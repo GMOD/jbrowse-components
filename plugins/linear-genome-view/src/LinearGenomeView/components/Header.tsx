@@ -22,6 +22,7 @@ import ZoomControls from './ZoomControls'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const WIDGET_HEIGHT = 27
+const SPACING = 7
 
 const useStyles = makeStyles(theme => ({
   headerBar: {
@@ -38,7 +39,7 @@ const useStyles = makeStyles(theme => ({
   panButton: {
     background: fade(theme.palette.background.paper, 0.8),
     height: WIDGET_HEIGHT,
-    margin: 7,
+    margin: SPACING,
   },
   bp: {
     display: 'flex',
@@ -114,7 +115,7 @@ const Search = observer(({ model }: { model: LGV }) => {
           startAdornment: <SearchIcon fontSize="small" />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
-            margin: 7,
+            margin: SPACING,
             height: WIDGET_HEIGHT,
           },
         }}
@@ -176,7 +177,7 @@ export default observer(({ model }: { model: LGV }) => {
           style={{
             display: 'inline-flex',
             height: WIDGET_HEIGHT,
-            margin: 7,
+            margin: SPACING,
           }}
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}

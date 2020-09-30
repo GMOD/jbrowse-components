@@ -93,260 +93,158 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="makeStyles-spacer"
         />
         <div
-          style="display: flex;"
+          class="MuiFormGroup-root MuiFormGroup-row"
         >
-          <div
-            style="margin: auto;"
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            tabindex="0"
+            type="button"
           >
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-              tabindex="0"
-              type="button"
+            <span
+              class="MuiButton-label"
             >
-              <span
-                class="MuiButton-label"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
-                  />
-                </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-              tabindex="0"
-              type="button"
+                <path
+                  d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
             >
-              <span
-                class="MuiButton-label"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
-                  />
-                </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
+                <path
+                  d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <div
+            aria-expanded="false"
+            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
+            role="combobox"
+            style="display: inline-flex; height: 27px; margin: 7px;"
+          >
             <div
-              aria-expanded="false"
-              class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
-              role="combobox"
-              style="display: inline-flex; height: 27px; margin: 7px;"
+              class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
             >
               <div
-                class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
               >
+                <input
+                  aria-autocomplete="list"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  id="refNameAutocomplete-lgv"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA"
+                />
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                  style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
+                  class="MuiAutocomplete-endAdornment"
                 >
-                  <input
-                    aria-autocomplete="list"
-                    aria-invalid="false"
-                    autocapitalize="none"
-                    autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                    id="refNameAutocomplete-lgv"
-                    spellcheck="false"
-                    type="text"
-                    value="ctgA"
-                  />
-                  <div
-                    class="MuiAutocomplete-endAdornment"
+                  <button
+                    aria-label="Clear"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator MuiAutocomplete-clearIndicatorDirty"
+                    tabindex="-1"
+                    title="Clear"
+                    type="button"
                   >
-                    <button
-                      aria-label="Clear"
-                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator MuiAutocomplete-clearIndicatorDirty"
-                      tabindex="-1"
-                      title="Clear"
-                      type="button"
+                    <span
+                      class="MuiIconButton-label"
                     >
-                      <span
-                        class="MuiIconButton-label"
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                          />
-                        </svg>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                    <button
-                      aria-label="Open"
-                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                      tabindex="-1"
-                      title="Open"
-                      type="button"
-                    >
-                      <span
-                        class="MuiIconButton-label"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M7 10l5 5 5-5z"
-                          />
-                        </svg>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                  </div>
-                  <fieldset
-                    aria-hidden="true"
-                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                    style="padding-left: 8px;"
+                        <path
+                          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <button
+                    aria-label="Open"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                    tabindex="-1"
+                    title="Open"
+                    type="button"
                   >
-                    <legend
-                      class="PrivateNotchedOutline-legend"
-                      style="width: 0.01px;"
+                    <span
+                      class="MuiIconButton-label"
                     >
-                      <span>
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M7 10l5 5 5-5z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
                 </div>
+                <fieldset
+                  aria-hidden="true"
+                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                  style="padding-left: 8px;"
+                >
+                  <legend
+                    class="PrivateNotchedOutline-legend"
+                    style="width: 0.01px;"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
               </div>
             </div>
-            <form
-              style="display: inline;"
+          </div>
+          <form
+            style="display: inline;"
+          >
+            <div
+              class="MuiFormControl-root MuiTextField-root makeStyles-input"
             >
               <div
-                class="MuiFormControl-root MuiTextField-root makeStyles-input"
-              >
-                <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                  style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                    />
-                  </svg>
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                    type="text"
-                    value="ctgA:1..100"
-                  />
-                  <fieldset
-                    aria-hidden="true"
-                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                    style="padding-left: 8px;"
-                  >
-                    <legend
-                      class="PrivateNotchedOutline-legend"
-                      style="width: 0.01px;"
-                    >
-                      <span>
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
-                </div>
-              </div>
-            </form>
-          </div>
-          <p
-            class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
-          >
-            100 bp
-          </p>
-          <div
-            class="makeStyles-container"
-          >
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-              data-testid="zoom_out"
-              disabled=""
-              tabindex="-1"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
-                  />
-                </svg>
-              </span>
-            </button>
-            <span
-              class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-            >
-              <span
-                class="MuiSlider-rail"
-              />
-              <span
-                class="MuiSlider-track"
-                style="left: 0%; width: 0%;"
-              />
-              <input
-                type="hidden"
-                value="332.1928094887362"
-              />
-              <span
-                aria-orientation="horizontal"
-                aria-valuemax="564.3856189774724"
-                aria-valuemin="332.1928094887362"
-                aria-valuenow="332.1928094887362"
-                class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                data-index="0"
-                role="slider"
-                style="left: 0%;"
-                tabindex="0"
-              />
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-              data-testid="zoom_in"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
               >
                 <svg
                   aria-hidden="true"
@@ -357,16 +255,114 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   <path
                     d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                   />
-                  <path
-                    d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
-                  />
                 </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-          </div>
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  type="text"
+                  value="ctgA:1..100"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                  style="padding-left: 8px;"
+                >
+                  <legend
+                    class="PrivateNotchedOutline-legend"
+                    style="width: 0.01px;"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </form>
+        </div>
+        <p
+          class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+        >
+          100 bp
+        </p>
+        <div
+          class="makeStyles-container"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+            data-testid="zoom_out"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+                />
+              </svg>
+            </span>
+          </button>
+          <span
+            class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+          >
+            <span
+              class="MuiSlider-rail"
+            />
+            <span
+              class="MuiSlider-track"
+              style="left: 0%; width: 0%;"
+            />
+            <input
+              type="hidden"
+              value="332.1928094887362"
+            />
+            <span
+              aria-orientation="horizontal"
+              aria-valuemax="564.3856189774724"
+              aria-valuemin="332.1928094887362"
+              aria-valuenow="332.1928094887362"
+              class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+              data-index="0"
+              role="slider"
+              style="left: 0%;"
+              tabindex="0"
+            />
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            data-testid="zoom_in"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+                <path
+                  d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
         </div>
         <div
           class="makeStyles-spacer"
@@ -929,262 +925,158 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="makeStyles-spacer"
         />
         <div
-          style="display: flex;"
+          class="MuiFormGroup-root MuiFormGroup-row"
         >
-          <div
-            style="margin: auto;"
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            tabindex="0"
+            type="button"
           >
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-              tabindex="0"
-              type="button"
+            <span
+              class="MuiButton-label"
             >
-              <span
-                class="MuiButton-label"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
-                  />
-                </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <button
-              class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
-              tabindex="0"
-              type="button"
+                <path
+                  d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
             >
-              <span
-                class="MuiButton-label"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
-                  />
-                </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
+                <path
+                  d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <div
+            aria-expanded="false"
+            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
+            role="combobox"
+            style="display: inline-flex; height: 27px; margin: 7px;"
+          >
             <div
-              aria-expanded="false"
-              class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
-              role="combobox"
-              style="display: inline-flex; height: 27px; margin: 7px;"
+              class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
             >
               <div
-                class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
               >
+                <input
+                  aria-autocomplete="list"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  id="refNameAutocomplete-lgv"
+                  spellcheck="false"
+                  type="text"
+                  value=""
+                />
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                  style="padding: 0px; height: 27px; background: rgba(255, 255, 255, 0.8);"
+                  class="MuiAutocomplete-endAdornment"
                 >
-                  <input
-                    aria-autocomplete="list"
-                    aria-invalid="false"
-                    autocapitalize="none"
-                    autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                    id="refNameAutocomplete-lgv"
-                    spellcheck="false"
-                    type="text"
-                    value=""
-                  />
-                  <div
-                    class="MuiAutocomplete-endAdornment"
+                  <button
+                    aria-label="Clear"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator"
+                    tabindex="-1"
+                    title="Clear"
+                    type="button"
                   >
-                    <button
-                      aria-label="Clear"
-                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator"
-                      tabindex="-1"
-                      title="Clear"
-                      type="button"
+                    <span
+                      class="MuiIconButton-label"
                     >
-                      <span
-                        class="MuiIconButton-label"
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                          />
-                        </svg>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                    <button
-                      aria-label="Open"
-                      class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                      tabindex="-1"
-                      title="Open"
-                      type="button"
-                    >
-                      <span
-                        class="MuiIconButton-label"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M7 10l5 5 5-5z"
-                          />
-                        </svg>
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                  </div>
-                  <fieldset
-                    aria-hidden="true"
-                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                    style="padding-left: 8px;"
+                        <path
+                          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                  <button
+                    aria-label="Open"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                    tabindex="-1"
+                    title="Open"
+                    type="button"
                   >
-                    <legend
-                      class="PrivateNotchedOutline-legend"
-                      style="width: 0.01px;"
+                    <span
+                      class="MuiIconButton-label"
                     >
-                      <span>
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M7 10l5 5 5-5z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
                 </div>
+                <fieldset
+                  aria-hidden="true"
+                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                  style="padding-left: 8px;"
+                >
+                  <legend
+                    class="PrivateNotchedOutline-legend"
+                    style="width: 0.01px;"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
               </div>
             </div>
-            <form
-              style="display: inline;"
+          </div>
+          <form
+            style="display: inline;"
+          >
+            <div
+              class="MuiFormControl-root MuiTextField-root makeStyles-input"
             >
               <div
-                class="MuiFormControl-root MuiTextField-root makeStyles-input"
-              >
-                <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                  style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                    />
-                  </svg>
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                    type="text"
-                    value="ctgA:1..100;ctgB:1,001..1,698"
-                  />
-                  <fieldset
-                    aria-hidden="true"
-                    class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                    style="padding-left: 8px;"
-                  >
-                    <legend
-                      class="PrivateNotchedOutline-legend"
-                      style="width: 0.01px;"
-                    >
-                      <span>
-                        ​
-                      </span>
-                    </legend>
-                  </fieldset>
-                </div>
-              </div>
-            </form>
-          </div>
-          <p
-            class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
-          >
-            798 bp
-          </p>
-          <div
-            class="makeStyles-container"
-          >
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-              data-testid="zoom_out"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
-                  />
-                </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-            <span
-              class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
-            >
-              <span
-                class="MuiSlider-rail"
-              />
-              <span
-                class="MuiSlider-track"
-                style="left: 0%; width: 2.3783941938133566%;"
-              />
-              <input
-                type="hidden"
-                value="0"
-              />
-              <span
-                aria-orientation="horizontal"
-                aria-valuemax="564.3856189774724"
-                aria-valuemin="-13.750352374993502"
-                aria-valuenow="0"
-                class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
-                data-index="0"
-                role="slider"
-                style="left: 2.3783941938133566%;"
-                tabindex="0"
-              />
-            </span>
-            <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-              data-testid="zoom_in"
-              tabindex="0"
-              type="button"
-            >
-              <span
-                class="MuiIconButton-label"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 27px;"
               >
                 <svg
                   aria-hidden="true"
@@ -1195,16 +1087,116 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   <path
                     d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                   />
-                  <path
-                    d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
-                  />
                 </svg>
-              </span>
-              <span
-                class="MuiTouchRipple-root"
-              />
-            </button>
-          </div>
+                <input
+                  aria-invalid="false"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  type="text"
+                  value="ctgA:1..100;ctgB:1,001..1,698"
+                />
+                <fieldset
+                  aria-hidden="true"
+                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                  style="padding-left: 8px;"
+                >
+                  <legend
+                    class="PrivateNotchedOutline-legend"
+                    style="width: 0.01px;"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </form>
+        </div>
+        <p
+          class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
+        >
+          798 bp
+        </p>
+        <div
+          class="makeStyles-container"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            data-testid="zoom_out"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <span
+            class="MuiSlider-root MuiSlider-colorPrimary makeStyles-slider"
+          >
+            <span
+              class="MuiSlider-rail"
+            />
+            <span
+              class="MuiSlider-track"
+              style="left: 0%; width: 2.3783941938133566%;"
+            />
+            <input
+              type="hidden"
+              value="0"
+            />
+            <span
+              aria-orientation="horizontal"
+              aria-valuemax="564.3856189774724"
+              aria-valuemin="-13.750352374993502"
+              aria-valuenow="0"
+              class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
+              data-index="0"
+              role="slider"
+              style="left: 2.3783941938133566%;"
+              tabindex="0"
+            />
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            data-testid="zoom_in"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+                <path
+                  d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
         </div>
         <div
           class="makeStyles-spacer"
