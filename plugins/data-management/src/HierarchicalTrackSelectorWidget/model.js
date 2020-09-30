@@ -8,6 +8,9 @@ export function generateHierarchy(trackConfigurations) {
 
   trackConfigurations.forEach(trackConf => {
     const categories = [...(readConfObject(trackConf, 'category') || [])]
+    if (trackConf.sessionTrack) {
+      categories.unshift(' Session tracks')
+    }
 
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i += 1) {
@@ -48,10 +51,10 @@ export default pluginManager =>
       },
     }))
     .views(self => ({
-      trackConfigurations(assemblyName) {
-        if (!self.view) return []
-        const session = getSession(self)
-        const trackConfigurations = session.tracks
+      trackConfigurations(assemblyName, trackConfigurations) {
+        if (!self.view) {
+          return []
+        }
 
         const relevantTrackConfigurations = trackConfigurations.filter(
           conf =>
@@ -66,7 +69,9 @@ export default pluginManager =>
       },
 
       connectionTrackConfigurations(connection) {
-        if (!self.view) return []
+        if (!self.view) {
+          return []
+        }
         const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
@@ -76,7 +81,15 @@ export default pluginManager =>
       },
 
       hierarchy(assemblyName) {
-        return generateHierarchy(self.trackConfigurations(assemblyName))
+        const session = getSession(self)
+        const sessionTracks = session.sessionTracks.slice(0)
+        sessionTracks.forEach(t => {
+          t.sessionTrack = true
+        })
+        const allTracks = session.tracks.concat(sessionTracks)
+        return generateHierarchy(
+          self.trackConfigurations(assemblyName, allTracks),
+        )
       },
 
       connectionHierarchy(connection) {

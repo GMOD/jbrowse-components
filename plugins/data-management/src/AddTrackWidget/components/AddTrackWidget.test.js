@@ -110,7 +110,7 @@ describe('<AddTrackWidget />', () => {
 
   it('adds a track', async () => {
     const { getByTestId, getByText } = render(<AddTrackWidget model={model} />)
-    expect(session.tracks.length).toBe(1)
+    expect(session.sessionTracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackFromConfigRadio'))
     fireEvent.click(getByTestId('addTrackNextButton'))
     fireEvent.change(getByTestId('trackNameInput'), {
@@ -125,6 +125,6 @@ describe('<AddTrackWidget />', () => {
     const volMyt1 = await waitForElement(() => getByText('volMyt1'))
     fireEvent.click(volMyt1)
     fireEvent.click(getByTestId('addTrackNextButton'))
-    expect(session.tracks.length).toBe(2)
+    expect(session.sessionTracks.length).toBe(2)
   })
 })

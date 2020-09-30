@@ -261,6 +261,7 @@ export default class PileupRenderer extends BoxRendererType {
             region,
             bpPerPx,
           )
+
           const mismatchWidthPx = Math.max(
             minFeatWidth,
             Math.abs(mismatchLeftPx - mismatchRightPx),
@@ -291,7 +292,7 @@ export default class PileupRenderer extends BoxRendererType {
             ctx.fillRect(pos - w, topPx, w * 3, 1)
             ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
             if (
-              mismatchWidthPx >= charSize.width &&
+              1 / bpPerPx >= charSize.width &&
               heightPx >= charSize.height - 2
             ) {
               ctx.fillText(
