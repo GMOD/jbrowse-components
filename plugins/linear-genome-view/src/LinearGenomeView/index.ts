@@ -30,6 +30,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -1028,28 +1029,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.toggleHeaderOverview,
               disabled: self.hideHeader,
             },
-            { type: 'divider' },
-            { type: 'subHeader', label: 'Track Labels' },
             {
-              label: 'Overlapping',
-              icon: VisibilityIcon,
-              type: 'radio',
-              checked: self.trackLabels === 'overlapping',
-              onClick: () => self.setTrackLabels('overlapping'),
-            },
-            {
-              label: 'Offset',
-              icon: VisibilityIcon,
-              type: 'radio',
-              checked: self.trackLabels === 'offset',
-              onClick: () => self.setTrackLabels('offset'),
-            },
-            {
-              label: 'Hidden',
-              icon: VisibilityIcon,
-              type: 'radio',
-              checked: self.trackLabels === 'hidden',
-              onClick: () => self.setTrackLabels('hidden'),
+              label: 'Track labels',
+              icon: LabelIcon,
+              subMenu: [
+                {
+                  label: 'Overlapping',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'overlapping',
+                  onClick: () => self.setTrackLabels('overlapping'),
+                },
+                {
+                  label: 'Offset',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'offset',
+                  onClick: () => self.setTrackLabels('offset'),
+                },
+                {
+                  label: 'Hidden',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'hidden',
+                  onClick: () => self.setTrackLabels('hidden'),
+                },
+              ],
             },
           ]
 
