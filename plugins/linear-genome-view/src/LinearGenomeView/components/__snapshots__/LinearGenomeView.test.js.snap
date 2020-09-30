@@ -377,11 +377,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="makeStyles-verticalGuidesContainer"
-        style="left: -800px; width: 1700px;"
+        style="left: -1024px; width: 2148px;"
       >
         <div
           class="makeStyles-boundaryPaddingBlock"
-          style="width: 800px;"
+          style="width: 1024px;"
         />
         <div
           class="makeStyles-block"
@@ -418,7 +418,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         </div>
         <div
           class="makeStyles-boundaryPaddingBlock"
-          style="width: 800px;"
+          style="width: 1024px;"
         />
       </div>
     </div>
@@ -437,11 +437,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-scaleBar"
-            style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
+            style="left: -1025px; width: 2148px; height: 17px; box-sizing: border-box;"
           >
             <div
               class="makeStyles-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              style="background: none; width: 1024px;"
             />
             <div
               class="makeStyles-block"
@@ -460,7 +460,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </div>
             <div
               class="makeStyles-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              style="background: none; width: 1024px;"
             />
           </div>
         </div>
@@ -573,11 +573,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             <div
               class="makeStyles-trackBlocks"
               data-testid="Blockset"
-              style="left: -800px;"
+              style="left: -1024px;"
             >
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
               <div
                 class="makeStyles-block"
@@ -614,7 +614,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
             </div>
           </div>
@@ -1209,11 +1209,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="makeStyles-verticalGuidesContainer"
-        style="left: -800px; width: 2702px;"
+        style="left: -1024px; width: 3150px;"
       >
         <div
           class="makeStyles-boundaryPaddingBlock"
-          style="width: 800px;"
+          style="width: 1024px;"
         />
         <div
           class="makeStyles-block"
@@ -1254,7 +1254,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         />
         <div
           class="makeStyles-block"
-          style="width: 800px;"
+          style="width: 1000px;"
         >
           <div
             class="makeStyles-tick makeStyles-majorTick"
@@ -1424,63 +1424,50 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="makeStyles-tick makeStyles-minorTick"
             style="left: 819px;"
           />
-        </div>
-        <div
-          class="makeStyles-block"
-          style="width: 200px;"
-        >
           <div
-            class="makeStyles-tick makeStyles-majorTick"
-            style="left: -1px;"
+            class="makeStyles-tick makeStyles-minorTick"
+            style="left: 839px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 19px;"
+            style="left: 859px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 39px;"
-          />
-          <div
-            class="makeStyles-tick makeStyles-minorTick"
-            style="left: 59px;"
-          />
-          <div
-            class="makeStyles-tick makeStyles-minorTick"
-            style="left: 79px;"
+            style="left: 879px;"
           />
           <div
             class="makeStyles-tick makeStyles-majorTick"
-            style="left: 99px;"
+            style="left: 899px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 119px;"
+            style="left: 919px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 139px;"
+            style="left: 939px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 159px;"
+            style="left: 959px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 179px;"
+            style="left: 979px;"
           />
           <div
             class="makeStyles-tick makeStyles-majorTick"
-            style="left: 199px;"
+            style="left: 999px;"
           />
           <div
             class="makeStyles-tick makeStyles-minorTick"
-            style="left: 219px;"
+            style="left: 1019px;"
           />
         </div>
         <div
           class="makeStyles-boundaryPaddingBlock"
-          style="width: 800px;"
+          style="width: 1024px;"
         />
       </div>
     </div>
@@ -1499,11 +1486,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-scaleBar"
-            style="left: -801px; width: 2702px; height: 17px; box-sizing: border-box;"
+            style="left: -1025px; width: 3150px; height: 17px; box-sizing: border-box;"
           >
             <div
               class="makeStyles-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              style="background: none; width: 1024px;"
             />
             <div
               class="makeStyles-block"
@@ -1526,7 +1513,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <div
               class="makeStyles-block"
-              style="width: 800px;"
+              style="width: 1000px;"
             >
               <div
                 class="makeStyles-tick"
@@ -1578,24 +1565,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   1,800
                 </p>
               </div>
-            </div>
-            <div
-              class="makeStyles-block"
-              style="width: 200px;"
-            >
               <div
                 class="makeStyles-tick"
-                style="left: -1px;"
-              >
-                <p
-                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-                >
-                  1,800
-                </p>
-              </div>
-              <div
-                class="makeStyles-tick"
-                style="left: 199px;"
+                style="left: 999px;"
               >
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
@@ -1606,7 +1578,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </div>
             <div
               class="makeStyles-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              style="background: none; width: 1024px;"
             />
           </div>
         </div>
@@ -1726,11 +1698,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <div
               class="makeStyles-trackBlocks"
               data-testid="Blockset"
-              style="left: -800px;"
+              style="left: -1024px;"
             >
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
               <div
                 class="makeStyles-block"
@@ -1771,11 +1743,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
               <div
                 class="makeStyles-block"
-                style="width: 800px;"
+                style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="394"
+                  data-html-size="397"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -1783,53 +1755,20 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                     <div
                       class="PileupRendering"
                       data-testid="pileup-normal"
-                      style="position:relative;width:800px;height:1px"
+                      style="position:relative;width:1000px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
                         height="2"
-                        style="width:800px;height:1px;position:absolute;left:0;top:0"
-                        width="1600"
+                        style="width:1000px;height:1px;position:absolute;left:0;top:0"
+                        width="2000"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
                         height="1"
                         style="position:absolute;left:0;top:0"
-                        width="800"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="makeStyles-block"
-                style="width: 200px;"
-              >
-                <div
-                  class="ssr-container"
-                  data-html-size="393"
-                >
-                  <div
-                    classname="ssr-container-inner"
-                  >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:200px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:200px;height:1px;position:absolute;left:0;top:0"
-                        width="400"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="200"
+                        width="1000"
                       />
                     </div>
                   </div>
@@ -1837,7 +1776,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
             </div>
           </div>
@@ -1950,11 +1889,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <div
               class="makeStyles-trackBlocks"
               data-testid="Blockset"
-              style="left: -800px;"
+              style="left: -1024px;"
             >
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
               <div
                 class="makeStyles-block"
@@ -1995,11 +1934,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
               <div
                 class="makeStyles-block"
-                style="width: 800px;"
+                style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="394"
+                  data-html-size="397"
                 >
                   <div
                     classname="ssr-container-inner"
@@ -2007,53 +1946,20 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                     <div
                       class="PileupRendering"
                       data-testid="pileup-normal"
-                      style="position:relative;width:800px;height:1px"
+                      style="position:relative;width:1000px;height:1px"
                     >
                       <canvas
                         data-testid="prerendered_canvas"
                         height="2"
-                        style="width:800px;height:1px;position:absolute;left:0;top:0"
-                        width="1600"
+                        style="width:1000px;height:1px;position:absolute;left:0;top:0"
+                        width="2000"
                       />
                       <canvas
                         class="highlightOverlayCanvas"
                         data-testid="pileup_overlay_canvas"
                         height="1"
                         style="position:absolute;left:0;top:0"
-                        width="800"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="makeStyles-block"
-                style="width: 200px;"
-              >
-                <div
-                  class="ssr-container"
-                  data-html-size="393"
-                >
-                  <div
-                    classname="ssr-container-inner"
-                  >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:200px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:200px;height:1px;position:absolute;left:0;top:0"
-                        width="400"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="200"
+                        width="1000"
                       />
                     </div>
                   </div>
@@ -2061,7 +1967,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="background: none; width: 1024px;"
               />
             </div>
           </div>
