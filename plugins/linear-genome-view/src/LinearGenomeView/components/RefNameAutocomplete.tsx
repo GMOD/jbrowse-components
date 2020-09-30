@@ -102,7 +102,7 @@ function RefNameAutocomplete({
   onSelect: (region: Region | undefined) => void
   assemblyName?: string
   defaultRegionName?: string
-  style: unknown
+  style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
   const [selectedRegionName, setSelectedRegionName] = useState<

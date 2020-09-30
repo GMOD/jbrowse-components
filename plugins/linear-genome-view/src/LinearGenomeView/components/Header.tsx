@@ -182,11 +182,6 @@ export default observer(({ model }: { model: LGV }) => {
             assemblyName={assemblyName}
             defaultRegionName={displayedRegions.length > 1 ? '' : refName}
             model={model}
-            ListboxProps={{
-              style: {
-                maxHeight: WIDGET_HEIGHT,
-              },
-            }}
             TextFieldProps={{
               variant: 'outlined',
               size: 'small',
