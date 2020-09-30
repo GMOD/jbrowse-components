@@ -176,7 +176,6 @@ export default observer(({ model }: { model: LGV }) => {
         <RefNameAutocomplete
           style={{
             display: 'inline-flex',
-            height: WIDGET_HEIGHT,
             margin: SPACING,
           }}
           onSelect={setDisplayedRegion}

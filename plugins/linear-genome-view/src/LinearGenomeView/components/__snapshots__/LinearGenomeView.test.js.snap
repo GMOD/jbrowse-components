@@ -143,9 +143,9 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
             role="combobox"
-            style="display: inline-flex; height: 27px; margin: 7px;"
+            style="display: inline-flex; margin: 7px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
@@ -168,31 +168,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 <div
                   class="MuiAutocomplete-endAdornment"
                 >
-                  <button
-                    aria-label="Clear"
-                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator MuiAutocomplete-clearIndicatorDirty"
-                    tabindex="-1"
-                    title="Clear"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
                   <button
                     aria-label="Open"
                     class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
@@ -705,15 +680,15 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
     >
       <div
         aria-expanded="false"
-        class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
+        class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
         role="combobox"
       >
         <div
           class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
         >
           <label
-            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
-            data-shrink="true"
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
+            data-shrink="false"
             for="refNameAutocomplete-lgv"
             id="refNameAutocomplete-lgv-label"
           >
@@ -732,36 +707,11 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               id="refNameAutocomplete-lgv"
               spellcheck="false"
               type="text"
-              value="ctgA"
+              value=""
             />
             <div
               class="MuiAutocomplete-endAdornment"
             >
-              <button
-                aria-label="Clear"
-                class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator MuiAutocomplete-clearIndicatorDirty"
-                tabindex="-1"
-                title="Clear"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
               <button
                 aria-label="Open"
                 class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
@@ -793,7 +743,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
             >
               <legend
-                class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
+                class="PrivateNotchedOutline-legendLabelled"
               >
                 <span>
                   Sequence
@@ -802,7 +752,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             </fieldset>
           </div>
           <p
-            class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+            class="MuiFormHelperText-root MuiFormHelperText-contained"
             id="refNameAutocomplete-lgv-helper-text"
           >
             Select sequence to view
@@ -975,9 +925,9 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root makeStyles-autocomplete MuiAutocomplete-hasPopupIcon"
             role="combobox"
-            style="display: inline-flex; height: 27px; margin: 7px;"
+            style="display: inline-flex; margin: 7px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
@@ -1000,31 +950,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <div
                   class="MuiAutocomplete-endAdornment"
                 >
-                  <button
-                    aria-label="Clear"
-                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-clearIndicator"
-                    tabindex="-1"
-                    title="Clear"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
                   <button
                     aria-label="Open"
                     class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"

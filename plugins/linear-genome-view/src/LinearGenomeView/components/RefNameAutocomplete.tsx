@@ -154,10 +154,11 @@ function RefNameAutocomplete({
           React.HTMLAttributes<HTMLElement>
         >
       }
+      disableClearable
       options={regionNames}
       value={
         !assemblyName || loading || !selectedRegionName
-          ? null
+          ? undefined
           : selectedRegionName
       }
       disabled={!assemblyName || loading}
