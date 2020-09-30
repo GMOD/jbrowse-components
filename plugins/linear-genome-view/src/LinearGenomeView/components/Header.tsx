@@ -6,7 +6,6 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
-import Autocomplete from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
@@ -31,15 +30,14 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     flexGrow: 1,
   },
-  input: {
-    width: 300,
-  },
+  input: {},
   headerRefName: {
     minWidth: 100,
   },
   panButton: {
     background: fade(theme.palette.background.paper, 0.8),
     height: WIDGET_HEIGHT,
+    margin: 7,
   },
   bp: {
     display: 'flex',
@@ -115,6 +113,7 @@ const Search = observer(({ model }: { model: LGV }) => {
           startAdornment: <SearchIcon fontSize="small" />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
+            margin: 7,
             height: WIDGET_HEIGHT,
           },
         }}
@@ -177,6 +176,7 @@ export default observer(({ model }: { model: LGV }) => {
             style={{
               display: 'inline-flex',
               height: WIDGET_HEIGHT,
+              margin: 7,
             }}
             onSelect={setDisplayedRegion}
             assemblyName={assemblyName}
