@@ -127,8 +127,6 @@ function RefNameAutocomplete({
     }
   }, [assemblyName, defaultRegionName, onSelect, loading, regions])
 
-  const classes = useStyles()
-
   const regionNames = regions.map(region => region.refName)
 
   function onChange(_: unknown, newRegionName: string | null) {
@@ -141,9 +139,8 @@ function RefNameAutocomplete({
     }
   }
 
-  return (
+  return !assemblyName || loading || !selectedRegionName ? null : (
     <Autocomplete
-      classes={{ root: classes.autocomplete }}
       id={`refNameAutocomplete-${model.id}`}
       disableListWrap
       ListboxComponent={
@@ -153,11 +150,7 @@ function RefNameAutocomplete({
       }
       disableClearable
       options={regionNames}
-      value={
-        !assemblyName || loading || !selectedRegionName
-          ? undefined
-          : selectedRegionName
-      }
+      value={selectedRegionName}
       disabled={!assemblyName || loading}
       style={style}
       onChange={onChange}

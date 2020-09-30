@@ -685,8 +685,8 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
           class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
         >
           <label
-            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
-            data-shrink="false"
+            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
+            data-shrink="true"
             for="refNameAutocomplete-lgv"
             id="refNameAutocomplete-lgv-label"
           >
@@ -705,7 +705,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               id="refNameAutocomplete-lgv"
               spellcheck="false"
               type="text"
-              value=""
+              value="ctgA"
             />
             <div
               class="MuiAutocomplete-endAdornment"
@@ -741,7 +741,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
             >
               <legend
-                class="PrivateNotchedOutline-legendLabelled"
+                class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
               >
                 <span>
                   Sequence
@@ -750,7 +750,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             </fieldset>
           </div>
           <p
-            class="MuiFormHelperText-root MuiFormHelperText-contained"
+            class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
             id="refNameAutocomplete-lgv-helper-text"
           >
             Select sequence to view
@@ -921,76 +921,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               class="MuiTouchRipple-root"
             />
           </button>
-          <div
-            aria-expanded="false"
-            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
-            role="combobox"
-            style="margin: 7px;"
-          >
-            <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
-            >
-              <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
-              >
-                <input
-                  aria-autocomplete="list"
-                  aria-invalid="false"
-                  autocapitalize="none"
-                  autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
-                  id="refNameAutocomplete-lgv"
-                  spellcheck="false"
-                  type="text"
-                  value=""
-                />
-                <div
-                  class="MuiAutocomplete-endAdornment"
-                >
-                  <button
-                    aria-label="Open"
-                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                    tabindex="-1"
-                    title="Open"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-                <fieldset
-                  aria-hidden="true"
-                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                  style="padding-left: 8px;"
-                >
-                  <legend
-                    class="PrivateNotchedOutline-legend"
-                    style="width: 0.01px;"
-                  >
-                    <span>
-                      ​
-                    </span>
-                  </legend>
-                </fieldset>
-              </div>
-            </div>
-          </div>
           <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
