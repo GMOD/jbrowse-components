@@ -9,6 +9,7 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState, useEffect } = jbrequire('react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
 
   const [LEFT] = [0, 1, 2, 3]
 
@@ -34,10 +35,10 @@ export default (pluginManager: any) => {
       const [mouseoverElt, setMouseoverElt] = useState()
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const [overlaps, setOverlaps] = useState([])
-      const trackLabels = views.map(view => view.trackLabels).join(',')
+      const snap = getSnapshot(views)
       useEffect(() => {
-        setOverlaps(trackLabels)
-      }, [trackLabels])
+        setOverlaps(snap)
+      }, [snap])
       let yOffset = 0
       if (ref.current) {
         const rect = ref.current.getBoundingClientRect()
