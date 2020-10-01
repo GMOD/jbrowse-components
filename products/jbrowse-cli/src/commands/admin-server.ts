@@ -4,6 +4,8 @@ import * as path from 'path'
 import * as express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
+// test
+
 function isValidPort(port: number) {
   return port > 0 && port < 65535
 }
