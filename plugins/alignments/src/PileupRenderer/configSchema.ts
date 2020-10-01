@@ -12,11 +12,7 @@ export default ConfigurationSchema(
 }`,
       functionSignature: ['feature'],
     },
-    maxInsertSize: {
-      type: 'number',
-      defaultValue: 5000,
-      description: 'size to expand for insert size',
-    },
+
     orientationType: {
       type: 'stringEnum',
       model: types.enumeration('orientationType', ['fr', 'rf', 'ff']),
@@ -48,7 +44,13 @@ export default ConfigurationSchema(
     maxClippingSize: {
       type: 'integer',
       description: 'the max clip size to be used in a pileup rendering',
-      defaultValue: 10000,
+      defaultValue: 0,
+    },
+    maxInsertSize: {
+      type: 'number',
+      defaultValue: 0,
+      description:
+        'size to expand for insert size for paired or linked supplementary alignments',
     },
     height: {
       type: 'integer',

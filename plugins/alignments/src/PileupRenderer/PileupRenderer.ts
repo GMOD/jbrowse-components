@@ -365,18 +365,21 @@ export default class PileupRenderer extends BoxRendererType {
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const maxInsertSize = readConfObject(config, 'maxInsertSize')
-
+    const { start, end } = region
+    const len = end - start
     const bpExpansion = Math.max(
       ...[
+        len,
         showSoftClip ? Math.round(maxClippingSize) : 0,
         viewAsPairs ? Math.round(maxInsertSize) : 0,
         linkSuppReads ? Math.round(maxInsertSize) : 0,
       ],
     )
+
     return {
       ...region,
-      start: Math.floor(Math.max(region.start - bpExpansion, 0)),
-      end: Math.ceil(region.end + bpExpansion),
+      start: Math.floor(Math.max(start - bpExpansion, 0)),
+      end: Math.ceil(end + bpExpansion),
     }
   }
 

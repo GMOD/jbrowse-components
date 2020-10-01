@@ -134,23 +134,26 @@ const stateModelFactory = (
         addDisposer(
           self,
           autorun(() => {
-            if (
-              !self.SNPCoverageTrack ||
+            if (!self.SNPCoverageTrack) {
+              this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
+            } else if (
               !deepEqual(
                 self.snpCoverageTrackConfig,
                 getSnapshot(self.SNPCoverageTrack.configuration),
               )
             ) {
-              this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
+              self.SNPCoverageTrack.setConfig(self.pileupTrackConfig)
             }
-            if (
-              !self.PileupTrack ||
+
+            if (!self.PileupTrack) {
+              this.setPileupTrack(self.pileupTrackConfig)
+            } else if (
               !deepEqual(
                 self.pileupTrackConfig,
                 getSnapshot(self.PileupTrack.configuration),
               )
             ) {
-              this.setPileupTrack(self.pileupTrackConfig)
+              self.PileupTrack.setConfig(self.pileupTrackConfig)
             }
           }),
         )

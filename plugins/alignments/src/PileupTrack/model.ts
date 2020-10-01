@@ -26,6 +26,7 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
 import { autorun } from 'mobx'
+import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 
@@ -147,6 +148,10 @@ const stateModelFactory = (
 
       toggleLinkSuppReads() {
         self.linkSuppReads = !self.linkSuppReads
+      },
+
+      setConfig(configuration: AnyConfigurationModel) {
+        self.configuration = configuration
       },
 
       async sortSelected(type: string) {
