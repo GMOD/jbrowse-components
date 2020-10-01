@@ -801,12 +801,13 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.moveTo(leftPx, topPx + heightPx / 2)
         ctx.lineTo(rightPx, topPx + heightPx / 2)
         ctx.stroke()
-        feature.get('subfeatures').forEach((feat: Feature) => {
-          this.drawRect(ctx, { feature: feat, topPx, heightPx }, props)
+        const subfeatures = feature.get('subfeatures') as Feature[]
+        subfeatures.forEach(subfeat => {
+          this.drawRect(ctx, { feature: subfeat, topPx, heightPx }, props)
           this.drawMismatches(
             ctx,
-            { feature: feat, heightPx, topPx },
-            feat.get('mismatches'),
+            { feature: subfeat, heightPx, topPx },
+            subfeat.get('mismatches'),
             props,
           )
         })
