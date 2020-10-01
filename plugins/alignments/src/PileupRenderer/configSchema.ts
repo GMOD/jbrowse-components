@@ -8,7 +8,7 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
       defaultValue: `function(feature) {
-  return '#888'
+  return '#c8c8c8'
 }`,
       functionSignature: ['feature'],
     },

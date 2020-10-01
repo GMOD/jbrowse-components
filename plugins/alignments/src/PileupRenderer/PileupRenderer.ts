@@ -518,7 +518,28 @@ export default class PileupRenderer extends BoxRendererType {
       region,
       bpPerPx,
     )
-    ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
+
+    const strand = feature.get('strand')
+    if (strand === -1) {
+      ctx.beginPath()
+      ctx.moveTo(leftPx, topPx + heightPx / 2)
+      ctx.lineTo(leftPx + 5, topPx + heightPx)
+      ctx.lineTo(rightPx, topPx + heightPx)
+      ctx.lineTo(rightPx, topPx)
+      ctx.lineTo(leftPx + 5, topPx)
+      ctx.closePath()
+      ctx.fill()
+    } else {
+      ctx.beginPath()
+      ctx.moveTo(leftPx, topPx)
+      ctx.lineTo(leftPx, topPx + heightPx)
+      ctx.lineTo(rightPx - 5, topPx + heightPx)
+      ctx.lineTo(rightPx, topPx + heightPx / 2)
+      ctx.lineTo(rightPx - 5, topPx)
+      ctx.closePath()
+      ctx.fill()
+    }
+    // ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
   }
 
   drawMismatches(
