@@ -14,11 +14,8 @@ import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const background = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      fade(theme.palette.tertiary.main, 0.7)
+    ? fade(theme.palette.tertiary.main, 0.7)
     : fade(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
@@ -35,11 +32,8 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      // @ts-ignore
       color: theme.palette.tertiary
-        ? // prettier-ignore
-          // @ts-ignore
-          theme.palette.tertiary.contrastText
+        ? theme.palette.tertiary.contrastText
         : theme.palette.primary.contrastText,
     },
     popover: {

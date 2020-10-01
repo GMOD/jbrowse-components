@@ -1,5 +1,5 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { App, theme } from '@gmod/jbrowse-core/ui'
+import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
+import { App, createJBrowseTheme } from '@gmod/jbrowse-core/ui'
 import { toUrlSafeB64 } from '@gmod/jbrowse-core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
@@ -113,14 +113,13 @@ const JBrowse = observer(({ pluginManager }) => {
     throw new Error(error)
   }
 
-  return <App session={rootModel.session} />
-})
-
-export default props => {
+  const theme = getConf(rootModel.jbrowse, 'theme')
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      <JBrowse {...props} />
+      <App session={rootModel.session} />
     </ThemeProvider>
   )
-}
+})
+
+export default JBrowse
