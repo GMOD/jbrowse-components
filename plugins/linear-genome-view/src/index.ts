@@ -37,6 +37,7 @@ import blockBasedTrackModel, {
   BlockBasedTrackModel,
 } from './BasicTrack/blockBasedTrackModel'
 import BlockBasedTrack from './BasicTrack/components/BlockBasedTrack'
+import { BlockModel } from './BasicTrack/util/serverSideRenderedBlock'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -118,4 +119,5 @@ export type {
   BlockBasedTrackModel,
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
+  BlockModel,
 }

@@ -120,7 +120,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get version() {
         return getParent(self).version
       },
-
+      get renderProps() {
+        return { theme: readConfObject(this.configuration, 'theme') }
+      },
       get visibleWidget() {
         if (isAlive(self))
           // returns most recently added item in active widgets
