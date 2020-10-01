@@ -102,9 +102,8 @@ describe('test configuration editor', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-    fireEvent.click(
-      await findByTestId('htsTrackEntryConfigure-volvox_filtered_vcf'),
-    )
+    fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+    fireEvent.click(await findByText('Settings'))
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })

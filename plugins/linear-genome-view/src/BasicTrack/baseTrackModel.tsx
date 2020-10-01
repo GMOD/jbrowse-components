@@ -10,6 +10,7 @@ import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
+
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 // these MST models only exist for tracks that are *shown*.
@@ -74,7 +75,9 @@ const generateBaseTrackConfig = (base: any) =>
         defaultValue: [],
       },
     },
-    { explicitIdentifier: 'trackId' },
+    {
+      explicitIdentifier: 'trackId',
+    },
   )
 
 // note that multiple displayed tracks could use the same configuration.
@@ -170,11 +173,6 @@ const BaseTrack = types
       return adapterType
     },
 
-    get canConfigure() {
-      const session = getSession(self)
-      return isSessionModelWithConfigEditing(session)
-    },
-
     /**
      * if a track-level message should be displayed instead of the blocks,
      * make this return a react component
@@ -224,18 +222,6 @@ const BaseTrack = types
     reload() {},
   }))
   .views(self => ({
-    get trackMenuItems(): MenuItem[] {
-      return [
-        {
-          label: 'About this track',
-          icon: InfoIcon,
-          onClick: () => {
-            self.setShowAbout(true)
-          },
-        },
-      ]
-    },
-
     /**
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -294,9 +280,42 @@ const BaseTrackWithReferences = types
   .actions(self => ({
     activateConfigurationUI() {
       const session = getSession(self)
+      const view = getContainingView(self)
       if (isSessionModelWithConfigEditing(session)) {
-        session.editConfiguration(self.configuration)
+        // @ts-ignore
+        const newTrackConf = session.editTrackConfiguration(self.configuration)
+        if (newTrackConf && newTrackConf !== self.configuration) {
+          // @ts-ignore
+          view.hideTrack(self.configuration)
+          // @ts-ignore
+          view.showTrack(newTrackConf)
+        }
       }
+    },
+  }))
+  .views(self => ({
+    get canConfigure() {
+      const session = getSession(self)
+      return (
+        isSessionModelWithConfigEditing(session) &&
+        // @ts-ignore
+        (session.adminMode ||
+          // @ts-ignore
+          session.sessionTracks.find(track => {
+            return track.trackId === self.configuration.trackId
+          }))
+      )
+    },
+    get trackMenuItems(): MenuItem[] {
+      return [
+        {
+          label: 'About this track',
+          icon: InfoIcon,
+          onClick: () => {
+            self.setShowAbout(true)
+          },
+        },
+      ]
     },
   }))
 

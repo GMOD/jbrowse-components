@@ -133,8 +133,9 @@ function HierarchicalTrackSelector({ model }) {
     return null
   }
   const filterError =
-    model.trackConfigurations(assemblyName) > 0 &&
-    model.trackConfigurations(assemblyName).filter(filter).length === 0
+    model.trackConfigurations(assemblyName, session.tracks) > 0 &&
+    model.trackConfigurations(assemblyName, session.tracks).filter(filter)
+      .length === 0
 
   return (
     <div
@@ -228,11 +229,9 @@ function HierarchicalTrackSelector({ model }) {
         </>
       ) : null}
 
-      {session.editConfiguration ? (
-        <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-          <AddIcon />
-        </Fab>
-      ) : null}
+      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+        <AddIcon />
+      </Fab>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
