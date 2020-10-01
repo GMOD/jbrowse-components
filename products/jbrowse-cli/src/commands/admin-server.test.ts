@@ -69,11 +69,16 @@ const setupWithCreate = setup.do(async ctx => {
 })
 
 async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
+  const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
+    /adminKey=([a-zA-Z0-9]{10,12}) /,
+  )[1]
+  const payload = { adminKey }
   await fetch(`http://localhost:${port}/shutdown`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify(payload),
   })
 }
 

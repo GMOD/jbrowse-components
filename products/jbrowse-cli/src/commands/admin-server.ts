@@ -4,6 +4,8 @@ import * as path from 'path'
 import * as express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
+// test
+
 function isValidPort(port: number) {
   return port > 0 && port < 65535
 }
@@ -102,8 +104,14 @@ export default class AdminServer extends JBrowseCommand {
     app.post(
       '/shutdown',
       async (req: express.Request, res: express.Response) => {
-        res.send('Exiting')
-        server.close()
+        this.debug('Req body: ', req.body)
+        if (req.body.adminKey === adminKey) {
+          this.debug('Admin key matches')
+          res.send('Exiting')
+          server.close()
+        } else {
+          res.status(403).send('Admin key does not match')
+        }
       },
     )
 
