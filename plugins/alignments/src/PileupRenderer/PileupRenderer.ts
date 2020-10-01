@@ -69,7 +69,8 @@ interface CachedPileupLayout {
   config: AnyConfigurationModel
   filters: SerializableFilterChain
   sortedBy: unknown
-  showSoftClip: unknown
+  showSoftClip: boolean
+  viewAsPairs: boolean
 }
 
 const colorForBase: { [key: string]: string } = {
@@ -252,7 +253,9 @@ class PairedRead implements Feature {
 class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
 
-  showSoftClip: unknown
+  showSoftClip: boolean
+
+  viewAsPairs: boolean
 
   constructor(args: PileupLayoutSessionProps) {
     super(args)
@@ -262,8 +265,9 @@ class PileupLayoutSession extends LayoutSession {
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
-      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
-      deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
+      this.showSoftClip === cachedLayout.showSoftClip &&
+      this.viewAsPairs === cachedLayout.viewAsPairs &&
+      deepEqual(this.sortedBy, cachedLayout.sortedBy)
     )
   }
 
@@ -277,6 +281,7 @@ class PileupLayoutSession extends LayoutSession {
         filters: this.filters,
         sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
+        viewAsPairs: this.viewAsPairs,
       }
     }
     return this.cachedLayout.layout
@@ -350,7 +355,7 @@ export default class PileupRenderer extends BoxRendererType {
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
-    const { config, showSoftClip, viewAsPairs = true } = renderArgs
+    const { config, showSoftClip, viewAsPairs } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const maxInsertSize = readConfObject(config, 'maxInsertSize')
@@ -518,8 +523,8 @@ export default class PileupRenderer extends BoxRendererType {
       region,
       bpPerPx,
     )
-
-    const strand = feature.get('strand') && region.reversed ? -1 : 1
+    const flip = region.reversed ? -1 : 1
+    const strand = feature.get('strand') * flip
     if (strand === -1) {
       ctx.beginPath()
       ctx.moveTo(leftPx, topPx + heightPx / 2)
@@ -626,17 +631,20 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { config, regions } = renderArgs
+  async getFeatures(renderArgs: RenderArgsAugmented) {
+    const { config, regions, viewAsPairs } = renderArgs
     const features = await super.getFeatures(renderArgs)
     const [region] = regions
-    const featureList = [...features.values()]
-    const pairedFeatures = [...this.pairFeatures(region, config, featureList)]
-    return new Map(
-      pairedFeatures.map(feat => {
-        return [feat.id(), feat]
-      }),
-    )
+    if (viewAsPairs) {
+      const featureList = [...features.values()]
+      const pairedFeatures = [...this.pairFeatures(region, config, featureList)]
+      return new Map(
+        pairedFeatures.map(feat => {
+          return [feat.id(), feat]
+        }),
+      )
+    }
+    return features
   }
 
   async makeImageData(props: PileupRenderProps) {

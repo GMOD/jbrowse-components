@@ -50,6 +50,7 @@ const stateModelFactory = (
         configuration: ConfigurationReference(configSchema),
         colorScheme: '',
         showSoftClipping: false,
+        viewAsPairs: false,
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -137,6 +138,10 @@ const stateModelFactory = (
 
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
+      },
+
+      toggleViewAsPairs() {
+        self.viewAsPairs = !self.viewAsPairs
       },
 
       async sortSelected(type: string) {
@@ -248,6 +253,7 @@ const stateModelFactory = (
             sortedBy: self.sortedBy,
             colorScheme: self.colorScheme,
             showSoftClip: self.showSoftClipping,
+            viewAsPairs: self.viewAsPairs,
             config,
           }
         },
@@ -261,10 +267,20 @@ const stateModelFactory = (
               checked: self.showSoftClipping,
               onClick: () => {
                 self.toggleSoftClipping()
-                // if toggling from off to on, will break sort for this track so clear it
+                // if toggling from off to on, will break sort for this track
+                // so clear it
                 if (self.showSoftClipping) {
                   self.clearSelected()
                 }
+              },
+            },
+            {
+              label: 'View as pairs',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showSoftClipping,
+              onClick: () => {
+                self.toggleViewAsPairs()
               },
             },
             {
