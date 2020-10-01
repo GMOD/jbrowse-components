@@ -64,7 +64,6 @@ NewSessionCard.defaultProps = {
   style: {},
 }
 
-// TODOSESSION make date string more readable
 const tzOffset = new Date().getTimezoneOffset() * 60000 // tz in ms
 const dateString = `${new Date(Date.now() - tzOffset)
   .toISOString()

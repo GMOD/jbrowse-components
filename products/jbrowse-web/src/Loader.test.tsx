@@ -150,14 +150,14 @@ describe('<Loader />', () => {
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
 
-    localStorage.setItem('local-1', `session: { name: 'testSession' }`)
+    localStorage.setItem('localSaved-1', `session: { name: 'testSession' }`)
     expect(localStorage.length).toBe(1)
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore
         location={{
           search:
-            '?config=test_data/volvox/config_main_thread.json&session=local-1',
+            '?config=test_data/volvox/config_main_thread.json&session=localSaved-1',
         }}
       >
         <Loader />

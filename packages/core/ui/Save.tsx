@@ -36,14 +36,14 @@ const useStyles = makeStyles(theme => ({
 const Save = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
-  const locationUrl = new URL(window.location.href)
-  const params = new URLSearchParams(locationUrl.search)
+  // const locationUrl = new URL(window.location.href)
+  // const params = new URLSearchParams(locationUrl.search)
 
-  // TODOSESSION: save button doesnt reset on new session
-  const [saved, setSaved] = useState(
-    params?.get('session')?.startsWith('localSaved-'),
-  )
-
+  // TODOSESSION: need to refactor this, dont like how it looks
+  console.log(session, session.name.endsWith('-saved'))
+  const [saved, setSaved] = useState(session.name.endsWith('-saved'))
+  if (session.name.endsWith('-saved') !== saved)
+    setSaved(session.name.endsWith('-saved'))
   // on new session or tab exit, if they are on an unsaved session, have some dialog saying
   // are you sure, this is unsaved and give them an action button to save
 

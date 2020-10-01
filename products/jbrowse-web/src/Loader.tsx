@@ -173,7 +173,6 @@ export function Loader() {
         url.search = params.toString()
 
         setLoadingState(true)
-        // TODOSESSION remove all references to savedSessions
         let response
         try {
           response = await fetch(url.href, {
@@ -248,7 +247,7 @@ export function Loader() {
               reject()
             }, 1000)
           })
-          const localId = `localSession-${uuid.v4()}`
+          const localId = `localUnsaved-${uuid.v4()}`
           sessionStorage.setItem(localId, result as string)
           setData(localId)
         }
@@ -356,12 +355,8 @@ export function Loader() {
   }
   // wrap below in useeffect, maybe set an error state
   // in the use effect callback, setState(() => throw new Error('My error'))
+  // TODOSESSION: having issues with this
   try {
-    // if statement, if there is an autosave with a session pop up a dialog box
-    // window.confirm ask if they want to load autosave or not
-    // if they load autosave, skip the rest of this try, or just continue on if they click no
-    // only do if there is no specific sessionQueryParam in url when pasted (so this doesnt happen on refresh)
-
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in
       const foundLocalSession =

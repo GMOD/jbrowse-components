@@ -31,7 +31,7 @@ function debounce(func, wait) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [sessionId, setSession] = useQueryParam('session', StringParam)
+  const [sessionId] = useQueryParam('session', StringParam)
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
   const adminMode = adminKeyParam !== undefined
 
@@ -48,7 +48,6 @@ const JBrowse = observer(({ pluginManager }) => {
         localStorage.setItem(sessionId, JSON.stringify(snapshot))
         if (localStorage.getItem('autosave')) {
           localStorage.removeItem('autosave')
-          localStorage.getItem('autosave')
         }
       }
     }

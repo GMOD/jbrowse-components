@@ -13,7 +13,10 @@ describe('Root MST model', () => {
     rootModel = rootModelFactory(pluginManager)
   })
 
-  afterEach(() => localStorage.clear())
+  afterEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
 
   it('creates with defaults', () => {
     const root = rootModel.create({
@@ -23,10 +26,10 @@ describe('Root MST model', () => {
       assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
-    expect(localStorage.length).toBe(0)
+    expect(sessionStorage.length).toBe(0)
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
-    expect(localStorage.length).toBe(1)
+    expect(sessionStorage.length).toBe(1)
     expect(root.jbrowse.assemblies.length).toBe(0)
     expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
   })
@@ -44,7 +47,7 @@ describe('Root MST model', () => {
 
   it('activates a session snapshot', () => {
     const session = { name: 'testSession' }
-    localStorage.setItem(`local-123`, JSON.stringify(session))
+    localStorage.setItem(`localSaved-123`, JSON.stringify(session))
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -101,7 +104,7 @@ describe('Root MST model', () => {
   })
 
   it('adds a session snapshot', () => {
-    localStorage.setItem(`local-1`, `{ name: 'testSession' }`)
+    localStorage.setItem(`localSaved-1`, `{ name: 'testSession' }`)
     expect(localStorage.length).toBe(1)
   })
 
