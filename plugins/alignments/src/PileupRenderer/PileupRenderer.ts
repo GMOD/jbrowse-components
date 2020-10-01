@@ -519,7 +519,7 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    const strand = feature.get('strand')
+    const strand = feature.get('strand') && region.reversed ? -1 : 1
     if (strand === -1) {
       ctx.beginPath()
       ctx.moveTo(leftPx, topPx + heightPx / 2)
