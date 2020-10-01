@@ -51,6 +51,7 @@ const stateModelFactory = (
         colorScheme: '',
         showSoftClipping: false,
         viewAsPairs: false,
+        linkSuppReads: false,
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -142,6 +143,10 @@ const stateModelFactory = (
 
       toggleViewAsPairs() {
         self.viewAsPairs = !self.viewAsPairs
+      },
+
+      toggleLinkSuppReads() {
+        self.linkSuppReads = !self.linkSuppReads
       },
 
       async sortSelected(type: string) {
@@ -254,6 +259,7 @@ const stateModelFactory = (
             colorScheme: self.colorScheme,
             showSoftClip: self.showSoftClipping,
             viewAsPairs: self.viewAsPairs,
+            linkSuppReads: self.linkSuppReads,
             config,
           }
         },
@@ -278,9 +284,18 @@ const stateModelFactory = (
               label: 'View as pairs',
               icon: VisibilityIcon,
               type: 'checkbox',
-              checked: self.showSoftClipping,
+              checked: self.viewAsPairs,
               onClick: () => {
                 self.toggleViewAsPairs()
+              },
+            },
+            {
+              label: 'Link supplementary reads',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.linkSuppReads,
+              onClick: () => {
+                self.toggleLinkSuppReads()
               },
             },
             {

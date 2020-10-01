@@ -7,7 +7,7 @@ import BoxRendererType, {
 import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
 import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
 import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
@@ -53,6 +53,7 @@ interface LayoutRecord {
 interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
   viewAsPairs?: boolean
+  linkSuppReads?: boolean
 }
 
 interface PileupLayoutSessionProps {
@@ -71,6 +72,7 @@ interface CachedPileupLayout {
   sortedBy: unknown
   showSoftClip: boolean
   viewAsPairs: boolean
+  linkSuppReads: boolean
 }
 
 const colorForBase: { [key: string]: string } = {
@@ -158,13 +160,13 @@ const alignmentColoring: { [key: string]: string } = {
   color_rev_strand: '#8F8FD8',
   color_fwd_missing_mate: '#D11919',
   color_rev_missing_mate: '#1919D1',
-  color_fwd_diff_chr: '#000000',
+  color_fwd_diff_chr: '#000',
   color_rev_diff_chr: '#969696',
-  color_pair_lr: 'grey',
+  color_pair_lr: '#c8c8c8',
   color_pair_rr: 'navy',
   color_pair_rl: 'teal',
   color_pair_ll: 'green',
-  color_nostrand: '#999999',
+  color_nostrand: '#999',
   color_interchrom: 'orange',
   color_longinsert: 'red',
   color_shortinsert: 'pink',
@@ -253,9 +255,11 @@ class PairedRead implements Feature {
 class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
 
-  showSoftClip: boolean
+  showSoftClip = false
 
-  viewAsPairs: boolean
+  viewAsPairs = false
+
+  linkSuppReads = false
 
   constructor(args: PileupLayoutSessionProps) {
     super(args)
@@ -267,6 +271,7 @@ class PileupLayoutSession extends LayoutSession {
       super.cachedLayoutIsValid(cachedLayout) &&
       this.showSoftClip === cachedLayout.showSoftClip &&
       this.viewAsPairs === cachedLayout.viewAsPairs &&
+      this.linkSuppReads === cachedLayout.linkSuppReads &&
       deepEqual(this.sortedBy, cachedLayout.sortedBy)
     )
   }
@@ -282,6 +287,7 @@ class PileupLayoutSession extends LayoutSession {
         sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
         viewAsPairs: this.viewAsPairs,
+        linkSuppReads: this.linkSuppReads,
       }
     }
     return this.cachedLayout.layout
@@ -355,19 +361,61 @@ export default class PileupRenderer extends BoxRendererType {
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
-    const { config, showSoftClip, viewAsPairs } = renderArgs
+    const { config, showSoftClip, viewAsPairs, linkSuppReads } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const maxInsertSize = readConfObject(config, 'maxInsertSize')
 
     const bpExpansion = Math.max(
-      showSoftClip ? Math.round(maxClippingSize) : 0,
-      viewAsPairs ? Math.round(maxInsertSize) : 0,
+      ...[
+        showSoftClip ? Math.round(maxClippingSize) : 0,
+        viewAsPairs ? Math.round(maxInsertSize) : 0,
+        linkSuppReads ? Math.round(maxInsertSize) : 0,
+      ],
     )
     return {
       ...region,
       start: Math.floor(Math.max(region.start - bpExpansion, 0)),
       end: Math.ceil(region.end + bpExpansion),
+    }
+  }
+
+  *linkSuppReads(
+    query: Region,
+    config: AnyConfigurationModel,
+    records: Feature[],
+  ) {
+    const pairCache: { [key: string]: Feature[] } = {}
+
+    for (let i = 0; i < records.length; i++) {
+      const rec = records[i]
+      const name = rec.get('name')
+      if (!pairCache[name]) {
+        pairCache[name] = []
+      }
+      pairCache[name].push(rec)
+    }
+
+    for (const [name, subfeatures] of Object.entries(pairCache)) {
+      let start = Infinity
+      let end = -Infinity
+      let refName
+      for (let i = 0; i < subfeatures.length; i++) {
+        const feat = subfeatures[i]
+        refName = feat.get('refName')
+        if (feat.get('start') < start) {
+          start = feat.get('start')
+        }
+        if (feat.get('end') > end) {
+          end = feat.get('end')
+        }
+      }
+      yield subfeatures.length > 1
+        ? new SimpleFeature({
+            id: name,
+            data: { start, end, refName, subfeatures },
+          })
+        : subfeatures[0]
     }
   }
 
@@ -632,9 +680,19 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async getFeatures(renderArgs: RenderArgsAugmented) {
-    const { config, regions, viewAsPairs } = renderArgs
+    const { config, regions, viewAsPairs, linkSuppReads } = renderArgs
     const features = await super.getFeatures(renderArgs)
     const [region] = regions
+
+    if (linkSuppReads) {
+      const featureList = [...features.values()]
+      const suppFeats = [...this.linkSuppReads(region, config, featureList)]
+      return new Map(
+        suppFeats.map(feat => {
+          return [feat.id(), feat]
+        }),
+      )
+    }
     if (viewAsPairs) {
       const featureList = [...features.values()]
       const pairedFeatures = [...this.pairFeatures(region, config, featureList)]
@@ -731,6 +789,27 @@ export default class PileupRenderer extends BoxRendererType {
           read2.get('mismatches'),
           props,
         )
+      } else if (feature.get('subfeatures')) {
+        const [leftPx, rightPx] = bpSpanPx(
+          feature.get('start'),
+          feature.get('end'),
+          region,
+          bpPerPx,
+        )
+        ctx.strokeStyle = 'black'
+        ctx.beginPath()
+        ctx.moveTo(leftPx, topPx + heightPx / 2)
+        ctx.lineTo(rightPx, topPx + heightPx / 2)
+        ctx.stroke()
+        feature.get('subfeatures').forEach((feat: Feature) => {
+          this.drawRect(ctx, { feature: feat, topPx, heightPx }, props)
+          this.drawMismatches(
+            ctx,
+            { feature: feat, heightPx, topPx },
+            feat.get('mismatches'),
+            props,
+          )
+        })
       } else {
         ctx.fillStyle = readConfObject(config, 'color', [feature])
         this.drawRect(ctx, { feature, topPx, heightPx }, props)
