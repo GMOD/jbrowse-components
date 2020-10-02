@@ -452,15 +452,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       duplicateCurrentSession() {
         return getParent(self).duplicateCurrentSession()
       },
-
       activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
       },
       setDefaultSession() {
         return getParent(self).setDefaultSession()
       },
-      saveSessionToLocalStorage(load = false) {
-        return getParent(self).saveSessionToLocalStorage(load)
+      saveSessionToLocalStorage() {
+        return getParent(self).saveSessionToLocalStorage()
+      },
+      loadAutosaveSession() {
+        return getParent(self).loadAutosaveSession()
       },
     }))
     .extend(() => {

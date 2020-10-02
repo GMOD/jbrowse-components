@@ -191,11 +191,12 @@ export function Loader() {
           const json = await response.json()
           const decryptedSession = decrypt(json.session)
           if (decryptedSession) {
-            localId = `localUnsaved-${uuid.v4()}`
+            localId = `local-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             fromShared.name = `${fromShared.name}-${new Date(
               Date.now(),
             ).toISOString()}`
+            sessionStorage.clear()
             sessionStorage.setItem(localId, JSON.stringify(fromShared))
             setData(localId)
           } else {
@@ -247,7 +248,7 @@ export function Loader() {
               reject()
             }, 1000)
           })
-          const localId = `localUnsaved-${uuid.v4()}`
+          const localId = `local-${uuid.v4()}`
           sessionStorage.setItem(localId, result as string)
           setData(localId)
         }
@@ -353,9 +354,6 @@ export function Loader() {
   if (!rootModel) {
     throw new Error('could not instantiate root model')
   }
-  // wrap below in useeffect, maybe set an error state
-  // in the use effect callback, setState(() => throw new Error('My error'))
-  // TODOSESSION: having issues with this
   try {
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in
@@ -372,16 +370,7 @@ export function Loader() {
         setSessString('')
       }
     } else {
-      let result
-      if (localStorage.getItem('autosave')) {
-        // eslint-disable-next-line no-alert
-        result = window.confirm(
-          'An unsaved session was located in autosave. Would you like to load this session?',
-        )
-      }
-      const localId = result
-        ? rootModel.loadAutosaveSession()
-        : rootModel.setDefaultSession()
+      const localId = rootModel.setDefaultSession()
       setSessionQueryParam(localId)
       setPasswordQueryParam(undefined)
       setSessString(localId)
@@ -415,7 +404,6 @@ export function Loader() {
       bc2.postMessage(ret)
     }
   }
-
   return loadingState ? (
     <CircularProgress />
   ) : (

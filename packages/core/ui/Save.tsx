@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Button from '@material-ui/core/Button'
 import SaveAltIcon from '@material-ui/icons/SaveAlt'
-import DoneIcon from '@material-ui/icons/Done'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -22,28 +21,14 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
-  savedButton: {
-    '@media (hover: none)': {
-      backgroundColor: 'transparent',
-    },
-    '&:disabled': {
-      color: 'inherit',
-    },
-  },
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Save = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
-  // const locationUrl = new URL(window.location.href)
-  // const params = new URLSearchParams(locationUrl.search)
 
   // TODOSESSION: need to refactor this, dont like how it looks
-  console.log(session, session.name.endsWith('-saved'))
-  const [saved, setSaved] = useState(session.name.endsWith('-saved'))
-  if (session.name.endsWith('-saved') !== saved)
-    setSaved(session.name.endsWith('-saved'))
   // on new session or tab exit, if they are on an unsaved session, have some dialog saying
   // are you sure, this is unsaved and give them an action button to save
 
@@ -53,34 +38,20 @@ const Save = observer((props: { session: any }) => {
   // call button or link Recover last unsaved session
   return (
     <div className={classes.saveDiv}>
-      {saved ? (
-        <Button
-          data-testid="saved_button"
-          size="small"
-          color="inherit"
-          startIcon={<DoneIcon />}
-          classes={{ root: classes.savedButton }}
-          disabled
-        >
-          Saved
-        </Button>
-      ) : (
-        <Button
-          data-testid="save_button"
-          onClick={() => {
-            session.saveSessionToLocalStorage(true)
-            setSaved(true)
-            if (localStorage.getItem('autosave'))
-              localStorage.removeItem('autosave')
-          }}
-          size="small"
-          color="inherit"
-          startIcon={<SaveAltIcon />}
-          classes={{ root: classes.saveButton }}
-        >
-          Save
-        </Button>
-      )}
+      <Button
+        data-testid="save_button"
+        onClick={() => {
+          session.saveSessionToLocalStorage()
+          if (localStorage.getItem('localSaved-autosave'))
+            localStorage.removeItem('localSaved-autosave')
+        }}
+        size="small"
+        color="inherit"
+        startIcon={<SaveAltIcon />}
+        classes={{ root: classes.saveButton }}
+      >
+        Save
+      </Button>
     </div>
   )
 })
