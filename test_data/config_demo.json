@@ -1167,11 +1167,11 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/NA12878_high_quality_variant.vcf.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/NA12878_high_quality_variant.vcf.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz.tbi"
           }
         }
       }
