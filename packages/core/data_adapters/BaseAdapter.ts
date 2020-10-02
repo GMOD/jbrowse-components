@@ -89,6 +89,10 @@ export abstract class BaseFeatureDataAdapter {
    */
   public abstract freeResources(region: Region): void
 
+  public getInfo(): unknown {
+    return null
+  }
+
   /**
    * Checks if the store has data for the given assembly and reference
    * sequence, and then gets the features in the region if it does.

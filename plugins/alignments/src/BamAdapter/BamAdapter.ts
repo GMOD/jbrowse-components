@@ -69,6 +69,16 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  async getInfo(opts?: BaseOptions) {
+    const samHeader = await this.bam.getHeader(opts)
+    const rest = samHeader.filter((l: { tag: string }) => l.tag !== 'SQ')
+    // hide sqlines from info box by default
+    const sqLines = samHeader
+      .filter((l: { tag: string }) => l.tag === 'SQ')
+      .map((l: { tag: string }) => ({ ...l, hidden: true }))
+    return [...rest, ...sqLines]
+  }
+
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
