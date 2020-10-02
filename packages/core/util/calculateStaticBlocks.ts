@@ -21,6 +21,7 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
+  width = window.innerWidth,
 ) {
   const {
     offsetPx,
@@ -28,12 +29,11 @@ export default function calculateStaticBlocks(
     bpPerPx,
     minimumBlockWidth,
     interRegionPaddingWidth,
-    width,
   } = model
 
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
-  const blockSizePx = Math.ceil(width / 200) * 200
+  const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
   // for each displayed region
   let regionBpOffset = 0

@@ -1073,7 +1073,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self, true, true, 1)
+          const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
