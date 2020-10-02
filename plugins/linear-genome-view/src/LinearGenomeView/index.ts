@@ -215,6 +215,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      parentRegion(assemblyName: string, refName: string) {
+        return this.displayedParentRegions.find(
+          parentRegion =>
+            parentRegion.assemblyName === assemblyName &&
+            parentRegion.refName === refName,
+        )
+      },
+
       bpToPx({ refName, coord }: { refName: string; coord: number }) {
         let offsetBp = 0
 
@@ -241,6 +249,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
+        //need to fix this
         let bpSoFar = 0
         const bp = (self.offsetPx + px) * self.bpPerPx
         const n = self.displayedRegions.length
@@ -780,6 +789,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
+
+        console.log('LEFT BPoffset', leftPx)
+        console.log('RIGHT BPoffset', rightPx)
 
         const selectionStart = Math.round(leftPx.offset)
         const selectionEnd = Math.round(rightPx.offset)

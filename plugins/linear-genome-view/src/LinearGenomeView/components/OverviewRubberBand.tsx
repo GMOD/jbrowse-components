@@ -80,6 +80,7 @@ function OverviewRubberBand({
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
+      console.log(controlsRef)
       if (controlsRef.current && mouseDragging) {
         const relativeX =
           event.clientX - controlsRef.current.getBoundingClientRect().left
@@ -94,6 +95,10 @@ function OverviewRubberBand({
         currentX !== undefined
       ) {
         if (Math.abs(currentX - startX) > 3) {
+          console.log('startX', startX)
+          console.log('bp start', overview.pxToBp(startX))
+          console.log('currentX', currentX)
+          console.log('bp end', overview.pxToBp(currentX))
           model.zoomToDisplayedRegions(
             overview.pxToBp(startX),
             overview.pxToBp(currentX),
@@ -148,10 +153,21 @@ function OverviewRubberBand({
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (controlsRef.current)
+    if (controlsRef.current) {
       setGuideX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
+      console.log(
+        'I am in this px',
+        event.clientX - controlsRef.current.getBoundingClientRect().left,
+      )
+      console.log(
+        'I am in this BP',
+        overview.pxToBp(
+          event.clientX - controlsRef.current.getBoundingClientRect().left,
+        ),
+      )
+    }
   }
 
   function mouseOut() {
