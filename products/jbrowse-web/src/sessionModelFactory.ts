@@ -192,7 +192,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             // from the view
             const type = 'open track(s)'
             const view = getContainingView(node) as TrackViewModel
-            callbacks.push(() => view.hideTrack(track))
+            callbacks.push(() => view.hideTrack(track.trackId))
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0
