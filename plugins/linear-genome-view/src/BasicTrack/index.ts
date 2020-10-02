@@ -15,7 +15,10 @@ export function configSchemaFactory(pluginManager: PluginManager) {
     'BasicTrack',
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+      renderer: types.optional(
+        pluginManager.pluggableConfigSchemaType('renderer'),
+        { type: 'SvgFeatureRenderer' },
+      ),
     },
     {
       baseConfiguration: BaseTrackConfig,
