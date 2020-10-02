@@ -1,9 +1,8 @@
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
@@ -100,10 +99,6 @@ function BlockMessage({ message }: { message: string | React.ReactNode }) {
   ) : (
     <div className={classes.blockReactNodeMessage}>{message}</div>
   )
-}
-BlockMessage.propTypes = {
-  messageContent: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
-    .isRequired,
 }
 
 function BlockError({
