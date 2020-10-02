@@ -54,6 +54,12 @@ export class BlockSet {
   get contentBlocks() {
     return this.blocks.filter(block => block instanceof ContentBlock)
   }
+
+  get totalBp() {
+    return this.contentBlocks
+      .map(block => block.end - block.start)
+      .reduce((a, b) => a + b, 0)
+  }
 }
 
 export class BaseBlock {
