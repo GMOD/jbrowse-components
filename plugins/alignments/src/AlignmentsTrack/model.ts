@@ -142,7 +142,7 @@ const stateModelFactory = (
                 getSnapshot(self.SNPCoverageTrack.configuration),
               )
             ) {
-              self.SNPCoverageTrack.setConfig(self.pileupTrackConfig)
+              self.SNPCoverageTrack.setConfig(self.snpCoverageTrackConfig)
             }
 
             if (!self.PileupTrack) {
