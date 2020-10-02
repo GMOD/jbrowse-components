@@ -90,19 +90,15 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   ) : null
 })
 
-function BlockMessage({
-  messageContent,
-}: {
-  messageContent: string | React.ReactNode
-}) {
+function BlockMessage({ message }: { message: string | React.ReactNode }) {
   const classes = useStyles()
 
-  return typeof messageContent === 'string' ? (
+  return typeof message === 'string' ? (
     <Typography variant="body2" className={classes.blockMessage}>
-      {messageContent}
+      {message}
     </Typography>
   ) : (
-    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
+    <div className={classes.blockReactNodeMessage}>{message}</div>
   )
 }
 BlockMessage.propTypes = {
@@ -132,22 +128,15 @@ function BlockError({
           >
             Reload
           </Button>
-          {error.message}
+          {`${error}`}
         </>
       ) : (
         <Typography color="error" variant="body2">
-          {error.message}
+          {`${error}`}
         </Typography>
       )}
     </div>
   )
-}
-BlockError.propTypes = {
-  error: MobxPropTypes.objectOrObservableObject.isRequired,
-  reload: PropTypes.func,
-}
-BlockError.defaultProps = {
-  reload: undefined,
 }
 
 const ServerSideRenderedBlockContent = observer(
@@ -171,7 +160,7 @@ const ServerSideRenderedBlockContent = observer(
     if (model.message) {
       return (
         <Repeater>
-          <BlockMessage messageContent={model.message} />
+          <BlockMessage message={model.message} />
         </Repeater>
       )
     }
