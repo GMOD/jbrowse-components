@@ -833,6 +833,42 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "na12878_highcov",
+      "name": "NA12878 high-coverage",
+      "assemblyNames": ["hg38"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": ["hg19"],
@@ -1124,6 +1160,24 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "get_rm_vcf",
+      "name": "GeT-RM NCBI vcf",
+      "assemblyNames": ["hg19"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "test_data/NA12878_high_quality_variant.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "test_data/NA12878_high_quality_variant.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "breast_cancer_sniffles_hg19",
       "name": "SKBR3 pacbio (sniffles VCF)",
       "assemblyNames": ["hg19"],
@@ -1137,14 +1191,6 @@
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
