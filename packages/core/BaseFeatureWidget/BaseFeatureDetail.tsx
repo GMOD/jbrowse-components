@@ -224,9 +224,9 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
 }
 
 export const BaseAttributes = (props: BaseProps) => {
-  const { feature, descriptions } = props
+  const { feature, descriptions, title = 'Attributes' } = props
   return (
-    <BaseCard {...props} title="Attributes">
+    <BaseCard {...props} title={title}>
       <Attributes {...props} attributes={feature} descriptions={descriptions} />
     </BaseCard>
   )
