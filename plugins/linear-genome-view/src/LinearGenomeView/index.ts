@@ -36,6 +36,7 @@ import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -80,7 +81,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
-      showTrackLabels: true,
+      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
       showCenterLine: false,
     })
     .volatile(() => ({
@@ -93,6 +94,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      trackRefs: {} as { [key: string]: any },
     }))
     .views(self => ({
       get width(): number {
@@ -300,17 +303,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      getTrackPos(trackId: string) {
-        const idx = self.tracks.findIndex(
-          t => t.configuration.trackId === trackId,
-        )
-        let accum = 0
-        for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
-        }
-        return accum
-      },
-
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {
@@ -481,8 +473,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      toggleTrackLabels() {
-        self.showTrackLabels = !self.showTrackLabels
+      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        self.trackLabels = setting
       },
 
       toggleCenterLine() {
@@ -1026,6 +1018,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.showAllRegions,
             },
             {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
+            { type: 'divider' },
+            {
               label: 'Show header',
               icon: VisibilityIcon,
               type: 'checkbox',
@@ -1041,18 +1041,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
               disabled: self.hideHeader,
             },
             {
-              label: 'Show track labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTrackLabels,
-              onClick: self.toggleTrackLabels,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
+              label: 'Track labels',
+              icon: LabelIcon,
+              subMenu: [
+                {
+                  label: 'Overlapping',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'overlapping',
+                  onClick: () => self.setTrackLabels('overlapping'),
+                },
+                {
+                  label: 'Offset',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'offset',
+                  onClick: () => self.setTrackLabels('offset'),
+                },
+                {
+                  label: 'Hidden',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'hidden',
+                  onClick: () => self.setTrackLabels('hidden'),
+                },
+              ],
             },
           ]
 

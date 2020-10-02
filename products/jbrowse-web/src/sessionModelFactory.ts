@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import {
+  readConfObject,
+  isConfigurationModel,
+} from '@gmod/jbrowse-core/configuration'
+import {
   Region,
   NotificationLevel,
   AbstractSessionModel,
@@ -23,10 +27,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  readConfObject,
-  isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+
 import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'

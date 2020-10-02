@@ -248,6 +248,8 @@ export default function stateModelFactory(pluginManager: any) {
                   'showTrack',
                   'toggleTrack',
                   'hideTrack',
+                  'setTrackLabels',
+                  'toggleCenterLine',
                 ]
                 if (actions.includes(name) && path) {
                   this.onSubviewAction(name, path, args)
