@@ -6,10 +6,11 @@ import Typography from '@material-ui/core/Typography'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
+import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { FunctionComponent } from 'react'
+import React, { useState, useEffect, FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
 
@@ -85,6 +86,7 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
 interface BaseProps extends BaseCardProps {
   feature: Record<string, any>
   descriptions?: Record<string, React.ReactNode>
+  omit?: string[]
 }
 
 export const BaseCoreDetails = (props: BaseProps) => {
@@ -229,6 +231,114 @@ export const BaseAttributes = (props: BaseProps) => {
     <BaseCard {...props} title={title}>
       <Attributes {...props} attributes={feature} descriptions={descriptions} />
     </BaseCard>
+  )
+}
+
+interface SubfeaturesToRenderProps {
+  title: string
+  attributes: Record<string, any>
+}
+
+/**
+ * Recursively parse features to extract all subfeatures.
+ * Return an subfeaturesToRender array of objects
+ */
+const getSubfeaturesToRender = (
+  features: Record<string, any>,
+  subfeaturesToRender: SubfeaturesToRenderProps[],
+): SubfeaturesToRenderProps[] => {
+  // Function who update subfeaturesToRender with the feature given, and recursively call
+  // getSubfeaturesToRender for subfeature inside feature.
+  const extractSubfeaturesToRender = (
+    feature: Record<string, any>,
+    subfeaturesToRenders: SubfeaturesToRenderProps[],
+  ) => {
+    let title = 'SubFeature'
+    title = feature.type
+    subfeaturesToRender.push({ title, attributes: feature })
+    // If subfeatures are present in feature, recursively call getSubfeaturesToRender
+    if ('subfeatures' in feature) {
+      getSubfeaturesToRender(feature.subfeatures, subfeaturesToRenders)
+    }
+    return subfeaturesToRender
+  }
+
+  if (Array.isArray(features)) {
+    for (const feature of features) {
+      extractSubfeaturesToRender(feature, subfeaturesToRender)
+    }
+  } else if (features !== undefined) {
+    extractSubfeaturesToRender(features, subfeaturesToRender)
+  }
+
+  return subfeaturesToRender
+}
+
+const subfeaturesOmit = ['gene_id', 'gene_name', 'gene_type', 'gene_status']
+
+// Display a card named SUBFEATURES closed by default.
+// When open, only card with information about transcript and mRNA are displayed,
+// Accompanied with a button to load additionnal subfeature like exon/cds.
+export const BaseSubFeatures = (props: BaseProps) => {
+  const { feature, descriptions } = props
+  const subfeaturesToRender = getSubfeaturesToRender(feature.subfeatures, [])
+  const [subfeaturesLoaded, setSubfeaturesLoaded] = useState(false)
+
+  // Reset subfeaturesLoaded on props change
+  useEffect(() => {
+    setSubfeaturesLoaded(false)
+  }, [feature])
+
+  return (
+    <>
+      {subfeaturesToRender.length > 0 && (
+        <BaseCard title="SubFeatures" expanded={false}>
+          {subfeaturesLoaded ? (
+            subfeaturesToRender.map((subfeature, idx) => {
+              return (
+                <BaseAttributes
+                  {...props}
+                  key={idx}
+                  expanded={false}
+                  omit={subfeaturesOmit}
+                  title={subfeature.title}
+                  feature={subfeature.attributes}
+                  descriptions={descriptions}
+                />
+              )
+            })
+          ) : (
+            <>
+              {subfeaturesToRender
+                .filter(subfeature =>
+                  ['transcript', 'mRNA'].includes(subfeature.title),
+                )
+                .map((subfeature, idx) => {
+                  return (
+                    <BaseAttributes
+                      {...props}
+                      key={idx}
+                      expanded={false}
+                      omit={subfeaturesOmit}
+                      title={subfeature.title}
+                      feature={subfeature.attributes}
+                      descriptions={descriptions}
+                    />
+                  )
+                })}
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ margin: '5px' }}
+                onClick={() => setSubfeaturesLoaded(true)}
+              >
+                Load Additional Subfeatures
+              </Button>
+            </>
+          )}
+        </BaseCard>
+      )}
+    </>
   )
 }
 
