@@ -72,7 +72,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
               assemblyName ? `Reference Sequence (${assemblyName})` : trackName
             }
             checked={model.view.tracks.some(t => t.configuration === trackConf)}
-            onChange={() => model.view.toggleTrack(trackConf)}
+            onChange={() => model.view.toggleTrack(trackConf.trackId)}
             disabled={disabled || unsupported}
           />
         </Tooltip>

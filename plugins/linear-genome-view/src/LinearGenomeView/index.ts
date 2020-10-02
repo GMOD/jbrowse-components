@@ -23,9 +23,15 @@ import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks
 import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
 import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { transaction } from 'mobx'
-import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
+import {
+  getSnapshot,
+  types,
+  cast,
+  Instance,
+  getRoot,
+  resolveIdentifier,
+} from 'mobx-state-tree'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
@@ -411,22 +417,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
-      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-        if (!trackType) throw new Error(`unknown track type ${type}`)
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType)
+          throw new Error(`unknown track type ${configuration.type}`)
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
-          type,
+          type: configuration.type,
           configuration,
         })
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: AnyConfigurationModel) {
+      hideTrack(trackId: string) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -463,11 +472,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      toggleTrack(configuration: AnyConfigurationModel) {
+      toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(trackId)
         // if none had that configuration, turn one on
-        if (!hiddenCount) self.showTrack(configuration)
+        if (!hiddenCount) {
+          self.showTrack(trackId)
+        }
       },
 
       toggleTrackLabels() {
