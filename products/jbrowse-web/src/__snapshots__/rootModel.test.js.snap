@@ -112,7 +112,7 @@ Object {
     "type": "BamAdapter",
   },
   "renderer": Object {
-    "type": "PileupRenderer",
+    "type": "SvgFeatureRenderer",
   },
   "trackId": "trackId0",
   "type": "BasicTrack",
