@@ -62,13 +62,14 @@ const coreRenderedDetails = [
 
 interface BaseCardProps {
   title: string
+  expanded: boolean
 }
 
 export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
-  const { children, title } = props
+  const { children, title, expanded = true } = props
   return (
-    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded>
+    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={expanded}>
       <ExpansionPanelSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
