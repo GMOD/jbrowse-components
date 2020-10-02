@@ -927,6 +927,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       centerAt(bp: number, refName: string) {
         const centerPx = self.bpToPx({ refName, coord: bp })
+        console.log(centerPx)
         if (centerPx) {
           const centerPxOffset = centerPx.offsetPx
           self.scrollTo(Math.round(centerPxOffset - self.width / 2))

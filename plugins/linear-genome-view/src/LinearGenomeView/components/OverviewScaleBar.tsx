@@ -263,7 +263,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   color: refNameColor,
                 }}
               >
-                {label.toLocaleString()}
+                {label.toLocaleString('en-US')}
               </div>
             ))}
           </Paper>
