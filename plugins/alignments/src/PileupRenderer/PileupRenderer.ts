@@ -383,11 +383,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  *linkSuppReads(
-    query: Region,
-    config: AnyConfigurationModel,
-    records: Feature[],
-  ) {
+  *linkSuppReads(query: Region, records: Feature[]) {
     const pairCache: { [key: string]: Feature[] } = {}
 
     for (let i = 0; i < records.length; i++) {
@@ -422,19 +418,14 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  *pairFeatures(
-    query: Region,
-    config: AnyConfigurationModel,
-    records: Feature[],
-  ) {
-    const maxInsertSize = readConfObject(config, 'maxInsertSize')
+  *pairFeatures(query: Region, records: Feature[]) {
     const pairCache: { [key: string]: { [key: string]: Feature } } = {}
     const features: { [key: string]: PairedRead } = {}
     for (let i = 0; i < records.length; i++) {
       let feat
       const rec = records[i]
       const tlen = rec.get('template_length')
-      if (canBePaired(rec) && Math.abs(tlen) < maxInsertSize) {
+      if (canBePaired(rec)) {
         const name = rec.get('name')
         feat = pairCache[name]
         const flags = rec.get('flags')
@@ -578,20 +569,20 @@ export default class PileupRenderer extends BoxRendererType {
     const strand = feature.get('strand') * flip
     if (strand === -1) {
       ctx.beginPath()
-      ctx.moveTo(leftPx, topPx + heightPx / 2)
-      ctx.lineTo(leftPx + 5, topPx + heightPx)
+      ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
+      ctx.lineTo(leftPx, topPx + heightPx)
       ctx.lineTo(rightPx, topPx + heightPx)
       ctx.lineTo(rightPx, topPx)
-      ctx.lineTo(leftPx + 5, topPx)
+      ctx.lineTo(leftPx, topPx)
       ctx.closePath()
       ctx.fill()
     } else {
       ctx.beginPath()
       ctx.moveTo(leftPx, topPx)
       ctx.lineTo(leftPx, topPx + heightPx)
-      ctx.lineTo(rightPx - 5, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx + heightPx / 2)
-      ctx.lineTo(rightPx - 5, topPx)
+      ctx.lineTo(rightPx, topPx + heightPx)
+      ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
+      ctx.lineTo(rightPx, topPx)
       ctx.closePath()
       ctx.fill()
     }
@@ -683,13 +674,13 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async getFeatures(renderArgs: RenderArgsAugmented) {
-    const { config, regions, viewAsPairs, linkSuppReads } = renderArgs
+    const { regions, viewAsPairs, linkSuppReads } = renderArgs
     const features = await super.getFeatures(renderArgs)
     const [region] = regions
 
     if (linkSuppReads) {
       const featureList = [...features.values()]
-      const suppFeats = [...this.linkSuppReads(region, config, featureList)]
+      const suppFeats = [...this.linkSuppReads(region, featureList)]
       return new Map(
         suppFeats.map(feat => {
           return [feat.id(), feat]
@@ -698,7 +689,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
     if (viewAsPairs) {
       const featureList = [...features.values()]
-      const pairedFeatures = [...this.pairFeatures(region, config, featureList)]
+      const pairedFeatures = [...this.pairFeatures(region, featureList)]
       return new Map(
         pairedFeatures.map(feat => {
           return [feat.id(), feat]
