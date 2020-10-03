@@ -100,7 +100,6 @@ export class CoreGetFileInfo extends RpcMethodType {
       adapterConfig,
     )
     return dataAdapter.getInfo(deserializedArgs)
-    return []
   }
 }
 

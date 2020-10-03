@@ -89,7 +89,7 @@ export abstract class BaseFeatureDataAdapter {
    */
   public abstract freeResources(region: Region): void
 
-  public getInfo(): unknown {
+  public async getInfo(): Promise<unknown> {
     return null
   }
 
@@ -177,10 +177,14 @@ export interface Alias {
   refName: string
   aliases: string[]
 }
-export interface BaseRefNameAliasAdapter {
-  getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
+export abstract class BaseRefNameAliasAdapter {
+  abstract getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
 
-  freeResources(): Promise<void>
+  async getInfo(): Promise<unknown> {
+    return null
+  }
+
+  abstract freeResources(): Promise<void>
 }
 export function isRefNameAliasAdapter(
   thing: object,
