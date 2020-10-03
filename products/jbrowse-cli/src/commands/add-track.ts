@@ -29,6 +29,9 @@ interface LocalPathLocation {
 }
 
 export default class AddTrack extends JBrowseCommand {
+  // @ts-ignore
+  target: string
+
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
@@ -76,7 +79,9 @@ export default class AddTrack extends JBrowseCommand {
     }),
     target: flags.string({
       description: 'path to config file in JB2 installation to write out to.',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
@@ -104,19 +109,16 @@ export default class AddTrack extends JBrowseCommand {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
+
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     const { track: argsTrack } = runArgs
-    const {
-      config,
-      skipCheck,
-      force,
-      category,
-      description,
-      load,
-      target,
-    } = runFlags
+    const { config, skipCheck, force, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(target)
+    const configDirectory = path.dirname(this.target)
     if (!(skipCheck || force)) {
       await this.checkLocation(configDirectory)
     }
@@ -161,7 +163,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // only add track if there is an existing config.json
-    const configContents: Config = await this.readJsonFile(target)
+    const configContents: Config = await this.readJsonFile(this.target)
 
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
@@ -321,13 +323,13 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    this.debug(`Writing configuration to file ${target}`)
-    await this.writeJsonFile(target, configContents)
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${target}`,
+      } ${this.target}`,
     )
   }
 
