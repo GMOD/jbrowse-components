@@ -255,21 +255,79 @@ export default class DotplotPlugin extends Plugin {
                   0,
                 )
 
+                function mergeIntervals(intervals: any) {
+                  // test if there are at least 2 intervals
+                  if (intervals.length <= 1) return intervals
+
+                  const stack = []
+                  let top = null
+
+                  // sort the intervals based on their start values
+                  intervals = intervals.sort((a, b) => a - b)
+
+                  // push the 1st interval into the stack
+                  stack.push(intervals[0])
+
+                  // start from the next interval and merge if needed
+                  for (let i = 1; i < intervals.length; i++) {
+                    // get the top element
+                    top = stack[stack.length - 1]
+
+                    // if the current interval doesn't overlap with the
+                    // stack top element, push it to the stack
+                    if (top.end < intervals[i].start) {
+                      stack.push(intervals[i])
+                    }
+                    // otherwise update the end value of the top element
+                    // if end of current interval is higher
+                    else if (top.end < intervals[i].end) {
+                      top.end = intervals[i].end
+                      stack.pop()
+                      stack.push(top)
+                    }
+                  }
+
+                  return stack
+                }
+
+                function groupBy(arr, property) {
+                  return arr.reduce(function (memo, x) {
+                    if (!memo[x[property]]) {
+                      memo[x[property]] = []
+                    }
+                    memo[x[property]].push(x)
+                    return memo
+                  }, {})
+                }
+                function gatherOverlaps(regions: IndexedRegion[]) {
+                  const groups = groupBy(regions, 'refName')
+                  const merged = Object.values(groups).map(group => {
+                    group.sort((a, b) => a.start - b.start)
+                    return mergeIntervals(group)
+                  })
+
+                  const r = merged.flat().sort((a, b) => a.index - b.index)
+                  console.log({ r })
+                  return r
+                }
+
                 session.addView('DotplotView', {
                   type: 'DotplotView',
                   hview: {
                     offsetPx: 0,
                     bpPerPx: refLength / 800,
-                    minimumBlockWidth: 0,
-                    interRegionPaddingWidth: 0,
-                    displayedRegions: features.map(f => {
-                      return {
-                        start: f.start,
-                        end: f.end,
-                        refName: f.refName,
-                        assemblyName: trackAssembly,
-                      }
-                    }),
+                    displayedRegions: gatherOverlaps(
+                      features.map((f, index) => {
+                        const { start, end, refName } = f
+                        return {
+                          start,
+                          end,
+                          refName,
+                          index,
+                          assemblyName: trackAssembly,
+                        }
+                      }),
+                    ),
                   },
                   vview: {
                     offsetPx: 0,
