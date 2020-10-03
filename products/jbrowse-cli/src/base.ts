@@ -178,7 +178,6 @@ export default abstract class JBrowseCommand extends Command {
         if (!response.ok) {
           throw new Error(`${locationUrl} result ${response.statusText}`)
         }
-        return locationUrl.href
       }
       return locationUrl.href
     }
