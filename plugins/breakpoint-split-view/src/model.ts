@@ -241,7 +241,17 @@ export default function stateModelFactory(pluginManager: any) {
               args: any[]
             }) => {
               if (self.linkViews) {
-                if (['horizontalScroll', 'zoomTo'].includes(name)) {
+                const actions = [
+                  'horizontalScroll',
+                  'zoomTo',
+                  'setScaleFactor',
+                  'showTrack',
+                  'toggleTrack',
+                  'hideTrack',
+                  'setTrackLabels',
+                  'toggleCenterLine',
+                ]
+                if (actions.includes(name) && path) {
                   this.onSubviewAction(name, path, args)
                 }
               }

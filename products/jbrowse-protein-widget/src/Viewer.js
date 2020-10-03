@@ -112,11 +112,11 @@ function(feature) {
 
     this.update(initialState)
 
-    this.model.view.showTrack(this.model.configuration.sequenceTrack)
-    this.model.view.showTrack(this.model.configuration.domainsTrack, {
+    this.model.view.showTrack(this.model.configuration.sequenceTrack.trackId)
+    this.model.view.showTrack(this.model.configuration.domainsTrack.trackId, {
       height: 300,
     })
-    this.model.view.showTrack(this.model.configuration.variantTrack, {
+    this.model.view.showTrack(this.model.configuration.variantTrack.trackId, {
       height: 300,
     })
   }
