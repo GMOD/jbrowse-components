@@ -99,7 +99,9 @@ export class CoreGetFileInfo extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    return dataAdapter.getInfo(deserializedArgs)
+    return !isRefNameAliasAdapter(dataAdapter)
+      ? dataAdapter.getInfo(deserializedArgs)
+      : null
   }
 }
 
