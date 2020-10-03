@@ -424,7 +424,6 @@ export default class PileupRenderer extends BoxRendererType {
     for (let i = 0; i < records.length; i++) {
       let feat
       const rec = records[i]
-      const tlen = rec.get('template_length')
       if (canBePaired(rec)) {
         const name = rec.get('name')
         feat = pairCache[name]
@@ -642,7 +641,7 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
         ctx.fillRect(pos - w, topPx, w * 3, 1)
         ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+        if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
           ctx.fillText(
             `(${mismatch.base})`,
             mismatchLeftPx + 2,
@@ -666,7 +665,12 @@ export default class PileupRenderer extends BoxRendererType {
           )
         }
       } else if (mismatch.type === 'skip') {
-        ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+        // fix to avoid bad rendering
+        // note that this was also related to chrome bug https://bugs.chromium.org/p/chro>
+        // ref #1236
+        if (mismatchLeftPx + mismatchWidthPx > 0) {
+          ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+        }
         ctx.fillStyle = '#333'
         ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
       }
