@@ -134,9 +134,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
         )}
         {value.map((val, i) => (
           <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            <SanitizedHTML
-              html={isObject(val) ? JSON.stringify(val) : String(val)}
-            />
+            {formatter(val)}
           </div>
         ))}
       </div>
@@ -255,11 +253,11 @@ export default function AboutDialog({
             ) : (
               <Attributes attributes={info} showHidden={showHidden} />
             )}
+            <Button onClick={() => setShowHidden(hidden => !hidden)}>
+              {!showHidden ? 'Show hidden entries' : 'Hide hidden entries'}
+            </Button>
           </BaseCard>
         ) : null}
-        <Button onClick={() => setShowHidden(hidden => !hidden)}>
-          {!showHidden ? 'Show hidden entries' : 'Hide hidden entries'}
-        </Button>
       </DialogContent>
     </Dialog>
   )
