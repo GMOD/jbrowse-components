@@ -306,9 +306,7 @@ export default class DotplotPlugin extends Plugin {
                     return mergeIntervals(group)
                   })
 
-                  const r = merged.flat().sort((a, b) => a.index - b.index)
-                  console.log({ r })
-                  return r
+                  return merged.flat().sort((a, b) => a.index - b.index)
                 }
 
                 session.addView('DotplotView', {
