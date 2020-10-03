@@ -159,10 +159,7 @@ export default abstract class JBrowseCommand extends Command {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async writeJsonFile(location: string, contents: any) {
     this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
-    return fsPromises.writeFile(
-      location,
-      JSON.stringify(contents, undefined, 2),
-    )
+    return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
   }
 
   async resolveFileLocation(location: string, check = true, warn = false) {
