@@ -355,6 +355,9 @@ export function Loader() {
     throw new Error('could not instantiate root model')
   }
   try {
+    const lastAutosave = localStorage.getItem('autosave')
+    if (lastAutosave)
+      localStorage.setItem('localSaved-previousAutosave', lastAutosave)
     if (sessionQueryParam) {
       // eslint-disable-next-line guard-for-in
       const foundLocalSession =

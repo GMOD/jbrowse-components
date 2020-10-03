@@ -40,21 +40,16 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     function updateLocalSession(snapshot) {
-      // TODOSESSION, need some warning when sessionstorage is full
-      if (sessionId?.startsWith('local-')) {
-        const autosavedSnapshot = {
-          ...snapshot,
-          name: `${snapshot.name}-autosave`,
-        }
+      if (
+        sessionId?.startsWith('local-') &&
+        sessionStorage.getItem(sessionId)
+      ) {
         sessionStorage.setItem(sessionId, JSON.stringify(snapshot))
-        localStorage.setItem(
-          'localSaved-autosave',
-          JSON.stringify(autosavedSnapshot),
-        )
+        localStorage.setItem('autosave', JSON.stringify(snapshot))
       } else if (sessionId?.startsWith('localSaved-')) {
         localStorage.setItem(sessionId, JSON.stringify(snapshot))
-        if (localStorage.getItem('localSaved-autosave')) {
-          localStorage.removeItem('localSaved-autosave')
+        if (localStorage.getItem('autosave')) {
+          localStorage.removeItem('autosave')
         }
       }
     }

@@ -87,18 +87,19 @@ export default function RootModel(
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           const oldname = snapshot.name
-          const snapInLocal = Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('localSaved-'))
-            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
 
           const snapInSession = Object.entries(sessionStorage)
             .filter(obj => obj[0].startsWith('local-'))
             .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
+
+          const snapInLocal = Object.entries(localStorage)
+            .filter(obj => obj[0].startsWith('localSaved-'))
+            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
           snapshot.name = sessionName
-          if (snapInLocal)
-            localStorage.setItem(snapInLocal[0], JSON.stringify(snapshot))
-          else if (snapInSession)
+          if (snapInSession)
             sessionStorage.setItem(snapInSession[0], JSON.stringify(snapshot))
+          else if (snapInLocal)
+            localStorage.setItem(snapInLocal[0], JSON.stringify(snapshot))
           this.setSession(snapshot)
         }
       },
@@ -153,8 +154,9 @@ export default function RootModel(
       },
       loadAutosaveSession() {
         const autosavedSession = JSON.parse(
-          localStorage.getItem('localSaved-autosave') || '',
+          localStorage.getItem('localSaved-previousAutosave') || '',
         )
+        autosavedSession.name = `${autosavedSession.name}-restored`
         const localId = `local-${uuid.v4()}`
         sessionStorage.clear()
         sessionStorage.setItem(localId, JSON.stringify(autosavedSession))
@@ -201,10 +203,8 @@ export default function RootModel(
               onClick: (session: any) => {
                 session.loadAutosaveSession()
               },
-              // TODOSESSION discuss, autosave would overwrite itself if it is a static button
-              // since it constantly saves instead of triggering before overwriting
-              disabled: Object.keys(localStorage).find(
-                key => key === 'localSaved-autosave',
+              disabled: !Object.keys(localStorage).find(
+                key => key === 'localSaved-previousAutosave',
               ),
             },
           ],

@@ -11,7 +11,7 @@ function generateSessionId(session) {
   return createHash('sha256').update(session).digest('hex')
 }
 
-async function uploadSession(sessionId, session) {
+async function uploadSession(sessionId, session, dateShared, referer) {
   const params = {
     Item: {
       sessionId: {
@@ -20,7 +20,14 @@ async function uploadSession(sessionId, session) {
       session: {
         S: session,
       },
+      dateShared: {
+        S: dateShared,
+      },
+      referer: {
+        S: referer,
+      },
     },
+    ConditionExpression: 'attribute_not_exists(sessionId)', // write once
     TableName: sessionTable,
   }
   return dynamodb.putItem(params).promise()
@@ -28,10 +35,10 @@ async function uploadSession(sessionId, session) {
 
 exports.handler = async event => {
   const data = multipart.parse(event)
-  const { session } = data
+  const { session, dateShared, referer } = data
   const sessionId = generateSessionId(session)
   try {
-    await uploadSession(sessionId, session)
+    await uploadSession(sessionId, session, dateShared, referer)
   } catch (e) {
     const response = {
       statusCode: 400,

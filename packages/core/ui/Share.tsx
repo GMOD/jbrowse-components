@@ -58,7 +58,6 @@ const Share = observer((props: { session: any }) => {
     return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
   }
 
-  // make warning message yellow
   const localHostMessage = locationUrl.href.includes('localhost')
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
     : ''
@@ -76,14 +75,14 @@ const Share = observer((props: { session: any }) => {
     setOpen(false)
   }
 
-  // add node-crypto to final shared url, and need to decode using same before reading
-  // from db also
   const shareSessionToDynamo = async () => {
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
 
     const data = new FormData()
     const encryptedSession = encrypt(sess)
     data.append('session', encryptedSession.encryptedData)
+    data.append('dateShared', `${new Date(Date.now()).toISOString()}`)
+    data.append('referer', locationUrl.href)
 
     let response
     try {
@@ -100,7 +99,7 @@ const Share = observer((props: { session: any }) => {
       const json = await response.json()
       handleClickOpen(json.sessionId, encryptedSession.iv)
     } else {
-      // on fail, say failed to generate sharelink
+      session.notify('Failed to generate a share link', 'warning')
     }
   }
   return (
@@ -136,9 +135,6 @@ const Share = observer((props: { session: any }) => {
           </DialogContentText>
         </DialogContent>
         <DialogContent>
-          {/* <DialogContentText id="alert-dialog-description">
-            {shareUrl}
-          </DialogContentText> */}
           <TextField
             id="filled-read-only-input"
             label="URL"

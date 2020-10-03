@@ -28,10 +28,6 @@ const Save = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
 
-  // TODOSESSION: need to refactor this, dont like how it looks
-  // on new session or tab exit, if they are on an unsaved session, have some dialog saying
-  // are you sure, this is unsaved and give them an action button to save
-
   // for autosave: generate autosave everytime someone is working on an unsaved session
   // and makes changes. clear when they click save or they start working on a saved session 'localSaved in url'
   // autosave is only if they close their tab and they had unsaved
@@ -42,8 +38,8 @@ const Save = observer((props: { session: any }) => {
         data-testid="save_button"
         onClick={() => {
           session.saveSessionToLocalStorage()
-          if (localStorage.getItem('localSaved-autosave'))
-            localStorage.removeItem('localSaved-autosave')
+          if (localStorage.getItem('autosave'))
+            localStorage.removeItem('autosave')
         }}
         size="small"
         color="inherit"
