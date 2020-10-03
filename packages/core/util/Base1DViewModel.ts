@@ -96,8 +96,8 @@ const Base1DView = types
           ...getSnapshot(region),
           oob: true,
           coord: region.reversed
-            ? Math.round(region.end - offset) + 1
-            : Math.round(region.start + offset) + 1,
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
           offset,
           index: 0,
         }
@@ -111,8 +111,8 @@ const Base1DView = types
           oob: true,
           offset,
           coord: region.reversed
-            ? Math.round(region.end - offset) + 1
-            : Math.round(region.start + offset) + 1,
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
           index: n - 1,
         }
       }
@@ -126,8 +126,8 @@ const Base1DView = types
             oob: false,
             offset,
             coord: region.reversed
-              ? Math.round(region.end - offset) + 1
-              : Math.round(region.start + offset) + 1,
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             index,
           }
         }

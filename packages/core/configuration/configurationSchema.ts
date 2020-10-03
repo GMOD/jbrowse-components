@@ -41,9 +41,10 @@ interface ConfigurationSchemaOptions {
   explicitIdentifier?: string
   implicitIdentifier?: string
   baseConfiguration?: AnyConfigurationSchemaType
-  actions?: (self: unknown) => Record<string, Function>
-  views?: (self: unknown) => Record<string, Function>
-  extend?: (self: unknown) => Record<string, Function>
+
+  actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -174,6 +175,7 @@ function makeConfigurationSchemaModel<
         return newSchema
       },
     }))
+
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }

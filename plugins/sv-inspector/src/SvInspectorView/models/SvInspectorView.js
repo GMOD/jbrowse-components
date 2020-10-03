@@ -272,13 +272,13 @@ export default pluginManager => {
               // hide any visible tracks
               if (self.circularView.tracks.length) {
                 self.circularView.tracks.forEach(track => {
-                  self.circularView.hideTrack(track.configuration)
+                  self.circularView.hideTrack(track.configuration.trackId)
                 })
               }
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                self.circularView.showTrack(generatedTrackConf, {
+                self.circularView.showTrack(generatedTrackConf.trackId, {
                   assemblyName,
                 })
               }

@@ -126,8 +126,8 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 export interface TrackViewModel extends AbstractViewModel {
-  showTrack(configuration: AnyConfigurationModel): void
-  hideTrack(configuration: AnyConfigurationModel): void
+  showTrack(trackId: string): void
+  hideTrack(trackId: string): void
 }
 export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
   return (

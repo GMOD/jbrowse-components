@@ -1,5 +1,6 @@
 import { flags } from '@oclif/command'
 import fs from 'fs'
+import crypto from 'crypto'
 import path from 'path'
 import express from 'express'
 import JBrowseCommand, { Config } from '../base'
@@ -10,7 +11,7 @@ function isValidPort(port: number) {
 
 // generate a string of random alphanumeric characters to serve as admin key
 function generateKey() {
-  return Math.random().toString(36).slice(2)
+  return crypto.randomBytes(5).toString('hex')
 }
 
 export default class AdminServer extends JBrowseCommand {

@@ -23,7 +23,7 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const Session = sessionModelFactory(pluginManager, adminMode)
+  const Session = sessionModelFactory(pluginManager)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )

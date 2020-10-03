@@ -13,7 +13,7 @@ configSnapshot.configuration = {
   useUrlSession: false,
 }
 
-export function getPluginManager(initialState, adminMode = false, sessionName) {
+export function getPluginManager(initialState, adminMode = true, sessionName) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -85,3 +85,6 @@ export function setup() {
   Storage.prototype.removeItem = jest.fn()
   Storage.prototype.clear = jest.fn()
 }
+
+// eslint-disable-next-line no-native-reassign,no-global-assign
+window = Object.assign(window, { innerWidth: 800 })

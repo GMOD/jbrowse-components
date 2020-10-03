@@ -1,6 +1,6 @@
 import Path from 'svg-path-generator'
 import { BreakpointViewModel } from '../model'
-import { yPos, getPxFromCoordinate } from '../util'
+import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -11,18 +11,24 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
 
   return observer(
     ({
       model,
       trackConfigId,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views, showIntraviewLinks } = model
       const session = getSession(model)
+      const snap = getSnapshot(model)
+      useNextFrame(snap)
+
       const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.hasPairedReads(trackConfigId)
         ? model.getBadlyPairedAlignments(trackConfigId)
@@ -35,6 +41,12 @@ export default (pluginManager: any) => {
         m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
       })
       const [mouseoverElt, setMouseoverElt] = useState()
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
       return (
         <g
           stroke="#333"
@@ -76,8 +88,10 @@ export default (pluginManager: any) => {
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
 
-              const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-              const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+              const y1 =
+                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
+              const y2 =
+                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
 
               // possible todo: use totalCurveHeight to possibly make alternative squiggle if the S is too small
               const path = Path()

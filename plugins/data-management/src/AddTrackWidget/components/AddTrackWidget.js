@@ -85,7 +85,7 @@ function AddTrackWidget({ model }) {
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
-    const trackConf = session.addTrackConf({
+    session.addTrackConf({
       trackId,
       type: trackType,
       name: trackName,
@@ -93,7 +93,7 @@ function AddTrackWidget({ model }) {
       adapter: trackAdapter,
     })
     if (model.view) {
-      model.view.showTrack(trackConf)
+      model.view.showTrack(trackId)
     } else {
       session.notify(
         'Open a new view, or use the track selector in an existing view, to view this track',

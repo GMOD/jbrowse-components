@@ -1,6 +1,6 @@
 import Path from 'svg-path-generator'
 import { BreakpointViewModel, LayoutRecord } from '../model'
-import { yPos, getPxFromCoordinate } from '../util'
+import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
@@ -9,6 +9,7 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
 
   const [LEFT] = [0, 1, 2, 3]
 
@@ -16,10 +17,12 @@ export default (pluginManager: any) => {
     ({
       model,
       trackConfigId,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views } = model
       const session = getSession(model)
@@ -30,6 +33,14 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+      const snap = getSnapshot(model)
+      useNextFrame(snap)
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
 
       // we hardcode the TRA to go to the "other view" and
       // if there is none, we just return null here
@@ -77,8 +88,10 @@ export default (pluginManager: any) => {
                 const reversed2 = views[level2].pxToBp(x2).reversed
 
                 const tracks = views.map(v => v.getTrack(trackConfigId))
-                const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-                const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+                const y1 =
+                  yPos(trackConfigId, level1, views, tracks, c1) - yOffset
+                const y2 =
+                  yPos(trackConfigId, level2, views, tracks, c2) - yOffset
 
                 const path = Path()
                   .moveTo(
