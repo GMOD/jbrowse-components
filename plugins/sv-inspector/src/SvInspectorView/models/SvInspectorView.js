@@ -243,7 +243,7 @@ export default pluginManager => {
                             JSON.parse(JSON.stringify(displayedRegions)),
                           )
                         })
-                        .catch(e => console.error(e))
+                        .catch(e => circularView.setError(e))
                     }
                   } else {
                     circularView.setDisplayedRegions(assemblyRegions)
@@ -278,6 +278,7 @@ export default pluginManager => {
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
+                self.circularView.addTrack(generatedTrackConf)
                 self.circularView.showTrack(generatedTrackConf.trackId, {
                   assemblyName,
                 })
