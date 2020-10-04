@@ -45,10 +45,6 @@ export default pluginManager => {
       scrollX: 0,
       scrollY: 0,
       trackSelectorType: 'hierarchical',
-
-      viewTrackConfigs: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
     })
     .volatile(() => ({
       width: 800,
@@ -283,15 +279,6 @@ export default pluginManager => {
         self.error = error
       },
 
-      addTrack(trackConf) {
-        const existing = self.viewTrackConfigs.find(
-          track => track.trackId === trackConf.trackId,
-        )
-        if (!existing) {
-          self.viewTrackConfigs.push(trackConf)
-        }
-      },
-
       showTrack(trackId, initialSnapshot = {}) {
         const IT = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(IT, getRoot(self), trackId)
@@ -307,6 +294,22 @@ export default pluginManager => {
           ...initialSnapshot,
           name,
           type: configuration.type,
+          configuration,
+        })
+        self.tracks.push(track)
+      },
+
+      showTrackConf(configuration, initialSnapshot) {
+        const { type } = configuration
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) {
+          throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
           configuration,
         })
         self.tracks.push(track)
