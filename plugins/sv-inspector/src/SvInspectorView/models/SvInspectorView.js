@@ -278,7 +278,7 @@ export default pluginManager => {
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                self.circularView.showTrackConf(generatedTrackConf, {
+                self.circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
               }

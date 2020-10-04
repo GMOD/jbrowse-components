@@ -282,14 +282,10 @@ export default pluginManager => {
       showTrack(trackId, initialSnapshot = {}) {
         const IT = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(IT, getRoot(self), trackId)
-        if (!configuration) {
-          throw new Error(`failed to find track config ${trackId}`)
-        }
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType) {
+        if (!trackType)
           throw new Error(`unknown track type ${configuration.type}`)
-        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
@@ -299,7 +295,7 @@ export default pluginManager => {
         self.tracks.push(track)
       },
 
-      showTrackConf(configuration, initialSnapshot) {
+      addTrackConf(configuration, initialSnapshot) {
         const { type } = configuration
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
