@@ -17,7 +17,10 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
 
   private seqCache = new AbortablePromiseCache({
     cache: new LRU({ maxSize: 200 }),
-    fill: async (args: unknown, abortSignal?: AbortSignal) => {
+    fill: async (
+      args: { refName: string; start: number; end: number },
+      abortSignal?: AbortSignal,
+    ) => {
       const { refName, start, end } = args
       return this.fasta.getSequence(refName, start, end)
     },
