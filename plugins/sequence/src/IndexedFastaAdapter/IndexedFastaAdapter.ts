@@ -9,9 +9,19 @@ import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
 import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { readConfObject } from '@gmod/jbrowse-core/configuration'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import AbortablePromiseCache from 'abortable-promise-cache'
+import LRU from '@gmod/jbrowse-core/util/QuickLRU'
 
 export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   protected fasta: typeof IndexedFasta
+
+  private seqCache = new AbortablePromiseCache({
+    cache: new LRU({ maxSize: 200 }),
+    fill: async (args: unknown, abortSignal?: AbortSignal) => {
+      const { refName, start, end } = args
+      return this.fasta.getSequence(refName, start, end)
+    },
+  })
 
   public constructor(config: AnyConfigurationModel) {
     super(config)
@@ -55,11 +65,23 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     return ObservableCreate<Feature>(async observer => {
       const size = await this.fasta.getSequenceSize(refName)
       const regionEnd = size !== undefined ? Math.min(size, end) : end
-      const seq: string = await this.fasta.getSequence(
-        refName,
-        start,
-        regionEnd,
-      )
+      const chunks = []
+      const chunkSize = 128000
+
+      const s = start - (start % chunkSize)
+      const e = end + (chunkSize - (end % chunkSize))
+      for (let chunkStart = s; chunkStart < e; chunkStart += chunkSize) {
+        const r = {
+          refName,
+          start: chunkStart,
+          end: chunkStart + chunkSize,
+        }
+        chunks.push(this.seqCache.get(JSON.stringify(r), r))
+      }
+      const seq = (await Promise.all(chunks))
+        .join('')
+        .slice(start - s)
+        .slice(0, end - start)
       if (seq) {
         observer.next(
           new SimpleFeature({
