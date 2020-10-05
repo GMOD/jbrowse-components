@@ -168,6 +168,11 @@ export default class ServerSideRenderer extends RendererType {
     return deserialized
   }
 
+  // will expand if soft clipping or feature glyphs are shown
+  getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
+    return region
+  }
+
   /**
    * use the dataAdapter to fetch the features to be rendered
    *
@@ -200,7 +205,7 @@ export default class ServerSideRenderer extends RendererType {
     const featureObservable =
       requestRegions.length === 1
         ? dataAdapter.getFeatures(
-            region,
+            this.getExpandedRegion(region, renderArgs),
             // @ts-ignore
             renderArgs,
           )
