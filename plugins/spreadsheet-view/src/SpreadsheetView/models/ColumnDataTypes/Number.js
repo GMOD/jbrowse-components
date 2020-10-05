@@ -95,7 +95,6 @@ export default ({ jbrequire }) => {
             filterModel.setFirstNumber(parseFloat(evt.target.value))
           }}
           className={classes.textFilterControl}
-          margin="dense"
         />
         {filterModel.operation !== 'between' &&
         filterModel.operation !== 'not between' ? null : (
@@ -111,7 +110,6 @@ export default ({ jbrequire }) => {
                 filterModel.setSecondNumber(parseFloat(evt.target.value))
               }
               className={classes.textFilterControl}
-              margin="dense"
             />
           </>
         )}

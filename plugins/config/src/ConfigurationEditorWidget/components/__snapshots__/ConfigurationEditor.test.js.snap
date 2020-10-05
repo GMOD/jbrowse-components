@@ -93,7 +93,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             <button
               aria-label="local file"
               aria-pressed="false"
-              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
               disabled=""
               tabindex="-1"
               type="button"
@@ -108,7 +108,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             <button
               aria-label="url"
               aria-pressed="true"
-              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected MuiToggleButton-sizeSmall"
+              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
               tabindex="0"
               type="button"
               value="url"
@@ -128,14 +128,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           class="MuiGrid-root MuiGrid-item"
         >
           <div
-            class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
+            class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
           >
             <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
             >
               <input
                 aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+                class="MuiInputBase-input MuiInput-input"
                 type="text"
                 value="/path/to/my.file"
               />
@@ -190,10 +190,10 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
         stringArrayTest
       </label>
       <ul
-        class="MuiList-root MuiList-dense"
+        class="MuiList-root"
       >
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -238,7 +238,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           </div>
         </li>
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -283,7 +283,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           </div>
         </li>
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -420,10 +420,10 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           class="MuiCardContent-root"
         >
           <ul
-            class="MuiList-root MuiList-dense"
+            class="MuiList-root"
           >
             <li
-              class="MuiListItem-root MuiListItem-dense"
+              class="MuiListItem-root"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -468,7 +468,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               </div>
             </li>
             <li
-              class="MuiListItem-root MuiListItem-dense"
+              class="MuiListItem-root"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -513,7 +513,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               </div>
             </li>
             <li
-              class="MuiListItem-root MuiListItem-dense"
+              class="MuiListItem-root"
             >
               <div
                 class="MuiFormControl-root MuiTextField-root"
@@ -999,10 +999,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         assemblyNames
       </label>
       <ul
-        class="MuiList-root MuiList-dense"
+        class="MuiList-root"
       >
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -1047,7 +1047,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           </div>
         </li>
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -1199,10 +1199,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         category
       </label>
       <ul
-        class="MuiList-root MuiList-dense"
+        class="MuiList-root"
       >
         <li
-          class="MuiListItem-root MuiListItem-dense"
+          class="MuiListItem-root"
         >
           <div
             class="MuiFormControl-root MuiTextField-root"
@@ -1837,7 +1837,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 <button
                   aria-label="local file"
                   aria-pressed="false"
-                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -1852,7 +1852,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 <button
                   aria-label="url"
                   aria-pressed="true"
-                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected MuiToggleButton-sizeSmall"
+                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
                   tabindex="0"
                   type="button"
                   value="url"
@@ -1872,14 +1872,14 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               class="MuiGrid-root MuiGrid-item"
             >
               <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
+                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
               >
                 <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
+                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                 >
                   <input
                     aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+                    class="MuiInputBase-input MuiInput-input"
                     type="text"
                     value="/path/to/my.bam"
                   />
@@ -2031,7 +2031,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     <button
                       aria-label="local file"
                       aria-pressed="false"
-                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
                       disabled=""
                       tabindex="-1"
                       type="button"
@@ -2046,7 +2046,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     <button
                       aria-label="url"
                       aria-pressed="true"
-                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected MuiToggleButton-sizeSmall"
+                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
                       tabindex="0"
                       type="button"
                       value="url"
@@ -2066,14 +2066,14 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                   class="MuiGrid-root MuiGrid-item"
                 >
                   <div
-                    class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
+                    class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                   >
                     <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                     >
                       <input
                         aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+                        class="MuiInputBase-input MuiInput-input"
                         type="text"
                         value="/path/to/my.bam.bai"
                       />
