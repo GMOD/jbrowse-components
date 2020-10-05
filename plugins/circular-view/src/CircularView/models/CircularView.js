@@ -4,7 +4,9 @@ import slicesFactory from './slices'
 export default pluginManager => {
   const { jbrequire } = pluginManager
   const { transaction } = jbrequire('mobx')
-  const { types, getParent } = jbrequire('mobx-state-tree')
+  const { types, getParent, resolveIdentifier, getRoot } = jbrequire(
+    'mobx-state-tree',
+  )
   const { Region } = jbrequire('@gmod/jbrowse-core/util/types/mst')
   const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
   const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
@@ -264,23 +266,42 @@ export default pluginManager => {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      toggleTrack(configuration) {
+      toggleTrack(trackId) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(trackId)
         // if none had that configuration, turn one on
-        if (!hiddenCount) self.showTrack(configuration)
+        if (!hiddenCount) {
+          self.showTrack(trackId)
+        }
       },
 
       setError(error) {
         self.error = error
       },
 
-      showTrack(configuration, initialSnapshot = {}) {
+      showTrack(trackId, initialSnapshot = {}) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType)
+          throw new Error(`unknown track type ${configuration.type}`)
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type: configuration.type,
+          configuration,
+        })
+        self.tracks.push(track)
+      },
+
+      addTrackConf(configuration, initialSnapshot) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
-        if (!trackType) throw new Error(`unknown track type ${type}`)
+        if (!trackType) {
+          throw new Error(`unknown track type ${configuration.type}`)
+        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
@@ -290,7 +311,9 @@ export default pluginManager => {
         self.tracks.push(track)
       },
 
-      hideTrack(configuration) {
+      hideTrack(trackId) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,

@@ -84,11 +84,33 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
         // empty block needed to keep small
       },
     },
+    // makes menus more compact
+    MuiMenuItem: {
+      root: {
+        paddingTop: 3,
+        paddingBottom: 3,
+      },
+    },
+
+    // the below two are linked to make menus more compact
+    MuiListItemIcon: {
+      root: {
+        minWidth: 32,
+      },
+    },
+    MuiListItemText: {
+      inset: {
+        paddingLeft: 32,
+      },
+    },
   }
 }
 
 export const jbrowseBaseTheme: ThemeOptions = {
   palette: jbrowseDefaultPalette,
+  typography: {
+    fontSize: 12,
+  },
   spacing: 4,
   overrides: createJBrowseDefaultOverrides(),
 }

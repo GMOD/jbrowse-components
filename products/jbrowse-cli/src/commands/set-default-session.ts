@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface DefaultSession {
@@ -85,27 +86,7 @@ export default class SetDefaultSession extends JBrowseCommand {
 
     await this.checkLocation(path.dirname(target))
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error(
-        'No existing config file found, run add-assembly first to bootstrap config',
-        {
-          exit: 100,
-        },
-      )
-    }
-
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
-    }
-
-    if (!configContents.defaultSession) configContents.defaultSession = {}
+    const configContents: Config = await this.readJsonFile(target)
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
@@ -118,7 +99,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     const foundTracks: Track[] = []
-    const existingDefaultSession = configContents.defaultSession.length > 0
+    const existingDefaultSession = configContents.defaultSession?.length > 0
 
     // must provide default session, or view, or tracks + view
     if (!session && !view && !tracks) {
@@ -172,10 +153,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       }
     }
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(target, configContents)
 
     this.log(
       `${
@@ -197,7 +175,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     try {
-      const { defaultSession } = JSON.parse(defaultSessionJson)
+      const { defaultSession } = parseJSON(defaultSessionJson)
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {

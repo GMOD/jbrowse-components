@@ -18,7 +18,6 @@ import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
-import 'mobx-react/batchingForReactDom'
 import 'core-js/stable'
 
 import Loading from './Loading'

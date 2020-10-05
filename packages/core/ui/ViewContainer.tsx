@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
