@@ -146,8 +146,13 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.maxBpPerPx).toEqual(20)
   model.setNewView(0.02, 0)
 
+  expect(model.offsetPx).toEqual(0)
   model.moveTo({ index: 0, offset: 100 }, { index: 0, offset: 200 })
+  expect(model.offsetPx).toEqual(800)
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
+  expect(model.offsetPx).toEqual(79401)
+  model.centerAt(5000, 'ctgA')
+  expect(model.offsetPx).toEqual(39500)
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
@@ -507,8 +512,17 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   )
   model.setWidth(width)
   model.setDisplayedRegions([
-    { assemblyName: 'volvox', start: 1000, end: 2000, refName: 'ctgA' },
+    {
+      assemblyName: 'volvox',
+      start: 1000,
+      end: 2000,
+      refName: 'ctgA',
+      reversed: true,
+    },
   ])
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toBe(undefined)
+  expect(model.pxToBp(-1).coord).toEqual(2002)
+  expect(model.pxToBp(100).offset).toEqual(100)
+  expect(model.pxToBp(100).coord).toEqual(1901)
 })

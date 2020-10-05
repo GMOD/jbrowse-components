@@ -88,7 +88,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.5, 6000)
+    state.session.views[0].setNewView(0.5, 5200)
 
     // load track
     fireEvent.click(
@@ -115,10 +115,7 @@ describe('alignments track', () => {
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.2,
-      failureThresholdType: 'percent',
-    })
+    expect(pileupBuf).toMatchImageSnapshot()
   }, 12000)
 
   it('selects a sort, updates object and layout', async () => {

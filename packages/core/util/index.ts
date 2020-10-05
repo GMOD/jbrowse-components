@@ -770,3 +770,7 @@ export async function renameRegionsIfNeeded<
 export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
+
+export function stringify(offset: { coord: number; refName: string }) {
+  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
+}

@@ -13,7 +13,7 @@ configSnapshot.configuration = {
   useUrlSession: false,
 }
 
-export function getPluginManager(initialState, adminMode = false) {
+export function getPluginManager(initialState, adminMode = true, sessionName) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -22,7 +22,12 @@ export function getPluginManager(initialState, adminMode = false) {
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
   })
-  if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
+  if (sessionName) {
+    const { name } = rootModel.jbrowse.savedSessions.find(
+      session => session.name === sessionName,
+    )
+    rootModel.activateSession(name)
+  } else if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
     const { name } = rootModel.jbrowse.savedSessions[0]
     rootModel.activateSession(name)
   } else {
@@ -80,3 +85,6 @@ export function setup() {
   Storage.prototype.removeItem = jest.fn()
   Storage.prototype.clear = jest.fn()
 }
+
+// eslint-disable-next-line no-native-reassign,no-global-assign
+window = Object.assign(window, { innerWidth: 800 })

@@ -1,7 +1,86 @@
+/**
+ * By convention, exit codes in this base class are below 100
+ */
+
 import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import fetch from 'node-fetch'
+
+export interface UriLocation {
+  uri: string
+}
+
+export interface IndexedFastaAdapter {
+  type: 'IndexedFastaAdapter'
+  fastaLocation: UriLocation
+  faiLocation: UriLocation
+}
+
+export interface BgzipFastaAdapter {
+  type: 'BgzipFastaAdapter'
+  fastaLocation: UriLocation
+  faiLocation: UriLocation
+  gziLocation: UriLocation
+}
+
+export interface TwoBitAdapter {
+  type: 'TwoBitAdapter'
+  twoBitLocation: UriLocation
+}
+
+export interface ChromeSizesAdapter {
+  type: 'ChromSizesAdapter'
+  chromSizesLocation: UriLocation
+}
+
+export interface CustomSequenceAdapter {
+  type: string
+}
+
+export interface RefNameAliasAdapter {
+  type: 'RefNameAliasAdapter'
+  location: UriLocation
+}
+
+export interface CustomRefNameAliasAdapter {
+  type: string
+}
+
+export interface Sequence {
+  type: 'ReferenceSequenceTrack'
+  trackId: string
+  adapter:
+    | IndexedFastaAdapter
+    | BgzipFastaAdapter
+    | TwoBitAdapter
+    | ChromeSizesAdapter
+    | CustomSequenceAdapter
+}
+
+export interface Assembly {
+  name: string
+  aliases?: string[]
+  sequence: Sequence
+  refNameAliases?: {
+    adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
+  }
+  refNameColors?: string[]
+}
+
+export interface Track {
+  trackId: string
+  name: string
+}
+
+export interface Config {
+  assemblies?: Assembly[]
+  configuration?: {}
+  connections?: unknown[]
+  defaultSession?: {}
+  tracks?: Track[]
+}
 
 interface GithubRelease {
   tag_name: string
@@ -33,7 +112,7 @@ export default abstract class JBrowseCommand extends Command {
     }
     let manifest: { name?: string } = {}
     try {
-      manifest = JSON.parse(manifestJson)
+      manifest = parseJSON(manifestJson)
     } catch (error) {
       this.error(
         'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
@@ -48,47 +127,58 @@ export default abstract class JBrowseCommand extends Command {
     }
   }
 
-  async readJsonConfig(location: string) {
-    let locationUrl: URL | undefined
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      const response = await fetch(locationUrl)
-      if (response.ok) {
-        return response.json()
-      }
-      throw new Error(`${response.statusText}`)
-    }
+  async readFile(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async resolveFileLocation(location: string, check = true, warning = false) {
+  async readJsonFile(location: string) {
+    let contents
+    try {
+      contents = await fsPromises.readFile(location, { encoding: 'utf8' })
+    } catch (error) {
+      this.error(error instanceof Error ? error : error.message, {
+        suggestions: [
+          `Make sure the file "${location}" exists`,
+          'Run `jbrowse add-assembly` to create a config file',
+        ],
+        exit: 40,
+      })
+    }
+    let result
+    try {
+      result = parseJSON(contents)
+    } catch (error) {
+      this.error(error instanceof Error ? error : error.message, {
+        suggestions: [`Make sure "${location}" is a valid JSON file`],
+        exit: 50,
+      })
+    }
+    return result
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async writeJsonFile(location: string, contents: any) {
+    this.debug(`Writing JSON file to ${process.cwd()} ${location}`)
+    return fsPromises.writeFile(location, JSON.stringify(contents, null, 2))
+  }
+
+  async resolveFileLocation(location: string, check = true, warn = false) {
     let locationUrl: URL | undefined
-    let locationPath: string | undefined
     try {
       locationUrl = new URL(location)
     } catch (error) {
       // ignore
     }
     if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-          if (response.ok) {
-            return locationUrl.href
-          }
-          throw new Error(`${response.statusText}`)
-        } else {
-          return locationUrl.href
+      if (check) {
+        const response = await fetch(locationUrl, { method: 'HEAD' })
+        if (!response.ok) {
+          throw new Error(`${locationUrl} result ${response.statusText}`)
         }
-      } catch (error) {
-        // ignore
       }
+      return locationUrl.href
     }
+    let locationPath: string | undefined
     try {
       if (check) {
         locationPath = await fsPromises.realpath(location)
@@ -100,7 +190,7 @@ export default abstract class JBrowseCommand extends Command {
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      if (warning && filePath.startsWith('..')) {
+      if (warn && filePath.startsWith('..')) {
         this.warn(
           `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
         )
@@ -116,18 +206,13 @@ export default abstract class JBrowseCommand extends Command {
     let result
     // see if it's inline JSON
     try {
-      result = JSON.parse(inlineOrFileName)
+      result = parseJSON(inlineOrFileName)
     } catch (error) {
+      this.debug(
+        `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
+      )
       // not inline JSON, must be location of a JSON file
-      try {
-        const fileLocation = await this.resolveFileLocation(inlineOrFileName)
-        const resultJSON = await this.readJsonConfig(fileLocation)
-        result = JSON.parse(resultJSON)
-      } catch (err) {
-        this.error(`Not valid inline JSON or JSON file ${inlineOrFileName}`, {
-          exit: 50,
-        })
-      }
+      result = await this.readJsonFile(inlineOrFileName)
     }
     return result
   }
@@ -192,11 +277,11 @@ export default abstract class JBrowseCommand extends Command {
         ? result.assets[0].browser_download_url
         : this.error(
             'Could not find version specified. Use --listVersions to see all available versions',
-            { exit: 130 },
+            { exit: 90 },
           )
     }
     return this.error(`Error: Could not find version: ${response.statusText}`, {
-      exit: 130,
+      exit: 90,
     })
   }
 }

@@ -34,7 +34,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', '{}', '--load', 'copy'])
-    .exit(130)
+    .catch('Must provide --name when using custom inline JSON sequence')
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
@@ -109,7 +109,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .exit(40)
+    .catch(/Could not resolve/)
     .it('fails if it cannot find a file')
 
   setup
@@ -125,7 +125,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(50)
+    .exit(40)
     .it('fails if using invalid inline JSON')
   setup
     .command([
@@ -862,7 +862,7 @@ describe('add-assembly', () => {
       'add-assembly',
       path.join('..', 'simple.2bit'),
       '--load',
-      'trust',
+      'inPlace',
     ])
 
   setup

@@ -18,7 +18,6 @@ import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
-import 'mobx-react/batchingForReactDom'
 import 'core-js/stable'
 
 import Loading from './Loading'
@@ -112,8 +111,8 @@ export function Loader() {
 
   const [configQueryParam] = useQueryParam('config', StringParam)
   const [sessionQueryParam] = useQueryParam('session', StringParam)
-  const [adminQueryParam] = useQueryParam('admin', StringParam)
-  const adminMode = adminQueryParam === '1' || adminQueryParam === 'true'
+  const [adminKeyParam] = useQueryParam('adminKey', StringParam)
+  const adminMode = adminKeyParam !== undefined
 
   useEffect(() => {
     async function fetchConfig() {

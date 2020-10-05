@@ -1,6 +1,7 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface DefaultSession {
@@ -85,27 +86,7 @@ export default class SetDefaultSession extends JBrowseCommand {
 
     await this.checkLocation(path.dirname(target))
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error(
-        'No existing config file found, run add-assembly first to bootstrap config',
-        {
-          exit: 100,
-        },
-      )
-    }
-
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
-    }
-
-    if (!configContents.defaultSession) configContents.defaultSession = {}
+    const configContents: Config = await this.readJsonFile(target)
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
@@ -118,7 +99,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     const foundTracks: Track[] = []
-    const existingDefaultSession = configContents.defaultSession.length > 0
+    const existingDefaultSession = configContents.defaultSession?.length > 0
 
     // must provide default session, or view, or tracks + view
     if (!session && !view && !tracks) {
@@ -134,27 +115,29 @@ export default class SetDefaultSession extends JBrowseCommand {
       // use trackids if any to match to tracks in the config
       let trackIds = []
       if (tracks && configContents.tracks) {
-        if (!view)
+        if (!view) {
           this.error(
             'Tracks must have a view type specified. Please rerun using the --view flag',
             { exit: 130 },
           )
+        }
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
           this.log(trackId)
           const matchingTrack = configContents.tracks.find(
             track => trackId === track.trackId,
           )
-          if (!matchingTrack)
+          if (!matchingTrack) {
             this.error(
               `Track ${trackId} has not been added to config yet.\nPlease add the track with the add-track command before adding to the default session`,
               { exit: 140 },
             )
-          else
+          } else {
             foundTracks.push({
               type: matchingTrack.type,
               configuration: matchingTrack.trackId,
             })
+          }
         })
       }
 
@@ -170,10 +153,7 @@ export default class SetDefaultSession extends JBrowseCommand {
       }
     }
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(target, configContents)
 
     this.log(
       `${
@@ -195,7 +175,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     try {
-      const { defaultSession } = JSON.parse(defaultSessionJson)
+      const { defaultSession } = parseJSON(defaultSessionJson)
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {

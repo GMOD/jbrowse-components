@@ -9,6 +9,7 @@ export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
+  const { useRef } = React
   const { makeStyles: jbrequiredMakeStyles } = jbrequire(
     '@material-ui/core/styles',
   )
@@ -80,6 +81,8 @@ export default (pluginManager: any) => {
     ({ model }: { model: BreakpointViewModel }) => {
       const classes = useStyles()
       const { views } = model
+      const ref = useRef(null)
+
       return (
         <div>
           <Header model={model} />
@@ -108,15 +111,29 @@ export default (pluginManager: any) => {
             </div>
             <div className={classes.overlay}>
               <svg
+                ref={ref}
                 style={{
                   width: '100%',
                   zIndex: 10,
                   pointerEvents: model.interactToggled ? undefined : 'none',
                 }}
               >
-                {model.matchedTracks.map(id => (
-                  <Overlay key={id} model={model} trackConfigId={id} />
-                ))}
+                {model.matchedTracks.map(id => {
+                  // note: we must pass ref down, because the child component
+                  // needs to getBoundingClientRect on the this components SVG,
+                  // and we cannot rely on using getBoundingClientRect in this
+                  // component to make sure this works because if it gets
+                  // shifted around by another element, this will not re-render
+                  // necessarily
+                  return (
+                    <Overlay
+                      parentRef={ref}
+                      key={id}
+                      model={model}
+                      trackConfigId={id}
+                    />
+                  )
+                })}
               </svg>
             </div>
           </div>

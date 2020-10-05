@@ -1,7 +1,8 @@
+/* eslint curly:error */
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Create extends JBrowseCommand {
@@ -54,29 +55,24 @@ export default class Create extends JBrowseCommand {
     const { force, url, listVersions, tag } = runFlags
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          version => version.tag_name,
-        )
-        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const versions = (await this.fetchGithubVersions()).map(
+        version => version.tag_name,
+      )
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      this.exit()
     }
 
     // mkdir will do nothing if dir exists
-    try {
-      await fsPromises.mkdir(argsPath, { recursive: true })
-    } catch (error) {
-      this.error(error)
-    }
+    await fsPromises.mkdir(argsPath, { recursive: true })
 
-    if (!force) await this.checkPath(argsPath)
+    if (!force) {
+      await this.checkPath(argsPath)
+    }
 
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 
+    this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
     if (!response.ok) {
       this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })
@@ -98,17 +94,13 @@ export default class Create extends JBrowseCommand {
   }
 
   async checkPath(userPath: string) {
-    let allFiles
-    try {
-      allFiles = await fsPromises.readdir(userPath)
-    } catch (error) {
-      this.error('Directory does not exist', { exit: 110 })
-    }
-    if (allFiles.length > 0)
+    const allFiles = await fsPromises.readdir(userPath)
+    if (allFiles.length > 0) {
       this.error(
         `${userPath} This directory has existing files and could cause conflicts with create. Please choose another directory or use the force flag to overwrite existing files`,
         { exit: 120 },
       )
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

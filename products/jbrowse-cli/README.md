@@ -35,6 +35,7 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -68,9 +69,9 @@ OPTIONS
   -h, --help
       show CLI help
 
-  -l, --load=copy|symlink|move|trust
+  -l, --load=copy|symlink|move|inPlace
       Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
-      directory to the JBrowse directory. Or use trust to modify the config without doing any file operations
+      directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations
 
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
@@ -122,8 +123,8 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
   $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust
-  $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
+  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace
+  $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
@@ -192,42 +193,45 @@ ARGUMENTS
   TRACK  Track file or URL
 
 OPTIONS
-  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
-                                      to the assembly in your config file
+  -a, --assemblyNames=assemblyNames     Assembly name or names for track as comma separated string. If none, will
+                                        default to the assembly in your config file
 
-  -d, --description=description       Optional description of the track
+  -d, --description=description         Optional description of the track
 
-  -f, --force                         Equivalent to `--skipCheck --overwrite`
+  -f, --force                           Equivalent to `--skipCheck --overwrite`
 
-  -h, --help                          show CLI help
+  -h, --help                            show CLI help
 
-  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
-                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
+  -l, --load=copy|symlink|move|inPlace  Required flag when using a local file. Choose how to manage the track. Copy,
+                                        symlink, or move the track to the JBrowse directory. Or inPlace to leave track
+                                        alone
 
-  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
+  -n, --name=name                       Name of the track. Will be defaulted to the trackId if none specified
 
-  -t, --type=type                     Type of track, by default inferred from track file
+  -t, --type=type                       Type of track, by default inferred from track file
 
-  --category=category                 Optional Comma separated string of categories to group tracks
+  --category=category                   Optional Comma separated string of categories to group tracks
 
-  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+  --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
+                                        "density"}'
 
-  --overwrite                         Overwrites existing track if it shares the same trackId
+  --overwrite                           Overwrites existing track if it shares the same trackId
 
-  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
-                                      directory
+  --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
+                                        directory
 
-  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
+  --target=target                       [default: ./config.json] path to config file in JB2 installation to write out
+                                        to.
 
-  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
-                                      throughout config
+  --trackId=trackId                     trackId for the track, by default inferred from filename, must be unique
+                                        throughout config
 
 EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy
   $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
   $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
-  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
 
@@ -251,6 +255,30 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
+```
+
+## `jbrowse admin-server`
+
+Start up a small admin server for JBrowse configuration
+
+```
+USAGE
+  $ jbrowse admin-server
+
+OPTIONS
+  -h, --help       show CLI help
+
+  -p, --port=port  Specifified port to start the server on;
+                   Default is 9090.
+
+  --skipCheck      Don't check whether or not you are in a JBrowse directory
+
+  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
+
+EXAMPLES
+  $ jbrowse admin-server
+  $ jbrowse admin-server -p 8888
 ```
 
 ## `jbrowse create LOCALPATH`
@@ -297,7 +325,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 

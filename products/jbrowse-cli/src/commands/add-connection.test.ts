@@ -56,7 +56,7 @@ describe('add-connection', () => {
   setup
     .nock('https://example.com', site => site.head('/hub.txt').reply(200))
     .command(['add-connection', 'https://example.com/hub.txt'])
-    .exit(100)
+    .catch(/no such file or directory/)
     .it('fails if no config file')
   setup
     .command(['add-connection', '.'])

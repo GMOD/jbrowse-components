@@ -40,7 +40,7 @@ test('get mismatches', () => {
       '100',
       'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTTA',
     ),
-  ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 1 }])
+  ).toEqual([{ start: 89, type: 'insertion', base: '1', length: 0 }])
 
   // contains a deletion and a SNP
   // read GGGGG--ATTTTTT
@@ -69,10 +69,59 @@ test('get mismatches', () => {
     { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
     { altbase: 'C', base: 'A', length: 1, start: 6, type: 'mismatch' },
   ])
+})
+
+test('basic skip', () => {
   expect(getMismatches('6M200N6M', '5AC5', 'GGGGGCATTTTT')).toEqual([
     { base: 'N', length: 200, start: 6, type: 'skip' },
     { altbase: 'A', base: 'C', length: 1, start: 5, type: 'mismatch' },
     { altbase: 'C', base: 'A', length: 1, start: 206, type: 'mismatch' },
+  ])
+})
+
+test('vsbuffalo', () => {
+  // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files
+  // example 1
+  expect(
+    getMismatches(
+      '89M1I11M',
+      '100',
+      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    ),
+  ).toEqual([{ base: '1', length: 0, start: 89, type: 'insertion' }])
+
+  // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files
+  // example 2
+  expect(
+    getMismatches(
+      '9M1I91M',
+      '48T42G8',
+      'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+    ),
+  ).toEqual([
+    { base: '1', length: 0, start: 9, type: 'insertion' },
+    {
+      altbase: 'T',
+      base: 'A',
+      length: 1,
+      start: 48,
+      type: 'mismatch',
+    },
+    {
+      altbase: 'G',
+      base: 'A',
+      length: 1,
+      start: 91,
+      type: 'mismatch',
+    },
+  ])
+})
+
+test('more skip', () => {
+  expect(getMismatches('3M200N3M200N3M', '8A', 'GGGGGCATTTTT')).toEqual([
+    { base: 'N', length: 200, start: 3, type: 'skip' },
+    { base: 'N', length: 200, start: 206, type: 'skip' },
+    { altbase: 'A', base: 'T', length: 1, start: 408, type: 'mismatch' },
   ])
   expect(
     getMismatches('31M1I17M1D37M', '6G4C20G1A5C5A1^C3A15G1G15', seq).sort(
@@ -96,7 +145,7 @@ test('get mismatches', () => {
       },
       Object {
         "base": "1",
-        "length": 1,
+        "length": 0,
         "start": 31,
         "type": "insertion",
       },

@@ -91,20 +91,28 @@ const Base1DView = types
       const n = self.displayedRegions.length
       if (bp < 0) {
         const region = self.displayedRegions[0]
+        const offset = bp
         return {
           ...getSnapshot(region),
           oob: true,
-          offset: bp,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
+          offset,
           index: 0,
         }
       }
       if (bp >= this.totalBp) {
         const region = self.displayedRegions[n - 1]
         const len = region.end - region.start
+        const offset = bp - this.totalBp + len
         return {
           ...getSnapshot(region),
           oob: true,
-          offset: bp - this.totalBp + len,
+          offset,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
           index: n - 1,
         }
       }
@@ -112,16 +120,19 @@ const Base1DView = types
         const region = self.displayedRegions[index]
         const len = region.end - region.start
         if (len + bpSoFar > bp && bpSoFar <= bp) {
+          const offset = bp - bpSoFar
           return {
             ...getSnapshot(region),
             oob: false,
-            offset: bp - bpSoFar,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             index,
           }
         }
         bpSoFar += len
       }
-
       throw new Error('pxToBp failed to map to a region')
     },
   }))

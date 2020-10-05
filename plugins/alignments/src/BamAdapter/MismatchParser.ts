@@ -22,12 +22,11 @@ export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
       seqOffset += len
     }
     if (op === 'I') {
-      // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
       mismatches.push({
         start: currOffset,
         type: 'insertion',
         base: `${len}`,
-        length: 1,
+        length: 0,
       })
       seqOffset += len
     } else if (op === 'D') {
@@ -93,26 +92,17 @@ export function mdToMismatches(
 ): Mismatch[] {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
-  const hasSkip = cigarMismatches.find(cigar => cigar.type === 'skip')
+  const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
   let lastCigar = 0
   let lastTemplateOffset = 0
   let lastRefOffset = 0
+  let lastSkipPos = 0
 
   // convert a position on the reference sequence to a position
   // on the template sequence, taking into account hard and soft
   // clipping of reads
 
   function nextRecord(): void {
-    // correct the start of the current mismatch if it comes after a cigar skip
-    if (hasSkip) {
-      cigarMismatches.forEach((mismatch: Mismatch) => {
-        if (mismatch.type === 'skip' && curr.start >= mismatch.start) {
-          curr.start += mismatch.length
-        }
-      })
-    }
-
-    // record it
     mismatchRecords.push(curr)
 
     // get a new mismatch record ready
@@ -136,7 +126,7 @@ export function mdToMismatches(
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
         templateOffset += len
-      } else if (op === 'D' || op === 'P') {
+      } else if (op === 'D' || op === 'P' || op === 'N') {
         refOffset += len
       } else if (op !== 'H') {
         templateOffset += len
@@ -145,6 +135,7 @@ export function mdToMismatches(
     }
     lastTemplateOffset = templateOffset
     lastRefOffset = refOffset
+
     return templateOffset - (refOffset - refCoord)
   }
 
@@ -164,6 +155,16 @@ export function mdToMismatches(
       // mismatch
       for (let j = 0; j < token.length; j += 1) {
         curr.length = 1
+
+        while (lastSkipPos < skips.length) {
+          const mismatch = skips[lastSkipPos]
+          if (curr.start >= mismatch.start) {
+            curr.start += mismatch.length
+            lastSkipPos++
+          } else {
+            break
+          }
+        }
         curr.base = seq
           ? seq.substr(
               cigarOps ? getTemplateCoordLocal(curr.start) : curr.start,
