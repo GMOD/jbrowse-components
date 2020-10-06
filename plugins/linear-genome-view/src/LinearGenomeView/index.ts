@@ -86,8 +86,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showCenterLine: false,
     })
     .actions(self => ({
-      setTracks(arr: any) {
-        self.tracks = arr
+      setTracks(arr: unknown[]) {
+        self.tracks = cast(arr)
       },
       afterAttach() {
         this.setTracks(
