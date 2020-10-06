@@ -40,6 +40,8 @@ export interface BpOffset {
   offset: number
   start?: number
   end?: number
+  coord?: number
+  reversed?: boolean
 }
 
 export interface NavLocation {
@@ -215,6 +217,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      idxInDisplayedRegion(refName: string | undefined) {
+        return self.displayedRegions.findIndex(
+          (region: Region) => region.refName === refName,
+        )
+      },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
           parentRegion =>
@@ -249,7 +256,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @returns BpOffset of the displayed region that it lands in
        */
       pxToBp(px: number) {
-        //need to fix this
         let bpSoFar = 0
         const bp = (self.offsetPx + px) * self.bpPerPx
         const n = self.displayedRegions.length
@@ -782,50 +788,64 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (leftPx === undefined || rightPx === undefined) return
 
         const singleRefSeq = leftPx.refName === rightPx.refName
+        const reversedOffsets =
+          singleRefSeq && rightPx.reversed
+            ? rightPx.offset > leftPx.offset
+            : rightPx.offset < leftPx.offset
+        /* Accounting when we need to flip the left and right Px*/
         if (
-          (singleRefSeq && rightPx.offset < leftPx.offset) ||
-          self.idxInParentRegion(leftPx.refName) >
-            self.idxInParentRegion(rightPx.refName)
+          reversedOffsets ||
+          self.idxInDisplayedRegion(leftPx.refName) >
+            self.idxInDisplayedRegion(rightPx.refName)
         ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
 
-        console.log('LEFT BPoffset', leftPx)
-        console.log('RIGHT BPoffset', rightPx)
-
-        const selectionStart = Math.round(leftPx.offset)
-        const selectionEnd = Math.round(rightPx.offset)
-        const startIdx = self.idxInParentRegion(leftPx.refName)
-        const endIdx = self.idxInParentRegion(rightPx.refName)
+        let startIdx = self.idxInDisplayedRegion(leftPx.refName)
+        let endIdx = self.idxInDisplayedRegion(rightPx.refName)
 
         const refSeqSelections: Region[] = []
 
-        if (singleRefSeq)
+        if (singleRefSeq) {
+          // if it's the same region
           refSeqSelections.push({
-            ...self.displayedParentRegions[startIdx],
-            start: selectionStart,
-            end: selectionEnd,
+            ...self.displayedRegions[startIdx],
+            start: Math.round(leftPx.offset),
+            end: Math.round(rightPx.offset),
           })
-        else {
+        } else {
           // when selecting over multiple ref seq, convert into correct selections
           // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
+          if (startIdx > endIdx) {
+            ;[leftPx, rightPx] = [rightPx, leftPx]
+            ;[startIdx, endIdx] = [endIdx, startIdx]
+          }
+
           for (let i = startIdx; i <= endIdx; i++) {
-            const ref = self.displayedParentRegions[i]
+            const ref = self.displayedRegions[i]
             // modify start of first refSeq
-            if (!refSeqSelections.length && ref.refName === leftPx.refName)
+            if (!refSeqSelections.length && ref.refName === leftPx.refName) {
               refSeqSelections.push({
                 ...ref,
-                start: selectionStart,
+                start: ref.reversed ? 0 : ref.end,
+                end: ref.reversed
+                  ? Math.round(ref.end - leftPx.offset)
+                  : Math.round(leftPx.offset),
               })
-            // modify end of last refSeq
-            else if (ref.refName === rightPx.refName)
+            } else if (ref.refName === rightPx.refName) {
               refSeqSelections.push({
                 ...ref,
-                end: selectionEnd,
+                end: ref.reversed ? ref.end : 0,
+                start: ref.reversed
+                  ? Math.round(ref.end - rightPx.offset)
+                  : Math.round(rightPx.offset),
               })
-            else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
+            } else {
+              refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
+            }
           }
         }
+        // console.log('refseqselections', refSeqSelections)
         let startOffset: BpOffset | undefined
         let endOffset: BpOffset | undefined
         self.displayedRegions.forEach((region, index) => {
@@ -927,7 +947,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       centerAt(bp: number, refName: string) {
         const centerPx = self.bpToPx({ refName, coord: bp })
-        console.log(centerPx)
         if (centerPx) {
           const centerPxOffset = centerPx.offsetPx
           self.scrollTo(Math.round(centerPxOffset - self.width / 2))

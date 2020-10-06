@@ -72,6 +72,7 @@ const useStyles = makeStyles(theme => {
   }
 })
 
+// spacer between regions ~ 2px
 const wholeSeqSpacer = 2
 const Polygon = observer(
   ({
@@ -92,13 +93,9 @@ const Polygon = observer(
       displayedRegions,
     } = model
 
-    /* TODO:
-      1) model and overview?
-      2) Need to modify the points of the SVG polygon to account for reversed regions so that there are hourglass figures
-      3) while iterating through the visible regions, we need to remove the parent regions lines 122-124
-    */
     overview.setVolatileWidth(width)
     overview.showAllRegions()
+
     // @ts-ignore
     const polygonColor = theme.palette.tertiary
       ? // prettier-ignore
@@ -118,10 +115,9 @@ const Polygon = observer(
           if (seqIndex === -1) {
             return null
           }
-          console.log(region)
-          console.log(model.offsetPx) //what is this
-          let startPx = region.offsetPx - offsetPx //what is this
-          let endPx = startPx + (region.end - region.start) / bpPerPx //what is this
+
+          let startPx = region.offsetPx - offsetPx
+          let endPx = startPx + (region.end - region.start) / bpPerPx
           if (region.reversed) {
             ;[startPx, endPx] = [endPx, startPx]
           }
@@ -141,11 +137,12 @@ const Polygon = observer(
             refName: region.refName,
             coord: region.start,
           })
-          // console.log('in Polygon', startPx)
-          // console.log('in Polygon', endPx)
+          // console.log('---------- Polygon ---------------')
+          // console.log('startpx', startPx)
+          // console.log('endPx', endPx)
           // console.log('topright', topRight)
           // console.log('topleft', topLeft)
-          // console.log('bar height', HEADER_BAR_HEIGHT)
+          // console.log('-------------------------')
           return (
             <polygon
               key={`${region.key}-${idx}`}
@@ -169,38 +166,30 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
-
-  /* TODO:
-    1) instead of the displayedParentRegions it will be just the displayed regions
-      For example if you had the small pieces then the parent one would be the entire cfgA
-    2) the return is iterating over the parent regions, we need to modify to get the displayed regions instead
-    3) so we are passing the model, what does it mean to get the session?.
-    4) what is the difference between dynamic/visible and static blocks?.
-  */
   const {
     displayedParentRegions,
     displayedRegions,
     dynamicBlocks: visibleRegions,
   } = model
   const { assemblyManager } = getSession(model)
-
   const gridPitch = chooseGridPitch(scale, 120, 15)
 
+  // what is the 120 and 15
   return (
     <div className={classes.scaleBar}>
       {/* this is the entire scale bar */}
       {displayedRegions.map((seq, idx) => {
         // for each displayed Region we need a ... in case the region is smaller than the parent region
         const assembly = assemblyManager.get(seq.assemblyName)
-        const parentRegion = model.parentRegion(seq.assemblyName, seq.refName)
+        // const parentRegion = model.parentRegion(seq.assemblyName, seq.refName) // check if region is smaller than parent
         let refNameColor: string | undefined
         if (assembly) {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        const parentRegionLength = parentRegion
-          ? parentRegion.end - parentRegion.start
-          : 0
+        // const parentRegionLength = parentRegion
+        //   ? parentRegion.end - parentRegion.start
+        //   : 0
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
 
         const labels = []
@@ -210,6 +199,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             : labels.push((index + 1) * gridPitch.majorPitch)
         }
 
+        // TODO: adjust scale according to gridpitch
         return (
           // each whole sequence
           <Paper
@@ -247,7 +237,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                       left: r.start / scale - 1,
                       pointerEvents: 'none',
                     }}
-                  />
+                  /> // neeed to edit the width here
                 )
               }
               return null
@@ -289,31 +279,11 @@ function OverviewScaleBar({
   } = model
 
   const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
-  })
+    displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+  }) // changed from displayedParentRegions to displayedRegions
 
-  const newOverview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(model.displayedRegions)),
-  })
-  // console.log('new overview', newOverview)
-  // console.log('overview', overview)
-  // console.log('displayedRegions', displayedRegions)
-  // console.log('displayedParentRegions', displayedParentRegions)
-  // console.log('total bp', model.totalBp)
-  // console.log('displayedRegions len', displayedParentRegionsLength)
-  /* TODO:
-    1) modify the scale to adapt to the displayed regions instead of the displayed Parent regions
-    2) what is the model here-> getting it from the LGV model
-    3) what is the overview, what is the Base1DView doing with create?
-    4) what are the children variable being passed?
-  */
   const scale =
-    displayedParentRegionsLength /
-    (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
-  // console.log('scale', scale)
-  const newScale =
-    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
-  console.log('newScale', newScale)
+    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer) // scale bp/px
 
   if (!displayedRegions.length) {
     return (
@@ -333,11 +303,11 @@ function OverviewScaleBar({
     <div>
       <OverviewRubberBand
         model={model}
-        overview={newOverview}
-        ControlComponent={<ScaleBar model={model} scale={newScale} />}
+        overview={overview}
+        ControlComponent={<ScaleBar model={model} scale={scale} />}
       />
       <div className={classes.overview}>
-        <Polygon model={model} overview={newOverview} />
+        <Polygon model={model} overview={overview} />
         {children}
       </div>
     </div>
