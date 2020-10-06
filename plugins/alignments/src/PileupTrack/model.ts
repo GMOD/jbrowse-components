@@ -61,11 +61,15 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       ready: false,
+      currBpPerPx: 0,
     }))
 
     .actions(self => ({
       setReady(flag: boolean) {
         self.ready = flag
+      },
+      setCurrBpPerPx(n: number) {
+        self.currBpPerPx = n
       },
     }))
     .actions(self => ({
@@ -77,6 +81,7 @@ const stateModelFactory = (
               try {
                 const { rpcManager } = getSession(self)
                 const { sortedBy, renderProps } = self
+                const view = getContainingView(self) as LGV
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
                   const region = {
@@ -97,6 +102,7 @@ const stateModelFactory = (
                     timeout: 1000000,
                   })
                   self.setReady(true)
+                  self.setCurrBpPerPx(view.bpPerPx)
                 } else {
                   self.setReady(true)
                 }
@@ -237,13 +243,16 @@ const stateModelFactory = (
         },
 
         get renderProps() {
+          const view = getContainingView(self) as LGV
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
-            notReady: !self.ready,
+            notReady:
+              !self.ready ||
+              (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
             trackModel: self,
             sortedBy: self.sortedBy,
             showSoftClip: self.showSoftClipping,
