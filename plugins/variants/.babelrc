@@ -1,0 +1,6 @@
+{
+  "presets": [
+    // can remove this if all .js files are converted to .ts
+    "@babel/preset-react"
+  ]
+}

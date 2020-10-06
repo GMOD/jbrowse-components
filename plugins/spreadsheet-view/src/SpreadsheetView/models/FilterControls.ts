@@ -24,7 +24,7 @@ export default (pluginManager: PluginManager) => {
           }
         s = s.toLowerCase()
         return function stringPredicate(
-          sheet: unknown,
+          _sheet: unknown,
           row: { cells: { text: string }[] },
         ) {
           const { cells } = row

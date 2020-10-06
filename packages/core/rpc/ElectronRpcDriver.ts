@@ -79,7 +79,7 @@ class WindowWorkerHandle {
 
     const { statusCallback, ...rest } = opts
     const channel = `message-${shortid.generate()}`
-    const listener = (event: unknown, message: string) => {
+    const listener = (_event: unknown, message: string) => {
       if (opts.statusCallback) {
         opts.statusCallback(message)
       }

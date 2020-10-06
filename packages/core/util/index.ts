@@ -28,6 +28,7 @@ export * from './aborting'
 export * from './when'
 
 if (!Object.fromEntries) {
+  // @ts-ignore
   fromEntries.shim()
 }
 

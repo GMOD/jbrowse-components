@@ -26,9 +26,14 @@ function main() {
     level.forEach(package => {
       scopes.push('--scope', package)
     })
-    spawn.sync('yarn', ['lerna', 'run', 'build', ...scopes], {
-      stdio: 'inherit',
-    })
+    const { signal, status } = spawn.sync(
+      'yarn',
+      ['lerna', 'run', 'build', ...scopes],
+      { stdio: 'inherit' },
+    )
+    if (signal || (status !== null && status > 0)) {
+      process.exit(status || 1)
+    }
   })
 }
 

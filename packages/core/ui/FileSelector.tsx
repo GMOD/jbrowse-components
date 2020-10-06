@@ -43,7 +43,7 @@ const FileLocationEditor = observer(
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     const handleFileOrUrlChange = (
-      event: React.MouseEvent<HTMLElement>,
+      _event: unknown,
       newValue: string | null,
     ) => {
       if (newValue === 'url') {

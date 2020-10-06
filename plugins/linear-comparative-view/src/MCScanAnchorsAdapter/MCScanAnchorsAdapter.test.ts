@@ -3,10 +3,7 @@ import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import { toArray } from 'rxjs/operators'
 import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import {
-  BaseFeatureDataAdapter,
-  BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
 import Adapter from './MCScanAnchorsAdapter'
 import configSchema from './configSchema'
 
@@ -17,7 +14,7 @@ class CustomAdapter extends BaseFeatureDataAdapter {
 
   freeResources() {}
 
-  getFeatures(region: Region, opts: BaseOptions) {
+  getFeatures(region: Region) {
     return ObservableCreate<Feature>(async observer => {
       if (region.assemblyName === 'peach') {
         observer.next(

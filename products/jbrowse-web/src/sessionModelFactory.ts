@@ -553,6 +553,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
+// @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check

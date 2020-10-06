@@ -6,13 +6,14 @@ import {
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './BreakpointAlignmentsFeatureDetail'
+import BreakpointSplitViewFactory from './BreakpointSplitView'
 
 export default class BreakpointSplitViewPlugin extends Plugin {
   name = 'BreakpointSplitViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./BreakpointSplitView')),
+      pluginManager.jbrequire(BreakpointSplitViewFactory),
     )
     pluginManager.addWidgetType(
       () =>

@@ -53,10 +53,7 @@ function MessageSnackbar({
     }
   }, [latestMessage, snackbarMessage])
 
-  const handleClose = (
-    event: React.SyntheticEvent | MouseEvent,
-    reason?: string,
-  ) => {
+  const handleClose = (_event: unknown, reason?: string) => {
     if (reason === 'clickaway') {
       return
     }

@@ -75,7 +75,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  async getRefNames(opts?: BaseOptions) {
+  async getRefNames() {
     const metadata = await this.hic.getMetaData()
     return metadata.chromosomes.map(chr => chr.name)
   }

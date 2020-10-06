@@ -1,10 +1,10 @@
-import webpack from 'webpack'
 import { baseJBrowsePluginWebpackConfig } from './build'
 
 it('produces something', () => {
-  const output = baseJBrowsePluginWebpackConfig(webpack, '/fake/directory', {
+  const output = baseJBrowsePluginWebpackConfig('/fake/directory', {
     name: 'FakePlugin',
   })
+  // @ts-ignore
   delete output.module
   expect(output).toMatchSnapshot()
 })
