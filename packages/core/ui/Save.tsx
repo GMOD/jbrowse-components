@@ -4,7 +4,7 @@ import SaveAltIcon from '@material-ui/icons/SaveAlt'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-// TODO SESSION remove all references to useUrlSession
+
 const useStyles = makeStyles(theme => ({
   saveDiv: {
     textAlign: 'center',

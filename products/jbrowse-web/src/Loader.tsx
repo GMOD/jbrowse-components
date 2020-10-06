@@ -407,6 +407,7 @@ export function Loader() {
       bc2.postMessage(ret)
     }
   }
+
   return loadingState ? (
     <CircularProgress />
   ) : (

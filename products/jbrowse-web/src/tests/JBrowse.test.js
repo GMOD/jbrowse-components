@@ -124,7 +124,6 @@ function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }
 
-// TODOSESSION - broken
 test('404 sequence file', async () => {
   console.error = jest.fn()
   const pluginManager = getPluginManager(chromeSizesConfig)

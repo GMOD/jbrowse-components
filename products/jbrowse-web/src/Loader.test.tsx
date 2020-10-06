@@ -10,8 +10,10 @@ import { QueryParamProvider } from 'use-query-params'
 
 import { Loader } from './Loader'
 
+const BroadcastChannelMock = jest.fn()
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
+if (!window.BroadcastChannel) window.BroadcastChannel = BroadcastChannelMock
 
 window.requestIdleCallback = cb => cb({ didTimeout: true })
 window.cancelIdleCallback = () => {}
@@ -85,6 +87,7 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
+
     expect(await findByText('Help')).toBeTruthy()
   })
 

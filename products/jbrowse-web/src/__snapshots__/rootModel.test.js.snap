@@ -19,6 +19,21 @@ Array [
         "label": "New Session",
         "onClick": [Function],
       },
+      Object {
+        "disabled": true,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "RestoreIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Restore Autosave Session",
+        "onClick": [Function],
+      },
     ],
   },
 ]
@@ -41,6 +56,21 @@ Array [
           },
         },
         "label": "New Session",
+        "onClick": [Function],
+      },
+      Object {
+        "disabled": true,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "RestoreIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Restore Autosave Session",
         "onClick": [Function],
       },
     ],

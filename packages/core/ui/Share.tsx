@@ -17,7 +17,6 @@ import * as crypto from 'crypto'
 import { ContentCopy as ContentCopyIcon } from './Icons'
 import { toUrlSafeB64 } from '../util'
 
-// TODO SESSION remove all references to useUrlSession
 const useStyles = makeStyles(theme => ({
   shareDiv: {
     textAlign: 'center',
