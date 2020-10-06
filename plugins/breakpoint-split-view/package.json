@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-breakpoint-split-view",
-  "version": "0.0.1-beta.19",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 breakpoint detail split view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

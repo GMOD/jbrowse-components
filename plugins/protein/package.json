@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-protein",
-  "version": "0.0.1-beta.17",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

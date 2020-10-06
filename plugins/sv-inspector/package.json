@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-sv-inspector",
-  "version": "0.0.1-beta.18",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 SV inspector view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

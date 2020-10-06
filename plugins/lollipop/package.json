@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-lollipop",
-  "version": "0.0.1-beta.17",
+  "version": "0.0.1-beta.12",
   "description": "JBrowse 2 plugin for lollipops",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

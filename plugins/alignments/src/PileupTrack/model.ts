@@ -115,7 +115,6 @@ const stateModelFactory = (
         )
       },
       selectFeature(feature: Feature) {
-        console.log('special alignments track only change')
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(

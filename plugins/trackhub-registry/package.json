@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-trackhub-registry",
-  "version": "0.0.1-beta.17",
+  "version": "0.0.1-beta.12",
   "description": "Add a connection to The Track Hub Registry",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

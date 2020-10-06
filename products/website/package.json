@@ -1,6 +1,6 @@
 {
   "name": "@gmod/docs-website",
-  "version": "0.0.1-beta.20",
+  "version": "0.0.1-beta.15",
   "private": true,
   "scripts": {
     "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",

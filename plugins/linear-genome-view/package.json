@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-linear-genome-view",
-  "version": "0.0.1-beta.20",
+  "version": "0.0.1-beta.15",
   "description": "JBrowse 2 linear genome view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
