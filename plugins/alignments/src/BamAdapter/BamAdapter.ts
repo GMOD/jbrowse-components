@@ -37,7 +37,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
-    console.log('wow');
 
     // note that derived classes may not provide a BAM directly
     // so this is conditional
