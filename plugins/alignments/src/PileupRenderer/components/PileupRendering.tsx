@@ -13,7 +13,7 @@ function PileupRendering(props: {
   height: number
   regions: Region[]
   bpPerPx: number
-  sortObject?: { by: string; position: number }
+  sortedBy?: { type: string; pos: number; refName: string }
   onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
 }) {
   const {
@@ -24,7 +24,7 @@ function PileupRendering(props: {
     height,
     regions,
     bpPerPx,
-    sortObject,
+    sortedBy,
   } = props
   const {
     selectedFeatureId,
@@ -171,7 +171,7 @@ function PileupRendering(props: {
   return (
     <div
       className="PileupRendering"
-      data-testid={`pileup-${sortObject ? sortObject.by : 'normal'}`}
+      data-testid={`pileup-${sortedBy ? sortedBy.type : 'normal'}`}
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas
