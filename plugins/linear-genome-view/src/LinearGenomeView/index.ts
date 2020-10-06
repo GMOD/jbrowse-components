@@ -26,6 +26,7 @@ import { transaction } from 'mobx'
 import {
   getSnapshot,
   types,
+  isValidReference,
   cast,
   Instance,
   getRoot,
@@ -84,6 +85,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
       showCenterLine: false,
     })
+    .actions(self => ({
+      setTracks(arr: any) {
+        self.tracks = arr
+      },
+      afterAttach() {
+        this.setTracks(
+          self.tracks.filter(track =>
+            isValidReference(() => track.configuration),
+          ),
+        )
+      },
+    }))
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 20,
