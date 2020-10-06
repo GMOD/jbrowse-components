@@ -39,10 +39,6 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.get('mq')
   }
 
-  _get_mapping_quality(): number {
-    return this.record.get('mq')
-  }
-
   _get_flags(): string {
     // @ts-ignore
     return this.record.flags
@@ -115,7 +111,9 @@ export default class BamSlightlyLazyFeature implements Feature {
               prop !== '_get_mismatches' &&
               prop !== '_get_skips_and_dels' &&
               prop !== '_get_cram_read_features' &&
-              prop !== '_get_tags',
+              prop !== '_get_tags' &&
+              prop !== '_get_next_seq_id' &&
+              prop !== '_get_seq_id',
           )
           .map(methodName => methodName.replace('_get_', ''))
           .concat(this._get_tags()),
