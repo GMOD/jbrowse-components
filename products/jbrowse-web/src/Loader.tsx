@@ -119,6 +119,7 @@ export function Loader() {
     async function fetchConfig() {
       const configLocation = {
         uri: configQueryParam || 'config.json',
+        originalUri: '',
       }
       let configText = ''
       try {
@@ -137,6 +138,14 @@ export function Loader() {
       if (configText) {
         try {
           config = JSON.parse(configText)
+          if (configQueryParam) {
+            const configUri = new URL(configQueryParam, window.location.origin)
+            console.log(configUri)
+            addRelativUris(config, configUri)
+            console.log(config)
+          } else {
+            addRelativUris(config, new URL(window.location.origin))
+          }
         } catch (error) {
           setConfigSnapshot(() => {
             throw new Error(`Can't parse config JSON: ${error.message}`)
@@ -265,6 +274,19 @@ export function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
+}
+
+function addRelativUris(config: Config, configUri: URL) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        addRelativUris(config[key], configUri)
+      } else if (key === 'uri') {
+        config.originalUri = config[key]
+        config[key] = new URL(config[key], configUri).href
+      }
+    }
+  }
 }
 
 function factoryReset() {
