@@ -1,5 +1,5 @@
 {
-  "name": "website",
+  "name": "@gmod/jbrowse2-website",
   "version": "0.0.1-beta.15",
   "private": true,
   "scripts": {
