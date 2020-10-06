@@ -22,13 +22,9 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "node scripts/pre-commit.js"
+      "pre-commit": "node scripts/pre-commit.js",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
