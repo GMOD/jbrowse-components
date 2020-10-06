@@ -116,6 +116,7 @@ const Polygon = observer(
             return null
           }
 
+          // TODO: fix these offsets
           let startPx = region.offsetPx - offsetPx
           let endPx = startPx + (region.end - region.start) / bpPerPx
           if (region.reversed) {

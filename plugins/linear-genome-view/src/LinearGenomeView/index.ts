@@ -810,7 +810,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const refSeqSelections: Region[] = []
 
         if (singleRefSeq) {
-          // if it's the same region
           refSeqSelections.push({
             ...self.displayedRegions[startIdx],
             start: Math.round(leftPx.offset),
@@ -848,7 +847,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
         }
-        // console.log('refseqselections', refSeqSelections)
+        console.log('refseqselections', refSeqSelections)
+        // console.log(leftPx)
+        // console.log(rightPx)
         let startOffset: BpOffset | undefined
         let endOffset: BpOffset | undefined
         self.displayedRegions.forEach((region, index) => {
@@ -861,12 +862,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 const offset = region.reversed
                   ? Math.max(region.end - seq.end, 0)
                   : Math.max(seq.start - region.start, 0)
-                startOffset = { index, offset }
+                startOffset = {
+                  index,
+                  offset,
+                }
               }
               const offset = region.reversed
                 ? Math.min(region.end - seq.start, region.end - region.start)
                 : Math.min(seq.end - region.start, region.end - region.start)
-              endOffset = { index, offset }
+              endOffset = {
+                index,
+                offset,
+              }
             }
           })
         })
@@ -892,9 +899,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       moveTo(start: BpOffset, end: BpOffset) {
         // find locations in the modellist
+        console.log(start)
+        console.log(end)
         let bpSoFar = 0
 
         if (start.index === end.index) {
+          // TODO account for Hf
           bpSoFar += end.offset - start.offset
         } else {
           const s = self.displayedRegions[start.index]
