@@ -103,7 +103,6 @@ module.exports = {
       '@docusaurus/preset-classic',
       {
         docs: {
-          homePageId: 'introduction',
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
           editUrl:
