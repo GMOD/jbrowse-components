@@ -36,7 +36,7 @@ describe('add-track', () => {
       'add-track',
       'https://mysite.com/data/simple.bam',
       '--load',
-      'trust',
+      'inPlace',
     ])
     .exit(100)
     .it('fails if URL with load flag is passed')
@@ -80,7 +80,7 @@ describe('add-track', () => {
     .it('Cannot add a track with the same track id')
   setup
     .command(['add-track', simpleBam, '--load', 'copy'])
-    .exit(30)
+    .catch(/no such file or directory/)
     .it('Cannot add a track if there is no config file')
   setup
     .do(async ctx => {

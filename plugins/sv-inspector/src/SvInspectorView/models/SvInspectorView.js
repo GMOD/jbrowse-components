@@ -243,7 +243,7 @@ export default pluginManager => {
                             JSON.parse(JSON.stringify(displayedRegions)),
                           )
                         })
-                        .catch(e => console.error(e))
+                        .catch(e => circularView.setError(e))
                     }
                   } else {
                     circularView.setDisplayedRegions(assemblyRegions)
@@ -272,13 +272,13 @@ export default pluginManager => {
               // hide any visible tracks
               if (self.circularView.tracks.length) {
                 self.circularView.tracks.forEach(track => {
-                  self.circularView.hideTrack(track.configuration)
+                  self.circularView.hideTrack(track.configuration.trackId)
                 })
               }
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                self.circularView.showTrack(generatedTrackConf, {
+                self.circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
               }

@@ -1,7 +1,7 @@
 import Path from 'svg-path-generator'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import { BreakpointViewModel, Breakend } from '../model'
-import { yPos, getPxFromCoordinate } from '../util'
+import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 
 const [LEFT] = [0, 1, 2, 3]
 
@@ -18,15 +18,18 @@ export default (pluginManager: any) => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
+  const { getSnapshot } = jbrequire('mobx-state-tree')
 
   return observer(
     ({
       model,
       trackConfigId,
+      parentRef: ref,
     }: {
       model: BreakpointViewModel
       height: number
       trackConfigId: string
+      parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views } = model
       const features = model.getMatchedBreakendFeatures(trackConfigId)
@@ -35,6 +38,14 @@ export default (pluginManager: any) => {
         features,
       )
       const [mouseoverElt, setMouseoverElt] = useState()
+      const snap = getSnapshot(model)
+      useNextFrame(snap)
+
+      let yOffset = 0
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect()
+        yOffset = rect.top
+      }
       return (
         <g
           stroke="green"
@@ -68,8 +79,10 @@ export default (pluginManager: any) => {
               const reversed2 = views[level2].pxToBp(x2).reversed
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
-              const y1 = yPos(trackConfigId, level1, views, tracks, c1)
-              const y2 = yPos(trackConfigId, level2, views, tracks, c2)
+              const y1 =
+                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
+              const y2 =
+                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
               if (!relevantAlt) {
                 console.warn(
                   'the relevant ALT allele was not found, cannot render',

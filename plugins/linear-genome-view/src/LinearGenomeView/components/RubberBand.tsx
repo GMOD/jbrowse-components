@@ -247,6 +247,7 @@ function RubberBand({
               horizontal: 'right',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>{stringify(leftBpOffset)}</Typography>
           </Popover>
@@ -266,6 +267,7 @@ function RubberBand({
               horizontal: 'left',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>{stringify(rightBpOffset)}</Typography>
           </Popover>
