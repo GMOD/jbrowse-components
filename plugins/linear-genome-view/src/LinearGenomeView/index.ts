@@ -90,6 +90,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks = cast(arr)
       },
       afterAttach() {
+        // used to remove tracks whose config has been deleted
         this.setTracks(
           self.tracks.filter(track =>
             isValidReference(() => track.configuration),
