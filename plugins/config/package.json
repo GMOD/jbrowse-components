@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-config",
-  "version": "0.0.1-beta.14",
+  "version": "0.0.1-beta.19",
   "description": "JBrowse 2 config utilities",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

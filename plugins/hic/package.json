@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-hic",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.17",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",

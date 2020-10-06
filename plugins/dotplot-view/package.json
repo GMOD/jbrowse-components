@@ -1,6 +1,6 @@
 {
   "name": "@gmod/jbrowse-plugin-dotplot-view",
-  "version": "0.0.1-beta.14",
+  "version": "0.0.1-beta.19",
   "description": "JBrowse 2 dotplot view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
