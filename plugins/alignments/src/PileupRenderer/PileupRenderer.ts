@@ -386,7 +386,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  *linkSuppReads(query: Region, records: Feature[]) {
+  *linkSuppReads(_: Region, records: Feature[]) {
     const pairCache: { [key: string]: Feature[] } = {}
 
     for (let i = 0; i < records.length; i++) {
