@@ -3,7 +3,6 @@ import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
 import { bpSpanPx } from '@gmod/jbrowse-core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
-import runner from 'mobx-run-in-reactive-context'
 import type { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
 
 function PileupRendering(props: {
@@ -185,15 +184,15 @@ function PileupRendering(props: {
         style={{ position: 'absolute', left: 0, top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}
-        onMouseDown={event => runner(() => onMouseDown(event))}
-        onMouseEnter={event => runner(() => onMouseEnter(event))}
-        onMouseOut={event => runner(() => onMouseOut(event))}
-        onMouseOver={event => runner(() => onMouseOver(event))}
-        onMouseUp={event => runner(() => onMouseUp(event))}
-        onMouseLeave={event => runner(() => onMouseLeave(event))}
-        onMouseMove={event => runner(() => mouseMove(event))}
-        onClick={event => runner(() => onClick(event))}
-        onContextMenu={event => runner(() => onContextMenu(event))}
+        onMouseDown={event => onMouseDown(event)}
+        onMouseEnter={event => onMouseEnter(event)}
+        onMouseOut={event => onMouseOut(event)}
+        onMouseOver={event => onMouseOver(event)}
+        onMouseUp={event => onMouseUp(event)}
+        onMouseLeave={event => onMouseLeave(event)}
+        onMouseMove={event => mouseMove(event)}
+        onClick={event => onClick(event)}
+        onContextMenu={event => onContextMenu(event)}
         onFocus={() => {}}
         onBlur={() => {}}
       />
