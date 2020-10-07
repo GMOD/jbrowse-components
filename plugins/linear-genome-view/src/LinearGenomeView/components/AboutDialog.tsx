@@ -211,24 +211,22 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
           {currHidden.length ? (
             <>
               <Typography color="textSecondary">
-                Note: Some entries were hidden since there were many entries
+                {`Note: Some entries were hidden (${currHidden}), click button below to reveal`}
               </Typography>
               <Button
-                onClick={() => {
-                  setCurrHidden([])
-                }}
+                variant="contained"
+                color="primary"
+                onClick={() => setCurrHidden([])}
               >
                 {`Show ${currHidden}`}
               </Button>
             </>
           ) : (
-            <>
-              <Button
-                onClick={() => {
-                  setCurrHidden(hidden)
-                }}
-              >{`Hide ${hidden}`}</Button>
-            </>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => setCurrHidden(hidden)}
+            >{`Hide ${hidden}`}</Button>
           )}
         </>
       ) : null}
