@@ -34,6 +34,20 @@ function debounce(func, wait) {
   return debounced
 }
 
+function revertUris(config) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        revertUris(config[key])
+      } else if (key === 'uri') {
+        // uri : volvox.2bit
+        config[key] = config.originalUri
+        delete config.originalUri
+      }
+    }
+  }
+}
+
 const JBrowse = observer(({ pluginManager }) => {
   const [, setSession] = useQueryParam('session', StringParam)
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
@@ -89,7 +103,10 @@ const JBrowse = observer(({ pluginManager }) => {
   useEffect(() => {
     onSnapshot(rootModel, async snapshot => {
       if (adminMode) {
-        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
+        const config = JSON.parse(JSON.stringify(snapshot.jbrowse))
+        revertUris(config)
+        const payload = { adminKey: adminKeyParam, config }
+
         const response = await fetch('/updateConfig', {
           method: 'POST',
           headers: {
