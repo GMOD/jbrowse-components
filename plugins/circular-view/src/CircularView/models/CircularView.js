@@ -295,6 +295,22 @@ export default pluginManager => {
         self.tracks.push(track)
       },
 
+      addTrackConf(configuration, initialSnapshot) {
+        const { type } = configuration
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) {
+          throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+        })
+        self.tracks.push(track)
+      },
+
       hideTrack(trackId) {
         const IT = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(IT, getRoot(self), trackId)

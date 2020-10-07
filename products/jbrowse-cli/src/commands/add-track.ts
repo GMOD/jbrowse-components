@@ -1,7 +1,9 @@
+/* eslint curly:error */
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import path from 'path'
 import fetch from 'node-fetch'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface Track {
@@ -34,7 +36,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
     `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite`,
+    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
   ]
 
@@ -84,8 +86,8 @@ export default class AddTrack extends JBrowseCommand {
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or trust to leave track alone',
-      options: ['copy', 'symlink', 'move', 'trust'],
+        'Required flag when using a local file. Choose how to manage the track. Copy, symlink, or move the track to the JBrowse directory. Or inPlace to leave track alone',
+      options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
     skipCheck: flags.boolean({
       description:
@@ -125,6 +127,7 @@ export default class AddTrack extends JBrowseCommand {
     } = await this.resolveFileLocationWithProtocol(
       argsTrack,
       !(skipCheck || force),
+      load === 'inPlace',
     )
 
     let trackLocation
@@ -137,7 +140,7 @@ export default class AddTrack extends JBrowseCommand {
       }
 
       trackLocation =
-        load === 'trust'
+        load === 'inPlace'
           ? location
           : path.join(configDirectory, path.basename(location))
     } else if (local) {
@@ -145,7 +148,9 @@ export default class AddTrack extends JBrowseCommand {
         'Local file detected. Please select a load option for the track with the --load flag',
         { exit: 110 },
       )
-    } else trackLocation = location
+    } else {
+      trackLocation = location
+    }
 
     const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
@@ -156,29 +161,14 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // only add track if there is an existing config.json
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error(
-        'No existing config file found, run add-assembly first to bootstrap config',
-        {
-          exit: 30,
-        },
-      )
-    }
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 140 })
-    }
+    const configContents: Config = await this.readJsonFile(target)
+
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
         exit: 150,
       })
-    } else if (configContents.assemblies.length > 1 && !assemblyNames) {
+    }
+    if (configContents.assemblies.length > 1 && !assemblyNames) {
       this.error(
         'Too many assemblies, cannot default to one. Please specify the assembly with the --assemblyNames flag',
       )
@@ -193,11 +183,15 @@ export default class AddTrack extends JBrowseCommand {
 
     if (trackId) {
       this.debug(`Track is :${trackId}`)
-    } else trackId = path.basename(location, path.extname(location)) // get filename and set as name
+    } else {
+      trackId = path.basename(location, path.extname(location))
+    } // get filename and set as name
 
     if (name) {
       this.debug(`Name is: ${name}`)
-    } else name = trackId
+    } else {
+      name = trackId
+    }
 
     if (assemblyNames) {
       this.debug(`Assembly name(s) is :${assemblyNames}`)
@@ -206,14 +200,7 @@ export default class AddTrack extends JBrowseCommand {
       this.log(`Inferred default assembly name ${assemblyNames}`)
     }
 
-    let configObj = {}
-    if (config) {
-      try {
-        configObj = JSON.parse(config)
-      } catch (error) {
-        this.error('Could not parse provided JSON object')
-      }
-    }
+    const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
       type,
       trackId,
@@ -226,7 +213,9 @@ export default class AddTrack extends JBrowseCommand {
     this.debug(
       `Track location: ${location}, index: ${adapter ? adapter.index : ''}`,
     )
-    if (description) trackConfig.description = description
+    if (description) {
+      trackConfig.description = description
+    }
 
     // any special track modifications go here
     switch (type) {
@@ -274,11 +263,13 @@ export default class AddTrack extends JBrowseCommand {
         configContents.tracks[idx] = trackConfig
       } else {
         this.error(
-          `Cannot add track with id ${trackId}, a track with that id already exists.`,
+          `Cannot add track with id ${trackId}, a track with that id already exists (use --force to override)`,
           { exit: 160 },
         )
       }
-    } else configContents.tracks.push(trackConfig)
+    } else {
+      configContents.tracks.push(trackConfig)
+    }
 
     // copy/symlinks/moves the track into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location))
@@ -286,17 +277,14 @@ export default class AddTrack extends JBrowseCommand {
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) {
+              return undefined
+            }
             const dataLocation = path.join(
               configDirectory,
               path.basename(filePath),
             )
-
-            try {
-              await fsPromises.copyFile(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 170 })
-            }
+            return fsPromises.copyFile(filePath, dataLocation)
           }),
         )
         break
@@ -304,17 +292,14 @@ export default class AddTrack extends JBrowseCommand {
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) {
+              return undefined
+            }
             const dataLocation = path.join(
               configDirectory,
               path.basename(filePath),
             )
-
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 170 })
-            }
+            return fsPromises.symlink(filePath, dataLocation)
           }),
         )
         break
@@ -322,17 +307,14 @@ export default class AddTrack extends JBrowseCommand {
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
+            if (!filePath) {
+              return undefined
+            }
             const dataLocation = path.join(
               configDirectory,
               path.basename(filePath),
             )
-
-            try {
-              await fsPromises.rename(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 170 })
-            }
+            return fsPromises.rename(filePath, dataLocation)
           }),
         )
         break
@@ -340,10 +322,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    await this.writeJsonFile(target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
@@ -352,7 +331,11 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  async resolveFileLocationWithProtocol(location: string, check = true) {
+  async resolveFileLocationWithProtocol(
+    location: string,
+    check = true,
+    warn = false,
+  ) {
     let locationUrl: URL | undefined
     let locationPath: string | undefined
     let locationObj: {
@@ -390,11 +373,11 @@ export default class AddTrack extends JBrowseCommand {
     }
     if (locationPath) {
       const filePath = path.relative(process.cwd(), locationPath)
-      //   if (filePath.startsWith('..')) {
-      //     this.warn(
-      //       `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-      //     )
-      //   }
+      if (warn && filePath.startsWith('..')) {
+        this.warn(
+          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
+        )
+      }
       locationObj = {
         location: filePath,
         protocol: 'uri',
@@ -440,7 +423,9 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.gff3?$/i.test(fileName)) return {}
+    if (/\.gff3?$/i.test(fileName)) {
+      return {}
+    }
 
     if (/\.gff3?\.b?gz$/i.test(fileName)) {
       return {
@@ -461,9 +446,13 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.gtf?$/i.test(fileName)) return {}
+    if (/\.gtf?$/i.test(fileName)) {
+      return {}
+    }
 
-    if (/\.vcf$/i.test(fileName)) return {}
+    if (/\.vcf$/i.test(fileName)) {
+      return {}
+    }
 
     if (/\.vcf\.b?gz$/i.test(fileName)) {
       return {
@@ -484,15 +473,27 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.vcf\.idx$/i.test(fileName)) return {}
+    if (/\.vcf\.idx$/i.test(fileName)) {
+      return {}
+    }
 
-    if (/\.bed$/i.test(fileName)) return {}
+    if (/\.bed$/i.test(fileName)) {
+      return {}
+    }
 
-    if (/\.bed\.b?gz$/i.test(fileName)) return {}
-    if (/\.bed.b?gz.tbi$/i.test(fileName)) return {}
-    if (/\.bed.b?gz.csi/i.test(fileName)) return {}
+    if (/\.bed\.b?gz$/i.test(fileName)) {
+      return {}
+    }
+    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
+      return {}
+    }
+    if (/\.bed.b?gz.csi/i.test(fileName)) {
+      return {}
+    }
 
-    if (/\.bed\.idx$/i.test(fileName)) return {}
+    if (/\.bed\.idx$/i.test(fileName)) {
+      return {}
+    }
 
     if (/\.(bb|bigbed)$/i.test(fileName)) {
       return {
@@ -549,7 +550,9 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.sizes$/i.test(fileName)) return {}
+    if (/\.sizes$/i.test(fileName)) {
+      return {}
+    }
 
     if (/\/trackData.jsonz?$/i.test(fileName)) {
       return {
@@ -569,8 +572,12 @@ export default class AddTrack extends JBrowseCommand {
   // find way to import this instead of having to paste it
   guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
-      if (protocol === 'uri') return { uri: location }
-      if (protocol === 'localPath') return { localPath: location }
+      if (protocol === 'uri') {
+        return { uri: location }
+      }
+      if (protocol === 'localPath') {
+        return { localPath: location }
+      }
       throw new Error(`invalid protocol ${protocol}`)
     }
     if (/\.bam$/i.test(fileName)) {

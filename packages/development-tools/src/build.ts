@@ -1,6 +1,5 @@
 import path from 'path'
 import { pascalCase } from 'change-case'
-import webpack from 'webpack'
 import CopyPlugin from 'copy-webpack-plugin'
 
 import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
@@ -66,11 +65,6 @@ const getStyleLoaders = (cssOptions: any, preProcessor?: string) => {
 }
 
 export function baseJBrowsePluginWebpackConfig(
-  myWebpack: {
-    optimize: {
-      LimitChunkCountPlugin: typeof webpack.optimize.LimitChunkCountPlugin
-    }
-  },
   buildDir: string,
   packageJson: PackageJson,
 ) {

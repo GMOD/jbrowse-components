@@ -74,7 +74,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @param result - object containing the results of calling the `render` method
    * @param features - Map of `feature.id() -> feature`
    */
-  serializeResultsInWorker(result: Record<string, any>, args: RenderArgs) {
+  serializeResultsInWorker(/* result: Record<string, any>, args: RenderArgs */) {
     // does nothing currently
   }
 
@@ -122,7 +122,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(results, args)
+    this.serializeResultsInWorker(/* results, args */)
     return results
   }
 
@@ -175,7 +175,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
     return rpcManager.call(args.sessionId, 'freeResources', serializedArgs)
   }
 
-  freeResourcesInWorker(args: RenderArgs) {
+  freeResourcesInWorker(/* args: RenderArgs */) {
     /* stub method */
   }
 }

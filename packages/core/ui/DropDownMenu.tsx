@@ -42,10 +42,7 @@ function DropDownMenu({
     setOpen(!open)
   }
 
-  function handleMenuItemClick(
-    event: React.MouseEvent<HTMLLIElement, MouseEvent>,
-    callback: Function,
-  ) {
+  function handleMenuItemClick(_event: unknown, callback: Function) {
     callback(session)
     handleClose()
   }

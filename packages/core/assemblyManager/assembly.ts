@@ -42,7 +42,6 @@ const refNameColors = [
 
 async function loadRefNameMap(
   assembly: Assembly,
-  adapterId: string,
   adapterConf: unknown,
   options: BaseOptions,
   signal?: AbortSignal,
@@ -125,7 +124,6 @@ export interface BaseOptions {
 }
 interface CacheData {
   adapterConf: unknown
-  adapterId: string
   self: Assembly
   sessionId: string
   options: BaseOptions
@@ -138,10 +136,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       abortSignal?: AbortSignal,
       statusCallback?: Function,
     ) {
-      const { adapterConf, adapterId, self, options } = args
+      const { adapterConf, self, options } = args
       return loadRefNameMap(
         self,
-        adapterId,
         adapterConf,
         { ...options, statusCallback },
         abortSignal,
@@ -224,7 +221,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .actions(self => ({
-      setLoading(abortController: AbortController) {},
+      setLoading() {},
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
@@ -268,7 +265,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           adapterId,
           {
             adapterConf,
-            adapterId,
             self: self as Assembly,
             options: rest,
           } as CacheData,

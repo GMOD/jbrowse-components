@@ -124,7 +124,7 @@ export default (pluginManager: PluginManager) => {
       },
 
       setLoaded(flag: boolean) {
-        self.isLoaded = true
+        self.isLoaded = flag
       },
 
       setRowMenuPosition(newPosition: RowMenuPosition) {

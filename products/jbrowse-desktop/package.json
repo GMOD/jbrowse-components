@@ -47,7 +47,7 @@
     "electron-is-dev": "^1.1.0",
     "json-stable-stringify": "^1.0.1",
     "mobx": "^5.10.1",
-    "mobx-react": "^6.0.3",
+    "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "mst-middlewares": "^3.10.2",
     "node-fetch": "^2.6.0",
@@ -91,7 +91,7 @@
   },
   "homepage": "./",
   "build": {
-    "electronVersion": "9.1.1",
+    "electronVersion": "9.3.1",
     "extraMetadata": {
       "main": "build/electron.js"
     },

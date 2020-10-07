@@ -29,9 +29,7 @@ interface GeneNameToRows {
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1 }),
-    fill: (data: BaseOptions, signal?: AbortSignal) => {
-      return this.setup({ ...data, signal })
-    },
+    fill: () => this.setup(),
   })
 
   private initialized = false
@@ -66,7 +64,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     this.assemblyNames = assemblyNames
   }
 
-  async setup(opts?: BaseOptions) {
+  async setup() {
     if (!this.initialized) {
       const text = (await this.mcscanAnchorsLocation.readFile('utf8')) as string
       text.split('\n').forEach((line: string, index: number) => {
@@ -94,7 +92,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts?: BaseOptions) {
+  async getRefNames() {
     // we cannot determine this accurately
     return []
   }

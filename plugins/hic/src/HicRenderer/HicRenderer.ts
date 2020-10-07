@@ -5,7 +5,7 @@ import ServerSideRendererType, {
   ResultsDeserialized,
   ResultsSerialized,
 } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
 import { Region } from '@gmod/jbrowse-core/util/types'
 import {
   createCanvas,
@@ -139,11 +139,7 @@ export default class HicRenderer extends ServerSideRendererType {
     return features as any
   }
 
-  serializeResultsInWorker(
-    result: { html: string },
-    features: Map<string, Feature>,
-    args: RenderArgsDeserialized,
-  ): ResultsSerialized {
+  serializeResultsInWorker(result: { html: string }): ResultsSerialized {
     const serialized = ({ ...result } as unknown) as ResultsSerialized
     return serialized
   }

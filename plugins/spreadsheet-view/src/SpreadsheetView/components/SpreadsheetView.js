@@ -1,4 +1,8 @@
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import ImportWizardFactory from './ImportWizard'
+import SpreadsheetFactory from './Spreadsheet'
+import GlobalFilterControlsFactory from './GlobalFilterControls'
+import ColumnFilterControlsFactory from './ColumnFilterControls'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -9,10 +13,10 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
 
-  const ImportWizard = jbrequire(require('./ImportWizard'))
-  const Spreadsheet = jbrequire(require('./Spreadsheet'))
-  const GlobalFilterControls = jbrequire(require('./GlobalFilterControls'))
-  const ColumnFilterControls = jbrequire(require('./ColumnFilterControls'))
+  const ImportWizard = jbrequire(ImportWizardFactory)
+  const Spreadsheet = jbrequire(SpreadsheetFactory)
+  const GlobalFilterControls = jbrequire(GlobalFilterControlsFactory)
+  const ColumnFilterControls = jbrequire(ColumnFilterControlsFactory)
 
   const headerHeight = 52
   const colFilterHeight = 46

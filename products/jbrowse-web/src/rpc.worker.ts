@@ -25,7 +25,7 @@ let jbPluginManager: PluginManager | undefined
 // waits for a message from the main thread containing our configuration,
 // which must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // listen for the configuration
     self.onmessage = (event: MessageEvent) => {
       resolve(event.data as WorkerConfiguration)
@@ -78,7 +78,7 @@ function wrapForRpc(
     // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager =>
+      .then(() =>
         func({
           ...args,
           statusCallback: (message: string) => {

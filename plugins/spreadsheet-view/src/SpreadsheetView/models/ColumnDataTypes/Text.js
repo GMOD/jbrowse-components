@@ -1,4 +1,5 @@
 import ClearIcon from '@material-ui/icons/Clear'
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -10,9 +11,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util/mst-reflection',
   )
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const OPERATIONS = [
     'equals',

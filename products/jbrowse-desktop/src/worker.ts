@@ -108,7 +108,7 @@ function wrapForRpc(
     // logBuffer.push(['rpc-call', myId, func.name, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager =>
+      .then(() =>
         func({
           ...args,
           statusCallback: (message: string) => {

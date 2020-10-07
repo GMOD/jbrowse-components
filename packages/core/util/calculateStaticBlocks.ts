@@ -21,7 +21,11 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
-  width = window.innerWidth,
+
+  // on the main thread, window.innerWidth is used because this reduces
+  // recalculating the blocks, otherwise, model.width for cases such as
+  // off-main-thread
+  width = window.innerWidth || model.width,
 ) {
   const {
     offsetPx,

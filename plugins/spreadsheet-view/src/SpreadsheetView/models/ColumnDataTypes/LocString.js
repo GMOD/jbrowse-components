@@ -4,6 +4,7 @@ import {
 } from '@gmod/jbrowse-core/util/range'
 import ClearIcon from '@material-ui/icons/Clear'
 import { when } from '@gmod/jbrowse-core/util'
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -19,9 +20,7 @@ export default pluginManager => {
     '@gmod/jbrowse-core/util',
   )
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const IconButton = jbrequire('@material-ui/core/IconButton')
