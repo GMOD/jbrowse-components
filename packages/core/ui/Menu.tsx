@@ -98,6 +98,7 @@ export interface MenuSubHeader {
 
 export interface BaseMenuItem {
   label: string
+  priority?: number
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean

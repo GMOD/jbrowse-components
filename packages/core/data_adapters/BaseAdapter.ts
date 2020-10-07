@@ -89,7 +89,7 @@ export abstract class BaseFeatureDataAdapter {
    */
   public abstract freeResources(region: Region): void
 
-  public async getInfo(opts?: BaseOptions): Promise<unknown> {
+  public async getInfo(_?: BaseOptions): Promise<unknown> {
     return null
   }
 

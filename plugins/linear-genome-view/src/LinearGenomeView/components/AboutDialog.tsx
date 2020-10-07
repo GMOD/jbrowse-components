@@ -1,6 +1,5 @@
-/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any */
+/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any,no-nested-ternary */
 import React, { useState, useEffect } from 'react'
-import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
 import { getSession } from '@gmod/jbrowse-core/util'
 import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
@@ -26,9 +25,6 @@ export const useStyles = makeStyles(theme => ({
   },
   expandIcon: {
     color: '#FFFFFF',
-  },
-  paperRoot: {
-    background: theme.palette.grey[100],
   },
   field: {
     display: 'flex',
@@ -103,7 +99,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     descriptions,
   } = props
 
-  const tags = Object.values(attributes)
+  const tags: string[] = Object.values(attributes)
     .filter(val => val !== undefined)
     .map(val => {
       return val.tag
@@ -114,9 +110,9 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     if (!accum[entry]) accum[entry] = 1
     else accum[entry]++
     return accum
-  }, {})
+  }, {} as { [key: string]: number })
   const hidden = Object.entries(counts)
-    .filter(([key, value]) => {
+    .filter(([_, value]) => {
       return value > 50
     })
     .map(entry => entry[0])
