@@ -6,7 +6,6 @@ import { Region } from '@gmod/jbrowse-core/util/types'
 import { useTheme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React from 'react'
-import { blue, green, red, yellow } from '@material-ui/core/colors'
 
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
@@ -92,28 +91,27 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
           style.boxSizing = 'border-box'
           style.borderCollapse = 'collapse'
         }
-        const dark = theme.palette.type === 'dark'
         switch (letter.toLocaleLowerCase()) {
           case 'a': {
-            const baseColor = green[dark ? '300' : '500']
+            const baseColor = '#00bf00'
             style.backgroundColor = baseColor
             style.color = contrastingTextColor(baseColor)
             break
           }
           case 'g': {
-            const baseColor = yellow[dark ? '300' : '800']
+            const baseColor = '#ffa500'
             style.backgroundColor = baseColor
             style.color = contrastingTextColor(baseColor)
             break
           }
           case 'c': {
-            const baseColor = blue[dark ? '300' : '500']
+            const baseColor = '#4747ff'
             style.backgroundColor = baseColor
             style.color = contrastingTextColor(baseColor)
             break
           }
           case 't': {
-            const baseColor = red[dark ? '300' : '500']
+            const baseColor = '#f00'
             style.backgroundColor = baseColor
             style.color = contrastingTextColor(baseColor)
             break
