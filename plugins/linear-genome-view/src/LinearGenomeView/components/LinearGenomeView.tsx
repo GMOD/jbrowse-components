@@ -41,6 +41,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   // the dialog scrolls the LGV
   const aboutTrack = model.tracks.find(t => t.showAbout)
   const dialogTrack = model.tracks.find(t => t.DialogComponent)
+  console.log({ dialogTrack })
 
   return !initialized ? (
     <ImportForm model={model} />

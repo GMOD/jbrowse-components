@@ -39,8 +39,8 @@ export const sortFeature = (
       const tag = sortedBy.tag as string
       featuresInCenterLine.sort((a, b) => {
         return isCram
-          ? a.get('tags')[tag] - b.get('tags')[tag]
-          : a.get(tag) - b.get(tag)
+          ? (b.get('tags')[tag] || 0) - (a.get('tags')[tag] || 0)
+          : (b.get(tag) || 0) - (a.get(tag) || 0)
       })
       break
     }

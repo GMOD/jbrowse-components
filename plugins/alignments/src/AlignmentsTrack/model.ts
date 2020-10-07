@@ -130,6 +130,11 @@ const stateModelFactory = (
       }
     })
     .actions(self => ({
+      setDialogComponent(dlg: unknown) {
+        self.DialogComponent = dlg
+        self.PileupTrack.setDialogComponent(dlg)
+        self.SNPCoverageTrack.setDialogComponent(dlg)
+      },
       afterAttach() {
         addDisposer(
           self,
