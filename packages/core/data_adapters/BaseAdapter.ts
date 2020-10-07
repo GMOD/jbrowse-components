@@ -90,13 +90,21 @@ export abstract class BaseFeatureDataAdapter {
   public abstract freeResources(region: Region): void
 
   /**
-   * Return info fetched from a track header for example, info that would not
-   * simply be in the config of the file. The return value can be
-   * `{tag:string, data: any}[]` e.g. list of tags with their values
-   * which is how VCF,BAM,CRAM return values for getInfo
-   * or it can be a nested JSON object
+   * Return "header info" that is fetched from the data file, or other info
+   * that would not simply be in the config of the file. The return value can
+   * be `{tag:string, data: any}[]` e.g. list of tags with their values which
+   * is how VCF,BAM,CRAM return values for getInfo or it can be a nested JSON
+   * object
    */
-  public async getInfo(_?: BaseOptions): Promise<unknown> {
+  public async getHeader(_?: BaseOptions): Promise<unknown> {
+    return null
+  }
+
+  /**
+   * Return info that is primarily used for interpreting the data that is there,
+   * primarily in reference to being used for augmenting feature details panels
+   */
+  public async getMetadata(_?: BaseOptions): Promise<unknown> {
     return null
   }
 

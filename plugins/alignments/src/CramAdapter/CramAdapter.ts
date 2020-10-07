@@ -78,7 +78,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  async getInfo(opts?: BaseOptions) {
+  async getHeader(opts?: BaseOptions) {
     return this.cram.cram.getSamHeader(opts)
   }
 
