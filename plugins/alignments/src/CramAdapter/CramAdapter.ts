@@ -79,13 +79,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getInfo(opts?: BaseOptions) {
-    const samHeader = await this.cram.cram.getSamHeader(opts)
-    const rest = samHeader.filter((l: { tag: string }) => l.tag !== 'SQ')
-    // hide sqlines from info box by default
-    const sqLines = samHeader
-      .filter((l: { tag: string }) => l.tag === 'SQ')
-      .map((l: { tag: string }) => ({ ...l, hidden: true }))
-    return [...rest, ...sqLines]
+    return this.cram.cram.getSamHeader(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {

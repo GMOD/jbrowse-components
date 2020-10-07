@@ -87,7 +87,6 @@ interface AttributeProps {
   prepend?: string
   formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
-  showHidden?: boolean
 }
 
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
@@ -96,7 +95,6 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     attributes,
     prepend = '',
     omit: propOmit = [],
-    showHidden = false,
     formatter = (value: unknown) => (
       <SanitizedHTML
         html={isObject(value) ? JSON.stringify(value) : String(value)}
@@ -104,6 +102,25 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     ),
     descriptions,
   } = props
+
+  const tags = Object.values(attributes)
+    .filter(val => val !== undefined)
+    .map(val => {
+      return val.tag
+    })
+    .filter(val => !!val)
+
+  const counts = tags.reduce((accum, entry) => {
+    if (!accum[entry]) accum[entry] = 1
+    else accum[entry]++
+    return accum
+  }, {})
+  const hidden = Object.entries(counts)
+    .filter(([key, value]) => {
+      return value > 50
+    })
+    .map(entry => entry[0])
+  const [currHidden, setCurrHidden] = useState(hidden)
 
   const SimpleValue = ({ name, value }: { name: string; value: any }) => {
     const description = descriptions && descriptions[name]
@@ -151,7 +168,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
         .map(([key, value], index) => {
           if (value.tag && value.data) {
-            return value.hidden && !showHidden ? null : (
+            return currHidden.includes(value.tag) ? null : (
               <SimpleValue
                 key={`${value.tag}_${index}`}
                 name={value.tag}
@@ -193,9 +210,37 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
             />
           )
         })}
+      {hidden.length ? (
+        <>
+          {currHidden.length ? (
+            <>
+              <Typography color="textSecondary">
+                Note: Some entries were hidden since there were many entries
+              </Typography>
+              <Button
+                onClick={() => {
+                  setCurrHidden([])
+                }}
+              >
+                {`Show ${currHidden}`}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={() => {
+                  setCurrHidden(hidden)
+                }}
+              >{`Hide ${hidden}`}</Button>
+            </>
+          )}
+        </>
+      ) : null}
     </>
   )
 }
+
+type FileInfo = Record<string, unknown>
 
 export default function AboutDialog({
   model,
@@ -204,22 +249,29 @@ export default function AboutDialog({
   model: BaseTrackModel
   handleClose: () => void
 }) {
-  const [info, setInfo] = useState<Record<string, any>>()
-  const [showHidden, setShowHidden] = useState(false)
-  const data = getSnapshot(model.configuration)
+  const [info, setInfo] = useState<FileInfo>()
+  const [error, setError] = useState<Error>()
+  const conf = getConf(model)
   const session = getSession(model)
   const { rpcManager } = session
   const sessionId = getRpcSessionId(model)
 
   useEffect(() => {
     const aborter = new AbortController()
+    const { signal } = aborter
     ;(async () => {
-      const result = (await rpcManager.call(sessionId, 'CoreGetInfo', {
-        adapterConfig: getSnapshot(model.configuration.adapter),
-        signal: aborter.signal,
-      })) as Record<string, unknown>
-      setInfo(result)
+      try {
+        const adapterConfig = getConf(model, 'adapter')
+        const result = await rpcManager.call(sessionId, 'CoreGetInfo', {
+          adapterConfig,
+          signal,
+        })
+        setInfo(result as FileInfo)
+      } catch (e) {
+        setError(e)
+      }
     })()
+
     return () => {
       aborter.abort()
     }
@@ -244,18 +296,17 @@ export default function AboutDialog({
       <DialogTitle id="alert-dialog-title">{trackName}</DialogTitle>
       <DialogContent>
         <BaseCard title="Configuration">
-          <Attributes attributes={data} />
+          <Attributes attributes={conf} />
         </BaseCard>
         {info !== null ? (
           <BaseCard title="File info">
-            {info === undefined ? (
+            {error ? (
+              <Typography color="error">{`${error}`}</Typography>
+            ) : info === undefined ? (
               'Loading file data...'
             ) : (
-              <Attributes attributes={info} showHidden={showHidden} />
+              <Attributes attributes={info} />
             )}
-            <Button onClick={() => setShowHidden(hidden => !hidden)}>
-              {!showHidden ? 'Show hidden entries' : 'Hide hidden entries'}
-            </Button>
           </BaseCard>
         ) : null}
       </DialogContent>
