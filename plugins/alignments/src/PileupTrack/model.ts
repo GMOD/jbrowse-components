@@ -18,7 +18,7 @@ import {
   blockBasedTrackModel,
   LinearGenomeViewModel,
 } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, cast, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
@@ -31,7 +31,6 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 import ColorByTagDlg from './components/ColorByTag'
-import runner from 'mobx-run-in-reactive-context'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -52,7 +51,6 @@ const stateModelFactory = (
       types.model({
         type: types.literal('PileupTrack'),
         configuration: ConfigurationReference(configSchema),
-        colorScheme: '',
         showSoftClipping: false,
         viewAsPairs: false,
         linkSuppReads: false,
@@ -62,6 +60,12 @@ const stateModelFactory = (
             pos: types.number,
             refName: types.string,
             assemblyName: types.string,
+          }),
+        ),
+        colorScheme: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
           }),
         ),
       }),
@@ -186,8 +190,9 @@ const stateModelFactory = (
         self.sortedBy = sort
         self.ready = false
       },
-      setColorScheme(colorScheme: string) {
-        self.colorScheme = colorScheme
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        console.log({ colorScheme })
+        self.colorScheme = cast(colorScheme)
       },
     }))
     .actions(self => {
@@ -328,39 +333,37 @@ const stateModelFactory = (
                 {
                   label: 'Normal',
                   onClick: () => {
-                    self.setColorScheme('normal')
+                    self.setColorScheme({ type: 'normal' })
                   },
                 },
                 {
                   label: 'Mapping quality',
                   onClick: () => {
-                    self.setColorScheme('mappingQuality')
+                    self.setColorScheme({ type: 'mappingQuality' })
                   },
                 },
                 {
                   label: 'Strand',
                   onClick: () => {
-                    self.setColorScheme('strand')
+                    self.setColorScheme({ type: 'strand' })
                   },
                 },
                 {
                   label: 'Pair orientation',
                   onClick: () => {
-                    self.setColorScheme('pairOrientation')
+                    self.setColorScheme({ type: 'pairOrientation' })
                   },
                 },
                 {
                   label: 'Insert size',
                   onClick: () => {
-                    self.setColorScheme('insertSize')
+                    self.setColorScheme({ type: 'insertSize' })
                   },
                 },
                 {
                   label: 'Color by tag',
                   onClick: () => {
-                    runner(() => {
                     self.setDialogComponent(ColorByTagDlg)
-                    })
                   },
                 },
               ],

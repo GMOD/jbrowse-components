@@ -40,7 +40,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   // rendered as a child of the TracksContainer, then clicking on
   // the dialog scrolls the LGV
   const aboutTrack = model.tracks.find(t => t.showAbout)
-  const dialogTrack = model.tracks.find(t => !!t.DialogComponent)
+  const dialogTrack = model.tracks.find(t => t.DialogComponent)
 
   return !initialized ? (
     <ImportForm model={model} />
@@ -55,7 +55,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
 
       {dialogTrack ? (
         <dialogTrack.DialogComponent
-          model={aboutTrack}
+          model={dialogTrack}
           handleClose={() => dialogTrack.setDialogComponent(undefined)}
         />
       ) : null}

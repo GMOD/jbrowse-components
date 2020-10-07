@@ -157,6 +157,15 @@ const stateModelFactory = (
             }
           }),
         )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.setDialogComponent(
+              self.PileupTrack.DialogComponent ||
+                self.SNPCoverageTrack.DialogComponent,
+            )
+          }),
+        )
       },
       setSNPCoverageTrack(trackConfig: AnyConfigurationModel) {
         self.SNPCoverageTrack = {

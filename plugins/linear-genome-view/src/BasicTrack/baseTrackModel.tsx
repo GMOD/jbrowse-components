@@ -194,7 +194,7 @@ const BaseTrack = types
     },
   }))
   .actions(self => ({
-    setDialogComponent(dlg: React.FC | undefined) {
+    setDialogComponent(dlg: any) {
       self.DialogComponent = dlg
     },
     setHeight(trackHeight: number) {

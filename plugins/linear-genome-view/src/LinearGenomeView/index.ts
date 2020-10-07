@@ -128,6 +128,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get trackHeights() {
         return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
       },
+
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
