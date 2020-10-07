@@ -138,14 +138,8 @@ export function Loader() {
       if (configText) {
         try {
           config = JSON.parse(configText)
-          if (configQueryParam) {
-            const configUri = new URL(configQueryParam, window.location.origin)
-            console.log(configUri)
-            addRelativUris(config, configUri)
-            console.log(config)
-          } else {
-            addRelativUris(config, new URL(window.location.origin))
-          }
+          const configUri = new URL(configLocation.uri, window.location.origin)
+          addRelativUris(config, configUri)
         } catch (error) {
           setConfigSnapshot(() => {
             throw new Error(`Can't parse config JSON: ${error.message}`)
