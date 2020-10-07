@@ -197,6 +197,7 @@ export function Loader() {
               Date.now(),
             ).toISOString()}`
             sessionStorage.clear()
+            console.log('setting')
             sessionStorage.setItem(localId, JSON.stringify(fromShared))
             setData(localId)
           } else {
@@ -233,7 +234,7 @@ export function Loader() {
       setSessString(data || '') // setting querys do not count for change rerender
     }
     ;(async () => {
-      if (sessionQueryParam) {
+      if (sessionQueryParam && !loadingSharedSession) {
         const foundLocalSession =
           localStorage.getItem(sessionQueryParam) ||
           sessionStorage.getItem(sessionQueryParam)
@@ -254,7 +255,14 @@ export function Loader() {
         }
       }
     })()
-  }, [bc1, bc2, sessionQueryParam, setPasswordQueryParam, setSessionQueryParam])
+  }, [
+    bc1,
+    bc2,
+    sessionQueryParam,
+    setPasswordQueryParam,
+    setSessionQueryParam,
+    loadingSharedSession,
+  ])
 
   useEffect(() => {
     async function fetchConfig() {

@@ -80,7 +80,7 @@ const Share = observer((props: { session: any }) => {
     const data = new FormData()
     const encryptedSession = encrypt(sess)
     data.append('session', encryptedSession.encryptedData)
-    data.append('dateShared', `${new Date(Date.now()).toISOString()}`)
+    data.append('dateShared', `${Date.now()}`)
     data.append('referer', locationUrl.href)
 
     let response
