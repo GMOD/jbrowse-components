@@ -41,7 +41,9 @@ export function getPluginManager(initialState, adminMode = false, sessionName) {
 }
 
 // resolves a file to the filesystem
-const getFile = url => new LocalFile(require.resolve(`../../${url}`))
+const getFile = url => {
+  return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+}
 
 // fakes server responses from local file object with fetchMock
 export const readBuffer = async request => {
