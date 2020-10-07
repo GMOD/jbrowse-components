@@ -31,6 +31,7 @@ import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configur
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 import ColorByTagDlg from './components/ColorByTag'
+import SortByTagDlg from './components/SortByTag'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -58,6 +59,7 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             pos: types.number,
+            tag: types.maybe(types.string),
             refName: types.string,
             assemblyName: types.string,
           }),
@@ -161,7 +163,7 @@ const stateModelFactory = (
         self.configuration = configuration
       },
 
-      async sortSelected(type: string) {
+      setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
           return
@@ -174,20 +176,13 @@ const stateModelFactory = (
           return
         }
 
-        this.setSortedBy({
+        self.sortedBy = {
           type,
           pos: centerBp,
           refName: centerRefName,
           assemblyName,
-        })
-      },
-      setSortedBy(sort: {
-        type: string
-        pos: number
-        refName: string
-        assemblyName: string
-      }) {
-        self.sortedBy = sort
+          tag,
+        }
         self.ready = false
       },
       setColorScheme(colorScheme: { type: string; tag?: string }) {
@@ -250,10 +245,6 @@ const stateModelFactory = (
           return contextMenuItems
         },
 
-        get sortOptions() {
-          return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
-        },
-
         get TrackBlurb() {
           return PileupTrackBlurb
         },
@@ -314,16 +305,23 @@ const stateModelFactory = (
               label: 'Sort by',
               icon: SortIcon,
               disabled: self.showSoftClipping,
-              subMenu: this.sortOptions.map((option: string) => {
-                return {
-                  label: option,
-                  onClick() {
-                    option === 'Clear sort'
-                      ? self.clearSelected()
-                      : self.sortSelected(option)
+              subMenu: ['Start location', 'Read strand', 'Base pair']
+                .map(option => {
+                  return {
+                    label: option,
+                    onClick: () => self.setSortedBy(option),
+                  }
+                })
+                .concat([
+                  {
+                    label: 'Sort by tag',
+                    onClick: () => self.setDialogComponent(SortByTagDlg),
                   },
-                }
-              }),
+                  {
+                    label: 'Clear sort',
+                    onClick: () => self.clearSelected(),
+                  },
+                ]),
             },
             {
               label: 'Color scheme',

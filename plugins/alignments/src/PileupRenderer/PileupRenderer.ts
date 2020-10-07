@@ -555,25 +555,15 @@ export default class PileupRenderer extends BoxRendererType {
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
         break
-      case 'tag':
+      case 'tag': {
         const tag = colorBy.tag as string
-        console.log(
-          'tag',
-          tag,
-          feature.get(tag),
-          colorMap[
-            feature.get(tag) !== undefined
-              ? feature.get(tag)
-              : feature.get('tags')[tag]
-          ],
-        )
-        ctx.fillStyle =
-          colorMap[
-            feature.get(tag) !== undefined
-              ? feature.get(tag)
-              : feature.get('tags')[tag]
-          ]
+        const val =
+          feature.get(tag) !== undefined
+            ? feature.get(tag)
+            : feature.get('tags')[tag]
+        ctx.fillStyle = colorMap[val]
         break
+      }
       case 'insertSizeAndPairOrientation':
         break
       case 'normal':
