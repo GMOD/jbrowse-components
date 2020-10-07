@@ -143,7 +143,7 @@ export default class ServerSideRenderer extends RendererType {
   serializeResultsInWorker(
     result: { html: string },
     features: Map<string, Feature>,
-    args: RenderArgsDeserialized,
+    _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const serialized = ({ ...result } as unknown) as ResultsSerialized
     serialized.features = iterMap(features.values(), f => f.toJSON())
@@ -169,7 +169,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // will expand if soft clipping or feature glyphs are shown
-  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+  getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
     return region
   }
 
@@ -271,7 +271,7 @@ export default class ServerSideRenderer extends RendererType {
     return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)
   }
 
-  freeResources(args: {}) {
+  freeResources(/* args: {} */) {
     return 0
   }
 }

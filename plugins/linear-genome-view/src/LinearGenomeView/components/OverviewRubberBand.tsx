@@ -228,6 +228,7 @@ function OverviewRubberBand({
               horizontal: 'right',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>
               {leftBpOffset ? stringify(leftBpOffset) : ''}
@@ -249,6 +250,7 @@ function OverviewRubberBand({
               horizontal: 'left',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>
               {rightBpOffset ? stringify(rightBpOffset) : ''}

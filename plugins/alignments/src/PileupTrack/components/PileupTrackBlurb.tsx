@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import Typography from '@material-ui/core/Typography'
 
-interface TrackBlurbProps {
+export interface TrackBlurbProps {
   model: {
     sortedBy?: {
       pos: number

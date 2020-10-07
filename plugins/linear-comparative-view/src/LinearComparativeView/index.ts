@@ -1,4 +1,5 @@
 import ReactComponent from './components/LinearComparativeView'
+import modelFactory from './model'
 
 export default ({ jbrequire }: { jbrequire: Function }) => {
   const ViewType = jbrequire(
@@ -6,7 +7,7 @@ export default ({ jbrequire }: { jbrequire: Function }) => {
   )
   return new ViewType({
     name: 'LinearComparativeView',
-    stateModel: jbrequire(require('./model')),
+    stateModel: jbrequire(modelFactory),
     ReactComponent,
   })
 }

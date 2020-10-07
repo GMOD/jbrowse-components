@@ -100,7 +100,7 @@ export class CoreFreeResources extends RpcMethodType {
 
     // pass the freeResources hint along to all the renderers as well
     this.pluginManager.getRendererTypes().forEach(renderer => {
-      const count = renderer.freeResources(specification)
+      const count = renderer.freeResources(/* specification */)
       if (count) deleteCount += count
     })
 

@@ -33,7 +33,7 @@ export default class RpcMethodType extends PluggableElementBase {
     return { ...serializedArgs, signal: undefined }
   }
 
-  async execute(serializedArgs: unknown): Promise<unknown> {
+  async execute(_serializedArgs: unknown): Promise<unknown> {
     throw new Error('execute method is abstract')
   }
 

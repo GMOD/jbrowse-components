@@ -105,7 +105,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       <p style={{ textAlign: 'center' }}>Select assemblies for synteny view</p>
-      {[...new Array(numRows)].map((element, index) => (
+      {[...new Array(numRows)].map((_, index) => (
         <FormRow
           key={`row_${index}_${selected[index]}`}
           error={error}

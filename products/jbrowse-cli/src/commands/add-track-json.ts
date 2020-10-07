@@ -1,7 +1,6 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
-import * as path from 'path'
-import JBrowseCommand from '../base'
+import path from 'path'
+import JBrowseCommand, { Config } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
   static description =
@@ -40,10 +39,13 @@ export default class AddTrackJson extends JBrowseCommand {
     const { update, target } = runFlags
     await this.checkLocation(path.dirname(target))
 
-    const config = JSON.parse(await this.readJsonConfig(target))
-    this.debug(`Found existing config file ${config}`)
+    const config: Config = await this.readJsonFile(target)
+    this.debug(`Found existing config file ${target}`)
 
     const track = await this.readInlineOrFileJson(inputtedTrack)
+    if (!config.tracks) {
+      config.tracks = []
+    }
     const idx = config.tracks.findIndex(
       ({ trackId }: { trackId: string }) => trackId === track.trackId,
     )
@@ -63,15 +65,11 @@ export default class AddTrackJson extends JBrowseCommand {
       config.tracks.push(track)
     }
     this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(target, JSON.stringify(config, undefined, 2))
+    await this.writeJsonFile(target, config)
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${track.name}" ${
         idx !== -1 ? 'in' : 'to'
       } ${target}`,
     )
-  }
-
-  async readJsonConfig(location: string) {
-    return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 }

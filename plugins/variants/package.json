@@ -2,10 +2,24 @@
   "name": "@gmod/jbrowse-plugin-variants",
   "version": "0.0.1-beta.18",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
   "main": "src/index.ts",
+  "distModule": "dist/jbrowse-plugin-variants.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "disabled-build": "cross-env NODE_ENV=production webpack",
-    "test": "cd ../..; jest plugins/variants"
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/variants",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
@@ -13,9 +27,6 @@
     "@gmod/tabix": "^1.4.6",
     "@gmod/vcf": "^4.0.1",
     "generic-filehandle": "^2.0.0"
-  },
-  "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1-beta.27"
   },
   "peerDependencies": {
     "@gmod/jbrowse-core": "^0.0.1-beta.1",
@@ -27,6 +38,5 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
-  },
-  "private": true
+  }
 }

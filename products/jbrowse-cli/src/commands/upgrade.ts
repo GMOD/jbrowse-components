@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
@@ -54,15 +54,11 @@ export default class Upgrade extends JBrowseCommand {
     const { listVersions, tag, url } = runFlags
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          version => version.tag_name,
-        )
-        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const versions = (await this.fetchGithubVersions()).map(
+        version => version.tag_name,
+      )
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      this.exit()
     }
     this.debug(`Want to upgrade at: ${argsPath}`)
 
@@ -71,6 +67,7 @@ export default class Upgrade extends JBrowseCommand {
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 
+    this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
     if (!response.ok) {
       this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })

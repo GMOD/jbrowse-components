@@ -18,6 +18,14 @@ import baseTrack from './baseTrackModel'
 import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
+export interface Layout {
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  name: string
+}
+
 type LayoutRecord = [number, number, number, number]
 const blockBasedTrack = types
   .compose(
@@ -37,7 +45,7 @@ const blockBasedTrack = types
   )
   .views(self => {
     let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: { [key: string]: typeof RBush | undefined } = {}
+    let rbush: Record<string, RBush<Layout>> = {}
 
     return {
       get blockType(): 'staticBlocks' | 'dynamicBlocks' {
@@ -129,7 +137,7 @@ const blockBasedTrack = types
 
       get rtree() {
         if (stale) {
-          rbush = {}
+          rbush = {} as Record<string, RBush<Layout>>
           for (const [blockKey, layoutFeatures] of this.blockLayoutFeatures) {
             rbush[blockKey] = new RBush()
             const r = rbush[blockKey]

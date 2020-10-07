@@ -24,7 +24,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     label: 'Toggle select',
     icon: DoneIcon,
     onClick(
-      view: unknown,
+      _view: unknown,
       spreadsheet: Instance<ReturnType<typeof Spreadsheet>>,
     ) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber

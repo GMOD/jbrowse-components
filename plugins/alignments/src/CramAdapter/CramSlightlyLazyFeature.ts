@@ -59,14 +59,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.mappingQuality
   }
 
-  _get_mapping_quality() {
-    return this.record.mappingQuality
-  }
-
-  _get_mq() {
-    return this.record.mappingQuality
-  }
-
   _get_flags() {
     return this.record.flags
   }

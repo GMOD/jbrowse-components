@@ -1,5 +1,6 @@
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import ReactComponent from './components/LinearSyntenyView'
+import modelFactory from './model'
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
@@ -8,7 +9,7 @@ export default (pluginManager: PluginManager) => {
   )
   return new ViewType({
     name: 'LinearSyntenyView',
-    stateModel: jbrequire(require('./model')),
+    stateModel: jbrequire(modelFactory),
     ReactComponent,
   })
 }

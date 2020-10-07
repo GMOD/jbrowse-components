@@ -1,11 +1,11 @@
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
+
 export default ({ jbrequire }) => {
   const { types } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
