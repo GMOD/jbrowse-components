@@ -29,6 +29,7 @@ export const sortFeature = (
   })
 
   const isCram = featureArray[0].get('tags')
+  console.log({ isCram })
   switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
@@ -37,6 +38,7 @@ export const sortFeature = (
 
     case 'tag': {
       const tag = sortedBy.tag as string
+      console.log('tag', tag, isCram)
       featuresInCenterLine.sort((a, b) => {
         return isCram
           ? a.get('tags')[tag] - b.get('tags')[tag]

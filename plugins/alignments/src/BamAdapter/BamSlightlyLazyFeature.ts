@@ -78,10 +78,6 @@ export default class BamSlightlyLazyFeature implements Feature {
       : undefined
   }
 
-  _get_tags(): string[] {
-    return this.record._tags()
-  }
-
   _get_seq(): string {
     return this.record.getReadBases()
   }
@@ -116,7 +112,7 @@ export default class BamSlightlyLazyFeature implements Feature {
               prop !== '_get_seq_id',
           )
           .map(methodName => methodName.replace('_get_', ''))
-          .concat(this._get_tags()),
+          .concat(this.record._tags()),
       ),
     ]
   }

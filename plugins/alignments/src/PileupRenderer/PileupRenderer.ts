@@ -557,10 +557,8 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'tag': {
         const tag = colorBy.tag as string
-        const val =
-          feature.get(tag) !== undefined
-            ? feature.get(tag)
-            : feature.get('tags')[tag]
+        const isCram = feature.get('tags')
+        const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
         ctx.fillStyle = colorMap[val]
         break
       }
