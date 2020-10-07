@@ -2,7 +2,7 @@ module.exports = {
   title: 'JBrowse',
   tagline: 'Next generation genome browser',
   url: 'https://jbrowse.com',
-  baseUrl: '/jb2/',
+  baseUrl: '/',
   favicon: 'img/favicon.ico',
   organizationName: 'GMOD', // Usually your GitHub org/user name.
   projectName: 'jbrowse-components', // Usually your repo name.
