@@ -25,10 +25,13 @@ import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
+
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
+import ColorByTagDlg from './components/ColorByTag'
+import runner from 'mobx-run-in-reactive-context'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -350,6 +353,14 @@ const stateModelFactory = (
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme('insertSize')
+                  },
+                },
+                {
+                  label: 'Color by tag',
+                  onClick: () => {
+                    runner(() => {
+                    self.setDialogComponent(ColorByTagDlg)
+                    })
                   },
                 },
               ],

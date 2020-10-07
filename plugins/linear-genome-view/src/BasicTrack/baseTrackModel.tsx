@@ -99,6 +99,7 @@ const BaseTrack = types
     showAbout: false,
     error: undefined as Error | string | undefined,
     userBpPerPxLimit: undefined as undefined | number,
+    DialogComponent: undefined as any,
   }))
   .views(self => ({
     get rpcSessionId() {
@@ -193,6 +194,9 @@ const BaseTrack = types
     },
   }))
   .actions(self => ({
+    setDialogComponent(dlg: React.FC | undefined) {
+      self.DialogComponent = dlg
+    },
     setHeight(trackHeight: number) {
       if (trackHeight > minTrackHeight) self.height = trackHeight
       else self.height = minTrackHeight
