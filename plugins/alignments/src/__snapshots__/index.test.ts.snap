@@ -2,6 +2,16 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
+  "bamLocation": Object {
+    "originalUri": "",
+    "uri": "/path/to/my.bam",
+  },
+  "index": Object {
+    "location": Object {
+      "originalUri": "",
+      "uri": "/path/to/my.bam.bai",
+    },
+  },
   "type": "BamAdapter",
 }
 `;

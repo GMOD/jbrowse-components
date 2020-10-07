@@ -2,14 +2,34 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
+  "index": Object {
+    "location": Object {
+      "originalUri": "",
+      "uri": "/path/to/my.vcf.gz.tbi",
+    },
+  },
   "type": "VcfTabixAdapter",
+  "vcfGzLocation": Object {
+    "originalUri": "",
+    "uri": "/path/to/my.vcf.gz",
+  },
 }
 `;
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "adapter": Object {
+    "index": Object {
+      "location": Object {
+        "originalUri": "",
+        "uri": "/path/to/my.vcf.gz.tbi",
+      },
+    },
     "type": "VcfTabixAdapter",
+    "vcfGzLocation": Object {
+      "originalUri": "",
+      "uri": "/path/to/my.vcf.gz",
+    },
   },
   "renderers": Object {
     "PileupRenderer": Object {
