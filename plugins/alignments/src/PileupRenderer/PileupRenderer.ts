@@ -540,7 +540,7 @@ export default class PileupRenderer extends BoxRendererType {
     const { heightPx, topPx, feature } = feat
     const region = regions[0]
 
-    const colorMap = ['lightblue', 'pink']
+    const colorMap = ['lightblue', 'pink', 'lightgreen', 'lightpurple']
     const colorType = colorBy ? colorBy.type : ''
     switch (colorType) {
       case 'insertSize':
