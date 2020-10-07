@@ -30,7 +30,7 @@ export default function ColorByTagDlg(props: {
 }) {
   const classes = useStyles()
   const { model, handleClose } = props
-  const [tag, setTag] = useState<string>()
+  const [tag, setTag] = useState('')
   return (
     <Dialog
       open
@@ -55,10 +55,12 @@ export default function ColorByTagDlg(props: {
             <TextField
               id="standard-select-currency"
               select
+              value={tag}
               onChange={event => {
                 setTag(event.target.value)
               }}
             >
+              <MenuItem value="" />
               <MenuItem value="HP">HP (haplotype)</MenuItem>
               <MenuItem value="YC">YC (color encoded)</MenuItem>
             </TextField>
