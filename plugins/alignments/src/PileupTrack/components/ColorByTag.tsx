@@ -31,7 +31,7 @@ export default function ColorByTagDlg(props: {
 }) {
   const classes = useStyles()
   const { model, handleClose } = props
-  const [tag, setTag] = useState()
+  const [tag, setTag] = useState<string>()
   return (
     <Dialog
       open
@@ -58,17 +58,16 @@ export default function ColorByTagDlg(props: {
               select
               onChange={event => {
                 setTag(event.target.value)
-                console.log(event.target.value)
               }}
             >
-              <MenuItem value="hp">HP (haplotype)</MenuItem>
-              <MenuItem value="yc">YC (color encoded)</MenuItem>
+              <MenuItem value="HP">HP (haplotype)</MenuItem>
+              <MenuItem value="YC">YC (color encoded)</MenuItem>
             </TextField>
             <Button
               onClick={() => {
                 ;(model.PileupTrack || model).setColorScheme({
                   type: 'tag',
-                  tag: event.target.value,
+                  tag,
                 })
                 handleClose()
               }}

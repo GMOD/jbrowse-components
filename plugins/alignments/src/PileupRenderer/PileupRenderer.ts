@@ -30,7 +30,10 @@ export interface PileupRenderProps {
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
-  colorScheme: string
+  colorBy: {
+    type: string
+    tag?: string
+  }
   height: number
   width: number
   highResolutionScaling: number
@@ -533,11 +536,13 @@ export default class PileupRenderer extends BoxRendererType {
     },
     props: PileupRenderProps,
   ) {
-    const { config, bpPerPx, regions, colorScheme } = props
+    const { config, bpPerPx, regions, colorBy } = props
     const { heightPx, topPx, feature } = feat
     const region = regions[0]
 
-    switch (colorScheme) {
+    const colorMap = ['lightblue', 'pink']
+    const colorType = colorBy ? colorBy.type : ''
+    switch (colorType) {
       case 'insertSize':
         ctx.fillStyle = this.colorByInsertSize(feature, config)
         break
@@ -549,6 +554,25 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
+        break
+      case 'tag':
+        const tag = colorBy.tag as string
+        console.log(
+          'tag',
+          tag,
+          feature.get(tag),
+          colorMap[
+            feature.get(tag) !== undefined
+              ? feature.get(tag)
+              : feature.get('tags')[tag]
+          ],
+        )
+        ctx.fillStyle =
+          colorMap[
+            feature.get(tag) !== undefined
+              ? feature.get(tag)
+              : feature.get('tags')[tag]
+          ]
         break
       case 'insertSizeAndPairOrientation':
         break

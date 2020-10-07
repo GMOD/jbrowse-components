@@ -62,7 +62,7 @@ const stateModelFactory = (
             assemblyName: types.string,
           }),
         ),
-        colorScheme: types.maybe(
+        colorBy: types.maybe(
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
@@ -191,8 +191,7 @@ const stateModelFactory = (
         self.ready = false
       },
       setColorScheme(colorScheme: { type: string; tag?: string }) {
-        console.log({ colorScheme })
-        self.colorScheme = cast(colorScheme)
+        self.colorBy = cast(colorScheme)
       },
     }))
     .actions(self => {
@@ -269,7 +268,7 @@ const stateModelFactory = (
             notReady: !self.ready,
             trackModel: self,
             sortedBy: self.sortedBy,
-            colorScheme: self.colorScheme,
+            colorBy: self.colorBy,
             showSoftClip: self.showSoftClipping,
             viewAsPairs: self.viewAsPairs,
             linkSuppReads: self.linkSuppReads,
