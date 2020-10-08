@@ -12,7 +12,7 @@
     "predeploy": "npm run build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
-    "make": "npm run copycli && cd docs; make; cd -"
+    "make": "npm run copycli && cd docs; make md; cd -"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.61",

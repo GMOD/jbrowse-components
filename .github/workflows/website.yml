@@ -29,10 +29,10 @@ jobs:
           cd ..
       - uses: docker://pandoc/latex:2.9
         with:
-          args: titlemod.md pdfcombined.md --toc -o products/website/jbrowse2.pdf
+          args: --toc -o products/website/jbrowse2.pdf titlemod.md pdfcombined.md
       - name: Upload
         run: |
-          cd ..
+          cd products/website/
           aws s3 sync build s3://jbrowse.org/
           aws s3 cp jbrowse2.pdf s3://jbrowse.org/jb2/
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"
