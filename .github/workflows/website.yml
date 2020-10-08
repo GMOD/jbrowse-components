@@ -1,9 +1,6 @@
-# Upload jbrowse-web release artifact to jbrowse-web tag
+# Upload website
+on: push
 name: Upload website
-jobs:
-  main:
-    name: Build and test
-    runs-on: ubuntu-latest
 jobs:
   build:
     name: upload_web
