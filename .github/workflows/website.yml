@@ -13,6 +13,12 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
       - uses: docker://pandoc/latex:2.9
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
       - name: Install deps
         run: yarn
       - name: Build project
