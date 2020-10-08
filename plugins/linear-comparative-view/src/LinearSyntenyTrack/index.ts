@@ -33,13 +33,12 @@ export function configSchemaFactory(pluginManager: PluginManager) {
 }
 
 export function stateModelFactory(
-  pluginManager: PluginManager,
   configSchema: ReturnType<typeof configSchemaFactory>,
 ) {
   return types
     .compose(
       'LinearSyntenyTrack',
-      baseModelFactory(pluginManager, configSchema),
+      baseModelFactory(configSchema),
       types.model('LinearSyntenyTrack', {
         type: types.literal('LinearSyntenyTrack'),
         configuration: ConfigurationReference(configSchema),

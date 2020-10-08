@@ -58,7 +58,7 @@ BlockMessage.propTypes = {
   messageText: PropTypes.string.isRequired,
 }
 
-function BlockError({ error, reload }: { error: Error; reload: () => void }) {
+function BlockError({ error }: { error: Error }) {
   const classes = useStyles()
   return <div className={classes.blockError}>{error.message}</div>
 }
@@ -66,13 +66,7 @@ function BlockError({ error, reload }: { error: Error; reload: () => void }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (model.error) {
-    return (
-      <BlockError
-        error={model.error}
-        reload={model.reload}
-        data-testid="reload_button"
-      />
-    )
+    return <BlockError error={model.error} data-testid="reload_button" />
   }
   if (model.message) {
     return <BlockMessage messageText={model.message} />

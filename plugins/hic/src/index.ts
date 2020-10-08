@@ -6,6 +6,7 @@ import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
 } from './HicRenderer'
+import HicAdapterFactory from './HicAdapter'
 
 import {
   configSchemaFactory as hicTrackConfigSchemaFactory,
@@ -20,7 +21,7 @@ export default class HicPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'HicAdapter',
-          ...pluginManager.jbrequire(require('./HicAdapter')),
+          ...pluginManager.jbrequire(HicAdapterFactory),
         }),
     )
     pluginManager.addRendererType(

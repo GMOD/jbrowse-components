@@ -94,6 +94,9 @@ export default class extends BaseFeatureDataAdapter {
     regions: Region[],
     opts: BaseOptions = {},
   ) {
+    // TODO: restore commented version below once TSDX supports Rollup v2
+    // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
+    const superGetFeaturesInMultipleRegions = super.getFeaturesInMultipleRegions
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const bytes = await this.bytesForRegions(regions)
       const stat = await this.filehandle.stat()
@@ -107,7 +110,10 @@ export default class extends BaseFeatureDataAdapter {
           `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
         )
       }
-      super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
+      superGetFeaturesInMultipleRegions
+        .call(this, regions, opts)
+        .subscribe(observer)
+      // super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
     })
   }
 

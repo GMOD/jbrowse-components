@@ -8,12 +8,13 @@ import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAda
 import PluginManager from '@gmod/jbrowse-core/PluginManager'
 import { Instance } from 'mobx-state-tree'
 import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
 type Dim = Instance<typeof Dotplot1DView>
+
+const { parseCigar } = MismatchParser
 
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter

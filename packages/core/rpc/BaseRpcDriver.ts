@@ -28,7 +28,7 @@ export async function watchWorker(worker: WorkerHandle, pingTime: number) {
   await worker.call('ping', [], { timeout: 100000000 })
 
   // after first ping succeeds, apply wait for timeout
-  return new Promise((resolve, reject) => {
+  return new Promise((_resolve, reject) => {
     function delay() {
       setTimeout(async () => {
         try {
@@ -133,11 +133,11 @@ export default abstract class BaseRpcDriver {
     functionName: string,
     signalId: number,
   ) {
-    const worker = this.getWorker(sessionId, functionName, pluginManager)
+    const worker = this.getWorker(sessionId, pluginManager)
     worker.call(functionName, signalId, { timeout: 1000000 })
   }
 
-  createWorkerPool(pluginManager: PluginManager): LazyWorker[] {
+  createWorkerPool(): LazyWorker[] {
     const hardwareConcurrency = detectHardwareConcurrency()
 
     const workerCount =
@@ -146,21 +146,17 @@ export default abstract class BaseRpcDriver {
     return [...new Array(workerCount)].map(() => new LazyWorker(this))
   }
 
-  getWorkerPool(pluginManager: PluginManager) {
+  getWorkerPool() {
     if (!this.workerPool) {
-      const res = this.createWorkerPool(pluginManager)
+      const res = this.createWorkerPool()
       this.workerPool = res
       return res // making this several steps makes TS happy
     }
     return this.workerPool
   }
 
-  getWorker(
-    sessionId: string,
-    functionName: string,
-    pluginManager: PluginManager,
-  ): WorkerHandle {
-    const workers = this.getWorkerPool(pluginManager)
+  getWorker(sessionId: string, pluginManager: PluginManager): WorkerHandle {
+    const workers = this.getWorkerPool()
     let workerNumber = this.workerAssignments.get(sessionId)
     if (workerNumber === undefined) {
       const workerAssignment = (this.lastWorkerAssignment + 1) % workers.length
@@ -187,7 +183,7 @@ export default abstract class BaseRpcDriver {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    const worker = this.getWorker(sessionId, functionName, pluginManager)
+    const worker = this.getWorker(sessionId, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args)
     const filteredAndSerializedArgs = this.filterArgs(
@@ -206,7 +202,7 @@ export default abstract class BaseRpcDriver {
     // check every 5 seconds to see if the worker has been killed, and
     // reject the killedP promise if it has
     let killedCheckInterval: ReturnType<typeof setInterval>
-    const killedP = new Promise((resolve, reject) => {
+    const killedP = new Promise((_resolve, reject) => {
       killedCheckInterval = setInterval(() => {
         // must've been killed
         if (worker.status === 'killed') {

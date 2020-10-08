@@ -19,7 +19,7 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     cache: new LRU({ maxSize: 200 }),
     fill: async (
       args: { refName: string; start: number; end: number },
-      abortSignal?: AbortSignal,
+      // abortSignal?: AbortSignal,
     ) => {
       const { refName, start, end } = args
       return this.fasta.getSequence(refName, start, end)

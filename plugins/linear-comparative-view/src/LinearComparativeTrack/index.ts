@@ -35,7 +35,7 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-export function stateModelFactory(pluginManager: any, configSchema: any) {
+export function stateModelFactory(configSchema: any) {
   return types
     .compose(
       'LinearComparativeTrack',
@@ -45,7 +45,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           type: types.literal('LinearComparativeTrack'),
           configuration: ConfigurationReference(configSchema),
         })
-        .volatile(self => ({
+        .volatile((/* self */) => ({
           // avoid circular typescript reference by casting to generic functional component
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
@@ -175,12 +175,7 @@ function renderBlockData(self: LinearComparativeTrack) {
   }
 }
 
-async function renderBlockEffect(
-  props: ReturnType<typeof renderBlockData>,
-  signal: AbortSignal,
-  self: LinearComparativeTrack,
-  allowRefetch = false,
-) {
+async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

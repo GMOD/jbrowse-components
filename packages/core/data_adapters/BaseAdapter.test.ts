@@ -11,7 +11,7 @@ describe('base data adapter', () => {
         return ['ctgA', 'ctgB']
       }
 
-      getFeatures(region: Region) {
+      getFeatures(_region: Region) {
         return ObservableCreate<Feature>(() =>
           Promise.reject(new Error('something blew up')),
         )

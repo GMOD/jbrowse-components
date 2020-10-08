@@ -2,9 +2,24 @@
   "name": "@gmod/jbrowse-plugin-filtering",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 filtering tracks, etc.",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
   "main": "src/index.ts",
+  "distModule": "dist/jbrowse-plugin-filtering.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "test": "cd ../..; jest plugins/filtering"
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/filtering",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
   },
   "author": "Garrett Stevens",
   "license": "MIT",
@@ -17,6 +32,5 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"
-  },
-  "private": true
+  }
 }
