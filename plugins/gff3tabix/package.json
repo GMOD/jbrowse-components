@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-gff3tabix",
   "version": "0.0.1-beta.13",
   "description": "JBrowse 2 gff3tabix.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/gff3tabix"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Colin Diesh",
-  "license": "MIT",
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@gmod/tabix": "^1.4.6",
@@ -37,5 +48,8 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

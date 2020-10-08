@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-menus",
   "version": "0.0.1-beta.13",
   "description": "JBrowse 2 basic menus",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/menus"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
     "file-saver": "^2.0.0",
@@ -37,5 +48,6 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  }
+  },
+  "private": true
 }

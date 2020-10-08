@@ -130,6 +130,8 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-assembly.ts)_
+
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
 Add a connection to a JBrowse 2 configuration
@@ -180,6 +182,8 @@ EXAMPLES
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
   /path/to/jb2/installation/config.json
 ```
+
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -235,6 +239,8 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
 
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track.ts)_
+
 ## `jbrowse add-track-json TRACK`
 
 Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
@@ -256,6 +262,8 @@ EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
 ```
+
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -280,6 +288,8 @@ EXAMPLES
   $ jbrowse admin-server
   $ jbrowse admin-server -p 8888
 ```
+
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -309,6 +319,8 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation --tag @jbrowse/web@0.0.1
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
+
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -358,6 +370,8 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/set-default-session.ts)_
+
 ## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
@@ -385,6 +399,8 @@ EXAMPLES
   $ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
+
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

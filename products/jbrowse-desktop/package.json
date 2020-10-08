@@ -2,17 +2,39 @@
   "name": "@jbrowse/desktop",
   "version": "0.0.1-beta.24",
   "description": "JBrowse desktop application specialized to inspect structural variants",
-  "author": {
-    "name": "JBrowse 2 Developers",
-    "email": "jbrowse-dev@lists.berkeley.edu",
-    "url": "https://jbrowse.org"
-  },
-  "private": true,
+  "license": "MIT",
+  "homepage": "./",
+  "author": "JBrowse Team",
   "main": "public/electron.js",
   "dir": "src",
-  "browserslist": [
-    "last 1 chrome version"
-  ],
+  "scripts": {
+    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
+    "serve": "cross-env BROWSER=none yarn cra-start",
+    "develop": "electron .",
+    "cra-start": "rescripts start",
+    "test": "rescripts test",
+    "build": "rescripts build",
+    "build-electron": "yarn build && electron-builder build --windows --mac --linux",
+    "build-electron:win": "yarn build && electron-builder build --windows",
+    "build-electron:mac": "yarn build && electron-builder build --mac",
+    "build-electron:linux": "yarn build && electron-builder build --linux",
+    "build-electron-unpacked": "yarn build && electron-builder build --windows --mac --linux --dir",
+    "build-electron-unpacked:win": "yarn build && electron-builder build --windows --dir",
+    "build-electron-unpacked:mac": "yarn build && electron-builder build --mac --dir",
+    "build-electron-unpacked:linux": "yarn build && electron-builder build --linux --dir",
+    "build-electron-prepackaged": "yarn build-electron-prepackaged:win && yarn build-electron-prepackaged:mac && yarn build-electron-prepackaged:linux",
+    "build-electron-prepackaged:win": "electron-builder build --windows --prepackaged dist/win-unpacked",
+    "build-electron-prepackaged:mac": "electron-builder build --mac --prepackaged dist/mac/",
+    "build-electron-prepackaged:linux": "electron-builder build --linux --prepackaged dist/linux-unpacked/",
+    "build-electron-only": "electron-builder build --windows --mac --linux",
+    "build-electron-only:win": "electron-builder build --windows",
+    "build-electron-only:mac": "electron-builder build --mac",
+    "build-electron-only:linux": "electron-builder build --linux",
+    "build-electron-only-unpacked": "electron-builder build -wml --dir",
+    "build-electron-only-unpacked:win": "electron-builder build -w --dir",
+    "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
+    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
+  },
   "dependencies": {
     "@jbrowse/core": "^0.0.1-beta.22",
     "@jbrowse/plugin-alignments": "^0.0.1-beta.18",
@@ -60,36 +82,9 @@
     "rxjs": "^6.5.2",
     "typeface-roboto": "^0.0.54"
   },
-  "license": "MIT",
-  "scripts": {
-    "start": "concurrently \"yarn serve\" \"wait-on http://localhost:3000 && yarn develop\"",
-    "serve": "cross-env BROWSER=none yarn cra-start",
-    "develop": "electron .",
-    "cra-start": "rescripts start",
-    "test": "rescripts test",
-    "build": "rescripts build",
-    "build-electron": "yarn build && electron-builder build --windows --mac --linux",
-    "build-electron:win": "yarn build && electron-builder build --windows",
-    "build-electron:mac": "yarn build && electron-builder build --mac",
-    "build-electron:linux": "yarn build && electron-builder build --linux",
-    "build-electron-unpacked": "yarn build && electron-builder build --windows --mac --linux --dir",
-    "build-electron-unpacked:win": "yarn build && electron-builder build --windows --dir",
-    "build-electron-unpacked:mac": "yarn build && electron-builder build --mac --dir",
-    "build-electron-unpacked:linux": "yarn build && electron-builder build --linux --dir",
-    "build-electron-prepackaged": "yarn build-electron-prepackaged:win && yarn build-electron-prepackaged:mac && yarn build-electron-prepackaged:linux",
-    "build-electron-prepackaged:win": "electron-builder build --windows --prepackaged dist/win-unpacked",
-    "build-electron-prepackaged:mac": "electron-builder build --mac --prepackaged dist/mac/",
-    "build-electron-prepackaged:linux": "electron-builder build --linux --prepackaged dist/linux-unpacked/",
-    "build-electron-only": "electron-builder build --windows --mac --linux",
-    "build-electron-only:win": "electron-builder build --windows",
-    "build-electron-only:mac": "electron-builder build --mac",
-    "build-electron-only:linux": "electron-builder build --linux",
-    "build-electron-only-unpacked": "electron-builder build -wml --dir",
-    "build-electron-only-unpacked:win": "electron-builder build -w --dir",
-    "build-electron-only-unpacked:mac": "electron-builder build -m --dir",
-    "build-electron-only-unpacked:linux": "electron-builder build -l --dir"
-  },
-  "homepage": "./",
+  "browserslist": [
+    "last 1 chrome version"
+  ],
   "build": {
     "electronVersion": "9.3.1",
     "extraMetadata": {
@@ -119,5 +114,6 @@
     "directories": {
       "buildResources": "assets/"
     }
-  }
+  },
+  "private": true
 }

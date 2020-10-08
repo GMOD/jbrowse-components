@@ -1,17 +1,18 @@
 {
   "name": "@jbrowse/web",
   "version": "0.0.1-beta.25",
+  "license": "MIT",
+  "homepage": ".",
   "main": "build",
   "dir": "src",
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version"
-    ]
+  "scripts": {
+    "start": "rescripts --max-http-header-size=100000 start",
+    "build": "rescripts build",
+    "test": "rescripts test",
+    "eject": "rescripts eject",
+    "checktypes": "tsc --noEmit",
+    "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
+    "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
   },
   "dependencies": {
     "@jbrowse/core": "^0.0.1-beta.22",
@@ -62,18 +63,16 @@
     "typeface-roboto": "^0.0.54",
     "use-query-params": "^1.1.3"
   },
-  "license": "MIT",
-  "scripts": {
-    "start": "rescripts --max-http-header-size=100000 start",
-    "build": "rescripts build",
-    "test": "rescripts test",
-    "eject": "rescripts eject",
-    "checktypes": "tsc --noEmit",
-    "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
-    "lint": "eslint --ext .js,.ts,.jsx,.tsx src"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "license": "MIT",
+    "development": [
+      "last 1 chrome version"
+    ]
   },
-  "homepage": ".",
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }

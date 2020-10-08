@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-alignments",
   "version": "0.0.1-beta.18",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/alignments"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "dependencies": {
     "@gmod/bam": "^1.1.2",
     "@gmod/cram": "^1.5.6",
@@ -47,5 +58,8 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-spreadsheet-view",
   "version": "0.0.1-beta.18",
   "description": "JBrowse 2 spreadsheet view",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/spreadsheet-view"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Robert Buels",
-  "license": "MIT",
   "dependencies": {
     "@jbrowse/plugin-variants": "^0.0.1-beta.18",
     "@gmod/vcf": "^4.0.0",
@@ -40,5 +51,6 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

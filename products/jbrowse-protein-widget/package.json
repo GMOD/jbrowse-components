@@ -2,19 +2,17 @@
   "name": "@jbrowse/protein-widget",
   "version": "0.0.1-beta.20",
   "description": "an embeddable protein viewer widget",
+  "license": "MIT",
   "main": "umd/jbrowse-protein-viewer.js",
+  "files": [
+    "umd"
+  ],
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack",
     "start": "echo opening app in file:/// to demonstrate the simplicity of this setup. refresh when webpack --watch is done building && sleep 3 && open-cli umd.html && cross-env NODE_ENV=development webpack -w",
     "test": "jest --config ../../jest.config.js --roots products/jbrowse-protein-widget/",
     "lint": "eslint src/"
   },
-  "unpkg": "umd/jbrowse-protein-viewer.js",
-  "files": [
-    "umd"
-  ],
-  "author": "Robert Buels (rbuels@gmail.com)",
-  "license": "MIT",
   "dependencies": {
     "@gmod/gff": "^1.1.2",
     "@jbrowse/core": "^0.0.1-beta.22",
@@ -35,5 +33,6 @@
     "rxjs": "^6.5.2",
     "typeface-roboto": "^0.0.54"
   },
+  "unpkg": "umd/jbrowse-protein-viewer.js",
   "private": true
 }

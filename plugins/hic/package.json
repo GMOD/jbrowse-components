@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-hic",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/hic"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Colin Diesh",
-  "license": "MIT",
   "dependencies": {
     "abortable-promise-cache": "^1.0.1",
     "hic-straw": "^1.2.2"
@@ -37,5 +48,6 @@
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
-  }
+  },
+  "private": true
 }

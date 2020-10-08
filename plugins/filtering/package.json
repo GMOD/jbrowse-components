@@ -2,6 +2,19 @@
   "name": "@jbrowse/plugin-filtering",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 filtering tracks, etc.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/filtering"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "peerDependencies": {
     "@jbrowse/core": "^0.0.1-beta.1",
     "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
@@ -32,5 +43,6 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"
-  }
+  },
+  "private": true
 }
