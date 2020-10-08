@@ -53,11 +53,15 @@
         "subadapters": [
           {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            }
           },
           {
             "type": "NCListAdapter",
-            "rootUrlTemplate": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            }
           }
         ],
         "assemblyNames": ["peach", "grape"],
