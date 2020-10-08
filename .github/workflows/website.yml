@@ -9,7 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
-      - uses: docker://pandoc/latex:2.9
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -18,7 +17,7 @@ jobs:
           aws-region: us-east-2
       - name: Install deps
         run: yarn
-      - name: Build project
+      - uses: docker://pandoc/latex:2.9
         run: |
           echo $RELEASE_VERSION
           cd products/website/
