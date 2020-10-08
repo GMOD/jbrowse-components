@@ -44,7 +44,7 @@ const configSchema = ConfigurationSchema(
 ### What are the details of configSchema and stateModel
 
 - stateModel - a mobx-state-tree object that manages track logic
-- configSchema - a a combination of a "stateModel" and a "configSchema"
+- configSchema - a combination of a "stateModel" and a "configSchema"
 
 The state model is often implemented as a composition of the "base track" and
 some custom logic

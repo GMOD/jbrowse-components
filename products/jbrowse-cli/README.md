@@ -390,7 +390,7 @@ EXAMPLES
 
 ## Debugging
 
-Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
+Debug logs (provided by [debug](https://github.com/visionmedia/debug)) can be
 printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
 print all debug logs. Setting `DEBUG=jbrowse*` will print only logs from this
 tool, and setting e.g. `DEBUG=jbrowse:add-assembly` will print only logs from
