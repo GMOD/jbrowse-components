@@ -1,13 +1,14 @@
 // library
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle' // eslint-disable-line import/no-extraneous-dependencies
 
 // locals
 import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { setup, readBuffer, getPluginManager } from './util'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 expect.extend({ toMatchImageSnapshot })
@@ -18,7 +19,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('bigwig', () => {

@@ -4,18 +4,23 @@ import '@testing-library/jest-dom/extend-expect'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle' // eslint-disable-line import/no-extraneous-dependencies
 
 // locals
 import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
 import JBrowse from '../JBrowse'
-import { setup, getPluginManager, readBuffer } from './util'
+import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 
 setup()
 
 afterEach(cleanup)
+
+const readBuffer = generateReadBuffer(url => {
+  return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+})
 
 beforeEach(() => {
   clearCache()
@@ -34,7 +39,7 @@ describe('reload tests', () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-sorted-altname.cram.crai') {
+      if (request.url === 'volvox-sorted-altname.cram.crai') {
         return { status: 404 }
       }
       return readBuffer(request)
@@ -66,10 +71,12 @@ describe('reload tests', () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-sorted-altname.cram') {
+      if (request.url === 'volvox-sorted-altname.cram') {
         return { status: 404 }
       }
-      return readBuffer(request)
+      return generateReadBuffer(url => {
+        return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+      })(request)
     })
 
     const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
@@ -97,7 +104,7 @@ describe('reload tests', () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-sorted-altname.bam.bai') {
+      if (request.url === 'volvox-sorted-altname.bam.bai') {
         return { status: 404 }
       }
       return readBuffer(request)
@@ -128,7 +135,7 @@ describe('reload tests', () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox-sorted-altname.bam') {
+      if (request.url === 'volvox-sorted-altname.bam') {
         return { status: 404 }
       }
       return readBuffer(request)
@@ -160,7 +167,7 @@ describe('reload tests', () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
-      if (request.url === 'test_data/volvox/volvox_microarray.bw') {
+      if (request.url === 'volvox_microarray.bw') {
         return { status: 404 }
       }
       return readBuffer(request)
