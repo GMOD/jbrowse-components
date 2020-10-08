@@ -115,8 +115,6 @@ const Polygon = observer(
           if (seqIndex === -1) {
             return null
           }
-
-          // TODO: fix these offsets
           let startPx = region.offsetPx - offsetPx
           let endPx = startPx + (region.end - region.start) / bpPerPx
           if (region.reversed) {
@@ -174,23 +172,33 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
-
-  // what is the 120 and 15
+  // console.log('displayed regions', displayedRegions.toJSON())
+  // console.log(visibleRegions)
   return (
     <div className={classes.scaleBar}>
       {/* this is the entire scale bar */}
       {displayedRegions.map((seq, idx) => {
-        // for each displayed Region we need a ... in case the region is smaller than the parent region
         const assembly = assemblyManager.get(seq.assemblyName)
-        // const parentRegion = model.parentRegion(seq.assemblyName, seq.refName) // check if region is smaller than parent
         let refNameColor: string | undefined
         if (assembly) {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        // const parentRegionLength = parentRegion
-        //   ? parentRegion.end - parentRegion.start
-        //   : 0
+        const parentRegion = model.parentRegion(seq.assemblyName, seq.refName)
+        const parentRegionLength = parentRegion
+          ? parentRegion.end - parentRegion.start
+          : 0
+        // console.log('---------------')
+        // console.log('parentRegion', parentRegion)
+        // console.log('displayedRegion', seq)
+        // console.log('len of parent', parentRegionLength)
+        // console.log('len of displayedRegion', regionLength)
+        // console.log(
+        //   'is the parent bigger than the region',
+        //   parentRegionLength > regionLength,
+        // )
+        // console.log('---------------')
+
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
 
         const labels = []
@@ -200,7 +208,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             : labels.push((index + 1) * gridPitch.majorPitch)
         }
 
-        // TODO: adjust scale according to gridpitch
         return (
           // each whole sequence
           <Paper
@@ -212,6 +219,12 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   ? undefined
                   : wholeSeqSpacer,
               borderColor: refNameColor,
+              // borderLeftWidth: 4,
+              // borderRightWidth: 4,
+              // borderLeftStyle: 'dotted',
+              // borderRightStyle: 'dotted',
+              // borderLeftColor: 'red',
+              // borderRightColor: 'red',
             }}
             className={classes.scaleBarContig}
             variant="outlined"
@@ -229,16 +242,25 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 seq.assemblyName === r.assemblyName &&
                 seq.refName === r.refName
               ) {
+                console.log('--------- Visible Region ----------')
+                // console.log('model offset', model.offsetPx)
+                console.log('region', r)
+                console.log('seq', seq)
+                const leftStyle = r.reversed
+                  ? (seq.end - r.end) / scale - 1
+                  : r.start / scale - 1
+                console.log('leftStyle', leftStyle)
+                console.log('-------------------------------------')
                 return (
                   <div
                     key={`${r.key}-${visibleRegionIdx}`}
                     className={classes.scaleBarVisibleRegion}
                     style={{
                       width: Math.max((r.end - r.start) / scale, 1),
-                      left: r.start / scale - 1,
+                      left: leftStyle,
                       pointerEvents: 'none',
                     }}
-                  /> // neeed to edit the width here
+                  />
                 )
               }
               return null
@@ -249,7 +271,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 key={label}
                 className={classes.scaleBarLabel}
                 style={{
-                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                  left: ((labelIdx + 0.96) * gridPitch.majorPitch) / scale,
                   pointerEvents: 'none',
                   color: refNameColor,
                 }}
@@ -281,10 +303,10 @@ function OverviewScaleBar({
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
-  }) // changed from displayedParentRegions to displayedRegions
+  })
 
   const scale =
-    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer) // scale bp/px
+    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
   if (!displayedRegions.length) {
     return (
