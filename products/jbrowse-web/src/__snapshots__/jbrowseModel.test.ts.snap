@@ -663,7 +663,10 @@ Object {
     },
     Object {
       "adapter": Object {
-        "rootUrlTemplate": "test_data/volvox/volvox_long_names_nclist/{refseq}/trackData.json",
+        "rootUrlTemplate": Object {
+          "originalUri": "",
+          "uri": "volvox_long_names_nclist/{refseq}/trackData.json",
+        },
         "type": "NCListAdapter",
       },
       "assemblyNames": Array [
@@ -1526,7 +1529,10 @@ Object {
     },
     Object {
       "adapter": Object {
-        "rootUrlTemplate": "test_data/volvox/volvox_genes_nclist/{refseq}/trackData.json",
+        "rootUrlTemplate": Object {
+          "originalUri": "",
+          "uri": "volvox_genes_nclist/{refseq}/trackData.json",
+        },
         "type": "NCListAdapter",
       },
       "assemblyNames": Array [
