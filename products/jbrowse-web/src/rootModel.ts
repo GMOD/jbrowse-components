@@ -60,7 +60,7 @@ export default function RootModel(
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
         const params = new URLSearchParams(locationUrl.search)
-        return params?.get('session').split('local-')[1]
+        return params?.get('session')?.split('local-')[1]
       },
     }))
     .actions(self => ({
@@ -145,7 +145,7 @@ export default function RootModel(
       saveSessionToLocalStorage() {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const localId = `localSaved-${self.currentSessionId}`
+          const localId = `localSaved-${self.currentSessionId || uuid.v4()}`
           try {
             localStorage.setItem(localId, JSON.stringify(snapshot))
           } catch (e) {

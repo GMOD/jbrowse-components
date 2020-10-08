@@ -109,12 +109,13 @@ describe('<Loader />', () => {
     ).toBeTruthy()
   })
 
-  xit('can use config from a url with no session param local uuid', async () => {
+  it('can use config from a url with no session param local uuid', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
 
     localStorage.setItem('local-1', `{"name": "testSession"}`)
+    expect(localStorage.length).toBe(1)
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore
