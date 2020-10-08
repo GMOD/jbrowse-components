@@ -140,6 +140,7 @@ export default function RootModel(
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           const localId = `localSaved-${uuid.v4()}`
+          snapshot.name = `${snapshot.name}-${localId}`
           try {
             localStorage.setItem(localId, JSON.stringify(snapshot))
           } catch (e) {

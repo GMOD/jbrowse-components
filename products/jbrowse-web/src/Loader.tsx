@@ -131,6 +131,7 @@ export function Loader() {
   const adminMode = adminKeyParam !== undefined
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')
 
+  // on share link pasted, reads from dynamoDB to fetch and decode session
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
@@ -196,7 +197,6 @@ export function Loader() {
               Date.now(),
             ).toISOString()}`
             sessionStorage.clear()
-            console.log('setting')
             sessionStorage.setItem(localId, JSON.stringify(fromShared))
             setData(localId)
           } else {
@@ -226,6 +226,7 @@ export function Loader() {
     key,
   ])
 
+  // on local link posted, checks other tabs if they have session stored in sessionStorage
   useEffect(() => {
     function setData(data?: string) {
       setSessionQueryParam(data)
@@ -361,6 +362,8 @@ export function Loader() {
   if (!rootModel) {
     throw new Error('could not instantiate root model')
   }
+  // in order: saves the previous autosave for recovery, tries to load the local session
+  // if session in query, or loads the default session
   try {
     const lastAutosave = localStorage.getItem('autosave')
     if (lastAutosave)

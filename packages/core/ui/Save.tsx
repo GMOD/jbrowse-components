@@ -28,10 +28,7 @@ const Save = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
 
-  // for autosave: generate autosave everytime someone is working on an unsaved session
-  // and makes changes. clear when they click save or they start working on a saved session 'localSaved in url'
-  // autosave is only if they close their tab and they had unsaved
-  // call button or link Recover last unsaved session
+  // Saves the session at current point in time to local storage
   return (
     <div className={classes.saveDiv}>
       <Button

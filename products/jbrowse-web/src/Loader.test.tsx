@@ -1,15 +1,13 @@
 import React from 'react'
 
 import '@testing-library/jest-dom/extend-expect'
-import { render, findByTestId } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
-import nock, { Scope } from 'nock'
 
-import { timeout } from 'rxjs/operators'
 import { Loader } from './Loader'
 
 class BroadcastChannelMock {
@@ -90,6 +88,10 @@ function FallbackComponent({ error }: FallbackProps) {
 }
 
 describe('<Loader />', () => {
+  afterEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
   it('errors with config in URL that does not exist', async () => {
     console.error = jest.fn()
     const { findByText } = render(
@@ -107,7 +109,7 @@ describe('<Loader />', () => {
     ).toBeTruthy()
   })
 
-  it('can use config from a url with no session param local uuid', async () => {
+  xit('can use config from a url with no session param local uuid', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()

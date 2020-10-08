@@ -38,6 +38,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const { rootModel } = pluginManager
   const { session, error } = rootModel || {}
 
+  // updates the session or local storage sessions + autosave
   useEffect(() => {
     function updateLocalSession(snapshot) {
       if (

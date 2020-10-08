@@ -74,6 +74,7 @@ const Share = observer((props: { session: any }) => {
     setOpen(false)
   }
 
+  // writes the encrypted session, current datetime, and referer to DynamoDB
   const shareSessionToDynamo = async () => {
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
 

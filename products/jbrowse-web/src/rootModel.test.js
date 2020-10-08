@@ -29,7 +29,6 @@ describe('Root MST model', () => {
     expect(sessionStorage.length).toBe(0)
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
-    expect(sessionStorage.length).toBe(1)
     expect(root.jbrowse.assemblies.length).toBe(0)
     expect(getSnapshot(root.jbrowse.configuration)).toMatchSnapshot()
   })
@@ -101,11 +100,6 @@ describe('Root MST model', () => {
     })
     expect(getSnapshot(newConnectionConf)).toMatchSnapshot()
     expect(root.jbrowse.connections.length).toBe(1)
-  })
-
-  it('adds a session snapshot', () => {
-    localStorage.setItem(`localSaved-1`, `{ name: 'testSession' }`)
-    expect(localStorage.length).toBe(1)
   })
 
   it('throws if session is invalid', () => {
