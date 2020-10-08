@@ -17,9 +17,22 @@ jobs:
           aws-region: us-east-2
       - name: Install deps
         run: yarn
-      - uses: docker://pandoc/latex:2.9
-        run: |
-          echo $RELEASE_VERSION
+      - run: |
           cd products/website/
           yarn build
-          yarn deploy
+          cd docs/
+          cp ../../jbrowse-cli/README.md cli.md
+          make pdf
+          cp pdfcombined.md ../../../
+          cp titlemod.md ../../../
+          cp listings.tex ../../../
+          cd ..
+      - uses: docker://pandoc/latex:2.9
+        with:
+          args: titlemod.md pdfcombined.md --toc -o products/website/jbrowse2.pdf
+      - name: Upload
+        run: |
+          cd ..
+          aws s3 sync build s3://jbrowse.org/
+          aws s3 cp jbrowse2.pdf s3://jbrowse.org/jb2/
+          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"
