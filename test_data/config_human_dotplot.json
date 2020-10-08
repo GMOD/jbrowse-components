@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/hg19.chrom.sizes"
+            "uri": "hg19.chrom.sizes"
           }
         },
         "rendering": {
@@ -24,7 +24,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/hg38.chrom.sizes"
+            "uri": "hg38.chrom.sizes"
           }
         },
         "rendering": {

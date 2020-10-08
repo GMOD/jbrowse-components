@@ -108,7 +108,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/grape.chrom.sizes"
+            "uri": "grape.chrom.sizes"
           }
         },
         "rendering": {
@@ -124,7 +124,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/peach.chrom.sizes"
+            "uri": "peach.chrom.sizes"
           }
         },
         "rendering": {
@@ -142,7 +142,7 @@
       "renderDelay": 100,
       "adapter": {
         "mcscanAnchorsLocation": {
-          "uri": "test_data/grape.peach.anchors"
+          "uri": "grape.peach.anchors"
         },
         "subadapters": [
           {

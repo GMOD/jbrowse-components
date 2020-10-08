@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/amel_hav3.1.chrom.sizes"
+            "uri": "amel_hav3.1.chrom.sizes"
           }
         }
       }
