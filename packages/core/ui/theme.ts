@@ -165,7 +165,7 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
 
 export const jbrowseBaseTheme: ThemeOptions = {
   palette: jbrowseDefaultPalette,
-  // typography: { fontSize: 12 },
+  typography: { fontSize: 12 },
   spacing: 4,
   props: createJBrowseDefaultProps(),
   overrides: createJBrowseDefaultOverrides(),
