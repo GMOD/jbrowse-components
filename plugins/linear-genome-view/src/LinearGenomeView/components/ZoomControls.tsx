@@ -32,7 +32,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomOut fontSize="small" />
+        <ZoomOut />
       </IconButton>
 
       <Slider
@@ -51,7 +51,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomIn fontSize="small" />
+        <ZoomIn />
       </IconButton>
     </div>
   )

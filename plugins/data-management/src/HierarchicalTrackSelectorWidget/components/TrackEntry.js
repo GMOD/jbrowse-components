@@ -84,7 +84,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           color="secondary"
           data-testid={`htsTrackEntryMenu-${trackId}`}
         >
-          <HorizontalDots fontSize="small" />
+          <HorizontalDots />
         </IconButton>
         <Menu
           anchorEl={anchorEl}

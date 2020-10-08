@@ -52,4 +52,16 @@ describe('theme utils', () => {
     expect(theme.overrides?.MuiButton).toEqual(muiButtonStyle)
     expect(Object.keys(theme.overrides || {}).length).toBe(7)
   })
+  it('allows adding a custom prop', () => {
+    const muiPaperProps = { variant: 'outlined' as 'outlined' }
+    const theme = createJBrowseTheme({ props: { MuiPaper: muiPaperProps } })
+    expect(theme.props?.MuiPaper).toEqual(muiPaperProps)
+    expect(Object.keys(theme.props || {}).length).toBe(18)
+  })
+  it('allows modifying a prop override', () => {
+    const muiButtonProps = { size: 'medium' as 'medium' }
+    const theme = createJBrowseTheme({ props: { MuiButton: muiButtonProps } })
+    expect(theme.props?.MuiButton).toEqual(muiButtonProps)
+    expect(Object.keys(theme.props || {}).length).toBe(17)
+  })
 })

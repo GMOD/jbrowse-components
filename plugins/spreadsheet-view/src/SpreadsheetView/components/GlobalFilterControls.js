@@ -36,7 +36,6 @@ export default pluginManager => {
           value={textFilterValue}
           onChange={evt => setTextFilterValue(evt.target.value)}
           className={classes.textFilterControl}
-          margin="dense"
           variant="outlined"
           InputProps={{
             startAdornment: (

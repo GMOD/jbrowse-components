@@ -68,20 +68,20 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   }
   let icon
   if (type === 'subMenu') {
-    icon = <ArrowRightIcon fontSize="small" color="action" />
+    icon = <ArrowRightIcon color="action" />
   } else if (type === 'checkbox') {
     if (checked) {
       const color = disabled ? 'inherit' : 'secondary'
-      icon = <CheckBoxIcon fontSize="small" color={color} />
+      icon = <CheckBoxIcon color={color} />
     } else {
-      icon = <CheckBoxOutlineBlankIcon fontSize="small" color="action" />
+      icon = <CheckBoxOutlineBlankIcon color="action" />
     }
   } else if (type === 'radio') {
     if (checked) {
       const color = disabled ? 'inherit' : 'secondary'
-      icon = <RadioButtonCheckedIcon fontSize="small" color={color} />
+      icon = <RadioButtonCheckedIcon color={color} />
     } else {
-      icon = <RadioButtonUncheckedIcon fontSize="small" color="action" />
+      icon = <RadioButtonUncheckedIcon color="action" />
     }
   }
   return <div className={classes.menuItemEndDecoration}>{icon}</div>
@@ -283,7 +283,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
             const Icon = menuItem.icon
             icon = (
               <ListItemIcon>
-                <Icon fontSize="small" />
+                <Icon />
               </ListItemIcon>
             )
           }

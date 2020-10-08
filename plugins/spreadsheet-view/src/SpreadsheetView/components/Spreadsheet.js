@@ -188,7 +188,6 @@ export default pluginManager => {
                   className={classes.rowSelector}
                   checked={rowModel.isSelected}
                   onClick={labelClick}
-                  size="small"
                 />
               )
             }
@@ -226,15 +225,9 @@ export default pluginManager => {
     if (sortSpec) {
       const { descending } = sortSpec
       return descending ? (
-        <KeyboardArrowUpIcon
-          fontSize="small"
-          className={classes.sortIndicator}
-        />
+        <KeyboardArrowUpIcon className={classes.sortIndicator} />
       ) : (
-        <KeyboardArrowDownIcon
-          fontSize="small"
-          className={classes.sortIndicator}
-        />
+        <KeyboardArrowDownIcon className={classes.sortIndicator} />
       )
     }
     return null
@@ -300,7 +293,6 @@ export default pluginManager => {
                       className={classes.unselectAllButton}
                       onClick={model.unselectAll}
                       disabled={!model.rowSet.selectedCount}
-                      size="small"
                       color="secondary"
                     >
                       <CropFreeIcon className={classes.columnButtonIcon} />

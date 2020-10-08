@@ -42,6 +42,63 @@ export const jbrowseDefaultPalette = {
   quaternary: refTheme.palette.augmentColor({ main: mandarin }),
 }
 
+export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
+  return {
+    MuiButton: {
+      size: 'small' as 'small',
+    },
+    MuiFilledInput: {
+      margin: 'dense' as 'dense',
+    },
+    MuiFormControl: {
+      margin: 'dense' as 'dense',
+    },
+    MuiFormHelperText: {
+      margin: 'dense' as 'dense',
+    },
+    MuiIconButton: {
+      size: 'small' as 'small',
+    },
+    MuiInputBase: {
+      margin: 'dense' as 'dense',
+    },
+    MuiInputLabel: {
+      margin: 'dense' as 'dense',
+    },
+    MuiList: {
+      dense: true,
+    },
+    MuiListItem: {
+      dense: true,
+    },
+    MuiOutlinedInput: {
+      margin: 'dense' as 'dense',
+    },
+    MuiFab: {
+      size: 'small' as 'small',
+    },
+    MuiTable: {
+      size: 'small' as 'small',
+    },
+    MuiTextField: {
+      margin: 'dense' as 'dense',
+      size: 'small' as 'small',
+    },
+    MuiToolbar: {
+      variant: 'dense' as 'dense',
+    },
+    MuiSvgIcon: {
+      fontSize: 'small' as 'small',
+    },
+    MuiToggleButtonGroup: {
+      size: 'small' as 'small',
+    },
+    MuiCheckbox: {
+      size: 'small' as 'small',
+    },
+  }
+}
+
 export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   const generatedPalette = deepmerge(jbrowseDefaultPalette, palette)
   return {
@@ -108,10 +165,9 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
 
 export const jbrowseBaseTheme: ThemeOptions = {
   palette: jbrowseDefaultPalette,
-  typography: {
-    fontSize: 12,
-  },
+  // typography: { fontSize: 12 },
   spacing: 4,
+  props: createJBrowseDefaultProps(),
   overrides: createJBrowseDefaultOverrides(),
 }
 
@@ -139,6 +195,7 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
   }
   theme = {
     ...theme,
+    props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
     overrides: deepmerge(
       createJBrowseDefaultOverrides(theme.palette),
       theme.overrides || {},
