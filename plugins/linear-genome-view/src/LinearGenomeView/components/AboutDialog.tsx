@@ -1,11 +1,11 @@
 import React from 'react'
-import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
-import SanitizedHTML from '@gmod/jbrowse-core/ui/SanitizedHTML'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 
 export const useStyles = makeStyles(theme => ({

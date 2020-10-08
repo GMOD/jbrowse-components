@@ -1,5 +1,5 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'

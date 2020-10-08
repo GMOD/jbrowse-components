@@ -1,4 +1,4 @@
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@jbrowse/core/util/io'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormLabel from '@material-ui/core/FormLabel'

@@ -1,5 +1,5 @@
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
+import { useDebounce } from '@jbrowse/core/util'
+import { stringToFunction } from '@jbrowse/core/util/functionStrings'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'

@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-bed",
+  "name": "@jbrowse/plugin-bed",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-bed.esm.js",
+  "distModule": "dist/plugin-bed.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -29,7 +29,7 @@
     "@gmod/tabix": "^1.4.6"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   }

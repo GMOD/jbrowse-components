@@ -1,9 +1,9 @@
-import { FileSelector } from '@gmod/jbrowse-core/ui'
+import { FileSelector } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
   getUnionSubTypes,
-} from '@gmod/jbrowse-core/util/mst-reflection'
+} from '@jbrowse/core/util/mst-reflection'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'

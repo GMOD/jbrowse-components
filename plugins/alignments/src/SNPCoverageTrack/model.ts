@@ -2,7 +2,7 @@ import { types } from 'mobx-state-tree'
 import {
   wiggleTrackModelFactory,
   WiggleTrackComponent,
-} from '@gmod/jbrowse-plugin-wiggle'
+} from '@jbrowse/plugin-wiggle'
 import Tooltip from './Tooltip'
 
 // using a map because it preserves order

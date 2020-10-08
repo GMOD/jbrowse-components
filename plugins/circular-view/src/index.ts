@@ -1,9 +1,6 @@
-import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
 import CircularViewFactory from './CircularView'
 import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'

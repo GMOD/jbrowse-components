@@ -1,11 +1,8 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { blockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { blockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import { VariantTrackConfigModel } from './configSchema'
 

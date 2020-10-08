@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
   isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 import {
   Region,
   NotificationLevel,
   TrackViewModel,
-} from '@gmod/jbrowse-core/util/types'
-import { getContainingView } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util/types'
+import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -24,7 +24,7 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode

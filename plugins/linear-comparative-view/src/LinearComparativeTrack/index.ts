@@ -4,18 +4,15 @@ import {
   readConfObject,
   ConfigurationReference,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import {
-  BaseTrackConfig,
-  BaseTrack,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseTrackConfig, BaseTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
   getSession,
   makeAbortableReaction,
-} from '@gmod/jbrowse-core/util'
-import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'

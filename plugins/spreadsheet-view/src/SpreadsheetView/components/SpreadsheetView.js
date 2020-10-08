@@ -11,7 +11,7 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
-  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
+  const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
 
   const ImportWizard = jbrequire(ImportWizardFactory)
   const Spreadsheet = jbrequire(SpreadsheetFactory)

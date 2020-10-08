@@ -1,5 +1,5 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 
 interface SortObject {

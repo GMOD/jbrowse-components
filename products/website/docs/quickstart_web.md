@@ -40,7 +40,7 @@ To install the JBrowse CLI tools, we expect node v10 or greater to be installed
 already, then you can use
 
 ```sh-session
-npm install -g @gmod/jbrowse-cli
+npm install -g @jbrowse/cli
 ```
 
 After running this command you can then test it with

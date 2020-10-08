@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-sequence",
+  "name": "@jbrowse/plugin-sequence",
   "version": "0.0.1-beta.13",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-sequence.esm.js",
+  "distModule": "dist/plugin-sequence.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -30,8 +30,8 @@
     "generic-filehandle": "^2.0.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",

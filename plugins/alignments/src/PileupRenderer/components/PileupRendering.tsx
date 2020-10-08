@@ -1,9 +1,9 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import { bpSpanPx } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
-import type { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import type { BlockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
 
 function PileupRendering(props: {
   blockKey: string

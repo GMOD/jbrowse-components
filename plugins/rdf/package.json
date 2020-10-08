@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-rdf",
+  "name": "@jbrowse/plugin-rdf",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 RDF resources",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-rdf.esm.js",
+  "distModule": "dist/plugin-rdf.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
     "string-template": "^1.0.0"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   }

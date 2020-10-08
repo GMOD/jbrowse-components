@@ -1,10 +1,10 @@
-import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
-import { RenderArgs } from '@gmod/jbrowse-core/rpc/coreRpcMethods'
-import { renameRegionsIfNeeded } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { RemoteAbortSignal } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+import { renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   FeatureStats,
   blankStats,

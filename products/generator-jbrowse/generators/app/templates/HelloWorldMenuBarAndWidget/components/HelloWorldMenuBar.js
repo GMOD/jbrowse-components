@@ -1,4 +1,4 @@
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession } from '@jbrowse/core/util'
 import AppBar from '@material-ui/core/AppBar'
 import Button from '@material-ui/core/Button'
 import { makeStyles } from '@material-ui/core/styles'

@@ -1,23 +1,23 @@
 import deepEqual from 'deep-equal'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import BoxRendererType, {
   LayoutSession,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
-import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
-import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
-import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
+import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'

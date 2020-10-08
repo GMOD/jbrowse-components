@@ -1,4 +1,4 @@
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@jbrowse/core/util/io'
 import { HubFile } from '@gmod/ucsc-hub'
 import Card from '@material-ui/core/Card'
 import CardActions from '@material-ui/core/CardActions'

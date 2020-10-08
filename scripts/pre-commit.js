@@ -14,11 +14,9 @@ function main() {
     .split(/[\r\n]+/)
   // If anything in the CLI code changed, re-generate the README docs and format
   if (changedFiles.some(fileName => fileName.includes('jbrowse-cli'))) {
-    spawn.sync(
-      'yarn',
-      ['lerna', 'run', '--scope', '@gmod/jbrowse-cli', 'docs'],
-      { stdio: 'inherit' },
-    )
+    spawn.sync('yarn', ['lerna', 'run', '--scope', '@jbrowse/cli', 'docs'], {
+      stdio: 'inherit',
+    })
     if (!changedFiles.includes('products/jbrowse-cli/README.md')) {
       changedFiles.push('products/jbrowse-cli/README.md')
     }

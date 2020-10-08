@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-circular-view",
+  "name": "@jbrowse/plugin-circular-view",
   "version": "0.0.1-beta.14",
   "description": "JBrowse 2 circular view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-circular-view.esm.js",
+  "distModule": "dist/plugin-circular-view.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
     "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"

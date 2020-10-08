@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-protein",
+  "name": "@jbrowse/plugin-protein",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "jbrowse-plugin-protein.esm.js",
+  "distModule": "dist/plugin-protein.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -24,7 +24,7 @@
   "author": "Garrett Stevens",
   "license": "MIT",
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "mobx-react": "^6.0.0",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"

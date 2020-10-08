@@ -63,4 +63,4 @@ and then run `serve`).
 
 We'll also be using the JBrowse CLI, although you can technically complete the
 tutorial without it. You can install it by making sure you have node installed
-and then running `[sudo] npm install -g @gmod/jbrowse-cli` (or `yarn global add @gmod/jbrowse-cli`). Check that it installed properly by running `jbrowse --help`.
+and then running `[sudo] npm install -g @jbrowse/cli` (or `yarn global add @jbrowse/cli`). Check that it installed properly by running `jbrowse --help`.

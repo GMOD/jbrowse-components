@@ -9,7 +9,7 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const InputAdornment = jbrequire('@material-ui/core/InputAdornment')
-  const { useDebounce } = jbrequire('@gmod/jbrowse-core/util')
+  const { useDebounce } = jbrequire('@jbrowse/core/util')
   const TextField = jbrequire('@material-ui/core/TextField')
 
   const useStyles = makeStyles((/* theme */) => {

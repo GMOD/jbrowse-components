@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, cleanup } from '@testing-library/react'
-import { guessAdapter } from '@gmod/jbrowse-core/util/tracks'
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { guessAdapter } from '@jbrowse/core/util/tracks'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import ConfirmTrack from './ConfirmTrack'
 
 // note work on this tomorrow, fix confirm track to work with alignments tracks

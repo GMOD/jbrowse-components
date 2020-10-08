@@ -1,5 +1,5 @@
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { stringify } from '@gmod/jbrowse-core/util'
+import { Menu } from '@jbrowse/core/ui'
+import { stringify } from '@jbrowse/core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'

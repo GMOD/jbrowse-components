@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-trackhub-registry",
+  "name": "@jbrowse/plugin-trackhub-registry",
   "version": "0.0.1-beta.12",
   "description": "Add a connection to The Track Hub Registry",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-trackhub-registry.esm.js",
+  "distModule": "dist/plugin-trackhub-registry.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -29,7 +29,7 @@
     "object-hash": "^1.3.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "dompurify": "^2.0.11",
     "mobx-react": "^6.0.0",

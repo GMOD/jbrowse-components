@@ -2,18 +2,18 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff from '@gmod/gff'
 import { Observer } from 'rxjs'
 
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 
 type Strand = '+' | '-' | '.' | '?'

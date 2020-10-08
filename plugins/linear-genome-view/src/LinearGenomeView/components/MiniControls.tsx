@@ -5,7 +5,7 @@ import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import Paper from '@material-ui/core/Paper'
-import Menu from '@gmod/jbrowse-core/ui/Menu'
+import Menu from '@jbrowse/core/ui/Menu'
 import { LinearGenomeViewModel } from '..'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {

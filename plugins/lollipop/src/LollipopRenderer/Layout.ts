@@ -1,6 +1,6 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 interface LayoutItem {
   uniqueId: string

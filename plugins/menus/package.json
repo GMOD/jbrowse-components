@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-menus",
+  "name": "@jbrowse/plugin-menus",
   "version": "0.0.1-beta.13",
   "description": "JBrowse 2 basic menus",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "jbrowse-plugin-menus.esm.js",
+  "distModule": "dist/plugin-menus.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -29,7 +29,7 @@
     "react-dropzone": "^10.1.0"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",

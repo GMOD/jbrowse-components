@@ -1,11 +1,11 @@
 {
-  "name": "@gmod/jbrowse-plugin-linear-genome-view",
+  "name": "@jbrowse/plugin-linear-genome-view",
   "version": "0.0.1-beta.15",
   "description": "JBrowse 2 linear genome view",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-linear-genome-view.esm.js",
+  "distModule": "dist/plugin-linear-genome-view.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -34,7 +34,7 @@
     "react-window": "^1.8.5"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",

@@ -1,5 +1,5 @@
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
+import { useDebounce } from '@jbrowse/core/util'
+import { App, StartScreen, theme } from '@jbrowse/core/ui'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 

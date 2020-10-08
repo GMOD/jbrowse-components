@@ -1,10 +1,10 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { Region } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import React from 'react'
 import './DivSequenceRendering.scss'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
