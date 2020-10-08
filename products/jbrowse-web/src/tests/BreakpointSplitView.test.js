@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/extend-expect'
 import { cleanup, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
-import { LocalFile } from 'generic-filehandle' // eslint-disable-line import/no-extraneous-dependencies
+import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
