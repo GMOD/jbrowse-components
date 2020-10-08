@@ -1,5 +1,8 @@
 # Upload website
-on: push
+on:
+  push:
+    branches:
+      - master
 name: Upload website
 jobs:
   build:
