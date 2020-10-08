@@ -29,7 +29,7 @@ jobs:
           cd ..
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --toc -o products/website/jbrowse2.pdf titlemod.md pdfcombined.md
+          args: --listings -H listings.tex --toc -o products/website/jbrowse2.pdf titlemod.md pdfcombined.md
       - name: Upload
         run: |
           cd products/website/
