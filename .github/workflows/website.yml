@@ -1,0 +1,23 @@
+# Upload jbrowse-web release artifact to jbrowse-web tag
+name: Upload website
+jobs:
+  main:
+    name: Build and test
+    runs-on: ubuntu-latest
+jobs:
+  build:
+    name: upload_web
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'update docs')"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: docker://pandoc/latex:2.9
+      - name: Install deps
+        run: yarn
+      - name: Build project
+        run: |
+          echo $RELEASE_VERSION
+          cd products/website/
+          yarn build
+          yarn deploy
