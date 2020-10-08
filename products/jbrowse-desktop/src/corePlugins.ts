@@ -5,7 +5,7 @@ import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import Filtering from '@jbrowse/plugin-filtering'
-import Gff3Tabix from '@jbrowse/plugin-gff3tabix'
+import Gff3 from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
@@ -28,7 +28,7 @@ export default [
   DataManagement,
   DotplotView,
   Filtering,
-  Gff3Tabix,
+  Gff3,
   LegacyJBrowse,
   LinearGenomeView,
   LinearComparativeView,

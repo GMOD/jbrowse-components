@@ -1,7 +1,7 @@
 {
-  "name": "@jbrowse/plugin-gff3tabix",
+  "name": "@jbrowse/plugin-gff3",
   "version": "0.0.1-beta.13",
-  "description": "JBrowse 2 gff3tabix.",
+  "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
     "jbrowse2"
@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/gff3tabix"
+    "directory": "plugins/gff3"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-gff3tabix.esm.js",
+  "distModule": "dist/plugin-gff3.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/gff3tabix",
+    "test": "cd ../..; jest plugins/gff3",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",

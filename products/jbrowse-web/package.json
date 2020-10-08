@@ -24,7 +24,7 @@
     "@jbrowse/plugin-data-management": "^0.0.1-beta.14",
     "@jbrowse/plugin-dotplot-view": "^0.0.1-beta.14",
     "@jbrowse/plugin-filtering": "^0.0.1-beta.12",
-    "@jbrowse/plugin-gff3tabix": "^0.0.1-beta.13",
+    "@jbrowse/plugin-gff3": "^0.0.1-beta.13",
     "@jbrowse/plugin-hic": "^0.0.1-beta.12",
     "@jbrowse/plugin-legacy-jbrowse": "^0.0.1-beta.12",
     "@jbrowse/plugin-linear-comparative-view": "^0.0.1-beta.14",
