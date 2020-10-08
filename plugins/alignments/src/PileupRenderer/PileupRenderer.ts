@@ -31,11 +31,12 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
-  sortObject: {
-    position: number
-    by: string
-  }
   showSoftClip: boolean
+  sortedBy: {
+    type: string
+    pos: number
+    refName: string
+  }
 }
 
 interface LayoutRecord {
@@ -54,7 +55,7 @@ interface PileupLayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortedBy: unknown
   showSoftClip: unknown
 }
 
@@ -63,14 +64,14 @@ interface CachedPileupLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortedBy: unknown
   showSoftClip: unknown
 }
 
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
 class PileupLayoutSession extends LayoutSession {
-  sortObject: unknown
+  sortedBy: unknown
 
   showSoftClip: unknown
 
@@ -82,7 +83,7 @@ class PileupLayoutSession extends LayoutSession {
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
-      deepEqual(this.sortObject, cachedLayout.sortObject) &&
+      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
       deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
     )
   }
@@ -95,7 +96,7 @@ class PileupLayoutSession extends LayoutSession {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
-        sortObject: this.sortObject,
+        sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
       }
     }
@@ -187,7 +188,7 @@ export default class PileupRenderer extends BoxRendererType {
       config,
       regions,
       bpPerPx,
-      sortObject,
+      sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
     } = props
@@ -203,8 +204,8 @@ export default class PileupRenderer extends BoxRendererType {
     const w = Math.max(minFeatWidth, pxPerBp)
 
     const sortedFeatures =
-      sortObject && sortObject.by && region.start === sortObject.position
-        ? sortFeature(features, sortObject)
+      sortedBy && sortedBy.type && region.start === sortedBy.pos
+        ? sortFeature(features, sortedBy)
         : null
 
     const featureMap = sortedFeatures || features

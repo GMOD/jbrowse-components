@@ -1,6 +1,8 @@
 import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
+
+import deepEqual from 'deep-equal'
 import { BaseTrack } from '@jbrowse/plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, getSnapshot, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -48,8 +50,13 @@ const stateModelFactory = (
       const { trackMenuItems } = self
       return {
         get pileupTrackConfig() {
+          const conf = getConf(self)
+          const { SNPCoverageRenderer, ...rest } = conf.renderers
           return {
-            ...getConf(self),
+            ...conf,
+            renderers: {
+              ...rest,
+            },
             type: 'PileupTrack',
             name: `${getConf(self, 'name')} pileup`,
             trackId: `${self.configuration.trackId}_pileup_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
@@ -79,8 +86,13 @@ const stateModelFactory = (
         },
 
         get snpCoverageTrackConfig() {
+          const conf = getConf(self)
+          const { SNPCoverageRenderer } = conf.renderers
           return {
-            ...getConf(self),
+            ...conf,
+            renderers: {
+              SNPCoverageRenderer,
+            },
             type: 'SNPCoverageTrack',
             name: `${getConf(self, 'name')} snpcoverage`,
             trackId: `${self.configuration.trackId}_snpcoverage_xyz`, // xyz to avoid someone accidentally namign the trackId similar to this
@@ -119,8 +131,27 @@ const stateModelFactory = (
         addDisposer(
           self,
           autorun(() => {
-            this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
-            this.setPileupTrack(self.pileupTrackConfig)
+            if (!self.SNPCoverageTrack) {
+              this.setSNPCoverageTrack(self.snpCoverageTrackConfig)
+            } else if (
+              !deepEqual(
+                self.snpCoverageTrackConfig,
+                getSnapshot(self.SNPCoverageTrack.configuration),
+              )
+            ) {
+              self.SNPCoverageTrack.setConfig(self.snpCoverageTrackConfig)
+            }
+
+            if (!self.PileupTrack) {
+              this.setPileupTrack(self.pileupTrackConfig)
+            } else if (
+              !deepEqual(
+                self.pileupTrackConfig,
+                getSnapshot(self.PileupTrack.configuration),
+              )
+            ) {
+              self.PileupTrack.setConfig(self.pileupTrackConfig)
+            }
           }),
         )
       },
