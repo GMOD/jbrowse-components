@@ -4,8 +4,8 @@ export default ConfigurationSchema(
   'NCListAdapter',
   {
     rootUrlTemplate: {
-      type: 'string',
-      defaultValue: '/path/to/my/{refseq}/trackData.json',
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/my/{refseq}/trackData.json' },
     },
     refNames: {
       type: 'stringArray',

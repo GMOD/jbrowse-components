@@ -28,7 +28,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
     this.nclist = new NCListStore({
       baseUrl: '',
-      urlTemplate: rootUrlTemplate,
+      urlTemplate: rootUrlTemplate.uri,
       readFile: (url: string) => openUrl(url).readFile(),
     })
   }
