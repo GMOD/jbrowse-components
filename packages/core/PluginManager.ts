@@ -118,7 +118,7 @@ type AnyFunction = (...args: any) => any
 export default class PluginManager {
   plugins: Plugin[] = []
 
-  elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
+  elementCreationSchedule? = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
     'adapter',
     'track',
@@ -179,6 +179,8 @@ export default class PluginManager {
   createPluggableElements() {
     // run the creation callbacks for each element type in order.
     // see elementCreationSchedule above for the creation order
+    if (!this.elementCreationSchedule)
+      throw new Error('createPluggableElements already run')
     this.elementCreationSchedule.run()
     delete this.elementCreationSchedule
     return this
@@ -233,6 +235,10 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
+    if (!this.elementCreationSchedule)
+      throw new Error(
+        'cannot add new element types, createPluggableElements has already been run',
+      )
     this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
       if (!newElement.name)
