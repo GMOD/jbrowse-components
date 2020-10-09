@@ -144,10 +144,9 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            // @ts-ignore
-            ...(session.getTrackActionMenuItems &&
-              // @ts-ignore
-              session.getTrackActionMenuItems(trackConf)),
+            ...(session.getTrackActionMenuItems
+              ? session.getTrackActionMenuItems(trackConf)
+              : []),
             ...track.trackMenuItems,
           ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
         />
