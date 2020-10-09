@@ -34,15 +34,13 @@ function debounce(func, wait) {
   return debounced
 }
 
-function revertUris(config) {
+function deleteBaseUris(config) {
   if (typeof config === 'object') {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
-        revertUris(config[key])
+        deleteBaseUris(config[key])
       } else if (key === 'uri') {
-        // uri : volvox.2bit
-        config[key] = config.originalUri
-        delete config.originalUri
+        delete config.baseUri
       }
     }
   }
@@ -104,7 +102,7 @@ const JBrowse = observer(({ pluginManager }) => {
     onSnapshot(rootModel, async snapshot => {
       if (adminMode) {
         const config = JSON.parse(JSON.stringify(snapshot.jbrowse))
-        revertUris(config)
+        deleteBaseUris(config)
         const payload = { adminKey: adminKeyParam, config }
 
         const response = await fetch('/updateConfig', {

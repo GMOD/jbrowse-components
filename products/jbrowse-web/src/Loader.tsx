@@ -119,7 +119,7 @@ export function Loader() {
     async function fetchConfig() {
       const configLocation = {
         uri: configQueryParam || 'config.json',
-        originalUri: '',
+        baseUri: '',
       }
       let configText = ''
       try {
@@ -276,8 +276,7 @@ function addRelativUris(config: Config, configUri: URL) {
       if (typeof config[key] === 'object') {
         addRelativUris(config[key], configUri)
       } else if (key === 'uri') {
-        config.originalUri = config[key]
-        config[key] = new URL(config[key], configUri).href
+        config.baseUri = configUri.href
       }
     }
   }
