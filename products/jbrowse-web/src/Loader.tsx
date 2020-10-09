@@ -366,7 +366,6 @@ export function Loader() {
     if (lastAutosave)
       localStorage.setItem('localSaved-previousAutosave', lastAutosave)
     if (sessionQueryParam) {
-      // eslint-disable-next-line guard-for-in
       const foundLocalSession =
         localStorage.getItem(sessionQueryParam) ||
         sessionStorage.getItem(sessionQueryParam)
