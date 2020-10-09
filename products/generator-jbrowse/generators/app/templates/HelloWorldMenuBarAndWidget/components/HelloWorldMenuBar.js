@@ -27,7 +27,7 @@ function HelloWorld({ model }) {
 
   return (
     <AppBar className={classes.root} position="static">
-      <Toolbar variant="dense">
+      <Toolbar>
         <Button onClick={() => onClick(session)} color="inherit">
           Click Me!
         </Button>

@@ -50,7 +50,6 @@ const FormRow = observer(
           }}
           error={Boolean(error)}
           disabled={Boolean(error)}
-          margin="dense"
           className={classes.importFormEntry}
         >
           {assemblyNames.map((name, idx) => (

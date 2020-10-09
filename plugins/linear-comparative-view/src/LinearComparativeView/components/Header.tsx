@@ -54,9 +54,9 @@ const InteractWithSquiggles = observer(
         title="Toggle interacting with the overlay"
       >
         {model.interactToggled ? (
-          <LocationSearchingIcon fontSize="small" />
+          <LocationSearchingIcon />
         ) : (
-          <LocationDisabledIcon fontSize="small" />
+          <LocationDisabledIcon />
         )}
       </IconButton>
     )
@@ -71,9 +71,9 @@ const LinkViews = observer(
         title="Toggle linked scrolls and behavior across views"
       >
         {model.linkViews ? (
-          <LinkIcon color="secondary" fontSize="small" />
+          <LinkIcon color="secondary" />
         ) : (
-          <LinkOffIcon color="secondary" fontSize="small" />
+          <LinkOffIcon color="secondary" />
         )}
       </IconButton>
     )
@@ -87,9 +87,9 @@ const Sync = observer(({ model }: { model: LinearComparativeViewModel }) => {
       title="Toggle rendering intraview links"
     >
       {model.showIntraviewLinks ? (
-        <LeakAddIcon color="secondary" fontSize="small" />
+        <LeakAddIcon color="secondary" />
       ) : (
-        <LeakRemoveIcon color="secondary" fontSize="small" />
+        <LeakRemoveIcon color="secondary" />
       )}
     </IconButton>
   )

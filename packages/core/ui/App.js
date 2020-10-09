@@ -89,7 +89,7 @@ function App({ session }) {
       <div className={classes.menuBarAndComponents}>
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">
-            <Toolbar variant="dense">
+            <Toolbar>
               {session.menus.map(menu => (
                 <DropDownMenu
                   key={menu.label}

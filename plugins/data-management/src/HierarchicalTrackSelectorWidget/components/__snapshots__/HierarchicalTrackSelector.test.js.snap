@@ -112,7 +112,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -314,7 +314,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                                 >
                                   <svg
                                     aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                                    class="MuiSvgIcon-root"
                                     focusable="false"
                                     viewBox="0 0 24 24"
                                   >
@@ -447,7 +447,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                                             >
                                               <svg
                                                 aria-hidden="true"
-                                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                                                class="MuiSvgIcon-root"
                                                 focusable="false"
                                                 viewBox="0 0 24 24"
                                               >
@@ -619,7 +619,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -758,7 +758,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                        class="MuiSvgIcon-root"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
@@ -827,7 +827,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                        class="MuiSvgIcon-root"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >

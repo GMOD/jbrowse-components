@@ -36,6 +36,7 @@ export default function JBrowseWeb(
           type: 'boolean',
           defaultValue: false,
         },
+        theme: { type: 'frozen', defaultValue: {} },
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),

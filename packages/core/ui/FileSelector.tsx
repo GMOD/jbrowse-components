@@ -62,7 +62,6 @@ const FileLocationEditor = observer(
             <ToggleButtonGroup
               value={fileOrUrlState}
               exclusive
-              size="small"
               onChange={handleFileOrUrlChange}
               aria-label="file or url picker"
             >
@@ -104,7 +103,6 @@ const UrlChooser = (props: {
   }
   return (
     <TextField
-      margin="dense"
       fullWidth
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={handleChange}
@@ -134,7 +132,7 @@ const LocalFileChooser = observer(
 
     return (
       <div style={{ position: 'relative' }}>
-        <Button size="small" variant="outlined" component="label">
+        <Button variant="outlined" component="label">
           Choose File
           <input
             type="file"

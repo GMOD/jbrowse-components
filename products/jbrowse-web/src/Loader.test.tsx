@@ -49,9 +49,12 @@ if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
 if (!window.BroadcastChannel) window.BroadcastChannel = BroadcastChannelMock
 
-window.requestIdleCallback = cb => cb({ didTimeout: true })
-window.cancelIdleCallback = () => {}
-
+window.requestIdleCallback = (
+  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
+) => {
+  cb({ didTimeout: true, timeRemaining: () => 0 })
+  return 1
+}
 const getFile = (url: string) => new LocalFile(require.resolve(`../${url}`))
 // fakes server responses from local file object with fetchMock
 const readBuffer = async (url: string, args: RequestInit) => {
