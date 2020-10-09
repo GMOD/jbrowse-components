@@ -3,7 +3,7 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "twoBitLocation": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "/path/to/my.2bit",
   },
   "type": "TwoBitAdapter",
@@ -13,11 +13,11 @@ Object {
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "faiLocation": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "/path/to/seq.fa.fai",
   },
   "fastaLocation": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "/path/to/seq.fa",
   },
   "type": "IndexedFastaAdapter",

@@ -3,7 +3,7 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "rootUrlTemplate": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "/path/to/my/{refseq}/trackData.json",
   },
   "type": "NCListAdapter",

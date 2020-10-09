@@ -3,7 +3,7 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "bigWigLocation": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "/path/to/my.bw",
   },
   "type": "BigWigAdapter",

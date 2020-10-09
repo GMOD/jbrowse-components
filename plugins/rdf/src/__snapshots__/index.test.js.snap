@@ -3,7 +3,7 @@
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
   "endpoint": Object {
-    "originalUri": "",
+    "baseUri": "",
     "uri": "https://somesite.com/sparql",
   },
   "type": "SPARQLAdapter",
