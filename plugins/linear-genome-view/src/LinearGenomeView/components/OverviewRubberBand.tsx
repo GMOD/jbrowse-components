@@ -94,6 +94,12 @@ function OverviewRubberBand({
         currentX !== undefined
       ) {
         if (Math.abs(currentX - startX) > 3) {
+          console.log('---------------')
+          console.log('startX', startX)
+          console.log('currentX', currentX)
+          console.log('pxtobp startX', overview.pxToBp(startX))
+          console.log('pxtobp currentX', overview.pxToBp(currentX))
+          console.log('------------------')
           model.zoomToDisplayedRegions(
             overview.pxToBp(startX),
             overview.pxToBp(currentX),
@@ -152,6 +158,11 @@ function OverviewRubberBand({
       setGuideX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
+      // console.log(
+      //   overview.pxToBp(
+      //     event.clientX - controlsRef.current.getBoundingClientRect().left,
+      //   ),
+      // )
     }
   }
 

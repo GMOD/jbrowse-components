@@ -790,31 +790,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
       zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
         if (leftPx === undefined || rightPx === undefined) return
 
-        const singleRefSeq = leftPx.refName === rightPx.refName
+        const singleRefSeq =
+          leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
         // zooming into one displayed Region
-        const reversedOffsets = rightPx.reversed
-          ? rightPx.coord > leftPx.coord
-          : rightPx.coord < leftPx.coord
-
         if (
-          (singleRefSeq && reversedOffsets) ||
-          self.idxInDisplayedRegion(leftPx.refName) >
-            self.idxInDisplayedRegion(rightPx.refName)
+          (singleRefSeq && rightPx.offset < leftPx.offset) ||
+          leftPx.index > rightPx.index
         ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
-        const startIdx = self.idxInDisplayedRegion(leftPx.refName)
-        const endIdx = self.idxInDisplayedRegion(rightPx.refName)
         const startOffset = {
           start: leftPx.start,
           end: leftPx.end,
-          index: startIdx,
+          index: leftPx.index,
           offset: leftPx.offset,
         }
         const endOffset = {
           start: rightPx.start,
           end: rightPx.end,
-          index: endIdx,
+          index: rightPx.index,
           offset: rightPx.offset,
         }
         if (startOffset && endOffset) {

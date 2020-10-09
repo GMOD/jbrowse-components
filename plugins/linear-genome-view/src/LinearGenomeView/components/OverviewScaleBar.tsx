@@ -168,17 +168,17 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           ? parentRegion.end - parentRegion.start
           : 0 // check for when region is smaller than parent region
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
-
         const labels = []
         for (let index = 0; index < numLabels; index++) {
+          // fix these for regions with the same name
           seq.reversed
-            ? labels.unshift(index * gridPitch.majorPitch)
-            : labels.push((index + 1) * gridPitch.majorPitch)
+            ? labels.unshift(index * gridPitch.majorPitch + seq.start)
+            : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
         }
         return (
           // each displayedRegion
           <Paper
-            key={seq.refName}
+            key={`${seq.refName}-${idx.toLocaleString('en-US')}`}
             style={{
               minWidth: regionLength / scale,
               marginRight:
