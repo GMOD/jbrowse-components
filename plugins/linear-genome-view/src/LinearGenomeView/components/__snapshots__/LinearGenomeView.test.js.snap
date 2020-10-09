@@ -76,7 +76,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -96,7 +96,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
             tabindex="0"
             type="button"
           >
@@ -119,7 +119,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
             tabindex="0"
             type="button"
           >
@@ -145,13 +145,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             aria-expanded="false"
             class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
             role="combobox"
-            style="margin: 7px;"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+              style="margin: 7px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd MuiInputBase-marginDense MuiOutlinedInput-marginDense"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
                 style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
                 <input
@@ -159,7 +159,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   aria-invalid="false"
                   autocapitalize="none"
                   autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
                   id="refNameAutocomplete-lgv"
                   spellcheck="false"
                   type="text"
@@ -214,14 +214,15 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              style="margin: 7px 7px 7px 21px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 32px;"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart"
+                style="background: rgba(255, 255, 255, 0.8); height: 32px;"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                  class="MuiSvgIcon-root"
                   focusable="false"
                   viewBox="0 0 24 24"
                 >
@@ -231,7 +232,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 </svg>
                 <input
                   aria-invalid="false"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
                   type="text"
                   value="ctgA:1..100"
                 />
@@ -273,7 +274,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                class="MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
@@ -320,7 +321,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                class="MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
@@ -464,7 +465,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -484,7 +485,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -515,7 +516,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -562,27 +563,23 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   data-html-size="393"
                 >
                   <div
-                    classname="ssr-container-inner"
+                    class="PileupRendering"
+                    data-testid="pileup-normal"
+                    style="position:relative;width:100px;height:1px"
                   >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:100px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:100px;height:1px;position:absolute;left:0;top:0"
-                        width="200"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="100"
-                      />
-                    </div>
+                    <canvas
+                      data-testid="prerendered_canvas"
+                      height="2"
+                      style="width:100px;height:1px;position:absolute;left:0;top:0"
+                      width="200"
+                    />
+                    <canvas
+                      class="highlightOverlayCanvas"
+                      data-testid="pileup_overlay_canvas"
+                      height="1"
+                      style="position:absolute;left:0;top:0"
+                      width="100"
+                    />
                   </div>
                 </div>
               </div>
@@ -855,7 +852,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -875,7 +872,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
             tabindex="0"
             type="button"
           >
@@ -898,7 +895,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton MuiButton-outlinedSizeSmall MuiButton-sizeSmall"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
             tabindex="0"
             type="button"
           >
@@ -923,14 +920,15 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              style="margin: 7px 7px 7px 21px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart MuiInputBase-marginDense MuiOutlinedInput-marginDense"
-                style="background: rgba(255, 255, 255, 0.8); margin: 7px; height: 32px;"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart"
+                style="background: rgba(255, 255, 255, 0.8); height: 32px;"
               >
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                  class="MuiSvgIcon-root"
                   focusable="false"
                   viewBox="0 0 24 24"
                 >
@@ -940,7 +938,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 </svg>
                 <input
                   aria-invalid="false"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart MuiInputBase-inputMarginDense MuiOutlinedInput-inputMarginDense"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
                   type="text"
                   value="ctgA:1..100;ctgB:1,001..1,698"
                 />
@@ -981,7 +979,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                class="MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
@@ -1031,7 +1029,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+                class="MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
@@ -1468,7 +1466,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -1488,7 +1486,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -1519,7 +1517,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -1566,27 +1564,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   data-html-size="393"
                 >
                   <div
-                    classname="ssr-container-inner"
+                    class="PileupRendering"
+                    data-testid="pileup-normal"
+                    style="position:relative;width:100px;height:1px"
                   >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:100px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:100px;height:1px;position:absolute;left:0;top:0"
-                        width="200"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="100"
-                      />
-                    </div>
+                    <canvas
+                      data-testid="prerendered_canvas"
+                      height="2"
+                      style="width:100px;height:1px;position:absolute;left:0;top:0"
+                      width="200"
+                    />
+                    <canvas
+                      class="highlightOverlayCanvas"
+                      data-testid="pileup_overlay_canvas"
+                      height="1"
+                      style="position:absolute;left:0;top:0"
+                      width="100"
+                    />
                   </div>
                 </div>
               </div>
@@ -1603,27 +1597,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   data-html-size="397"
                 >
                   <div
-                    classname="ssr-container-inner"
+                    class="PileupRendering"
+                    data-testid="pileup-normal"
+                    style="position:relative;width:1000px;height:1px"
                   >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:1000px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                        width="2000"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="1000"
-                      />
-                    </div>
+                    <canvas
+                      data-testid="prerendered_canvas"
+                      height="2"
+                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
+                      width="2000"
+                    />
+                    <canvas
+                      class="highlightOverlayCanvas"
+                      data-testid="pileup_overlay_canvas"
+                      height="1"
+                      style="position:absolute;left:0;top:0"
+                      width="1000"
+                    />
                   </div>
                 </div>
               </div>
@@ -1658,7 +1648,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-dragHandleIcon MuiSvgIcon-fontSizeSmall"
+            class="MuiSvgIcon-root makeStyles-dragHandleIcon"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -1678,7 +1668,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -1709,7 +1699,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall"
+              class="MuiSvgIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -1756,27 +1746,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   data-html-size="393"
                 >
                   <div
-                    classname="ssr-container-inner"
+                    class="PileupRendering"
+                    data-testid="pileup-normal"
+                    style="position:relative;width:100px;height:1px"
                   >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:100px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:100px;height:1px;position:absolute;left:0;top:0"
-                        width="200"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="100"
-                      />
-                    </div>
+                    <canvas
+                      data-testid="prerendered_canvas"
+                      height="2"
+                      style="width:100px;height:1px;position:absolute;left:0;top:0"
+                      width="200"
+                    />
+                    <canvas
+                      class="highlightOverlayCanvas"
+                      data-testid="pileup_overlay_canvas"
+                      height="1"
+                      style="position:absolute;left:0;top:0"
+                      width="100"
+                    />
                   </div>
                 </div>
               </div>
@@ -1793,27 +1779,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   data-html-size="397"
                 >
                   <div
-                    classname="ssr-container-inner"
+                    class="PileupRendering"
+                    data-testid="pileup-normal"
+                    style="position:relative;width:1000px;height:1px"
                   >
-                    <div
-                      class="PileupRendering"
-                      data-testid="pileup-normal"
-                      style="position:relative;width:1000px;height:1px"
-                    >
-                      <canvas
-                        data-testid="prerendered_canvas"
-                        height="2"
-                        style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                        width="2000"
-                      />
-                      <canvas
-                        class="highlightOverlayCanvas"
-                        data-testid="pileup_overlay_canvas"
-                        height="1"
-                        style="position:absolute;left:0;top:0"
-                        width="1000"
-                      />
-                    </div>
+                    <canvas
+                      data-testid="prerendered_canvas"
+                      height="2"
+                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
+                      width="2000"
+                    />
+                    <canvas
+                      class="highlightOverlayCanvas"
+                      data-testid="pileup_overlay_canvas"
+                      height="1"
+                      style="position:absolute;left:0;top:0"
+                      width="1000"
+                    />
                   </div>
                 </div>
               </div>

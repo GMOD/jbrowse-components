@@ -19,7 +19,7 @@ function HelloWorld({ model }) {
 
   return (
     <AppBar className={classes.root} position="static">
-      <Toolbar variant="dense">
+      <Toolbar>
         <Typography variant="h6" color="inherit">
           Hello, World! ({model.id})
         </Typography>

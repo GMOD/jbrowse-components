@@ -64,7 +64,7 @@ export default pluginManager => {
           style={{ height }}
         >
           <Grid item className={classes.filterIconBg}>
-            <FilterIcon className={classes.filterIcon} fontSize="small" />
+            <FilterIcon className={classes.filterIcon} />
           </Grid>
           <Grid item>
             <IconButton
@@ -72,7 +72,7 @@ export default pluginManager => {
               title="remove filter"
               color="secondary"
             >
-              <CloseIcon fontSize="small" />
+              <CloseIcon />
             </IconButton>
             <Typography className={classes.columnName} component="span">
               {columnDefinition.name}

@@ -243,7 +243,6 @@ const BaseTrack = types
                 self.setUserBpPerPxLimit(view.bpPerPx)
                 self.reload()
               }}
-              size="small"
               variant="outlined"
             >
               Force Load
