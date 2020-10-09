@@ -34,9 +34,6 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
-interface DynamoDbSession {
-  session?: string
-}
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
