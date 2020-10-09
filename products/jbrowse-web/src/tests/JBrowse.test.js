@@ -142,7 +142,7 @@ test('404 sequence file', async () => {
 test('looks at about this track dialog', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
-  const { findByTestId, findByText, findAllByTestId } = render(
+  const { findByTestId, findAllByText, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -151,5 +151,5 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('About this track'))
-  await findByText('SQ')
-}, 10000)
+  await findAllByText('SQ')
+})
