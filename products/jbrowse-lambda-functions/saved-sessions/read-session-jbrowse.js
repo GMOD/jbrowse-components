@@ -30,10 +30,10 @@ exports.handler = async event => {
     return response
   }
 
-  const { session } = tableData.Item
+  const sessionObj = tableData.Item
   const response = {
     statusCode: 200,
-    body: JSON.stringify({ session }),
+    body: JSON.stringify(sessionObj),
   }
   return response
 }

@@ -159,6 +159,7 @@ export function Loader() {
       setSessString(data || '') // setting querys do not count for change rerender
     }
 
+    // wrap the sessionstorage object in an object, and grab one level inner
     async function readSessionFromDynamo() {
       if (loadingSharedSession && sessionQueryParam) {
         const sessionId = sessionQueryParam.split('share-')[1]
@@ -238,17 +239,21 @@ export function Loader() {
 
         if (!foundLocalSession) {
           bc1.postMessage(sessionQueryParam)
-          const result = await new Promise((resolve, reject) => {
-            bc2.onmessage = msg => {
-              resolve(msg.data)
-            }
-            setTimeout(() => {
-              reject()
-            }, 1000)
-          })
-          const localId = `local-${uuid.v4()}`
-          sessionStorage.setItem(localId, result as string)
-          setData(localId)
+          try {
+            const result = await new Promise((resolve, reject) => {
+              bc2.onmessage = msg => {
+                resolve(msg.data)
+              }
+              setTimeout(() => {
+                reject()
+              }, 1000)
+            })
+            const localId = `local-${uuid.v4()}`
+            sessionStorage.setItem(localId, result as string)
+            setData(localId)
+          } catch (e) {
+            console.error(e)
+          }
         }
       }
     })()
@@ -428,7 +433,7 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-// if(loadingState) { return <CircularProgress /> } put in render return
+
 export default () => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
