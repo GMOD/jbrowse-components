@@ -19,11 +19,8 @@ import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const scaleBarColor = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      theme.palette.tertiary.light
+    ? theme.palette.tertiary.light
     : theme.palette.primary.light
   return {
     scaleBar: {
@@ -92,11 +89,8 @@ const Polygon = observer(
     overview.setVolatileWidth(width)
     overview.showAllRegions()
 
-    // @ts-ignore
     const polygonColor = theme.palette.tertiary
-      ? // prettier-ignore
-        // @ts-ignore
-        theme.palette.tertiary.light
+      ? theme.palette.tertiary.light
       : theme.palette.primary.light
     return (
       <svg

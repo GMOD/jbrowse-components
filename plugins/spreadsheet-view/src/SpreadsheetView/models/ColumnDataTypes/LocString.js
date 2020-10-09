@@ -71,7 +71,6 @@ export default pluginManager => {
           value={filterModel.locString}
           onChange={evt => filterModel.setLocString(evt.target.value)}
           className={classes.textFilterControl}
-          margin="dense"
           InputProps={{
             endAdornment: (
               <InputAdornment

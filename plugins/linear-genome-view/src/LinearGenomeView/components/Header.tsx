@@ -71,7 +71,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
         session.visibleWidget.view.id === model.id
       }
     >
-      <TrackSelectorIcon fontSize="small" />
+      <TrackSelectorIcon />
     </ToggleButton>
   )
 })
@@ -108,13 +108,12 @@ const Search = observer(({ model }: { model: LGV }) => {
         onChange={event => setValue(event.target.value)}
         className={classes.input}
         variant="outlined"
-        size="small"
         value={value === undefined ? visibleLocStrings : value}
+        style={{ margin: SPACING, marginLeft: SPACING * 3 }}
         InputProps={{
-          startAdornment: <SearchIcon fontSize="small" />,
+          startAdornment: <SearchIcon />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
-            margin: SPACING,
             height: WIDGET_HEIGHT,
           },
         }}
@@ -128,7 +127,6 @@ function PanControls({ model }: { model: LGV }) {
   return (
     <>
       <Button
-        size="small"
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
@@ -136,7 +134,6 @@ function PanControls({ model }: { model: LGV }) {
         <ArrowBackIcon />
       </Button>
       <Button
-        size="small"
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
@@ -173,17 +170,14 @@ export default observer(({ model }: { model: LGV }) => {
       <FormGroup row>
         <PanControls model={model} />
         <RefNameAutocomplete
-          style={{
-            margin: SPACING,
-          }}
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}
           defaultRegionName={displayedRegions.length > 1 ? '' : refName}
           model={model}
           TextFieldProps={{
             variant: 'outlined',
-            size: 'small',
             className: classes.headerRefName,
+            style: { margin: SPACING },
             InputProps: {
               style: {
                 padding: 0,

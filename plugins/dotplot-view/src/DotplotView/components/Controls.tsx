@@ -47,7 +47,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowLeft fontSize="small" />
+          <ArrowLeft />
         </IconButton>
 
         <IconButton
@@ -58,7 +58,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowRight fontSize="small" />
+          <ArrowRight />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -68,7 +68,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowDown fontSize="small" />
+          <ArrowDown />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -78,7 +78,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowUp fontSize="small" />
+          <ArrowUp />
         </IconButton>
         <IconButton
           onClick={model.zoomOutButton}

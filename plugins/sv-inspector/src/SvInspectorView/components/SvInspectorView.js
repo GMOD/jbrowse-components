@@ -70,7 +70,7 @@ export default pluginManager => {
             data-testid="sv_inspector_view_open"
             color="secondary"
           >
-            <FolderOpenIcon fontSize="small" />
+            <FolderOpenIcon />
           </IconButton>
         </Grid>
       </Grid>
@@ -97,7 +97,6 @@ export default pluginManager => {
                     evt.target.checked,
                   )
                 }
-                size="small"
               />
             }
             label="show only regions with data"

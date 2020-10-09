@@ -36,6 +36,6 @@ jobs:
       - name: Upload
         run: |
           cd products/website/
-          aws s3 sync build s3://jbrowse.org/
+          aws s3 sync build s3://jbrowse.org/jb2/
           aws s3 cp jbrowse2.pdf s3://jbrowse.org/jb2/
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"

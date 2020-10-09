@@ -127,7 +127,6 @@ function BlockError({
           <Button
             data-testid="reload_button"
             onClick={reload}
-            size="small"
             startIcon={<RefreshIcon />}
           >
             Reload

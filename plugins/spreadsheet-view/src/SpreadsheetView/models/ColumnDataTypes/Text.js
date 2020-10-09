@@ -96,7 +96,6 @@ export default pluginManager => {
           value={filterModel.stringToFind}
           onChange={evt => filterModel.setString(evt.target.value)}
           className={classes.textFilterControl}
-          margin="dense"
           InputProps={{
             endAdornment: (
               <InputAdornment
