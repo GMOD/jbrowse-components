@@ -433,15 +433,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
         const localId = `localSaved-${uuid.v4()}`
-        localStorage.setItem(localId, JSON.stringify(sessionSnapshot))
+        localStorage.setItem(
+          localId,
+          JSON.stringify({ session: sessionSnapshot }),
+        )
         return localId
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        // return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
-
         for (const [key, value] of Object.entries(localStorage)) {
-          if (value === sessionSnapshot) {
+          const sessionString = JSON.stringify(JSON.parse(value).session)
+          if (sessionString === JSON.stringify(sessionSnapshot)) {
             localStorage.removeItem(key)
             break
           }

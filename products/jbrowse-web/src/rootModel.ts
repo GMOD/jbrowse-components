@@ -48,27 +48,30 @@ export default function RootModel(
     })
     .views(() => ({
       get savedSessions() {
-        // return getParent(self).jbrowse.savedSessions
         return Object.entries(localStorage)
           .filter(obj => obj[0].startsWith('localSaved-'))
-          .map(entry => JSON.parse(entry[1]))
+          .map(entry => JSON.parse(entry[1]).session)
       },
       get savedSessionNames() {
         return this.savedSessions.map(savedSession => savedSession.name)
       },
-
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
         const params = new URLSearchParams(locationUrl.search)
         return params?.get('session')?.split('local-')[1]
       },
-    }))
-    .actions(self => ({
-      isUnsavedSession() {
+      get hasRecoverableAutosave() {
+        return !!Object.keys(localStorage).find(
+          key => key === 'localSaved-previousAutosave',
+        )
+      },
+      get isUnsavedSession() {
         const locationUrl = new URL(window.location.href)
         const params = new URLSearchParams(locationUrl.search)
         return params?.get('session')?.startsWith('local-')
       },
+    }))
+    .actions(self => ({
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
@@ -84,7 +87,7 @@ export default function RootModel(
 
         const localId = `local-${uuid.v4()}`
         sessionStorage.clear()
-        sessionStorage.setItem(localId, JSON.stringify(newSession))
+        sessionStorage.setItem(localId, JSON.stringify({ session: newSession }))
         this.setSessionUuidInUrl(localId)
         this.setSession(newSession)
         return localId
@@ -96,16 +99,28 @@ export default function RootModel(
 
           const snapInSession = Object.entries(sessionStorage)
             .filter(obj => obj[0].startsWith('local-'))
-            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
+            .find(
+              sessionSnap =>
+                JSON.parse(sessionSnap[1]).session.name === oldname,
+            )
 
           const snapInLocal = Object.entries(localStorage)
             .filter(obj => obj[0].startsWith('localSaved-'))
-            .find(sessionSnap => JSON.parse(sessionSnap[1]).name === oldname)
+            .find(
+              sessionSnap =>
+                JSON.parse(sessionSnap[1]).session.name === oldname,
+            )
           snapshot.name = sessionName
           if (snapInSession)
-            sessionStorage.setItem(snapInSession[0], JSON.stringify(snapshot))
+            sessionStorage.setItem(
+              snapInSession[0],
+              JSON.stringify({ session: snapshot }),
+            )
           else if (snapInLocal)
-            localStorage.setItem(snapInLocal[0], JSON.stringify(snapshot))
+            localStorage.setItem(
+              snapInLocal[0],
+              JSON.stringify({ session: snapshot }),
+            )
           this.setSession(snapshot)
         }
       },
@@ -123,7 +138,7 @@ export default function RootModel(
           snapshot.name = newSnapshotName
           const localId = `local-${uuid.v4()}`
           sessionStorage.clear()
-          sessionStorage.setItem(localId, JSON.stringify(snapshot))
+          sessionStorage.setItem(localId, JSON.stringify({ session: snapshot }))
           this.setSessionUuidInUrl(localId)
           this.setSession(snapshot)
         }
@@ -131,23 +146,23 @@ export default function RootModel(
       activateSession(name: string) {
         const newSessionSnapshot = Object.entries(localStorage)
           .filter(obj => obj[0].startsWith('localSaved-'))
-          .find(sessionSnap => JSON.parse(sessionSnap[1]).name === name)
+          .find(sessionSnap => JSON.parse(sessionSnap[1]).session.name === name)
 
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
           )
 
-        const [localId, snapshot] = newSessionSnapshot
+        const [localId, sessionObj] = newSessionSnapshot
         this.setSessionUuidInUrl(localId)
-        this.setSession(JSON.parse(snapshot))
+        this.setSession(JSON.parse(sessionObj).session)
       },
       saveSessionToLocalStorage() {
-        if (self.session) {
+        if (self.session && self.isUnsavedSession) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           const localId = `localSaved-${self.currentSessionId || uuid.v4()}`
           try {
-            localStorage.setItem(localId, JSON.stringify(snapshot))
+            localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
           } catch (e) {
             if (e.code === '22' || e.code === '1024') {
               // eslint-disable-next-line no-alert
@@ -161,11 +176,14 @@ export default function RootModel(
       loadAutosaveSession() {
         const autosavedSession = JSON.parse(
           localStorage.getItem('localSaved-previousAutosave') || '',
-        )
+        ).session
         autosavedSession.name = `${autosavedSession.name}-restored`
         const localId = `local-${uuid.v4()}`
         sessionStorage.clear()
-        sessionStorage.setItem(localId, JSON.stringify(autosavedSession))
+        sessionStorage.setItem(
+          localId,
+          JSON.stringify({ session: autosavedSession }),
+        )
         this.setSessionUuidInUrl(localId)
         this.setSession(autosavedSession)
         return localId
@@ -193,7 +211,7 @@ export default function RootModel(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 let result
-                if (self.isUnsavedSession())
+                if (self.isUnsavedSession)
                   // eslint-disable-next-line no-alert
                   result = window.confirm(
                     'You have unsaved changes. Click OK if you would like to save before continuing',
@@ -209,9 +227,7 @@ export default function RootModel(
               onClick: (session: any) => {
                 session.loadAutosaveSession()
               },
-              disabled: !Object.keys(localStorage).find(
-                key => key === 'localSaved-previousAutosave',
-              ),
+              disabled: !self.hasRecoverableAutosave,
             },
           ],
         },

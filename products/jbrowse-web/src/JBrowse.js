@@ -42,14 +42,21 @@ const JBrowse = observer(({ pluginManager }) => {
   // updates the session or local storage sessions + autosave
   useEffect(() => {
     function updateLocalSession(snapshot) {
+      const toStore = JSON.stringify({ session: snapshot })
+      const autosaveStore = JSON.stringify({
+        session: {
+          ...snapshot,
+          name: `${snapshot.name}-auto`,
+        },
+      })
       if (
         sessionId?.startsWith('local-') &&
         sessionStorage.getItem(sessionId)
       ) {
-        sessionStorage.setItem(sessionId, JSON.stringify(snapshot))
-        localStorage.setItem('autosave', JSON.stringify(snapshot))
+        sessionStorage.setItem(sessionId, toStore)
+        localStorage.setItem('autosave', autosaveStore)
       } else if (sessionId?.startsWith('localSaved-')) {
-        localStorage.setItem(sessionId, JSON.stringify(snapshot))
+        localStorage.setItem(sessionId, toStore)
         if (localStorage.getItem('autosave')) {
           localStorage.removeItem('autosave')
         }

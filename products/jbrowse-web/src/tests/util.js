@@ -25,7 +25,7 @@ export function getPluginManager(initialState, adminMode = true) {
     const { name } = rootModel.jbrowse.defaultSession
     localStorage.setItem(
       `localSaved-1`,
-      JSON.stringify(rootModel.jbrowse.defaultSession),
+      JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
     )
     rootModel.activateSession(name)
   } else rootModel.setDefaultSession()

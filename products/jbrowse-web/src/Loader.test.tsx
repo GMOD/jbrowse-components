@@ -117,7 +117,9 @@ describe('<Loader />', () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
-    Storage.prototype.getItem = jest.fn(() => `{"name": "testSession"}`)
+    Storage.prototype.getItem = jest.fn(
+      () => `{"session": {"name": "testSession"}}`,
+    )
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore

@@ -45,8 +45,10 @@ describe('Root MST model', () => {
 
   it('activates a session snapshot', () => {
     const session = { name: 'testSession' }
-    localStorage.setItem(`localSaved-123`, JSON.stringify(session))
-    Storage.prototype.getItem = jest.fn(() => `{"name": "testSession"}`)
+    localStorage.setItem(`localSaved-123`, JSON.stringify({ session }))
+    Storage.prototype.getItem = jest.fn(
+      () => `{"session": {"name": "testSession"}}`,
+    )
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },

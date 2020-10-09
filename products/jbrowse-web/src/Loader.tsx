@@ -195,7 +195,10 @@ export function Loader() {
               Date.now(),
             ).toISOString()}`
             sessionStorage.clear()
-            sessionStorage.setItem(localId, JSON.stringify(fromShared))
+            sessionStorage.setItem(
+              localId,
+              JSON.stringify({ session: fromShared }),
+            )
             setData(localId)
           } else {
             // eslint-disable-next-line no-alert
@@ -375,7 +378,7 @@ export function Loader() {
         localStorage.getItem(sessionQueryParam) ||
         sessionStorage.getItem(sessionQueryParam)
       if (foundLocalSession) {
-        rootModel.setSession(JSON.parse(foundLocalSession))
+        rootModel.setSession(JSON.parse(foundLocalSession).session)
       } else if (!loadingSharedSession) {
         // eslint-disable-next-line no-alert
         alert('No matching local session found')
