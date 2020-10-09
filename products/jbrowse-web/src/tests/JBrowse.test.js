@@ -141,8 +141,7 @@ test('404 sequence file', async () => {
 
 test('looks at about this track dialog', async () => {
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findAllByText, findByText, findAllByTestId } = render(
+  const { findByTestId, findAllByText, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
