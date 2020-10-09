@@ -119,14 +119,6 @@ const Polygon = observer(
           if (region.reversed) {
             ;[startPx, endPx] = [endPx, startPx]
           }
-          // let totalWidth = 0
-          // for (let i = 0; i < seqIndex; i++) {
-          //   const seq = displayedParentRegions[i]
-          //   const regionLength = seq.end - seq.start
-          //   totalWidth += regionLength / scale + wholeSeqSpacer
-          // }
-          // const parentStart = displayedParentRegions[seqIndex].start
-
           const topRight = overview.bpToPx({
             refName: region.refName,
             coord: region.end,
@@ -158,7 +150,6 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
-  // const theme = useTheme()
   const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
@@ -175,7 +166,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const parentRegion = model.parentRegion(seq.assemblyName, seq.refName)
         const parentRegionLength = parentRegion
           ? parentRegion.end - parentRegion.start
-          : 0
+          : 0 // check for when region is smaller than parent region
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
 
         const labels = []
@@ -206,7 +197,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             >
               {seq.refName}
             </Typography>
-            {/* where the boxes actually get drawn   */}
+            {/* where the rubberband selection boxes actually get drawn */}
             {visibleRegions.map((r, visibleRegionIdx) => {
               if (
                 seq.assemblyName === r.assemblyName &&
@@ -229,7 +220,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               }
               return null
             })}
-            {/* the numbers */}
+            {/* the number labels */}
             {labels.map((label, labelIdx) => (
               <div
                 key={label}
