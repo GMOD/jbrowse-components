@@ -89,7 +89,6 @@ const Polygon = observer(
       width,
       bpPerPx,
       dynamicBlocks: visibleRegions,
-      displayedParentRegions,
       displayedRegions,
     } = model
 
@@ -136,12 +135,6 @@ const Polygon = observer(
             refName: region.refName,
             coord: region.start,
           })
-          // console.log('---------- Polygon ---------------')
-          // console.log('startpx', startPx)
-          // console.log('endPx', endPx)
-          // console.log('topright', topRight)
-          // console.log('topleft', topLeft)
-          // console.log('-------------------------')
           return (
             <polygon
               key={`${region.key}-${idx}`}
@@ -165,15 +158,10 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
-  const {
-    displayedParentRegions,
-    displayedRegions,
-    dynamicBlocks: visibleRegions,
-  } = model
+  // const theme = useTheme()
+  const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
-  // console.log('displayed regions', displayedRegions.toJSON())
-  // console.log(visibleRegions)
   return (
     <div className={classes.scaleBar}>
       {/* this is the entire scale bar */}
@@ -188,17 +176,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const parentRegionLength = parentRegion
           ? parentRegion.end - parentRegion.start
           : 0
-        // console.log('---------------')
-        // console.log('parentRegion', parentRegion)
-        // console.log('displayedRegion', seq)
-        // console.log('len of parent', parentRegionLength)
-        // console.log('len of displayedRegion', regionLength)
-        // console.log(
-        //   'is the parent bigger than the region',
-        //   parentRegionLength > regionLength,
-        // )
-        // console.log('---------------')
-
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
 
         const labels = []
@@ -207,9 +184,8 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             ? labels.unshift(index * gridPitch.majorPitch)
             : labels.push((index + 1) * gridPitch.majorPitch)
         }
-
         return (
-          // each whole sequence
+          // each displayedRegion
           <Paper
             key={seq.refName}
             style={{
@@ -219,12 +195,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   ? undefined
                   : wholeSeqSpacer,
               borderColor: refNameColor,
-              // borderLeftWidth: 4,
-              // borderRightWidth: 4,
-              // borderLeftStyle: 'dotted',
-              // borderRightStyle: 'dotted',
-              // borderLeftColor: 'red',
-              // borderRightColor: 'red',
             }}
             className={classes.scaleBarContig}
             variant="outlined"
@@ -242,15 +212,9 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 seq.assemblyName === r.assemblyName &&
                 seq.refName === r.refName
               ) {
-                console.log('--------- Visible Region ----------')
-                // console.log('model offset', model.offsetPx)
-                console.log('region', r)
-                console.log('seq', seq)
                 const leftStyle = r.reversed
                   ? (seq.end - r.end) / scale - 1
                   : r.start / scale - 1
-                console.log('leftStyle', leftStyle)
-                console.log('-------------------------------------')
                 return (
                   <div
                     key={`${r.key}-${visibleRegionIdx}`}
@@ -294,12 +258,7 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const {
-    displayedParentRegions,
-    displayedParentRegionsLength,
-    width,
-    displayedRegions,
-  } = model
+  const { width, displayedRegions } = model
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
