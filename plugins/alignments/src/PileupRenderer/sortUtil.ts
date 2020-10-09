@@ -3,35 +3,31 @@ import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 
 interface SortObject {
-  position: number
-  by: string
+  pos: number
+  type: string
 }
 export const sortFeature = (
   features: Map<string, Feature>,
-  sortObject: SortObject,
+  sortedBy: SortObject,
 ) => {
   const featureArray = Array.from(features.values())
   const featuresInCenterLine: Feature[] = []
   const featuresOutsideCenter: Feature[] = []
+  const { pos, type } = sortedBy
 
   // only sort on features that intersect center line, append those outside post-sort
   featureArray.forEach(innerArray => {
     const feature = innerArray
-    if (
-      doesIntersect2(
-        sortObject.position - 1,
-        sortObject.position,
-        feature.get('start'),
-        feature.get('end'),
-      )
-    ) {
+    const start = feature.get('start')
+    const end = feature.get('end')
+    if (doesIntersect2(pos - 1, pos, start, end)) {
       featuresInCenterLine.push(innerArray)
     } else {
       featuresOutsideCenter.push(innerArray)
     }
   })
 
-  switch (sortObject.by) {
+  switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
       break
@@ -48,10 +44,7 @@ export const sortFeature = (
           const consuming =
             mismatch.type === 'insertion' || mismatch.type === 'softclip'
           const len = consuming ? 0 : mismatch.length
-          if (
-            sortObject.position >= offset &&
-            sortObject.position < offset + len
-          ) {
+          if (pos >= offset && pos < offset + len) {
             baseSortArray.push([feature.id(), mismatch])
           }
         })
