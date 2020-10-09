@@ -31,8 +31,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
-  const { model } = props /// model here is the Linear Genome View State Model
-  // console.log(model)
+  const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
   const session = getSession(model)
