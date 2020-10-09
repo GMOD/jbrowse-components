@@ -15,16 +15,11 @@ import LRU from '@gmod/jbrowse-core/util/QuickLRU'
 export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   protected fasta: typeof IndexedFasta
 
-  private seqCache = new AbortablePromiseCache({
-    cache: new LRU({ maxSize: 200 }),
-    fill: async (
-      args: { refName: string; start: number; end: number },
-      // abortSignal?: AbortSignal,
-    ) => {
-      const { refName, start, end } = args
-      return this.fasta.getSequence(refName, start, end)
-    },
-  })
+  private seqCache: AbortablePromiseCache<
+    { refName: string; start: number; end: number },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    any
+  >
 
   public constructor(config: AnyConfigurationModel) {
     super(config)
@@ -41,6 +36,16 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
       fai: openLocation(faiLocation as FileLocation),
     }
 
+    this.seqCache = new AbortablePromiseCache({
+      cache: new LRU({ maxSize: 200 }),
+      fill: async (
+        args: { refName: string; start: number; end: number },
+        // abortSignal?: AbortSignal,
+      ) => {
+        const { refName, start, end } = args
+        return this.fasta.getSequence(refName, start, end)
+      },
+    })
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
