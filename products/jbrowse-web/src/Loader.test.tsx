@@ -44,6 +44,7 @@ class BroadcastChannelMock {
     return false
   }
 }
+
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
 if (!window.BroadcastChannel) window.BroadcastChannel = BroadcastChannelMock
@@ -113,9 +114,7 @@ describe('<Loader />', () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
-
-    localStorage.setItem('local-1', `{"name": "testSession"}`)
-    expect(localStorage.length).toBe(1)
+    Storage.prototype.getItem = jest.fn(() => `{"name": "testSession"}`)
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore

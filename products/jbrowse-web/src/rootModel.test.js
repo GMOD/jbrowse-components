@@ -26,7 +26,6 @@ describe('Root MST model', () => {
       assemblyManager: {},
     })
     expect(root.session).toBeUndefined()
-    expect(sessionStorage.length).toBe(0)
     root.setDefaultSession()
     expect(root.session).toBeTruthy()
     expect(root.jbrowse.assemblies.length).toBe(0)
@@ -47,6 +46,7 @@ describe('Root MST model', () => {
   it('activates a session snapshot', () => {
     const session = { name: 'testSession' }
     localStorage.setItem(`localSaved-123`, JSON.stringify(session))
+    Storage.prototype.getItem = jest.fn(() => `{"name": "testSession"}`)
     const root = rootModel.create({
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
