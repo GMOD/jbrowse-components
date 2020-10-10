@@ -113,8 +113,13 @@ export default class extends Plugin {
           label: 'Save session',
           icon: SaveIcon,
           onClick: (session: SessionWithWidgets) => {
-            session.saveSessionToLocalStorage()
-            session.notify(`Saved session "${session.name}"`)
+            // @ts-ignore
+            if (session.saveSessionToLocalStorage) {
+              // @ts-ignore
+              session.saveSessionToLocalStorage()
+              // @ts-ignore
+              session.notify(`Saved session "${session.name}"`)
+            }
           },
         },
         1,

@@ -57,7 +57,6 @@ export default function RootModel(
     }))
     .views(self => ({
       get savedSessions() {
-        console.log(Array.from(self.savedSessionsVolatile.values()))
         return Array.from(self.savedSessionsVolatile.values())
       },
     }))
@@ -97,7 +96,16 @@ export default function RootModel(
           self,
           autorun(() => {
             for (const [key, val] of self.savedSessionsVolatile.entries()) {
-              localStorage.setItem(`${key}`, JSON.stringify(val))
+              try {
+                localStorage.setItem(`${key}`, JSON.stringify(val))
+              } catch (e) {
+                if (e.code === '22' || e.code === '1024') {
+                  // eslint-disable-next-line no-alert
+                  alert(
+                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
+                  )
+                }
+              }
             }
           }),
         )
@@ -196,17 +204,7 @@ export default function RootModel(
           // const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
           // // @ts-ignore
           // const localId = `localSaved-${self.session.name}`
-          // try {
-          //   localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
-          // } catch (e) {
-          //   if (e.code === '22' || e.code === '1024') {
-          //     // eslint-disable-next-line no-alert
-          //     // @ts-ignore
-          //     self.notify(
-          //       'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-          //     )
-          //   }
-          // }
+          //
         }
       },
       loadAutosaveSession() {
