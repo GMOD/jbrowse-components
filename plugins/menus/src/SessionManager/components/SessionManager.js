@@ -32,9 +32,9 @@ const useStyles = makeStyles(theme => ({
 
 const AutosaveEntry = observer(({ session }) => {
   const classes = useStyles()
-  const autosavedSession = JSON.parse(
-    localStorage.getItem('localSaved-previousAutosave') || '{}',
-  ).session
+  const autosavedSession =
+    JSON.parse(localStorage.getItem('localSaved-previousAutosave') || '{}')
+      .session || {}
   const { views = [] } = autosavedSession
   const totalTracks = views
     .map(view => view.tracks.length)

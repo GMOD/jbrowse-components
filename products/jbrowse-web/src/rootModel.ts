@@ -6,7 +6,14 @@ import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import AddIcon from '@material-ui/icons/Add'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  SnapshotIn,
+  types,
+} from 'mobx-state-tree'
+import { observable, autorun } from 'mobx'
 import { UndoManager } from 'mst-middlewares'
 import * as uuid from 'uuid'
 import corePlugins from './corePlugins'
@@ -45,18 +52,18 @@ export default function RootModel(
       error: types.maybe(types.string),
       version: types.maybe(types.string),
     })
-    .views(() => ({
+    .volatile(() => ({
+      savedSessionsVolatile: observable.map({}),
+    }))
+    .views(self => ({
       get savedSessions() {
-        return Object.entries(localStorage)
-          .filter(
-            obj =>
-              obj[0].startsWith('localSaved-') &&
-              !obj[0].endsWith('previousAutosave'),
-          )
-          .map(entry => JSON.parse(entry[1]).session)
+        console.log(Array.from(self.savedSessionsVolatile.values()))
+        return Array.from(self.savedSessionsVolatile.values())
       },
+    }))
+    .views(self => ({
       get savedSessionNames() {
-        return this.savedSessions.map(savedSession => savedSession.name)
+        return self.savedSessions.map(session => session.name)
       },
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
@@ -64,7 +71,7 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
       get hasRecoverableAutosave() {
-        return !!Object.keys(localStorage).find(
+        return !!Object.keys(self.savedSessions).find(
           key => key === 'localSaved-previousAutosave',
         )
       },
@@ -75,6 +82,26 @@ export default function RootModel(
       },
     }))
     .actions(self => ({
+      afterCreate() {
+        Object.entries(localStorage)
+          .filter(
+            ([key, _val]) =>
+              key.startsWith('localSaved-') &&
+              !key.endsWith('previousAutosave'),
+          )
+          .forEach(([key, val]) => {
+            self.savedSessionsVolatile.set(key, JSON.parse(val))
+          })
+
+        addDisposer(
+          self,
+          autorun(() => {
+            for (const [key, val] of self.savedSessionsVolatile.entries()) {
+              localStorage.setItem(`${key}`, JSON.stringify(val))
+            }
+          }),
+        )
+      },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
@@ -162,20 +189,24 @@ export default function RootModel(
       },
       saveSessionToLocalStorage() {
         if (self.session && self.isUnsavedSession) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          // @ts-ignore
-          const localId = `localSaved-${self.session.name}`
-          try {
-            localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
-          } catch (e) {
-            if (e.code === '22' || e.code === '1024') {
-              // eslint-disable-next-line no-alert
-              // @ts-ignore
-              self.notify(
-                'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
-              )
-            }
-          }
+          self.savedSessionsVolatile.set(
+            `localSaved-${self.session.name}`,
+            getSnapshot(self.session),
+          )
+          // const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          // // @ts-ignore
+          // const localId = `localSaved-${self.session.name}`
+          // try {
+          //   localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
+          // } catch (e) {
+          //   if (e.code === '22' || e.code === '1024') {
+          //     // eslint-disable-next-line no-alert
+          //     // @ts-ignore
+          //     self.notify(
+          //       'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
+          //     )
+          //   }
+          // }
         }
       },
       loadAutosaveSession() {

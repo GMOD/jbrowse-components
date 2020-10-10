@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { observable } from 'mobx'
 import {
   readConfObject,
   isConfigurationModel,
@@ -11,7 +12,7 @@ import {
   TrackViewModel,
 } from '@gmod/jbrowse-core/util/types'
 import { getContainingView } from '@gmod/jbrowse-core/util'
-import { observable } from 'mobx'
+
 import {
   getMembers,
   getParent,
