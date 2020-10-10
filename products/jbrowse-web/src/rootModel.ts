@@ -163,14 +163,16 @@ export default function RootModel(
       saveSessionToLocalStorage() {
         if (self.session && self.isUnsavedSession) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const localId = `localSaved-${self.currentSessionId || uuid.v4()}`
+          // @ts-ignore
+          const localId = `localSaved-${self.session.name}`
           try {
             localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
           } catch (e) {
             if (e.code === '22' || e.code === '1024') {
               // eslint-disable-next-line no-alert
-              alert(
-                'Local storage is full! Please open sessions and remove some before saving',
+              // @ts-ignore
+              self.notify(
+                'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
               )
             }
           }
