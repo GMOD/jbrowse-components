@@ -24,6 +24,25 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const AutosaveEntry = observer(({ session }) => {
+  const classes = useStyles()
+  const autosavedSession = JSON.parse(
+    localStorage.getItem('localSaved-previousAutosave') || '',
+  ).session
+  return session.hasRecoverableAutosave ? (
+    <Paper className={classes.root}>
+      <List subheader={<ListSubheader>Last autosaved entry</ListSubheader>}>
+        <ListItem button onClick={() => session.loadAutosaveSession()}>
+          <ListItemIcon>
+            <ViewListIcon />
+          </ListItemIcon>
+          <ListItemText primary={autosavedSession.name} />
+        </ListItem>
+      </List>
+    </Paper>
+  ) : null
+})
+
 export default observer(({ session }) => {
   const classes = useStyles()
   const { visibleWidget } = session
@@ -51,10 +70,9 @@ export default observer(({ session }) => {
 
   return (
     <>
+      <AutosaveEntry session={session} />
       <Paper className={classes.root}>
-        <List
-          subheader={<ListSubheader>Choose a session to open</ListSubheader>}
-        >
+        <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
           {session.savedSessions.map((sessionSnapshot, idx) => {
             const { views = [] } = sessionSnapshot
             const openTrackCount = views.map(view => (view.tracks || []).length)

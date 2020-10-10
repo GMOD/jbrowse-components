@@ -6,7 +6,6 @@ import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
 import { MenuItem } from '@gmod/jbrowse-core/ui'
 import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
 import AddIcon from '@material-ui/icons/Add'
-import RestoreIcon from '@material-ui/icons/Restore'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import * as uuid from 'uuid'
@@ -206,7 +205,7 @@ export default function RootModel(
           label: 'File',
           menuItems: [
             {
-              label: 'New Session',
+              label: 'New session',
               icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
@@ -219,15 +218,6 @@ export default function RootModel(
                 if (result) session.saveSessionToLocalStorage()
                 session.setDefaultSession()
               },
-            },
-            {
-              label: 'Restore Autosave Session',
-              icon: RestoreIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                session.loadAutosaveSession()
-              },
-              disabled: !self.hasRecoverableAutosave,
             },
           ],
         },

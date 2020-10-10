@@ -97,7 +97,7 @@ export default class extends Plugin {
       pluginManager.rootModel.insertInMenu(
         'File',
         {
-          label: 'Open Session…',
+          label: 'Open session',
           icon: FolderOpenIcon,
           onClick: (session: SessionWithWidgets) => {
             const widget = session.addWidget('SessionManager', 'sessionManager')
@@ -109,7 +109,7 @@ export default class extends Plugin {
       pluginManager.rootModel.insertInMenu(
         'File',
         {
-          label: 'Duplicate Session',
+          label: 'Duplicate session',
           icon: FileCopyIcon,
           onClick: (session: AbstractSessionModel) => {
             session.duplicateCurrentSession()
