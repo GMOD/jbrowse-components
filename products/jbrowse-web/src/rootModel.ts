@@ -213,13 +213,13 @@ export default function RootModel(
               icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
-                let result
-                if (self.isUnsavedSession)
-                  // eslint-disable-next-line no-alert
-                  result = window.confirm(
-                    'You have unsaved changes. Click OK if you would like to save before continuing',
+                const lastAutosave = localStorage.getItem('autosave')
+                if (lastAutosave) {
+                  localStorage.setItem(
+                    'localSaved-previousAutosave',
+                    lastAutosave,
                   )
-                if (result) session.saveSessionToLocalStorage()
+                }
                 session.setDefaultSession()
               },
             },
