@@ -37,7 +37,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const adminMode = adminKeyParam !== undefined
 
   const { rootModel } = pluginManager
-  const { session, error } = rootModel || {}
+  const { error } = rootModel || {}
 
   // updates the session or local storage sessions + autosave
   useEffect(() => {
@@ -54,26 +54,29 @@ const JBrowse = observer(({ pluginManager }) => {
         sessionStorage.getItem(sessionId)
       ) {
         sessionStorage.setItem(sessionId, toStore)
-        localStorage.setItem('autosave', autosaveStore)
       } else if (sessionId?.startsWith('localSaved-')) {
         localStorage.setItem(sessionId, toStore)
         if (localStorage.getItem('autosave')) {
           localStorage.removeItem('autosave')
         }
       }
+
+      localStorage.setItem('autosave', autosaveStore)
     }
 
     let disposer = () => {}
-    if (session) {
+    if (rootModel) {
       const updater = debounce(updateLocalSession, 400)
-      const snapshotDisposer = onSnapshot(session, updater)
+      const snapshotDisposer = onSnapshot(rootModel, snap => {
+        updater(snap.session)
+      })
       disposer = () => {
         snapshotDisposer()
         updater.cancel()
       }
     }
     return disposer
-  }, [session, sessionId])
+  }, [rootModel, sessionId])
 
   useEffect(() => {
     onSnapshot(rootModel, async snapshot => {
