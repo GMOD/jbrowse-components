@@ -46,7 +46,7 @@ const JBrowse = observer(({ pluginManager }) => {
       const autosaveStore = JSON.stringify({
         session: {
           ...snapshot,
-          name: `${snapshot.name}-auto`,
+          name: `${snapshot.name}-autosaved`,
         },
       })
       if (

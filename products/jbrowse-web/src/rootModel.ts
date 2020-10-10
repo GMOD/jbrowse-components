@@ -180,7 +180,10 @@ export default function RootModel(
         const autosavedSession = JSON.parse(
           localStorage.getItem('localSaved-previousAutosave') || '',
         ).session
-        autosavedSession.name = `${autosavedSession.name}-restored`
+        autosavedSession.name = `${autosavedSession.name.replace(
+          '-autosaved',
+          '',
+        )}-restored`
         const localId = `local-${uuid.v4()}`
         sessionStorage.clear()
         sessionStorage.setItem(
