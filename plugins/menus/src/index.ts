@@ -10,6 +10,7 @@ import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import HelpIcon from '@material-ui/icons/Help'
 import InfoIcon from '@material-ui/icons/Info'
+import SaveIcon from '@material-ui/icons/Save'
 import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
@@ -102,6 +103,17 @@ export default class extends Plugin {
           onClick: (session: SessionWithWidgets) => {
             const widget = session.addWidget('SessionManager', 'sessionManager')
             session.showWidget(widget)
+          },
+        },
+        1,
+      )
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Save session',
+          icon: SaveIcon,
+          onClick: (session: SessionWithWidgets) => {
+            session.saveSessionToLocalStorage()
           },
         },
         1,

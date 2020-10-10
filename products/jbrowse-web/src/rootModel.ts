@@ -48,7 +48,11 @@ export default function RootModel(
     .views(() => ({
       get savedSessions() {
         return Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('localSaved-'))
+          .filter(
+            obj =>
+              obj[0].startsWith('localSaved-') &&
+              !obj[0].endsWith('previousAutosave'),
+          )
           .map(entry => JSON.parse(entry[1]).session)
       },
       get savedSessionNames() {
