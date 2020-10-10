@@ -114,6 +114,7 @@ export default class extends Plugin {
           icon: SaveIcon,
           onClick: (session: SessionWithWidgets) => {
             session.saveSessionToLocalStorage()
+            session.notify(`Saved session "${session.name}"`)
           },
         },
         1,
