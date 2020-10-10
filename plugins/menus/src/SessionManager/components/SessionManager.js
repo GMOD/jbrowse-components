@@ -35,6 +35,11 @@ const AutosaveEntry = observer(({ session }) => {
   const autosavedSession = JSON.parse(
     localStorage.getItem('localSaved-previousAutosave') || '{}',
   ).session
+  const { views = [] } = autosavedSession
+  const totalTracks = views
+    .map(view => view.tracks.length)
+    .reduce((a, b) => a + b, 0)
+
   return session.hasRecoverableAutosave ? (
     <Paper className={classes.root}>
       <List subheader={<ListSubheader>Previous autosaved entry</ListSubheader>}>
@@ -42,7 +47,18 @@ const AutosaveEntry = observer(({ session }) => {
           <ListItemIcon>
             <ViewListIcon />
           </ListItemIcon>
-          <ListItemText primary={autosavedSession.name} />
+          <ListItemText
+            primary={autosavedSession.name}
+            secondary={
+              session.name === autosavedSession.name
+                ? 'Currently open'
+                : `${views.length} ${pluralize(
+                    'view',
+                    views.length,
+                  )}; ${totalTracks}
+                           open ${pluralize('track', totalTracks)}`
+            }
+          />
         </ListItem>
       </List>
     </Paper>
