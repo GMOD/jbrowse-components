@@ -115,6 +115,15 @@ export default function JBrowseWeb(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
+      deleteTrackConf(trackConf) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
+
+        return self.tracks.splice(idx, 1)
+      },
     }))
     .views(self => ({
       get savedSessionNames() {
