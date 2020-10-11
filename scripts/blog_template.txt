@@ -7,6 +7,23 @@ tags: ["release","jbrowse 2"]
 ${NOTES}
 
 
-* https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG}
-* https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_DESKTOP_TAG}
+Latest jbrowse-web and jbrowse-desktop releases. [^1][^2][^3]
+
+
+* [$JBROWSE_WEB_TAG](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG})
+* [$JBROWSE_DESKTOP_TAG](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_DESKTOP_TAG})
+
+
+Footnotes:
+
+[^1] jbrowse-desktop is our desktop app, and can be downloaded and run on your
+computer with no server setup. jbrowse-web is our web product, and can be
+downloaded and used on your website.
+
+[^2] you can also use the [jbrowse
+CLI](https://jbrowse.org/jb2/docs/quickstart_web) to automatically install or
+upgrade your jbrowse 2 instance
+
+[^3] Both jbrowse-web and jbrowse-desktop are versioned independently so this
+release might not share the same version number
 
