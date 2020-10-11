@@ -106,6 +106,9 @@ export default function JBrowseDesktop(
         return self.connections[length - 1]
       },
 
+      hasWidget(widget) {
+        return getParent(self).session.activeWidgets.has(widget.id)
+      },
       removeReferring(referring, track, callbacks, dereferenceTypeCount) {
         referring.forEach(({ node }) => {
           let dereferenced = false
@@ -127,7 +130,7 @@ export default function JBrowseDesktop(
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'
-            callbacks.push(() => this.hideWidget(node))
+            callbacks.push(() => getParent(self).session.hideWidget(node))
             dereferenced = true
             if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
             dereferenceTypeCount[type] += 1
