@@ -26,6 +26,10 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
+import SettingsIcon from '@material-ui/icons/Settings'
+import CopyIcon from '@material-ui/icons/FileCopy'
+import DeleteIcon from '@material-ui/icons/Delete'
+
 declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
@@ -271,6 +275,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).jbrowse.addTrackConf(trackConf)
       },
 
+      deleteTrackConf(trackConf: AnyConfigurationModel) {
+        return getParent(self).jbrowse.deleteTrackConf(trackConf)
+      },
+
       addConnectionConf(connectionConf: any) {
         return getParent(self).jbrowse.addConnectionConf(connectionConf)
       },
@@ -383,6 +391,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         )
         this.showWidget(editor)
       },
+      editTrackConfiguration(configuration: AnyConfigurationModel) {
+        this.editConfiguration(configuration)
+      },
 
       clearConnections() {
         self.connectionInstances.clear()
@@ -436,6 +447,40 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         },
       }
     })
+    .views(self => ({
+      getTrackActionMenuItems(config: any) {
+        const session = self
+        return [
+          {
+            label: 'Settings',
+            onClick: () => {
+              session.editConfiguration(config)
+            },
+            icon: SettingsIcon,
+          },
+          {
+            label: 'Delete track',
+            onClick: () => {
+              session.deleteTrackConf(config)
+            },
+            icon: DeleteIcon,
+          },
+          {
+            label: 'Copy track',
+            onClick: () => {
+              const trackSnapshot = JSON.parse(
+                JSON.stringify(getSnapshot(config)),
+              )
+              trackSnapshot.trackId += `-${Date.now()}`
+              trackSnapshot.name += ' (copy)'
+              trackSnapshot.category = undefined
+              session.addTrackConf(trackSnapshot)
+            },
+            icon: CopyIcon,
+          },
+        ]
+      },
+    }))
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

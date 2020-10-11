@@ -8,6 +8,11 @@ import {
   getSnapshot,
   resolveIdentifier,
   types,
+  walk,
+  getType,
+  getMembers,
+  isModelType,
+  isReferenceType,
 } from 'mobx-state-tree'
 
 // poke some things for testing (this stuff will eventually be removed)
@@ -99,6 +104,74 @@ export default function JBrowseDesktop(
         if (!type) throw new Error(`unknown connection type ${type}`)
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
+      },
+
+      removeReferring(referring, track, callbacks, dereferenceTypeCount) {
+        referring.forEach(({ node }) => {
+          let dereferenced = false
+          try {
+            // If a view is referring to the track config, remove the track
+            // from the view
+            const type = 'open track(s)'
+            const view = getContainingView(node)
+            callbacks.push(() => view.hideTrack(track.trackId))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
+            dereferenceTypeCount[type] += 1
+          } catch (err1) {
+            // ignore
+          }
+          if (this.hasWidget(node)) {
+            // If a configuration editor widget has the track config
+            // open, close the widget
+            const type = 'configuration editor widget(s)'
+            callbacks.push(() => this.hideWidget(node))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            dereferenceTypeCount[type] += 1
+          }
+          if (!dereferenced)
+            throw new Error(
+              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
+                getSnapshot(node),
+              )}`,
+            )
+        })
+      },
+      getReferring(object) {
+        const refs = []
+        walk(getParent(self), node => {
+          if (isModelType(getType(node))) {
+            const members = getMembers(node)
+            Object.entries(members.properties).forEach(([key, value]) => {
+              // @ts-ignore
+              if (isReferenceType(value) && node[key] === object) {
+                refs.push({ node, key })
+              }
+            })
+          }
+        })
+        return refs
+      },
+      deleteTrackConf(trackConf) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
+        const callbacksToDereferenceTrack = []
+        const dereferenceTypeCount = {}
+        const referring = self.getReferring(trackConf)
+        this.removeReferring(
+          referring,
+          trackConf,
+          callbacksToDereferenceTrack,
+          dereferenceTypeCount,
+        )
+        callbacksToDereferenceTrack.forEach(cb => cb())
+        return self.tracks.splice(idx, 1)
       },
     }))
     .views(self => ({
