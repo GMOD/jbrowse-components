@@ -421,10 +421,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.activeWidgets.set(widget.id, widget)
       },
 
-      hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
-      },
-
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
       },

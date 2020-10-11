@@ -8,11 +8,6 @@ import {
   getSnapshot,
   resolveIdentifier,
   types,
-  walk,
-  getType,
-  getMembers,
-  isModelType,
-  isReferenceType,
 } from 'mobx-state-tree'
 
 // poke some things for testing (this stuff will eventually be removed)
