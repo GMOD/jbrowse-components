@@ -275,7 +275,83 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).jbrowse.addTrackConf(trackConf)
       },
 
+      hasWidget(widget: any) {
+        return self.activeWidgets.has(widget.id)
+      },
+
+      removeReferring(
+        referring: any,
+        track: any,
+        callbacks: Function[],
+        dereferenceTypeCount: Record<string, number>,
+      ) {
+        referring.forEach(({ node }: ReferringNode) => {
+          let dereferenced = false
+          try {
+            // If a view is referring to the track config, remove the track
+            // from the view
+            const type = 'open track(s)'
+            const view = getContainingView(node) as TrackViewModel
+            callbacks.push(() => view.hideTrack(track.trackId))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
+            dereferenceTypeCount[type] += 1
+          } catch (err1) {
+            // ignore
+          }
+          if (this.hasWidget(node)) {
+            // If a configuration editor widget has the track config
+            // open, close the widget
+            const type = 'configuration editor widget(s)'
+            callbacks.push(() => this.hideWidget(node))
+            dereferenced = true
+            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            dereferenceTypeCount[type] += 1
+          }
+          if (!dereferenced)
+            throw new Error(
+              `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
+                getSnapshot(node),
+              )}`,
+            )
+        })
+      },
+
+      /**
+       * See if any MST nodes currently have a types.reference to this object.
+       * @param object - object
+       * @returns An array where the first element is the node referring
+       * to the object and the second element is they property name the node is
+       * using to refer to the object
+       */
+      getReferring(object: IAnyStateTreeNode) {
+        const refs: ReferringNode[] = []
+        walk(getParent(self), node => {
+          if (isModelType(getType(node))) {
+            const members = getMembers(node)
+            Object.entries(members.properties).forEach(([key, value]) => {
+              // @ts-ignore
+              if (isReferenceType(value) && node[key] === object) {
+                refs.push({ node, key })
+              }
+            })
+          }
+        })
+        return refs
+      },
       deleteTrackConf(trackConf: AnyConfigurationModel) {
+        const callbacksToDereferenceTrack: Function[] = []
+        const dereferenceTypeCount: Record<string, number> = {}
+        const referring = self.getReferring(trackConf)
+        this.removeReferring(
+          referring,
+          trackConf,
+          callbacksToDereferenceTrack,
+          dereferenceTypeCount,
+        )
+        callbacksToDereferenceTrack.forEach(cb => cb())
         return getParent(self).jbrowse.deleteTrackConf(trackConf)
       },
 
