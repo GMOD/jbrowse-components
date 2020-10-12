@@ -229,20 +229,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const assemblyConnections =
           self.connectionInstances.get(assemblyName) || []
         const connection = assemblyConnections.find(c => c.name === name)
-        connection.tracks.forEach((track: any) => {
-          const referring = self.getReferring(track)
-          this.removeReferring(
-            referring,
-            track,
-            callbacksToDereferenceTrack,
-            dereferenceTypeCount,
-          )
-        })
-        const safelyBreakConnection = () => {
-          callbacksToDereferenceTrack.forEach(cb => cb())
-          this.breakConnection(configuration)
+        if (connection) {
+          connection.tracks.forEach((track: any) => {
+            const referring = self.getReferring(track)
+            this.removeReferring(
+              referring,
+              track,
+              callbacksToDereferenceTrack,
+              dereferenceTypeCount,
+            )
+          })
+          const safelyBreakConnection = () => {
+            callbacksToDereferenceTrack.forEach(cb => cb())
+            this.breakConnection(configuration)
+          }
+          return [safelyBreakConnection, dereferenceTypeCount]
         }
-        return [safelyBreakConnection, dereferenceTypeCount]
+        return undefined
       },
 
       breakConnection(configuration: AnyConfigurationModel) {
@@ -253,6 +256,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`connections for ${assemblyName} not found`)
         const connection = connectionInstances.find(c => c.name === name)
         connectionInstances.remove(connection)
+      },
+
+      deleteConnection(configuration: AnyConfigurationModel) {
+        return getParent(self).jbrowse.deleteConnectionConf(configuration)
       },
 
       updateDrawerWidth(drawerWidth: number) {

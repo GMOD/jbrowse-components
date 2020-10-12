@@ -172,51 +172,30 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
+        const callbacksToDereferenceTrack: Function[] = []
+        const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
         const assemblyName = readConfObject(configuration, 'assemblyName')
         const assemblyConnections =
           self.connectionInstances.get(assemblyName) || []
         const connection = assemblyConnections.find(c => c.name === name)
-        const callbacksToDereferenceTrack: Function[] = []
-        const dereferenceTypeCount: Record<string, number> = {}
-        connection.tracks.forEach((track: any) => {
-          const referring = self.getReferring(track)
-          referring.forEach(({ node }: ReferringNode) => {
-            let dereferenced = false
-            try {
-              // If a view is referring to the track config, remove the track
-              // from the view
-              const type = 'open track(s)'
-              const view = getContainingView(node) as TrackViewModel
-              callbacksToDereferenceTrack.push(() => view.hideTrack(track))
-              dereferenced = true
-              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
-              dereferenceTypeCount[type] += 1
-            } catch (err1) {
-              // ignore
-            }
-            if (this.hasWidget(node)) {
-              // If a configuration editor widget has the track config
-              // open, close the widget
-              const type = 'configuration editor widget(s)'
-              callbacksToDereferenceTrack.push(() => this.hideWidget(node))
-              dereferenced = true
-              if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
-              dereferenceTypeCount[type] += 1
-            }
-            if (!dereferenced)
-              throw new Error(
-                `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
-                  getSnapshot(node),
-                )}`,
-              )
+        if (connection) {
+          connection.tracks.forEach((track: any) => {
+            const referring = self.getReferring(track)
+            this.removeReferring(
+              referring,
+              track,
+              callbacksToDereferenceTrack,
+              dereferenceTypeCount,
+            )
           })
-        })
-        const safelyBreakConnection = () => {
-          callbacksToDereferenceTrack.forEach(cb => cb())
-          this.breakConnection(configuration)
+          const safelyBreakConnection = () => {
+            callbacksToDereferenceTrack.forEach(cb => cb())
+            this.breakConnection(configuration)
+          }
+          return [safelyBreakConnection, dereferenceTypeCount]
         }
-        return [safelyBreakConnection, dereferenceTypeCount]
+        return undefined
       },
 
       breakConnection(configuration: AnyConfigurationModel) {
@@ -227,6 +206,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`connections for ${assemblyName} not found`)
         const connection = connectionInstances.find(c => c.name === name)
         connectionInstances.remove(connection)
+      },
+
+      deleteConnection(configuration: AnyConfigurationModel) {
+        return getParent(self).jbrowse.deleteConnectionConf(configuration)
       },
 
       updateDrawerWidth(drawerWidth: number) {

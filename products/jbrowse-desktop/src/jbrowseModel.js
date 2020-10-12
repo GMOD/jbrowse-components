@@ -101,6 +101,13 @@ export default function JBrowseDesktop(
         return self.connections[length - 1]
       },
 
+      deleteConnectionConf(configuration) {
+        const idx = self.connections.findIndex(
+          conn => conn.id === configuration.id,
+        )
+        return self.connections.splice(idx, 1)
+      },
+
       deleteTrackConf(trackConf) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)

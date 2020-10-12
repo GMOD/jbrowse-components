@@ -24,6 +24,7 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
+import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
@@ -116,14 +117,14 @@ function HierarchicalTrackSelector({ model }) {
 
   function breakConnection(connectionConf) {
     const name = readConfObject(connectionConf, 'name')
-    const [
-      safelyBreakConnection,
-      dereferenceTypeCount,
-    ] = session.prepareToBreakConnection(connectionConf)
-    if (Object.keys(dereferenceTypeCount).length > 0) {
-      setModalInfo({ safelyBreakConnection, dereferenceTypeCount, name })
-    } else {
-      safelyBreakConnection()
+    const result = session.prepareToBreakConnection(connectionConf)
+    if (result) {
+      const [safelyBreakConnection, dereferenceTypeCount] = result
+      if (Object.keys(dereferenceTypeCount).length > 0) {
+        setModalInfo({ safelyBreakConnection, dereferenceTypeCount, name })
+      } else {
+        safelyBreakConnection()
+      }
     }
   }
 
@@ -185,26 +186,35 @@ function HierarchicalTrackSelector({ model }) {
               readConfObject(connectionConf, 'assemblyName') === assemblyName,
           )
           .map(connectionConf => (
-            <FormControlLabel
-              key={connectionConf.connectionId}
-              control={
-                <Switch
-                  checked={
-                    session.connectionInstances.has(assemblyName) &&
-                    !!session.connectionInstances
-                      .get(assemblyName)
-                      .find(
-                        connection =>
-                          connection.name ===
-                          readConfObject(connectionConf, 'name'),
-                      )
-                  }
-                  onChange={() => handleConnectionToggle(connectionConf)}
-                  // value="checkedA"
-                />
-              }
-              label={readConfObject(connectionConf, 'name')}
-            />
+            <FormGroup row key={connectionConf.connectionId}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={
+                      session.connectionInstances.has(assemblyName) &&
+                      !!session.connectionInstances
+                        .get(assemblyName)
+                        .find(
+                          connection =>
+                            connection.name ===
+                            readConfObject(connectionConf, 'name'),
+                        )
+                    }
+                    onChange={() => handleConnectionToggle(connectionConf)}
+                    // value="checkedA"
+                  />
+                }
+                label={readConfObject(connectionConf, 'name')}
+              />
+              <IconButton
+                onClick={() => {
+                  breakConnection(connectionConf)
+                  session.deleteConnection(connectionConf)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </FormGroup>
           ))}
       </FormGroup>
       {session.connectionInstances.has(assemblyName) ? (
