@@ -15,7 +15,10 @@ declare global {
   }
 }
 
-const isElectron = window && window.process && window.process.type
+// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
+// for detecting electron in a renderer process, which is the one that has node enabled for us
+const isElectron =
+  window && window.process && process.versions.hasOwnProperty('electron')
 
 export const openUrl = (arg: string) => {
   return isElectron ? rangeFetcherOpenUrl(arg) : new ElectronRemoteFile(arg)
