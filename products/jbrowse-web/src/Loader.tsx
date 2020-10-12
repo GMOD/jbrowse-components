@@ -394,6 +394,7 @@ export function Loader() {
         if (bc2) bc2.postMessage(ret)
       }
     }
+  }
 
   return loadingState ? (
     <CircularProgress />
