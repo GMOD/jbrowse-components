@@ -12,6 +12,7 @@ import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 import Share from './Share'
 import Save from './Save'
+import { isElectron } from '../util'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -61,7 +62,6 @@ function App({ session }) {
   const classes = useStyles()
   const { pluginManager } = session
   const { visibleWidget, drawerWidth } = session
-  const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
   function handleNameChange(newName) {
     if (

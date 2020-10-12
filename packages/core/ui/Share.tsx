@@ -3,7 +3,6 @@ import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
-import { getSnapshot } from 'mobx-state-tree'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
@@ -13,9 +12,8 @@ import Divider from '@material-ui/core/Divider'
 import TextField from '@material-ui/core/TextField'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import * as crypto from 'crypto'
 import { ContentCopy as ContentCopyIcon } from './Icons'
-import { toUrlSafeB64 } from '../util'
+import { shareSessionToDynamo } from '../util/sessionSharing'
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {
@@ -46,17 +44,6 @@ const Share = observer((props: { session: any }) => {
   const [shareUrl, setShareUrl] = React.useState('')
   const locationUrl = new URL(window.location.href)
 
-  const key = crypto.createHash('sha256').update('JBrowse').digest()
-  const iv = crypto.randomBytes(16)
-
-  // adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
-  const encrypt = (text: string) => {
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
-    let encrypted = cipher.update(text)
-    encrypted = Buffer.concat([encrypted, cipher.final()])
-    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
-  }
-
   const localHostMessage = locationUrl.href.includes('localhost')
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
     : ''
@@ -74,40 +61,19 @@ const Share = observer((props: { session: any }) => {
     setOpen(false)
   }
 
-  // writes the encrypted session, current datetime, and referer to DynamoDB
-  const shareSessionToDynamo = async () => {
-    const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-
-    const data = new FormData()
-    const encryptedSession = encrypt(sess)
-    data.append('session', encryptedSession.encryptedData)
-    data.append('dateShared', `${Date.now()}`)
-    data.append('referer', locationUrl.href)
-
-    let response
-    try {
-      response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        body: data,
-      })
-    } catch (error) {
-      // ignore
-    }
-
-    if (response && response.ok) {
-      const json = await response.json()
-      handleClickOpen(json.sessionId, encryptedSession.iv)
-    } else {
-      session.notify('Failed to generate a share link', 'warning')
-    }
-  }
   return (
     <div className={classes.shareDiv}>
       <Button
         data-testid="share_button"
-        onClick={() => {
-          shareSessionToDynamo()
+        onClick={async () => {
+          const result = await shareSessionToDynamo(
+            session,
+            url,
+            locationUrl.href,
+          )
+          if (result)
+            handleClickOpen(result.json.sessionId, result.encryptedSession.iv)
+          else session.notify('Failed to generate a share link', 'warning')
         }}
         size="small"
         color="inherit"

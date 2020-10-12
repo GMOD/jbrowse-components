@@ -21,6 +21,7 @@ import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import * as uuid from 'uuid'
+import { readSessionFromDynamo } from '@jbrowse/core/util/sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -106,8 +107,14 @@ function NoConfigMessage() {
 type Config = SnapshotOut<AnyConfigurationModel>
 
 export function Loader() {
-  const bc1 = new BroadcastChannel('request_session')
-  const bc2 = new BroadcastChannel('respond_session')
+  const bc1 =
+    typeof BroadcastChannel === 'undefined'
+      ? null
+      : new BroadcastChannel('jb_request_session')
+  const bc2 =
+    typeof BroadcastChannel === 'undefined'
+      ? null
+      : new BroadcastChannel('jb_respond_session')
   const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
@@ -121,7 +128,7 @@ export function Loader() {
     'password',
     StringParam,
   )
-  const [sessString, setSessString] = useState('')
+  const [, setSessString] = useState('')
   const [loadingState, setLoadingState] = useState(false)
   const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
@@ -133,63 +140,25 @@ export function Loader() {
     const controller = new AbortController()
     const { signal } = controller
 
-    // adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
-    function decrypt(text: string) {
-      if (!passwordQueryParam) return ''
-      try {
-        const iv = Buffer.from(passwordQueryParam, 'hex')
-        const encryptedText = Buffer.from(text, 'hex')
-        const decipher = crypto.createDecipheriv(
-          'aes-256-cbc',
-          Buffer.from(key),
-          iv,
-        )
-        let decrypted = decipher.update(encryptedText)
-        decrypted = Buffer.concat([decrypted, decipher.final()])
-        return decrypted.toString()
-      } catch (e) {
-        // error
-        return ''
-      }
-    }
-
     function setData(data?: string) {
       setSessionQueryParam(data)
       setPasswordQueryParam(undefined)
       setSessString(data || '') // setting querys do not count for change rerender
     }
 
-    // wrap the sessionstorage object in an object, and grab one level inner
-    async function readSessionFromDynamo() {
-      if (loadingSharedSession && sessionQueryParam) {
-        const sessionId = sessionQueryParam.split('share-')[1]
-        const url = new URL(
-          'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
-        )
-        const params = new URLSearchParams(url.search)
-        params.set('sessionId', sessionId)
-        url.search = params.toString()
-
-        setLoadingState(true)
-        let response
+    async function readSharedSession() {
+      if (sessionQueryParam && loadingSharedSession) {
+        setLoadingState(false)
         try {
-          response = await fetch(url.href, {
-            method: 'GET',
-            mode: 'cors',
+          const decryptedSession = await readSessionFromDynamo(
+            sessionQueryParam,
+            key,
+            passwordQueryParam || '',
             signal,
-          })
-        } catch (error) {
-          if (!signal.aborted) {
-            // ignore
-          }
-        }
+          )
 
-        let localId
-        if (response && response.ok) {
-          const json = await response.json()
-          const decryptedSession = decrypt(json.session)
           if (decryptedSession) {
-            localId = `local-${uuid.v4()}`
+            const localId = `local-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             fromShared.name = `${fromShared.name}-${new Date(
               Date.now(),
@@ -205,26 +174,25 @@ export function Loader() {
             alert('Session could not be decrypted with given password')
             setData()
           }
-        } else {
+        } catch (e) {
           // eslint-disable-next-line no-alert
           alert('Failed to find given session in database')
           setData()
         }
       }
     }
-    readSessionFromDynamo()
+    readSharedSession()
     return () => {
       controller.abort()
       setLoadingState(false)
     }
   }, [
-    loadingSharedSession,
-    sessionQueryParam,
-    setSessionQueryParam,
-    passwordQueryParam,
-    setPasswordQueryParam,
-    sessString,
     key,
+    loadingSharedSession,
+    passwordQueryParam,
+    sessionQueryParam,
+    setPasswordQueryParam,
+    setSessionQueryParam,
   ])
 
   // on local link posted, checks other tabs if they have session stored in sessionStorage
@@ -240,7 +208,7 @@ export function Loader() {
           localStorage.getItem(sessionQueryParam) ||
           sessionStorage.getItem(sessionQueryParam)
 
-        if (!foundLocalSession) {
+        if (bc1 && bc2 && !foundLocalSession) {
           bc1.postMessage(sessionQueryParam)
           try {
             const result = await new Promise((resolve, reject) => {
@@ -415,12 +383,13 @@ export function Loader() {
 
   pluginManager.configure()
 
-  bc1.onmessage = msg => {
-    const ret = sessionStorage.getItem(msg.data)
-    if (ret) {
-      bc2.postMessage(ret)
+  if (bc1 && bc2)
+    bc1.onmessage = msg => {
+      const ret = sessionStorage.getItem(msg.data)
+      if (ret) {
+        bc2.postMessage(ret)
+      }
     }
-  }
 
   return loadingState ? (
     <CircularProgress />
