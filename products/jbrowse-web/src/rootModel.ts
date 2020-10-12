@@ -89,7 +89,7 @@ export default function RootModel(
               !key.endsWith('previousAutosave'),
           )
           .forEach(([key, val]) => {
-            self.savedSessionsVolatile.set(key, JSON.parse(val))
+            self.savedSessionsVolatile.set(key, JSON.parse(val).session)
           })
 
         addDisposer(
@@ -157,10 +157,7 @@ export default function RootModel(
         }
       },
       activateSession(name: string) {
-        const newSessionSnapshot = Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('localSaved-'))
-          .find(sessionSnap => JSON.parse(sessionSnap[1]).session.name === name)
-
+        const newSessionSnapshot = localStorage.getItem(`localSaved-${name}`)
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
