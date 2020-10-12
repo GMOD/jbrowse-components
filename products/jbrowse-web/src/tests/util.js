@@ -1,5 +1,4 @@
 import rangeParser from 'range-parser' // eslint-disable-line import/no-extraneous-dependencies
-import { LocalFile } from 'generic-filehandle' // eslint-disable-line import/no-extraneous-dependencies
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import JBrowseRootModelFactory from '../rootModel'

@@ -13,7 +13,7 @@ import { LocalFile } from 'generic-filehandle'
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { setup, readBuffer, getPluginManager } from './util'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 setup()
