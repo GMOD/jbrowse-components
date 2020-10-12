@@ -160,6 +160,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setName(str: string) {
+        self.name = str
+      },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},

@@ -97,7 +97,7 @@ export default function RootModel(
           autorun(() => {
             for (const [key, val] of self.savedSessionsVolatile.entries()) {
               try {
-                localStorage.setItem(`${key}`, JSON.stringify(val))
+                localStorage.setItem(`${key}`, JSON.stringify({ session: val }))
               } catch (e) {
                 if (e.code === '22' || e.code === '1024') {
                   // eslint-disable-next-line no-alert
@@ -133,32 +133,7 @@ export default function RootModel(
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const oldname = snapshot.name
-
-          const snapInSession = Object.entries(sessionStorage)
-            .filter(obj => obj[0].startsWith('local-'))
-            .find(
-              sessionSnap =>
-                JSON.parse(sessionSnap[1]).session.name === oldname,
-            )
-
-          const snapInLocal = Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('localSaved-'))
-            .find(
-              sessionSnap =>
-                JSON.parse(sessionSnap[1]).session.name === oldname,
-            )
           snapshot.name = sessionName
-          if (snapInSession)
-            sessionStorage.setItem(
-              snapInSession[0],
-              JSON.stringify({ session: snapshot }),
-            )
-          else if (snapInLocal)
-            localStorage.setItem(
-              snapInLocal[0],
-              JSON.stringify({ session: snapshot }),
-            )
           this.setSession(snapshot)
         }
       },
