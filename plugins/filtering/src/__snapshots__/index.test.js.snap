@@ -2,24 +2,12 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "twoBitLocation": Object {
-    "baseUri": "",
-    "uri": "/path/to/my.2bit",
-  },
   "type": "TwoBitAdapter",
 }
 `;
 
 exports[`plugin in a stock JBrowse 2`] = `
 Object {
-  "faiLocation": Object {
-    "baseUri": "",
-    "uri": "/path/to/seq.fa.fai",
-  },
-  "fastaLocation": Object {
-    "baseUri": "",
-    "uri": "/path/to/seq.fa",
-  },
   "type": "IndexedFastaAdapter",
 }
 `;

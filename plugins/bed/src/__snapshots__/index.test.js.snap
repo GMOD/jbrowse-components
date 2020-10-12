@@ -2,10 +2,6 @@
 
 exports[`plugin in a stock JBrowse 1`] = `
 Object {
-  "bigBedLocation": Object {
-    "baseUri": "",
-    "uri": "/path/to/my.bb",
-  },
   "type": "BigBedAdapter",
 }
 `;
