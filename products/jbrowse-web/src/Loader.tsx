@@ -106,8 +106,14 @@ function NoConfigMessage() {
 type Config = SnapshotOut<AnyConfigurationModel>
 
 export function Loader() {
-  const bc1 = new BroadcastChannel('request_session')
-  const bc2 = new BroadcastChannel('respond_session')
+  const bc1 =
+    typeof BroadcastChannel === 'undefined'
+      ? null
+      : new BroadcastChannel('request_session')
+  const bc2 =
+    typeof BroadcastChannel === 'undefined'
+      ? null
+      : new BroadcastChannel('respond_session')
   const [configSnapshot, setConfigSnapshot] = useState<Config>()
   const [noDefaultConfig, setNoDefaultConfig] = useState(false)
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
@@ -241,21 +247,25 @@ export function Loader() {
           sessionStorage.getItem(sessionQueryParam)
 
         if (!foundLocalSession) {
-          bc1.postMessage(sessionQueryParam)
-          try {
-            const result = await new Promise((resolve, reject) => {
-              bc2.onmessage = msg => {
-                resolve(msg.data)
-              }
-              setTimeout(() => {
-                reject()
-              }, 1000)
-            })
-            const localId = `local-${uuid.v4()}`
-            sessionStorage.setItem(localId, result as string)
-            setData(localId)
-          } catch (e) {
-            console.error(e)
+          if (bc1) {
+            bc1.postMessage(sessionQueryParam)
+            try {
+              const result = await new Promise((resolve, reject) => {
+                if (bc2) {
+                  bc2.onmessage = msg => {
+                    resolve(msg.data)
+                  }
+                }
+                setTimeout(() => {
+                  reject()
+                }, 1000)
+              })
+              const localId = `local-${uuid.v4()}`
+              sessionStorage.setItem(localId, result as string)
+              setData(localId)
+            } catch (e) {
+              console.error(e)
+            }
           }
         }
       }
@@ -415,10 +425,12 @@ export function Loader() {
 
   pluginManager.configure()
 
-  bc1.onmessage = msg => {
-    const ret = sessionStorage.getItem(msg.data)
-    if (ret) {
-      bc2.postMessage(ret)
+  if (bc1) {
+    bc1.onmessage = msg => {
+      const ret = sessionStorage.getItem(msg.data)
+      if (ret) {
+        if (bc2) bc2.postMessage(ret)
+      }
     }
   }
 
