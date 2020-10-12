@@ -182,7 +182,7 @@ export interface Region extends SnapshotIn<typeof MUIRegion> {}
 export interface LocalPathLocation
   extends SnapshotOut<typeof MULocalPathLocation> {}
 
-export interface UriLocation extends SnapshotOut<typeof MUUriLocation> {}
+export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export interface BlobLocation {
   blob: Blob

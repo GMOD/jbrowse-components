@@ -47,11 +47,11 @@ export const LocalPathLocation = types.model('LocalPathLocation', {
 export const UriLocation = types
   .model('UriLocation', {
     uri: types.string, // TODO: refine
-    baseUri: types.optional(types.string, ''),
+    baseUri: types.maybe(types.string),
   })
   .postProcessSnapshot(snap => {
     const { baseUri, ...rest } = snap
-    if (baseUri === '') {
+    if (!baseUri) {
       return rest
     }
     return snap
