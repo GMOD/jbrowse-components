@@ -195,7 +195,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         return (
           // each displayedRegion
           <Paper
-            key={`${seq.refName}-${idx.toLocaleString('en-US')}`}
+            key={JSON.stringify(seq)}
             style={{
               minWidth: regionLength / scale,
               marginRight:
