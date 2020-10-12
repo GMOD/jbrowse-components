@@ -155,15 +155,15 @@ export default function RootModel(
         }
       },
       activateSession(name: string) {
-        const newSessionSnapshot = localStorage.getItem(`localSaved-${name}`)
+        const localId = `localSaved-${name}`
+        const newSessionSnapshot = localStorage.getItem(localId)
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
           )
 
-        const [localId, sessionObj] = newSessionSnapshot
         this.setSessionUuidInUrl(localId)
-        this.setSession(JSON.parse(sessionObj).session)
+        this.setSession(JSON.parse(newSessionSnapshot).session)
       },
       saveSessionToLocalStorage() {
         if (self.session && self.isUnsavedSession) {
