@@ -82,6 +82,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       task: undefined,
     }))
     .views(self => ({
+      get hasRecoverableAutosave() {
+        return getParent(self).hasRecoverableAutosave
+      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
       },
@@ -157,6 +160,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setName(str: string) {
+        self.name = str
+      },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},

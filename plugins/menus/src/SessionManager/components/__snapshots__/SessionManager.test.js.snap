@@ -10,8 +10,13 @@ exports[`<SessionManager /> renders 1`] = `
     <li
       class="MuiListSubheader-root MuiListSubheader-sticky MuiListSubheader-gutters"
     >
-      Choose a session to open
+      Saved sessions
     </li>
+    <p
+      class="MuiTypography-root makeStyles-message MuiTypography-body1"
+    >
+      No saved sessions found
+    </p>
   </ul>
 </div>
 `;

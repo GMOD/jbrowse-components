@@ -208,22 +208,26 @@ export function Loader() {
           localStorage.getItem(sessionQueryParam) ||
           sessionStorage.getItem(sessionQueryParam)
 
-        if (bc1 && bc2 && !foundLocalSession) {
-          bc1.postMessage(sessionQueryParam)
-          try {
-            const result = await new Promise((resolve, reject) => {
-              bc2.onmessage = msg => {
-                resolve(msg.data)
-              }
-              setTimeout(() => {
-                reject()
-              }, 1000)
-            })
-            const localId = `local-${uuid.v4()}`
-            sessionStorage.setItem(localId, result as string)
-            setData(localId)
-          } catch (e) {
-            console.error(e)
+        if (!foundLocalSession) {
+          if (bc1) {
+            bc1.postMessage(sessionQueryParam)
+            try {
+              const result = await new Promise((resolve, reject) => {
+                if (bc2) {
+                  bc2.onmessage = msg => {
+                    resolve(msg.data)
+                  }
+                }
+                setTimeout(() => {
+                  reject()
+                }, 1000)
+              })
+              const localId = `local-${uuid.v4()}`
+              sessionStorage.setItem(localId, result as string)
+              setData(localId)
+            } catch (e) {
+              console.error(e)
+            }
           }
         }
       }
@@ -383,11 +387,11 @@ export function Loader() {
 
   pluginManager.configure()
 
-  if (bc1 && bc2)
+  if (bc1) {
     bc1.onmessage = msg => {
       const ret = sessionStorage.getItem(msg.data)
       if (ret) {
-        bc2.postMessage(ret)
+        if (bc2) bc2.postMessage(ret)
       }
     }
 

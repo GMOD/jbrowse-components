@@ -6,8 +6,14 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import AddIcon from '@material-ui/icons/Add'
-import RestoreIcon from '@material-ui/icons/Restore'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getSnapshot,
+  SnapshotIn,
+  types,
+} from 'mobx-state-tree'
+import { observable, autorun } from 'mobx'
 import { UndoManager } from 'mst-middlewares'
 import * as uuid from 'uuid'
 import corePlugins from './corePlugins'
@@ -46,14 +52,17 @@ export default function RootModel(
       error: types.maybe(types.string),
       version: types.maybe(types.string),
     })
-    .views(() => ({
+    .volatile(() => ({
+      savedSessionsVolatile: observable.map({}),
+    }))
+    .views(self => ({
       get savedSessions() {
-        return Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('localSaved-'))
-          .map(entry => JSON.parse(entry[1]).session)
+        return Array.from(self.savedSessionsVolatile.values())
       },
+    }))
+    .views(self => ({
       get savedSessionNames() {
-        return this.savedSessions.map(savedSession => savedSession.name)
+        return self.savedSessions.map(session => session.name)
       },
       get currentSessionId() {
         const locationUrl = new URL(window.location.href)
@@ -61,7 +70,7 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
       get hasRecoverableAutosave() {
-        return !!Object.keys(localStorage).find(
+        return !!Object.keys(self.savedSessions).find(
           key => key === 'localSaved-previousAutosave',
         )
       },
@@ -72,6 +81,35 @@ export default function RootModel(
       },
     }))
     .actions(self => ({
+      afterCreate() {
+        Object.entries(localStorage)
+          .filter(
+            ([key, _val]) =>
+              key.startsWith('localSaved-') &&
+              !key.endsWith('previousAutosave'),
+          )
+          .forEach(([key, val]) => {
+            self.savedSessionsVolatile.set(key, JSON.parse(val).session)
+          })
+
+        addDisposer(
+          self,
+          autorun(() => {
+            for (const [key, val] of self.savedSessionsVolatile.entries()) {
+              try {
+                localStorage.setItem(`${key}`, JSON.stringify({ session: val }))
+              } catch (e) {
+                if (e.code === '22' || e.code === '1024') {
+                  // eslint-disable-next-line no-alert
+                  alert(
+                    'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
+                  )
+                }
+              }
+            }
+          }),
+        )
+      },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
@@ -93,32 +131,7 @@ export default function RootModel(
       renameCurrentSession(sessionName: string) {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const oldname = snapshot.name
-
-          const snapInSession = Object.entries(sessionStorage)
-            .filter(obj => obj[0].startsWith('local-'))
-            .find(
-              sessionSnap =>
-                JSON.parse(sessionSnap[1]).session.name === oldname,
-            )
-
-          const snapInLocal = Object.entries(localStorage)
-            .filter(obj => obj[0].startsWith('localSaved-'))
-            .find(
-              sessionSnap =>
-                JSON.parse(sessionSnap[1]).session.name === oldname,
-            )
           snapshot.name = sessionName
-          if (snapInSession)
-            sessionStorage.setItem(
-              snapInSession[0],
-              JSON.stringify({ session: snapshot }),
-            )
-          else if (snapInLocal)
-            localStorage.setItem(
-              snapInLocal[0],
-              JSON.stringify({ session: snapshot }),
-            )
           this.setSession(snapshot)
         }
       },
@@ -142,10 +155,7 @@ export default function RootModel(
         }
       },
       activateSession(name: string) {
-        const newSessionSnapshot = Object.entries(localStorage)
-          .filter(obj => obj[0].startsWith('localSaved-'))
-          .find(sessionSnap => JSON.parse(sessionSnap[1]).session.name === name)
-
+        const newSessionSnapshot = localStorage.getItem(`localSaved-${name}`)
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
@@ -157,25 +167,24 @@ export default function RootModel(
       },
       saveSessionToLocalStorage() {
         if (self.session && self.isUnsavedSession) {
-          const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          const localId = `localSaved-${self.currentSessionId || uuid.v4()}`
-          try {
-            localStorage.setItem(localId, JSON.stringify({ session: snapshot }))
-          } catch (e) {
-            if (e.code === '22' || e.code === '1024') {
-              // eslint-disable-next-line no-alert
-              alert(
-                'Local storage is full! Please open sessions and remove some before saving',
-              )
-            }
-          }
+          self.savedSessionsVolatile.set(
+            `localSaved-${self.session.name}`,
+            getSnapshot(self.session),
+          )
+          // const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
+          // // @ts-ignore
+          // const localId = `localSaved-${self.session.name}`
+          //
         }
       },
       loadAutosaveSession() {
         const autosavedSession = JSON.parse(
           localStorage.getItem('localSaved-previousAutosave') || '',
         ).session
-        autosavedSession.name = `${autosavedSession.name}-restored`
+        autosavedSession.name = `${autosavedSession.name.replace(
+          '-autosaved',
+          '',
+        )}-restored`
         const localId = `local-${uuid.v4()}`
         sessionStorage.clear()
         sessionStorage.setItem(
@@ -204,28 +213,19 @@ export default function RootModel(
           label: 'File',
           menuItems: [
             {
-              label: 'New Session',
+              label: 'New session',
               icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
-                let result
-                if (self.isUnsavedSession)
-                  // eslint-disable-next-line no-alert
-                  result = window.confirm(
-                    'You have unsaved changes. Click OK if you would like to save before continuing',
+                const lastAutosave = localStorage.getItem('autosave')
+                if (lastAutosave) {
+                  localStorage.setItem(
+                    'localSaved-previousAutosave',
+                    lastAutosave,
                   )
-                if (result) session.saveSessionToLocalStorage()
+                }
                 session.setDefaultSession()
               },
-            },
-            {
-              label: 'Restore Autosave Session',
-              icon: RestoreIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                session.loadAutosaveSession()
-              },
-              disabled: !self.hasRecoverableAutosave,
             },
           ],
         },

@@ -11,7 +11,6 @@ import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 import Share from './Share'
-import Save from './Save'
 import { isElectron } from '../util'
 
 const useStyles = makeStyles(theme => ({
@@ -112,7 +111,6 @@ function App({ session }) {
                 />
               </Tooltip>
               {!isElectron && <Share session={session} />}
-              {!isElectron && <Save session={session} />}
               <div className={classes.grow} />
               <div style={{ width: 150, maxHeight: 48 }}>
                 <LogoFull variant="white" />
