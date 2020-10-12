@@ -9,15 +9,17 @@ import {
   BlobLocation,
 } from '../types'
 
-export const openUrl = rangeFetcherOpenUrl
-
 declare global {
   interface Window {
     electron?: import('electron').AllElectron
   }
 }
 
-const isElectron = !!window.electron
+const isElectron = window && window.process && window.process.type
+
+export const openUrl = (arg: string) => {
+  return isElectron ? rangeFetcherOpenUrl(arg) : new ElectronRemoteFile(arg)
+}
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
