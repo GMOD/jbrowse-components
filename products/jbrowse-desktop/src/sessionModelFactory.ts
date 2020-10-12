@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  readConfObject,
+  isConfigurationModel,
+} from '@jbrowse/core/configuration'
 import {
   Region,
   NotificationLevel,
   TrackViewModel,
-} from '@gmod/jbrowse-core/util/types'
-import { getContainingView } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util/types'
+import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -20,11 +24,7 @@ import {
   types,
   walk,
 } from 'mobx-state-tree'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  readConfObject,
-  isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -107,7 +107,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get version() {
         return getParent(self).version
       },
-
+      get renderProps() {
+        return { theme: readConfObject(this.configuration, 'theme') }
+      },
       get visibleWidget() {
         if (isAlive(self))
           // returns most recently added item in active widgets

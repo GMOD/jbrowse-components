@@ -8,8 +8,8 @@ import ErrorBoundary from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
@@ -63,19 +63,21 @@ test('lollipop track test', async () => {
 test('variant track test - opens feature detail view', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
+  const { findByTestId, findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   state.session.views[0].tracks[0].setFeatureIdUnderMouse('test-vcf-604452')
-  fireEvent.click(await findByTestId('test-vcf-604452'))
+  const feats1 = await findAllByTestId('test-vcf-604452')
+  fireEvent.click(feats1[0])
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
   fireEvent.click(await findByTestId('drawer-close'))
-  fireEvent.contextMenu(await findByTestId('test-vcf-604452'))
+  const feats2 = await findAllByTestId('test-vcf-604452')
+  fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
 }, 10000)
@@ -101,23 +103,23 @@ describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, findByDisplayValue } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const {
+      findByTestId,
+      findAllByTestId,
+      findByText,
+      findByDisplayValue,
+    } = render(<JBrowse pluginManager={pluginManager} />)
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-    fireEvent.click(
-      await findByTestId('htsTrackEntryConfigure-volvox_filtered_vcf'),
-    )
+    fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+    fireEvent.click(await findByText('Settings'))
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
     await wait(async () => {
-      expect(await findByTestId('box-test-vcf-604452')).toHaveAttribute(
-        'fill',
-        'green',
-      )
+      const feats = await findAllByTestId('box-test-vcf-604452')
+      expect(feats[0]).toHaveAttribute('fill', 'green')
     })
   }, 10000)
 })

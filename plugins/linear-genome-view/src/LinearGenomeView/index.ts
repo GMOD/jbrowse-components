@@ -1,11 +1,8 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import {
-  ElementId,
-  Region as MUIRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import { Region } from '@jbrowse/core/util/types'
+import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -16,20 +13,27 @@ import {
   parseLocString,
   springAnimate,
   isSessionModelWithWidgets,
-} from '@gmod/jbrowse-core/util'
-import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
-import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
+} from '@jbrowse/core/util'
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { transaction } from 'mobx'
-import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
+import {
+  getSnapshot,
+  types,
+  cast,
+  Instance,
+  getRoot,
+  resolveIdentifier,
+} from 'mobx-state-tree'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -74,7 +78,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
-      showTrackLabels: true,
+      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
       showCenterLine: false,
     })
     .volatile(() => ({
@@ -87,6 +91,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      trackRefs: {} as { [key: string]: any },
     }))
     .views(self => ({
       get width(): number {
@@ -251,8 +257,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ...getSnapshot(region),
             oob: true,
             coord: region.reversed
-              ? Math.round(region.end - offset) + 1
-              : Math.round(region.start + offset) + 1,
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             offset,
             index: 0,
           }
@@ -266,8 +272,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             oob: true,
             offset,
             coord: region.reversed
-              ? Math.round(region.end - offset) + 1
-              : Math.round(region.start + offset) + 1,
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             index: n - 1,
           }
         }
@@ -281,8 +287,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
               oob: false,
               offset,
               coord: region.reversed
-                ? Math.round(region.end - offset) + 1
-                : Math.round(region.start + offset) + 1,
+                ? Math.floor(region.end - offset) + 1
+                : Math.floor(region.start + offset) + 1,
               index,
             }
           }
@@ -292,17 +298,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
-      },
-
-      getTrackPos(trackId: string) {
-        const idx = self.tracks.findIndex(
-          t => t.configuration.trackId === trackId,
-        )
-        let accum = 0
-        for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
-        }
-        return accum
       },
 
       // modifies view menu action onClick to apply to all tracks of same type
@@ -411,22 +406,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
-      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-        if (!trackType) throw new Error(`unknown track type ${type}`)
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType)
+          throw new Error(`unknown track type ${configuration.type}`)
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
-          type,
+          type: configuration.type,
           configuration,
         })
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: AnyConfigurationModel) {
+      hideTrack(trackId: string) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -463,15 +461,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      toggleTrack(configuration: AnyConfigurationModel) {
+      toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(trackId)
         // if none had that configuration, turn one on
-        if (!hiddenCount) self.showTrack(configuration)
+        if (!hiddenCount) {
+          self.showTrack(trackId)
+        }
       },
 
-      toggleTrackLabels() {
-        self.showTrackLabels = !self.showTrackLabels
+      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        self.trackLabels = setting
       },
 
       toggleCenterLine() {
@@ -1015,6 +1015,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.showAllRegions,
             },
             {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
+            { type: 'divider' },
+            {
               label: 'Show header',
               icon: VisibilityIcon,
               type: 'checkbox',
@@ -1030,18 +1038,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
               disabled: self.hideHeader,
             },
             {
-              label: 'Show track labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTrackLabels,
-              onClick: self.toggleTrackLabels,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
+              label: 'Track labels',
+              icon: LabelIcon,
+              subMenu: [
+                {
+                  label: 'Overlapping',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'overlapping',
+                  onClick: () => self.setTrackLabels('overlapping'),
+                },
+                {
+                  label: 'Offset',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'offset',
+                  onClick: () => self.setTrackLabels('offset'),
+                },
+                {
+                  label: 'Hidden',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'hidden',
+                  onClick: () => self.setTrackLabels('hidden'),
+                },
+              ],
             },
           ]
 
@@ -1062,7 +1083,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self, true, true, 1)
+          const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret

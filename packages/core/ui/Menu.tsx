@@ -38,7 +38,7 @@ const useStyles = makeStyles({
     right: 16,
     top: '50%',
     transform: 'translateY(-50%)',
-    padding: 12,
+    padding: 2,
     marginRight: -12,
     display: 'inline-flex',
   },
@@ -87,40 +87,40 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   return <div className={classes.menuItemEndDecoration}>{icon}</div>
 }
 
-interface MenuDivider {
+export interface MenuDivider {
   type: 'divider'
 }
 
-interface MenuSubHeader {
+export interface MenuSubHeader {
   type: 'subHeader'
   label: string
 }
 
-interface BaseMenuItem {
+export interface BaseMenuItem {
   label: string
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
 }
 
-interface NormalMenuItem extends BaseMenuItem {
+export interface NormalMenuItem extends BaseMenuItem {
   type?: 'normal'
   onClick: Function
 }
 
-interface CheckboxMenuItem extends BaseMenuItem {
+export interface CheckboxMenuItem extends BaseMenuItem {
   type: 'checkbox'
   checked: boolean
   onClick: Function
 }
 
-interface RadioMenuItem extends BaseMenuItem {
+export interface RadioMenuItem extends BaseMenuItem {
   type: 'radio'
   checked: boolean
   onClick: Function
 }
 
-interface SubMenuItem extends BaseMenuItem {
+export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'
   subMenu: MenuItem[]
 }

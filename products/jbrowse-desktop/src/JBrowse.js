@@ -1,5 +1,6 @@
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { App, StartScreen, theme } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { useDebounce } from '@jbrowse/core/util'
+import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 
@@ -64,22 +65,22 @@ const JBrowse = observer(({ pluginManager }) => {
     throw new Error(error)
   }
 
-  return rootModel.session ? (
-    <App session={rootModel.session} />
-  ) : (
-    <StartScreen
-      root={rootModel}
-      bypass={firstLoad}
-      onFactoryReset={factoryReset}
-    />
+  const theme = getConf(rootModel.jbrowse, 'theme')
+
+  return (
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
+      <CssBaseline />
+      {rootModel.session ? (
+        <App session={rootModel.session} />
+      ) : (
+        <StartScreen
+          root={rootModel}
+          bypass={firstLoad}
+          onFactoryReset={factoryReset}
+        />
+      )}
+    </ThemeProvider>
   )
 })
 
-export default props => {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <JBrowse {...props} />
-    </ThemeProvider>
-  )
-}
+export default JBrowse

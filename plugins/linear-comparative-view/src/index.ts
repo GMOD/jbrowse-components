@@ -1,7 +1,7 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import Plugin from '@jbrowse/core/Plugin'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -10,11 +10,10 @@ import {
   AbstractSessionModel,
   isAbstractMenuManager,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   configSchemaFactory as comparativeTrackConfigSchemaFactory,
   stateModelFactory as comparativeTrackStateModelFactory,
@@ -31,6 +30,10 @@ import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
+import LinearComparativeViewFactory from './LinearComparativeView'
+import LinearSyntenyViewFactory from './LinearSyntenyView'
+
+const { parseCigar } = MismatchParser
 
 interface Track {
   addAdditionalContextMenuItemCallback: Function
@@ -114,10 +117,10 @@ export default class extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearComparativeView')),
+      pluginManager.jbrequire(LinearComparativeViewFactory),
     )
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearSyntenyView')),
+      pluginManager.jbrequire(LinearSyntenyViewFactory),
     )
 
     pluginManager.addTrackType(() => {
@@ -126,10 +129,7 @@ export default class extends Plugin {
         compatibleView: 'LinearComparativeView',
         name: 'LinearComparativeTrack',
         configSchema,
-        stateModel: comparativeTrackStateModelFactory(
-          pluginManager,
-          configSchema,
-        ),
+        stateModel: comparativeTrackStateModelFactory(configSchema),
       })
     })
     pluginManager.addTrackType(() => {
@@ -138,7 +138,7 @@ export default class extends Plugin {
         compatibleView: 'LinearSyntenyView',
         name: 'LinearSyntenyTrack',
         configSchema,
-        stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: syntenyTrackStateModelFactory(configSchema),
       })
     })
     pluginManager.addAdapterType(

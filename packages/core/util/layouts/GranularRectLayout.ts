@@ -43,7 +43,7 @@ class LayoutRow<T> {
 
   private rowState?: RowState<T>
 
-  constructor(rowNumber: number) {
+  constructor() {
     this.padding = 1
     this.widthLimit = 1000000
 
@@ -425,7 +425,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
           }px) exceeded, aborting layout`,
         )
       }
-      row = new LayoutRow(y)
+      row = new LayoutRow()
       bitmap[y] = row
     }
     return row

@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
@@ -105,7 +105,7 @@ const ViewMenu = observer(
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
-          onMenuItemClick={(event, callback) => {
+          onMenuItemClick={(_event, callback) => {
             callback()
             setAnchorEl(undefined)
           }}
@@ -173,10 +173,9 @@ export default withContentRect('bounds')(
               model={view}
               IconButtonProps={{
                 classes: { root: classes.iconRoot },
-                size: 'small',
                 edge: 'start',
               }}
-              IconProps={{ fontSize: 'small', className: classes.icon }}
+              IconProps={{ className: classes.icon }}
             />
             <div className={classes.grow} />
             {view.displayName ? (
@@ -197,11 +196,10 @@ export default withContentRect('bounds')(
             <div className={classes.grow} />
             <IconButton
               classes={{ root: classes.iconRoot }}
-              size="small"
               edge="end"
               onClick={onClose}
             >
-              <CloseIcon fontSize="small" className={classes.icon} />
+              <CloseIcon className={classes.icon} />
             </IconButton>
           </div>
           <Paper>{children}</Paper>

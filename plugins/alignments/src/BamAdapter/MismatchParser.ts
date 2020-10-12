@@ -22,12 +22,11 @@ export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
       seqOffset += len
     }
     if (op === 'I') {
-      // GAH: shouldn't length of insertion really by 0, since JBrowse internally uses zero-interbase coordinates?
       mismatches.push({
         start: currOffset,
         type: 'insertion',
         base: `${len}`,
-        length: 1,
+        length: 0,
       })
       seqOffset += len
     } else if (op === 'D') {

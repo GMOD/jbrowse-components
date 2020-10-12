@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
 
-import { MenuItem } from '@gmod/jbrowse-core/ui'
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { MenuItem } from '@jbrowse/core/ui'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
   BaseTrackStateModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+} from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
   types,
@@ -28,7 +28,7 @@ import {
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
+  const { ElementId } = jbrequire('@jbrowse/core/util/types/mst')
 
   const defaultHeight = 400
   return types
@@ -97,7 +97,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           onAction(self, (param: ISerializedActionCall) => {
             if (self.linkViews) {
               const { name, path, args } = param
-              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
+              const actions = [
+                'horizontalScroll',
+                'zoomTo',
+                'setScaleFactor',
+                'showTrack',
+                'hideTrack',
+                'toggleTrack',
+              ]
               if (actions.includes(name) && path) {
                 this.onSubviewAction(name, path, args)
               }

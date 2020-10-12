@@ -1,5 +1,6 @@
 import rangeParser from 'range-parser' // eslint-disable-line import/no-extraneous-dependencies
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { LocalFile } from 'generic-filehandle' // eslint-disable-line import/no-extraneous-dependencies
+import PluginManager from '@jbrowse/core/PluginManager'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
@@ -12,7 +13,7 @@ configSnapshot.configuration = {
   useUrlSession: false,
 }
 
-export function getPluginManager(initialState, adminMode = false, sessionName) {
+export function getPluginManager(initialState, adminMode = true, sessionName) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -84,3 +85,17 @@ export function setup() {
   Storage.prototype.removeItem = jest.fn()
   Storage.prototype.clear = jest.fn()
 }
+
+// eslint-disable-next-line no-native-reassign,no-global-assign
+window = Object.assign(window, { innerWidth: 800 })
+
+const originalError = console.error
+
+// this is here to silence a warning related to useStaticRendering
+// xref https://github.com/GMOD/jbrowse-components/issues/1277
+jest.spyOn(console, 'error').mockImplementation((...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('useLayoutEffect')) {
+    return undefined
+  }
+  return originalError.call(console, args)
+})

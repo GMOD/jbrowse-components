@@ -1,7 +1,7 @@
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession } from '@jbrowse/core/util'
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import Link from '@material-ui/core/Link'

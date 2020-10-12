@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Instance } from 'mobx-state-tree'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { clamp } from '@gmod/jbrowse-core/util'
-import { LayoutRecord, VIEW_DIVIDER_HEIGHT } from './model'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import { clamp } from '@jbrowse/core/util'
+import { LayoutRecord } from './model'
 
 const [, TOP, , BOTTOM] = [0, 1, 2, 3]
 
@@ -13,19 +14,7 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  const heightUpUntilThisPoint =
-    views
-      .slice(0, level)
-      .map(v => v.height + VIEW_DIVIDER_HEIGHT)
-      .reduce((a, b) => a + b, 0) +
-    level * 3
-  return (
-    heightUpUntilThisPoint +
-    views[level].headerHeight +
-    views[level].scaleBarHeight +
-    views[level].getTrackPos(trackConfigId) +
-    1
-  )
+  return views[level].trackRefs[trackConfigId].getBoundingClientRect().top
 }
 
 export function getPxFromCoordinate(
@@ -45,22 +34,35 @@ export function yPos(
     height: number
     scrollTop: number
     SNPCoverageTrack?: { height: number }
+    showCoverage?: boolean
   }[], // basic track requirements
   c: LayoutRecord,
 ) {
   const min = 0
   const max = tracks[level].height
-
   let offset = 0
-  const subtrack = tracks[level].SNPCoverageTrack
-  if (subtrack) {
-    offset = subtrack.height + 5
+  const { showCoverage, SNPCoverageTrack } = tracks[level]
+  if (SNPCoverageTrack && showCoverage) {
+    offset = SNPCoverageTrack.height + 5
   }
   return (
     clamp(
       c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
       min,
       max,
-    ) + heightFromSpecificLevel(views, trackConfigId, level)
+    ) +
+    heightFromSpecificLevel(views, trackConfigId, level) +
+    tracks[level].scrollTop
   )
+}
+
+// we combo a useEffect and useState combo to force rerender on snap
+// changing. the setup of this being a useEffect+useState makes it
+// re-render once the useEffect is called, which is generally the
+// "next frame". If we removed the below use
+export const useNextFrame = (variable: unknown) => {
+  const [, setNextFrameState] = useState()
+  useEffect(() => {
+    setNextFrameState(variable)
+  }, [variable])
 }

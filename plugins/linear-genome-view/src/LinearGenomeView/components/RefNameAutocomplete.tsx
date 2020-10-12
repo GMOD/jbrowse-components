@@ -1,12 +1,11 @@
 /**
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
+import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
-import { makeStyles } from '@material-ui/core/styles'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
@@ -16,14 +15,11 @@ import React, { useEffect, useState } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
-const LISTBOX_PADDING = 8 // px
-
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
   return React.cloneElement(data[index], {
     style: {
       ...style,
-      top: (style.top as number) + LISTBOX_PADDING,
     },
   })
 }
@@ -64,7 +60,7 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
         <OuterElementContext.Provider value={other}>
           <VariableSizeList
             itemData={itemData}
-            height={getHeight() + 2 * LISTBOX_PADDING}
+            height={getHeight()}
             width="100%"
             key={itemCount}
             outerElementType={OuterElementType}
@@ -81,26 +77,19 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
   },
 )
 
-const useStyles = makeStyles({
-  listbox: {
-    '& ul': {
-      padding: 0,
-      margin: 0,
-    },
-  },
-})
-
 function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
   defaultRegionName,
+  style,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
   onSelect: (region: Region | undefined) => void
   assemblyName?: string
   defaultRegionName?: string
+  style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
   const [selectedRegionName, setSelectedRegionName] = useState<
@@ -128,8 +117,6 @@ function RefNameAutocomplete({
     }
   }, [assemblyName, defaultRegionName, onSelect, loading, regions])
 
-  const classes = useStyles()
-
   const regionNames = regions.map(region => region.refName)
 
   function onChange(_: unknown, newRegionName: string | null) {
@@ -142,23 +129,20 @@ function RefNameAutocomplete({
     }
   }
 
-  return (
+  return !assemblyName || loading || !selectedRegionName ? null : (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       disableListWrap
-      classes={classes}
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
         >
       }
+      disableClearable
       options={regionNames}
-      value={
-        !assemblyName || loading || !selectedRegionName
-          ? null
-          : selectedRegionName
-      }
+      value={selectedRegionName}
       disabled={!assemblyName || loading}
+      style={style}
       onChange={onChange}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps

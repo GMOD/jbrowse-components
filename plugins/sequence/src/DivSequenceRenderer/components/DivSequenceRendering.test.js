@@ -1,8 +1,8 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import Rendering, { featuresToSequence } from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
 

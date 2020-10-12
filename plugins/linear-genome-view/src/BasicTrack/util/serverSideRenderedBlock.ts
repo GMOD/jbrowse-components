@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { Component } from 'react'
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Region } from '@gmod/jbrowse-core/util/types/mst'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { Region } from '@jbrowse/core/util/types/mst'
 
 import {
   assembleLocString,
   makeAbortableReaction,
   getSession,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util'
 import {
   getTrackAssemblyNames,
   getRpcSessionId,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 

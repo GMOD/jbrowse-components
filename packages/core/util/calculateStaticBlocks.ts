@@ -21,6 +21,11 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
+
+  // on the main thread, window.innerWidth is used because this reduces
+  // recalculating the blocks, otherwise, model.width for cases such as
+  // off-main-thread
+  width = window.innerWidth || model.width,
 ) {
   const {
     offsetPx,
@@ -28,12 +33,11 @@ export default function calculateStaticBlocks(
     bpPerPx,
     minimumBlockWidth,
     interRegionPaddingWidth,
-    width,
   } = model
 
   const windowLeftBp = offsetPx * bpPerPx
   const windowRightBp = (offsetPx + width) * bpPerPx
-  const blockSizePx = Math.ceil(width / 200) * 200
+  const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
   // for each displayed region
   let regionBpOffset = 0

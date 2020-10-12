@@ -1,4 +1,6 @@
+import { ThemeProvider } from '@material-ui/core/styles'
 import { renderToString } from 'react-dom/server'
+import React from 'react'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
 import {
   SnapshotOrInstance,
@@ -19,6 +21,7 @@ import SerializableFilterChain, {
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import RpcManager from '../../rpc/RpcManager'
+import { createJBrowseTheme } from '../../ui'
 
 interface BaseRenderArgs {
   blockKey: string
@@ -143,7 +146,7 @@ export default class ServerSideRenderer extends RendererType {
   serializeResultsInWorker(
     result: { html: string },
     features: Map<string, Feature>,
-    args: RenderArgsDeserialized,
+    _args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const serialized = ({ ...result } as unknown) as ResultsSerialized
     serialized.features = iterMap(features.values(), f => f.toJSON())
@@ -169,7 +172,7 @@ export default class ServerSideRenderer extends RendererType {
   }
 
   // will expand if soft clipping or feature glyphs are shown
-  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
+  getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
     return region
   }
 
@@ -249,7 +252,14 @@ export default class ServerSideRenderer extends RendererType {
     statusCallback('Rendering plot')
     const results = await this.render({ ...deserializedArgs, features })
     checkAbortSignal(signal)
-    const html = renderToString(results.element)
+    const html = renderToString(
+      React.createElement(
+        ThemeProvider,
+        // @ts-ignore
+        { theme: createJBrowseTheme(args.theme) },
+        results.element,
+      ),
+    )
     delete results.element
 
     // serialize the results for passing back to the main thread.
@@ -271,7 +281,7 @@ export default class ServerSideRenderer extends RendererType {
     return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)
   }
 
-  freeResources(args: {}) {
+  freeResources(/* args: {} */) {
     return 0
   }
 }

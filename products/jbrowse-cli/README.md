@@ -10,7 +10,7 @@ This document covers the CLI tools.
 The command line tools can be installed using `npm` as follows
 
 ```sh-session
-$ npm install -g @gmod/jbrowse-cli
+$ npm install -g @jbrowse/cli
 ```
 
 You can test your installation with
@@ -22,7 +22,7 @@ $ jbrowse --version
 It is also possible to do one-off executions using npx, e.g.
 
 ```sh-session
-npx @gmod/jbrowse-cli create myfolder
+npx @jbrowse/cli create myfolder
 ```
 
 It is likely preferable in most cases to install the tools first however
@@ -69,9 +69,9 @@ OPTIONS
   -h, --help
       show CLI help
 
-  -l, --load=copy|symlink|move|trust
+  -l, --load=copy|symlink|move|inPlace
       Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
-      directory to the JBrowse directory. Or use trust to modify the config without doing any file operations
+      directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations
 
   -n, --name=name
       Name of the assembly; if not specified, will be guessed using the sequence file name
@@ -123,12 +123,14 @@ OPTIONS
 EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --load copy
   $ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move
-  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust
-  $ jbrowse add-assembly GRCh38.chrom.sizes --load trust
+  $ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace
+  $ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace
   $ jbrowse add-assembly GRCh38.config.json --load copy
   $ jbrowse add-assembly https://example.com/data/sample.2bit
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
+
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -181,6 +183,8 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-connection.ts)_
+
 ## `jbrowse add-track TRACK`
 
 Add a track to a JBrowse 2 configuration
@@ -193,44 +197,49 @@ ARGUMENTS
   TRACK  Track file or URL
 
 OPTIONS
-  -a, --assemblyNames=assemblyNames   Assembly name or names for track as comma separated string. If none, will default
-                                      to the assembly in your config file
+  -a, --assemblyNames=assemblyNames     Assembly name or names for track as comma separated string. If none, will
+                                        default to the assembly in your config file
 
-  -d, --description=description       Optional description of the track
+  -d, --description=description         Optional description of the track
 
-  -f, --force                         Equivalent to `--skipCheck --overwrite`
+  -f, --force                           Equivalent to `--skipCheck --overwrite`
 
-  -h, --help                          show CLI help
+  -h, --help                            show CLI help
 
-  -l, --load=copy|symlink|move|trust  Required flag when using a local file. Choose how to manage the track. Copy,
-                                      symlink, or move the track to the JBrowse directory. Or trust to leave track alone
+  -l, --load=copy|symlink|move|inPlace  Required flag when using a local file. Choose how to manage the track. Copy,
+                                        symlink, or move the track to the JBrowse directory. Or inPlace to leave track
+                                        alone
 
-  -n, --name=name                     Name of the track. Will be defaulted to the trackId if none specified
+  -n, --name=name                       Name of the track. Will be defaulted to the trackId if none specified
 
-  -t, --type=type                     Type of track, by default inferred from track file
+  -t, --type=type                       Type of track, by default inferred from track file
 
-  --category=category                 Optional Comma separated string of categories to group tracks
+  --category=category                   Optional Comma separated string of categories to group tracks
 
-  --config=config                     Any extra config settings to add to a track. i.e '{"defaultRendering": "density"}'
+  --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
+                                        "density"}'
 
-  --overwrite                         Overwrites existing track if it shares the same trackId
+  --overwrite                           Overwrites existing track if it shares the same trackId
 
-  --skipCheck                         Skip check for whether or not the file or URL exists or if you are in a JBrowse
-                                      directory
+  --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
+                                        directory
 
-  --target=target                     [default: ./config.json] path to config file in JB2 installation to write out to.
+  --target=target                       [default: ./config.json] path to config file in JB2 installation to write out
+                                        to.
 
-  --trackId=trackId                   trackId for the track, by default inferred from filename, must be unique
-                                      throughout config
+  --trackId=trackId                     trackId for the track, by default inferred from filename, must be unique
+                                        throughout config
 
 EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy
   $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
   $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
-  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load trust --overwrite
+  $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
+
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -253,6 +262,8 @@ EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
 ```
+
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -278,6 +289,8 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/admin-server.ts)_
+
 ## `jbrowse create LOCALPATH`
 
 Downloads and installs the latest JBrowse 2 release
@@ -294,7 +307,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -303,9 +316,11 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1
+  $ jbrowse create /path/to/new/installation --tag @jbrowse/web@0.0.1
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
+
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -322,7 +337,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.1.0/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -355,6 +370,8 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/set-default-session.ts)_
+
 ## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
@@ -370,7 +387,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -378,16 +395,18 @@ OPTIONS
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @jbrowse/web@0.0.1
   $ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
+
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 
 ## Debugging
 
-Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
+Debug logs (provided by [debug](https://github.com/visionmedia/debug)) can be
 printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
 print all debug logs. Setting `DEBUG=jbrowse*` will print only logs from this
 tool, and setting e.g. `DEBUG=jbrowse:add-assembly` will print only logs from

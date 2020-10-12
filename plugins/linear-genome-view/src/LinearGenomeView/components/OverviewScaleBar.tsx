@@ -1,9 +1,7 @@
-// import { Region } from '@gmod/jbrowse-core/util/types'
-// import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
-import { getSession } from '@gmod/jbrowse-core/util'
+// import { Region } from '@jbrowse/core/util/types'
+// import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
+import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
@@ -21,11 +19,8 @@ import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const scaleBarColor = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      theme.palette.tertiary.light
+    ? theme.palette.tertiary.light
     : theme.palette.primary.light
   return {
     scaleBar: {
@@ -94,11 +89,8 @@ const Polygon = observer(
     overview.setVolatileWidth(width)
     overview.showAllRegions()
 
-    // @ts-ignore
     const polygonColor = theme.palette.tertiary
-      ? // prettier-ignore
-        // @ts-ignore
-        theme.palette.tertiary.light
+      ? theme.palette.tertiary.light
       : theme.palette.primary.light
     return (
       <svg

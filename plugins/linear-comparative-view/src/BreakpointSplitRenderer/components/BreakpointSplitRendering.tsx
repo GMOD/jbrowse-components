@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react'
 import { getParent, isStateTreeNode } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
-import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+import { ImageBitmapType } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { BreakpointSplitRenderingProps } from '../BreakpointSplitRenderer'
 
 /**

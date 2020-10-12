@@ -1,7 +1,7 @@
 // this file contains the rather verbose functions for
 // creating features from CSV/TSV lines
 export default ({ jbrequire }) => {
-  const { parseLocString } = jbrequire('@gmod/jbrowse-core/util')
+  const { parseLocString } = jbrequire('@jbrowse/core/util')
 
   function makeAdHocFeature(
     columns,

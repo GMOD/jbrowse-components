@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import fetch from 'node-fetch'
-import * as unzip from 'unzipper'
+import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
 export default class Upgrade extends JBrowseCommand {
@@ -9,7 +9,7 @@ export default class Upgrade extends JBrowseCommand {
   static examples = [
     '$ jbrowse upgrade # Upgrades current directory to latest jbrowse release',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @jbrowse/web@0.0.1',
     '$ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2',
     '$ jbrowse upgrade --url https://sample.com/jbrowse2.zip',
   ]
@@ -39,7 +39,7 @@ export default class Upgrade extends JBrowseCommand {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.\nDefaults to latest',
+        'Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.\nDefaults to latest',
     }),
     url: flags.string({
       char: 'u',
@@ -54,15 +54,11 @@ export default class Upgrade extends JBrowseCommand {
     const { listVersions, tag, url } = runFlags
 
     if (listVersions) {
-      try {
-        const versions = (await this.fetchGithubVersions()).map(
-          version => version.tag_name,
-        )
-        this.log(`All JBrowse versions:\n${versions.join('\n')}`)
-        this.exit()
-      } catch (error) {
-        this.error(error)
-      }
+      const versions = (await this.fetchGithubVersions()).map(
+        version => version.tag_name,
+      )
+      this.log(`All JBrowse versions:\n${versions.join('\n')}`)
+      this.exit()
     }
     this.debug(`Want to upgrade at: ${argsPath}`)
 
@@ -71,6 +67,7 @@ export default class Upgrade extends JBrowseCommand {
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 
+    this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
     if (!response.ok) {
       this.error(`Failed to fetch: ${response.statusText}`, { exit: 100 })

@@ -1,26 +1,48 @@
 {
-  "name": "@gmod/jbrowse-plugin-variants",
+  "name": "@jbrowse/plugin-variants",
   "version": "0.0.1-beta.18",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
-  "main": "src/index.ts",
-  "scripts": {
-    "disabled-build": "cross-env NODE_ENV=production webpack",
-    "test": "cd ../..; jest plugins/variants"
-  },
-  "author": "Garrett Stevens",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
   "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/variants"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-variants.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/variants",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
+  },
   "dependencies": {
     "@gmod/tabix": "^1.4.6",
     "@gmod/vcf": "^4.0.1",
     "generic-filehandle": "^2.0.0"
   },
-  "devDependencies": {
-    "@gmod/jbrowse-development-tools": "^0.0.1-beta.27"
-  },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
-    "@gmod/jbrowse-plugin-alignments": "^0.0.1-beta.1",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/plugin-alignments": "^0.0.1-beta.1",
+    "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
@@ -28,5 +50,7 @@
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
   },
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  }
 }

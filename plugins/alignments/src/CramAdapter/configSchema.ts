@@ -1,5 +1,5 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default (pluginManager: PluginManager) => {
   const { types } = pluginManager.lib['mobx-state-tree']

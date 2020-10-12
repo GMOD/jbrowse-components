@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import React, { useEffect } from 'react'
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { AlignmentsTrackModel } from '../model'
 
 function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {

@@ -3,8 +3,8 @@ import breakpointSplitViewFromTableRowFactory from './breakpointSplitViewFromTab
 
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getConf } = jbrequire('@jbrowse/core/configuration')
+  const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
   const { resolveIdentifier } = jbrequire('mobx-state-tree')
 
   const session = getSession(chordTrack)
@@ -45,9 +45,9 @@ export default pluginManager => {
   const { types, getParent, addDisposer, getSnapshot } = jbrequire(
     'mobx-state-tree',
   )
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { getSession } = jbrequire('@jbrowse/core/util')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
@@ -243,7 +243,7 @@ export default pluginManager => {
                             JSON.parse(JSON.stringify(displayedRegions)),
                           )
                         })
-                        .catch(e => console.error(e))
+                        .catch(e => circularView.setError(e))
                     }
                   } else {
                     circularView.setDisplayedRegions(assemblyRegions)
@@ -272,13 +272,13 @@ export default pluginManager => {
               // hide any visible tracks
               if (self.circularView.tracks.length) {
                 self.circularView.tracks.forEach(track => {
-                  self.circularView.hideTrack(track.configuration)
+                  self.circularView.hideTrack(track.configuration.trackId)
                 })
               }
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                self.circularView.showTrack(generatedTrackConf, {
+                self.circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
               }

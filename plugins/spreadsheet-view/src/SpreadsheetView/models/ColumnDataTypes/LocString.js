@@ -1,9 +1,7 @@
-import {
-  doesIntersect2,
-  isContainedWithin,
-} from '@gmod/jbrowse-core/util/range'
+import { doesIntersect2, isContainedWithin } from '@jbrowse/core/util/range'
 import ClearIcon from '@material-ui/icons/Clear'
-import { when } from '@gmod/jbrowse-core/util'
+import { when } from '@jbrowse/core/util'
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -12,16 +10,14 @@ export default pluginManager => {
   const React = jbrequire('react')
 
   const { getPropertyType, getEnumerationValues, getSubType } = jbrequire(
-    '@gmod/jbrowse-core/util/mst-reflection',
+    '@jbrowse/core/util/mst-reflection',
   )
 
   const { compareLocs, getSession, parseLocString } = jbrequire(
-    '@gmod/jbrowse-core/util',
+    '@jbrowse/core/util',
   )
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const IconButton = jbrequire('@material-ui/core/IconButton')
@@ -75,7 +71,6 @@ export default pluginManager => {
           value={filterModel.locString}
           onChange={evt => filterModel.setLocString(evt.target.value)}
           className={classes.textFilterControl}
-          margin="dense"
           InputProps={{
             endAdornment: (
               <InputAdornment

@@ -4,18 +4,15 @@ import {
   readConfObject,
   ConfigurationReference,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import {
-  BaseTrackConfig,
-  BaseTrack,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseTrackConfig, BaseTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
   getSession,
   makeAbortableReaction,
-} from '@gmod/jbrowse-core/util'
-import { getRpcSessionId } from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
@@ -35,7 +32,7 @@ export function configSchemaFactory(pluginManager: any) {
   )
 }
 
-export function stateModelFactory(pluginManager: any, configSchema: any) {
+export function stateModelFactory(configSchema: any) {
   return types
     .compose(
       'LinearComparativeTrack',
@@ -45,7 +42,7 @@ export function stateModelFactory(pluginManager: any, configSchema: any) {
           type: types.literal('LinearComparativeTrack'),
           configuration: ConfigurationReference(configSchema),
         })
-        .volatile(self => ({
+        .volatile((/* self */) => ({
           // avoid circular typescript reference by casting to generic functional component
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
@@ -175,12 +172,7 @@ function renderBlockData(self: LinearComparativeTrack) {
   }
 }
 
-async function renderBlockEffect(
-  props: ReturnType<typeof renderBlockData>,
-  signal: AbortSignal,
-  self: LinearComparativeTrack,
-  allowRefetch = false,
-) {
+async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   if (!props) {
     throw new Error('cannot render with no props')
   }

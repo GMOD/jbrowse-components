@@ -1,13 +1,13 @@
-import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import {
   BlockBasedTrack,
   blockBasedTrackModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getContainingView } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { getContainingView } from '@jbrowse/core/util'
 
 export default (configSchema: AnyConfigurationSchemaType, trackType: string) =>
   types.compose(

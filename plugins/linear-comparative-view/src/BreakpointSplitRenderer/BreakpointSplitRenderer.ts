@@ -1,11 +1,11 @@
 /* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import {
   overlayYPos,
@@ -17,12 +17,6 @@ import {
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
-interface LayoutMatch {
-  level: number
-  layout: LayoutRecord
-  feature: Feature
-  refName: string
-}
 interface BreakpointSplitRenderProps {
   trackModel?: any
   imageData: any
@@ -32,26 +26,11 @@ interface BreakpointSplitRenderProps {
   middle: boolean
   highResolutionScaling: number
   linkedTrack: string
-  pluginManager: any
   views: ReducedLinearGenomeView[]
 }
 export interface BreakpointSplitRenderingProps
   extends BreakpointSplitRenderProps {
   imageData: any
-}
-
-interface BreakpointSplitImageData {
-  imageData?: ImageBitmap
-  height: number
-  width: number
-  maxHeightReached: boolean
-}
-interface LayoutRect {
-  feature: Feature
-  leftPx: number
-  rightPx: number
-  topPx: number
-  heightPx: number
 }
 
 // faster than localeCompare by 5x or so
@@ -60,10 +39,7 @@ const strcmp = new Intl.Collator(undefined, {
   sensitivity: 'base',
 }).compare
 
-function instantiateTrackLayoutFeatures(
-  views: ReducedLinearGenomeView[],
-  pluginManager: any,
-) {
+function instantiateTrackLayoutFeatures(views: ReducedLinearGenomeView[]) {
   views.forEach(view => {
     view.tracks.forEach(track => {
       if (track.layoutFeatures) {
@@ -153,7 +129,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
       width,
       height,
       middle,
-      pluginManager,
       linkedTrack,
       config,
     } = props
@@ -165,7 +140,7 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     ctx.strokeStyle = readConfObject(config, 'color')
     ctx.fillStyle = readConfObject(config, 'color')
     const drawMode = readConfObject(config, 'drawMode')
-    const views = instantiateTrackLayoutFeatures(props.views, pluginManager)
+    const views = instantiateTrackLayoutFeatures(props.views)
 
     for (const chunk of generateLayoutMatches(views, trackId, middle)) {
       // we follow a path in the list of chunks, not from top to bottom, just in series
@@ -194,9 +169,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
         //   continue
         // }
 
-        // flipMultiplier combines with normal directionality of the curve
-        const flipMultipliers = views.map(v => 1)
-
         const x1 = getPxFromCoordinate(
           v1,
           ref1,
@@ -224,32 +196,20 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
           ctx.beginPath()
           ctx.moveTo(x1, y1)
           ctx.bezierCurveTo(
-            x1 + 200 * f1.get('strand') * flipMultipliers[level1],
+            x1 + 200 * f1.get('strand'),
             y1,
-            x2 - 200 * f2.get('strand') * flipMultipliers[level2],
+            x2 - 200 * f2.get('strand'),
             y2,
             x2,
             y2,
           )
           ctx.stroke()
-          drawArrow(
-            ctx,
-            x2 - 10 * f2.get('strand') * flipMultipliers[level2],
-            y2,
-            x2,
-            y2,
-          )
+          drawArrow(ctx, x2 - 10 * f2.get('strand'), y2, x2, y2)
         } else {
           ctx.beginPath()
-          ctx.moveTo(
-            x1 + 10 * f1.get('strand') * flipMultipliers[level1] * -1,
-            y1,
-          )
+          ctx.moveTo(x1 + 10 * f1.get('strand') * -1, y1)
           ctx.lineTo(x1, y1)
-          ctx.lineTo(
-            x2 - 10 * f2.get('strand') * flipMultipliers[level2] * -1,
-            y2,
-          )
+          ctx.lineTo(x2 - 10 * f2.get('strand') * -1, y2)
           ctx.lineTo(x2, y2)
           ctx.stroke()
           // drawArrow(

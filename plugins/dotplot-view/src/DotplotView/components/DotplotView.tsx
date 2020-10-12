@@ -3,12 +3,14 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { LinearProgress } from '@material-ui/core'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getConf } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import PluginManager from '@jbrowse/core/PluginManager'
 import normalizeWheel from 'normalize-wheel'
 import { DotplotViewModel, Dotplot1DViewModel } from '../model'
+import ImportFormFactory from './ImportForm'
+import ControlsFactory from './Controls'
 
 const useStyles = makeStyles(theme => {
   return {
@@ -424,8 +426,8 @@ const Grid = observer(
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
-  const ImportForm = jbrequire(require('./ImportForm'))
-  const Controls = jbrequire(require('./Controls'))
+  const ImportForm = jbrequire(ImportFormFactory)
+  const Controls = jbrequire(ControlsFactory)
 
   // produces offsetX/offsetY coordinates from a clientX and an element's getBoundingClientRect
   function getOffset(coord: Coord, rect: Rect) {
@@ -655,7 +657,7 @@ export default (pluginManager: PluginManager) => {
               </div>
               <Menu
                 open={Boolean(mouseup)}
-                onMenuItemClick={(event, callback) => {
+                onMenuItemClick={(_, callback) => {
                   callback()
                   setMouseUpClient(undefined)
                   setMouseDownClient(undefined)

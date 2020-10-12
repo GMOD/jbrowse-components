@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LoadingF from '../../ChordTrack/components/Loading'
 import TrackErrorF from '../../ChordTrack/components/TrackError'
 import RpcRenderedSvgGroupF from './RpcRenderedSvgGroup'
