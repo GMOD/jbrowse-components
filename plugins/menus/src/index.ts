@@ -118,7 +118,7 @@ export default class extends Plugin {
               // @ts-ignore
               session.saveSessionToLocalStorage()
               // @ts-ignore
-              session.notify(`Saved session "${session.name}"`)
+              session.notify(`Saved session "${session.name}"`, 'success')
             }
           },
         },
