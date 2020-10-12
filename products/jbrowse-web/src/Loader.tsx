@@ -139,7 +139,7 @@ export function Loader() {
         try {
           config = JSON.parse(configText)
           const configUri = new URL(configLocation.uri, window.location.origin)
-          addRelativUris(config, configUri)
+          addRelativeUris(config, configUri)
         } catch (error) {
           setConfigSnapshot(() => {
             throw new Error(`Can't parse config JSON: ${error.message}`)
@@ -270,11 +270,11 @@ export function Loader() {
   return <JBrowse pluginManager={pluginManager} />
 }
 
-function addRelativUris(config: Config, configUri: URL) {
+function addRelativeUris(config: Config, configUri: URL) {
   if (typeof config === 'object') {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
-        addRelativUris(config[key], configUri)
+        addRelativeUris(config[key], configUri)
       } else if (key === 'uri') {
         config.baseUri = configUri.href
       }
