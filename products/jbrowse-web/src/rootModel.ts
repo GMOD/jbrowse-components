@@ -70,7 +70,7 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
       get hasRecoverableAutosave() {
-        return !!Object.keys(self.savedSessions).find(
+        return !!Object.keys(localStorage).find(
           key => key === 'localSaved-previousAutosave',
         )
       },
