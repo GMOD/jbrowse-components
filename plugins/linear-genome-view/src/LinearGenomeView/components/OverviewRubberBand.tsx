@@ -60,7 +60,6 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-// functional component for OverviewRubberBand
 function OverviewRubberBand({
   model,
   overview,

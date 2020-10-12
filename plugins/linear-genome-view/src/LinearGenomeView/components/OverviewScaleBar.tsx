@@ -150,6 +150,7 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
+  const theme = useTheme()
   const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
@@ -167,10 +168,26 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const parentRegionLength = parentRegion
           ? parentRegion.end - parentRegion.start
           : 0 // check for when region is smaller than parent region
+        const gradientForward = `
+        linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px), 
+        linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px),
+        linear-gradient(-45deg, #cccccc 11px, transparent 12px),
+        linear-gradient(-135deg, #cccccc 11px, transparent 12px),
+        linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px),
+        linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px)`
+        const gradientBackward = `
+        linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px), 
+        linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px),
+        linear-gradient(45deg, #cccccc 11px, transparent 12px),
+        linear-gradient(135deg, #cccccc 11px, transparent 12px),
+        linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px),
+        linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px)`
+        const backgroundGradient = seq.reversed
+          ? gradientBackward
+          : gradientForward
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
-          // fix these for regions with the same name
           seq.reversed
             ? labels.unshift(index * gridPitch.majorPitch + seq.start)
             : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
@@ -186,6 +203,9 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   ? undefined
                   : wholeSeqSpacer,
               borderColor: refNameColor,
+              backgroundImage: `${backgroundGradient}`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: '20px',
             }}
             className={classes.scaleBarContig}
             variant="outlined"
