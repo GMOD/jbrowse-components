@@ -8,12 +8,12 @@ export function generateHierarchy(trackConfigurations) {
 
   trackConfigurations.forEach(trackConf => {
     const categories = [...(readConfObject(trackConf, 'category') || [])]
-    if (trackConf.sessionTrack) {
+    if (trackConf.trackId.endsWith('sessionTrack')) {
       categories.unshift(' Session tracks')
     }
 
     let currLevel = hierarchy
-    for (let i = 0; i < categories.length; i += 1) {
+    for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
       if (!currLevel.has(category)) {
         currLevel.set(category, new Map())

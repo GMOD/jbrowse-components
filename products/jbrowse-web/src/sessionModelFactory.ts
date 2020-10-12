@@ -94,7 +94,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return self.sessionTracks.concat(getParent(self).jbrowse.tracks)
+        return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
       },
       get connections() {
         return getParent(self).jbrowse.connections
@@ -544,7 +544,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),
               )
-              trackSnapshot.trackId += `-${Date.now()}`
+              trackSnapshot.trackId += `-${Date.now()}-sessionTrack`
               trackSnapshot.name += ' (copy)'
               trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)
