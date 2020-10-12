@@ -1,14 +1,14 @@
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { featureSpanPx } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Region } from '@jbrowse/core/util/types'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   getOrigin,
   getScale,
   ScaleOpts,
   WiggleBaseRenderer,
-} from '@gmod/jbrowse-plugin-wiggle'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+} from '@jbrowse/plugin-wiggle'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>

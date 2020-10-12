@@ -229,7 +229,7 @@ export default abstract class JBrowseCommand extends Command {
   async getLatest() {
     for await (const versions of this.fetchVersions()) {
       const jb2webreleases = versions.filter(release =>
-        release.tag_name.startsWith('@gmod/jbrowse-web'),
+        release.tag_name.startsWith('@jbrowse/web'),
       )
 
       // if a release was just uploaded, or an erroneous build was made
@@ -244,7 +244,7 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
 
-    throw new Error('no @gmod/jbrowse-web tags found')
+    throw new Error('no @jbrowse/web tags found')
   }
 
   async *fetchVersions() {

@@ -1,7 +1,8 @@
 {
-  "name": "website",
+  "name": "@jbrowse/website",
   "version": "0.0.1-beta.15",
-  "private": true,
+  "license": "MIT",
+  "homepage": ".",
   "scripts": {
     "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",
     "prestart": "npm run make",
@@ -34,5 +35,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "."
+  "private": true
 }

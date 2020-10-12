@@ -1,14 +1,14 @@
 import React from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
+import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 

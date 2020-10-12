@@ -1,14 +1,14 @@
-import BoxRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
-} from '@gmod/jbrowse-plugin-alignments/src/PileupRenderer'
+} from '@jbrowse/plugin-alignments/src/PileupRenderer'
 import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
-} from '@gmod/jbrowse-plugin-svg/src/SvgFeatureRenderer'
+} from '@jbrowse/plugin-svg/src/SvgFeatureRenderer'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs

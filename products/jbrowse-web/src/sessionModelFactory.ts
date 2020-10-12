@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
   isConfigurationModel,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 import {
   Region,
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
-} from '@gmod/jbrowse-core/util/types'
-import { getContainingView } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util/types'
+import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -26,9 +26,9 @@ import {
   walk,
   Instance,
 } from 'mobx-state-tree'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'

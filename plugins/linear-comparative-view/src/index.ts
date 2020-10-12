@@ -1,7 +1,7 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import Plugin from '@jbrowse/core/Plugin'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -10,10 +10,10 @@ import {
   AbstractSessionModel,
   isAbstractMenuManager,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
+} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   configSchemaFactory as comparativeTrackConfigSchemaFactory,
   stateModelFactory as comparativeTrackStateModelFactory,

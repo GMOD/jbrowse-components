@@ -1,7 +1,7 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchema as ConfigurationEditorConfigSchema,
   HeadingComponent as ConfigurationEditorHeadingComponent,

@@ -2,18 +2,18 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { Instance } from 'mobx-state-tree'
-import { Region, FileLocation } from '@gmod/jbrowse-core/util/types'
+import { Region, FileLocation } from '@jbrowse/core/util/types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import MyConfigSchema from './configSchema'
 
 type RowToGeneNames = {

@@ -1,5 +1,5 @@
-import baseConnectionConfig from '@gmod/jbrowse-core/baseConnectionConfig'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import baseConnectionConfig from '@jbrowse/core/baseConnectionConfig'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
   'JBrowse1Connection',

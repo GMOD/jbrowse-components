@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import SpreadsheetViewF from './SpreadsheetView'
 
 const pluginManager = new PluginManager()

@@ -1,8 +1,8 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { NoAssemblyRegion, Region } from '@gmod/jbrowse-core/util/types'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { NoAssemblyRegion, Region } from '@jbrowse/core/util/types'
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export interface UnrectifiedFeatureStats {
   scoreMin: number

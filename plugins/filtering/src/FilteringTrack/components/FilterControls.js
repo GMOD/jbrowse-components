@@ -1,4 +1,4 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import Checkbox from '@material-ui/core/Checkbox'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'

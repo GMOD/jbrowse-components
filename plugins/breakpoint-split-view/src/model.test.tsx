@@ -1,7 +1,7 @@
 import React from 'react'
-import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import PluginManager from '@jbrowse/core/PluginManager'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { types, Instance } from 'mobx-state-tree'
 import stateModelFactory, { BreakpointViewStateModel } from './model'
 

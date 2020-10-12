@@ -1,4 +1,4 @@
-import { useDebounce } from '@gmod/jbrowse-core/util'
+import { useDebounce } from '@jbrowse/core/util'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'

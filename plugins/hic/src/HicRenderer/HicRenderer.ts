@@ -1,20 +1,20 @@
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import ServerSideRendererType, {
   RenderArgsDeserialized,
   RenderArgs,
   ResultsDeserialized,
   ResultsSerialized,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import { Region } from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 interface HicFeature {
   bin1: number

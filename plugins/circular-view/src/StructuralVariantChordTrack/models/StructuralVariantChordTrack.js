@@ -7,13 +7,13 @@ export default pluginManager => {
 
   const { types } = jbrequire('mobx-state-tree')
   const { getConf, ConfigurationSchema, ConfigurationReference } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
+    '@jbrowse/core/configuration',
   )
   const { getTrackAssemblyNames, getRpcSessionId } = jbrequire(
-    '@gmod/jbrowse-core/util/tracks',
+    '@jbrowse/core/util/tracks',
   )
   const { getContainingView, makeAbortableReaction, getSession } = jbrequire(
-    '@gmod/jbrowse-core/util',
+    '@jbrowse/core/util',
   )
 
   const { renderReactionData, renderReactionEffect } = jbrequire(

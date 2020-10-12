@@ -1,19 +1,16 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import ViewType from '@gmod/jbrowse-core/pluggableElementTypes/ViewType'
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 
 import {
   configSchema as baseFeatureWidgetConfigSchema,
   ReactComponent as BaseFeatureWidgetReactComponent,
   stateModel as baseFeatureWidgetStateModel,
-} from '@gmod/jbrowse-core/BaseFeatureWidget'
-import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/BaseFeatureWidget'
+import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import {
   configSchemaFactory as basicTrackConfigSchemaFactory,
   stateModelFactory as basicTrackStateModelFactory,

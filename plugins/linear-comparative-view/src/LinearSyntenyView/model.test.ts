@@ -1,5 +1,5 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import LinearGenomeView from '@gmod/jbrowse-plugin-linear-genome-view'
+import PluginManager from '@jbrowse/core/PluginManager'
+import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import stateModelFactory from './model'
 
 test('creation', () => {
