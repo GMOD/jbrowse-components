@@ -48,7 +48,7 @@ that has some nicer ways to handle global package installations. To install the
 CLI, open a terminal and run the following commands:
 
 ```sh
-yarn global add @gmod/jbrowse-cli
+yarn global add @jbrowse/cli
 echo export PATH="$(yarn global bin):$PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
@@ -65,11 +65,11 @@ your `PATH`.
 
 If you don't want to install the CLI and you have NPM installed, you can also do
 all of the things we will do in this tutorial by replacing `jbrowse` in any
-commands with `npx @gmod/jbrowse-cli`. For example, to get the help output you
+commands with `npx @jbrowse/cli`. For example, to get the help output you
 would run
 
 ```sh
-npx @gmod/jbrowse-cli --help
+npx @jbrowse/cli --help
 ```
 
 :::

@@ -3,9 +3,9 @@ import {
   getConf,
   ConfigurationReference,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { getContainingView } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getContainingView } from '@jbrowse/core/util'
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,

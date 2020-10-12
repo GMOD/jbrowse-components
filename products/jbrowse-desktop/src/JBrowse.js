@@ -1,6 +1,6 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { App, StartScreen, createJBrowseTheme } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { useDebounce } from '@jbrowse/core/util'
+import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 

@@ -1,6 +1,6 @@
-import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { configSchema, modelFactory } from './trackhub-registry'
 import TrackHubRegistrySelect from './trackhub-registry/TrackHubRegistrySelect'
 

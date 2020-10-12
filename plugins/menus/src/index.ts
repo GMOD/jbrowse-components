@@ -1,11 +1,11 @@
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   SessionWithWidgets,
   isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util'
 import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import HelpIcon from '@material-ui/icons/Help'

@@ -1,5 +1,5 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Config from '@gmod/jbrowse-plugin-config'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Config from '@jbrowse/plugin-config'
 import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 

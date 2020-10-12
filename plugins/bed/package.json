@@ -1,11 +1,24 @@
 {
-  "name": "@gmod/jbrowse-plugin-bed",
+  "name": "@jbrowse/plugin-bed",
   "version": "0.0.1-beta.12",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/bed"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-bed.esm.js",
+  "distModule": "dist/plugin-bed.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -21,16 +34,17 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "dependencies": {
     "@gmod/bbi": "^1.0.30",
     "@gmod/bed": "^2.0.3",
     "@gmod/tabix": "^1.4.6"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

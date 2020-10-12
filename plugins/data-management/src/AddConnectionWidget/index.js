@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export { default as ReactComponent } from './components/AddConnectionWidget'
 export { default as stateModel } from './model'

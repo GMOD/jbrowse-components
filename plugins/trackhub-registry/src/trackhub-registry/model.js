@@ -1,9 +1,9 @@
 import {
   ConfigurationReference,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
-import { getSession } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/configuration'
+import connectionModelFactory from '@jbrowse/core/BaseConnectionModel'
+import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { generateTracks } from './tracks'

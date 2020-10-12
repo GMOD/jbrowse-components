@@ -18,9 +18,6 @@ if (process.env.BUILT_TESTS) {
       ),
     ).toBeTruthy()
   })
+} else {
+  test('skipping build tests', () => {})
 }
-
-test('can import JBrowse Generator', () => {
-  const generatorJbrowse = require('./products/generator-jbrowse')
-  expect(typeof generatorJbrowse).toBe('object')
-})

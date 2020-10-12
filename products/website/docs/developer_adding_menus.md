@@ -118,8 +118,8 @@ This way the rest of the plugin will still work if there is not a menu. Here's
 an example that adds an "Open My View" item to the `File -> Add` menu.
 
 ```js
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import { isAbstractMenuManager } from '@gmod/jbrowse-core/util'
+import Plugin from '@jbrowse/core/Plugin'
+import { isAbstractMenuManager } from '@jbrowse/core/util'
 import InfoIcon from '@material-ui/icons/Info'
 
 class MyPlugin extends Plugin {

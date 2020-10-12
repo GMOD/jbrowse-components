@@ -1,5 +1,5 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { App, createJBrowseTheme } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'

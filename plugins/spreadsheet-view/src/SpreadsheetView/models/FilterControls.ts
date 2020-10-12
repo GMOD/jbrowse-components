@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { SnapshotIn } from 'mobx-state-tree'
 import ColumnDataTypes from './ColumnDataTypes'
 

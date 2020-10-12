@@ -10,8 +10,8 @@ import {
 import React from 'react'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, readBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 

@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import { cleanup, render, waitForElement } from '@testing-library/react'
 import React from 'react'

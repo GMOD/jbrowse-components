@@ -1,11 +1,24 @@
 {
-  "name": "@gmod/jbrowse-plugin-config",
+  "name": "@jbrowse/plugin-config",
   "version": "0.0.1-beta.14",
   "description": "JBrowse 2 config utilities",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/config"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-config.esm.js",
+  "distModule": "dist/plugin-config.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -21,8 +34,6 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
     "generic-filehandle": "^2.0.1",
@@ -32,7 +43,7 @@
     "react-syntax-highlighter": "^14.0.0"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
@@ -40,5 +51,8 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

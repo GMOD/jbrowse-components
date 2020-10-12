@@ -1,4 +1,4 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 /* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
 

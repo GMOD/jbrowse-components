@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: '@gmod/jbrowse-web@v0.0.1',
+    tag_name: '@jbrowse/web@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -24,16 +24,14 @@ const releaseArray = [
 function mockTagFail(gitHubApi: Scope) {
   return gitHubApi
     .get(
-      '/repos/GMOD/jbrowse-components/releases/tags/@gmod/jbrowse-web@v999.999.999',
+      '/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v999.999.999',
     )
     .reply(404, {})
 }
 
 function mockTagSuccess(gitHubApi: Scope) {
   return gitHubApi
-    .get(
-      '/repos/GMOD/jbrowse-components/releases/tags/@gmod/jbrowse-web@v0.0.1',
-    )
+    .get('/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v0.0.1')
     .reply(200, releaseArray[0])
 }
 
@@ -129,13 +127,7 @@ describe('create', () => {
   setup
     .nock('https://api.github.com', mockTagSuccess)
     .nock('https://example.com', mockZip)
-    .command([
-      'create',
-      'jbrowse',
-      '--tag',
-      '@gmod/jbrowse-web@v0.0.1',
-      '--force',
-    ])
+    .command(['create', 'jbrowse', '--tag', '@jbrowse/web@v0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
       async ctx => {
@@ -150,7 +142,7 @@ describe('create', () => {
       'create',
       'jbrowse',
       '--tag',
-      '@gmod/jbrowse-web@v999.999.999',
+      '@jbrowse/web@v999.999.999',
       '--force',
     ])
     .catch(/Could not find version/)
@@ -168,7 +160,7 @@ describe('create', () => {
     .catch(/0/)
     .it('lists versions', ctx => {
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'All JBrowse versions:\n@gmod/jbrowse-web@v0.0.1\n',
+        'All JBrowse versions:\n@jbrowse/web@v0.0.1\n',
       )
     })
 })

@@ -1,5 +1,5 @@
-import { FileSelector } from '@gmod/jbrowse-core/ui'
-import { JsonEditor } from '@gmod/jbrowse-plugin-config'
+import { FileSelector } from '@jbrowse/core/ui'
+import { JsonEditor } from '@jbrowse/plugin-config'
 import FormControl from '@material-ui/core/FormControl'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import Paper from '@material-ui/core/Paper'

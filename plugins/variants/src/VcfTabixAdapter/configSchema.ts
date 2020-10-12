@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
   'VcfTabixAdapter',

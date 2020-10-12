@@ -1,11 +1,11 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   guessAdapter,
   guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'

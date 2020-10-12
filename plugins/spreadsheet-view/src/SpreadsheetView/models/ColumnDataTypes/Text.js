@@ -8,7 +8,7 @@ export default pluginManager => {
   const React = jbrequire('react')
 
   const { getPropertyType, getEnumerationValues, getSubType } = jbrequire(
-    '@gmod/jbrowse-core/util/mst-reflection',
+    '@jbrowse/core/util/mst-reflection',
   )
 
   const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)

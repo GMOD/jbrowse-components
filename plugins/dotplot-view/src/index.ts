@@ -1,18 +1,18 @@
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import Plugin from '@jbrowse/core/Plugin'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   isAbstractMenuManager,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
-import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,

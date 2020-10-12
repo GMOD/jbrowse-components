@@ -1,8 +1,8 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AdapterClass as BgzipFastaAdapterClass,
   configSchema as bgzipFastaAdapterConfigSchema,

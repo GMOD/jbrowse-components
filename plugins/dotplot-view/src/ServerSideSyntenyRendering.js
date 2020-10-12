@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
-import { ImageBitmapType } from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+import { ImageBitmapType } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this

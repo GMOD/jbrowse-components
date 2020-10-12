@@ -1,4 +1,4 @@
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export function ucscProcessedTranscript(feature: Feature) {
   const children = feature.children()
