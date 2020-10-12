@@ -1,6 +1,6 @@
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
 import FromConfigAdapter from './FromConfigAdapter'
 

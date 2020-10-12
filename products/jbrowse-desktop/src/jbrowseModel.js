@@ -1,8 +1,8 @@
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+} from '@jbrowse/core/configuration'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
   getSnapshot,

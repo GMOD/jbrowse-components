@@ -41,7 +41,7 @@ version, but you can try to install these however you feel comfortable
 To start, we will install the jbrowse-cli
 
 ```sh
-sudo npm install -g @gmod/jbrowse-cli
+sudo npm install -g @jbrowse/cli
 ```
 
 Depending on your setup you might need to use sudo for this. We will use the

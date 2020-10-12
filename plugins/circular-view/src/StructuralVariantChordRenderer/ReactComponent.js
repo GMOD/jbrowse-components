@@ -2,11 +2,11 @@ export default ({ jbrequire }) => {
   const React = jbrequire('react')
   const { useMemo } = jbrequire('react')
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
-  const { polarToCartesian } = jbrequire('@gmod/jbrowse-core/util')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { polarToCartesian } = jbrequire('@jbrowse/core/util')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
 
   const { PropTypes: CommonPropTypes } = jbrequire(
-    '@gmod/jbrowse-core/util/types/mst',
+    '@jbrowse/core/util/types/mst',
   )
   const PropTypes = jbrequire('prop-types')
 

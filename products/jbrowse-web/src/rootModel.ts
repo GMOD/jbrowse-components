@@ -1,10 +1,10 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@gmod/jbrowse-core/assemblyManager'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
-import { AbstractSessionModel } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { MenuItem } from '@jbrowse/core/ui'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 import AddIcon from '@material-ui/icons/Add'
 import RestoreIcon from '@material-ui/icons/Restore'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'

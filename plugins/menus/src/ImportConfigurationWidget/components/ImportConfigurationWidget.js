@@ -1,5 +1,5 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { getSession } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import Button from '@material-ui/core/Button'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'

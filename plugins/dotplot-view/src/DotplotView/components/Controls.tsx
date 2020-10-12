@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import { observer } from 'mobx-react'
-import { isSessionModelWithWidgets, getSession } from '@gmod/jbrowse-core/util'
+import { isSessionModelWithWidgets, getSession } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
 export default () => {

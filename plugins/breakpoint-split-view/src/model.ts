@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MenuItem } from '@gmod/jbrowse-core/ui'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { MenuItem } from '@jbrowse/core/ui'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
 
@@ -27,7 +27,7 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
+  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
 
   const minHeight = 40
   const defaultHeight = 400

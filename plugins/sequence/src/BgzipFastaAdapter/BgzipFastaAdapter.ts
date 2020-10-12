@@ -1,8 +1,8 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
-import { FileLocation } from '@gmod/jbrowse-core/util/types'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { FileLocation } from '@jbrowse/core/util/types'
+import { openLocation } from '@jbrowse/core/util/io'
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter'
 import MyConfigSchema from './configSchema'
 

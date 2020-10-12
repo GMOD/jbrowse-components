@@ -25,7 +25,7 @@ Configurations are all descendents of a single root configuration, which is `roo
 Configuration types should always be created by the `ConfigurationSchema` factory, e.g.
 
 ```js
-import { ConfigurationSchema } from '@gmod/jbrowse-core/utils/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/utils/configuration'
 const ThingStateModel = types.model('MyThingsState', {
   foo: 42,
   configuration: ConfigurationSchema('MyThing', {

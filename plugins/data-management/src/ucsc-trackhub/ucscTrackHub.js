@@ -1,7 +1,7 @@
 import objectHash from 'object-hash'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
+import { openLocation } from '@jbrowse/core/util/io'
+import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
 import ucscAssemblies from './ucscAssemblies'
 
 export { ucscAssemblies }
