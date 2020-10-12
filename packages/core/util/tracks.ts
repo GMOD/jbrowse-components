@@ -68,7 +68,7 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   function makeLocation(location: string): UriLocation | LocalPathLocation {
     if (protocol === 'uri') {
-      return { uri: location, originalUri: '' }
+      return { uri: location, baseUri: '' }
     }
     if (protocol === 'localPath') {
       return { localPath: location }

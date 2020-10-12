@@ -124,16 +124,15 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/CRAM') {
       const adapter: Jb2Adapter = {
         type: 'CramAdapter',
-        cramLocation: { uri: urlTemplate, originalUri: '' },
+        cramLocation: { uri: urlTemplate, baseUri: '' },
         sequenceAdapter,
       }
       if (jb1TrackConfig.craiUrlTemplate)
         adapter.craiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
-          originalUri: '',
+          baseUri: '',
         }
-      else
-        adapter.craiLocation = { uri: `${urlTemplate}.crai`, originalUri: '' }
+      else adapter.craiLocation = { uri: `${urlTemplate}.crai`, baseUri: '' }
       return {
         ...jb2TrackConfig,
         type: 'PileupTrack',
@@ -409,7 +408,7 @@ export async function createRefSeqsAdapter(
     }
     const refSeqsJson = await openLocation({
       uri: refSeqs.url,
-      originalUri: '',
+      baseUri: '',
     }).readFile('utf8')
     const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson as string)
     return refSeqAdapterFromConfig(refSeqsData)

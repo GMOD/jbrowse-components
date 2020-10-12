@@ -93,7 +93,7 @@ export interface Config {
 
 export interface UriLocation {
   uri: string
-  originalUri: string
+  baseUri: string
 }
 
 export interface LocalPathLocation {
