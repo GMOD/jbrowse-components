@@ -44,16 +44,17 @@ export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine
 })
 
-export const UriLocationRaw = types.model('UriLocation', {
-  uri: types.string, // TODO: refine
-  baseUri: types.optional(types.string, ''),
-})
-
-export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
-  postProcessor(snapshot: unknown) {
-    const { baseUri, ...rest } = snapshot
-    return rest
-  },
-})
+export const UriLocation = types
+  .model('UriLocation', {
+    uri: types.string, // TODO: refine
+    baseUri: types.optional(types.string, ''),
+  })
+  .postProcessSnapshot(snap => {
+    const { baseUri, ...rest } = snap
+    if (baseUri === '') {
+      return rest
+    }
+    return snap
+  })
 
 export const FileLocation = types.union(LocalPathLocation, UriLocation)
