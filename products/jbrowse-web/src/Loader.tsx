@@ -160,9 +160,6 @@ export function Loader() {
           if (decryptedSession) {
             const localId = `local-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
-            fromShared.name = `${fromShared.name}-${new Date(
-              Date.now(),
-            ).toISOString()}`
             sessionStorage.clear()
             sessionStorage.setItem(
               localId,
@@ -346,8 +343,9 @@ export function Loader() {
   // if session in query, or loads the default session
   try {
     const lastAutosave = localStorage.getItem('autosave')
-    if (lastAutosave)
+    if (lastAutosave) {
       localStorage.setItem('localSaved-previousAutosave', lastAutosave)
+    }
     if (sessionQueryParam) {
       const foundLocalSession =
         localStorage.getItem(sessionQueryParam) ||
@@ -362,10 +360,10 @@ export function Loader() {
         setSessString('')
       }
     } else {
-      const localId = rootModel.setDefaultSession()
-      setSessionQueryParam(localId)
-      setPasswordQueryParam(undefined)
-      setSessString(localId)
+      rootModel.setDefaultSession()
+      // setSessionQueryParam(localId)
+      // setPasswordQueryParam(undefined)
+      // setSessString(localId)
     }
 
     if (!rootModel.session) return null

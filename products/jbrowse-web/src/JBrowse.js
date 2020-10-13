@@ -44,7 +44,7 @@ function deleteBaseUris(config) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [sessionId] = useQueryParam('session', StringParam)
+  const [sessionId, setSessionId] = useQueryParam('session', StringParam)
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
   const adminMode = adminKeyParam !== undefined
 
@@ -80,7 +80,9 @@ const JBrowse = observer(({ pluginManager }) => {
     if (rootModel) {
       const updater = debounce(updateLocalSession, 400)
       const snapshotDisposer = onSnapshot(rootModel, snap => {
+        console.log(snap.session)
         updater(snap.session)
+        setSessionId(snap.session.id)
       })
       disposer = () => {
         snapshotDisposer()
@@ -88,7 +90,7 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [rootModel, sessionId])
+  }, [rootModel, sessionId, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {

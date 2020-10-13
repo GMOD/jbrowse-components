@@ -32,6 +32,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
+import shortid from 'shortid'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -42,7 +43,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
-      name: types.identifier,
+      id: types.optional(types.identifier, shortid()),
+      name: types.string,
       margin: 0,
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),

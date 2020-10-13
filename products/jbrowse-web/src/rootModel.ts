@@ -117,19 +117,13 @@ export default function RootModel(
         self.session = cast(sessionSnapshot)
       },
       setDefaultSession() {
+        const { defaultSession } = self.jbrowse
         const newSession = {
-          ...self.jbrowse.defaultSession,
-          name: `${self.jbrowse.defaultSession.name} ${new Date(
-            Date.now(),
-          ).toLocaleDateString()} ${new Date(Date.now()).toLocaleTimeString()}`,
+          ...defaultSession,
+          name: `${defaultSession.name} ${new Date().toLocaleString()}`,
         }
 
-        const localId = `local-${uuid.v4()}`
-        sessionStorage.clear()
-        sessionStorage.setItem(localId, JSON.stringify({ session: newSession }))
-        this.setSessionUuidInUrl(localId)
         this.setSession(newSession)
-        return localId
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -164,10 +158,6 @@ export default function RootModel(
             } while (self.savedSessionNames.includes(newSnapshotName))
           }
           snapshot.name = newSnapshotName
-          const localId = `local-${uuid.v4()}`
-          sessionStorage.clear()
-          sessionStorage.setItem(localId, JSON.stringify({ session: snapshot }))
-          this.setSessionUuidInUrl(localId)
           this.setSession(snapshot)
         }
       },
