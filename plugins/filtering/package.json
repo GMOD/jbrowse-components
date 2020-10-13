@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-filtering",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "JBrowse 2 filtering tracks, etc.",
   "keywords": [
     "jbrowse",
