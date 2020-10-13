@@ -99,10 +99,10 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
 
   useEffect(() => {
-    onSnapshot(rootModel, async snapshot => {
+    onSnapshot(jbrowse, async snapshot => {
       if (adminMode) {
-        const config = JSON.parse(JSON.stringify(snapshot.jbrowse))
-        deleteBaseUris(config)
+        const config = JSON.parse(JSON.stringify(snapshot))
+        deleteBaseUris(snapshot)
         const payload = { adminKey: adminKeyParam, config }
 
         const response = await fetch('/updateConfig', {
@@ -122,7 +122,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [rootModel, adminMode, adminKeyParam])
+  }, [jbrowse, rootModel.session, adminMode, adminKeyParam])
 
   if (error) {
     throw new Error(error)
