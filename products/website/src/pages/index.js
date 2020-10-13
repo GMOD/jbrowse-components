@@ -5,7 +5,7 @@ import Layout from '@theme/Layout'
 // eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { makeStyles } from '@material-ui/core/styles'
-
+import Link from '@material-ui/core/Link'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 
@@ -52,9 +52,11 @@ function Home() {
               A pluggable open-source platform for visualizing and integrating
               biological data
             </p>
-            <Button variant="contained" color="secondary" disableElevation>
-              Download latest release
-            </Button>
+            <Link href="/jb2/blog/" target="_blank">
+              <Button variant="contained" color="secondary" disableElevation>
+                Download latest release
+              </Button>
+            </Link>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
