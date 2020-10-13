@@ -124,15 +124,14 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/CRAM') {
       const adapter: Jb2Adapter = {
         type: 'CramAdapter',
-        cramLocation: { uri: urlTemplate, baseUri: '' },
+        cramLocation: { uri: urlTemplate },
         sequenceAdapter,
       }
       if (jb1TrackConfig.craiUrlTemplate)
         adapter.craiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
-          baseUri: '',
         }
-      else adapter.craiLocation = { uri: `${urlTemplate}.crai`, baseUri: '' }
+      else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
       return {
         ...jb2TrackConfig,
         type: 'PileupTrack',
@@ -406,10 +405,9 @@ export async function createRefSeqsAdapter(
     if (refSeqs.url.match(/.sizes/)) {
       throw new Error('chromosome SIZES adapter not available')
     }
-    const refSeqsJson = await openLocation({
-      uri: refSeqs.url,
-      baseUri: '',
-    }).readFile('utf8')
+    const refSeqsJson = await openLocation({ uri: refSeqs.url }).readFile(
+      'utf8',
+    )
     const refSeqsData: RefSeq[] = JSON.parse(refSeqsJson as string)
     return refSeqAdapterFromConfig(refSeqsData)
   }
