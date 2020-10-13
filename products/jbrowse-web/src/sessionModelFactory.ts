@@ -29,7 +29,6 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import * as uuid from 'uuid'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -439,16 +438,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        const localId = `localSaved-${uuid.v4()}`
-        localStorage.setItem(
-          localId,
-          JSON.stringify({ session: sessionSnapshot }),
-        )
-        return localId
+        return getParent(self).addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        getParent(self).removeSavedSession(sessionSnapshot)
+        return getParent(self).removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {

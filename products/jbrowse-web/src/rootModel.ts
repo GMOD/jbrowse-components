@@ -136,6 +136,15 @@ export default function RootModel(
         }
       },
 
+      addSavedSession(sessionSnapshot: any) {
+        const localId = `localSaved-${uuid.v4()}`
+        localStorage.setItem(
+          localId,
+          JSON.stringify({ session: sessionSnapshot }),
+        )
+        return localId
+      },
+
       removeSavedSession(session: { name: string }) {
         const key = `localSaved-${session.name}`
         localStorage.removeItem(key)
