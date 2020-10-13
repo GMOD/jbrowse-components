@@ -32,7 +32,6 @@ const decrypt = (text: string, key: Buffer, password: string) => {
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session: any,
   url: string,
   referer: string,
@@ -72,7 +71,6 @@ export async function readSessionFromDynamo(
   sessionQueryParam: string,
   key: Buffer,
   password: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signal: any,
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
