@@ -50,11 +50,7 @@ const DrawerWidget = observer(props => {
     <Drawer session={session} open={Boolean(session.activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
-          <Toolbar
-            variant="dense"
-            disableGutters
-            className={classes.drawerToolbar}
-          >
+          <Toolbar disableGutters className={classes.drawerToolbar}>
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
@@ -70,7 +66,7 @@ const DrawerWidget = observer(props => {
               aria-label="Close"
               onClick={() => session.hideWidget(visibleWidget)}
             >
-              <CloseIcon fontSize="small" />
+              <CloseIcon />
             </IconButton>
           </Toolbar>
         </AppBar>

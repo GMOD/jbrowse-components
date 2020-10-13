@@ -11,20 +11,18 @@ import {
 } from 'mobx-state-tree'
 
 import { observable, autorun, transaction } from 'mobx'
-import { BaseTrackStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
-import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
+import { BaseTrackStateModel } from '@jbrowse/plugin-linear-genome-view'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import {
   getSession,
   minmax,
   isSessionModelWithWidgets,
-} from '@gmod/jbrowse-core/util'
-import { readConfObject, getConf } from '@gmod/jbrowse-core/configuration'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
+} from '@jbrowse/core/util'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12

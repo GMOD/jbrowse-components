@@ -59,11 +59,7 @@ export default ({ jbrequire }: { jbrequire: any }) => {
           className={classes.iconButton}
           title="Toggle interacting with the overlay"
         >
-          {model.interactToggled ? (
-            <LocationSearching fontSize="small" />
-          ) : (
-            <LocationDisabled fontSize="small" />
-          )}
+          {model.interactToggled ? <LocationSearching /> : <LocationDisabled />}
         </IconButton>
       )
     },
@@ -80,9 +76,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         title="Toggle linked scrolls and behavior across views"
       >
         {model.linkViews ? (
-          <LinkIcon color="secondary" fontSize="small" />
+          <LinkIcon color="secondary" />
         ) : (
-          <LinkOffIcon color="secondary" fontSize="small" />
+          <LinkOffIcon color="secondary" />
         )}
       </IconButton>
     )
@@ -99,9 +95,9 @@ export default ({ jbrequire }: { jbrequire: any }) => {
         title="Toggle rendering intraview links"
       >
         {model.showIntraviewLinks ? (
-          <LeakAdd color="secondary" fontSize="small" />
+          <LeakAdd color="secondary" />
         ) : (
-          <LeakRemove color="secondary" fontSize="small" />
+          <LeakRemove color="secondary" />
         )}
       </IconButton>
     )

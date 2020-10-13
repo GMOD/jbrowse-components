@@ -1,5 +1,5 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Menu } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
 import { useTheme, makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'

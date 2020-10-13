@@ -1,9 +1,9 @@
 /**
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { Region as MSTRegion } from '@gmod/jbrowse-core/util/types/mst'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
+import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'

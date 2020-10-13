@@ -1,6 +1,6 @@
 import csv from 'csvtojson'
 
-import { parseLocString } from '@gmod/jbrowse-core/util'
+import { parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)

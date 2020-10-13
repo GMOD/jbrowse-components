@@ -67,8 +67,8 @@ The following is a frame of a basic state model
 import {
   ConfigurationReference,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
+} from '@jbrowse/core/configuration'
+import connectionModelFactory from '@jbrowse/core/BaseConnectionModel'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'

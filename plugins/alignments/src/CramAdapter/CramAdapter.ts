@@ -2,16 +2,16 @@ import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util/types'
+import { checkAbortSignal } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {

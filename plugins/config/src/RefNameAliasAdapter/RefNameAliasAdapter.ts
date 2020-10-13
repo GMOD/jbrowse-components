@@ -1,12 +1,12 @@
 import {
   BaseRefNameAliasAdapter,
   Alias,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { openLocation } from '@jbrowse/core/util/io'
 import { GenericFilehandle } from 'generic-filehandle'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 
-import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import MyConfigAdapterSchema from './configSchema'
 
 export default class RefNameAliasAdapter implements BaseRefNameAliasAdapter {

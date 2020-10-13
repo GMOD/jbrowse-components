@@ -1,6 +1,6 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
-import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { Menu, MenuItem } from '@jbrowse/core/ui'
+import { InstanceOfModelReturnedBy } from '@jbrowse/core/util'
 
 import SpreadsheetModelF from '../models/Spreadsheet'
 import ViewModelF from '../models/SpreadsheetView'

@@ -100,13 +100,13 @@ function RecentSessionCard({
       >
         <MenuItem onClick={() => handleMenuClose('rename')}>
           <ListItemIcon>
-            <TextFieldsIcon color="secondary" fontSize="small" />
+            <TextFieldsIcon color="secondary" />
           </ListItemIcon>
           <Typography variant="inherit">Rename</Typography>
         </MenuItem>
         <MenuItem onClick={() => handleMenuClose('delete')}>
           <ListItemIcon>
-            <DeleteIcon color="secondary" fontSize="small" />
+            <DeleteIcon color="secondary" />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>

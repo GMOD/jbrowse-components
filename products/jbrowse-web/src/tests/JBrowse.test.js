@@ -7,8 +7,8 @@ import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, readBuffer } from './util'

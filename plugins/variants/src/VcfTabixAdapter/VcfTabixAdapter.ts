@@ -1,21 +1,21 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   FileLocation,
   NoAssemblyRegion,
   Region,
-} from '@gmod/jbrowse-core/util/types'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/types'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
 import MyConfigSchema from './configSchema'
 

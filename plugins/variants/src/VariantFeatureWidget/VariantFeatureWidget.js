@@ -12,7 +12,7 @@ import React from 'react'
 import {
   BaseFeatureDetails,
   BaseCard,
-} from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 const useStyles = makeStyles(theme => ({
   table: {

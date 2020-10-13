@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
@@ -127,7 +127,6 @@ function BlockError({
           <Button
             data-testid="reload_button"
             onClick={reload}
-            size="small"
             startIcon={<RefreshIcon />}
           >
             Reload

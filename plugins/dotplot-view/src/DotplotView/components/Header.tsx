@@ -34,7 +34,7 @@ export default () => {
   const Controls = observer(({ model }: { model: DotplotViewModel }) => {
     return (
       <IconButton onClick={model.closeView} title="close this view">
-        <CloseIcon fontSize="small" />
+        <CloseIcon />
       </IconButton>
     )
   })
@@ -101,7 +101,7 @@ export default () => {
             value="track_select"
             color="secondary"
           >
-            <LineStyleIcon fontSize="small" />
+            <LineStyleIcon />
           </IconButton>
           <div className={classes.spacer} />
         </div>

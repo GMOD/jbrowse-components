@@ -4,11 +4,11 @@ import { observer } from 'mobx-react'
 import SimpleFeature, {
   SimpleFeatureSerialized,
   Feature,
-} from '@gmod/jbrowse-core/util/simpleFeature'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { getContainingView } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { MismatchParser } from '@gmod/jbrowse-plugin-alignments'
+} from '@jbrowse/core/util/simpleFeature'
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'

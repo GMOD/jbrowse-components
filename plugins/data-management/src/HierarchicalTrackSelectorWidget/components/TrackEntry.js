@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { Menu } from '@gmod/jbrowse-core/ui'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { Menu } from '@jbrowse/core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -84,7 +84,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           color="secondary"
           data-testid={`htsTrackEntryMenu-${trackId}`}
         >
-          <HorizontalDots fontSize="small" />
+          <HorizontalDots />
         </IconButton>
         <Menu
           anchorEl={anchorEl}

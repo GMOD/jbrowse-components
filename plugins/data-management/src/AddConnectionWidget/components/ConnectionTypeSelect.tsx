@@ -4,7 +4,7 @@ import TextField from '@material-ui/core/TextField'
 import React from 'react'
 import OpenInNewIcon from '@material-ui/icons/OpenInNew'
 
-import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
+import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 
 function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]

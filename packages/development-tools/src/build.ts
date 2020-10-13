@@ -2,7 +2,7 @@ import path from 'path'
 import { pascalCase } from 'change-case'
 import CopyPlugin from 'copy-webpack-plugin'
 
-import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
+import ReExportsList from '@jbrowse/core/ReExports/list'
 
 export interface PackageJson {
   name: string
@@ -72,7 +72,7 @@ export function baseJBrowsePluginWebpackConfig(
 
   const pluginName =
     pluginConfiguration?.name ||
-    pascalCase(packageJson.name.replace('@gmod/jbrowse-plugin-', ''))
+    pascalCase(packageJson.name.replace('@jbrowse/plugin-', ''))
 
   const distDir = path.resolve(buildDir, 'dist')
 

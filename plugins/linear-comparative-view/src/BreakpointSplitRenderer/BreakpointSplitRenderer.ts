@@ -1,11 +1,11 @@
 /* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import {
   overlayYPos,

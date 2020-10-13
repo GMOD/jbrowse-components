@@ -1,6 +1,6 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -109,7 +109,7 @@ const TrackLabel = React.forwardRef(
             onDragEnd={onDragEnd}
             data-testid={`dragHandle-${view.id}-${trackId}`}
           >
-            <DragIcon fontSize="small" className={classes.dragHandleIcon} />
+            <DragIcon className={classes.dragHandleIcon} />
           </span>
           <IconButton
             onClick={() => view.hideTrack(trackId)}
@@ -117,7 +117,7 @@ const TrackLabel = React.forwardRef(
             title="close this track"
             color="secondary"
           >
-            <CloseIcon fontSize="small" />
+            <CloseIcon />
           </IconButton>
           <Typography
             variant="body1"
@@ -135,7 +135,7 @@ const TrackLabel = React.forwardRef(
             data-testid="track_menu_icon"
             disabled={!track.trackMenuItems.length}
           >
-            <MoreVertIcon fontSize="small" />
+            <MoreVertIcon />
           </IconButton>
         </Paper>
         <Menu
