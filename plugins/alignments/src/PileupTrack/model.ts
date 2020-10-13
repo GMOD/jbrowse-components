@@ -256,6 +256,7 @@ const stateModelFactory = (
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
+          const view = getContainingView(self) as LGV
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
