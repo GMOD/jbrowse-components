@@ -31,6 +31,18 @@ function debounce(func, wait) {
   return debounced
 }
 
+function deleteBaseUris(config) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        deleteBaseUris(config[key])
+      } else if (key === 'uri') {
+        delete config.baseUri
+      }
+    }
+  }
+}
+
 const JBrowse = observer(({ pluginManager }) => {
   const [sessionId] = useQueryParam('session', StringParam)
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
@@ -79,9 +91,12 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [rootModel, sessionId])
 
   useEffect(() => {
-    onSnapshot(rootModel, async snapshot => {
+    onSnapshot(jbrowse, async snapshot => {
       if (adminMode) {
-        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
+        const config = JSON.parse(JSON.stringify(snapshot))
+        deleteBaseUris(snapshot)
+        const payload = { adminKey: adminKeyParam, config }
+
         const response = await fetch('/updateConfig', {
           method: 'POST',
           headers: {
@@ -99,7 +114,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [rootModel, adminMode, adminKeyParam])
+  }, [jbrowse, rootModel.session, adminMode, adminKeyParam])
 
   if (error) {
     throw new Error(error)

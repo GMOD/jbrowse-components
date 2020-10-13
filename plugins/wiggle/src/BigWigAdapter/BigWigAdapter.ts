@@ -32,7 +32,7 @@ export default class BigWigAdapter
     })
   }
 
-  private getHeader(opts?: BaseOptions) {
+  private setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     statusCallback('Downloading bigwig header')
     const result = this.bigwig.getHeader(opts)
@@ -41,17 +41,17 @@ export default class BigWigAdapter
   }
 
   public async getRefNames(opts?: BaseOptions) {
-    const header = await this.getHeader(opts)
+    const header = await this.setup(opts)
     return Object.keys(header.refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const h = await this.getHeader()
+    const h = await this.setup()
     return (h.refsByNumber[refId] || { name: undefined }).name
   }
 
   public async getGlobalStats(opts?: BaseOptions) {
-    const header = await this.getHeader(opts)
+    const header = await this.setup(opts)
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 

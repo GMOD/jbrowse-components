@@ -19,7 +19,7 @@ export default function JBrowseWeb(
   Session,
   assemblyConfigSchemasType,
 ) {
-  return types
+  const JBrowseModel = types
     .model('JBrowseWeb', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
@@ -103,4 +103,17 @@ export default function JBrowseWeb(
         return getParent(self).rpcManager
       },
     }))
+
+  return types.snapshotProcessor(JBrowseModel, {
+    postProcessor(snapshot) {
+      function removeAttr(obj, attr) {
+        for (const prop in obj) {
+          if (prop === attr) delete obj[prop]
+          else if (typeof obj[prop] === 'object') removeAttr(obj[prop])
+        }
+      }
+      removeAttr(snapshot, 'baseUri')
+      return snapshot
+    },
+  })
 }

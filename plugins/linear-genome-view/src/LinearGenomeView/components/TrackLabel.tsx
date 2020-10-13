@@ -48,19 +48,14 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
+type BaseTrack = Instance<BaseTrackStateModel>
 
 const TrackLabel = React.forwardRef(
-  (
-    props: {
-      track: Instance<BaseTrackStateModel>
-      className?: string
-    },
-    ref,
-  ) => {
+  (props: { track: BaseTrack; className?: string }, ref) => {
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
-    const view = (getContainingView(track) as unknown) as LGV
+    const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
@@ -149,12 +144,11 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            // @ts-ignore
-            ...(session.getTrackActionMenuItems &&
-              // @ts-ignore
-              session.getTrackActionMenuItems(trackConf)),
+            ...(session.getTrackActionMenuItems
+              ? session.getTrackActionMenuItems(trackConf)
+              : []),
             ...track.trackMenuItems,
-          ]}
+          ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
         />
       </>
     )

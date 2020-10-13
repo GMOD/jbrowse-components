@@ -62,9 +62,6 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
     MuiInputBase: {
       margin: 'dense' as 'dense',
     },
-    MuiInputLabel: {
-      margin: 'dense' as 'dense',
-    },
     MuiList: {
       dense: true,
     },

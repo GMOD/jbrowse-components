@@ -56,6 +56,24 @@ export default class extends BaseFeatureDataAdapter {
     return this.vcf.getReferenceSequenceNames(opts)
   }
 
+  async getHeader() {
+    const header = await this.vcf.getHeader()
+    return header
+      .split('\n')
+      .filter(line => line.startsWith('##'))
+      .map(line => {
+        const str = line.slice(2)
+        const index = str.indexOf('=')
+        const [tag, data] = [str.slice(0, index), str.slice(index + 1)]
+        return { tag, data }
+      })
+  }
+
+  async getMetadata() {
+    const parser = await this.parser
+    return parser.getMetadata()
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser

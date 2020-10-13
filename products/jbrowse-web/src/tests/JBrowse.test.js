@@ -5,13 +5,14 @@ import { cleanup, fireEvent, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
-import { setup, getPluginManager, readBuffer } from './util'
+import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -23,7 +24,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('<JBrowse />', () => {
@@ -137,4 +142,18 @@ test('404 sequence file', async () => {
       exact: false,
     }),
   ).toBeTruthy()
+})
+
+test('looks at about this track dialog', async () => {
+  const pluginManager = getPluginManager()
+  const { findByTestId, findAllByText, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('About this track'))
+  await findAllByText('SQ')
 })

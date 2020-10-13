@@ -40,7 +40,13 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     if (isLocalPathLocation(location))
       return new ElectronLocalFile(location.localPath)
   } else {
-    if (isUriLocation(location)) return openUrl(location.uri)
+    if (isUriLocation(location)) {
+      return openUrl(
+        location.baseUri
+          ? new URL(location.uri, location.baseUri).href
+          : location.uri,
+      )
+    }
     if (isLocalPathLocation(location)) return new LocalFile(location.localPath)
   }
   if (isBlobLocation(location)) return new BlobFile(location.blob)

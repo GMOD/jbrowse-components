@@ -31,7 +31,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/hg19_aliases.txt"
+            "uri": "hg19_aliases.txt"
           }
         }
       }
@@ -68,7 +68,7 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "test_data/longread_vs_ref.paf"
+          "uri": "longread_vs_ref.paf"
         },
         "assemblyNames": ["longread", "hg19"]
       },
