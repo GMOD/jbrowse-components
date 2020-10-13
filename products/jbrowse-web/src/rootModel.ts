@@ -137,12 +137,10 @@ export default function RootModel(
       },
 
       addSavedSession(sessionSnapshot: any) {
-        const localId = `localSaved-${uuid.v4()}`
-        localStorage.setItem(
-          localId,
-          JSON.stringify({ session: sessionSnapshot }),
+        self.savedSessionsVolatile.set(
+          `localSaved-${sessionSnapshot.name}`,
+          sessionSnapshot,
         )
-        return localId
       },
 
       removeSavedSession(session: { name: string }) {
