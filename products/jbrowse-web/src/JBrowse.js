@@ -49,7 +49,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const adminMode = adminKeyParam !== undefined
 
   const { rootModel } = pluginManager
-  const { error } = rootModel || {}
+  const { error, jbrowse } = rootModel || {}
 
   // updates the session or local storage sessions + autosave
   useEffect(() => {

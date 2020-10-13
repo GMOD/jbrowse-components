@@ -94,6 +94,7 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, val] of self.savedSessionsVolatile.entries()) {
               try {
                 localStorage.setItem(

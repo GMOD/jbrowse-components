@@ -476,7 +476,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         },
         actions: {
           notify(message: string, level?: NotificationLevel) {
-            console.log('message',level);
+            console.log('message', level)
             return this.pushSnackbarMessage(message, level)
           },
 
