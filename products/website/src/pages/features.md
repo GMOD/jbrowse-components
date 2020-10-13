@@ -6,20 +6,21 @@ such as new view types that can be displayed alongside our linear genome view.
 
 ## Feature comparison
 
-| Feature                                                                      | JBrowse 2               | JBrowse 1 |
-| ---------------------------------------------------------------------------- | ----------------------- | --------- |
-| Displays status updates during track loading (e.g. Downloading BAM index...) | :heavy_check_mark:      | :x:       |
-| Uses webworkers for parsing and rendering tracks                             | :heavy_check_mark:      | :x:       |
-| Supports interactive editing of configuration in the app                     | :heavy_check_mark:      | :x:       |
-| Can "flip" or reverse complement the linear view                             | :heavy_check_mark:      | :x:       |
-| Supports htsget                                                              | :heavy_check_mark:      | :x:       |
-| Hi-C data rendering                                                          | :heavy_check_mark:      | :x:       |
-| Can display multiple chromosomes in a single view                            | :heavy_check_mark:      | :x:       |
-| Sort read pileup in alignments tracks                                        | :heavy_check_mark:      | :x:       |
-| Show soft clipping in alignments tracks                                      | :heavy_check_mark:      | :x:       |
-| Supports new view types such as circular, dotplot, etc.                      | :heavy_check_mark:      | :x:       |
-| Connect to UCSC trackHubs                                                    | :heavy_check_mark: [^1] | :x:       |
-| Built in spreadsheet for flipping through variant datasets                   | :heavy_check_mark:      | :x:       |
+| Feature                                                                                    | JBrowse 2               | JBrowse 1 |
+| ------------------------------------------------------------------------------------------ | ----------------------- | --------- |
+| Displays status updates during track loading (e.g. Downloading BAM index...)               | :heavy_check_mark:      | :x:       |
+| Uses webworkers for parsing and rendering tracks                                           | :heavy_check_mark:      | :x:       |
+| Supports interactive editing of configuration in the app                                   | :heavy_check_mark:      | :x:       |
+| Can "flip" or reverse complement the linear view                                           | :heavy_check_mark:      | :x:       |
+| Supports htsget                                                                            | :heavy_check_mark:      | :x:       |
+| Hi-C data rendering                                                                        | :heavy_check_mark:      | :x:       |
+| Can display multiple chromosomes in a single view                                          | :heavy_check_mark:      | :x:       |
+| Sort read pileup in alignments tracks                                                      | :heavy_check_mark:      | :x:       |
+| Show soft clipping in alignments tracks                                                    | :heavy_check_mark:      | :x:       |
+| Supports new view types such as circular, dotplot, etc.                                    | :heavy_check_mark:      | :x:       |
+| Connect to UCSC trackHubs                                                                  | :heavy_check_mark: [^1] | :x:       |
+| Built in spreadsheet for flipping through variant datasets                                 | :heavy_check_mark:      | :x:       |
+| Ability for non-admin users to open tracks and share them with others in their session URL | :heavy_check_mark:      | :x:       |
 
 [^1] Requires that the trackhub host support CORS for the jbrowse-web, jbrowse-desktop does not require this however
 

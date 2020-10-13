@@ -56,6 +56,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   notify(message: string, level?: NotificationLevel): void
   assemblyManager: AssemblyManager
   version: string
+  getTrackActionMenuItems?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
