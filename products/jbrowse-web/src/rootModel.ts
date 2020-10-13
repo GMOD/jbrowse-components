@@ -84,15 +84,22 @@ export default function RootModel(
               !key.endsWith('previousAutosave'),
           )
           .forEach(([key, val]) => {
-            self.savedSessionsVolatile.set(key, JSON.parse(val).session)
+            try {
+              const { session } = JSON.parse(val)
+              self.savedSessionsVolatile.set(key, session)
+            } catch (e) {
+              console.error('bad session encountered', key, val)
+            }
           })
-
         addDisposer(
           self,
           autorun(() => {
-            for (const [key, val] of self.savedSessionsVolatile.entries()) {
+            for (const [_, val] of self.savedSessionsVolatile.entries()) {
               try {
-                localStorage.setItem(`${key}`, JSON.stringify({ session: val }))
+                localStorage.setItem(
+                  `localSaved-${val.name}`,
+                  JSON.stringify({ session: val }),
+                )
               } catch (e) {
                 if (e.code === '22' || e.code === '1024') {
                   // eslint-disable-next-line no-alert
