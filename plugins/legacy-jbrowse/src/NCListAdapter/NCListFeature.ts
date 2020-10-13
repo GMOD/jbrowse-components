@@ -1,7 +1,7 @@
 import {
   Feature,
   SimpleFeatureSerialized,
-} from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/simpleFeature'
 
 const jb2ToJb1 = { refName: 'seq_id' }
 

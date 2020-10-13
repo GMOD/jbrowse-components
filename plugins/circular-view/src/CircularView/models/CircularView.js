@@ -7,10 +7,10 @@ export default pluginManager => {
   const { types, getParent, resolveIdentifier, getRoot } = jbrequire(
     'mobx-state-tree',
   )
-  const { Region } = jbrequire('@gmod/jbrowse-core/util/types/mst')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { clamp, getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
+  const { Region } = jbrequire('@jbrowse/core/util/types/mst')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
+  const { clamp, getSession } = jbrequire('@jbrowse/core/util')
+  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(slicesFactory)
 

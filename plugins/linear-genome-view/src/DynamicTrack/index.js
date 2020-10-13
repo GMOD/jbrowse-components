@@ -1,7 +1,7 @@
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import {
   configSchemaFactory as basicTrackConfigSchemaFactory,

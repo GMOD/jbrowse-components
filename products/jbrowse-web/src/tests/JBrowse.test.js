@@ -7,8 +7,8 @@ import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, readBuffer } from './util'
@@ -137,4 +137,18 @@ test('404 sequence file', async () => {
       exact: false,
     }),
   ).toBeTruthy()
+})
+
+test('looks at about this track dialog', async () => {
+  const pluginManager = getPluginManager()
+  const { findByTestId, findAllByText, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('About this track'))
+  await findAllByText('SQ')
 })

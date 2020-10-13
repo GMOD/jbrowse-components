@@ -3,7 +3,7 @@ import React from 'react'
 import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const useStyles = makeStyles(theme => ({
   popper: {

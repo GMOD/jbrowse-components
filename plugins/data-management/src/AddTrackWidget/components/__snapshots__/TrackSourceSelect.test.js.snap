@@ -143,7 +143,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
           <button
             aria-label="local file"
             aria-pressed="false"
-            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiToggleButton-sizeSmall MuiButtonBase-disabled"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
             disabled=""
             tabindex="-1"
             type="button"
@@ -158,7 +158,7 @@ exports[`<TrackSourceSelect /> renders 1`] = `
           <button
             aria-label="url"
             aria-pressed="true"
-            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected MuiToggleButton-sizeSmall"
+            class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
             tabindex="0"
             type="button"
             value="url"
@@ -178,14 +178,14 @@ exports[`<TrackSourceSelect /> renders 1`] = `
         class="MuiGrid-root MuiGrid-item"
       >
         <div
-          class="MuiFormControl-root MuiTextField-root MuiFormControl-marginDense MuiFormControl-fullWidth"
+          class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
         >
           <div
-            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-marginDense MuiInput-marginDense"
+            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
           >
             <input
               aria-invalid="false"
-              class="MuiInputBase-input MuiInput-input MuiInputBase-inputMarginDense MuiInput-inputMarginDense"
+              class="MuiInputBase-input MuiInput-input"
               type="text"
               value=""
             />

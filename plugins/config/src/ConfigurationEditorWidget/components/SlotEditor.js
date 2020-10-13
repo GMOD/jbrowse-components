@@ -1,9 +1,9 @@
-import { FileSelector } from '@gmod/jbrowse-core/ui'
+import { FileSelector } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
   getUnionSubTypes,
-} from '@gmod/jbrowse-core/util/mst-reflection'
+} from '@jbrowse/core/util/mst-reflection'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
 import CardHeader from '@material-ui/core/CardHeader'
@@ -65,9 +65,9 @@ const StringArrayEditor = observer(({ slot }) => {
   return (
     <>
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
-      <List dense disablePadding>
+      <List disablePadding>
         {slot.value.map((val, idx) => (
-          <ListItem key={idx} dense disableGutters>
+          <ListItem key={idx} disableGutters>
             <TextField
               value={val}
               onChange={evt => slot.setAtIndex(idx, evt.target.value)}
@@ -86,7 +86,7 @@ const StringArrayEditor = observer(({ slot }) => {
             />
           </ListItem>
         ))}
-        <ListItem dense disableGutters>
+        <ListItem disableGutters>
           <TextField
             value={value}
             placeholder="add new"

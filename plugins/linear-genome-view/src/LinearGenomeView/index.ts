@@ -1,11 +1,8 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import {
-  ElementId,
-  Region as MUIRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import { Region } from '@jbrowse/core/util/types'
+import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -16,12 +13,12 @@ import {
   parseLocString,
   springAnimate,
   isSessionModelWithWidgets,
-} from '@gmod/jbrowse-core/util'
-import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
-import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
+} from '@jbrowse/core/util'
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { transaction } from 'mobx'
 import {
   getSnapshot,
@@ -32,7 +29,7 @@ import {
   resolveIdentifier,
 } from 'mobx-state-tree'
 
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'

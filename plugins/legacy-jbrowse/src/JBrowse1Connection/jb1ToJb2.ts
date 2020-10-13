@@ -1,4 +1,4 @@
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@jbrowse/core/util/io'
 import objectHash from 'object-hash'
 import {
   generateUnknownTrackConf,
@@ -7,7 +7,7 @@ import {
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 import { JBLocation, Track, RefSeqs, RefSeq } from './types'
 
 interface Jb2Track {

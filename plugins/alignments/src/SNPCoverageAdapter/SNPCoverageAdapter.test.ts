@@ -1,6 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import { LocalFile } from 'generic-filehandle'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { SnapshotIn } from 'mobx-state-tree'
 import AdapterF from './index'
 import CramAdapterF from '../CramAdapter'

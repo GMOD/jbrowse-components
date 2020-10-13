@@ -1,4 +1,4 @@
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 
 // material ui things
 import Button from '@material-ui/core/Button'

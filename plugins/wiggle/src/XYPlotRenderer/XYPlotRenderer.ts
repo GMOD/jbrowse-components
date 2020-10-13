@@ -1,7 +1,7 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { featureSpanPx } from '@jbrowse/core/util'
 import Color from 'color'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   WiggleBaseRendererProps,

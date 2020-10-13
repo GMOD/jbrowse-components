@@ -1,7 +1,7 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BaseTrackConfig as LinearGenomeTrackConfig } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 function PileupConfigFactory(pluginManager: PluginManager) {
   const PileupRendererConfigSchema = pluginManager.getRendererType(

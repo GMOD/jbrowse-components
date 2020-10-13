@@ -1,17 +1,17 @@
 import {
   getConf,
   ConfigurationReference,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 
 import deepEqual from 'deep-equal'
 import { BaseTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
 import { types, addDisposer, getSnapshot, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+import { MenuItem } from '@jbrowse/core/ui'
 import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 

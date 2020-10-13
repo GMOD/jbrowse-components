@@ -46,10 +46,10 @@ To take this a little slow let's look at each function individually
 This is a more complete description of the class interface that you can implement
 
 ```js
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 class MyAdapter extends BaseFeatureDataAdapter {
   // @param config - a configuration object

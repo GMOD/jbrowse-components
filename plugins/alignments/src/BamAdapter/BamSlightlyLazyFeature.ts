@@ -2,7 +2,7 @@
 import {
   Feature,
   SimpleFeatureSerialized,
-} from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/simpleFeature'
 import { BamRecord } from '@gmod/bam'
 import {
   parseCigar,

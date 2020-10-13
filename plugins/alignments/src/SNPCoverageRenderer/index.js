@@ -1,7 +1,7 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ConfigSchema from './configSchema'
 
-export { WiggleRendering as ReactComponent } from '@gmod/jbrowse-plugin-wiggle'
+export { WiggleRendering as ReactComponent } from '@jbrowse/plugin-wiggle'
 export { default } from './SNPCoverageRenderer'
 
 export const configSchema = ConfigurationSchema(

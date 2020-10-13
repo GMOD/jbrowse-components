@@ -10,7 +10,7 @@ This document covers the CLI tools.
 The command line tools can be installed using `npm` as follows
 
 ```sh-session
-$ npm install -g @gmod/jbrowse-cli
+$ npm install -g @jbrowse/cli
 ```
 
 You can test your installation with
@@ -22,7 +22,7 @@ $ jbrowse --version
 It is also possible to do one-off executions using npx, e.g.
 
 ```sh-session
-npx @gmod/jbrowse-cli create myfolder
+npx @jbrowse/cli create myfolder
 ```
 
 It is likely preferable in most cases to install the tools first however
@@ -130,6 +130,8 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-assembly.ts)_
+
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
 Add a connection to a JBrowse 2 configuration
@@ -180,6 +182,8 @@ EXAMPLES
   $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
   /path/to/jb2/installation/config.json
 ```
+
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -235,6 +239,8 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
 
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track.ts)_
+
 ## `jbrowse add-track-json TRACK`
 
 Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
@@ -256,6 +262,8 @@ EXAMPLES
   $ jbrowse add-track-json track.json
   $ jbrowse add-track-json track.json --update
 ```
+
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -281,6 +289,8 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/admin-server.ts)_
+
 ## `jbrowse create LOCALPATH`
 
 Downloads and installs the latest JBrowse 2 release
@@ -297,7 +307,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -306,9 +316,11 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag @gmod/jbrowse-web@0.0.1
+  $ jbrowse create /path/to/new/installation --tag @jbrowse/web@0.0.1
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
+
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -358,6 +370,8 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/set-default-session.ts)_
+
 ## `jbrowse upgrade [LOCALPATH]`
 
 Upgrades JBrowse 2 to latest version
@@ -373,7 +387,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @gmod/jbrowse-web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -381,16 +395,18 @@ OPTIONS
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @gmod/jbrowse-web@0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @jbrowse/web@0.0.1
   $ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
+
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 
 ## Debugging
 
-Debug logs (provded by [debug](https://github.com/visionmedia/debug)) can be
+Debug logs (provided by [debug](https://github.com/visionmedia/debug)) can be
 printed by setting the `DEBUG` environment variable. Setting `DEBUG=*` will
 print all debug logs. Setting `DEBUG=jbrowse*` will print only logs from this
 tool, and setting e.g. `DEBUG=jbrowse:add-assembly` will print only logs from

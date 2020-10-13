@@ -9,7 +9,7 @@ export default pluginManager => {
   const Grid = jbrequire('@material-ui/core/Grid')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
   const Checkbox = jbrequire('@material-ui/core/Checkbox')
-  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
+  const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
   const { grey } = jbrequire('@material-ui/core/colors')
 
   const headerHeight = 52
@@ -70,7 +70,7 @@ export default pluginManager => {
             data-testid="sv_inspector_view_open"
             color="secondary"
           >
-            <FolderOpenIcon fontSize="small" />
+            <FolderOpenIcon />
           </IconButton>
         </Grid>
       </Grid>
@@ -97,7 +97,6 @@ export default pluginManager => {
                     evt.target.checked,
                   )
                 }
-                size="small"
               />
             }
             label="show only regions with data"
