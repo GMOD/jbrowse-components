@@ -67,7 +67,6 @@ const AutosaveEntry = observer(({ session }) => {
 
 export default observer(({ session }) => {
   const classes = useStyles()
-  const { visibleWidget } = session
   const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
   const [open, setOpen] = useState(false)
 
@@ -79,9 +78,9 @@ export default observer(({ session }) => {
   function handleDialogClose(deleteSession = false) {
     if (deleteSession) {
       session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
-      session.hideWidget(visibleWidget)
     }
     setSessionIndexToDelete(null)
+    setOpen(false)
   }
 
   const sessionNameToDelete =

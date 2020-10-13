@@ -74,11 +74,6 @@ export default function RootModel(
           key => key === 'localSaved-previousAutosave',
         )
       },
-      get isUnsavedSession() {
-        const locationUrl = new URL(window.location.href)
-        const params = new URLSearchParams(locationUrl.search)
-        return params?.get('session')?.startsWith('local-')
-      },
     }))
     .actions(self => ({
       afterCreate() {
@@ -136,7 +131,7 @@ export default function RootModel(
         }
       },
 
-      addSavedSession(sessionSnapshot: any) {
+      addSavedSession(sessionSnapshot: { name: string }) {
         self.savedSessionsVolatile.set(
           `localSaved-${sessionSnapshot.name}`,
           sessionSnapshot,
@@ -180,7 +175,7 @@ export default function RootModel(
         this.setSession(JSON.parse(newSessionSnapshot).session)
       },
       saveSessionToLocalStorage() {
-        if (self.session && self.isUnsavedSession) {
+        if (self.session) {
           self.savedSessionsVolatile.set(
             `localSaved-${self.session.name}`,
             getSnapshot(self.session),
