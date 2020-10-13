@@ -21,6 +21,7 @@ import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import { readSessionFromDynamo } from '@jbrowse/core/util/sessionSharing'
+import shortid from 'shortid'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -205,8 +206,6 @@ export function Loader() {
             ? sessionStorageSession
             : null)
 
-        console.log(sessionQueryParam, foundLocalSession)
-
         if (!foundLocalSession) {
           if (bc1) {
             bc1.postMessage(sessionQueryParam)
@@ -221,7 +220,8 @@ export function Loader() {
                   reject()
                 }, 1000)
               })
-              console.log({ result })
+              // @ts-ignore
+              result.id = shortid()
               sessionStorage.setItem('current', JSON.stringify(result))
               // @ts-ignore
               setData(result.id)

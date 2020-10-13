@@ -169,7 +169,6 @@ export default function RootModel(
             `Can't activate session ${name}, it is not in the savedSessions`,
           )
 
-        this.setSessionUuidInUrl(localId)
         this.setSession(JSON.parse(newSessionSnapshot).session)
       },
       saveSessionToLocalStorage() {
@@ -198,17 +197,10 @@ export default function RootModel(
           localId,
           JSON.stringify({ session: autosavedSession }),
         )
-        this.setSessionUuidInUrl(localId)
         this.setSession(autosavedSession)
         return localId
       },
-      setSessionUuidInUrl(localId: string) {
-        const locationUrl = new URL(window.location.href)
-        const params = new URLSearchParams(locationUrl.search)
-        params.set('session', `${localId}`)
-        locationUrl.search = params.toString()
-        window.history.replaceState({}, '', locationUrl.href)
-      },
+
       setError(errorMessage: string) {
         self.error = errorMessage
       },
