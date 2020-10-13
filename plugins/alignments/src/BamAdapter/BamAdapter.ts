@@ -69,6 +69,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  async getHeader(opts?: BaseOptions) {
+    return this.bam.getHeader(opts)
+  }
+
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {

@@ -88,16 +88,19 @@ function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
 }
 
 export interface MenuDivider {
+  priority?: number
   type: 'divider'
 }
 
 export interface MenuSubHeader {
   type: 'subHeader'
+  priority?: number
   label: string
 }
 
 export interface BaseMenuItem {
   label: string
+  priority?: number
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
@@ -266,7 +269,9 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   const ListContents = (
     <>
       <MenuList autoFocusItem={open && !isSubMenuOpen}>
-        {menuItems.map((menuItem, idx) => {
+        {menuItems
+          .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+.map((menuItem, idx) => {
           if (menuItem.type === 'divider') {
             return <Divider key={`divider-${idx}`} component="li" />
           }
