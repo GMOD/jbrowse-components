@@ -1,33 +1,30 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { ContentCopy as ContentCopyIcon } from '@gmod/jbrowse-core/ui/Icons'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   blockBasedTrackModel,
   LinearGenomeViewModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+} from '@jbrowse/plugin-linear-genome-view'
 import { types, addDisposer, cast, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
 
 import { autorun } from 'mobx'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { PileupConfigModel } from './configSchema'
 import PileupTrackBlurb from './components/PileupTrackBlurb'
 import ColorByTagDlg from './components/ColorByTag'
@@ -169,7 +166,7 @@ const stateModelFactory = (
         self.configuration = configuration
       },
 
-     setSortedBy(type: string, tag?: string) {
+      setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
           return
