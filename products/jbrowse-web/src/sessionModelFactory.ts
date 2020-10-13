@@ -448,13 +448,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        for (const [key, value] of Object.entries(localStorage)) {
-          const sessionString = JSON.stringify(JSON.parse(value).session)
-          if (sessionString === JSON.stringify(sessionSnapshot)) {
-            localStorage.removeItem(key)
-            break
-          }
-        }
+        getParent(self).removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {

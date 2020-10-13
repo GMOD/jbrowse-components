@@ -135,6 +135,13 @@ export default function RootModel(
           this.setSession(snapshot)
         }
       },
+
+      removeSavedSession(session: { name: string }) {
+        const key = `localSaved-${session.name}`
+        localStorage.removeItem(key)
+        self.savedSessionsVolatile.delete(key)
+      },
+
       duplicateCurrentSession() {
         if (self.session) {
           const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))

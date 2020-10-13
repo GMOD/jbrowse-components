@@ -82,7 +82,6 @@ export default observer(({ session }) => {
       session.hideWidget(visibleWidget)
     }
     setSessionIndexToDelete(null)
-    setOpen(false)
   }
 
   const sessionNameToDelete =
