@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { useTheme } from '@material-ui/core/styles'
@@ -93,27 +92,27 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
         }
         switch (letter.toLocaleLowerCase()) {
           case 'a': {
-            const baseColor = '#00bf00'
+            const baseColor = theme.palette.bases.A.main
             style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
+            style.color = theme.palette.bases.A.contrastText
             break
           }
           case 'g': {
-            const baseColor = '#ffa500'
+            const baseColor = theme.palette.bases.G.main
             style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
+            style.color = theme.palette.bases.G.contrastText
             break
           }
           case 'c': {
-            const baseColor = '#4747ff'
+            const baseColor = theme.palette.bases.C.main
             style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
+            style.color = theme.palette.bases.C.contrastText
             break
           }
           case 't': {
-            const baseColor = '#f00'
+            const baseColor = theme.palette.bases.T.main
             style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
+            style.color = theme.palette.bases.T.contrastText
             break
           }
           default:
