@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import clsx from 'clsx'
 import { Typography } from '@material-ui/core'
 import {
   LinearGenomeViewStateModel,
@@ -38,6 +39,28 @@ const useStyles = makeStyles(theme => {
       backgroundColor: theme.palette.background.default,
       position: 'relative',
       borderColor: theme.palette.text.primary,
+    },
+    scaleBarContigForward: {
+      backgroundImage: `
+      linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px), 
+      linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(-45deg, #cccccc 11px, transparent 12px),
+      linear-gradient(-135deg, #cccccc 11px, transparent 12px),
+      linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
+      backgroundRepeat: 'repeat',
+      backgroundSize: HEADER_OVERVIEW_HEIGHT,
+    },
+    scaleBarContigReverse: {
+      backgroundImage: `
+      linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px), 
+      linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(45deg, #cccccc 11px, transparent 12px),
+      linear-gradient(135deg, #cccccc 11px, transparent 12px),
+      linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
+      backgroundRepeat: 'repeat',
+      backgroundSize: HEADER_OVERVIEW_HEIGHT,
     },
     scaleBarRefName: {
       position: 'absolute',
@@ -110,7 +133,7 @@ const Polygon = observer(
         {visibleRegions.map((region, idx) => {
           const seqIndex = displayedRegions.findIndex(
             seq => seq.refName === region.refName,
-          )
+          ) // need a unique identifier here
           if (seqIndex === -1) {
             return null
           }
@@ -120,6 +143,7 @@ const Polygon = observer(
             ;[startPx, endPx] = [endPx, startPx]
           }
           const topRight = overview.bpToPx({
+            // need a unique identifier here
             refName: region.refName,
             coord: region.end,
           })
@@ -150,10 +174,11 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
-  const theme = useTheme()
   const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
+  console.log('visible regions', visibleRegions)
+  console.log('displayedRegions', displayedRegions.toJSON())
   return (
     <div className={classes.scaleBar}>
       {/* this is the entire scale bar */}
@@ -168,23 +193,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const parentRegionLength = parentRegion
           ? parentRegion.end - parentRegion.start
           : 0 // check for when region is smaller than parent region
-        const gradientForward = `
-        linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px), 
-        linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px),
-        linear-gradient(-45deg, #cccccc 11px, transparent 12px),
-        linear-gradient(-135deg, #cccccc 11px, transparent 12px),
-        linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px),
-        linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px)`
-        const gradientBackward = `
-        linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px), 
-        linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px),
-        linear-gradient(45deg, #cccccc 11px, transparent 12px),
-        linear-gradient(135deg, #cccccc 11px, transparent 12px),
-        linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px),
-        linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px)`
-        const backgroundGradient = seq.reversed
-          ? gradientBackward
-          : gradientForward
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
@@ -203,11 +211,13 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   ? undefined
                   : wholeSeqSpacer,
               borderColor: refNameColor,
-              backgroundImage: `${backgroundGradient}`,
-              backgroundRepeat: 'repeat',
-              backgroundSize: '20px',
             }}
-            className={classes.scaleBarContig}
+            className={clsx(
+              classes.scaleBarContig,
+              seq.reversed
+                ? classes.scaleBarContigReverse
+                : classes.scaleBarContigForward,
+            )}
             variant="outlined"
           >
             {/* name of sequence */}
@@ -221,7 +231,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             {visibleRegions.map((r, visibleRegionIdx) => {
               if (
                 seq.assemblyName === r.assemblyName &&
-                seq.refName === r.refName
+                seq.refName === r.refName // need a unique identifier here
               ) {
                 const leftStyle = r.reversed
                   ? (seq.end - r.end) / scale - 1
