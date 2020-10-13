@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/gff3",
+    "test": "cd ../..; jest plugins/gff3 --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
@@ -51,5 +51,6 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "gitHead": "32e27bccb4eb35ee2b3ba3ab004baf68dfcbf38d"
 }
