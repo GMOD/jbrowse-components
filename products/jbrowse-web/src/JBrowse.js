@@ -63,9 +63,9 @@ const JBrowse = observer(({ pluginManager }) => {
       })
       if (
         sessionId?.startsWith('local-') &&
-        sessionStorage.getItem(sessionId)
+        sessionStorage.getItem('current')
       ) {
-        sessionStorage.setItem(sessionId, toStore)
+        sessionStorage.setItem('current', toStore)
       } else if (sessionId?.startsWith('localSaved-')) {
         localStorage.setItem(sessionId, toStore)
         if (localStorage.getItem('autosave')) {
@@ -80,9 +80,9 @@ const JBrowse = observer(({ pluginManager }) => {
     if (rootModel) {
       const updater = debounce(updateLocalSession, 400)
       const snapshotDisposer = onSnapshot(rootModel, snap => {
-        console.log(snap.session)
         updater(snap.session)
         setSessionId(snap.session.id)
+        sessionStorage.setItem('current', JSON.stringify(snap.session))
       })
       disposer = () => {
         snapshotDisposer()

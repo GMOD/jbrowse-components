@@ -20,7 +20,6 @@ import * as crypto from 'crypto'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
-import * as uuid from 'uuid'
 import { readSessionFromDynamo } from '@jbrowse/core/util/sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -158,14 +157,10 @@ export function Loader() {
           )
 
           if (decryptedSession) {
-            const localId = `local-${uuid.v4()}`
+            // const localId = `local-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
-            sessionStorage.clear()
-            sessionStorage.setItem(
-              localId,
-              JSON.stringify({ session: fromShared }),
-            )
-            setData(localId)
+            sessionStorage.setItem('current', JSON.stringify(fromShared))
+            setData(fromShared.id)
           } else {
             // eslint-disable-next-line no-alert
             alert('Session could not be decrypted with given password')
@@ -201,9 +196,16 @@ export function Loader() {
     }
     ;(async () => {
       if (sessionQueryParam && !loadingSharedSession) {
+        const sessionStorageSession = JSON.parse(
+          sessionStorage.getItem('current') || '{}',
+        )
         const foundLocalSession =
           localStorage.getItem(sessionQueryParam) ||
-          sessionStorage.getItem(sessionQueryParam)
+          (sessionStorageSession.id === sessionQueryParam
+            ? sessionStorageSession
+            : null)
+
+        console.log(sessionQueryParam, foundLocalSession)
 
         if (!foundLocalSession) {
           if (bc1) {
@@ -219,9 +221,10 @@ export function Loader() {
                   reject()
                 }, 1000)
               })
-              const localId = `local-${uuid.v4()}`
-              sessionStorage.setItem(localId, result as string)
-              setData(localId)
+              console.log({ result })
+              sessionStorage.setItem('current', JSON.stringify(result))
+              // @ts-ignore
+              setData(result.id)
             } catch (e) {
               console.error(e)
             }
@@ -347,17 +350,20 @@ export function Loader() {
       localStorage.setItem('localSaved-previousAutosave', lastAutosave)
     }
     if (sessionQueryParam) {
-      const foundLocalSession =
-        localStorage.getItem(sessionQueryParam) ||
-        sessionStorage.getItem(sessionQueryParam)
+      const foundLocalSession = localStorage.getItem(sessionQueryParam)
       if (foundLocalSession) {
         rootModel.setSession(JSON.parse(foundLocalSession).session)
-      } else if (!loadingSharedSession) {
-        // eslint-disable-next-line no-alert
-        alert('No matching local session found')
-        setSessionQueryParam(undefined)
-        setPasswordQueryParam(undefined)
-        setSessString('')
+      } else {
+        const session = sessionStorage.getItem('current')
+        if (session && JSON.parse(session).id === sessionQueryParam) {
+          rootModel.setSession(JSON.parse(session))
+        } else if (!loadingSharedSession) {
+          // eslint-disable-next-line no-alert
+          alert('No matching local session found')
+          setSessionQueryParam(undefined)
+          setPasswordQueryParam(undefined)
+          setSessString('')
+        }
       }
     } else {
       rootModel.setDefaultSession()
@@ -390,8 +396,8 @@ export function Loader() {
 
   if (bc1) {
     bc1.onmessage = msg => {
-      const ret = sessionStorage.getItem(msg.data)
-      if (ret) {
+      const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+      if (ret.id === msg.data) {
         if (bc2) bc2.postMessage(ret)
       }
     }
