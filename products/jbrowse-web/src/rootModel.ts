@@ -15,7 +15,6 @@ import {
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
 import { UndoManager } from 'mst-middlewares'
-import * as uuid from 'uuid'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -191,14 +190,14 @@ export default function RootModel(
           '-autosaved',
           '',
         )}-restored`
-        const localId = `local-${uuid.v4()}`
-        sessionStorage.clear()
-        sessionStorage.setItem(
-          localId,
-          JSON.stringify({ session: autosavedSession }),
-        )
+        // const localId = `local-${uuid.v4()}`
+        // sessionStorage.clear()
+        // sessionStorage.setItem(
+        //   localId,
+        //   JSON.stringify({ session: autosavedSession }),
+        // )
         this.setSession(autosavedSession)
-        return localId
+        // return localId
       },
 
       setError(errorMessage: string) {
