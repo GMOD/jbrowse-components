@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState, useCallback } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
@@ -33,12 +34,6 @@ if (!window.TextEncoder) {
 if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
-
-// the history tracking and forceUpdate are related to use-query-params,
-// because the setters from use-query-params don't cause a component rerender
-// if a router system is not used. see the no-router example here
-// https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
-
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
@@ -138,6 +133,11 @@ export function Loader() {
   const [session, setSession] = useState<any>()
   const [, forceUpdate] = React.useReducer(x => x + 1, 0)
   const adminMode = adminKeyParam !== undefined
+
+  // this history.listen and forceUpdate() are related to use-query-params,
+  // because the setters from use-query-params don't cause a component rerender
+  // if a router system is not used. see the no-router example here
+  // https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
   useEffect(() => {
     history.listen(() => {
       forceUpdate()
@@ -189,7 +189,7 @@ export function Loader() {
     }
     readSharedSession()
     return () => {
-      // controller.abort()
+      controller.abort()
     }
   }, [
     setData,
@@ -223,9 +223,7 @@ export function Loader() {
                     resolve(msg.data)
                   }
                 }
-                setTimeout(() => {
-                  reject('timeout')
-                }, 1000)
+                setTimeout(() => reject(), 1000)
               })
               const id = shortid()
               // @ts-ignore
@@ -233,7 +231,8 @@ export function Loader() {
               sessionStorage.setItem('current', JSON.stringify(result))
               setData(id)
             } catch (e) {
-              // clear erroneous session
+              // the broadcast channels did not find the session in another tab
+              // clear session param
               setData()
             }
           }
