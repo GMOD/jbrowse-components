@@ -66,26 +66,33 @@ const Base1DView = types
     get minimumBlockWidth() {
       return 20
     },
-    bpToPx({ refName, coord }: { refName: string; coord: number }) {
-      const indices: any[] = []
-      let offset = 0
-      let bpSoFar = 0
-      self.displayedRegions.forEach((region, idx) => {
-        if (
-          refName === region.refName &&
-          coord >= region.start &&
-          coord <= region.end
-        ) {
-          offset = region.reversed ? region.end - coord : coord - region.start
-          indices.push({
-            index: idx,
-            offsetPx: Math.round((bpSoFar + offset) / self.bpPerPx),
-          })
+    bpToPx({
+      refName,
+      coord,
+      regionNumber,
+    }: {
+      refName: string
+      coord: number
+      regionNumber?: number
+    }) {
+      let offsetBp = 0
+
+      const index = self.displayedRegions.findIndex((r, idx) => {
+        if (refName === r.refName && coord >= r.start && coord <= r.end) {
+          if (regionNumber ? regionNumber === idx : true) {
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
+            return true
+          }
         }
-        bpSoFar += region.end - region.start
-        offset = 0
+        offsetBp += r.end - r.start
+        return false
       })
-      return indices
+      const foundRegion = self.displayedRegions[index]
+      if (foundRegion) {
+        return Math.round(offsetBp / self.bpPerPx)
+      }
+
+      return undefined
     },
 
     pxToBp(px: number) {

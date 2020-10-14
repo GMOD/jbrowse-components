@@ -141,20 +141,16 @@ const Polygon = observer(
           if (region.reversed) {
             ;[startPx, endPx] = [endPx, startPx]
           }
-          let topLeft = overview
-            .bpToPx({
-              refName: region.refName,
-              coord: region.start,
-            })
-            .find(elem => elem.index === region.regionNumber)
-          let topRight = overview
-            .bpToPx({
-              refName: region.refName,
-              coord: region.end,
-            })
-            .find(elem => elem.index === region.regionNumber)
-          topRight = topRight ? topRight.offsetPx : -1
-          topLeft = topLeft ? topLeft.offsetPx : -1
+          const topLeft = overview.bpToPx({
+            refName: region.refName,
+            coord: region.start,
+            regionNumber: region.regionNumber,
+          })
+          const topRight = overview.bpToPx({
+            refName: region.refName,
+            coord: region.end,
+            regionNumber: region.regionNumber,
+          })
           return (
             <polygon
               key={`${region.key}-${idx}`}
@@ -194,7 +190,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const regionLength = seq.end - seq.start
         const parent = model.parentRegion(seq.assemblyName, seq.refName)
         const parentLength = parent ? parent.end - parent.start : 0
-
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
@@ -231,7 +226,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             </Typography>
             {/* where the rubberband selection boxes actually get drawn */}
             {visibleRegions.map((r, visibleRegionIdx) => {
-              // regionNumber could be derived from key but what is it's in reversed
               if (
                 seq.assemblyName === r.assemblyName &&
                 seq.refName === r.refName &&
