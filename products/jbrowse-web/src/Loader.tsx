@@ -136,8 +136,7 @@ export function Loader() {
       if (configText) {
         try {
           config = JSON.parse(configText)
-          const base = window.location.origin + window.location.pathname
-          const configUri = new URL(configLocation.uri, base)
+          const configUri = new URL(configLocation.uri, window.location.href)
           addRelativeUris(config, configUri)
         } catch (error) {
           setConfigSnapshot(() => {
