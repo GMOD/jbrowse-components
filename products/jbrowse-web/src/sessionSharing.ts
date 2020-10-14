@@ -76,24 +76,15 @@ export async function readSessionFromDynamo(
   params.set('sessionId', sessionId)
   url.search = params.toString()
 
-  let response
-  try {
-    response = await fetch(url.href, {
-      method: 'GET',
-      mode: 'cors',
-      signal,
-    })
+  const response = await fetch(url.href, {
+    method: 'GET',
+    mode: 'cors',
+    signal,
+  })
 
-    if (!response.ok) {
-      throw new Error(`Error reading session ${response.statusText}`)
-    }
-    const json = await response.json()
-    return decrypt(json.session, key, password)
-  } catch (error) {
-    // ignore if aborted error
-    if (signal.aborted) {
-      return null
-    }
-    throw error
+  if (!response.ok) {
+    throw new Error(`Error reading session ${response.statusText}`)
   }
+  const json = await response.json()
+  return decrypt(json.session, key, password)
 }

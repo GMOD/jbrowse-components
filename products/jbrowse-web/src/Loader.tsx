@@ -1,10 +1,9 @@
+import React, { useEffect, useState, useCallback } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import ErrorBoundary from 'react-error-boundary'
-import { UndoManager } from 'mst-middlewares'
-import React, { useEffect, useState } from 'react'
 import {
   StringParam,
   useQueryParam,
@@ -133,33 +132,35 @@ export function Loader() {
     'password',
     StringParam,
   )
-  const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
-  const adminMode = adminKeyParam !== undefined
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')
   const [root, setRoot] = useState<any>()
+  const [session, setSession] = useState<any>()
   const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+  const adminMode = adminKeyParam !== undefined
   useEffect(() => {
     history.listen(() => {
       forceUpdate()
     })
   }, [])
 
-  console.log('re-rendering')
+  const setData = useCallback(
+    function setData(data?: string) {
+      setSessionQueryParam(data)
+      setPasswordQueryParam(undefined)
+    },
+    [setSessionQueryParam, setPasswordQueryParam],
+  )
 
   // on share link pasted, reads from dynamoDB to fetch and decode session
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
 
-    function setData(data?: string) {
-      setSessionQueryParam(data)
-      setPasswordQueryParam(undefined)
-    }
-
     async function readSharedSession() {
       if (sessionQueryParam && loadingSharedSession) {
         try {
+          const key = crypto.createHash('sha256').update('JBrowse').digest()
           const decryptedSession = await readSessionFromDynamo(
             sessionQueryParam,
             key,
@@ -171,24 +172,27 @@ export function Loader() {
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             sessionStorage.setItem('current', JSON.stringify(fromShared))
             setData(fromShared.id)
+            setSession(fromShared)
           } else {
             // eslint-disable-next-line no-alert
             alert('Session could not be decrypted with given password')
             setData()
           }
         } catch (e) {
-          // eslint-disable-next-line no-alert
-          alert(`Failed to find session in database: ${e}`)
-          setData()
+          if (!signal.aborted) {
+            // eslint-disable-next-line no-alert
+            alert(`Failed to find session in database: ${e}`)
+            setData()
+          }
         }
       }
     }
     readSharedSession()
     return () => {
-      controller.abort()
+      // controller.abort()
     }
   }, [
-    key,
+    setData,
     loadingSharedSession,
     passwordQueryParam,
     sessionQueryParam,
@@ -198,10 +202,6 @@ export function Loader() {
 
   // on local link posted, checks other tabs if they have session stored in sessionStorage
   useEffect(() => {
-    function setData(data?: string) {
-      setSessionQueryParam(data)
-      setPasswordQueryParam(undefined)
-    }
     ;(async () => {
       if (sessionQueryParam && !loadingSharedSession) {
         const sessionStorageSession = JSON.parse(
@@ -224,15 +224,15 @@ export function Loader() {
                   }
                 }
                 setTimeout(() => {
-                  console.log('rejecting because of timeout')
                   reject()
                 }, 1000)
               })
+              const id = shortid()
               // @ts-ignore
-              result.id = shortid()
+              result.id = id
               sessionStorage.setItem('current', JSON.stringify(result))
-              // @ts-ignore
-              setData(result.id)
+              console.log('setting item', id)
+              setData(id)
             } catch (e) {
               console.error(e)
             }
@@ -243,6 +243,7 @@ export function Loader() {
   }, [
     bc1,
     bc2,
+    setData,
     sessionQueryParam,
     setPasswordQueryParam,
     setSessionQueryParam,
@@ -305,7 +306,25 @@ export function Loader() {
   }, [configSnapshot])
 
   useEffect(() => {
-    if (plugins !== undefined) {
+    const lastAutosave = localStorage.getItem('autosave')
+    if (lastAutosave) {
+      localStorage.setItem('localSaved-previousAutosave', lastAutosave)
+    }
+    if (sessionQueryParam) {
+      const foundLocalSession = localStorage.getItem(sessionQueryParam)
+      if (foundLocalSession) {
+        setSession(JSON.parse(foundLocalSession).session)
+      } else {
+        const session = sessionStorage.getItem('current')
+        if (session && JSON.parse(session).id === sessionQueryParam) {
+          setSession(JSON.parse(session))
+        }
+      }
+    }
+  }, [loadingSharedSession, sessionQueryParam, setData])
+
+  useEffect(() => {
+    if ((!sessionQueryParam || session) && plugins !== undefined) {
       console.log('trying to initialize the rootmodel/pluginmanager')
       const pluginManager = new PluginManager(plugins.map(P => new P()))
 
@@ -348,37 +367,17 @@ export function Loader() {
       // in order: saves the previous autosave for recovery, tries to load the local session
       // if session in query, or loads the default session
       try {
-        const lastAutosave = localStorage.getItem('autosave')
-        if (lastAutosave) {
-          localStorage.setItem('localSaved-previousAutosave', lastAutosave)
-        }
-        if (sessionQueryParam) {
-          const foundLocalSession = localStorage.getItem(sessionQueryParam)
-          if (foundLocalSession) {
-            rootModel.setSession(JSON.parse(foundLocalSession).session)
-          } else {
-            const session = sessionStorage.getItem('current')
-            if (session && JSON.parse(session).id === sessionQueryParam) {
-              rootModel.setSession(JSON.parse(session))
-            } else if (!loadingSharedSession) {
-              // eslint-disable-next-line no-alert
-              alert('No matching local session found')
-              setSessionQueryParam(undefined)
-              setPasswordQueryParam(undefined)
-            }
-          }
-        } else {
+        if (!sessionQueryParam) {
           rootModel.setDefaultSession()
-          // setSessionQueryParam(localId)
-          // setPasswordQueryParam(undefined)
+        } else {
+          rootModel.setSession(session)
         }
-
         if (!rootModel.session) {
           throw new Error('root model did not have any session defined')
         }
-        rootModel.setHistory(
-          UndoManager.create({}, { targetStore: rootModel.session }),
-        )
+        // rootModel.setHistory(
+        //   UndoManager.create({}, { targetStore: rootModel.session }),
+        // )
       } catch (e) {
         console.error(e)
         if (e.message) {
@@ -399,6 +398,8 @@ export function Loader() {
       setRoot(pluginManager)
     }
   }, [
+    session,
+    setData,
     configSnapshot,
     setPasswordQueryParam,
     setSessionQueryParam,
