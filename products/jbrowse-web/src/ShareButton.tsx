@@ -66,14 +66,16 @@ const Share = observer((props: { session: any }) => {
       <Button
         data-testid="share_button"
         onClick={async () => {
-          const result = await shareSessionToDynamo(
-            session,
-            url,
-            locationUrl.href,
-          )
-          if (result)
+          try {
+            const result = await shareSessionToDynamo(
+              session,
+              url,
+              locationUrl.href,
+            )
             handleClickOpen(result.json.sessionId, result.encryptedSession.iv)
-          else session.notify('Failed to generate a share link', 'warning')
+          } catch (e) {
+            session.notify(`Failed to generate a share link ${e}`, 'warning')
+          }
         }}
         size="small"
         color="inherit"

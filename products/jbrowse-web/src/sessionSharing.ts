@@ -37,7 +37,10 @@ export async function shareSessionToDynamo(
   referer: string,
 ) {
   const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-  const key = crypto.createHash('sha256').update('JBrowse').digest()
+  const key = crypto
+    .createHash('sha256')
+    .update('JBrowse')
+    .digest()
   const iv = crypto.randomBytes(16)
   const encryptedSession = encrypt(sess, key, iv)
 
@@ -46,25 +49,20 @@ export async function shareSessionToDynamo(
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
 
-  let response
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      body: data,
-    })
-  } catch (error) {
-    // ignore
-  }
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    body: data,
+  })
 
-  if (response && response.ok) {
-    const json = await response.json()
-    return {
-      json,
-      encryptedSession,
-    }
+  if (!response.ok) {
+    throw new Error(`Error sharing session ${response.statusText}`)
   }
-  return null
+  const json = await response.json()
+  return {
+    json,
+    encryptedSession,
+  }
 }
 
 export async function readSessionFromDynamo(
@@ -88,16 +86,17 @@ export async function readSessionFromDynamo(
       mode: 'cors',
       signal,
     })
-  } catch (error) {
-    if (!signal.aborted) {
-      // ignore
-    }
-  }
 
-  if (response && response.ok) {
+    if (!response.ok) {
+      throw new Error(`Error reading session ${response.statusText}`)
+    }
     const json = await response.json()
     return decrypt(json.session, key, password)
+  } catch (error) {
+    // ignore if aborted error
+    if (signal.aborted) {
+      return null
+    }
+    throw error
   }
-
-  return null
 }

@@ -130,7 +130,12 @@ export function Loader() {
   )
   const [, setSessString] = useState('')
   const [loadingState, setLoadingState] = useState(false)
-  const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
+  const [key] = useState(
+    crypto
+      .createHash('sha256')
+      .update('JBrowse')
+      .digest(),
+  )
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
   const adminMode = adminKeyParam !== undefined
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')
@@ -158,7 +163,6 @@ export function Loader() {
           )
 
           if (decryptedSession) {
-            // const localId = `local-${uuid.v4()}`
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
             sessionStorage.setItem('current', JSON.stringify(fromShared))
             setData(fromShared.id)
@@ -169,7 +173,7 @@ export function Loader() {
           }
         } catch (e) {
           // eslint-disable-next-line no-alert
-          alert('Failed to find given session in database')
+          alert(`Failed to find session in database: ${e}`)
           setData()
         }
       }

@@ -1,17 +1,16 @@
+/* eslint-disable react/prop-types */
+import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
-import { observer, PropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-import React from 'react'
+import { observer } from 'mobx-react'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
 import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import { isElectron } from '../util'
 
 const useStyles = makeStyles(theme => ({
   '@global': {
@@ -147,11 +146,6 @@ function App({ session, HeaderButtons }) {
       <Snackbar session={session} />
     </div>
   )
-}
-
-App.propTypes = {
-  session: PropTypes.observableObject.isRequired,
-  HeaderButtons: ReactPropTypes.ReactNode,
 }
 
 export default observer(App)
