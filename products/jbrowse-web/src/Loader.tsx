@@ -224,17 +224,17 @@ export function Loader() {
                   }
                 }
                 setTimeout(() => {
-                  reject()
+                  reject('timeout')
                 }, 1000)
               })
               const id = shortid()
               // @ts-ignore
               result.id = id
               sessionStorage.setItem('current', JSON.stringify(result))
-              console.log('setting item', id)
               setData(id)
             } catch (e) {
-              console.error(e)
+              // clear erroneous session
+              setData()
             }
           }
         }
