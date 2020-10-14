@@ -15,13 +15,12 @@ import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import * as crypto from 'crypto'
 import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
-import { createBrowserHistory } from 'history'
+import history from './history'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -35,6 +34,11 @@ if (!window.TextEncoder) {
 if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
+
+// the history tracking and forceUpdate are related to use-query-params,
+// because the setters from use-query-params don't cause a component rerender
+// if a router system is not used. see the no-router example here
+// https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
 
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
@@ -129,11 +133,17 @@ export function Loader() {
     'password',
     StringParam,
   )
-  const [loadingState, setLoadingState] = useState(false)
   const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
   const adminMode = adminKeyParam !== undefined
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')
+  const [root, setRoot] = useState<any>()
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+  useEffect(() => {
+    history.listen(() => {
+      forceUpdate()
+    })
+  }, [])
 
   // on share link pasted, reads from dynamoDB to fetch and decode session
   useEffect(() => {
@@ -147,7 +157,6 @@ export function Loader() {
 
     async function readSharedSession() {
       if (sessionQueryParam && loadingSharedSession) {
-        setLoadingState(false)
         try {
           const decryptedSession = await readSessionFromDynamo(
             sessionQueryParam,
@@ -175,7 +184,6 @@ export function Loader() {
     readSharedSession()
     return () => {
       controller.abort()
-      setLoadingState(false)
     }
   }, [
     key,
@@ -294,118 +302,131 @@ export function Loader() {
     fetchPlugins()
   }, [configSnapshot])
 
+  useEffect(() => {
+    if (plugins !== undefined) {
+      const pluginManager = new PluginManager(plugins.map(P => new P()))
+
+      pluginManager.createPluggableElements()
+
+      const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
+
+      let rootModel
+      try {
+        if (configSnapshot) {
+          rootModel = JBrowseRootModel.create({
+            jbrowse: configSnapshot,
+            assemblyManager: {},
+            version: packagedef.version,
+          })
+        }
+      } catch (error) {
+        // if it failed to load, it's probably a problem with the saved sessions,
+        // so just delete them and try again
+        try {
+          console.error(error)
+          console.warn(
+            'deleting saved sessions and re-trying after receiving the above error',
+          )
+          rootModel = JBrowseRootModel.create({
+            jbrowse: { ...configSnapshot },
+            assemblyManager: {},
+            version: packagedef.version,
+          })
+        } catch (e) {
+          console.error(e)
+          const additionalMsg =
+            e.message.length > 10000 ? '... see console for more' : ''
+          throw new Error(e.message.slice(0, 10000) + additionalMsg)
+        }
+      }
+      if (!rootModel) {
+        throw new Error('could not instantiate root model')
+      }
+      // in order: saves the previous autosave for recovery, tries to load the local session
+      // if session in query, or loads the default session
+      try {
+        const lastAutosave = localStorage.getItem('autosave')
+        if (lastAutosave) {
+          localStorage.setItem('localSaved-previousAutosave', lastAutosave)
+        }
+        if (sessionQueryParam) {
+          const foundLocalSession = localStorage.getItem(sessionQueryParam)
+          if (foundLocalSession) {
+            rootModel.setSession(JSON.parse(foundLocalSession).session)
+          } else {
+            const session = sessionStorage.getItem('current')
+            if (session && JSON.parse(session).id === sessionQueryParam) {
+              rootModel.setSession(JSON.parse(session))
+            } else if (!loadingSharedSession) {
+              // eslint-disable-next-line no-alert
+              alert('No matching local session found')
+              setSessionQueryParam(undefined)
+              setPasswordQueryParam(undefined)
+            }
+          }
+        } else {
+          rootModel.setDefaultSession()
+          // setSessionQueryParam(localId)
+          // setPasswordQueryParam(undefined)
+        }
+
+        if (!rootModel.session) {
+          throw new Error('root model did not have any session defined')
+        }
+        rootModel.setHistory(
+          UndoManager.create({}, { targetStore: rootModel.session }),
+        )
+      } catch (e) {
+        console.error(e)
+        if (e.message) {
+          throw new Error(e.message.slice(0, 10000))
+        } else {
+          throw e
+        }
+      }
+      // make some things available globally for testing
+      // e.g. window.MODEL.views[0] in devtools
+      // @ts-ignore
+      window.MODEL = rootModel.session
+      // @ts-ignore
+      window.ROOTMODEL = rootModel
+      pluginManager.setRootModel(rootModel)
+
+      pluginManager.configure()
+      setRoot(pluginManager)
+
+      if (bc1) {
+        bc1.onmessage = msg => {
+          const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+          if (ret.id === msg.data) {
+            if (bc2) {
+              bc2.postMessage(ret)
+            }
+          }
+        }
+      }
+    }
+  }, [
+    bc1,
+    bc2,
+    configSnapshot,
+    setPasswordQueryParam,
+    setSessionQueryParam,
+    sessionQueryParam,
+    plugins,
+    adminMode,
+    loadingSharedSession,
+  ])
+
   if (noDefaultConfig) {
     return <NoConfigMessage />
   }
 
-  if (!(configSnapshot && plugins)) {
+  if (!root) {
     return <Loading />
   }
 
-  const pluginManager = new PluginManager(plugins.map(P => new P()))
-
-  pluginManager.createPluggableElements()
-
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-
-  let rootModel
-  try {
-    if (configSnapshot) {
-      rootModel = JBrowseRootModel.create({
-        jbrowse: configSnapshot,
-        assemblyManager: {},
-        version: packagedef.version,
-      })
-    }
-  } catch (error) {
-    // if it failed to load, it's probably a problem with the saved sessions,
-    // so just delete them and try again
-    try {
-      console.error(error)
-      console.warn(
-        'deleting saved sessions and re-trying after receiving the above error',
-      )
-      rootModel = JBrowseRootModel.create({
-        jbrowse: { ...configSnapshot },
-        assemblyManager: {},
-        version: packagedef.version,
-      })
-    } catch (e) {
-      console.error(e)
-      const additionalMsg =
-        e.message.length > 10000 ? '... see console for more' : ''
-      throw new Error(e.message.slice(0, 10000) + additionalMsg)
-    }
-  }
-  if (!rootModel) {
-    throw new Error('could not instantiate root model')
-  }
-  // in order: saves the previous autosave for recovery, tries to load the local session
-  // if session in query, or loads the default session
-  try {
-    const lastAutosave = localStorage.getItem('autosave')
-    if (lastAutosave) {
-      localStorage.setItem('localSaved-previousAutosave', lastAutosave)
-    }
-    if (sessionQueryParam) {
-      const foundLocalSession = localStorage.getItem(sessionQueryParam)
-      if (foundLocalSession) {
-        rootModel.setSession(JSON.parse(foundLocalSession).session)
-      } else {
-        const session = sessionStorage.getItem('current')
-        if (session && JSON.parse(session).id === sessionQueryParam) {
-          rootModel.setSession(JSON.parse(session))
-        } else if (!loadingSharedSession) {
-          // eslint-disable-next-line no-alert
-          alert('No matching local session found')
-          setSessionQueryParam(undefined)
-          setPasswordQueryParam(undefined)
-        }
-      }
-    } else {
-      rootModel.setDefaultSession()
-      // setSessionQueryParam(localId)
-      // setPasswordQueryParam(undefined)
-    }
-
-    if (!rootModel.session) return null
-    rootModel.setHistory(
-      UndoManager.create({}, { targetStore: rootModel.session }),
-    )
-  } catch (e) {
-    console.error(e)
-    if (e.message) {
-      throw new Error(e.message.slice(0, 10000))
-    } else {
-      throw e
-    }
-  }
-  // make some things available globally for testing
-  // e.g. window.MODEL.views[0] in devtools
-  // @ts-ignore
-  window.MODEL = rootModel.session
-  // @ts-ignore
-  window.ROOTMODEL = rootModel
-  pluginManager.setRootModel(rootModel)
-
-  pluginManager.configure()
-
-  if (bc1) {
-    bc1.onmessage = msg => {
-      const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
-      if (ret.id === msg.data) {
-        if (bc2) {
-          bc2.postMessage(ret)
-        }
-      }
-    }
-  }
-
-  return loadingState ? (
-    <CircularProgress />
-  ) : (
-    <JBrowse pluginManager={pluginManager} />
-  )
+  return <JBrowse pluginManager={root} />
 }
 
 function addRelativeUris(config: Config, configUri: URL) {
@@ -427,24 +448,11 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-
-// the history tracking and forceUpdate are related to use-query-params,
-// because the setters from use-query-params don't cause a component rerender
-// if a router system is not used. see the no-router example here
-// https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
-const history = createBrowserHistory()
-
 export default () => {
-  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
-  useEffect(() => {
-    history.listen(() => {
-      forceUpdate()
-    })
-  }, [])
-
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-      <QueryParamProvider>
+      {/* @ts-ignore*/}
+      <QueryParamProvider history={history}>
         <Loader />
       </QueryParamProvider>
     </ErrorBoundary>
