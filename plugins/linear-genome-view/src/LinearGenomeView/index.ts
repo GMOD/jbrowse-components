@@ -239,24 +239,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
-      bpToPx({ refName, coord }: { refName: string; coord: number }) {
+      bpToPx({
+        refName,
+        coord,
+        regionNumber,
+      }: {
+        refName: string
+        coord: number
+        regionNumber?: number
+      }) {
         let offsetBp = 0
 
-        const index = self.displayedRegions.findIndex(r => {
+        const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += r.reversed ? r.end - coord : coord - r.start
-            return true
+            if (regionNumber ? regionNumber === idx : true) {
+              offsetBp += r.reversed ? r.end - coord : coord - r.start
+              return true
+            }
           }
           offsetBp += r.end - r.start
           return false
         })
         const foundRegion = self.displayedRegions[index]
         if (foundRegion) {
-          return {
-            index,
-            offsetPx: Math.round(offsetBp / self.bpPerPx),
-          }
+          return Math.round(offsetBp / self.bpPerPx)
         }
+
         return undefined
       },
       /**
@@ -888,12 +896,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * of the displayed regions, does nothing
        * @param bp -
        * @param refName -
+       * @param regionIndex
        */
-      centerAt(bp: number, refName: string) {
-        const centerPx = self.bpToPx({ refName, coord: bp })
+      centerAt(bp: number, refName: string, regionIndex: number) {
+        const centerPx = self.bpToPx({
+          refName,
+          coord: bp,
+          regionNumber: regionIndex,
+        })
         if (centerPx) {
-          const centerPxOffset = centerPx.offsetPx
-          self.scrollTo(Math.round(centerPxOffset - self.width / 2))
+          self.scrollTo(Math.round(centerPx - self.width / 2))
         }
       },
 
