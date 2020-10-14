@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { StringParam, useQueryParam } from 'use-query-params'
 import React, { useEffect } from 'react'
+import ShareButton from './ShareButton'
 
 // adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
 function debounce(func, wait) {
@@ -123,10 +124,14 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
+  const { session } = rootModel
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      <App session={rootModel.session} />
+      <App
+        session={session}
+        HeaderButtons={<ShareButton session={session} />}
+      />
     </ThemeProvider>
   )
 })

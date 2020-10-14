@@ -12,8 +12,8 @@ import Divider from '@material-ui/core/Divider'
 import TextField from '@material-ui/core/TextField'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import { ContentCopy as ContentCopyIcon } from './Icons'
-import { shareSessionToDynamo } from '../util/sessionSharing'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { shareSessionToDynamo } from './sessionSharing'
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {

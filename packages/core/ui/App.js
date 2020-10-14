@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer, PropTypes } from 'mobx-react'
+import ReactPropTypes from 'prop-types'
 import React from 'react'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
@@ -10,7 +11,6 @@ import EditableTypography from './EditableTypography'
 import LogoFull from './LogoFull'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import Share from './Share'
 import { isElectron } from '../util'
 
 const useStyles = makeStyles(theme => ({
@@ -57,7 +57,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App({ session }) {
+function App({ session, HeaderButtons }) {
   const classes = useStyles()
   const { pluginManager } = session
   const { visibleWidget, drawerWidth } = session
@@ -110,7 +110,7 @@ function App({ session }) {
                   }}
                 />
               </Tooltip>
-              {!isElectron && <Share session={session} />}
+              {HeaderButtons}
               <div className={classes.grow} />
               <div style={{ width: 150, maxHeight: 48 }}>
                 <LogoFull variant="white" />
@@ -151,6 +151,7 @@ function App({ session }) {
 
 App.propTypes = {
   session: PropTypes.observableObject.isRequired,
+  HeaderButtons: ReactPropTypes.ReactNode,
 }
 
 export default observer(App)

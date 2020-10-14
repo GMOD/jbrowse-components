@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as crypto from 'crypto'
 import { getSnapshot } from 'mobx-state-tree'
-import { toUrlSafeB64 } from '.'
+import { toUrlSafeB64 } from '@jbrowse/core/util'
 
 // adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 const encrypt = (text: string, key: Buffer, iv: Buffer) => {
