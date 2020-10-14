@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
 import { observer } from 'mobx-react'
@@ -31,6 +31,9 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
+  loadingMessage: {
+    padding: theme.spacing(5),
+  },
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,25 +43,18 @@ const Share = observer((props: { session: any }) => {
   const url =
     'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/share'
 
-  const [open, setOpen] = React.useState(false)
-  const [shareUrl, setShareUrl] = React.useState('')
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [shareUrl, setShareUrl] = useState('')
   const locationUrl = new URL(window.location.href)
 
   const localHostMessage = locationUrl.href.includes('localhost')
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
     : ''
 
-  const handleClickOpen = (urlLink: string, password: string) => {
-    const params = new URLSearchParams(locationUrl.search)
-    params.set('session', `share-${urlLink}`)
-    params.set('password', password)
-    locationUrl.search = params.toString()
-    setShareUrl(locationUrl.href)
-    setOpen(true)
-  }
-
   const handleClose = () => {
     setOpen(false)
+    setLoading(false)
   }
 
   return (
@@ -67,12 +63,19 @@ const Share = observer((props: { session: any }) => {
         data-testid="share_button"
         onClick={async () => {
           try {
+            setOpen(true)
+            setLoading(true)
             const result = await shareSessionToDynamo(
               session,
               url,
               locationUrl.href,
             )
-            handleClickOpen(result.json.sessionId, result.encryptedSession.iv)
+            setLoading(false)
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `share-${result.json.sessionId}`)
+            params.set('password', result.encryptedSession.iv)
+            locationUrl.search = params.toString()
+            setShareUrl(locationUrl.href)
           } catch (e) {
             session.notify(`Failed to generate a share link ${e}`, 'warning')
           }
@@ -95,29 +98,37 @@ const Share = observer((props: { session: any }) => {
           JBrowse Shareable Link
         </DialogTitle>
         <Divider />
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Share the below URL to let others see what you see on screen.
-            <br />
-            {localHostMessage}
+        {loading ? (
+          <DialogContentText className={classes.loadingMessage}>
+            Generating shareable link...
           </DialogContentText>
-        </DialogContent>
-        <DialogContent>
-          <TextField
-            id="filled-read-only-input"
-            label="URL"
-            defaultValue={shareUrl}
-            InputProps={{
-              readOnly: true,
-            }}
-            variant="filled"
-            style={{ width: '100%' }}
-            onClick={event => {
-              const target = event.target as HTMLTextAreaElement
-              target.select()
-            }}
-          />
-        </DialogContent>
+        ) : (
+          <>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Share the below URL to let others see what you see on screen.
+                <br />
+                {localHostMessage}
+              </DialogContentText>
+            </DialogContent>
+            <DialogContent>
+              <TextField
+                id="filled-read-only-input"
+                label="URL"
+                value={shareUrl}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                style={{ width: '100%' }}
+                onClick={event => {
+                  const target = event.target as HTMLTextAreaElement
+                  target.select()
+                }}
+              />
+            </DialogContent>
+          </>
+        )}
         <DialogActions>
           <Button
             onClick={() => {
