@@ -130,12 +130,7 @@ export function Loader() {
   )
   const [, setSessString] = useState('')
   const [loadingState, setLoadingState] = useState(false)
-  const [key] = useState(
-    crypto
-      .createHash('sha256')
-      .update('JBrowse')
-      .digest(),
-  )
+  const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
   const adminMode = adminKeyParam !== undefined
   const loadingSharedSession = sessionQueryParam?.startsWith('share-')

@@ -37,10 +37,7 @@ export async function shareSessionToDynamo(
   referer: string,
 ) {
   const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-  const key = crypto
-    .createHash('sha256')
-    .update('JBrowse')
-    .digest()
+  const key = crypto.createHash('sha256').update('JBrowse').digest()
   const iv = crypto.randomBytes(16)
   const encryptedSession = encrypt(sess, key, iv)
 
