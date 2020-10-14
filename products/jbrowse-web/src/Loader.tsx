@@ -314,9 +314,12 @@ export function Loader() {
       if (foundLocalSession) {
         setSession(JSON.parse(foundLocalSession).session)
       } else {
-        const session = sessionStorage.getItem('current')
-        if (session && JSON.parse(session).id === sessionQueryParam) {
-          setSession(JSON.parse(session))
+        const sessionStorageSession = sessionStorage.getItem('current')
+        if (
+          sessionStorageSession &&
+          JSON.parse(sessionStorageSession).id === sessionQueryParam
+        ) {
+          setSession(JSON.parse(sessionStorageSession))
         }
       }
     }
@@ -324,7 +327,6 @@ export function Loader() {
 
   useEffect(() => {
     if ((!sessionQueryParam || session) && plugins !== undefined) {
-      console.log('trying to initialize the rootmodel/pluginmanager')
       const pluginManager = new PluginManager(plugins.map(P => new P()))
 
       pluginManager.createPluggableElements()
