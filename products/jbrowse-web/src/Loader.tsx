@@ -145,6 +145,8 @@ export function Loader() {
     })
   }, [])
 
+  console.log('re-rendering')
+
   // on share link pasted, reads from dynamoDB to fetch and decode session
   useEffect(() => {
     const controller = new AbortController()
@@ -304,6 +306,7 @@ export function Loader() {
 
   useEffect(() => {
     if (plugins !== undefined) {
+      console.log('trying to initialize the rootmodel/pluginmanager')
       const pluginManager = new PluginManager(plugins.map(P => new P()))
 
       pluginManager.createPluggableElements()
@@ -394,21 +397,8 @@ export function Loader() {
 
       pluginManager.configure()
       setRoot(pluginManager)
-
-      if (bc1) {
-        bc1.onmessage = msg => {
-          const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
-          if (ret.id === msg.data) {
-            if (bc2) {
-              bc2.postMessage(ret)
-            }
-          }
-        }
-      }
     }
   }, [
-    bc1,
-    bc2,
     configSnapshot,
     setPasswordQueryParam,
     setSessionQueryParam,
@@ -417,6 +407,19 @@ export function Loader() {
     adminMode,
     loadingSharedSession,
   ])
+
+  useEffect(() => {
+    if (bc1) {
+      bc1.onmessage = msg => {
+        const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+        if (ret.id === msg.data) {
+          if (bc2) {
+            bc2.postMessage(ret)
+          }
+        }
+      }
+    }
+  }, [bc1, bc2])
 
   if (noDefaultConfig) {
     return <NoConfigMessage />
