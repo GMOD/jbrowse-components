@@ -118,7 +118,6 @@ export function Loader() {
     async function fetchConfig() {
       const configLocation = {
         uri: configQueryParam || 'config.json',
-        baseUri: '',
       }
       let configText = ''
       try {
@@ -137,7 +136,8 @@ export function Loader() {
       if (configText) {
         try {
           config = JSON.parse(configText)
-          const configUri = new URL(configLocation.uri, window.location.origin)
+          const base = window.location.origin + window.location.pathname
+          const configUri = new URL(configLocation.uri, base)
           addRelativeUris(config, configUri)
         } catch (error) {
           setConfigSnapshot(() => {
