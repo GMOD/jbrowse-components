@@ -170,6 +170,7 @@ export function Loader() {
 
           if (decryptedSession) {
             const fromShared = JSON.parse(fromUrlSafeB64(decryptedSession))
+            fromShared.id = shortid()
             sessionStorage.setItem('current', JSON.stringify(fromShared))
             setData(fromShared.id)
             setSession(fromShared)
