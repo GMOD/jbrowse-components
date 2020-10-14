@@ -112,7 +112,7 @@ export default class extends Plugin {
           label: 'Duplicate Session',
           icon: FileCopyIcon,
           onClick: (session: AbstractSessionModel) => {
-            session.duplicateCurrentSession()
+            session.duplicateCurrentSession?.()
           },
         },
         1,
