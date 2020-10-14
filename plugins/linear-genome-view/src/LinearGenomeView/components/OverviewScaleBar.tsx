@@ -55,7 +55,6 @@ const useStyles = makeStyles(theme => {
       top: -1,
       borderWidth: 1,
       borderStyle: 'solid',
-      // @ts-ignore
       borderColor: fade(scaleBarColor, 0.8),
       boxSizing: 'content-box',
     },

@@ -165,13 +165,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
-            // @ts-ignore
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
               { view: self },
             )
-            // @ts-ignore
             session.showWidget(selector)
             return selector
           }

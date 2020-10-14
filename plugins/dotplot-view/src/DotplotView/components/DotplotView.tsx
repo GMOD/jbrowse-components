@@ -647,7 +647,6 @@ export default (pluginManager: PluginManager) => {
                   const { ReactComponent } = track
 
                   return ReactComponent ? (
-                    // @ts-ignore
                     <ReactComponent
                       key={getConf(track, 'trackId')}
                       model={track}

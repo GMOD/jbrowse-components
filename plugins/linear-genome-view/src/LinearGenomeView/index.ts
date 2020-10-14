@@ -305,7 +305,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         viewMenuActions.forEach((action: MenuItem) => {
           // go to lowest level menu
           if ('subMenu' in action) {
-            // @ts-ignore
             this.rewriteOnClicks(trackType, action.subMenu)
           }
           if ('onClick' in action) {
@@ -313,7 +312,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             action.onClick = (...args: unknown[]) => {
               self.tracks.forEach(track => {
                 if (track.type === trackType) {
-                  // @ts-ignore
                   holdOnClick.apply(track, [track, ...args])
                 }
               })
@@ -328,7 +326,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = clone(track.viewMenuActions)
-            // @ts-ignore
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
