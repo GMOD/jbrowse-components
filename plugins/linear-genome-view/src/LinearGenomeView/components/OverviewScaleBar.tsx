@@ -117,7 +117,6 @@ const Polygon = observer(
 
     overview.setVolatileWidth(width)
     overview.showAllRegions()
-
     // @ts-ignore
     const polygonColor = theme.palette.tertiary
       ? // prettier-ignore
@@ -133,7 +132,7 @@ const Polygon = observer(
         {visibleRegions.map((region, idx) => {
           const seqIndex = displayedRegions.findIndex(
             seq => seq.refName === region.refName,
-          ) // need a unique identifier here
+          )
           if (seqIndex === -1) {
             return null
           }
@@ -142,15 +141,20 @@ const Polygon = observer(
           if (region.reversed) {
             ;[startPx, endPx] = [endPx, startPx]
           }
-          const topRight = overview.bpToPx({
-            // need a unique identifier here
-            refName: region.refName,
-            coord: region.end,
-          })
-          const topLeft = overview.bpToPx({
-            refName: region.refName,
-            coord: region.start,
-          })
+          let topLeft = overview
+            .bpToPx({
+              refName: region.refName,
+              coord: region.start,
+            })
+            .find(elem => elem.index === region.regionNumber)
+          let topRight = overview
+            .bpToPx({
+              refName: region.refName,
+              coord: region.end,
+            })
+            .find(elem => elem.index === region.regionNumber)
+          topRight = topRight ? topRight.offsetPx : -1
+          topLeft = topLeft ? topLeft.offsetPx : -1
           return (
             <polygon
               key={`${region.key}-${idx}`}
@@ -177,8 +181,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
   const gridPitch = chooseGridPitch(scale, 120, 15)
-  console.log('visible regions', visibleRegions)
-  console.log('displayedRegions', displayedRegions.toJSON())
+
   return (
     <div className={classes.scaleBar}>
       {/* this is the entire scale bar */}
@@ -189,10 +192,9 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        const parentRegion = model.parentRegion(seq.assemblyName, seq.refName)
-        const parentRegionLength = parentRegion
-          ? parentRegion.end - parentRegion.start
-          : 0 // check for when region is smaller than parent region
+        const parent = model.parentRegion(seq.assemblyName, seq.refName)
+        const parentLength = parent ? parent.end - parent.start : 0
+
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
@@ -203,7 +205,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         return (
           // each displayedRegion
           <Paper
-            key={JSON.stringify(seq)}
+            key={`${JSON.stringify(seq)}-${idx.toLocaleString('en-US')}`}
             style={{
               minWidth: regionLength / scale,
               marginRight:
@@ -229,13 +231,15 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             </Typography>
             {/* where the rubberband selection boxes actually get drawn */}
             {visibleRegions.map((r, visibleRegionIdx) => {
+              // regionNumber could be derived from key but what is it's in reversed
               if (
                 seq.assemblyName === r.assemblyName &&
-                seq.refName === r.refName // need a unique identifier here
+                seq.refName === r.refName &&
+                r.regionNumber === idx
               ) {
                 const leftStyle = r.reversed
                   ? (seq.end - r.end) / scale - 1
-                  : r.start / scale - 1
+                  : (r.start - seq.start) / scale - 1
                 return (
                   <div
                     key={`${r.key}-${visibleRegionIdx}`}
