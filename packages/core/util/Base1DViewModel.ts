@@ -67,22 +67,25 @@ const Base1DView = types
       return 20
     },
     bpToPx({ refName, coord }: { refName: string; coord: number }) {
-      let offsetBp = 0
-
-      const index = self.displayedRegions.findIndex(r => {
-        if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += r.reversed ? r.end - coord : coord - r.start
-          return true
+      const indices: any[] = []
+      let offset = 0
+      let bpSoFar = 0
+      self.displayedRegions.forEach((region, idx) => {
+        if (
+          refName === region.refName &&
+          coord >= region.start &&
+          coord <= region.end
+        ) {
+          offset = region.reversed ? region.end - coord : coord - region.start
+          indices.push({
+            index: idx,
+            offsetPx: Math.round((bpSoFar + offset) / self.bpPerPx),
+          })
         }
-        offsetBp += r.end - r.start
-        return false
+        bpSoFar += region.end - region.start
+        offset = 0
       })
-      const foundRegion = self.displayedRegions[index]
-      if (foundRegion) {
-        return Math.round(offsetBp / self.bpPerPx)
-      }
-
-      return undefined
+      return indices
     },
 
     pxToBp(px: number) {
