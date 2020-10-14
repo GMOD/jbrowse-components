@@ -21,6 +21,7 @@ import 'typeface-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
+import { createBrowserHistory } from 'history'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -128,7 +129,6 @@ export function Loader() {
     'password',
     StringParam,
   )
-  const [, setSessString] = useState('')
   const [loadingState, setLoadingState] = useState(false)
   const [key] = useState(crypto.createHash('sha256').update('JBrowse').digest())
   const [adminKeyParam] = useQueryParam('adminKey', StringParam)
@@ -143,7 +143,6 @@ export function Loader() {
     function setData(data?: string) {
       setSessionQueryParam(data)
       setPasswordQueryParam(undefined)
-      setSessString(data || '') // setting querys do not count for change rerender
     }
 
     async function readSharedSession() {
@@ -192,7 +191,6 @@ export function Loader() {
     function setData(data?: string) {
       setSessionQueryParam(data)
       setPasswordQueryParam(undefined)
-      setSessString(data || '') // setting querys do not count for change rerender
     }
     ;(async () => {
       if (sessionQueryParam && !loadingSharedSession) {
@@ -216,6 +214,7 @@ export function Loader() {
                   }
                 }
                 setTimeout(() => {
+                  console.log('rejecting because of timeout')
                   reject()
                 }, 1000)
               })
@@ -361,14 +360,12 @@ export function Loader() {
           alert('No matching local session found')
           setSessionQueryParam(undefined)
           setPasswordQueryParam(undefined)
-          setSessString('')
         }
       }
     } else {
       rootModel.setDefaultSession()
       // setSessionQueryParam(localId)
       // setPasswordQueryParam(undefined)
-      // setSessString(localId)
     }
 
     if (!rootModel.session) return null
@@ -397,7 +394,9 @@ export function Loader() {
     bc1.onmessage = msg => {
       const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
       if (ret.id === msg.data) {
-        if (bc2) bc2.postMessage(ret)
+        if (bc2) {
+          bc2.postMessage(ret)
+        }
       }
     }
   }
@@ -429,7 +428,20 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
 
+// the history tracking and forceUpdate are related to use-query-params,
+// because the setters from use-query-params don't cause a component rerender
+// if a router system is not used. see the no-router example here
+// https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
+const history = createBrowserHistory()
+
 export default () => {
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+  useEffect(() => {
+    history.listen(() => {
+      forceUpdate()
+    })
+  }, [])
+
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
