@@ -1,13 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import {
-  cleanup,
-  fireEvent,
-  render,
-  wait,
-  waitForElementToBeRemoved,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -21,9 +15,6 @@ import { setup, getPluginManager, generateReadBuffer } from './util'
 expect.extend({ toMatchImageSnapshot })
 
 setup()
-
-afterEach(cleanup)
-
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
@@ -34,11 +25,11 @@ beforeEach(() => {
     }),
   )
 })
-
-test('copy track', async () => {
+afterEach(cleanup)
+test('copy and delete track in admin mode', async () => {
   const pluginManager = getPluginManager(undefined, true)
   const state = pluginManager.rootModel
-  const { findByTestId, getByTestId, findAllByTestId, findByText } = render(
+  const { findByTestId, queryByText, findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -46,8 +37,28 @@ test('copy track', async () => {
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   fireEvent.click(await findByText('Copy track'))
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+  expect(queryByText(/Session tracks/)).toBeNull()
   await wait(() => expect(state.session.views[0].tracks.length).toBe(1))
-  const element = await findAllByTestId('box-test-vcf-604452')
+  await findAllByTestId('box-test-vcf-604452')
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Delete track'))
+  await wait(() => expect(state.session.views[0].tracks.length).toBe(0))
+})
+
+test('copy and delete track to session tracks', async () => {
+  const pluginManager = getPluginManager(undefined, false)
+  const state = pluginManager.rootModel
+  const { findByTestId, findAllByTestId, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.05, 5000)
+  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+  fireEvent.click(await findByText('Copy track'))
+  fireEvent.click(await findByText('volvox filtered vcf (copy)'))
+  await findByText(/Session tracks/)
+  await wait(() => expect(state.session.views[0].tracks.length).toBe(1))
+  await findAllByTestId('box-test-vcf-604452')
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await wait(() => expect(state.session.views[0].tracks.length).toBe(0))

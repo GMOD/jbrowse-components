@@ -551,9 +551,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),
               )
-              trackSnapshot.trackId += `-${Date.now()}-sessionTrack`
+              trackSnapshot.trackId += `-${Date.now()}`
+              // the -sessionTrack suffix to trackId is used as metadata for
+              // the track selector to store the track in a special category,
+              // and default category is also cleared
+              if (!session.adminMode) {
+                trackSnapshot.trackId += '-sessionTrack'
+                trackSnapshot.category = undefined
+              }
               trackSnapshot.name += ' (copy)'
-              trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
