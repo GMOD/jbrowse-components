@@ -1,7 +1,7 @@
 import React from 'react'
 
 import '@testing-library/jest-dom/extend-expect'
-import { render } from '@testing-library/react'
+import { render, wait } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
@@ -145,9 +145,6 @@ describe('<Loader />', () => {
     expect(await findByText('Help')).toBeTruthy()
   })
 
-  // FUTURE TODO: the setQueryParam hook for QueryParamProvider does not seem to have
-  // a good way to be mocked, can only test loading where the session param does not have
-  // to be set. Below work once there is a good solution to mocking setSessionParam
   it('can use config from a url with share session param ', async () => {
     jest.spyOn(global as any, 'fetch').mockResolvedValueOnce({
       ok: true,
@@ -172,7 +169,7 @@ describe('<Loader />', () => {
     expect(sessionStorage.length).toBeGreaterThan(0)
   })
 
-  xit('can use config from a url with nonexistent share param ', async () => {
+  it('can use config from a url with nonexistent share param ', async () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
@@ -181,7 +178,8 @@ describe('<Loader />', () => {
     jest.spyOn(global as any, 'fetch').mockResolvedValueOnce({
       ok: false,
     })
-    const { findByText } = render(
+    window.alert = jest.fn()
+    render(
       <QueryParamProvider
         // @ts-ignore
         location={{
@@ -192,8 +190,8 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
-    expect(
-      await findByText('Failed to find given session in database'),
-    ).toBeTruthy()
+    wait(() =>
+      expect(window.alert).toHaveBeenCalledWith(/Failed to find session/),
+    )
   })
 })

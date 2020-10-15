@@ -181,6 +181,7 @@ export function Loader() {
           }
         } catch (e) {
           if (!signal.aborted) {
+            console.log('got here')
             // eslint-disable-next-line no-alert
             alert(`Failed to find session in database: ${e}`)
             setData()
