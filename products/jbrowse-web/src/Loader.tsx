@@ -33,6 +33,12 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
+// TODOANALYTICS
+// lambda function called jbrowse-analytics needs to be migrated to a recent version of node
+// in here, on load trigger lambda function AFTER the session loading logic is complete
+// also need a trigger for google analytics
+// make google analytics acc, import google analytics here and call in the same logic loop as lambda
+
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
