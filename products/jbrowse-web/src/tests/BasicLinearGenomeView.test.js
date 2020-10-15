@@ -30,14 +30,6 @@ beforeEach(() => {
   )
 })
 describe('valid file tests', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-    fetch.mockResponse(
-      generateReadBuffer(url => {
-        return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-      }),
-    )
-  })
   it('access about menu', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
