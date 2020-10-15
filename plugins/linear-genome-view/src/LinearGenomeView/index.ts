@@ -18,7 +18,6 @@ import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { transaction } from 'mobx'
 import {
   getSnapshot,
@@ -900,10 +899,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp -basepair at which you want to center the view
-       * @param refName - refName of the displayedRegion you are centering at
-       * @param regionIndex - index of the displayedRegion At which you are
-       * centering at
+       * @param bp-basepair at which you want to center the view
+       * @param refName-refName of the displayedRegion you are centering at
+       * @param regionIndex-index of the displayedRegion
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({
