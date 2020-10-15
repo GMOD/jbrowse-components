@@ -10,44 +10,8 @@ import { QueryParamProvider } from 'use-query-params'
 
 import { Loader } from '../Loader'
 
-class BroadcastChannelMock {
-  postMessage() {
-    jest.fn()
-  }
-
-  onmessage() {
-    jest.fn()
-  }
-
-  get name() {
-    return ''
-  }
-
-  onmessageerror() {
-    jest.fn()
-  }
-
-  close() {
-    jest.fn()
-  }
-
-  addEventListener() {
-    jest.fn()
-  }
-
-  removeEventListener() {
-    jest.fn()
-  }
-
-  dispatchEvent() {
-    jest.fn()
-    return false
-  }
-}
-
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
-if (!window.BroadcastChannel) window.BroadcastChannel = BroadcastChannelMock
 
 window.requestIdleCallback = (
   cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
@@ -146,6 +110,7 @@ describe('<Loader />', () => {
   })
 
   it('can use config from a url with share session param ', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(global as any, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: async () => ({
