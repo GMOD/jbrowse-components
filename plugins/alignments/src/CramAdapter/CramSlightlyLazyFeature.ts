@@ -2,9 +2,9 @@
 import {
   Feature,
   SimpleFeatureSerialized,
-} from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/simpleFeature'
 
-import { ClassReturnedBy } from '@gmod/jbrowse-core/util'
+import { ClassReturnedBy } from '@jbrowse/core/util'
 import CramAdapterF from './CramAdapter'
 
 type CramAdapter = ClassReturnedBy<typeof CramAdapterF>

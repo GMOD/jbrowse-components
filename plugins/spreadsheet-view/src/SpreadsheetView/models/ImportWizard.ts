@@ -1,5 +1,5 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getSession } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
@@ -10,8 +10,8 @@ const IMPORT_SIZE_LIMIT = 300000
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
   const { types, getParent, getRoot } = lib['mobx-state-tree']
-  const { openLocation } = lib['@gmod/jbrowse-core/util/io']
-  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
+  const { openLocation } = lib['@jbrowse/core/util/io']
+  const { readConfObject } = lib['@jbrowse/core/configuration']
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {

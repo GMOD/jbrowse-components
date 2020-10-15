@@ -1,4 +1,4 @@
-import * as util from '@gmod/jbrowse-core/util'
+import * as util from '@jbrowse/core/util'
 import F from './slices'
 
 const { calculateStaticSlices } = F({

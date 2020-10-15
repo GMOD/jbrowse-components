@@ -4,13 +4,14 @@ import '@testing-library/jest-dom/extend-expect'
 import { cleanup, fireEvent, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import configSnapshot from '../../test_data/volvox/config.json'
 import JBrowse from '../JBrowse'
-import { setup, getPluginManager, readBuffer } from './util'
+import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -22,7 +23,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('circular views', () => {

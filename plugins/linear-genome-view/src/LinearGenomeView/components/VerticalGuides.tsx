@@ -2,7 +2,7 @@ import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
-} from '@gmod/jbrowse-core/util/blockTypes'
+} from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from '@material-ui/core/styles'
 import clsx from 'clsx'
 import { observer } from 'mobx-react'

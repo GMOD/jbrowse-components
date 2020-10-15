@@ -20,7 +20,7 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   # build release
-  - if [[ "$TRAVIS_TAG"  =~ ^@gmod/jbrowse-web ]]; then
+  - if [[ "$TRAVIS_TAG"  =~ ^@jbrowse/web ]]; then
     (cd products/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_TAG//[!0-9.]/}.zip" .);
     else
     (cd products/jbrowse-web/build; zip -r "jbrowse-web-${TRAVIS_BRANCH}.zip" .);

@@ -1,5 +1,5 @@
 import Path from 'svg-path-generator'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { BreakpointViewModel, Breakend } from '../model'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 

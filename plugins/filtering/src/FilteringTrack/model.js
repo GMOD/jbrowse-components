@@ -1,6 +1,6 @@
-import { ConfigurationReference } from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { basicTrackStateModelFactory } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import FilteringTrackComponent from './components/FilteringTrack'
 

@@ -5,7 +5,7 @@ import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import Paper from '@material-ui/core/Paper'
-import Menu from '@gmod/jbrowse-core/ui/Menu'
+import Menu from '@jbrowse/core/ui/Menu'
 import { LinearGenomeViewModel } from '..'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
@@ -17,13 +17,12 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
     <>
       <Paper style={{ background: '#aaa7' }}>
         <IconButton
-          size="small"
           color="secondary"
           onClick={event => {
             setAnchorEl(event.currentTarget)
           }}
         >
-          <ArrowDown fontSize="small" />
+          <ArrowDown />
         </IconButton>
 
         <IconButton
@@ -32,10 +31,9 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             model.zoom(bpPerPx * 2)
           }}
           disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
-          size="small"
           color="secondary"
         >
-          <ZoomOut fontSize="small" />
+          <ZoomOut />
         </IconButton>
         <IconButton
           data-testid="zoom_in"
@@ -44,9 +42,8 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           }}
           disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
           color="secondary"
-          size="small"
         >
-          <ZoomIn fontSize="small" />
+          <ZoomIn />
         </IconButton>
       </Paper>
       <Menu

@@ -1,5 +1,5 @@
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ResizeHandle } from '@jbrowse/core/ui'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'

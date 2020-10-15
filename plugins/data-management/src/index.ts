@@ -1,11 +1,8 @@
-import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  SessionWithWidgets,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
+import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import InputIcon from '@material-ui/icons/Input'
 import {

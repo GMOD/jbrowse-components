@@ -56,6 +56,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   notify(message: string, level?: NotificationLevel): void
   assemblyManager: AssemblyManager
   version: string
+  getTrackActionMenuItems?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -182,7 +183,7 @@ export interface Region extends SnapshotIn<typeof MUIRegion> {}
 export interface LocalPathLocation
   extends SnapshotOut<typeof MULocalPathLocation> {}
 
-export interface UriLocation extends SnapshotOut<typeof MUUriLocation> {}
+export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export interface BlobLocation {
   blob: Blob

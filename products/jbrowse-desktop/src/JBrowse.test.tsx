@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import fs from 'fs'
 import { ipcMain, ipcRenderer } from 'electron'
 import { render, waitForElement } from '@testing-library/react'

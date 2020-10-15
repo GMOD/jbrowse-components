@@ -1,11 +1,11 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Alignments from '@gmod/jbrowse-plugin-alignments'
-import SVG from '@gmod/jbrowse-plugin-svg'
-import PileupTrackSchemaFactory from '@gmod/jbrowse-plugin-alignments/src/PileupTrack/configSchema'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Alignments from '@jbrowse/plugin-alignments'
+import SVG from '@jbrowse/plugin-svg'
+import PileupTrackSchemaFactory from '@jbrowse/plugin-alignments/src/PileupTrack/configSchema'
 import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor widget', () => {

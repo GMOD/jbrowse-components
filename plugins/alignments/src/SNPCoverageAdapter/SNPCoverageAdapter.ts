@@ -1,19 +1,15 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util/types'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-} from '@gmod/jbrowse-plugin-wiggle'
+import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
 import { Instance, getSnapshot } from 'mobx-state-tree'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
 import MyConfigSchemaF from './configSchema'

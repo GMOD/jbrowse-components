@@ -1,6 +1,6 @@
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,

@@ -1,5 +1,5 @@
 import VCF from '@gmod/vcf'
-import { VcfFeature } from '@gmod/jbrowse-plugin-variants'
+import { VcfFeature } from '@jbrowse/plugin-variants'
 import {
   bufferToString,
   Row,

@@ -1,5 +1,5 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { basicTrackConfigSchemaFactory } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { basicTrackConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 export { default as modelFactory } from './model'
 

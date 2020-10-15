@@ -1,5 +1,5 @@
 import objectHash from 'object-hash'
-import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
+import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
 
 export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
   // eslint-disable-next-line no-underscore-dangle
