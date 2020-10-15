@@ -13,184 +13,184 @@ Object {
   "devtool": false,
   "entry": "./src/index.ts",
   "externals": Object {
-    "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail": Object {
-      "amd": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
-      "commonjs": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
-      "commonjs2": "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail": Object {
+      "amd": "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
+      "commonjs": "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
+      "commonjs2": "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail",
+        "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
       ],
     },
-    "@gmod/jbrowse-core/BaseViewModel": Object {
-      "amd": "@gmod/jbrowse-core/BaseViewModel",
-      "commonjs": "@gmod/jbrowse-core/BaseViewModel",
-      "commonjs2": "@gmod/jbrowse-core/BaseViewModel",
+    "@jbrowse/core/BaseViewModel": Object {
+      "amd": "@jbrowse/core/BaseViewModel",
+      "commonjs": "@jbrowse/core/BaseViewModel",
+      "commonjs2": "@jbrowse/core/BaseViewModel",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/BaseViewModel",
+        "@jbrowse/core/BaseViewModel",
       ],
     },
-    "@gmod/jbrowse-core/Plugin": Object {
-      "amd": "@gmod/jbrowse-core/Plugin",
-      "commonjs": "@gmod/jbrowse-core/Plugin",
-      "commonjs2": "@gmod/jbrowse-core/Plugin",
+    "@jbrowse/core/Plugin": Object {
+      "amd": "@jbrowse/core/Plugin",
+      "commonjs": "@jbrowse/core/Plugin",
+      "commonjs2": "@jbrowse/core/Plugin",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/Plugin",
+        "@jbrowse/core/Plugin",
       ],
     },
-    "@gmod/jbrowse-core/configuration": Object {
-      "amd": "@gmod/jbrowse-core/configuration",
-      "commonjs": "@gmod/jbrowse-core/configuration",
-      "commonjs2": "@gmod/jbrowse-core/configuration",
+    "@jbrowse/core/configuration": Object {
+      "amd": "@jbrowse/core/configuration",
+      "commonjs": "@jbrowse/core/configuration",
+      "commonjs2": "@jbrowse/core/configuration",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/configuration",
+        "@jbrowse/core/configuration",
       ],
     },
-    "@gmod/jbrowse-core/data_adapters/BaseAdapter": Object {
-      "amd": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
-      "commonjs": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
-      "commonjs2": "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+    "@jbrowse/core/data_adapters/BaseAdapter": Object {
+      "amd": "@jbrowse/core/data_adapters/BaseAdapter",
+      "commonjs": "@jbrowse/core/data_adapters/BaseAdapter",
+      "commonjs2": "@jbrowse/core/data_adapters/BaseAdapter",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/data_adapters/BaseAdapter",
+        "@jbrowse/core/data_adapters/BaseAdapter",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/AdapterType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+    "@jbrowse/core/pluggableElementTypes/AdapterType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/AdapterType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/AdapterType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/AdapterType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/AdapterType",
+        "@jbrowse/core/pluggableElementTypes/AdapterType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/TrackType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+    "@jbrowse/core/pluggableElementTypes/TrackType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/TrackType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/TrackType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/TrackType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/TrackType",
+        "@jbrowse/core/pluggableElementTypes/TrackType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/ViewType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+    "@jbrowse/core/pluggableElementTypes/ViewType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/ViewType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/ViewType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/ViewType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/ViewType",
+        "@jbrowse/core/pluggableElementTypes/ViewType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/WidgetType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
+    "@jbrowse/core/pluggableElementTypes/WidgetType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/WidgetType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/WidgetType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/WidgetType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/WidgetType",
+        "@jbrowse/core/pluggableElementTypes/WidgetType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+    "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType",
+        "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+    "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType",
+        "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType",
       ],
     },
-    "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType": Object {
-      "amd": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
-      "commonjs": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
-      "commonjs2": "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+    "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType",
+        "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType",
       ],
     },
-    "@gmod/jbrowse-core/ui": Object {
-      "amd": "@gmod/jbrowse-core/ui",
-      "commonjs": "@gmod/jbrowse-core/ui",
-      "commonjs2": "@gmod/jbrowse-core/ui",
+    "@jbrowse/core/ui": Object {
+      "amd": "@jbrowse/core/ui",
+      "commonjs": "@jbrowse/core/ui",
+      "commonjs2": "@jbrowse/core/ui",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/ui",
+        "@jbrowse/core/ui",
       ],
     },
-    "@gmod/jbrowse-core/util": Object {
-      "amd": "@gmod/jbrowse-core/util",
-      "commonjs": "@gmod/jbrowse-core/util",
-      "commonjs2": "@gmod/jbrowse-core/util",
+    "@jbrowse/core/util": Object {
+      "amd": "@jbrowse/core/util",
+      "commonjs": "@jbrowse/core/util",
+      "commonjs2": "@jbrowse/core/util",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util",
+        "@jbrowse/core/util",
       ],
     },
-    "@gmod/jbrowse-core/util/Base1DViewModel": Object {
-      "amd": "@gmod/jbrowse-core/util/Base1DViewModel",
-      "commonjs": "@gmod/jbrowse-core/util/Base1DViewModel",
-      "commonjs2": "@gmod/jbrowse-core/util/Base1DViewModel",
+    "@jbrowse/core/util/Base1DViewModel": Object {
+      "amd": "@jbrowse/core/util/Base1DViewModel",
+      "commonjs": "@jbrowse/core/util/Base1DViewModel",
+      "commonjs2": "@jbrowse/core/util/Base1DViewModel",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/Base1DViewModel",
+        "@jbrowse/core/util/Base1DViewModel",
       ],
     },
-    "@gmod/jbrowse-core/util/color": Object {
-      "amd": "@gmod/jbrowse-core/util/color",
-      "commonjs": "@gmod/jbrowse-core/util/color",
-      "commonjs2": "@gmod/jbrowse-core/util/color",
+    "@jbrowse/core/util/color": Object {
+      "amd": "@jbrowse/core/util/color",
+      "commonjs": "@jbrowse/core/util/color",
+      "commonjs2": "@jbrowse/core/util/color",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/color",
+        "@jbrowse/core/util/color",
       ],
     },
-    "@gmod/jbrowse-core/util/io": Object {
-      "amd": "@gmod/jbrowse-core/util/io",
-      "commonjs": "@gmod/jbrowse-core/util/io",
-      "commonjs2": "@gmod/jbrowse-core/util/io",
+    "@jbrowse/core/util/io": Object {
+      "amd": "@jbrowse/core/util/io",
+      "commonjs": "@jbrowse/core/util/io",
+      "commonjs2": "@jbrowse/core/util/io",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/io",
+        "@jbrowse/core/util/io",
       ],
     },
-    "@gmod/jbrowse-core/util/mst-reflection": Object {
-      "amd": "@gmod/jbrowse-core/util/mst-reflection",
-      "commonjs": "@gmod/jbrowse-core/util/mst-reflection",
-      "commonjs2": "@gmod/jbrowse-core/util/mst-reflection",
+    "@jbrowse/core/util/mst-reflection": Object {
+      "amd": "@jbrowse/core/util/mst-reflection",
+      "commonjs": "@jbrowse/core/util/mst-reflection",
+      "commonjs2": "@jbrowse/core/util/mst-reflection",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/mst-reflection",
+        "@jbrowse/core/util/mst-reflection",
       ],
     },
-    "@gmod/jbrowse-core/util/tracks": Object {
-      "amd": "@gmod/jbrowse-core/util/tracks",
-      "commonjs": "@gmod/jbrowse-core/util/tracks",
-      "commonjs2": "@gmod/jbrowse-core/util/tracks",
+    "@jbrowse/core/util/tracks": Object {
+      "amd": "@jbrowse/core/util/tracks",
+      "commonjs": "@jbrowse/core/util/tracks",
+      "commonjs2": "@jbrowse/core/util/tracks",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/tracks",
+        "@jbrowse/core/util/tracks",
       ],
     },
-    "@gmod/jbrowse-core/util/types/mst": Object {
-      "amd": "@gmod/jbrowse-core/util/types/mst",
-      "commonjs": "@gmod/jbrowse-core/util/types/mst",
-      "commonjs2": "@gmod/jbrowse-core/util/types/mst",
+    "@jbrowse/core/util/types/mst": Object {
+      "amd": "@jbrowse/core/util/types/mst",
+      "commonjs": "@jbrowse/core/util/types/mst",
+      "commonjs2": "@jbrowse/core/util/types/mst",
       "root": Array [
         "JBrowseExports",
-        "@gmod/jbrowse-core/util/types/mst",
+        "@jbrowse/core/util/types/mst",
       ],
     },
     "@material-ui/core": Object {

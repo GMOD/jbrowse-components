@@ -2,9 +2,9 @@ import ReactComponentFactory from './ReactComponent'
 
 export default ({ jbrequire }) => {
   const ChordRendererType = jbrequire(
-    '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
+    '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
-  const { ConfigurationSchema } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { ConfigurationSchema } = jbrequire('@jbrowse/core/configuration')
 
   const ReactComponent = jbrequire(ReactComponentFactory)
   const configSchema = ConfigurationSchema(

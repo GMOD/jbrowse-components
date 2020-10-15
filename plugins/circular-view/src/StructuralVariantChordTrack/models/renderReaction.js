@@ -1,8 +1,8 @@
 export default ({ jbrequire }) => {
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getRpcSessionId } = jbrequire('@gmod/jbrowse-core/util/tracks')
-  const { getContainingView } = jbrequire('@gmod/jbrowse-core/util')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getConf } = jbrequire('@jbrowse/core/configuration')
+  const { getRpcSessionId } = jbrequire('@jbrowse/core/util/tracks')
+  const { getContainingView } = jbrequire('@jbrowse/core/util')
+  const { getSession } = jbrequire('@jbrowse/core/util')
 
   function renderReactionData(self) {
     const track = self

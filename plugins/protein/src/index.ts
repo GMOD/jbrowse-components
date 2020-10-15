@@ -1,6 +1,6 @@
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchema as proteinReferenceSequenceTrackRendererConfigSchema,
   ReactComponent as ProteinReferenceSequenceTrackRendererReactComponent,

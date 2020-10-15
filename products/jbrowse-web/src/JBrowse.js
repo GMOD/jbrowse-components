@@ -1,6 +1,6 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { App, theme } from '@gmod/jbrowse-core/ui'
-import { toUrlSafeB64 } from '@gmod/jbrowse-core/util'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { App, createJBrowseTheme } from '@jbrowse/core/ui'
+import { toUrlSafeB64 } from '@jbrowse/core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
@@ -32,6 +32,18 @@ function debounce(func, wait) {
     timeout = null
   }
   return debounced
+}
+
+function deleteBaseUris(config) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        deleteBaseUris(config[key])
+      } else if (key === 'uri') {
+        delete config.baseUri
+      }
+    }
+  }
 }
 
 const JBrowse = observer(({ pluginManager }) => {
@@ -87,9 +99,12 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
 
   useEffect(() => {
-    onSnapshot(rootModel, async snapshot => {
+    onSnapshot(jbrowse, async snapshot => {
       if (adminMode) {
-        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
+        const config = JSON.parse(JSON.stringify(snapshot))
+        deleteBaseUris(snapshot)
+        const payload = { adminKey: adminKeyParam, config }
+
         const response = await fetch('/updateConfig', {
           method: 'POST',
           headers: {
@@ -107,20 +122,19 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [rootModel, adminMode, adminKeyParam])
+  }, [jbrowse, rootModel.session, adminMode, adminKeyParam])
 
   if (error) {
     throw new Error(error)
   }
 
-  return <App session={rootModel.session} />
-})
-
-export default props => {
+  const theme = getConf(rootModel.jbrowse, 'theme')
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      <JBrowse {...props} />
+      <App session={rootModel.session} />
     </ThemeProvider>
   )
-}
+})
+
+export default JBrowse

@@ -1,3 +1,12 @@
+## [0.0.1-beta.28](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.11...v0.0.1-beta.28) (2020-10-13)
+
+### Reverts
+
+- Revert "Bump @docusaurus alpha version" ([32b604a](https://github.com/GMOD/jbrowse-components/commit/32b604a1ef829f2d2e17fa3822184577ea951e69))
+- Revert "Remove checkLocation from CLI base class" ([d399135](https://github.com/GMOD/jbrowse-components/commit/d399135e364d3553130c919bdfccbf17e14d6a9b))
+- Revert "Allow touchscreen using pointer events (#1112)" the pointer ([404546e](https://github.com/GMOD/jbrowse-components/commit/404546e5a1c71510a90a777957d32cd2c8f71ed1)), closes [#1112](https://github.com/GMOD/jbrowse-components/issues/1112)
+- Revert "Simplify command unzip (#1075)" ([9c0b975](https://github.com/GMOD/jbrowse-components/commit/9c0b97504b7a423a9c356ac3ffffc2754224c65a)), closes [#1075](https://github.com/GMOD/jbrowse-components/issues/1075)
+
 ## [0.0.1-beta.27](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.14...v0.0.1-beta.27) (2020-09-13)
 
 ### Reverts

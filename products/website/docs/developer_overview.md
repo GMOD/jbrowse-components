@@ -37,7 +37,7 @@ command-line tool implemented with [OCLIF](https://oclif.io/).
 A plugin is an independently distributed package of code that is designed to
 "plug in" to a JBrowse application.
 
-It's implemented as a class that extends `@gmod/jbrowse-core/Plugin`. It gets
+It's implemented as a class that extends `@jbrowse/core/Plugin`. It gets
 instantiated by the application that it plugs into, and it has an `install`
 method and a `configure` method that the application calls. This class is
 distributed as a webpack bundle that exports it to a namespace on the browser's

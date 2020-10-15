@@ -1,11 +1,11 @@
 import {
   ConfigurationReference,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseTrackConfig } from './baseTrackModel'
 import BlockBasedTrackComponent from './components/BlockBasedTrack'
 import blockBasedTrack from './blockBasedTrackModel'

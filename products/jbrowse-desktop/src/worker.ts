@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 /* eslint curly:error */
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import { isAbortException } from '@gmod/jbrowse-core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { isAbortException } from '@jbrowse/core/util'
 import { useStaticRendering } from 'mobx-react'
-import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
-import PluginLoader, { PluginDefinition } from '@gmod/jbrowse-core/PluginLoader'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
 
 const { electron, electronBetterIpc } = window

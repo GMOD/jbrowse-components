@@ -173,10 +173,9 @@ export default withContentRect('bounds')(
               model={view}
               IconButtonProps={{
                 classes: { root: classes.iconRoot },
-                size: 'small',
                 edge: 'start',
               }}
-              IconProps={{ fontSize: 'small', className: classes.icon }}
+              IconProps={{ className: classes.icon }}
             />
             <div className={classes.grow} />
             {view.displayName ? (
@@ -196,12 +195,12 @@ export default withContentRect('bounds')(
             ) : null}
             <div className={classes.grow} />
             <IconButton
+              data-testid="close_view"
               classes={{ root: classes.iconRoot }}
-              size="small"
               edge="end"
               onClick={onClose}
             >
-              <CloseIcon fontSize="small" className={classes.icon} />
+              <CloseIcon className={classes.icon} />
             </IconButton>
           </div>
           <Paper>{children}</Paper>

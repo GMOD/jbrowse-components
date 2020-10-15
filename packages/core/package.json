@@ -1,18 +1,24 @@
 {
-  "name": "@gmod/jbrowse-core",
-  "version": "0.0.1-beta.22",
+  "name": "@jbrowse/core",
+  "version": "0.0.1-beta.23",
   "description": "JBrowse 2 core libraries used by plugins",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "bionode",
+    "biojs",
+    "genomics"
+  ],
   "license": "MIT",
-  "repository": "GMOD/jbrowse-components",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/core"
+  },
+  "author": "JBrowse Team",
   "main": "index.js",
-  "author": {
-    "name": "Robert Buels",
-    "email": "rbuels@gmail.com",
-    "url": "https://github.com/rbuels"
-  },
-  "engines": {
-    "node": ">=8"
-  },
   "scripts": {
     "test": "jest",
     "coverage": "npm test -- --coverage",
@@ -24,11 +30,6 @@
     "version": "standard-changelog && git add CHANGELOG.md",
     "postpublish": "git push origin master --follow-tags"
   },
-  "keywords": [
-    "bionode",
-    "biojs",
-    "genomics"
-  ],
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
     "@material-ui/icons": "^4.0.0",

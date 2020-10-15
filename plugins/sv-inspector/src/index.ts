@@ -1,9 +1,9 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import {
   AbstractSessionModel,
   isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/util/types'
 import TableChartIcon from '@material-ui/icons/TableChart'
 import SvInspectorViewTypeFactory from './SvInspectorView/SvInspectorViewType'
 

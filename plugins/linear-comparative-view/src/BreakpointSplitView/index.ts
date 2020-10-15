@@ -1,13 +1,13 @@
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import modelF from './model'
 import componentF from '../LinearComparativeView/components/LinearComparativeView'
 
 export default ({ lib, load }: PluginManager) => {
-  const ViewType = lib['@gmod/jbrowse-core/pluggableElementTypes/ViewType']
-  const { getSession } = lib['@gmod/jbrowse-core/util']
+  const ViewType = lib['@jbrowse/core/pluggableElementTypes/ViewType']
+  const { getSession } = lib['@jbrowse/core/util']
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ReactComponent = load(componentF) as any

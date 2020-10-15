@@ -1,2 +1,2 @@
-declare module '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-declare module '@gmod/jbrowse-core/util/QuickLRU'
+declare module '@jbrowse/core/util/offscreenCanvasPonyfill'
+declare module '@jbrowse/core/util/QuickLRU'

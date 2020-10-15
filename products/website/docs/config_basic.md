@@ -69,7 +69,7 @@ Here is a complete config.json file containing only a hg19
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
@@ -123,7 +123,7 @@ Example config.json containing a track config
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }

@@ -1,9 +1,9 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import { bpSpanPx } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
-import type { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import type { BlockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
 
 function PileupRendering(props: {
   blockKey: string
@@ -12,7 +12,7 @@ function PileupRendering(props: {
   height: number
   regions: Region[]
   bpPerPx: number
-  sortObject?: { by: string; position: number }
+  sortedBy?: { type: string; pos: number; refName: string }
   onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
 }) {
   const {
@@ -23,7 +23,7 @@ function PileupRendering(props: {
     height,
     regions,
     bpPerPx,
-    sortObject,
+    sortedBy,
   } = props
   const {
     selectedFeatureId,
@@ -170,7 +170,7 @@ function PileupRendering(props: {
   return (
     <div
       className="PileupRendering"
-      data-testid={`pileup-${sortObject ? sortObject.by : 'normal'}`}
+      data-testid={`pileup-${sortedBy ? sortedBy.type : 'normal'}`}
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas

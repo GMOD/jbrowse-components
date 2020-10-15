@@ -1,17 +1,17 @@
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { autorun } from 'mobx'
 import {
   getSession,
   getContainingView,
   isSessionModelWithWidgets,
   isSelectionContainer,
-} from '@gmod/jbrowse-core/util'
-import { BaseBlock } from '@gmod/jbrowse-core/util/blockTypes'
-import { Region } from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/util'
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { Region } from '@jbrowse/core/util/types'
 import { addDisposer, types, Instance, isAlive } from 'mobx-state-tree'
 import RBush from 'rbush'
-import { Feature, isFeature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'

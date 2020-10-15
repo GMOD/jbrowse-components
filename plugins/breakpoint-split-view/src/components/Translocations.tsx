@@ -5,7 +5,7 @@ import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getSession } = jbrequire('@jbrowse/core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')

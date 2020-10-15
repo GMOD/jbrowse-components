@@ -42,7 +42,7 @@ Here is a complete config.json that has the hg19 genome loaded
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }

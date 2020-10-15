@@ -2,7 +2,8 @@ import { types } from 'mobx-state-tree'
 import {
   wiggleTrackModelFactory,
   WiggleTrackComponent,
-} from '@gmod/jbrowse-plugin-wiggle'
+} from '@jbrowse/plugin-wiggle'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Tooltip from './Tooltip'
 
 // using a map because it preserves order
@@ -18,6 +19,11 @@ const stateModelFactory = (configSchema: any) =>
     )
     .volatile(() => ({
       ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
+    }))
+    .actions(self => ({
+      setConfig(configuration: AnyConfigurationModel) {
+        self.configuration = configuration
+      },
     }))
     .views(() => ({
       get TooltipComponent() {

@@ -1,7 +1,24 @@
 {
-  "name": "@gmod/jbrowse-development-tools",
-  "version": "0.0.1-beta.27",
+  "name": "@jbrowse/development-tools",
+  "version": "0.0.1-beta.28",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/development-tools"
+  },
+  "author": "JBrowse Team",
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "jest",
     "coverage": "npm test -- --coverage",
@@ -13,19 +30,8 @@
     "prepare": "npm run build",
     "postpublish": "git push origin master --follow-tags"
   },
-  "repository": "GMOD/jbrowse-components",
-  "main": "dist/index.js",
-  "files": [
-    "dist"
-  ],
-  "author": {
-    "name": "Robert Buels",
-    "email": "rbuels@gmail.com",
-    "url": "https://github.com/rbuels"
-  },
-  "license": "MIT",
   "dependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.22",
+    "@jbrowse/core": "^0.0.1-beta.23",
     "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",

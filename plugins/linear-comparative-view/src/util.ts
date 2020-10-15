@@ -1,6 +1,6 @@
-import { clamp } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { clamp } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export type LayoutRecord = [number, number, number, number]
 

@@ -1,21 +1,18 @@
-import {
-  ConfigurationReference,
-  getConf,
-} from '@gmod/jbrowse-core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   isAbortException,
   getSession,
   getContainingView,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util'
 import {
   getParentRenderProps,
   getRpcSessionId,
   getTrackAssemblyNames,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 import {
   blockBasedTrackModel,
   LinearGenomeViewModel,
-} from '@gmod/jbrowse-plugin-linear-genome-view'
+} from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
 import {
   addDisposer,

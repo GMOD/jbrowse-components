@@ -1,6 +1,7 @@
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon'
 import React from 'react'
 
+// Icons below come from https://material.io/resources/icons/?icon=line_style&style=baseline
 export function ContentCopy(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>

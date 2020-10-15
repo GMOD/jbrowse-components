@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/amel_hav3.1.chrom.sizes"
+            "uri": "amel_hav3.1.chrom.sizes"
           }
         }
       }
@@ -23,7 +23,9 @@
       "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
+        }
       },
       "renderer": {
         "type": "SvgFeatureRenderer",

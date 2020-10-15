@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { pluginManager } = createTestSession() as any

@@ -3,16 +3,16 @@ export default pluginManager => {
   // const { transaction } = jbrequire('mobx')
   const { types, getParent, isAlive } = jbrequire('mobx-state-tree')
   const React = jbrequire('react')
-  const { ElementId } = jbrequire('@gmod/jbrowse-core/util/types/mst')
+  const { ElementId } = jbrequire('@jbrowse/core/util/types/mst')
   const { ConfigurationSchema, ConfigurationReference, getConf } = jbrequire(
-    '@gmod/jbrowse-core/configuration',
+    '@jbrowse/core/configuration',
   )
   const CircularChordRendererType = jbrequire(
-    '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType',
+    '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
 
-  const { getSession, getContainingView } = jbrequire('@gmod/jbrowse-core/util')
-  const { getParentRenderProps } = jbrequire('@gmod/jbrowse-core/util/tracks')
+  const { getSession, getContainingView } = jbrequire('@jbrowse/core/util')
+  const { getParentRenderProps } = jbrequire('@jbrowse/core/util/tracks')
 
   const configSchema = ConfigurationSchema(
     'ChordTrack',
