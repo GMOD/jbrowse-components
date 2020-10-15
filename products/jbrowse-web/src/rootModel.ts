@@ -6,7 +6,14 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import AddIcon from '@material-ui/icons/Add'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import SettingsIcon from '@material-ui/icons/Settings'
+import {
+  cast,
+  getSnapshot,
+  SnapshotIn,
+  types,
+  getParent,
+} from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
@@ -43,6 +50,7 @@ export default function RootModel(
       assemblyManager: assemblyManagerType,
       error: types.maybe(types.string),
       version: types.maybe(types.string),
+      isEditing: false,
     })
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
@@ -56,6 +64,9 @@ export default function RootModel(
             Date.now(),
           ).toISOString()}`,
         })
+      },
+      setEditing(flag: boolean) {
+        self.isEditing = flag
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -107,6 +118,20 @@ export default function RootModel(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()
+              },
+            },
+          ],
+        },
+        {
+          label: 'Admin',
+          menuItems: [
+            {
+              label: 'Open Assembly Manager',
+              icon: SettingsIcon,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setEditing(true)
               },
             },
           ],

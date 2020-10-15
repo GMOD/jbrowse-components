@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { App, createJBrowseTheme } from '@jbrowse/core/ui'
+import { App, createJBrowseTheme, AssemblyManager } from '@jbrowse/core/ui'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
@@ -133,6 +133,13 @@ const JBrowse = observer(({ pluginManager }) => {
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
       <App session={rootModel.session} />
+      <AssemblyManager
+        rootModel={rootModel}
+        open={rootModel.isEditing}
+        onClose={() => {
+          rootModel.setEditing(false)
+        }}
+      />
     </ThemeProvider>
   )
 })
