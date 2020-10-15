@@ -123,16 +123,18 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
       jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before / 2)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before / 2)
     })
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
     await wait(() => {
       jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before)
     })
     expect(state.session.views[0].bpPerPx).toBe(before)
-  }, 10000)
+  }, 30000)
 
   it('opens track selector', async () => {
     const pluginManager = getPluginManager()
