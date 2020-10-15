@@ -35,7 +35,7 @@ interface Jb2Adapter {
   bigBedLocation?: Jb2Location
   vcfGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
-  rootUrlTemplate?: string
+  rootUrlTemplate?: Jb2Location
   sequenceAdapter?: Jb2Adapter
 }
 
@@ -142,7 +142,10 @@ export function convertTrackConfig(
       return {
         ...jb2TrackConfig,
         type: 'BasicTrack',
-        adapter: { type: 'NCListAdapter', rootUrlTemplate: urlTemplate },
+        adapter: {
+          type: 'NCListAdapter',
+          rootUrlTemplate: { uri: urlTemplate },
+        },
         renderer: { type: 'SvgFeatureRenderer' },
       }
     }
