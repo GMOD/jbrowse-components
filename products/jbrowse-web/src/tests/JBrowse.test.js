@@ -138,7 +138,7 @@ test('404 sequence file', async () => {
     </ErrorBoundary>,
   )
   expect(
-    await findByText('HTTP 404 fetching test_data/grape.chrom.sizes.nonexist', {
+    await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
       exact: false,
     }),
   ).toBeTruthy()
