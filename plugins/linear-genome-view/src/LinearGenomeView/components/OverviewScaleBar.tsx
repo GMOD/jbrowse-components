@@ -95,7 +95,6 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-// spacer between regions ~ 2px
 const wholeSeqSpacer = 2
 const Polygon = observer(
   ({
@@ -198,7 +197,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
         }
         return (
-          // each displayedRegion
           <Paper
             key={`${JSON.stringify(seq)}-${idx.toLocaleString('en-US')}`}
             style={{

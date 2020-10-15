@@ -238,7 +238,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             parentRegion.refName === refName,
         )
       },
-
+      /**
+       * @param refName - refName of the displayedRegion
+       * @param coord - coordinate at the displayed Region
+       * @param regionNumber - optional param used as identifier when
+       * there are multiple displayedRegions with the same refName
+       * @returns offsetPx of the displayed region that it lands in
+       */
       bpToPx({
         refName,
         coord,
