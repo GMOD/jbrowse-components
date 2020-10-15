@@ -179,8 +179,8 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        const parent = model.parentRegion(seq.assemblyName, seq.refName)
-        const parentLength = parent ? parent.end - parent.start : 0
+        // const parent = model.parentRegion(seq.assemblyName, seq.refName)
+        // const parentLength = parent ? parent.end - parent.start : 0
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
