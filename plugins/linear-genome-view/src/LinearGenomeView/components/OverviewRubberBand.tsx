@@ -186,7 +186,6 @@ function OverviewRubberBand({
           </Tooltip>
         ) : null}
         <div
-          data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
           role="presentation"
           ref={controlsRef}

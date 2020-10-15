@@ -10,14 +10,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="makeStyles-rubberBandControl"
-        data-testid="rubberBand_controls"
         role="presentation"
       >
         <div
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
             style="min-width: 800px; border-color: rgb(153, 102, 0);"
           >
             <p
@@ -28,19 +27,37 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </p>
             <div
               class="makeStyles-scaleBarVisibleRegion"
-              style="width: 8000px; left: -1px; pointer-events: none;"
+              style="width: 800px; left: -1px; pointer-events: none;"
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 153.6px; pointer-events: none; color: rgb(153, 102, 0);"
             >
-              5
+              20
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 313.6px; pointer-events: none; color: rgb(153, 102, 0);"
             >
-              10
+              40
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 473.6px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              60
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 633.6px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              80
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 793.6px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              100
             </div>
           </div>
         </div>
@@ -56,7 +73,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,,0,0,0"
+          points="0,48,100,48,800,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
@@ -789,15 +806,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="makeStyles-rubberBandControl"
-        data-testid="rubberBand_controls"
         role="presentation"
       >
         <div
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-            style="min-width: 800px; border-color: rgb(153, 102, 0);"
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
+            style="min-width: 72.54545454545455px; margin-right: 2px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -807,19 +823,51 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </p>
             <div
               class="makeStyles-scaleBarVisibleRegion"
-              style="width: 8000px; left: -1px; pointer-events: none;"
+              style="width: 72.54545454545455px; left: -1px; pointer-events: none;"
+            />
+          </div>
+          <div
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
+            style="min-width: 725.4545454545454px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
+            >
+              ctgB
+            </p>
+            <div
+              class="makeStyles-scaleBarVisibleRegion"
+              style="width: 506.36727272727273px; left: -1px; pointer-events: none;"
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 139.28727272727272px; pointer-events: none;"
             >
-              5
+              1,200
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 284.3781818181818px; pointer-events: none;"
             >
-              10
+              1,400
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 429.4690909090909px; pointer-events: none;"
+            >
+              1,600
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 574.56px; pointer-events: none;"
+            >
+              1,800
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 719.6509090909091px; pointer-events: none;"
+            >
+              2,000
             </div>
           </div>
         </div>
@@ -835,7 +883,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,,0,0,0"
+          points="0,48,100,48,73,0,0,0"
+          stroke="rgba(121, 134, 203, 0.8)"
+        />
+        <polygon
+          fill="rgba(121, 134, 203, 0.3)"
+          points="102,48,800,48,580,0,73,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
