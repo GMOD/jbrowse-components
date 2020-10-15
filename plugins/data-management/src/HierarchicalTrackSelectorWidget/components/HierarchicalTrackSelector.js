@@ -308,35 +308,36 @@ function HierarchicalTrackSelector({ model }) {
             connectionConf =>
               readConfObject(connectionConf, 'assemblyName') === assemblyName,
           )
-          .map(connectionConf => (
-            <FormGroup row key={connectionConf.connectionId}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={
-                      session.connectionInstances.has(assemblyName) &&
-                      !!session.connectionInstances
-                        .get(assemblyName)
-                        .find(
-                          connection =>
-                            connection.name ===
-                            readConfObject(connectionConf, 'name'),
-                        )
-                    }
-                    onChange={() => handleConnectionToggle(connectionConf)}
-                  />
-                }
-                label={readConfObject(connectionConf, 'name')}
-              />
-              <IconButton
-                onClick={() => {
-                  breakConnection(connectionConf, true)
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </FormGroup>
-          ))}
+          .map(connectionConf => {
+            const name = readConfObject(connectionConf, 'name')
+            const id = connectionConf.connectionId
+            return (
+              <FormGroup row key={id}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={
+                        session.connectionInstances.has(assemblyName) &&
+                        !!session.connectionInstances
+                          .get(assemblyName)
+                          .find(connection => connection.name === name)
+                      }
+                      onChange={() => handleConnectionToggle(connectionConf)}
+                    />
+                  }
+                  label={name}
+                />
+                <IconButton
+                  data-testid="delete-connection"
+                  onClick={() => {
+                    breakConnection(connectionConf, true)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </FormGroup>
+            )
+          })}
       </FormGroup>
       {session.connectionInstances.has(assemblyName) ? (
         <>

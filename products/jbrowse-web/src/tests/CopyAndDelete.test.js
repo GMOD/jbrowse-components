@@ -10,9 +10,16 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import JBrowse from '../JBrowse'
+import masterConfig from '../../test_data/volvox/connection_test.json'
 import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
+
+masterConfig.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+}
 
 setup()
 beforeEach(() => {
@@ -62,4 +69,16 @@ test('copy and delete track to session tracks', async () => {
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await wait(() => expect(state.session.views[0].tracks.length).toBe(0))
+})
+
+test('delete connection', async () => {
+  const pluginManager = getPluginManager(masterConfig, true)
+  const { findByTestId, findByText, queryByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+
+  fireEvent.click(await findByTestId('delete-connection'))
+  fireEvent.click(await findByText('OK'))
+  expect(queryByTestId('delete-connection')).toBeNull()
 })
