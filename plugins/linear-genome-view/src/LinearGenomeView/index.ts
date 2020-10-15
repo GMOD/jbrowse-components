@@ -262,7 +262,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
         const foundRegion = self.displayedRegions[index]
         if (foundRegion) {
-          return Math.round(offsetBp / self.bpPerPx)
+          return {
+            index,
+            offsetPx: Math.round(offsetBp / self.bpPerPx),
+          }
         }
 
         return undefined
@@ -896,7 +899,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * of the displayed regions, does nothing
        * @param bp -
        * @param refName -
-       * @param regionIndex
+       * @param region
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({
@@ -905,7 +908,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           regionNumber: regionIndex,
         })
         if (centerPx) {
-          self.scrollTo(Math.round(centerPx - self.width / 2))
+          self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
       },
 

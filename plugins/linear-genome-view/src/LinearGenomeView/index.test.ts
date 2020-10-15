@@ -307,25 +307,29 @@ describe('Zoom to selected displayed regions', () => {
 
   it('can select whole region', () => {
     // should have no offset and largest bpPerPx
+    expect(model.offsetPx).toBe(0)
+    expect(model.bpPerPx).toEqual(1)
     model.zoomToDisplayedRegions(
       {
-        start: 0,
+        start: 5000,
+        coord: 16193,
         index: 0,
-        end: 50001,
-        offset: 0,
+        end: 20000,
+        offset: 11193,
         refName: 'ctgA',
       },
       {
         start: 0,
-        index: 1,
-        end: 6079,
-        offset: 6079,
+        coord: 1437,
+        index: 2,
+        end: 3000,
+        offset: 1437,
         refName: 'ctgB',
       },
     )
     largestBpPerPx = model.bpPerPx
-    expect(model.offsetPx).toBe(0)
-    expect(model.bpPerPx).toBeCloseTo(28)
+    expect(model.offsetPx).toBe(584)
+    expect(model.bpPerPx).toBeCloseTo(19.44, 0)
   })
 
   it('can select if start and end object are swapped', () => {
@@ -333,86 +337,94 @@ describe('Zoom to selected displayed regions', () => {
     model.zoomToDisplayedRegions(
       {
         start: 0,
-        index: 1,
-        end: 6079,
-        offset: 6079,
+        coord: 1437,
+        index: 2,
+        end: 3000,
+        offset: 1437,
         refName: 'ctgB',
       },
       {
-        start: 0,
+        start: 5000,
+        coord: 16193,
         index: 0,
-        end: 50001,
-        offset: 0,
+        end: 20000,
+        offset: 11193,
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(0)
-    expect(model.bpPerPx).toEqual(largestBpPerPx)
+    expect(model.offsetPx).toBe(584)
+    expect(model.bpPerPx).toBeCloseTo(19.44, 0)
   })
 
   it('can select over one refSeq', () => {
     model.zoomToDisplayedRegions(
       {
-        start: 0,
+        start: 5000,
         index: 0,
-        end: 50001,
-        offset: 10000,
+        coord: 11364,
+        end: 20000,
+        offset: 6363.63,
         refName: 'ctgA',
       },
       {
-        start: 0,
+        start: 5000,
+        coord: 14829,
         index: 0,
-        end: 50001,
-        offset: 35000,
+        end: 20000,
+        offset: 9828.28,
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(266)
-    expect(model.bpPerPx).toBeCloseTo(18.796)
+    expect(model.offsetPx).toBeCloseTo(1469)
+    expect(model.bpPerPx).toBeCloseTo(4.37, 0)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
   it('can select one region with start and end outside of displayed region', () => {
     model.zoomToDisplayedRegions(
       {
-        start: 0,
+        start: 5000,
+        coord: 7369,
         index: 0,
-        end: 50001,
-        offset: 29000,
+        end: 20000,
+        offset: 2368.69,
         refName: 'ctgA',
       },
       {
-        start: 0,
+        start: 5000,
+        coord: 3589,
         index: 0,
-        end: 50001,
-        offset: 50000,
+        end: 20000,
+        offset: -1414.14,
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(1202)
-    expect(model.bpPerPx).toBe(12.5)
+    expect(model.offsetPx).toBe(-299)
+    expect(model.bpPerPx).toBeCloseTo(4.77, 0)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
   it('can select over two regions in the same reference sequence', () => {
     model.zoomToDisplayedRegions(
       {
-        start: 0,
-        index: 0,
-        end: 50001,
-        offset: 35000,
+        start: 30000,
+        coord: 38723,
+        index: 1,
+        end: 40000,
+        offset: 8722.22,
         refName: 'ctgA',
       },
       {
         start: 0,
+        coord: 1551,
         index: 1,
-        end: 6709,
-        offset: 2000,
+        end: 3000,
+        offset: 1550.51,
         refName: 'ctgB',
       },
     )
-    expect(model.offsetPx).toBe(2282)
-    expect(model.bpPerPx).toBeCloseTo(8.771)
+    expect(model.offsetPx).toBe(1006420)
+    expect(model.bpPerPx).toBeCloseTo(0.02, 0)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
@@ -424,22 +436,24 @@ describe('Zoom to selected displayed regions', () => {
     ])
     model.zoomToDisplayedRegions(
       {
-        start: 0,
+        start: 5000,
+        coord: 18786,
         index: 0,
-        end: 50001,
-        offset: 10000,
+        end: 20000,
+        offset: 13785.35,
         refName: 'ctgA',
       },
       {
         start: 0,
-        index: 0,
-        end: 50001,
-        offset: 15000,
+        coord: 2812,
+        index: 2,
+        end: 35000,
+        offset: 2811.87,
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(142)
-    expect(model.bpPerPx).toBeCloseTo(35.176)
+    expect(model.offsetPx).toBe(1562)
+    expect(model.bpPerPx).toBeCloseTo(8.92, 0)
   })
 })
 
