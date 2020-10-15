@@ -155,7 +155,10 @@ describe('alignments track', () => {
     const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
-    expect(buf).toMatchImageSnapshot()
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 
   it('test that bam with small max height displays message', async () => {
