@@ -903,9 +903,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp -
-       * @param refName -
-       * @param region
+       * @param bp -basepair at which you want to center the view
+       * @param refName - refName of the displayedRegion you are centering at
+       * @param regionIndex - index of the displayedRegion At which you are
+       * centering at
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({
