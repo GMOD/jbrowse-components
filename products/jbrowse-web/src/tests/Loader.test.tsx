@@ -92,6 +92,17 @@ function FallbackComponent({ error }: FallbackProps) {
   return <div>there was an error: {String(error)}</div>
 }
 
+// beforeEach(() => {
+//   // values stored in tests will also be available in other tests unless you run
+//   localStorage.clear()
+//   // or directly reset the storage
+//   localStorage.__STORE__ = {}
+//   // you could also reset all mocks, but this could impact your other mocks
+//   jest.resetAllMocks()
+//   // or individually reset a mock used
+//   localStorage.setItem.mockClear()
+// })
+
 describe('<Loader />', () => {
   afterEach(() => {
     localStorage.clear()
@@ -115,11 +126,9 @@ describe('<Loader />', () => {
   })
 
   it('can use config from a url with no session param local uuid', async () => {
-    console.error = jest.fn()
-    // onaction warning from linear-comparative-view
-    console.warn = jest.fn()
-    sessionStorage.prototype.getItem = jest.fn(
-      () => `{"session": {"id": "abcdefg", "name": "testSession"}}`,
+    sessionStorage.setItem(
+      'current',
+      `{"id": "abcdefg", "name": "testSession"}`,
     )
     const { findByText } = render(
       <QueryParamProvider
@@ -139,11 +148,7 @@ describe('<Loader />', () => {
   // FUTURE TODO: the setQueryParam hook for QueryParamProvider does not seem to have
   // a good way to be mocked, can only test loading where the session param does not have
   // to be set. Below work once there is a good solution to mocking setSessionParam
-  xit('can use config from a url with share session param ', async () => {
-    console.error = jest.fn()
-    // onaction warning from linear-comparative-view
-    console.warn = jest.fn()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  it('can use config from a url with share session param ', async () => {
     jest.spyOn(global as any, 'fetch').mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -156,13 +161,14 @@ describe('<Loader />', () => {
         // @ts-ignore
         location={{
           search:
-            '?config=test_data/volvox/config.json&session=share-test&password=17732efacf3f4909151acb11e1d5f057',
+            '?config=test_data/volvox/config_main_thread.json&session=share-test&password=17732efacf3f4909151acb11e1d5f057',
         }}
       >
         <Loader />
       </QueryParamProvider>,
     )
     expect(await findByText('Help')).toBeTruthy()
+
     expect(sessionStorage.length).toBeGreaterThan(0)
   })
 

@@ -208,10 +208,7 @@ export function Loader() {
         const sessionStorageSession = JSON.parse(
           sessionStorage.getItem('current') || '{}',
         )
-        console.log(
-          localStorage.getItem('test'),
-          sessionStorage.getItem('test'),
-        )
+
         const foundLocalSession =
           localStorage.getItem(sessionQueryParam) ||
           (sessionStorageSession.id === sessionQueryParam
