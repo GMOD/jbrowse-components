@@ -8,7 +8,7 @@ import rangeParser from 'range-parser'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
 
-import { Loader } from './Loader'
+import { Loader } from '../Loader'
 
 class BroadcastChannelMock {
   postMessage() {
@@ -55,7 +55,8 @@ window.requestIdleCallback = (
   cb({ didTimeout: true, timeRemaining: () => 0 })
   return 1
 }
-const getFile = (url: string) => new LocalFile(require.resolve(`../${url}`))
+
+const getFile = (url: string) => new LocalFile(require.resolve(`../../${url}`))
 // fakes server responses from local file object with fetchMock
 const readBuffer = async (url: string, args: RequestInit) => {
   try {
@@ -117,15 +118,15 @@ describe('<Loader />', () => {
     console.error = jest.fn()
     // onaction warning from linear-comparative-view
     console.warn = jest.fn()
-    Storage.prototype.getItem = jest.fn(
-      () => `{"session": {"name": "testSession"}}`,
+    sessionStorage.prototype.getItem = jest.fn(
+      () => `{"session": {"id": "abcdefg", "name": "testSession"}}`,
     )
     const { findByText } = render(
       <QueryParamProvider
         // @ts-ignore
         location={{
           search:
-            '?config=test_data/volvox/config_main_thread.json&session=local-1',
+            '?config=test_data/volvox/config_main_thread.json&session=abcdefg',
         }}
       >
         <Loader />
