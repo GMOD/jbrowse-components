@@ -39,6 +39,52 @@ if (!window.TextDecoder) {
 // also need a trigger for google analytics
 // make google analytics acc, import google analytics here and call in the same logic loop as lambda
 
+// jb1 post object
+// var stats = {
+//   ver: this.version || 'dev',
+//   'refSeqs-count': this.refSeqOrder.length,
+//   'refSeqs-avgLen':
+//     ! this.refSeqOrder.length
+//       ? null
+//       : dojof.reduce(
+//           dojo.map( this.refSeqOrder,
+//                     function(name) {
+//                         var ref = this.allRefs[name];
+//                         if( !ref )
+//                             return 0;
+//                         return ref.end - ref.start;
+//                     },
+//                     this
+//                   ),
+//           '+'
+//       ),
+//   'tracks-count': this.config.tracks.length,
+//   'plugins': dojof.keys( this.plugins ).sort().join(','),
+
+//   // screen geometry
+//   'scn-h': scn ? scn.height : null,
+//   'scn-w': scn ? scn.width  : null,
+//   // window geometry
+//   'win-h':document.body.offsetHeight,
+//   'win-w': document.body.offsetWidth,
+//   // container geometry
+//   'el-h': this.container.offsetHeight,
+//   'el-w': this.container.offsetWidth,
+
+//   // time param to prevent caching
+//   t: date.getTime()/1000,
+//   electron: Util.isElectron(),
+
+//   // also get local time zone offset
+//   tzoffset: date.getTimezoneOffset(),
+
+//   loadTime: (date.getTime() - this.startTime)/1000
+// };
+
+// in new loader, will be an action
+// async postToLambda, and async postToGA
+// send post and then put in the after create call
+
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
