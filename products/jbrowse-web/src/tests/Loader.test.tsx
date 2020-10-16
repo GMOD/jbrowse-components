@@ -89,7 +89,7 @@ describe('<Loader />', () => {
     ).toBeTruthy()
   })
 
-  it('can use config from a url with no session param local uuid', async () => {
+  it('can use config from a url with session param+sessionStorage', async () => {
     sessionStorage.setItem(
       'current',
       `{"id": "abcdefg", "name": "testSession"}`,

@@ -192,25 +192,30 @@ const SessionLoader = types
         const configText = (await location.readFile('utf8')) as string
 
         const config = JSON.parse(configText)
+        console.log({ config })
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
         self.setConfigSnapshot(config)
+        self.setConfigLoaded(true)
       } catch (error) {
+        console.log({ error })
         if (!self.config) {
           self.setNoDefaultConfig(true)
+          self.setConfigLoaded(true)
         } else {
           self.setError(error)
         }
       }
-      self.setConfigLoaded(true)
     },
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
+      console.log({ sessionStr }, self.session)
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
         if (self.session === sessionSnap.id) {
+          console.log('good')
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)
           return
@@ -309,10 +314,14 @@ export function Loader() {
 
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
-    const { noDefaultConfig, ready } = loader
+    const { noDefaultConfig, error, ready } = loader
+    console.log({ ready, error })
 
     if (noDefaultConfig) {
       return <NoConfigMessage />
+    }
+    if (error) {
+      throw error
     }
 
     if (ready) {
