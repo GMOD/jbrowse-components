@@ -59,16 +59,9 @@ export async function readSessionFromDynamo(
   signal?: AbortSignal,
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
-  const url = new URL(
-    'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load',
-  )
-  const params = new URLSearchParams(url.search)
-  params.set('sessionId', sessionId)
-  url.search = params.toString()
+  const url = `https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load?sessionId=${sessionId}`
 
-  const response = await fetch(url.href, {
-    method: 'GET',
-    mode: 'cors',
+  const response = await fetch(url, {
     signal,
   })
 

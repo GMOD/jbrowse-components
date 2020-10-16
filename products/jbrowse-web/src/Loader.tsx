@@ -120,8 +120,12 @@ const SessionLoader = types
     sessionSnapshot: undefined as any,
     plugins: undefined as undefined | PluginConstructor[],
     error: undefined as Error | undefined,
-    channel:
-      window.BroadcastChannel && new window.BroadcastChannel('jbsession'),
+    bc1:
+      window.BroadcastChannel &&
+      new window.BroadcastChannel('jb_request_session'),
+    bc2:
+      window.BroadcastChannel &&
+      new window.BroadcastChannel('jb_respond_session'),
   }))
   .views(self => ({
     get sharedSession() {
@@ -164,6 +168,7 @@ const SessionLoader = types
     },
     setSessionSnapshot(snap: unknown) {
       self.sessionSnapshot = snap
+      sessionStorage.setItem('current', JSON.stringify(snap))
     },
   }))
   .actions(self => ({
@@ -201,9 +206,36 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      const sessionSnap = sessionStr ? JSON.parse(sessionStr) : undefined
-      console.log(sessionSnap)
-      self.setSessionSnapshot(sessionSnap)
+      console.log('test0', sessionStr)
+      if (sessionStr) {
+        const sessionSnap = JSON.parse(sessionStr)
+        self.setSessionSnapshot(sessionSnap)
+      } else if (self.bc1) {
+        console.log('test1', self.session)
+        self.bc1.postMessage(self.session)
+        const resultP = new Promise((resolve, reject) => {
+          if (self.bc2) {
+            self.bc2.onmessage = msg => {
+              resolve(msg.data)
+            }
+          }
+          setTimeout(() => reject(), 1000)
+        })
+
+        try {
+          console.log('test2')
+          const result = await resultP
+          console.log('test3')
+          console.log({ result })
+          // @ts-ignore
+          self.setSessionSnapshot({ ...result, id: shortid() })
+        } catch (e) {
+          console.log('e', e)
+          // the broadcast channels did not find the session in another tab
+          // clear session param
+          /* ignore */
+        }
+      }
     },
 
     async fetchSharedSession() {
@@ -218,9 +250,7 @@ const SessionLoader = types
         self.setSessionLoading(false)
 
         const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-        session.id = shortid()
-        self.setSessionSnapshot(session)
-        sessionStorage.setItem('current', JSON.stringify(session))
+        self.setSessionSnapshot({ ...session, id: shortid() })
       } catch (e) {
         self.setError(e)
         // `Failed to find session in database: ${e}`)
@@ -234,6 +264,19 @@ const SessionLoader = types
         this.fetchSharedSession()
       } else if (session) {
         this.fetchSessionStorageSession()
+      }
+
+      if (self.bc1) {
+        console.log('test4')
+        self.bc1.onmessage = msg => {
+          console.log('msg', msg)
+          const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+          if (ret.id === msg.data) {
+            if (self.bc2) {
+              self.bc2.postMessage(ret)
+            }
+          }
+        }
       }
     },
   }))
@@ -271,7 +314,6 @@ export function Loader() {
   //     forceUpdate()
   //   })
   // }, [])
-  console.log('here2')
 
   return <Renderer loader={loader} />
 }
@@ -312,7 +354,6 @@ const Renderer = observer(
       // in order: saves the previous autosave for recovery, tries to load the local session
       // if session in query, or loads the default session
       try {
-        console.log(loader.session, loader.sessionSnapshot)
         if (!loader.session) {
           rootModel.setDefaultSession()
         } else {
@@ -341,9 +382,7 @@ const Renderer = observer(
       pluginManager.setRootModel(rootModel)
 
       pluginManager.configure()
-      const root = pluginManager
-      console.log('here1')
-      return <JBrowse pluginManager={root} />
+      return <JBrowse pluginManager={pluginManager} />
     }
     return <Loading />
   },
