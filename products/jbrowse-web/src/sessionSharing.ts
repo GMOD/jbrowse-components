@@ -13,22 +13,12 @@ const encrypt = (text: string, key: Buffer, iv: Buffer) => {
 
 // adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 const decrypt = (text: string, key: Buffer, password: string) => {
-  if (!password) return null
-  try {
-    const iv = Buffer.from(password, 'hex')
-    const encryptedText = Buffer.from(text, 'hex')
-    const decipher = crypto.createDecipheriv(
-      'aes-256-cbc',
-      Buffer.from(key),
-      iv,
-    )
-    let decrypted = decipher.update(encryptedText)
-    decrypted = Buffer.concat([decrypted, decipher.final()])
-    return decrypted.toString()
-  } catch (e) {
-    // error
-    return null
-  }
+  const iv = Buffer.from(password, 'hex')
+  const encryptedText = Buffer.from(text, 'hex')
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
+  let decrypted = decipher.update(encryptedText)
+  decrypted = Buffer.concat([decrypted, decipher.final()])
+  return decrypted.toString()
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
@@ -66,7 +56,7 @@ export async function readSessionFromDynamo(
   sessionQueryParam: string,
   key: Buffer,
   password: string,
-  signal: any,
+  signal?: AbortSignal,
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
   const url = new URL(
