@@ -51,47 +51,6 @@ const JBrowse = observer(({ pluginManager }) => {
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
 
-  // updates the session or local storage sessions + autosave
-  useEffect(() => {
-    function updateLocalSession(snapshot) {
-      const toStore = JSON.stringify({ session: snapshot })
-      const autosaveStore = JSON.stringify({
-        session: {
-          ...snapshot,
-          name: `${snapshot.name}-autosaved`,
-        },
-      })
-      if (
-        sessionId?.startsWith('local-') &&
-        sessionStorage.getItem('current')
-      ) {
-        sessionStorage.setItem('current', toStore)
-      } else if (sessionId?.startsWith('localSaved-')) {
-        localStorage.setItem(sessionId, toStore)
-        if (localStorage.getItem('autosave')) {
-          localStorage.removeItem('autosave')
-        }
-      }
-
-      localStorage.setItem('autosave', autosaveStore)
-    }
-
-    let disposer = () => {}
-    if (rootModel) {
-      const updater = debounce(updateLocalSession, 400)
-      const snapshotDisposer = onSnapshot(rootModel, snap => {
-        updater(snap.session)
-        setSessionId(snap.session.id)
-        sessionStorage.setItem('current', JSON.stringify(snap.session))
-      })
-      disposer = () => {
-        snapshotDisposer()
-        updater.cancel()
-      }
-    }
-    return disposer
-  }, [rootModel, sessionId, setSessionId])
-
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {

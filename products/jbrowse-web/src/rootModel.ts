@@ -46,6 +46,7 @@ export default function RootModel(
         Session,
         assemblyConfigSchemasType,
       ),
+      configPath: types.string,
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
       error: types.maybe(types.string),
@@ -59,6 +60,17 @@ export default function RootModel(
         return Array.from(self.savedSessionsVolatile.values())
       },
     }))
+    .actions(self => ({
+      localStorageId(name: string) {
+        return `localSaved-${name}-${self.configPath}`
+      },
+      get autosaveId() {
+        return `autosave-${self.configPath}`
+      }
+      get previousAutosaveId() {
+        return `previousAutosave-${self.configPath}`
+      }
+    }))
     .views(self => ({
       get savedSessionNames() {
         return self.savedSessions.map(session => session.name)
@@ -69,19 +81,14 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
       get hasRecoverableAutosave() {
-        return !!Object.keys(localStorage).find(
-          key => key === 'localSaved-previousAutosave',
-        )
+        return Boolean(localStorage.get(self.previousAutosaveId))
       },
     }))
     .actions(self => ({
       afterCreate() {
         Object.entries(localStorage)
-          .filter(
-            ([key, _val]) =>
-              key.startsWith('localSaved-') &&
-              !key.endsWith('previousAutosave'),
-          )
+          .filter(([key, _val]) => key.startsWith('localSaved-'))
+          .filter(([key, _val]) => key.indexOf(self.configPath) !== -1)
           .forEach(([key, val]) => {
             try {
               const { session } = JSON.parse(val)
@@ -96,10 +103,8 @@ export default function RootModel(
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, val] of self.savedSessionsVolatile.entries()) {
               try {
-                localStorage.setItem(
-                  `localSaved-${val.name}`,
-                  JSON.stringify({ session: val }),
-                )
+                const key = self.localStorageId(val.name)
+                localStorage.setItem(key, JSON.stringify({ session: val }))
               } catch (e) {
                 if (e.code === '22' || e.code === '1024') {
                   // eslint-disable-next-line no-alert
@@ -132,15 +137,13 @@ export default function RootModel(
         }
       },
 
-      addSavedSession(sessionSnapshot: { name: string }) {
-        self.savedSessionsVolatile.set(
-          `localSaved-${sessionSnapshot.name}`,
-          sessionSnapshot,
-        )
+      addSavedSession(session: { name: string }) {
+        const key = self.localStorageId(session.name)
+        self.savedSessionsVolatile.set(key, session)
       },
 
       removeSavedSession(session: { name: string }) {
-        const key = `localSaved-${session.name}`
+        const key = self.localStorageId(session.name)
         localStorage.removeItem(key)
         self.savedSessionsVolatile.delete(key)
       },
@@ -161,7 +164,7 @@ export default function RootModel(
         }
       },
       activateSession(name: string) {
-        const localId = `localSaved-${name}`
+        const localId = self.localStorageId(name)
         const newSessionSnapshot = localStorage.getItem(localId)
         console.log({name,newSessionSnapshot});
         if (!newSessionSnapshot)
@@ -173,32 +176,18 @@ export default function RootModel(
       },
       saveSessionToLocalStorage() {
         if (self.session) {
-          self.savedSessionsVolatile.set(
-            `localSaved-${self.session.name}`,
-            getSnapshot(self.session),
-          )
-          // const snapshot = JSON.parse(JSON.stringify(getSnapshot(self.session)))
-          // // @ts-ignore
-          // const localId = `localSaved-${self.session.name}`
-          //
+          const key = self.localStorageId(self.session.name)
+          self.savedSessionsVolatile.set(key, getSnapshot(self.session))
         }
       },
       loadAutosaveSession() {
-        const autosavedSession = JSON.parse(
-          localStorage.getItem('localSaved-previousAutosave') || '',
-        ).session
-        autosavedSession.name = `${autosavedSession.name.replace(
-          '-autosaved',
-          '',
-        )}-restored`
-        // const localId = `local-${uuid.v4()}`
-        // sessionStorage.clear()
-        // sessionStorage.setItem(
-        //   localId,
-        //   JSON.stringify({ session: autosavedSession }),
-        // )
+        const previousAutosave = localStorage.getItem(self.previousAutosaveId)
+        const autosavedSession = previousAutosave
+          ? JSON.parse(previousAutosave).session
+          : {}
+        const { name } = autosavedSession
+        autosavedSession.name = `${name.replace('-autosaved', '')}-restored`
         this.setSession(autosavedSession)
-        // return localId
       },
 
       setError(errorMessage: string) {
@@ -216,12 +205,9 @@ export default function RootModel(
               icon: AddIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
-                const lastAutosave = localStorage.getItem('autosave')
+                const lastAutosave = localStorage.getItem(self.autosaveId)
                 if (lastAutosave) {
-                  localStorage.setItem(
-                    'localSaved-previousAutosave',
-                    lastAutosave,
-                  )
+                  localStorage.setItem(self.previousAutosaveId, lastAutosave)
                 }
                 session.setDefaultSession()
               },
