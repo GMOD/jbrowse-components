@@ -1,5 +1,5 @@
 {
-  "name": "@jbrowse/react-linear-view",
+  "name": "@jbrowse/react-linear-genome-view",
   "version": "0.0.1-beta.0",
   "description": "JBrowse 2 linear genome view React component",
   "keywords": [
@@ -12,11 +12,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/jbrowse-react-linear-view"
+    "directory": "packages/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
-  "module": "dist/jbrowse-react-linear-view.esm.js",
+  "module": "dist/jbrowse-react-linear-genome-view.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",

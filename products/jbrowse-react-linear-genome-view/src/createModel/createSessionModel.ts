@@ -26,7 +26,7 @@ import { ReferringNode } from '../types'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
-    .model('ReactLinearViewSession', {
+    .model('ReactLinearGenomeViewSession', {
       name: types.identifier,
       margin: 0,
       view: pluginManager.getViewType('LinearGenomeView').stateModel,

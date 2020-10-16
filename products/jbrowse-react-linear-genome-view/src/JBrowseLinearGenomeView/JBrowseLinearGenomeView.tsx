@@ -7,7 +7,11 @@ import ViewContainer from './ViewContainer'
 
 type Session = Instance<ReturnType<typeof createSessionModel>>
 
-function JBrowseLinearView({ viewState }: { viewState: { session: Session } }) {
+function JBrowseLinearGenomeView({
+  viewState,
+}: {
+  viewState: { session: Session }
+}) {
   const { session } = viewState
   const { view, pluginManager } = session
   const viewType = pluginManager.getViewType(view.type)
@@ -26,4 +30,4 @@ function JBrowseLinearView({ viewState }: { viewState: { session: Session } }) {
   )
 }
 
-export default observer(JBrowseLinearView)
+export default observer(JBrowseLinearGenomeView)

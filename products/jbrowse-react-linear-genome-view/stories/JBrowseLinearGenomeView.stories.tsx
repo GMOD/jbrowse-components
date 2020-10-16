@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import {
   createViewState,
   createJBrowseTheme,
-  JBrowseLinearView,
+  JBrowseLinearGenomeView,
   loadPlugins,
   ThemeProvider,
 } from '../src'
@@ -65,12 +65,12 @@ export const ReferenceSequence = () => {
   })
   return (
     <ThemeProvider theme={theme}>
-      <JBrowseLinearView viewState={state} />
+      <JBrowseLinearGenomeView viewState={state} />
     </ThemeProvider>
   )
 }
 
-export const TwoLinearViews = () => {
+export const TwoLinearGenomeViews = () => {
   const state1 = createViewState({
     assembly,
     tracks,
@@ -88,8 +88,8 @@ export const TwoLinearViews = () => {
   })
   return (
     <ThemeProvider theme={theme}>
-      <JBrowseLinearView viewState={state1} />
-      <JBrowseLinearView viewState={state2} />
+      <JBrowseLinearGenomeView viewState={state1} />
+      <JBrowseLinearGenomeView viewState={state2} />
     </ThemeProvider>
   )
 }
@@ -125,7 +125,7 @@ export const WithRuntimePlugins = () => {
   })
   return (
     <ThemeProvider theme={theme}>
-      <JBrowseLinearView viewState={state} />
+      <JBrowseLinearGenomeView viewState={state} />
     </ThemeProvider>
   )
 }

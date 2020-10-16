@@ -14,7 +14,7 @@ import 'fontsource-roboto'
 import {
   createViewState,
   createJBrowseTheme,
-  JBrowseLinearView,
+  JBrowseLinearGenomeView,
   ThemeProvider,
 } from '@jbrowse/react-linear-view'
 
@@ -32,7 +32,7 @@ function View() {
   })
   return (
     <ThemeProvider theme={theme}>
-      <JBrowseLinearView viewState={state} />
+      <JBrowseLinearGenomeView viewState={state} />
     </ThemeProvider>
   )
 }
