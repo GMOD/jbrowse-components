@@ -192,14 +192,12 @@ const SessionLoader = types
         const configText = (await location.readFile('utf8')) as string
 
         const config = JSON.parse(configText)
-        console.log({ config })
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
         self.setConfigSnapshot(config)
         self.setConfigLoaded(true)
       } catch (error) {
-        console.log({ error })
         if (!self.config) {
           self.setNoDefaultConfig(true)
           self.setConfigLoaded(true)
@@ -211,11 +209,9 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      console.log({ sessionStr }, self.session)
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
         if (self.session === sessionSnap.id) {
-          console.log('good')
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)
           return
@@ -246,41 +242,41 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
-      try {
-        const key = crypto.createHash('sha256').update('JBrowse').digest()
-        const decryptedSession = await readSessionFromDynamo(
-          self.session || '',
-          key,
-          self.password || '',
-        )
+      const key = crypto.createHash('sha256').update('JBrowse').digest()
+      const decryptedSession = await readSessionFromDynamo(
+        self.session || '',
+        key,
+        self.password || '',
+      )
 
-        const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      } catch (e) {
-        self.setError(e)
-      }
+      const session = JSON.parse(fromUrlSafeB64(decryptedSession))
+      self.setSessionSnapshot({ ...session, id: shortid() })
       self.setSessionLoaded(true)
     },
     async afterCreate() {
-      const { session, sharedSession } = self
-      this.fetchConfig()
-      if (sharedSession) {
-        this.fetchSharedSession()
-      } else if (session) {
-        this.fetchSessionStorageSession()
-      } else {
-        self.setSessionLoaded(true)
-      }
+      try {
+        const { session, sharedSession } = self
+        await this.fetchConfig()
+        if (sharedSession) {
+          await this.fetchSharedSession()
+        } else if (session) {
+          await this.fetchSessionStorageSession()
+        } else {
+          self.setSessionLoaded(true)
+        }
 
-      if (self.bc1) {
-        self.bc1.onmessage = msg => {
-          const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
-          if (ret.id === msg.data) {
-            if (self.bc2) {
-              self.bc2.postMessage(ret)
+        if (self.bc1) {
+          self.bc1.onmessage = msg => {
+            const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+            if (ret.id === msg.data) {
+              if (self.bc2) {
+                self.bc2.postMessage(ret)
+              }
             }
           }
         }
+      } catch (e) {
+        self.setError(e)
       }
     },
   }))
@@ -292,6 +288,7 @@ export function Loader() {
   const [session] = useQueryParam('session', StringParam)
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
+
   const loader = SessionLoader.create({
     config: load(config),
     session: load(session),
@@ -299,23 +296,12 @@ export function Loader() {
     adminKey: load(adminKey),
   })
 
-  // this history.listen and forceUpdate() are related to use-query-params,
-  // because the setters from use-query-params don't cause a component rerender
-  // if a router system is not used. see the no-router example here
-  // https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
-  // useEffect(() => {
-  //   history.listen(() => {
-  //     forceUpdate()
-  //   })
-  // }, [])
-
   return <Renderer loader={loader} />
 }
 
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
     const { noDefaultConfig, error, ready } = loader
-    console.log({ ready, error })
 
     if (noDefaultConfig) {
       return <NoConfigMessage />

@@ -66,8 +66,17 @@ export async function readSessionFromDynamo(
   })
 
   if (!response.ok) {
-    throw new Error(`Error reading session ${response.statusText}`)
+    console.error({ response, url })
+    throw new Error(
+      `Unable to fetch session ${sessionId}\n${response.statusText}`,
+    )
   }
-  const json = await response.json()
+
+  // TODO: shouldn't get a 200 back for this
+  const text = await response.text()
+  if (!text) {
+    throw new Error(`Unable to fetch session ${sessionId}`)
+  }
+  const json = JSON.parse(text)
   return decrypt(json.session, key, password)
 }
