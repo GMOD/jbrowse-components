@@ -45,9 +45,10 @@ function deleteBaseUris(config) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [sessionId, setSessionId] = useQueryParam('session', StringParam)
-  const [adminKeyParam] = useQueryParam('adminKey', StringParam)
-  const adminMode = adminKeyParam !== undefined
+  const queryParams = new URLSearchParams(window.location.search)
+  const sessionId = queryParams.get('session')
+  const adminKeyParam = queryParams.get('adminKey')
+  const adminMode = adminKeyParam !== null
 
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
@@ -82,7 +83,11 @@ const JBrowse = observer(({ pluginManager }) => {
       const updater = debounce(updateLocalSession, 400)
       const snapshotDisposer = onSnapshot(rootModel, snap => {
         updater(snap.session)
-        setSessionId(snap.session.id)
+        // update session url
+        const params = new URLSearchParams(window.location.search)
+        params.set('session', snap.session.id)
+        window.history.replaceState(null, null, `?${params.toString()}`)
+
         sessionStorage.setItem('current', JSON.stringify(snap.session))
       })
       disposer = () => {
@@ -91,7 +96,7 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [rootModel, sessionId, setSessionId])
+  }, [rootModel, sessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {

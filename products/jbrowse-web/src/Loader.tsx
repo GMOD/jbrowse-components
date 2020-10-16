@@ -111,6 +111,7 @@ const SessionLoader = types
     config: types.maybe(types.string),
     session: types.maybe(types.string),
     password: types.maybe(types.string),
+    adminMode: types.boolean,
   })
   .volatile(() => ({
     noDefaultConfig: false,
@@ -207,11 +208,12 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
+      console.log('sessionStr')
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
         if (self.session === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
-      self.setSessionLoaded(true)
+          self.setSessionLoaded(true)
           return
         }
       }
@@ -238,6 +240,7 @@ const SessionLoader = types
           /* ignore */
         }
       }
+      console.log('here')
       self.setSessionLoaded(true)
     },
 
@@ -264,6 +267,8 @@ const SessionLoader = types
         this.fetchSharedSession()
       } else if (session) {
         this.fetchSessionStorageSession()
+      } else {
+        self.setSessionLoaded(true)
       }
 
       if (self.bc1) {
@@ -280,27 +285,16 @@ const SessionLoader = types
   }))
 
 export function Loader() {
-  const [configSnapshot, setConfigSnapshot] = useState<Config>()
-  const [noDefaultConfig, setNoDefaultConfig] = useState(false)
-  const [plugins, setPlugins] = useState<PluginConstructor[]>()
-
-  const [configQueryParam] = useQueryParam('config', StringParam)
-  const [sessionQueryParam, setSessionQueryParam] = useQueryParam(
-    'session',
-    StringParam,
-  )
-  const [passwordQueryParam, setPasswordQueryParam] = useQueryParam(
-    'password',
-    StringParam,
-  )
-  const loadingSharedSession = sessionQueryParam?.startsWith('share-')
-  const [root, setRoot] = useState<any>()
-  const [session, setSession] = useState<any>()
-  const [, forceUpdate] = React.useReducer(x => x + 1, 0)
+  const queryParams = new URLSearchParams(window.location.search)
+  const load = (param: string) => {
+    const ret = queryParams.get(param)
+    return ret === null ? undefined : ret
+  }
   const loader = SessionLoader.create({
-    config: configQueryParam === null ? undefined : configQueryParam,
-    session: sessionQueryParam === null ? undefined : sessionQueryParam,
-    password: passwordQueryParam === null ? undefined : passwordQueryParam,
+    config: load('config'),
+    session: load('session'),
+    password: load('password'),
+    adminMode: Boolean(load('adminKey')),
   })
 
   // this history.listen and forceUpdate() are related to use-query-params,
@@ -318,15 +312,23 @@ export function Loader() {
 
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
-    const [adminKeyParam] = useQueryParam('adminKey', StringParam)
-    const adminMode = adminKeyParam !== undefined
-    if (loader.noDefaultConfig) {
+    const { noDefaultConfig, ready } = loader
+
+    console.log({ noDefaultConfig, ready })
+    if (noDefaultConfig) {
       return <NoConfigMessage />
     }
 
-    if (loader.ready) {
+    if (ready) {
       console.log({ loader })
-      const pluginManager = new PluginManager(loader.plugins.map(P => new P()))
+      const {
+        plugins,
+        adminMode,
+        session,
+        configSnapshot,
+        sessionSnapshot,
+      } = loader
+      const pluginManager = new PluginManager(plugins.map(P => new P()))
 
       pluginManager.createPluggableElements()
 
@@ -334,13 +336,13 @@ const Renderer = observer(
 
       if (loader.configSnapshot) {
         const rootModel = JBrowseRootModel.create({
-          jbrowse: loader.configSnapshot,
+          jbrowse: configSnapshot,
           assemblyManager: {},
           version: packagedef.version,
         })
         // in order: saves the previous autosave for recovery, tries to load the local session
         // if session in query, or loads the default session
-        if (!loader.session || !loader.sessionSnapshot) {
+        if (!session || !sessionSnapshot) {
           rootModel.setDefaultSession()
         } else {
           rootModel.setSession(loader.sessionSnapshot)
