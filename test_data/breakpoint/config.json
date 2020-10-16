@@ -200,5 +200,16 @@
       "activeWidgets": {},
       "connections": {}
     }
+  ],
+  "connections": [
+    {
+      "type": "JBrowse1Connection",
+      "connectionId": "COSMIC_connection_grch37",
+      "name": "COSMIC (GRCh37)",
+      "assemblyName": "hg19",
+      "dataDirLocation": {
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+      }
+    }
   ]
 }

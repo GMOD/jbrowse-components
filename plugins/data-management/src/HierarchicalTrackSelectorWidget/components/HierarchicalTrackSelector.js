@@ -24,6 +24,7 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
+import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import Contents from './Contents'
@@ -51,6 +52,118 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
+
+const CloseConnectionDlg = observer(props => {
+  const { open, modalInfo, setModalInfo } = props
+  const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo || {}
+  return (
+    <Dialog
+      aria-labelledby="connection-modal-title"
+      aria-describedby="connection-modal-description"
+      open={open}
+    >
+      <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
+      <DialogContent>
+        <>
+          {dereferenceTypeCount ? (
+            <>
+              <DialogContentText>
+                Closing this connection will close:
+              </DialogContentText>
+              <List>
+                {Object.entries(dereferenceTypeCount).map(([key, value]) => (
+                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
+                ))}
+              </List>
+            </>
+          ) : null}
+          <DialogContentText>
+            Are you sure you want to close this connection?
+          </DialogContentText>
+        </>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setModalInfo()
+          }}
+          color="primary"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={
+            modalInfo
+              ? () => {
+                  if (safelyBreakConnection) safelyBreakConnection()
+                  setModalInfo()
+                }
+              : () => {}
+          }
+          color="primary"
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+})
+
+const DeleteConnectionDlg = observer(props => {
+  const { open, modalInfo, session, setModalInfo } = props
+  const { connectionConf, name, dereferenceTypeCount, safelyBreakConnection } =
+    modalInfo || {}
+  return (
+    <Dialog
+      aria-labelledby="connection-modal-title"
+      aria-describedby="connection-modal-description"
+      open={open}
+    >
+      <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
+      <DialogContent>
+        {dereferenceTypeCount ? (
+          <>
+            Closing this connection will close
+            <List>
+              {Object.entries(dereferenceTypeCount).map(([key, value]) => (
+                <ListItem key={key}>{`${value} ${key}`}</ListItem>
+              ))}
+            </List>
+          </>
+        ) : null}
+        <DialogContentText>
+          Are you sure you want to delete this connection?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setModalInfo()
+          }}
+          color="primary"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={
+            modalInfo
+              ? () => {
+                  if (safelyBreakConnection) safelyBreakConnection()
+                  session.deleteConnection(connectionConf)
+                  setModalInfo()
+                }
+              : () => {}
+          }
+          color="primary"
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+})
 
 function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
@@ -114,16 +227,26 @@ function HierarchicalTrackSelector({ model }) {
     }
   }
 
-  function breakConnection(connectionConf) {
+  function breakConnection(connectionConf, deleting = false) {
     const name = readConfObject(connectionConf, 'name')
-    const [
-      safelyBreakConnection,
-      dereferenceTypeCount,
-    ] = session.prepareToBreakConnection(connectionConf)
-    if (Object.keys(dereferenceTypeCount).length > 0) {
-      setModalInfo({ safelyBreakConnection, dereferenceTypeCount, name })
-    } else {
-      safelyBreakConnection()
+    const result = session.prepareToBreakConnection(connectionConf)
+    if (result) {
+      const [safelyBreakConnection, dereferenceTypeCount] = result
+      // always popup a warning if deleting or tracks are going to be removed
+      // from view
+      if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
+        setModalInfo({
+          connectionConf,
+          safelyBreakConnection,
+          dereferenceTypeCount,
+          name,
+          deleting,
+        })
+      } else {
+        safelyBreakConnection()
+      }
+    } else if (deleting) {
+      setModalInfo({ name, deleting, connectionConf })
     }
   }
 
@@ -132,6 +255,7 @@ function HierarchicalTrackSelector({ model }) {
   if (!assemblyName) {
     return null
   }
+
   const filterError =
     model.trackConfigurations(assemblyName, session.tracks) > 0 &&
     model.trackConfigurations(assemblyName, session.tracks).filter(filter)
@@ -184,28 +308,36 @@ function HierarchicalTrackSelector({ model }) {
             connectionConf =>
               readConfObject(connectionConf, 'assemblyName') === assemblyName,
           )
-          .map(connectionConf => (
-            <FormControlLabel
-              key={connectionConf.connectionId}
-              control={
-                <Switch
-                  checked={
-                    session.connectionInstances.has(assemblyName) &&
-                    !!session.connectionInstances
-                      .get(assemblyName)
-                      .find(
-                        connection =>
-                          connection.name ===
-                          readConfObject(connectionConf, 'name'),
-                      )
+          .map(connectionConf => {
+            const name = readConfObject(connectionConf, 'name')
+            const id = connectionConf.connectionId
+            return (
+              <FormGroup row key={id}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={
+                        session.connectionInstances.has(assemblyName) &&
+                        !!session.connectionInstances
+                          .get(assemblyName)
+                          .find(connection => connection.name === name)
+                      }
+                      onChange={() => handleConnectionToggle(connectionConf)}
+                    />
                   }
-                  onChange={() => handleConnectionToggle(connectionConf)}
-                  // value="checkedA"
+                  label={name}
                 />
-              }
-              label={readConfObject(connectionConf, 'name')}
-            />
-          ))}
+                <IconButton
+                  data-testid="delete-connection"
+                  onClick={() => {
+                    breakConnection(connectionConf, true)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </FormGroup>
+            )
+          })}
       </FormGroup>
       {session.connectionInstances.has(assemblyName) ? (
         <>
@@ -241,54 +373,18 @@ function HierarchicalTrackSelector({ model }) {
         <MenuItem onClick={addConnection}>Add connection</MenuItem>
         <MenuItem onClick={addTrack}>Add track</MenuItem>
       </Menu>
-      <Dialog
-        aria-labelledby="connection-modal-title"
-        aria-describedby="connection-modal-description"
-        open={Boolean(modalInfo)}
-      >
-        <DialogTitle>
-          Close connection &quot;{modalInfo && modalInfo.name}&quot;
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Closing this connection will close:
-          </DialogContentText>
-          {modalInfo ? (
-            <List>
-              {Object.entries(modalInfo.dereferenceTypeCount).map(
-                ([key, value]) => (
-                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
-                ),
-              )}
-            </List>
-          ) : null}
-          <DialogContentText>Are you sure you want to close?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setModalInfo()
-            }}
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={
-              modalInfo
-                ? () => {
-                    modalInfo.safelyBreakConnection()
-                    setModalInfo()
-                  }
-                : () => {}
-            }
-            color="primary"
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CloseConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && !modalInfo.deleting}
+        session={session}
+      />
+      <DeleteConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && modalInfo.deleting}
+        session={session}
+      />
     </div>
   )
 }

@@ -195,6 +195,7 @@ export default withContentRect('bounds')(
             ) : null}
             <div className={classes.grow} />
             <IconButton
+              data-testid="close_view"
               classes={{ root: classes.iconRoot }}
               edge="end"
               onClick={onClose}
