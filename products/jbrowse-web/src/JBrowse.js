@@ -8,30 +8,6 @@ import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import ShareButton from './ShareButton'
 
-// adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
-function debounce(func, wait) {
-  let timeout
-  let result
-  const later = (...args) => {
-    timeout = null
-    result = func(...args)
-  }
-  const debounced = (...args) => {
-    if (timeout) {
-      clearTimeout(timeout)
-    }
-    timeout = setTimeout(() => {
-      return later(...args)
-    }, wait)
-    return result
-  }
-  debounced.cancel = () => {
-    clearTimeout(timeout)
-    timeout = null
-  }
-  return debounced
-}
-
 function deleteBaseUris(config) {
   if (typeof config === 'object') {
     for (const key of Object.keys(config)) {
@@ -46,10 +22,15 @@ function deleteBaseUris(config) {
 
 const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
-  const [sessionId, setSessionId] = useQueryParam('session', StringParam)
-
+  const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
-  const { error, jbrowse } = rootModel || {}
+  const { error, jbrowse, session } = rootModel || {}
+
+  useEffect(() => {
+    onSnapshot(rootModel, snapshot => {
+      setSessionId(rootModel.session.id)
+    })
+  }, [rootModel, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
@@ -67,7 +48,7 @@ const JBrowse = observer(({ pluginManager }) => {
         })
         if (!response.ok) {
           const message = await response.text()
-          rootModel.session.notify(
+          session.notify(
             `Admin server error: ${response.status} (${response.statusText}) ${
               message || ''
             }`,
@@ -75,14 +56,13 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, rootModel.session, adminKey])
+  }, [jbrowse, session, adminKey])
 
   if (error) {
     throw new Error(error)
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { session } = rootModel
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />

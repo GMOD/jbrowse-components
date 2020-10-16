@@ -321,6 +321,7 @@ const Renderer = observer(
         sessionQuery,
         configSnapshot,
         sessionSnapshot,
+        configPath,
       } = loader
       if (load) {
         const pluginManager = new PluginManager(plugins.map(P => new P()))
@@ -337,6 +338,7 @@ const Renderer = observer(
             jbrowse: configSnapshot,
             assemblyManager: {},
             version: packagedef.version,
+            configPath,
           })
           // in order: saves the previous autosave for recovery, tries to load the local session
           // if session in query, or loads the default session

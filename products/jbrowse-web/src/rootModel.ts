@@ -46,7 +46,7 @@ export default function RootModel(
         Session,
         assemblyConfigSchemasType,
       ),
-      configPath: types.string,
+      configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
       error: types.maybe(types.string),
@@ -59,17 +59,15 @@ export default function RootModel(
       get savedSessions() {
         return Array.from(self.savedSessionsVolatile.values())
       },
-    }))
-    .actions(self => ({
       localStorageId(name: string) {
         return `localSaved-${name}-${self.configPath}`
       },
       get autosaveId() {
         return `autosave-${self.configPath}`
-      }
+      },
       get previousAutosaveId() {
         return `previousAutosave-${self.configPath}`
-      }
+      },
     }))
     .views(self => ({
       get savedSessionNames() {
@@ -88,7 +86,9 @@ export default function RootModel(
       afterCreate() {
         Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(([key, _val]) => key.indexOf(self.configPath) !== -1)
+          .filter(
+            ([key, _val]) => key.indexOf(self.configPath || 'undefined') !== -1,
+          )
           .forEach(([key, val]) => {
             try {
               const { session } = JSON.parse(val)
@@ -121,7 +121,9 @@ export default function RootModel(
           autorun(
             () => {
               if (self.session) {
-                const snapshot = getSnapshot(self.session) || {}
+                const snapshot = getSnapshot(self.session) || {
+                  name: 'no-session',
+                }
                 const { id: sessionId } = self.session
                 const toStore = JSON.stringify({ session: snapshot })
                 const autosaveStore = JSON.stringify({
@@ -198,7 +200,7 @@ export default function RootModel(
       activateSession(name: string) {
         const localId = self.localStorageId(name)
         const newSessionSnapshot = localStorage.getItem(localId)
-        console.log({name,newSessionSnapshot});
+        console.log({ name, newSessionSnapshot })
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
