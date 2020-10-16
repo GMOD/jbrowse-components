@@ -114,11 +114,11 @@ const SessionLoader = types
   })
   .volatile(() => ({
     noDefaultConfig: false,
-    sessionLoading: false, // is session loading e.g. from remote shared URL
-    configLoading: false, // is config loading e.g. downloading json config
+    sessionLoaded: false, // is session loading e.g. from remote shared URL
+    configLoaded: false, // is config loading e.g. downloading json config
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
-    plugins: undefined as undefined | PluginConstructor[],
+    plugins: [] as PluginConstructor[],
     error: undefined as Error | undefined,
     bc1:
       window.BroadcastChannel &&
@@ -138,9 +138,9 @@ const SessionLoader = types
 
     get ready() {
       return (
-        self.plugins !== undefined &&
-        self.configSnapshot !== undefined &&
-        (self.session ? self.sessionSnapshot !== undefined : true)
+        // self.configSnapshot !== undefined &&
+        self.configLoaded && self.sessionLoaded
+        // (self.session ? self.sessionSnapshot !== undefined : true)
       )
     },
   }))
@@ -151,11 +151,11 @@ const SessionLoader = types
     setError(error: Error) {
       self.error = error
     },
-    setSessionLoading(flag: boolean) {
-      self.sessionLoading = flag
+    setSessionLoaded(flag: boolean) {
+      self.sessionLoaded = flag
     },
-    setConfigLoading(flag: boolean) {
-      self.configLoading = flag
+    setConfigLoaded(flag: boolean) {
+      self.configLoaded = flag
     },
     setNoDefaultConfig(flag: boolean) {
       self.noDefaultConfig = flag
@@ -193,8 +193,8 @@ const SessionLoader = types
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
+        await this.fetchPlugins(config)
         self.setConfigSnapshot(config)
-        this.fetchPlugins(config)
       } catch (error) {
         if (!self.config) {
           self.setNoDefaultConfig(true)
@@ -202,16 +202,20 @@ const SessionLoader = types
           self.setError(error)
         }
       }
+      self.setConfigLoaded(true)
     },
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      console.log('test0', sessionStr)
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
-        self.setSessionSnapshot(sessionSnap)
-      } else if (self.bc1) {
-        console.log('test1', self.session)
+        if (self.session === sessionSnap.id) {
+          self.setSessionSnapshot(sessionSnap)
+      self.setSessionLoaded(true)
+          return
+        }
+      }
+      if (self.bc1) {
         self.bc1.postMessage(self.session)
         const resultP = new Promise((resolve, reject) => {
           if (self.bc2) {
@@ -223,39 +227,35 @@ const SessionLoader = types
         })
 
         try {
-          console.log('test2')
+          console.log('try')
           const result = await resultP
-          console.log('test3')
           console.log({ result })
           // @ts-ignore
           self.setSessionSnapshot({ ...result, id: shortid() })
         } catch (e) {
-          console.log('e', e)
           // the broadcast channels did not find the session in another tab
           // clear session param
           /* ignore */
         }
       }
+      self.setSessionLoaded(true)
     },
 
     async fetchSharedSession() {
       try {
-        self.setSessionLoading(true)
         const key = crypto.createHash('sha256').update('JBrowse').digest()
         const decryptedSession = await readSessionFromDynamo(
           self.session || '',
           key,
           self.password || '',
         )
-        self.setSessionLoading(false)
 
         const session = JSON.parse(fromUrlSafeB64(decryptedSession))
         self.setSessionSnapshot({ ...session, id: shortid() })
       } catch (e) {
         self.setError(e)
-        // `Failed to find session in database: ${e}`)
-        // TODO self.setSession()
       }
+      self.setSessionLoaded(true)
     },
     async afterCreate() {
       const { session, sharedSession } = self
@@ -267,9 +267,7 @@ const SessionLoader = types
       }
 
       if (self.bc1) {
-        console.log('test4')
         self.bc1.onmessage = msg => {
-          console.log('msg', msg)
           const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
           if (ret.id === msg.data) {
             if (self.bc2) {
@@ -326,35 +324,23 @@ const Renderer = observer(
       return <NoConfigMessage />
     }
 
-    if (loader.ready && loader.plugins) {
+    if (loader.ready) {
+      console.log({ loader })
       const pluginManager = new PluginManager(loader.plugins.map(P => new P()))
 
       pluginManager.createPluggableElements()
 
       const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
 
-      let rootModel
-      try {
-        if (loader.configSnapshot) {
-          rootModel = JBrowseRootModel.create({
-            jbrowse: loader.configSnapshot,
-            assemblyManager: {},
-            version: packagedef.version,
-          })
-        }
-      } catch (e) {
-        console.error(e)
-        const additionalMsg =
-          e.message.length > 10000 ? '... see console for more' : ''
-        throw new Error(e.message.slice(0, 10000) + additionalMsg)
-      }
-      if (!rootModel) {
-        throw new Error('could not instantiate root model')
-      }
-      // in order: saves the previous autosave for recovery, tries to load the local session
-      // if session in query, or loads the default session
-      try {
-        if (!loader.session) {
+      if (loader.configSnapshot) {
+        const rootModel = JBrowseRootModel.create({
+          jbrowse: loader.configSnapshot,
+          assemblyManager: {},
+          version: packagedef.version,
+        })
+        // in order: saves the previous autosave for recovery, tries to load the local session
+        // if session in query, or loads the default session
+        if (!loader.session || !loader.sessionSnapshot) {
           rootModel.setDefaultSession()
         } else {
           rootModel.setSession(loader.sessionSnapshot)
@@ -362,27 +348,23 @@ const Renderer = observer(
         if (!rootModel.session) {
           throw new Error('root model did not have any session defined')
         }
+
+        // TODO use UndoManager
         // rootModel.setHistory(
         //   UndoManager.create({}, { targetStore: rootModel.session }),
         // )
-      } catch (e) {
-        console.error(e)
-        if (e.message) {
-          throw new Error(e.message.slice(0, 10000))
-        } else {
-          throw e
-        }
-      }
-      // make some things available globally for testing
-      // e.g. window.MODEL.views[0] in devtools
-      // @ts-ignore
-      window.MODEL = rootModel.session
-      // @ts-ignore
-      window.ROOTMODEL = rootModel
-      pluginManager.setRootModel(rootModel)
 
-      pluginManager.configure()
-      return <JBrowse pluginManager={pluginManager} />
+        // make some things available globally for testing e.g.
+        // window.MODEL.views[0] in devtools
+        // @ts-ignore
+        window.MODEL = rootModel.session
+        // @ts-ignore
+        window.ROOTMODEL = rootModel
+        pluginManager.setRootModel(rootModel)
+
+        pluginManager.configure()
+        return <JBrowse pluginManager={pluginManager} />
+      }
     }
     return <Loading />
   },
