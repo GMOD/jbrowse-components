@@ -23,17 +23,22 @@ exports.handler = async event => {
   try {
     tableData = await readSession(sessionId)
   } catch (e) {
-    const response = {
-      statusCode: 400,
-      body: JSON.stringify({ message: `Session not found. ${e}` }),
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: `${e}` }),
     }
-    return response
   }
 
   const sessionObj = tableData.Item
-  const response = {
+  if (!sessionObj) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ message: `Session not found` }),
+    }
+  }
+
+  return {
     statusCode: 200,
     body: JSON.stringify(sessionObj),
   }
-  return response
 }
