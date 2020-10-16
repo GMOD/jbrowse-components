@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
+import { useQueryParam, StringParam } from 'use-query-params'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
@@ -44,8 +45,6 @@ function deleteBaseUris(config) {
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const queryParams = new URLSearchParams(window.location.search)
-  const sessionId = queryParams.get('session')
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [sessionId, setSessionId] = useQueryParam('session', StringParam)
 
@@ -91,14 +90,14 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [rootModel, sessionId])
+  }, [rootModel, sessionId, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
         const config = JSON.parse(JSON.stringify(snapshot))
         deleteBaseUris(snapshot)
-        const payload = { adminKey: adminKeyParam, config }
+        const payload = { adminKey, config }
 
         const response = await fetch('/updateConfig', {
           method: 'POST',
@@ -117,7 +116,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, rootModel.session, adminKey, adminKeyParam])
+  }, [jbrowse, rootModel.session, adminKey])
 
   if (error) {
     throw new Error(error)
