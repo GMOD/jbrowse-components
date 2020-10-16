@@ -133,7 +133,6 @@ const SessionLoader = types
     },
 
     get ready() {
-      console.log(self.session, self.sessionSnapshot)
       return (
         self.plugins !== undefined &&
         self.configSnapshot !== undefined &&
@@ -203,6 +202,7 @@ const SessionLoader = types
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
       const sessionSnap = sessionStr ? JSON.parse(sessionStr) : undefined
+      console.log(sessionSnap)
       self.setSessionSnapshot(sessionSnap)
     },
 
@@ -228,11 +228,11 @@ const SessionLoader = types
       }
     },
     async afterCreate() {
-      const { localSession, sharedSession } = self
+      const { session, sharedSession } = self
       this.fetchConfig()
       if (sharedSession) {
         this.fetchSharedSession()
-      } else if (localSession) {
+      } else if (session) {
         this.fetchSessionStorageSession()
       }
     },
@@ -266,11 +266,12 @@ export function Loader() {
   // because the setters from use-query-params don't cause a component rerender
   // if a router system is not used. see the no-router example here
   // https://github.com/pbeshai/use-query-params/blob/master/examples/no-router/src/App.js
-  useEffect(() => {
-    history.listen(() => {
-      forceUpdate()
-    })
-  }, [])
+  // useEffect(() => {
+  //   history.listen(() => {
+  //     forceUpdate()
+  //   })
+  // }, [])
+  console.log('here2')
 
   return <Renderer loader={loader} />
 }
@@ -341,6 +342,7 @@ const Renderer = observer(
 
       pluginManager.configure()
       const root = pluginManager
+      console.log('here1')
       return <JBrowse pluginManager={root} />
     }
     return <Loading />
