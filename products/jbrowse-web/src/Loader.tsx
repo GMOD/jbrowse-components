@@ -16,7 +16,7 @@ import { SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import 'typeface-roboto'
+import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 
