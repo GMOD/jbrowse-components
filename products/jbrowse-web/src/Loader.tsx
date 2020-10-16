@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
@@ -111,7 +111,7 @@ const SessionLoader = types
     config: types.maybe(types.string),
     session: types.maybe(types.string),
     password: types.maybe(types.string),
-    adminMode: types.boolean,
+    adminKey: types.maybe(types.string),
   })
   .volatile(() => ({
     noDefaultConfig: false,
@@ -208,7 +208,6 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
-      console.log('sessionStr')
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
         if (self.session === sessionSnap.id) {
@@ -229,9 +228,7 @@ const SessionLoader = types
         })
 
         try {
-          console.log('try')
           const result = await resultP
-          console.log({ result })
           // @ts-ignore
           self.setSessionSnapshot({ ...result, id: shortid() })
         } catch (e) {
@@ -240,7 +237,6 @@ const SessionLoader = types
           /* ignore */
         }
       }
-      console.log('here')
       self.setSessionLoaded(true)
     },
 
@@ -285,16 +281,17 @@ const SessionLoader = types
   }))
 
 export function Loader() {
-  const queryParams = new URLSearchParams(window.location.search)
-  const load = (param: string) => {
-    const ret = queryParams.get(param)
-    return ret === null ? undefined : ret
-  }
+  const load = (param: string | null | undefined) =>
+    param === null ? undefined : param
+  const [config] = useQueryParam('config', StringParam)
+  const [session] = useQueryParam('session', StringParam)
+  const [password] = useQueryParam('password', StringParam)
+  const [adminKey] = useQueryParam('adminKey', StringParam)
   const loader = SessionLoader.create({
-    config: load('config'),
-    session: load('session'),
-    password: load('password'),
-    adminMode: Boolean(load('adminKey')),
+    config: load(config),
+    session: load(session),
+    password: load(password),
+    adminKey: load(adminKey),
   })
 
   // this history.listen and forceUpdate() are related to use-query-params,
@@ -314,16 +311,14 @@ const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
     const { noDefaultConfig, ready } = loader
 
-    console.log({ noDefaultConfig, ready })
     if (noDefaultConfig) {
       return <NoConfigMessage />
     }
 
     if (ready) {
-      console.log({ loader })
       const {
         plugins,
-        adminMode,
+        adminKey,
         session,
         configSnapshot,
         sessionSnapshot,
@@ -332,7 +327,10 @@ const Renderer = observer(
 
       pluginManager.createPluggableElements()
 
-      const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
+      const JBrowseRootModel = JBrowseRootModelFactory(
+        pluginManager,
+        !!adminKey,
+      )
 
       if (loader.configSnapshot) {
         const rootModel = JBrowseRootModel.create({

@@ -1,11 +1,10 @@
+import React, { useEffect } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
-import React, { useEffect } from 'react'
 import ShareButton from './ShareButton'
 
 // adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
@@ -47,8 +46,8 @@ function deleteBaseUris(config) {
 const JBrowse = observer(({ pluginManager }) => {
   const queryParams = new URLSearchParams(window.location.search)
   const sessionId = queryParams.get('session')
-  const adminKeyParam = queryParams.get('adminKey')
-  const adminMode = adminKeyParam !== null
+  const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [sessionId, setSessionId] = useQueryParam('session', StringParam)
 
   const { rootModel } = pluginManager
   const { error, jbrowse } = rootModel || {}
@@ -83,11 +82,7 @@ const JBrowse = observer(({ pluginManager }) => {
       const updater = debounce(updateLocalSession, 400)
       const snapshotDisposer = onSnapshot(rootModel, snap => {
         updater(snap.session)
-        // update session url
-        const params = new URLSearchParams(window.location.search)
-        params.set('session', snap.session.id)
-        window.history.replaceState(null, null, `?${params.toString()}`)
-
+        setSessionId(snap.session.id)
         sessionStorage.setItem('current', JSON.stringify(snap.session))
       })
       disposer = () => {
@@ -100,7 +95,7 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
-      if (adminMode) {
+      if (adminKey) {
         const config = JSON.parse(JSON.stringify(snapshot))
         deleteBaseUris(snapshot)
         const payload = { adminKey: adminKeyParam, config }
@@ -122,7 +117,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, rootModel.session, adminMode, adminKeyParam])
+  }, [jbrowse, rootModel.session, adminKey, adminKeyParam])
 
   if (error) {
     throw new Error(error)
