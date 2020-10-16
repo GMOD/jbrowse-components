@@ -10,6 +10,7 @@ linear view of the same type exists in the full JBrowse 2 application.
 
 ```tsx
 import React from 'react'
+import 'fontsource-roboto'
 import {
   createViewState,
   createJBrowseTheme,
@@ -50,6 +51,14 @@ Or with [npm](https://npmjs.org/):
 ```
 $ npm install @jbrowse/react-linear-view
 ```
+
+### Note on fonts
+
+[Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
+JBrowse, and this component will use that font if it is available. The easiest
+way to add it is to add the
+[`fontsource-roboto`](https://www.npmjs.com/package/fontsource-roboto) package
+to your project and import it in your root `index.js`.
 
 ## Academic Use
 

@@ -7,7 +7,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import 'typeface-roboto'
 import createSessionModel from '../createModel/createSessionModel'
 
 type Session = Instance<ReturnType<typeof createSessionModel>>

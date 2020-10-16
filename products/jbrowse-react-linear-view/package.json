@@ -51,8 +51,7 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react-use-dimensions": "^1.2.1",
-    "rxjs": "^6.0.0",
-    "typeface-roboto": "^0.0.54"
+    "rxjs": "^6.0.0"
   },
   "peerDependencies": {
     "react": "^16.8.0"

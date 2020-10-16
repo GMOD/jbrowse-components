@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import 'typeface-roboto'
 import createSessionModel from '../createModel/createSessionModel'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
