@@ -163,6 +163,7 @@ export default function RootModel(
       activateSession(name: string) {
         const localId = `localSaved-${name}`
         const newSessionSnapshot = localStorage.getItem(localId)
+        console.log({name,newSessionSnapshot});
         if (!newSessionSnapshot)
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,

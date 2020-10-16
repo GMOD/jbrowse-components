@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
@@ -252,6 +252,13 @@ const SessionLoader = types
     async afterCreate() {
       try {
         const { session, sharedSession } = self
+
+        // rename autosave to previousAutosave
+        const lastAutosave = localStorage.getItem('autosave')
+        if (lastAutosave) {
+          localStorage.setItem('localSaved-previousAutosave', lastAutosave)
+        }
+
         await this.fetchConfig()
         if (sharedSession) {
           await this.fetchSharedSession()
@@ -285,6 +292,8 @@ export function Loader() {
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
 
+  console.log('running')
+
   const loader = SessionLoader.create({
     config: load(config),
     session: load(session),
@@ -298,6 +307,63 @@ export function Loader() {
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
     const { noDefaultConfig, error, ready } = loader
+    const [pluginManager, setPluginManager] = useState<PluginManager>()
+    const load = ready && !noDefaultConfig
+
+    // only create the pluginManager/rootModel "on mount"
+    useEffect(() => {
+      const {
+        plugins,
+        adminKey,
+        session,
+        configSnapshot,
+        sessionSnapshot,
+      } = loader
+      if (load) {
+        const pluginManager = new PluginManager(plugins.map(P => new P()))
+
+        pluginManager.createPluggableElements()
+
+        const JBrowseRootModel = JBrowseRootModelFactory(
+          pluginManager,
+          !!adminKey,
+        )
+
+        if (loader.configSnapshot) {
+          const rootModel = JBrowseRootModel.create({
+            jbrowse: configSnapshot,
+            assemblyManager: {},
+            version: packagedef.version,
+          })
+          // in order: saves the previous autosave for recovery, tries to load the local session
+          // if session in query, or loads the default session
+          if (!session || !sessionSnapshot) {
+            rootModel.setDefaultSession()
+          } else {
+            rootModel.setSession(loader.sessionSnapshot)
+          }
+          // if (!rootModel.session) {
+          //   throw new Error('root model did not have any session defined')
+          // }
+
+          // TODO use UndoManager
+          // rootModel.setHistory(
+          //   UndoManager.create({}, { targetStore: rootModel.session }),
+          // )
+
+          // make some things available globally for testing e.g.
+          // window.MODEL.views[0] in devtools
+          // @ts-ignore
+          window.MODEL = rootModel.session
+          // @ts-ignore
+          window.ROOTMODEL = rootModel
+          pluginManager.setRootModel(rootModel)
+
+          pluginManager.configure()
+          setPluginManager(pluginManager)
+        }
+      }
+    }, [loader, load])
 
     if (noDefaultConfig) {
       return <NoConfigMessage />
@@ -306,56 +372,8 @@ const Renderer = observer(
       throw error
     }
 
-    if (ready) {
-      const {
-        plugins,
-        adminKey,
-        session,
-        configSnapshot,
-        sessionSnapshot,
-      } = loader
-      const pluginManager = new PluginManager(plugins.map(P => new P()))
-
-      pluginManager.createPluggableElements()
-
-      const JBrowseRootModel = JBrowseRootModelFactory(
-        pluginManager,
-        !!adminKey,
-      )
-
-      if (loader.configSnapshot) {
-        const rootModel = JBrowseRootModel.create({
-          jbrowse: configSnapshot,
-          assemblyManager: {},
-          version: packagedef.version,
-        })
-        // in order: saves the previous autosave for recovery, tries to load the local session
-        // if session in query, or loads the default session
-        if (!session || !sessionSnapshot) {
-          rootModel.setDefaultSession()
-        } else {
-          rootModel.setSession(loader.sessionSnapshot)
-        }
-        if (!rootModel.session) {
-          throw new Error('root model did not have any session defined')
-        }
-
-        // TODO use UndoManager
-        // rootModel.setHistory(
-        //   UndoManager.create({}, { targetStore: rootModel.session }),
-        // )
-
-        // make some things available globally for testing e.g.
-        // window.MODEL.views[0] in devtools
-        // @ts-ignore
-        window.MODEL = rootModel.session
-        // @ts-ignore
-        window.ROOTMODEL = rootModel
-        pluginManager.setRootModel(rootModel)
-
-        pluginManager.configure()
-        return <JBrowse pluginManager={pluginManager} />
-      }
+    if (pluginManager) {
+      return <JBrowse pluginManager={pluginManager} />
     }
     return <Loading />
   },
