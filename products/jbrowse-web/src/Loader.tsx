@@ -108,8 +108,8 @@ type Config = SnapshotOut<AnyConfigurationModel>
 
 const SessionLoader = types
   .model({
-    config: types.maybe(types.string),
-    session: types.maybe(types.string),
+    configPath: types.maybe(types.string),
+    sessionQuery: types.maybe(types.string),
     password: types.maybe(types.string),
     adminKey: types.maybe(types.string),
   })
@@ -130,11 +130,11 @@ const SessionLoader = types
   }))
   .views(self => ({
     get sharedSession() {
-      return self.session?.startsWith('share-')
+      return self.sessionQuery?.startsWith('share-')
     },
 
     get localSession() {
-      return self.session?.startsWith('local-')
+      return self.sessionQuery?.startsWith('local-')
     },
 
     get ready() {
@@ -142,8 +142,8 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
-    setSession(session?: any) {
-      self.session = session
+    setSessionQuery(session?: any) {
+      self.sessionQuery = session
     },
     setError(error: Error) {
       self.error = error
@@ -182,7 +182,7 @@ const SessionLoader = types
     async fetchConfig() {
       try {
         const configLocation = {
-          uri: self.config || 'config.json',
+          uri: self.configPath || 'config.json',
         }
         const location = openLocation(configLocation)
         const configText = (await location.readFile('utf8')) as string
@@ -194,7 +194,7 @@ const SessionLoader = types
         self.setConfigSnapshot(config)
         self.setConfigLoaded(true)
       } catch (error) {
-        if (!self.config) {
+        if (!self.configPath) {
           self.setNoDefaultConfig(true)
           self.setConfigLoaded(true)
         } else {
@@ -205,16 +205,18 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
+
+      // check if
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr)
-        if (self.session === sessionSnap.id) {
+        if (self.sessionQuery === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)
           return
         }
       }
       if (self.bc1) {
-        self.bc1.postMessage(self.session)
+        self.bc1.postMessage(self.sessionQuery)
         const resultP = new Promise((resolve, reject) => {
           if (self.bc2) {
             self.bc2.onmessage = msg => {
@@ -230,8 +232,7 @@ const SessionLoader = types
           self.setSessionSnapshot({ ...result, id: shortid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
-          // clear session param
-          /* ignore */
+          // clear session param, so just ignore
         }
       }
       self.setSessionLoaded(true)
@@ -240,7 +241,7 @@ const SessionLoader = types
     async fetchSharedSession() {
       const key = crypto.createHash('sha256').update('JBrowse').digest()
       const decryptedSession = await readSessionFromDynamo(
-        self.session || '',
+        self.sessionQuery || '',
         key,
         self.password || '',
       )
@@ -251,18 +252,19 @@ const SessionLoader = types
     },
     async afterCreate() {
       try {
-        const { session, sharedSession } = self
+        const { sessionQuery, sharedSession, configPath } = self
 
         // rename autosave to previousAutosave
-        const lastAutosave = localStorage.getItem('autosave')
+        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
         if (lastAutosave) {
-          localStorage.setItem('localSaved-previousAutosave', lastAutosave)
+          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
         }
 
+        // fetch config
         await this.fetchConfig()
         if (sharedSession) {
           await this.fetchSharedSession()
-        } else if (session) {
+        } else if (sessionQuery) {
           await this.fetchSessionStorageSession()
         } else {
           self.setSessionLoaded(true)
@@ -285,18 +287,19 @@ const SessionLoader = types
   }))
 
 export function Loader() {
+  // return value if defined, else convert null to undefined for use with
+  // types.maybe
   const load = (param: string | null | undefined) =>
     param === null ? undefined : param
+
   const [config] = useQueryParam('config', StringParam)
   const [session] = useQueryParam('session', StringParam)
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
 
-  console.log('running')
-
   const loader = SessionLoader.create({
-    config: load(config),
-    session: load(session),
+    configPath: load(config),
+    sessionQuery: load(session),
     password: load(password),
     adminKey: load(adminKey),
   })
@@ -315,7 +318,7 @@ const Renderer = observer(
       const {
         plugins,
         adminKey,
-        session,
+        sessionQuery,
         configSnapshot,
         sessionSnapshot,
       } = loader
@@ -337,7 +340,7 @@ const Renderer = observer(
           })
           // in order: saves the previous autosave for recovery, tries to load the local session
           // if session in query, or loads the default session
-          if (!session || !sessionSnapshot) {
+          if (!sessionQuery || !sessionSnapshot) {
             rootModel.setDefaultSession()
           } else {
             rootModel.setSession(loader.sessionSnapshot)

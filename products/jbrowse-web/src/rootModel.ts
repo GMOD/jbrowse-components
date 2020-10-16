@@ -116,6 +116,38 @@ export default function RootModel(
             }
           }),
         )
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.session) {
+                const snapshot = getSnapshot(self.session) || {}
+                const { id: sessionId } = self.session
+                const toStore = JSON.stringify({ session: snapshot })
+                const autosaveStore = JSON.stringify({
+                  session: {
+                    ...snapshot,
+                    name: `${snapshot.name}-autosaved`,
+                  },
+                })
+                if (
+                  sessionId?.startsWith('local-') &&
+                  sessionStorage.getItem('current')
+                ) {
+                  sessionStorage.setItem('current', toStore)
+                } else if (sessionId?.startsWith('localSaved-')) {
+                  localStorage.setItem(sessionId, toStore)
+                  if (localStorage.getItem('autosave')) {
+                    localStorage.removeItem('autosave')
+                  }
+                }
+
+                localStorage.setItem('autosave', autosaveStore)
+              }
+            },
+            { delay: 400 },
+          ),
+        )
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
