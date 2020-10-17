@@ -401,7 +401,7 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, load])
+    }, [loader, load, setPassword])
 
     if (noDefaultConfig) {
       return <NoConfigMessage />

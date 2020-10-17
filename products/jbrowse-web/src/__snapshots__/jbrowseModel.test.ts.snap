@@ -6,7 +6,7 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "name": "New Session",
+    "name": "New session",
   },
   "plugins": undefined,
   "tracks": Array [],
