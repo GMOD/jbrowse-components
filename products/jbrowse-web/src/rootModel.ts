@@ -1,3 +1,4 @@
+/* eslint curly:error*/
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
@@ -192,11 +193,11 @@ export default function RootModel(
       activateSession(name: string) {
         const localId = self.localStorageId(name)
         const newSessionSnapshot = localStorage.getItem(localId)
-        console.log({ name, newSessionSnapshot })
-        if (!newSessionSnapshot)
+        if (!newSessionSnapshot) {
           throw new Error(
             `Can't activate session ${name}, it is not in the savedSessions`,
           )
+        }
 
         this.setSession(JSON.parse(newSessionSnapshot).session)
       },

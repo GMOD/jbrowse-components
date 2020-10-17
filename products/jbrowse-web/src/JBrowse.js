@@ -25,13 +25,11 @@ const JBrowse = observer(({ pluginManager }) => {
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
+  const { id: currentSessionId } = session
 
   useEffect(() => {
-    onSnapshot(rootModel, snapshot => {
-      console.log('here', rootModel.session.id)
-      setSessionId(rootModel.session.id)
-    })
-  }, [rootModel, setSessionId])
+    setSessionId(currentSessionId)
+  }, [currentSessionId, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
