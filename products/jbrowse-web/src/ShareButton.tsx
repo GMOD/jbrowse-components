@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary */
+/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
@@ -81,25 +81,145 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
   )
 }
 
+const ShareDialog = observer(
+  ({
+    open,
+    loading,
+    handleClose,
+    shortUrl,
+    session,
+    error,
+  }: {
+    open: boolean
+    loading: boolean
+    handleClose: () => void
+    shortUrl: string
+    session: any
+    error: Error | undefined
+  }) => {
+    const [infoDialogOpen, setInfoDialogOpen] = useState(false)
+    // generate long URL
+    const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
+    const longUrl = new URL(window.location.href)
+    const longParams = new URLSearchParams(longUrl.search)
+    longParams.set('session', `encoded-${sess}`)
+    longUrl.search = longParams.toString()
+    return (
+      <>
+        <Dialog
+          maxWidth="xl"
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            JBrowse Shareable Link
+          </DialogTitle>
+          <Divider />
+
+          <>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Copy either the short or long version of the URL below to share
+                the session.
+                <IconButton onClick={() => setInfoDialogOpen(true)}>
+                  <HelpOutlineIcon />
+                </IconButton>
+              </DialogContentText>
+            </DialogContent>
+
+            <DialogContent>
+              <Typography>Short URL</Typography>
+              {error ? (
+                <Typography color="error">
+                  Failed to generate short URL: {`${error}`}
+                </Typography>
+              ) : loading ? (
+                <Typography>Generating short URL...</Typography>
+              ) : (
+                <TextField
+                  id="filled-read-only-input"
+                  label="URL"
+                  value={shortUrl}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  variant="filled"
+                  style={{ width: '100%' }}
+                  onClick={event => {
+                    const target = event.target as HTMLTextAreaElement
+                    target.select()
+                  }}
+                />
+              )}
+              <Typography>Long URL</Typography>
+              <TextField
+                id="filled-read-only-input"
+                label="URL"
+                value={longUrl.toString()}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                style={{ width: '100%' }}
+                onClick={event => {
+                  const target = event.target as HTMLTextAreaElement
+                  target.select()
+                }}
+              />
+            </DialogContent>
+          </>
+          <DialogActions>
+            {!loading && !error ? (
+              <Button
+                onClick={() => {
+                  copy(shortUrl)
+                  session.notify('Copied to clipboard', 'success')
+                }}
+                color="primary"
+                startIcon={<ContentCopyIcon />}
+              >
+                Copy short URL to Clipboard
+              </Button>
+            ) : null}
+            <Button
+              onClick={() => {
+                copy(longUrl.toString())
+                session.notify('Copied to clipboard', 'success')
+              }}
+              color="primary"
+              startIcon={<ContentCopyIcon />}
+            >
+              Copy long URL to Clipboard
+            </Button>
+            <Button onClick={handleClose} color="primary" autoFocus>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <InfoDialog
+          open={infoDialogOpen}
+          onClose={() => {
+            setInfoDialogOpen(false)
+          }}
+        />
+      </>
+    )
+  },
+)
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Share = observer((props: { session: any }) => {
+const ShareButton = observer((props: { session: any }) => {
+  const [open, setOpen] = useState(false)
+  const [shortUrl, setShortUrl] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error>()
   const { session } = props
   const classes = useStyles()
   const url = session.shareURL
 
-  const [open, setOpen] = useState(false)
-  const [infoDialogOpen, setInfoDialogOpen] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [shareUrl, setShareUrl] = useState('')
   const locationUrl = new URL(window.location.href)
-  const [error, setError] = useState<Error>()
-
-  // generate long URL
-  const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
-  const longUrl = new URL(window.location.href)
-  const longParams = new URLSearchParams(longUrl.search)
-  longParams.set('session', `encoded-${sess}`)
-  longUrl.search = longParams.toString()
 
   const handleClose = () => {
     setOpen(false)
@@ -125,7 +245,7 @@ const Share = observer((props: { session: any }) => {
             params.set('session', `share-${result.json.sessionId}`)
             params.set('password', result.encryptedSession.iv)
             locationUrl.search = params.toString()
-            setShareUrl(locationUrl.href)
+            setShortUrl(locationUrl.href)
           } catch (e) {
             setLoading(false)
             setError(e)
@@ -138,108 +258,16 @@ const Share = observer((props: { session: any }) => {
       >
         Share
       </Button>
-      <Dialog
-        maxWidth="xl"
+      <ShareDialog
         open={open}
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          JBrowse Shareable Link
-        </DialogTitle>
-        <Divider />
-
-        <>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <p>
-                Copy either the short or long version of the URL below to share
-                the session.
-                <IconButton onClick={() => setInfoDialogOpen(true)}>
-                  <HelpOutlineIcon />
-                </IconButton>
-              </p>
-            </DialogContentText>
-          </DialogContent>
-
-          <DialogContent>
-            <Typography>Short URL</Typography>
-            {error ? (
-              <Typography color="error">
-                Failed to generate short URL: {`${error}`}
-              </Typography>
-            ) : loading ? (
-              <Typography>Generating short URL...</Typography>
-            ) : (
-              <TextField
-                id="filled-read-only-input"
-                label="URL"
-                value={shareUrl}
-                InputProps={{
-                  readOnly: true,
-                }}
-                variant="filled"
-                style={{ width: '100%' }}
-                onClick={event => {
-                  const target = event.target as HTMLTextAreaElement
-                  target.select()
-                }}
-              />
-            )}
-            <Typography>Long URL</Typography>
-            <TextField
-              id="filled-read-only-input"
-              label="URL"
-              value={longUrl.toString()}
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="filled"
-              style={{ width: '100%' }}
-              onClick={event => {
-                const target = event.target as HTMLTextAreaElement
-                target.select()
-              }}
-            />
-          </DialogContent>
-        </>
-        <DialogActions>
-          {!loading && !error ? (
-            <Button
-              onClick={() => {
-                copy(shareUrl)
-                session.notify('Copied to clipboard', 'success')
-              }}
-              color="primary"
-              startIcon={<ContentCopyIcon />}
-            >
-              Copy short URL to Clipboard
-            </Button>
-          ) : null}
-          <Button
-            onClick={() => {
-              copy(longUrl.toString())
-              session.notify('Copied to clipboard', 'success')
-            }}
-            color="primary"
-            startIcon={<ContentCopyIcon />}
-          >
-            Copy long URL to Clipboard
-          </Button>
-          <Button onClick={handleClose} color="primary" autoFocus>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <InfoDialog
-        open={infoDialogOpen}
-        onClose={() => {
-          setInfoDialogOpen(false)
-        }}
+        handleClose={handleClose}
+        loading={loading}
+        shortUrl={shortUrl}
+        session={session}
+        error={error}
       />
     </div>
   )
 })
 
-export default Share
+export default ShareButton
