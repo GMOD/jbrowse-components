@@ -17,11 +17,10 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import * as crypto from 'crypto'
-import 'typeface-roboto'
+import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
-import history from './history'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -408,8 +407,7 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
 export default () => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-      {/* @ts-ignore*/}
-      <QueryParamProvider history={history}>
+      <QueryParamProvider>
         <Loader />
       </QueryParamProvider>
     </ErrorBoundary>
