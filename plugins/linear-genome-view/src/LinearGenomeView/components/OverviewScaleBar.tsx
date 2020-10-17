@@ -34,13 +34,14 @@ const useStyles = makeStyles(theme => {
       backgroundColor: theme.palette.background.default,
       position: 'relative',
       borderColor: theme.palette.text.primary,
+      borderBottomColor: 'black',
     },
     scaleBarContigForward: {
       backgroundImage: `
       linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px), 
       linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px),
-      linear-gradient(-45deg, #cccccc 11px, transparent 12px),
-      linear-gradient(-135deg, #cccccc 11px, transparent 12px),
+      linear-gradient(-45deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(-135deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px),
       linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
       backgroundRepeat: 'repeat',
@@ -50,12 +51,34 @@ const useStyles = makeStyles(theme => {
       backgroundImage: `
       linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px), 
       linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px),
-      linear-gradient(45deg, #cccccc 11px, transparent 12px),
-      linear-gradient(135deg, #cccccc 11px, transparent 12px),
+      linear-gradient(45deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(135deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px),
       linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
       backgroundRepeat: 'repeat',
       backgroundSize: HEADER_OVERVIEW_HEIGHT,
+    },
+    scaleBarRegionIncompleteLeft: {
+      width: 10,
+      height: 17.5,
+      background: `linear-gradient(-225deg, #aaa 3px, transparent 1px),
+      linear-gradient(45deg, #aaa 3px, transparent 1px)`,
+      backgroundRepeat: 'repeat-y',
+      backgroundSize: '10px 8px',
+      borderTopLeftRadius: '2px',
+      borderBottomLeftRadius: '2px',
+      float: 'left',
+    },
+    scaleBarRegionIncompleteRight: {
+      width: 10,
+      height: 17.5,
+      background: `linear-gradient(225deg, #aaa 3px, transparent 1px),
+      linear-gradient(-45deg, #aaa 3px, transparent 1px)`,
+      backgroundRepeat: 'repeat-y',
+      backgroundSize: '10px 8px',
+      borderTopRightRadius: '2px',
+      borderBottomRightRadius: '2px',
+      float: 'right',
     },
     scaleBarRefName: {
       position: 'absolute',
@@ -179,11 +202,19 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        // const parent = model.parentRegion(seq.assemblyName, seq.refName)
-        // const parentLength = parent ? parent.end - parent.start : 0
+        const parent = model.parentRegion(seq.assemblyName, seq.refName)
+        let regionStartSmaller = parent ? seq.start > parent.start : false
+        let regionEndSmaller = parent ? seq.end < parent.end : false
+        if (seq.reversed) {
+          ;[regionStartSmaller, regionEndSmaller] = [
+            regionEndSmaller,
+            regionStartSmaller,
+          ]
+        }
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
+          //need to fix
           seq.reversed
             ? labels.unshift(index * gridPitch.majorPitch + seq.start)
             : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
@@ -191,6 +222,13 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         return (
           <Paper
             key={`${JSON.stringify(seq)}-${idx.toLocaleString('en-US')}`}
+            variant="outlined"
+            className={clsx(
+              classes.scaleBarContig,
+              seq.reversed
+                ? classes.scaleBarContigReverse
+                : classes.scaleBarContigForward,
+            )}
             style={{
               minWidth: regionLength / scale,
               marginRight:
@@ -199,14 +237,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   : wholeSeqSpacer,
               borderColor: refNameColor,
             }}
-            className={clsx(
-              classes.scaleBarContig,
-              seq.reversed
-                ? classes.scaleBarContigReverse
-                : classes.scaleBarContigForward,
-            )}
-            variant="outlined"
           >
+            {regionStartSmaller && (
+              <div className={classes.scaleBarRegionIncompleteLeft} />
+            )}
             {/* name of sequence */}
             <Typography
               style={{ color: refNameColor }}
@@ -252,6 +286,9 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 {label.toLocaleString('en-US')}
               </div>
             ))}
+            {regionEndSmaller && (
+              <div className={classes.scaleBarRegionIncompleteRight} />
+            )}
           </Paper>
         )
       })}
