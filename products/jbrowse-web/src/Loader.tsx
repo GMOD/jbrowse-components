@@ -132,6 +132,10 @@ const SessionLoader = types
       return self.sessionQuery?.startsWith('share-')
     },
 
+    get urlSession() {
+      return self.sessionQuery?.startsWith('url-')
+    },
+
     get localSession() {
       return self.sessionQuery?.startsWith('local-')
     },
@@ -239,7 +243,20 @@ const SessionLoader = types
 
     async fetchSharedSession() {
       const key = crypto.createHash('sha256').update('JBrowse').digest()
+
+      // raw readConf alternative for before conf is initialized
+      const readConf = (
+        conf: { configuration?: { [key: string]: string } },
+        attr: string,
+        def: string,
+      ) => {
+        return (conf.configuration || {})[attr] || def
+      }
+
+      const defaultURL =
+        'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
+        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
         key,
         self.password || '',
@@ -310,6 +327,7 @@ export function Loader() {
 
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
+    const [, setPassword] = useQueryParam('password', StringParam)
     const { noDefaultConfig, error, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
     const load = ready && !noDefaultConfig
@@ -367,6 +385,9 @@ const Renderer = observer(
 
           pluginManager.configure()
           setPluginManager(pluginManager)
+
+          // automatically clear password field once loaded
+          setPassword(undefined)
         }
       }
     }, [loader, load])

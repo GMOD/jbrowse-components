@@ -40,8 +40,7 @@ const useStyles = makeStyles(theme => ({
 const Share = observer((props: { session: any }) => {
   const { session } = props
   const classes = useStyles()
-  const url =
-    'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/share'
+  const url = session.shareURL
 
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)

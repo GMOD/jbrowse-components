@@ -28,13 +28,10 @@ export default function JBrowseWeb(
           type: 'number',
           defaultValue: 2,
         },
-        useUrlSession: {
-          type: 'boolean',
-          defaultValue: true,
-        },
-        useLocalStorage: {
-          type: 'boolean',
-          defaultValue: false,
+        shareURL: {
+          type: 'string',
+          defaultValue:
+            'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
         theme: { type: 'frozen', defaultValue: {} },
       }),
@@ -47,7 +44,7 @@ export default function JBrowseWeb(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       defaultSession: types.optional(types.frozen(Session), {
-        name: `New Session`,
+        name: `New session`,
       }),
     })
     .actions(self => ({

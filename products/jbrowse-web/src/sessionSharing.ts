@@ -36,7 +36,7 @@ export async function shareSessionToDynamo(
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
 
-  const response = await fetch(url, {
+  const response = await fetch(`${url}share`, {
     method: 'POST',
     mode: 'cors',
     body: data,
@@ -53,13 +53,14 @@ export async function shareSessionToDynamo(
 }
 
 export async function readSessionFromDynamo(
+  baseUrl: string,
   sessionQueryParam: string,
   key: Buffer,
   password: string,
   signal?: AbortSignal,
 ) {
   const sessionId = sessionQueryParam.split('share-')[1]
-  const url = `https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/load?sessionId=${sessionId}`
+  const url = `${baseUrl}?sessionId=${sessionId}`
 
   const response = await fetch(url, {
     signal,

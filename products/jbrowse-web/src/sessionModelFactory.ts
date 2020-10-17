@@ -2,6 +2,7 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
+  getConf,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
@@ -62,7 +63,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
-
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
@@ -83,6 +83,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       task: undefined,
     }))
     .views(self => ({
+      get shareURL() {
+        return getConf(getParent(self).jbrowse, 'shareURL')
+      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
       },
