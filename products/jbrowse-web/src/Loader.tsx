@@ -208,7 +208,7 @@ const SessionLoader = types
 
       // check if
       if (sessionStr) {
-        const sessionSnap = JSON.parse(sessionStr)
+        const sessionSnap = JSON.parse(sessionStr).session
         if (self.sessionQuery === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)

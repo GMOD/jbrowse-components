@@ -28,6 +28,7 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     onSnapshot(rootModel, snapshot => {
+      console.log('here', rootModel.session.id)
       setSessionId(rootModel.session.id)
     })
   }, [rootModel, setSessionId])
