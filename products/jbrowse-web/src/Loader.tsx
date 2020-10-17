@@ -312,7 +312,7 @@ export function Loader() {
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
     const { noDefaultConfig, error, ready } = loader
-    const [pluginManager, setPluginManager] = useState<PluginManager>()
+    const [pm, setPluginManager] = useState<PluginManager>()
     const load = ready && !noDefaultConfig
 
     // only create the pluginManager/rootModel "on mount"
@@ -379,8 +379,8 @@ const Renderer = observer(
       throw error
     }
 
-    if (pluginManager) {
-      return <JBrowse pluginManager={pluginManager} />
+    if (pm) {
+      return <JBrowse pluginManager={pm} />
     }
     return <Loading />
   },
