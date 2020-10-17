@@ -10,9 +10,12 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import { getSnapshot } from 'mobx-state-tree'
+import { toUrlSafeB64 } from '@jbrowse/core/util'
 import { shareSessionToDynamo } from './sessionSharing'
 
 const useStyles = makeStyles(theme => ({
@@ -46,6 +49,13 @@ const Share = observer((props: { session: any }) => {
   const [loading, setLoading] = useState(true)
   const [shareUrl, setShareUrl] = useState('')
   const locationUrl = new URL(window.location.href)
+
+  // generate long URL
+  const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
+  const longUrl = new URL(window.location.href)
+  const longParams = new URLSearchParams(longUrl.search)
+  longParams.set('session', `encoded-${sess}`)
+  longUrl.search = longParams.toString()
 
   const localHostMessage = locationUrl.href.includes('localhost')
     ? 'Warning: Domain contains localhost, sharing link with others may be unsuccessful'
@@ -111,10 +121,26 @@ const Share = observer((props: { session: any }) => {
               </DialogContentText>
             </DialogContent>
             <DialogContent>
+              <Typography>Short URL</Typography>
               <TextField
                 id="filled-read-only-input"
                 label="URL"
                 value={shareUrl}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="filled"
+                style={{ width: '100%' }}
+                onClick={event => {
+                  const target = event.target as HTMLTextAreaElement
+                  target.select()
+                }}
+              />
+              <Typography>Long URL</Typography>
+              <TextField
+                id="filled-read-only-input"
+                label="URL"
+                value={longUrl.toString()}
                 InputProps={{
                   readOnly: true,
                 }}
@@ -137,7 +163,17 @@ const Share = observer((props: { session: any }) => {
             color="primary"
             startIcon={<ContentCopyIcon />}
           >
-            Copy to Clipboard
+            Copy short URL to Clipboard
+          </Button>
+          <Button
+            onClick={() => {
+              copy(longUrl.toString())
+              session.notify('Copied to clipboard', 'success')
+            }}
+            color="primary"
+            startIcon={<ContentCopyIcon />}
+          >
+            Copy long URL to Clipboard
           </Button>
           <Button onClick={handleClose} color="primary" autoFocus>
             Close

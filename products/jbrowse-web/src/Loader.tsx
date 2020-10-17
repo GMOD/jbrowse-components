@@ -132,8 +132,8 @@ const SessionLoader = types
       return self.sessionQuery?.startsWith('share-')
     },
 
-    get urlSession() {
-      return self.sessionQuery?.startsWith('url-')
+    get encodedSession() {
+      return self.sessionQuery?.startsWith('encoded-')
     },
 
     get localSession() {
@@ -266,9 +266,18 @@ const SessionLoader = types
       self.setSessionSnapshot({ ...session, id: shortid() })
       self.setSessionLoaded(true)
     },
+
+    async decodeEncodedUrlSession() {
+      const session = JSON.parse(
+        // @ts-ignore
+        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+      )
+      self.setSessionSnapshot({ ...session, id: shortid() })
+      self.setSessionLoaded(true)
+    },
     async afterCreate() {
       try {
-        const { sessionQuery, sharedSession, configPath } = self
+        const { sessionQuery, encodedSession, sharedSession, configPath } = self
 
         // rename autosave to previousAutosave
         const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
@@ -280,6 +289,8 @@ const SessionLoader = types
         await this.fetchConfig()
         if (sharedSession) {
           await this.fetchSharedSession()
+        } else if (encodedSession) {
+          await this.decodeEncodedUrlSession()
         } else if (sessionQuery) {
           await this.fetchSessionStorageSession()
         } else {
