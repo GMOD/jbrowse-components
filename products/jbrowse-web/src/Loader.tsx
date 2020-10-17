@@ -208,7 +208,7 @@ const SessionLoader = types
 
       // check if
       if (sessionStr) {
-        const sessionSnap = JSON.parse(sessionStr).session
+        const sessionSnap = JSON.parse(sessionStr).session || {}
         if (self.sessionQuery === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)
@@ -272,7 +272,9 @@ const SessionLoader = types
 
         if (self.bc1) {
           self.bc1.onmessage = msg => {
-            const ret = JSON.parse(sessionStorage.getItem('current') || '{}')
+            const ret =
+              JSON.parse(sessionStorage.getItem('current') || '{}').session ||
+              {}
             if (ret.id === msg.data) {
               if (self.bc2) {
                 self.bc2.postMessage(ret)

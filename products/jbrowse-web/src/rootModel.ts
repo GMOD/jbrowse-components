@@ -123,7 +123,6 @@ export default function RootModel(
               if (self.session) {
                 const noSession = { name: 'empty' }
                 const snapshot = getSnapshot(self.session) || noSession
-                console.log('updated')
                 sessionStorage.setItem(
                   'current',
                   JSON.stringify({ session: snapshot }),
