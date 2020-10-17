@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
@@ -91,6 +92,7 @@ const Share = observer((props: { session: any }) => {
   const [loading, setLoading] = useState(true)
   const [shareUrl, setShareUrl] = useState('')
   const locationUrl = new URL(window.location.href)
+  const [error, setError] = useState<Error>()
 
   // generate long URL
   const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
@@ -102,6 +104,7 @@ const Share = observer((props: { session: any }) => {
   const handleClose = () => {
     setOpen(false)
     setLoading(false)
+    setError(undefined)
   }
 
   return (
@@ -124,7 +127,8 @@ const Share = observer((props: { session: any }) => {
             locationUrl.search = params.toString()
             setShareUrl(locationUrl.href)
           } catch (e) {
-            session.notify(`Failed to generate a share link ${e}`, 'warning')
+            setLoading(false)
+            setError(e)
           }
         }}
         size="small"
@@ -161,7 +165,11 @@ const Share = observer((props: { session: any }) => {
 
           <DialogContent>
             <Typography>Short URL</Typography>
-            {loading ? (
+            {error ? (
+              <Typography color="error">
+                Failed to generate short URL: {`${error}`}
+              </Typography>
+            ) : loading ? (
               <Typography>Generating short URL...</Typography>
             ) : (
               <TextField
@@ -197,7 +205,7 @@ const Share = observer((props: { session: any }) => {
           </DialogContent>
         </>
         <DialogActions>
-          {!loading ? (
+          {!loading && !error ? (
             <Button
               onClick={() => {
                 copy(shareUrl)
