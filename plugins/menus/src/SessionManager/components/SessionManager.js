@@ -32,15 +32,18 @@ const useStyles = makeStyles(theme => ({
 
 const AutosaveEntry = observer(({ session }) => {
   const classes = useStyles()
+  console.log(session.configPath)
   const autosavedSession =
-    JSON.parse(localStorage.getItem('localSaved-previousAutosave') || '{}')
+    JSON.parse(localStorage.getItem(session.previousAutosaveId) || '{}')
       .session || {}
+
+  console.log(autosavedSession)
   const { views = [] } = autosavedSession
   const totalTracks = views
     .map(view => view.tracks.length)
     .reduce((a, b) => a + b, 0)
 
-  return session.hasRecoverableAutosave ? (
+  return autosavedSession ? (
     <Paper className={classes.root}>
       <List subheader={<ListSubheader>Previous autosaved entry</ListSubheader>}>
         <ListItem button onClick={() => session.loadAutosaveSession()}>

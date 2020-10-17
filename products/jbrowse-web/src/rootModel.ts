@@ -79,14 +79,6 @@ export default function RootModel(
         const params = new URLSearchParams(locationUrl.search)
         return params?.get('session')?.split('local-')[1]
       },
-      get hasRecoverableAutosave() {
-        // caution to allow a test to pass
-        return (
-          localStorage &&
-          localStorage.get &&
-          Boolean(localStorage.get(self.previousAutosaveId))
-        )
-      },
     }))
     .actions(self => ({
       afterCreate() {
@@ -135,7 +127,7 @@ export default function RootModel(
                 )
 
                 localStorage.setItem(
-                  'autosave',
+                  `autosave-${self.configPath}`,
                   JSON.stringify({
                     session: {
                       ...snapshot,

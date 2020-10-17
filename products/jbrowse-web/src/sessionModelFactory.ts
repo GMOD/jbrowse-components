@@ -83,9 +83,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       task: undefined,
     }))
     .views(self => ({
-      get hasRecoverableAutosave() {
-        return getParent(self).hasRecoverableAutosave
-      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
       },
@@ -110,6 +107,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get savedSessions() {
         return getParent(self).savedSessions
       },
+      get previousAutosaveId() {
+        return getParent(self).previousAutosaveId
+      },
       get savedSessionNames() {
         return getParent(self).savedSessionNames
       },
@@ -119,7 +119,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get menus() {
         return getParent(self).menus
       },
-
       get assemblyManager() {
         return getParent(self).assemblyManager
       },
