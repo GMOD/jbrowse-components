@@ -12454,7 +12454,7 @@ highlight.js@^10.1.1, highlight.js@~10.2.0:
   resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-10.2.1.tgz#09784fe2e95612abbefd510948945d4fe6fa9668"
   integrity sha512-A+sckVPIb9zQTUydC9lpRX1qRFO/N0OKEh0NwIr65ckvWA/oMY8v9P3+kGRK3w2ULSh9E8v5MszXafodQ6039g==
 
-history@^4.0.0, history@^4.9.0:
+history@^4.9.0:
   version "4.10.1"
   resolved "https://registry.yarnpkg.com/history/-/history-4.10.1.tgz#33371a65e3a83b267434e2b3f3b1b4c58aad4cf3"
   integrity sha512-36nwAD620w12kuzPAsyINPWJqlNbij+hpK1k9XRloDtym8mxzGYl2c17LnV6IAGB2Dmg4tEa7G7DlawS0+qjew==
@@ -20208,7 +20208,7 @@ serialize-javascript@^4.0.0:
   dependencies:
     randombytes "^2.1.0"
 
-serialize-query-params@^1.2.0:
+serialize-query-params@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/serialize-query-params/-/serialize-query-params-1.2.3.tgz#0d6728c2378fa692233af80f4a72765db06f1069"
   integrity sha512-pTssDTpnDR2p54q1/V1LpG/czg29iX9imxfKF1cupl30BWcRg8R8y3ddB4iHuhuVBO+HjSNj4+tAT1s075iimw==
@@ -22361,12 +22361,12 @@ url@^0.11.0:
     punycode "1.3.2"
     querystring "0.2.0"
 
-use-query-params@1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-1.1.3.tgz#b99cd48f87fcc79f737ce5c46c65a3ac73ba6c7f"
-  integrity sha512-lT4zhtmeMecwXPFExLbMV0BSISl08kwAFtKw8Wz0HQyCDo01nIDYa7NV7kU9dTfljkDN6LRqiHBcRoa/MU8P9A==
+use-query-params@^1.1.3:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/use-query-params/-/use-query-params-1.1.8.tgz#61d5e2ad903da9ed807383e509b4b52343c886ad"
+  integrity sha512-tB9V4IEE1AbHHtbqxpIjajrDOJsnxS2+PrEfiI/zYatOgns3hkRqj+hrn7F0z5Vxf7z8k4ZV9CGanuk+tt8dEg==
   dependencies:
-    serialize-query-params "^1.2.0"
+    serialize-query-params "^1.2.3"
 
 use@^3.1.0:
   version "3.1.1"
@@ -22441,11 +22441,6 @@ uuid@^3.0.1, uuid@^3.3.2, uuid@^3.4.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
-
-uuid@^8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.0.tgz#ab738085ca22dc9a8c92725e459b1d507df5d6ea"
-  integrity sha512-fX6Z5o4m6XsXBdli9g7DtWgAx+osMsRRZFKma1mIUsLCz6vRvv+pz5VNbyu9UEDzpMWulZfvpgb/cmDXVulYFQ==
 
 v8-compile-cache@2.0.3:
   version "2.0.3"
