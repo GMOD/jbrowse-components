@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any */
+/* eslint-disable no-nested-ternary */
 import React, { useState } from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
@@ -20,6 +20,7 @@ import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from 'mobx-state-tree'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
 import { shareSessionToDynamo } from './sessionSharing'
+import { SessionModel } from './sessionModelFactory'
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {
@@ -94,7 +95,7 @@ const ShareDialog = observer(
     loading: boolean
     handleClose: () => void
     shortUrl: string
-    session: any
+    session: SessionModel
     error: Error | undefined
   }) => {
     const [infoDialogOpen, setInfoDialogOpen] = useState(false)
@@ -139,7 +140,6 @@ const ShareDialog = observer(
                 <Typography>Generating short URL...</Typography>
               ) : (
                 <TextField
-                  id="filled-read-only-input"
                   label="URL"
                   value={shortUrl}
                   InputProps={{
@@ -155,7 +155,6 @@ const ShareDialog = observer(
               )}
               <Typography>Long URL</Typography>
               <TextField
-                id="filled-read-only-input"
                 label="URL"
                 value={longUrl.toString()}
                 InputProps={{
@@ -209,8 +208,7 @@ const ShareDialog = observer(
   },
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ShareButton = observer((props: { session: any }) => {
+const ShareButton = observer((props: { session: SessionModel }) => {
   const [open, setOpen] = useState(false)
   const [shortUrl, setShortUrl] = useState('')
   const [loading, setLoading] = useState(true)
