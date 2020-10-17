@@ -80,7 +80,12 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
       get hasRecoverableAutosave() {
-        return Boolean(localStorage.get(self.previousAutosaveId))
+        // caution to allow a test to pass
+        return (
+          localStorage &&
+          localStorage.get &&
+          Boolean(localStorage.get(self.previousAutosaveId))
+        )
       },
     }))
     .actions(self => ({
