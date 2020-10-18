@@ -57,11 +57,251 @@ interface MyProps {
   highResolutionScaling: number
 }
 
+function revcom(seqString: string) {
+  return complement(seqString).split('').reverse().join('')
+}
+
+const complement = (() => {
+  const complementRegex = /[ACGT]/gi
+
+  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+  // generated with:
+  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+  const complementTable = {
+    S: 'S',
+    w: 'w',
+    T: 'A',
+    r: 'y',
+    a: 't',
+    N: 'N',
+    K: 'M',
+    x: 'x',
+    d: 'h',
+    Y: 'R',
+    V: 'B',
+    y: 'r',
+    M: 'K',
+    h: 'd',
+    k: 'm',
+    C: 'G',
+    g: 'c',
+    t: 'a',
+    A: 'T',
+    n: 'n',
+    W: 'W',
+    X: 'X',
+    m: 'k',
+    v: 'b',
+    B: 'V',
+    s: 's',
+    H: 'D',
+    c: 'g',
+    D: 'H',
+    b: 'v',
+    R: 'Y',
+    G: 'C',
+  } as { [key: string]: string }
+
+  return (seqString: string) => {
+    return seqString.replace(complementRegex, m => complementTable[m] || '')
+  }
+})()
+
+const defaultStarts = ['ATG']
+const defaultStops = ['TAA', 'TAG', 'TGA']
+const defaultCodonTable = {
+  TCA: 'S',
+  TCC: 'S',
+  TCG: 'S',
+  TCT: 'S',
+  TTC: 'F',
+  TTT: 'F',
+  TTA: 'L',
+  TTG: 'L',
+  TAC: 'Y',
+  TAT: 'Y',
+  TAA: '*',
+  TAG: '*',
+  TGC: 'C',
+  TGT: 'C',
+  TGA: '*',
+  TGG: 'W',
+  CTA: 'L',
+  CTC: 'L',
+  CTG: 'L',
+  CTT: 'L',
+  CCA: 'P',
+  CCC: 'P',
+  CCG: 'P',
+  CCT: 'P',
+  CAC: 'H',
+  CAT: 'H',
+  CAA: 'Q',
+  CAG: 'Q',
+  CGA: 'R',
+  CGC: 'R',
+  CGG: 'R',
+  CGT: 'R',
+  ATA: 'I',
+  ATC: 'I',
+  ATT: 'I',
+  ATG: 'M',
+  ACA: 'T',
+  ACC: 'T',
+  ACG: 'T',
+  ACT: 'T',
+  AAC: 'N',
+  AAT: 'N',
+  AAA: 'K',
+  AAG: 'K',
+  AGC: 'S',
+  AGT: 'S',
+  AGA: 'R',
+  AGG: 'R',
+  GTA: 'V',
+  GTC: 'V',
+  GTG: 'V',
+  GTT: 'V',
+  GCA: 'A',
+  GCC: 'A',
+  GCG: 'A',
+  GCT: 'A',
+  GAC: 'D',
+  GAT: 'D',
+  GAA: 'E',
+  GAG: 'E',
+  GGA: 'G',
+  GGC: 'G',
+  GGG: 'G',
+  GGT: 'G',
+}
+
+function generateCodonTable(table: any) {
+  /**
+   *  take CodonTable above and generate larger codon table that includes
+   *  all permutations of upper and lower case nucleotides
+   */
+  const tempCodonTable: { [key: string]: string } = {}
+  Object.keys(table).forEach(codon => {
+    const aa = table[codon]
+    // console.log("Codon: ", codon, ", aa: ", aa);
+    const nucs: string[][] = []
+    for (let i = 0; i < 3; i++) {
+      const nuc = codon.charAt(i)
+      nucs[i] = []
+      nucs[i][0] = nuc.toUpperCase()
+      nucs[i][1] = nuc.toLowerCase()
+    }
+    for (let i = 0; i < 2; i++) {
+      const n0 = nucs[0][i]
+      for (let j = 0; j < 2; j++) {
+        const n1 = nucs[1][j]
+        for (let k = 0; k < 2; k++) {
+          const n2 = nucs[2][k]
+          const triplet = n0 + n1 + n2
+          tempCodonTable[triplet] = aa
+        }
+      }
+    }
+  })
+  return tempCodonTable
+}
+
+function renderTranslation(
+  ctx: CanvasRenderingContext2D,
+  codonTable: any,
+  seq: string,
+  offset: number,
+  blockStart: number,
+  blockEnd: number,
+  blockLength: number,
+  scale: number,
+  reverse: boolean,
+) {
+  seq = reverse ? revcom(seq) : seq
+
+  const extraBases = (seq.length - offset) % 3
+  const seqSliced = seq.slice(offset, seq.length - extraBases)
+
+  let translated = ''
+  for (let i = 0; i < seqSliced.length; i += 3) {
+    const nextCodon = seqSliced.slice(i, i + 3)
+    const aminoAcid = codonTable[nextCodon] || ''
+    translated += aminoAcid
+  }
+  console.log({ translated, offset })
+
+  translated = reverse ? translated.split('').reverse().join('') : translated
+  const orientedSeqSliced = reverse
+    ? seqSliced.split('').reverse().join('')
+    : seqSliced
+
+  // const charSize = ctx.measureText('A')
+
+  // const charWidth = 100 / (blockLength / 3)
+  // console.log({ scale })
+
+  // const container = dom.create('div', { className: 'translatedSequence' })
+  // const table = dom.create(
+  //   'table',
+  //   {
+  //     className: `translatedSequence offset${offset}${bigTiles ? ' big' : ''}`,
+  //     style: {
+  //       width: `${charWidth * translated.length}%`,
+  //     },
+  //   },
+  //   container,
+  // )
+  // const tr = dom.create('tr', {}, table)
+
+  //   const leftPercent = reverse
+  //     ? 100 - charWidth * (translated.length + offset / 3)
+  //     : (charWidth * offset) / 3
+
+  //   const drawChars = scale >= charSize.width
+
+  for (let i = 0; i < translated.length; i++) {
+    // const aminoAcidSpan = document.createElement('td')
+    let originalCodon = orientedSeqSliced.slice(3 * i, 3 * i + 3)
+    originalCodon = reverse
+      ? originalCodon.split('').reverse().join('')
+      : originalCodon
+    // aminoAcidSpan.className = `aminoAcid aminoAcid_${translated
+    //   .charAt(i)
+    //   .toLowerCase()}`
+
+    // However, if it's known to be a start/stop, apply those CSS classes instead.
+    // if (codonStarts.indexOf(originalCodon.toUpperCase()) != -1) {
+    // aminoAcidSpan.className = 'aminoAcid aminoAcid_start'
+    // }
+    // if (codonStops.indexOf(originalCodon.toUpperCase()) != -1) {
+    // aminoAcidSpan.className = 'aminoAcid aminoAcid_stop'
+    // }
+    // aminoAcidSpan.style.width = charWidth
+    // if (drawChars) {
+    //   aminoAcidSpan.innerHTML = translated.charAt(i)
+    // }
+    // tr.appendChild(aminoAcidSpan)
+    ctx.strokeRect(
+      (1 / scale) * 3 * i + offset / scale,
+      offset * 20,
+      (1 / scale) * 3,
+      20,
+    )
+    ctx.fillText(
+      translated[i],
+      i * (1 / scale) * 3 + offset / scale,
+      offset * 20 + 15,
+    )
+  }
+}
+
 function SequenceDivs(props: MyProps) {
   const { features, highResolutionScaling, regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 40
+  const totalHeight = 100
+  const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
 
   const ref = useRef<HTMLCanvasElement>(null)
@@ -84,10 +324,7 @@ function SequenceDivs(props: MyProps) {
       s += seq.get('seq')
     }
   }
-  let letters = s.split('')
-  if (region.reversed) {
-    letters = letters.reverse()
-  }
+  const seq = region.reversed ? s.split('').reverse().join('') : s
 
   useEffect(() => {
     if (!ref.current) {
@@ -106,10 +343,10 @@ function SequenceDivs(props: MyProps) {
     )
     ctx.font = '20px Courier New,monospace'
     const charSize = ctx.measureText('A')
-    const w = Math.max((rightPx - leftPx) / letters.length, 0.8)
+    const w = Math.max((rightPx - leftPx) / seq.length, 0.8)
     ctx.strokeStyle = 'black'
-    for (let i = 0; i < letters.length; i++) {
-      const letter = letters[i]
+    for (let i = 0; i < seq.length; i++) {
+      const letter = seq[i]
 
       switch (letter.toLowerCase()) {
         case 'a':
@@ -125,17 +362,46 @@ function SequenceDivs(props: MyProps) {
           ctx.fillStyle = '#f00'
           break
       }
-      ctx.fillRect(leftPx + i * w, 0, w, height)
+      ctx.fillRect(leftPx + i * w, 60, w, height)
       if (1 / bpPerPx >= charSize.width) {
-        ctx.strokeRect(leftPx + i * w, 0, w, height)
+        ctx.strokeRect(leftPx + i * w, 60, w, height)
       }
     }
     if (1 / bpPerPx >= charSize.width) {
       ctx.fillStyle = 'black'
-      for (let i = 0; i < letters.length; i++) {
-        const letter = letters[i]
-        ctx.fillText(letter, leftPx + i * w + (w - charSize.width) / 2, 15)
+      for (let i = 0; i < seq.length; i++) {
+        const letter = seq[i]
+        ctx.fillText(letter, leftPx + i * w + (w - charSize.width) / 2, 60 + 15)
       }
+    }
+
+    const blockStart = region.start
+    const blockEnd = region.end
+    const blockSeq = seq.substring(2, seq.length - 2)
+    const blockLength = seq.length
+
+    const extStart = blockStart - 2
+    const extEnd = blockStart + 2
+    const leftover = (seq.length - 2) % 3
+    const extStartSeq = seq.substring(0, seq.length - 2)
+    const extEndSeq = seq.substring(2)
+
+    const frameDiv = []
+    for (let i = 0; i < 3; i++) {
+      const transStart = blockStart + i
+      const frame = ((transStart % 3) + 3) % 3
+      const translatedDiv = renderTranslation(
+        ctx,
+        codonTable,
+        extEndSeq,
+        i,
+        blockStart,
+        blockEnd,
+        blockLength,
+        bpPerPx,
+        false,
+      )
+      frameDiv[frame] = translatedDiv
     }
   }, [])
   return (
