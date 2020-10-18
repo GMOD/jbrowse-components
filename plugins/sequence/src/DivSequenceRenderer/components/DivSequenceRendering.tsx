@@ -1,3 +1,4 @@
+/* eslint curly:error*/
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
@@ -5,7 +6,8 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { useTheme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
+import { bpSpanPx } from '@jbrowse/core/util'
 
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
@@ -34,11 +36,15 @@ export function featuresToSequence(
   // pad with spaces at the beginning of the string if necessary
   const len = region.end - region.start
   let sequence = ''
-  while (sequence.length < len) sequence += ' '
+  while (sequence.length < len) {
+    sequence += ' '
+  }
 
   for (const f of features.values()) {
     const seq = f.get('residues') || f.get('seq')
-    if (seq) sequence = replaceAt(sequence, f.get('start') - region.start, seq)
+    if (seq) {
+      sequence = replaceAt(sequence, f.get('start') - region.start, seq)
+    }
   }
   return sequence
 }
@@ -48,15 +54,22 @@ interface MyProps {
   regions: Region[]
   bpPerPx: number
   config: AnyConfigurationModel
+  highResolutionScaling: number
 }
 
-function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
-  const theme = useTheme()
+function SequenceDivs(props: MyProps) {
+  const { features, highResolutionScaling, regions, bpPerPx } = props
   const [region] = regions
+  const width = (region.end - region.start) / bpPerPx
+  const totalHeight = 40
+  const height = 20
+
+  const ref = useRef<HTMLCanvasElement>(null)
+
   let s = ''
   for (const seq of features.values()) {
     const seqString = seq.get('seq')
-    if (!seqString || seqString.length !== seq.get('end') - seq.get('start'))
+    if (!seqString || seqString.length !== seq.get('end') - seq.get('start')) {
       throw new Error(
         `feature ${seq.id()} did not contain a valid \`seq\` attribute ${
           seqString
@@ -66,66 +79,72 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
             : 'seq did not exist'
         }`,
       )
-    if (seqString) s += seq.get('seq')
+    }
+    if (seqString) {
+      s += seq.get('seq')
+    }
   }
   let letters = s.split('')
-  if (region.reversed) letters = letters.reverse()
+  if (region.reversed) {
+    letters = letters.reverse()
+  }
 
+  useEffect(() => {
+    if (!ref.current) {
+      return
+    }
+    const ctx = ref.current.getContext('2d')
+    if (!ctx) {
+      return
+    }
+
+    const [leftPx, rightPx] = bpSpanPx(
+      region.start,
+      region.end,
+      region,
+      bpPerPx,
+    )
+    ctx.font = '20px Courier New,monospace'
+    const charSize = ctx.measureText('A')
+    const w = Math.max((rightPx - leftPx) / letters.length, 0.8)
+    ctx.strokeStyle = 'black'
+    for (let i = 0; i < letters.length; i++) {
+      const letter = letters[i]
+
+      switch (letter.toLowerCase()) {
+        case 'a':
+          ctx.fillStyle = '#00bf00'
+          break
+        case 'g':
+          ctx.fillStyle = '#ffa500'
+          break
+        case 'c':
+          ctx.fillStyle = '#4747ff'
+          break
+        case 't':
+          ctx.fillStyle = '#f00'
+          break
+      }
+      ctx.fillRect(leftPx + i * w, 0, w, height)
+      if (1 / bpPerPx >= charSize.width) {
+        ctx.strokeRect(leftPx + i * w, 0, w, height)
+      }
+    }
+    if (1 / bpPerPx >= charSize.width) {
+      ctx.fillStyle = 'black'
+      for (let i = 0; i < letters.length; i++) {
+        const letter = letters[i]
+        ctx.fillText(letter, leftPx + i * w + (w - charSize.width) / 2, 15)
+      }
+    }
+  }, [])
   return (
-    <div style={{ display: 'flex' }}>
-      {letters.map((letter, iter) => {
-        const style: React.CSSProperties = {
-          textAlign: 'center',
-          display: 'inline-block',
-          height: '100%',
-          overflow: 'hidden',
-          minHeight: 16,
-          flex: 1,
-          backgroundColor: theme.palette.action.disabled,
-          color: theme.palette.text.primary,
-        }
-        const showLetter = bpPerPx < 0.1
-        if (showLetter) {
-          style.border = `1px solid ${theme.palette.divider}`
-          style.borderRadius = theme.shape.borderRadius
-          style.boxSizing = 'border-box'
-          style.borderCollapse = 'collapse'
-        }
-        switch (letter.toLocaleLowerCase()) {
-          case 'a': {
-            const baseColor = '#00bf00'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 'g': {
-            const baseColor = '#ffa500'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 'c': {
-            const baseColor = '#4747ff'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 't': {
-            const baseColor = '#f00'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          default:
-            break
-        }
-        return (
-          <div key={`${region.start}-${iter}`} style={style}>
-            {showLetter ? letter : ''}
-          </div>
-        )
-      })}
-    </div>
+    <canvas
+      ref={ref}
+      width={width}
+      height={totalHeight}
+      style={{ width, height: totalHeight }}
+    />
   )
 }
 
