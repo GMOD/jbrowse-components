@@ -11,7 +11,6 @@
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
     "lerna-publish": "lerna publish --no-push",
-    "postlerna-publish": "git push origin tag \"@jbrowse/web*\" && git push --follow-tags",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",

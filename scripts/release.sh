@@ -17,6 +17,13 @@ BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-release.md
 
 yarn run lerna-publish $2
 
+## This pushes only the @jbrowse/web tag first because a flood of tags causes
+## the CI system to skip the build
+git push origin tag \"@jbrowse/web*\"
+
+## Push the rest of the tags
+git push --follow-tags
+
 ## Blogpost run after lerna publish, to get the accurate tags
 JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web*"|head -n1)
 JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
