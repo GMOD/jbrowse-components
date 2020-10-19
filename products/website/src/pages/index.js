@@ -52,11 +52,14 @@ function Home() {
               A pluggable open-source platform for visualizing and integrating
               biological data
             </p>
-            <Link href="/jb2/blog/" target="_blank">
-              <Button variant="contained" color="secondary" disableElevation>
-                Download latest release
-              </Button>
-            </Link>
+            <Button
+              href="/jb2/blog"
+              variant="contained"
+              color="secondary"
+              disableElevation
+            >
+              Download latest release
+            </Button>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
