@@ -218,10 +218,12 @@ function renderTranslation(
   scale: number,
   reverse: boolean,
 ) {
-  seq = reverse ? revcom(seq) : seq
+  // const seq = reverse ? revcom(seq) : seq
 
-  const extraBases = (seq.length - offset) % 3
-  const seqSliced = seq.slice(offset, seq.length - extraBases)
+  const seqSliced = seq // seq.slice(0, seq.length + extraBases)
+
+  // console.log({ sequence })
+  // console.log({ extraBases })
 
   let translated = ''
   for (let i = 0; i < seqSliced.length; i += 3) {
@@ -229,68 +231,29 @@ function renderTranslation(
     const aminoAcid = codonTable[nextCodon] || ''
     translated += aminoAcid
   }
-  console.log({ translated, offset })
 
   translated = reverse ? translated.split('').reverse().join('') : translated
-  const orientedSeqSliced = reverse
-    ? seqSliced.split('').reverse().join('')
-    : seqSliced
-
-  // const charSize = ctx.measureText('A')
-
-  // const charWidth = 100 / (blockLength / 3)
-  // console.log({ scale })
-
-  // const container = dom.create('div', { className: 'translatedSequence' })
-  // const table = dom.create(
-  //   'table',
-  //   {
-  //     className: `translatedSequence offset${offset}${bigTiles ? ' big' : ''}`,
-  //     style: {
-  //       width: `${charWidth * translated.length}%`,
-  //     },
-  //   },
-  //   container,
-  // )
-  // const tr = dom.create('tr', {}, table)
-
-  //   const leftPercent = reverse
-  //     ? 100 - charWidth * (translated.length + offset / 3)
-  //     : (charWidth * offset) / 3
-
-  //   const drawChars = scale >= charSize.width
-
+  ctx.fillStyle = 'grey'
   for (let i = 0; i < translated.length; i++) {
-    // const aminoAcidSpan = document.createElement('td')
-    let originalCodon = orientedSeqSliced.slice(3 * i, 3 * i + 3)
-    originalCodon = reverse
-      ? originalCodon.split('').reverse().join('')
-      : originalCodon
-    // aminoAcidSpan.className = `aminoAcid aminoAcid_${translated
-    //   .charAt(i)
-    //   .toLowerCase()}`
-
-    // However, if it's known to be a start/stop, apply those CSS classes instead.
-    // if (codonStarts.indexOf(originalCodon.toUpperCase()) != -1) {
-    // aminoAcidSpan.className = 'aminoAcid aminoAcid_start'
-    // }
-    // if (codonStops.indexOf(originalCodon.toUpperCase()) != -1) {
-    // aminoAcidSpan.className = 'aminoAcid aminoAcid_stop'
-    // }
-    // aminoAcidSpan.style.width = charWidth
-    // if (drawChars) {
-    //   aminoAcidSpan.innerHTML = translated.charAt(i)
-    // }
-    // tr.appendChild(aminoAcidSpan)
+    ctx.fillRect(
+      (1 / scale) * 3 * i + offset / scale,
+      offset * 20,
+      (1 / scale) * 3,
+      20,
+    )
     ctx.strokeRect(
       (1 / scale) * 3 * i + offset / scale,
       offset * 20,
       (1 / scale) * 3,
       20,
     )
+  }
+  ctx.fillStyle = 'black'
+  for (let i = 0; i < translated.length; i++) {
+    // const aminoAcidSpan = document.createElement('td')
     ctx.fillText(
       translated[i],
-      i * (1 / scale) * 3 + offset / scale,
+      i * (1 / scale) * 3 + (offset + 1) / scale,
       offset * 20 + 15,
     )
   }
@@ -341,7 +304,7 @@ function SequenceDivs(props: MyProps) {
       region,
       bpPerPx,
     )
-    ctx.font = '20px Courier New,monospace'
+    ctx.font = '16px Courier New,monospace'
     const charSize = ctx.measureText('A')
     const w = Math.max((rightPx - leftPx) / seq.length, 0.8)
     ctx.strokeStyle = 'black'
@@ -393,7 +356,7 @@ function SequenceDivs(props: MyProps) {
       const translatedDiv = renderTranslation(
         ctx,
         codonTable,
-        extEndSeq,
+        seq.slice(i),
         i,
         blockStart,
         blockEnd,
