@@ -70,13 +70,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="makeStyles-overviewSvg"
         height="48"
         width="100%"
-      >
-        <polygon
-          fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,800,0,0,0"
-          stroke="rgba(121, 134, 203, 0.8)"
-        />
-      </svg>
+      />
       <div
         class="makeStyles-headerBar"
       >
@@ -880,12 +874,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,73,0,0,0"
-          stroke="rgba(121, 134, 203, 0.8)"
-        />
-        <polygon
-          fill="rgba(121, 134, 203, 0.3)"
-          points="102,48,800,48,580,0,73,0"
+          points=",48,800,48,580,0,,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
