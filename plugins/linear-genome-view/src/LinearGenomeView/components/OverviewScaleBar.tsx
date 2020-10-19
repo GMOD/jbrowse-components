@@ -137,6 +137,9 @@ const Polygon = observer(
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
+
+    let bottomLeft: number
+    let newTopLeft: number
     return (
       <svg
         height={HEADER_BAR_HEIGHT}
@@ -150,34 +153,41 @@ const Polygon = observer(
           if (seqIndex === -1) {
             return null
           }
-          let startPx = region.offsetPx - offsetPx
-          let endPx = startPx + (region.end - region.start) / bpPerPx
-          if (region.reversed) {
-            ;[startPx, endPx] = [endPx, startPx]
-          }
-          const topLeft = overview.bpToPx({
+          const startPx = region.offsetPx - offsetPx
+          const endPx = startPx + (region.end - region.start) / bpPerPx
+          let topLeft = overview.bpToPx({
             refName: region.refName,
             coord: region.start,
             regionNumber: region.regionNumber,
           })
-          const topRight = overview.bpToPx({
+          let topRight = overview.bpToPx({
             refName: region.refName,
             coord: region.end,
             regionNumber: region.regionNumber,
           })
-          return (
-            <polygon
-              key={`${region.key}-${idx}`}
-              points={[
-                [startPx, HEADER_BAR_HEIGHT],
-                [endPx, HEADER_BAR_HEIGHT],
-                [topRight, 0],
-                [topLeft, 0],
-              ].toString()}
-              fill={fade(polygonColor, 0.3)}
-              stroke={fade(polygonColor, 0.8)}
-            />
-          )
+          if (region.reversed) {
+            ;[topLeft, topRight] = [topRight, topLeft]
+          }
+          if (idx === 0) {
+            bottomLeft = startPx || 0
+            newTopLeft = topLeft || 0
+          }
+          if (idx === visibleRegions.length - 1) {
+            return (
+              <polygon
+                key={`${region.key}-${idx}`}
+                points={[
+                  [bottomLeft, HEADER_BAR_HEIGHT],
+                  [endPx, HEADER_BAR_HEIGHT],
+                  [topRight, 0],
+                  [newTopLeft, 0],
+                ].toString()}
+                fill={fade(polygonColor, 0.3)}
+                stroke={fade(polygonColor, 0.8)}
+              />
+            )
+          }
+          return null
         })}
       </svg>
     )
@@ -214,7 +224,6 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
-          //need to fix
           seq.reversed
             ? labels.unshift(index * gridPitch.majorPitch + seq.start)
             : labels.push((index + 1) * gridPitch.majorPitch + seq.start)

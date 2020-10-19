@@ -149,11 +149,6 @@ function OverviewRubberBand({
       setGuideX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
-      // console.log(
-      //   overview.pxToBp(
-      //     event.clientX - controlsRef.current.getBoundingClientRect().left,
-      //   ),
-      // )
     }
   }
 
