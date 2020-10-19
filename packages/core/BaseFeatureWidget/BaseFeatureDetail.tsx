@@ -358,6 +358,8 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
       <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
+      <Divider />
+      <BaseSubFeatures feature={feat} {...props} descriptions={descriptions} />
     </Paper>
   )
 })
