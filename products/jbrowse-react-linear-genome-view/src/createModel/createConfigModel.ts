@@ -27,6 +27,9 @@ export default function createConfigModel(
       plugins: types.frozen(),
     })
     .views(self => ({
+      get assemblies() {
+        return [self.assembly]
+      },
       get assemblyName(): string {
         return readConfObject(self.assembly, 'name')
       },
