@@ -38,6 +38,10 @@ const useStyles = makeStyles(() => ({
     minHeight: 0,
     minWidth: 0,
   },
+
+  dialogContent: {
+    width: 600,
+  },
 }))
 
 // remember to make observable
@@ -116,29 +120,31 @@ const AssemblyManager = observer(
       <Dialog open={open}>
         <DialogTitle className={classes.titleBox}>Assembly Manager</DialogTitle>
         <DialogContent>
-          {showAddNewAssemblyButton ? (
-            <div>
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<AddIcon />}
-                onClick={() => {
-                  setFormOpen(true)
-                }}
-              >
-                Add New Assembly
-              </Button>
-              <AssemblyTable
-                rootModel={rootModel}
-                classes={classes}
-                setAssemblyBeingEdited={setAssemblyBeingEdited}
-              />
-            </div>
-          ) : null}
-          {assemblyBeingEdited ? (
-            <AssemblyEditor assembly={assemblyBeingEdited} />
-          ) : null}
-          {isFormOpen ? <AssemblyAddForm /> : null}
+          <div className={classes.dialogContent}>
+            {showAddNewAssemblyButton ? (
+              <>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setFormOpen(true)
+                  }}
+                >
+                  Add New Assembly
+                </Button>
+                <AssemblyTable
+                  rootModel={rootModel}
+                  classes={classes}
+                  setAssemblyBeingEdited={setAssemblyBeingEdited}
+                />
+              </>
+            ) : null}
+            {assemblyBeingEdited ? (
+              <AssemblyEditor assembly={assemblyBeingEdited} />
+            ) : null}
+            {isFormOpen ? <AssemblyAddForm /> : null}
+          </div>
         </DialogContent>
         <DialogActions>
           <Button
