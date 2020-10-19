@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -19,7 +20,6 @@ import DeleteIcon from '@material-ui/icons/Delete'
 
 // const [assemblyBeingEdited,setAssemblyBeingEdited]= useState()
 // edit button onClick={() => setAssemblyBeingEdited(assembly)}
-
 
 const useStyles = makeStyles(() => ({
   titleBox: {
@@ -43,19 +43,22 @@ const useStyles = makeStyles(() => ({
 // remember to make observable
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AssemblyTable(props: any) {
-  const { rootModel, classes } = props
+  const { rootModel, setAssemblyBeingEdited, classes } = props
   const configSnapshot = getSnapshot(rootModel)
   console.log(getSnapshot(rootModel))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = configSnapshot.jbrowse.assemblies.map((assembly: any) => {
-    const { name, aliases } = assembly
+    const { name, aliases = '' } = assembly
     // console.log(aliases)
     return (
       <TableRow key={name}>
         <TableCell>{name}</TableCell>
         <TableCell>{aliases.toString()}</TableCell>
         <TableCell className={classes.buttonCell}>
-          <Button className={classes.button}>
+          <Button
+            className={classes.button}
+            onClick={() => setAssemblyBeingEdited(assembly)}
+          >
             <CreateIcon color="primary" />
           </Button>
         </TableCell>
@@ -84,55 +87,74 @@ function AssemblyTable(props: any) {
   )
 }
 
-const AssemblyManager = ({
-  rootModel,
-  open,
-  onClose,
-}: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rootModel: any
-  open: boolean
-  onClose: Function
-}) => {
-  const classes = useStyles()
-  const [isFormOpen, setFormOpen] = useState(false)
+const AssemblyAddForm = observer(({}) => {
+  return <h1>Hello im the assembly addform</h1>
+})
 
-  return (
-    <Dialog open={open}>
-      <DialogTitle className={classes.titleBox}>Assembly Manager</DialogTitle>
-      <DialogContent>
-        {isFormOpen ? (
-          <Button onClick={() => setFormOpen(false)}>Bomb!!!</Button>
-        ) : (
-          <div>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={() => {
-                setFormOpen(true)
-              }}
-            >
-              Add New Assembly
-            </Button>
-            <AssemblyTable rootModel={rootModel} classes={classes} />
-          </div>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => {
-            onClose(false)
-          }}
-        >
-          Return
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
+const AssemblyEditor = observer(({ assembly }) => {
+  return <h1>Hello im the assembly editor for {assembly.name}</h1>
+})
+
+const AssemblyManager = observer(
+  ({
+    rootModel,
+    open,
+    onClose,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rootModel: any
+    open: boolean
+    onClose: Function
+  }) => {
+    const classes = useStyles()
+    const [isFormOpen, setFormOpen] = useState(false)
+    const [assemblyBeingEdited, setAssemblyBeingEdited] = useState()
+
+    const showAddNewAssemblyButton = !isFormOpen && !assemblyBeingEdited
+
+    return (
+      <Dialog open={open}>
+        <DialogTitle className={classes.titleBox}>Assembly Manager</DialogTitle>
+        <DialogContent>
+          {showAddNewAssemblyButton ? (
+            <div>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setFormOpen(true)
+                }}
+              >
+                Add New Assembly
+              </Button>
+              <AssemblyTable
+                rootModel={rootModel}
+                classes={classes}
+                setAssemblyBeingEdited={setAssemblyBeingEdited}
+              />
+            </div>
+          ) : null}
+          {assemblyBeingEdited ? (
+            <AssemblyEditor assembly={assemblyBeingEdited} />
+          ) : null}
+          {isFormOpen ? <AssemblyAddForm /> : null}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => {
+              onClose(false)
+            }}
+          >
+            Return
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  },
+)
 
 // remember to make observable
 export default AssemblyManager
