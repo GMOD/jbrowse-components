@@ -25,8 +25,8 @@ basically looks like this
 You have your config schema
 
 ```js
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BasicTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BasicTrackConfig } from '@jbrowse/plugin-linear-genome-view'
 
 const configSchema = ConfigurationSchema(
   'MyTrack',
@@ -52,7 +52,7 @@ some custom logic
 ```js
 import { observer } from 'mobx-react'
 import { types } from 'mobx-state-tree'
-import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 
 // A component which changes color when you click on it
 // Note that this track is an observer, so it automatically re-renders
@@ -104,10 +104,10 @@ src/index.js
 ```js
 import { observer } from 'mobx-react'
 import { types } from 'mobx-state-tree'
-import { BlockBasedTrack } from '@gmod/jbrowse-plugin-linear-genome-view'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { BasicTrackConfig } from '@gmod/jbrowse-plugin-linear-genome-view'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { BasicTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import Plugin from '@jbrowse/core/Plugin'
 
 const BackgroundChangeTrack = observer(props => {
   const { model } = props

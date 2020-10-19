@@ -1,5 +1,5 @@
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LollipopRenderer, {
   configSchema as lollipopRendererConfigSchema,
   ReactComponent as LollipopRendererReactComponent,

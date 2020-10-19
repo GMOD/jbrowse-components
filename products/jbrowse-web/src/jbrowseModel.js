@@ -1,8 +1,8 @@
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+} from '@jbrowse/core/configuration'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
   getSnapshot,
@@ -19,7 +19,7 @@ export default function JBrowseWeb(
   Session,
   assemblyConfigSchemasType,
 ) {
-  return types
+  const JBrowseModel = types
     .model('JBrowseWeb', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
@@ -115,6 +115,23 @@ export default function JBrowseWeb(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
+
+      deleteConnectionConf(configuration) {
+        const idx = self.connections.findIndex(
+          conn => conn.id === configuration.id,
+        )
+        return self.connections.splice(idx, 1)
+      },
+
+      deleteTrackConf(trackConf) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
+
+        return self.tracks.splice(idx, 1)
+      },
     }))
     .views(self => ({
       get savedSessionNames() {
@@ -127,4 +144,17 @@ export default function JBrowseWeb(
         return getParent(self).rpcManager
       },
     }))
+
+  return types.snapshotProcessor(JBrowseModel, {
+    postProcessor(snapshot) {
+      function removeAttr(obj, attr) {
+        for (const prop in obj) {
+          if (prop === attr) delete obj[prop]
+          else if (typeof obj[prop] === 'object') removeAttr(obj[prop])
+        }
+      }
+      removeAttr(snapshot, 'baseUri')
+      return snapshot
+    },
+  })
 }

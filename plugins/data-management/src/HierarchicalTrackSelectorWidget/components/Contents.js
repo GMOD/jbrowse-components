@@ -1,5 +1,5 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
 import { makeStyles } from '@material-ui/core/styles'

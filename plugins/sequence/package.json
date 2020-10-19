@@ -1,11 +1,24 @@
 {
-  "name": "@gmod/jbrowse-plugin-sequence",
-  "version": "0.0.1-beta.13",
+  "name": "@jbrowse/plugin-sequence",
+  "version": "0.0.1-beta.14",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/sequence"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-sequence.esm.js",
+  "distModule": "dist/plugin-sequence.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -21,23 +34,24 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Garrett Stevens",
-  "license": "MIT",
   "dependencies": {
     "@gmod/indexedfasta": "^1.0.13",
     "@gmod/twobit": "^1.1.10",
-    "clsx": "^1.1.0",
     "abortable-promise-cache": "^1.3.0",
+    "clsx": "^1.1.0",
     "generic-filehandle": "^2.0.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
-    "@gmod/jbrowse-plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
     "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

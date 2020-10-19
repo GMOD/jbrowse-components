@@ -1,21 +1,21 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   FileLocation,
   NoAssemblyRegion,
   Region,
-} from '@gmod/jbrowse-core/util/types'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/types'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
 import MyConfigSchema from './configSchema'
 
@@ -54,6 +54,24 @@ export default class extends BaseFeatureDataAdapter {
 
   public async getRefNames(opts: BaseOptions = {}) {
     return this.vcf.getReferenceSequenceNames(opts)
+  }
+
+  async getHeader() {
+    const header = await this.vcf.getHeader()
+    return header
+      .split('\n')
+      .filter(line => line.startsWith('##'))
+      .map(line => {
+        const str = line.slice(2)
+        const index = str.indexOf('=')
+        const [tag, data] = [str.slice(0, index), str.slice(index + 1)]
+        return { tag, data }
+      })
+  }
+
+  async getMetadata() {
+    const parser = await this.parser
+    return parser.getMetadata()
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {

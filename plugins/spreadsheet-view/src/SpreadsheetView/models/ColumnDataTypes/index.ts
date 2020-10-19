@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import LocStringFactory from './LocString'
 import LocRefFactory from './LocRef'
 import LocStartFactory from './LocStart'

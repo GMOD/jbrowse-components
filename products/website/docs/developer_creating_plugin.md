@@ -13,8 +13,8 @@ code
 src/index.js
 
 ```js
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import Plugin from '@jbrowse/core/Plugin'
 import { AdapterClass, configSchema } from './UCSCAdapter'
 
 export default class UCSCPlugin extends Plugin {
@@ -38,10 +38,10 @@ src/UCSCAdapter/index.ts
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/configuration'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import stringify from 'json-stable-stringify'
 
 export const configSchema = ConfigurationSchema(
@@ -170,8 +170,8 @@ new plugin from scratch again
 src/index.js
 
 ```js
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import ArcRenderer, {
   configSchema as ArcRendererConfigSchema,
@@ -201,18 +201,18 @@ import React from 'react'
 // prettier-ignore
 import {
   ServerSideRendererType
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import { bpSpanPx } from '@gmod/jbrowse-core/util'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { bpSpanPx } from '@jbrowse/core/util'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 // Our config schema for arc track will be basic, include just a color
 export const configSchema = ConfigurationSchema(

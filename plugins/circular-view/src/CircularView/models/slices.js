@@ -2,7 +2,7 @@ import { thetaRangesOverlap } from './viewportVisibleRegion'
 
 export default ({ jbrequire }) => {
   const { polarToCartesian, assembleLocString, objectFromEntries } = jbrequire(
-    '@gmod/jbrowse-core/util',
+    '@jbrowse/core/util',
   )
 
   class Slice {

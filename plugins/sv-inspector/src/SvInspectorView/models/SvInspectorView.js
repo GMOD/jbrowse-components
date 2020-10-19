@@ -3,8 +3,8 @@ import breakpointSplitViewFromTableRowFactory from './breakpointSplitViewFromTab
 
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { getConf } = jbrequire('@jbrowse/core/configuration')
+  const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
   const { resolveIdentifier } = jbrequire('mobx-state-tree')
 
   const session = getSession(chordTrack)
@@ -45,9 +45,9 @@ export default pluginManager => {
   const { types, getParent, addDisposer, getSnapshot } = jbrequire(
     'mobx-state-tree',
   )
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { getSession } = jbrequire('@jbrowse/core/util')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')

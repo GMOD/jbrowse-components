@@ -566,6 +566,12 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
+    if (/\.hic$/i.test(fileName)) {
+      return {
+        file: fileName,
+      }
+    }
+
     return {}
   }
 
@@ -796,7 +802,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.hic/i.test(fileName)) {
       return {
-        type: 'HicTrack',
+        type: 'HicAdapter',
         hicLocation: makeLocation(fileName),
       }
     }
@@ -872,6 +878,7 @@ export default class AddTrack extends JBrowseCommand {
       IndexedFastaAdapter: 'SequenceTrack',
       TwoBitAdapter: 'SequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
+      HicAdapter: 'HicTrack',
     }
     return known[adapterType] || 'BasicTrack'
   }

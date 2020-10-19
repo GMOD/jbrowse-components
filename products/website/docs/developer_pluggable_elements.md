@@ -30,7 +30,7 @@ Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
 see [creating data adapters](developer_creating_data_adapters))
 
-Example data adapters: the `@gmod/jbrowse-plugin-alignments` plugin creates
+Example data adapters: the `@jbrowse/plugin-alignments` plugin creates
 multiple data adapter types
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
@@ -49,7 +49,7 @@ contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
 renderers](developer_creating_renderers)
 
-Example renderers: the `@gmod/jbrowse-plugin-alignments` exports several
+Example renderers: the `@jbrowse/plugin-alignments` exports several
 renderer types
 
 - `PileupRenderer` - a renderer type that renders Pileup type display of
@@ -69,7 +69,7 @@ cases, a track combines a renderer and an adapter, and can do additional things 
 - Choose "static-blocks" rendering styles, which keeps contents stable while
   the user scrolls, or "dynamic-blocks" that update on each scroll
 
-Example tracks: the `@gmod/jbrowse-plugin-alignments` exports multiple track
+Example tracks: the `@jbrowse/plugin-alignments` exports multiple track
 types
 
 - `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
@@ -90,7 +90,7 @@ Widgets can do multiple types of things including
 - etc.
 
 These widgets can be extended via plugins, so for example, the
-`@gmod/jbrowse-plugin-alignments` extends the `BaseFeatureDetailWidget` to
+`@jbrowse/plugin-alignments` extends the `BaseFeatureDetailWidget` to
 have custom display of the alignments
 
 - `AlignmentsFeatureDetailWidget` - this provides a custom widget

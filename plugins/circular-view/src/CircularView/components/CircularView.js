@@ -27,8 +27,8 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
-  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
+  const { assembleLocString, getSession } = jbrequire('@jbrowse/core/util')
   const Ruler = jbrequire(RulerFactory)
 
   const useStyles = makeStyles(theme => {

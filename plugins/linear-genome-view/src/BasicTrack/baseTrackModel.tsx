@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigurationSchema, getConf } from '@gmod/jbrowse-core/configuration'
-import { isSessionModelWithConfigEditing } from '@gmod/jbrowse-core/util/types'
-import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
+import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
+import { isSessionModelWithConfigEditing } from '@jbrowse/core/util/types'
+import { ElementId } from '@jbrowse/core/util/types/mst'
+import { MenuItem } from '@jbrowse/core/ui'
+import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types, Instance } from 'mobx-state-tree'
 import InfoIcon from '@material-ui/icons/Info'
 import React from 'react'
@@ -310,6 +310,7 @@ const BaseTrackWithReferences = types
         {
           label: 'About this track',
           icon: InfoIcon,
+          priority: 10,
           onClick: () => {
             self.setShowAbout(true)
           },

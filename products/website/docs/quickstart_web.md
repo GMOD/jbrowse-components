@@ -8,9 +8,7 @@ This guide will walk through installing jbrowse 2 on your website
 
 JBrowse 2, like JBrowse 1, is "static site" compatible, meaning it does not
 have any server side code that needs to run. We refer to JBrowse 2 for the web
-as the jbrowse-web package, and jbrowse-web package is an optimized build of
-our project, and is simply a folder of HTML, JS, and CSS files that can be
-copied to your web directory.
+as jbrowse-web also.
 
 ### Pre-requisites
 
@@ -40,7 +38,7 @@ To install the JBrowse CLI tools, we expect node v10 or greater to be installed
 already, then you can use
 
 ```sh-session
-npm install -g @gmod/jbrowse-cli
+npm install -g @jbrowse/cli
 ```
 
 After running this command you can then test it with
@@ -78,11 +76,23 @@ refer to simply as an assembly. This is basically a FASTA file
 
 ```sh-session
 cd /var/www/html/jbrowse2
+samtools faidx ~/hg19.fa
 jbrowse add-assembly ~/hg19.fa --load copy
 ```
 
-This will copy the hg19.fa to the current folder, and initialize a file called
-config.json with the hg19 assembly.
+This will copy the hg19.fa and hg19.fa.fai (the FASTA index) to the current
+folder, and initialize a file called config.json with the hg19 assembly.
+
+You can also use .2bit files or bgzip-indexed fasta
+
+Here is an example with bgzip indexed fasta
+
+```
+cd /var/www/html/jbrowse2
+bgzip -i hg19.fa
+samtools faidx hg19.fa.gz
+jbrowse add-assembly ~/hg19.fa.gz --load copy
+```
 
 See [configuring assemblies](config_assembly) for more info on formats
 supported for the sequence file.
@@ -92,6 +102,7 @@ supported for the sequence file.
 Once you have loaded an assembly, we can try adding a BAM track
 
 ```sh-session
+samtools index ~/myfile.bam
 jbrowse add-track ~/myfile.bam --load copy
 ```
 

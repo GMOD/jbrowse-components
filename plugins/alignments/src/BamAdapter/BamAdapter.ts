@@ -2,17 +2,17 @@ import { BamFile } from '@gmod/bam'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util/types'
+import { checkAbortSignal } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface HeaderLine {
@@ -67,6 +67,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const { dataAdapter } = getSubAdapter(adapterConfig)
       this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
     }
+  }
+
+  async getHeader(opts?: BaseOptions) {
+    return this.bam.getHeader(opts)
   }
 
   private async setup(opts?: BaseOptions) {

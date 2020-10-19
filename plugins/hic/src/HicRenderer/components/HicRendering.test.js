@@ -1,4 +1,4 @@
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
+import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import React from 'react'
 import { render } from '@testing-library/react'
 import HicRendering from './HicRendering'

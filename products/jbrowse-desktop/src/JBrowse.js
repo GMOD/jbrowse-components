@@ -1,6 +1,5 @@
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { useDebounce } from '@gmod/jbrowse-core/util'
-import { App, StartScreen, createJBrowseTheme } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 
@@ -13,53 +12,78 @@ import factoryReset from './factoryReset'
 
 const debounceMs = 1000
 
+// adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
+function debounce(func, wait) {
+  let timeout
+  let result
+  const later = (...args) => {
+    timeout = null
+    result = func(...args)
+  }
+  const debounced = (...args) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(() => {
+      return later(...args)
+    }, wait)
+    return result
+  }
+  debounced.cancel = () => {
+    clearTimeout(timeout)
+    timeout = null
+  }
+  return debounced
+}
+
 const JBrowse = observer(({ pluginManager }) => {
   const { electron = {} } = window
   const { desktopCapturer, ipcRenderer } = electron
   const [firstLoad, setFirstLoad] = useState(true)
-  const [sessionSnapshot, setSessionSnapshot] = useState()
-  const [configSnapshot, setConfigSnapshot] = useState()
-  const debouncedSessionSnapshot = useDebounce(sessionSnapshot, debounceMs)
-  const debouncedConfigSnapshot = useDebounce(configSnapshot, debounceMs)
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel
   if (firstLoad && session) setFirstLoad(false)
 
   useEffect(() => {
-    return jbrowse
-      ? onSnapshot(jbrowse, snap => {
-          setConfigSnapshot(snap)
-        })
-      : () => {}
-  }, [jbrowse])
-  useEffect(() => {
-    return session
-      ? onSnapshot(session, snap => {
-          setSessionSnapshot(snap)
-        })
-      : () => {}
-  }, [session])
-
-  useEffect(() => {
-    ;(async () => {
-      if (debouncedSessionSnapshot) {
-        const sources = await desktopCapturer.getSources({
-          types: ['window'],
-          thumbnailSize: { width: 500, height: 500 },
-        })
-        const jbWindow = sources.find(source => source.name === 'JBrowse')
-        const screenshot = jbWindow.thumbnail.toDataURL()
-        ipcRenderer.send('saveSession', debouncedSessionSnapshot, screenshot)
-      }
-    })()
-  }, [debouncedSessionSnapshot, desktopCapturer, ipcRenderer])
-
-  useEffect(() => {
-    if (debouncedConfigSnapshot) {
-      ipcRenderer.send('saveConfig', debouncedConfigSnapshot)
+    function sendIpcConfig(snapshot) {
+      ipcRenderer.send('saveConfig', snapshot)
     }
-  }, [debouncedConfigSnapshot, ipcRenderer])
+
+    let disposer = () => {}
+    if (jbrowse) {
+      const updater = debounce(sendIpcConfig, debounceMs)
+      const snapshotDisposer = onSnapshot(jbrowse, updater)
+      disposer = () => {
+        snapshotDisposer()
+        updater.cancel()
+      }
+    }
+    return disposer
+  }, [jbrowse, ipcRenderer])
+
+  useEffect(() => {
+    async function createScreenshot(snapshot) {
+      const sources = await desktopCapturer.getSources({
+        types: ['window'],
+        thumbnailSize: { width: 500, height: 500 },
+      })
+      const jbWindow = sources.find(source => source.name === 'JBrowse')
+      const screenshot = jbWindow.thumbnail.toDataURL()
+      ipcRenderer.send('saveSession', snapshot, screenshot)
+    }
+
+    let disposer = () => {}
+    if (session) {
+      const updater = debounce(createScreenshot, debounceMs)
+      const snapshotDisposer = onSnapshot(session, updater)
+      disposer = () => {
+        snapshotDisposer()
+        updater.cancel()
+      }
+    }
+    return disposer
+  }, [session, desktopCapturer, ipcRenderer])
 
   if (error) {
     throw new Error(error)

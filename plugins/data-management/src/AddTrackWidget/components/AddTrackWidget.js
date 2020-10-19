@@ -1,5 +1,5 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'

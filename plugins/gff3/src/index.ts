@@ -1,6 +1,6 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import {
   AdapterClass as Gff3TabixAdapterClass,
   configSchema as gff3TabixAdapterConfigSchema,

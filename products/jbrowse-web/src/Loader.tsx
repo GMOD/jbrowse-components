@@ -1,7 +1,7 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import PluginLoader from '@gmod/jbrowse-core/PluginLoader'
-import { inDevelopment, fromUrlSafeB64 } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import PluginManager from '@jbrowse/core/PluginManager'
+import PluginLoader from '@jbrowse/core/PluginLoader'
+import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import ErrorBoundary from 'react-error-boundary'
 import { UndoManager } from 'mst-middlewares'
 import React, { useEffect, useState } from 'react'
@@ -10,13 +10,13 @@ import {
   useQueryParam,
   QueryParamProvider,
 } from 'use-query-params'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import { getConf } from '@gmod/jbrowse-core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { getConf } from '@jbrowse/core/configuration'
 import { SnapshotOut } from 'mobx-state-tree'
-import { PluginConstructor } from '@gmod/jbrowse-core/Plugin'
-import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import { PluginConstructor } from '@jbrowse/core/Plugin'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import 'typeface-roboto'
+import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 
@@ -136,6 +136,8 @@ export function Loader() {
       if (configText) {
         try {
           config = JSON.parse(configText)
+          const configUri = new URL(configLocation.uri, window.location.href)
+          addRelativeUris(config, configUri)
         } catch (error) {
           setConfigSnapshot(() => {
             throw new Error(`Can't parse config JSON: ${error.message}`)
@@ -264,6 +266,18 @@ export function Loader() {
   pluginManager.configure()
 
   return <JBrowse pluginManager={pluginManager} />
+}
+
+function addRelativeUris(config: Config, configUri: URL) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        addRelativeUris(config[key], configUri)
+      } else if (key === 'uri') {
+        config.baseUri = configUri.href
+      }
+    }
+  }
 }
 
 function factoryReset() {
