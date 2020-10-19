@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -12,6 +13,13 @@ import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
+import AddIcon from '@material-ui/icons/Add'
+import CreateIcon from '@material-ui/icons/Create'
+import DeleteIcon from '@material-ui/icons/Delete'
+
+// const [assemblyBeingEdited,setAssemblyBeingEdited]= useState()
+// edit button onClick={() => setAssemblyBeingEdited(assembly)}
+
 
 const useStyles = makeStyles(() => ({
   titleBox: {
@@ -21,18 +29,41 @@ const useStyles = makeStyles(() => ({
   table: {
     minWidth: 650,
   },
+  buttonCell: {
+    padding: 3,
+  },
+  button: {
+    display: 'inline-block',
+    padding: 0,
+    minHeight: 0,
+    minWidth: 0,
+  },
 }))
 
 // remember to make observable
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AssemblyTable(props: any) {
-  const { rootModel } = props
+  const { rootModel, classes } = props
+  const configSnapshot = getSnapshot(rootModel)
+  console.log(getSnapshot(rootModel))
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = rootModel.jbrowse.assemblies.map((assembly: any) => {
-    const { name } = assembly
+  const rows = configSnapshot.jbrowse.assemblies.map((assembly: any) => {
+    const { name, aliases } = assembly
+    // console.log(aliases)
     return (
-      <TableRow>
+      <TableRow key={name}>
         <TableCell>{name}</TableCell>
+        <TableCell>{aliases.toString()}</TableCell>
+        <TableCell className={classes.buttonCell}>
+          <Button className={classes.button}>
+            <CreateIcon color="primary" />
+          </Button>
+        </TableCell>
+        <TableCell className={classes.buttonCell}>
+          <Button className={classes.button}>
+            <DeleteIcon color="error" />
+          </Button>
+        </TableCell>
       </TableRow>
     )
   })
@@ -43,6 +74,7 @@ function AssemblyTable(props: any) {
         <TableRow>
           <TableCell>Name</TableCell>
           <TableCell>Aliases</TableCell>
+          <TableCell>Actions</TableCell>
         </TableRow>
       </TableHead>
       <Table>
@@ -63,12 +95,29 @@ const AssemblyManager = ({
   onClose: Function
 }) => {
   const classes = useStyles()
+  const [isFormOpen, setFormOpen] = useState(false)
 
   return (
     <Dialog open={open}>
       <DialogTitle className={classes.titleBox}>Assembly Manager</DialogTitle>
       <DialogContent>
-        <AssemblyTable rootModel={rootModel} />
+        {isFormOpen ? (
+          <Button onClick={() => setFormOpen(false)}>Bomb!!!</Button>
+        ) : (
+          <div>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setFormOpen(true)
+              }}
+            >
+              Add New Assembly
+            </Button>
+            <AssemblyTable rootModel={rootModel} classes={classes} />
+          </div>
+        )}
       </DialogContent>
       <DialogActions>
         <Button
@@ -78,16 +127,7 @@ const AssemblyManager = ({
             onClose(false)
           }}
         >
-          OK
-        </Button>
-        <Button
-          color="secondary"
-          variant="contained"
-          onClick={() => {
-            onClose(false)
-          }}
-        >
-          Cancel
+          Return
         </Button>
       </DialogActions>
     </Dialog>
