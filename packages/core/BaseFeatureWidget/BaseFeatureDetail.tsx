@@ -281,9 +281,14 @@ const subfeaturesOmit = ['gene_id', 'gene_name', 'gene_type', 'gene_status']
 // Accompanied with a button to load additionnal subfeature like exon/cds.
 export const BaseSubFeatures = (props: BaseProps) => {
   const { feature, descriptions } = props
-  const subfeaturesToRender = getSubfeaturesToRender(feature.subfeatures, [])
   const [subfeaturesLoaded, setSubfeaturesLoaded] = useState(false)
-
+  let subfeaturesToRender = getSubfeaturesToRender(feature.subfeatures, [])
+  // If not loaded, display only transcript and mRNA
+  if (!subfeaturesLoaded) {
+    subfeaturesToRender = subfeaturesToRender.filter(subfeature =>
+      ['transcript', 'mRNA'].includes(subfeature.title),
+    )
+  }
   // Reset subfeaturesLoaded on props change
   useEffect(() => {
     setSubfeaturesLoaded(false)
@@ -293,48 +298,28 @@ export const BaseSubFeatures = (props: BaseProps) => {
     <>
       {subfeaturesToRender.length > 0 && (
         <BaseCard title="SubFeatures" expanded={false}>
-          {subfeaturesLoaded ? (
-            subfeaturesToRender.map((subfeature, idx) => {
-              return (
-                <BaseAttributes
-                  {...props}
-                  key={idx}
-                  expanded={false}
-                  omit={subfeaturesOmit}
-                  title={subfeature.title}
-                  feature={subfeature.attributes}
-                  descriptions={descriptions}
-                />
-              )
-            })
-          ) : (
-            <>
-              {subfeaturesToRender
-                .filter(subfeature =>
-                  ['transcript', 'mRNA'].includes(subfeature.title),
-                )
-                .map((subfeature, idx) => {
-                  return (
-                    <BaseAttributes
-                      {...props}
-                      key={idx}
-                      expanded={false}
-                      omit={subfeaturesOmit}
-                      title={subfeature.title}
-                      feature={subfeature.attributes}
-                      descriptions={descriptions}
-                    />
-                  )
-                })}
-              <Button
-                variant="contained"
-                color="secondary"
-                style={{ margin: '5px' }}
-                onClick={() => setSubfeaturesLoaded(true)}
-              >
-                Load Additional Subfeatures
-              </Button>
-            </>
+          {subfeaturesToRender.map((subfeature, idx) => {
+            return (
+              <BaseAttributes
+                {...props}
+                key={idx}
+                expanded={false}
+                omit={subfeaturesOmit}
+                title={subfeature.title}
+                feature={subfeature.attributes}
+                descriptions={descriptions}
+              />
+            )
+          })}
+          {subfeaturesLoaded ? null : (
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{ margin: '5px' }}
+              onClick={() => setSubfeaturesLoaded(true)}
+            >
+              Load Additional Subfeatures
+            </Button>
           )}
         </BaseCard>
       )}
