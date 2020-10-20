@@ -104,6 +104,10 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.maxBpPerPx).toEqual(10)
   model.setNewView(0.02, 0)
 
+  expect(model.scaleBarHeight).toEqual(20)
+  // header height 20 + area where polygons get drawn has height of 48
+  expect(model.headerHeight).toEqual(68)
+  expect(model.height).toBe(191)
   // test some sanity values from zooming around
   model.setNewView(0.02, 0)
   expect(model.pxToBp(10).offset).toEqual(0.2)
@@ -153,6 +157,14 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.offsetPx).toEqual(79401)
   model.centerAt(5000, 'ctgA', 1)
   expect(model.offsetPx).toEqual(79401)
+
+  // length of ctgA 50000 and length of ctgB is 6080 = 56080
+  expect(model.displayedParentRegionsLength).toEqual(56080)
+  expect(model.idxInDisplayedRegion('ctgA')).toEqual(0)
+  expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toEqual({
+    index: 0,
+    offsetPx: 3990,
+  })
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
@@ -539,4 +551,29 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   expect(model.pxToBp(-1).coord).toEqual(2002)
   expect(model.pxToBp(100).offset).toEqual(100)
   expect(model.pxToBp(100).coord).toEqual(1901)
+  // testing bpToPx and pxToBp when region is reversed
+
+  // coordinate is out of bounds
+  expect(model.bpToPx({ refName: 'ctgA', coord: 0 })).toEqual(undefined)
+  expect(model.bpToPx({ refName: 'ctgA', coord: 2001 })).toEqual(undefined)
+
+  // offset here should be 500 because coord 1500 - 1000 start = 500
+  expect(model.bpToPx({ refName: 'ctgA', coord: 1500 })).toEqual({
+    index: 0,
+    offsetPx: 500,
+  })
+  expect(model.pxToBp(-1).oob).toEqual(true)
+
+  model.centerAt(1500, 'ctgA', 0)
+  expect(model.bpPerPx).toEqual(1)
+  expect(model.offsetPx).toEqual(100)
+
+  model.toggleHeader()
+  expect(model.hideHeader).toEqual(true)
+  model.toggleHeader()
+  model.toggleHeaderOverview()
+  expect(model.hideHeaderOverview).toEqual(true)
+  model.toggleHeaderOverview()
+  model.setError(Error('pxToBp failed to map to a region'))
+  expect(model.error?.message).toEqual('pxToBp failed to map to a region')
 })
