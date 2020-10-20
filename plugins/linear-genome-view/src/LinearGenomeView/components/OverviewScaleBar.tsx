@@ -218,12 +218,14 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const incompleteRegion = parent
           ? parent.end - parent.start > seq.end - seq.start
           : false
-        const numLabels = Math.round(regionLength / gridPitch.majorPitch)
+        const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
-          seq.reversed
-            ? labels.unshift(index * gridPitch.majorPitch)
-            : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
+          const offsetLabel = (index + 1) * gridPitch.majorPitch
+          const label = seq.reversed
+            ? seq.end - offsetLabel
+            : offsetLabel + seq.start
+          labels.push(Math.floor(label / 100) * 100)
         }
         return (
           <Paper
