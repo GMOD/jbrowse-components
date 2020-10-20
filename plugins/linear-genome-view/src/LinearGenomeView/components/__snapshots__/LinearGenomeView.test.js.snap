@@ -822,12 +822,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               class="makeStyles-scaleBarVisibleRegion"
               style="width: 72.54545454545455px; left: -1px; pointer-events: none;"
             />
-            <div
-              class="makeStyles-scaleBarLabel"
-              style="left: 145.0909090909091px; pointer-events: none; color: rgb(153, 102, 0);"
-            >
-              200
-            </div>
           </div>
           <div
             class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"

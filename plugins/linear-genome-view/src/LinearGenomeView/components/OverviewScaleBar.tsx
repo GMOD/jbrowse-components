@@ -214,10 +214,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
-        const parent = model.parentRegion(seq.assemblyName, seq.refName)
-        const incompleteRegion = parent
-          ? parent.end - parent.start > seq.end - seq.start
-          : false
+        // boolean if displayed region length is smaller than its parent's
+        const incompleteRegion =
+          seq.parentEnd - seq.parentStart > seq.end - seq.start
+
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
@@ -225,7 +225,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
           const label = seq.reversed
             ? seq.end - offsetLabel
             : offsetLabel + seq.start
-          labels.push(Math.floor(label / 100) * 100)
+          labels.push(label)
         }
         return (
           <Paper
@@ -250,7 +250,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               <div
                 className={classes.scaleBarRegionIncompleteLeft}
                 style={{
-                  background: `linear-gradient(-225deg, ${refNameColor} 3px, transparent 1px),
+                  backgroundImage: `linear-gradient(-225deg, ${refNameColor} 3px, transparent 1px),
                 linear-gradient(45deg, ${refNameColor} 3px, transparent 1px)`,
                   backgroundSize: '10px 8px',
                   backgroundRepeat: 'repeat-y',
@@ -292,7 +292,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             {/* the number labels */}
             {labels.map((label, labelIdx) => (
               <div
-                key={label}
+                key={`${JSON.stringify(seq)}-${label}-${labelIdx}`}
                 className={classes.scaleBarLabel}
                 style={{
                   left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
@@ -307,7 +307,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               <div
                 className={classes.scaleBarRegionIncompleteRight}
                 style={{
-                  background: `linear-gradient(225deg, ${refNameColor} 3px, transparent 1px),
+                  backgroundImage: `linear-gradient(225deg, ${refNameColor} 3px, transparent 1px),
               linear-gradient(-45deg, ${refNameColor} 3px, transparent 1px)`,
                   backgroundSize: '10px 8px',
                   backgroundRepeat: 'repeat-y',
