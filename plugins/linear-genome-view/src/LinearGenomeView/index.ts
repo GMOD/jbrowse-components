@@ -536,7 +536,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       navToLocString(locString: string) {
-        console.log('hhellooo')
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const locStrings = locString.split(';')
