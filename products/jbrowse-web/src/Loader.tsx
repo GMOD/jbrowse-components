@@ -25,6 +25,7 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
+// import { writeAWSAnalytics, writeGAAnalytics } from './analytics'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -32,58 +33,6 @@ if (!window.TextEncoder) {
 if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
-
-// TODOANALYTICS
-// lambda function called jbrowse-analytics needs to be migrated to a recent version of node
-// in here, on load trigger lambda function AFTER the session loading logic is complete
-// also need a trigger for google analytics
-// make google analytics acc, import google analytics here and call in the same logic loop as lambda
-
-// jb1 post object
-// var stats = {
-//   ver: this.version || 'dev',
-//   'refSeqs-count': this.refSeqOrder.length,
-//   'refSeqs-avgLen':
-//     ! this.refSeqOrder.length
-//       ? null
-//       : dojof.reduce(
-//           dojo.map( this.refSeqOrder,
-//                     function(name) {
-//                         var ref = this.allRefs[name];
-//                         if( !ref )
-//                             return 0;
-//                         return ref.end - ref.start;
-//                     },
-//                     this
-//                   ),
-//           '+'
-//       ),
-//   'tracks-count': this.config.tracks.length,
-//   'plugins': dojof.keys( this.plugins ).sort().join(','),
-
-//   // screen geometry
-//   'scn-h': scn ? scn.height : null,
-//   'scn-w': scn ? scn.width  : null,
-//   // window geometry
-//   'win-h':document.body.offsetHeight,
-//   'win-w': document.body.offsetWidth,
-//   // container geometry
-//   'el-h': this.container.offsetHeight,
-//   'el-w': this.container.offsetWidth,
-
-//   // time param to prevent caching
-//   t: date.getTime()/1000,
-//   electron: Util.isElectron(),
-
-//   // also get local time zone offset
-//   tzoffset: date.getTimezoneOffset(),
-
-//   loadTime: (date.getTime() - this.startTime)/1000
-// };
-
-// in new loader, will be an action
-// async postToLambda, and async postToGA
-// send post and then put in the after create call
 
 function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
@@ -201,6 +150,22 @@ export function Loader() {
     fetchConfig()
   }, [configQueryParam])
 
+  // useEffect(() => {
+  //   async function sendToAWS() {
+  //     if (configSnapshot) {
+  //       await writeAWSAnalytics()
+  //     }
+  //   }
+
+  //   async function sendToGA() {
+  //     if (configSnapshot) {
+  //       await writeGAAnalytics()
+  //     }
+  //   }
+  //   sendToAWS()
+  //   sendToGA()
+  // }, [configSnapshot])
+
   useEffect(() => {
     async function fetchPlugins() {
       // Load runtime plugins
@@ -287,6 +252,7 @@ export function Loader() {
         }
       }
     }
+    console.log(rootModel, rootModel.session, rootModel.session?.assemblies[0])
     if (!rootModel.session) {
       if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
         const { name } = rootModel.jbrowse.savedSessions[0]
