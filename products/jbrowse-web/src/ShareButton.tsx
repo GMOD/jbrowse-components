@@ -199,7 +199,7 @@ const ShareDialog = observer(
     useEffect(() => {
       let cancelled = false
       ;(async () => {
-        if (currentSetting === 'short') {
+        if (currentSetting === 'short' && open) {
           try {
             setLoading(true)
             const locationUrl = new URL(window.location.href)
@@ -226,7 +226,7 @@ const ShareDialog = observer(
       return () => {
         cancelled = true
       }
-    }, [currentSetting, url, snap])
+    }, [currentSetting, url, snap, open])
 
     // generate long URL
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
