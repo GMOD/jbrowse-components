@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -18,8 +17,8 @@ import AddIcon from '@material-ui/icons/Add'
 import CreateIcon from '@material-ui/icons/Create'
 import DeleteIcon from '@material-ui/icons/Delete'
 
-// const [assemblyBeingEdited,setAssemblyBeingEdited]= useState()
-// edit button onClick={() => setAssemblyBeingEdited(assembly)}
+// local
+import { readConfObject } from '../configuration'
 
 const useStyles = makeStyles(() => ({
   titleBox: {
@@ -44,60 +43,77 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-// remember to make observable
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function AssemblyTable(props: any) {
-  const { rootModel, setAssemblyBeingEdited, classes } = props
-  const configSnapshot = getSnapshot(rootModel)
-  console.log(getSnapshot(rootModel))
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = configSnapshot.jbrowse.assemblies.map((assembly: any) => {
-    const { name, aliases = '' } = assembly
-    // console.log(aliases)
-    return (
-      <TableRow key={name}>
-        <TableCell>{name}</TableCell>
-        <TableCell>{aliases.toString()}</TableCell>
-        <TableCell className={classes.buttonCell}>
-          <Button
-            className={classes.button}
-            onClick={() => setAssemblyBeingEdited(assembly)}
-          >
-            <CreateIcon color="primary" />
-          </Button>
-        </TableCell>
-        <TableCell className={classes.buttonCell}>
-          <Button className={classes.button}>
-            <DeleteIcon color="error" />
-          </Button>
-        </TableCell>
-      </TableRow>
-    )
-  })
+const AssemblyTable = observer(
+  ({
+    rootModel,
+    setAssemblyBeingEdited,
+    classes,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rootModel: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setAssemblyBeingEdited: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    classes: any
+  }) => {
+    console.log(readConfObject(rootModel.jbrowse, 'assemblies'))
+    const assemblies = readConfObject(rootModel.jbrowse, 'assemblies')
 
-  return (
-    <TableContainer component={Paper}>
-      <TableHead>
-        <TableRow>
-          <TableCell>Name</TableCell>
-          <TableCell>Aliases</TableCell>
-          <TableCell>Actions</TableCell>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows = assemblies.map((assembly: any) => {
+      const { name, aliases } = assembly
+      return (
+        <TableRow key={name}>
+          <TableCell>{name}</TableCell>
+          <TableCell>{aliases.toString()}</TableCell>
+          <TableCell className={classes.buttonCell}>
+            <Button
+              className={classes.button}
+              onClick={() => setAssemblyBeingEdited(assembly)}
+            >
+              <CreateIcon color="primary" />
+            </Button>
+          </TableCell>
+          <TableCell className={classes.buttonCell}>
+            <Button className={classes.button}>
+              <DeleteIcon color="error" />
+            </Button>
+          </TableCell>
         </TableRow>
-      </TableHead>
-      <Table>
-        <TableBody>{rows}</TableBody>
-      </Table>
-    </TableContainer>
-  )
-}
+      )
+    })
 
-const AssemblyAddForm = observer(({}) => {
+    return (
+      <TableContainer component={Paper}>
+        <TableHead>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Aliases</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <Table>
+          <TableBody>{rows}</TableBody>
+        </Table>
+      </TableContainer>
+    )
+  },
+)
+
+const AssemblyAddForm = observer(() => {
   return <h1>Hello im the assembly addform</h1>
 })
 
-const AssemblyEditor = observer(({ assembly }) => {
-  return <h1>Hello im the assembly editor for {assembly.name}</h1>
-})
+const AssemblyEditor = observer(
+  ({
+    assembly,
+  }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    assembly: any
+  }) => {
+    return <h1>Hello im the assembly editor for {assembly.name}</h1>
+  },
+)
 
 const AssemblyManager = observer(
   ({
