@@ -23,6 +23,7 @@ const useStyles = makeStyles(theme => {
   const scaleBarColor = theme.palette.tertiary
     ? theme.palette.tertiary.light
     : theme.palette.primary.light
+  const background = theme.palette.background.default
   return {
     scaleBar: {
       display: 'flex',
@@ -38,31 +39,31 @@ const useStyles = makeStyles(theme => {
     },
     scaleBarContigForward: {
       backgroundImage: `
-      linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px), 
-      linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(-45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(-135deg, ${background} 10px, transparent 10px),
       linear-gradient(-45deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(-135deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(-45deg, ${theme.palette.background.default} 10px, transparent 10px),
-      linear-gradient(-135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
+      linear-gradient(-45deg, ${background} 10px, transparent 10px),
+      linear-gradient(-135deg, ${background} 10px, transparent 10px)`,
       backgroundRepeat: 'repeat',
       backgroundSize: HEADER_OVERVIEW_HEIGHT,
     },
     scaleBarContigReverse: {
       backgroundImage: `
-      linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px), 
-      linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px),
+      linear-gradient(45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(135deg, ${background} 10px, transparent 10px),
       linear-gradient(45deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(135deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(45deg, ${theme.palette.background.default} 10px, transparent 10px),
-      linear-gradient(135deg, ${theme.palette.background.default} 10px, transparent 10px)`,
+      linear-gradient(45deg, ${background} 10px, transparent 10px),
+      linear-gradient(135deg, ${background} 10px, transparent 10px)`,
       backgroundRepeat: 'repeat',
       backgroundSize: HEADER_OVERVIEW_HEIGHT,
     },
     scaleBarRegionIncompleteLeft: {
       width: 10,
       height: 17.5,
-      background: `linear-gradient(-225deg, #aaa 3px, transparent 1px),
-      linear-gradient(45deg, #aaa 3px, transparent 1px)`,
+      background: `linear-gradient(-225deg,black 3px, transparent 1px),
+      linear-gradient(45deg, black 3px, transparent 1px)`,
       backgroundRepeat: 'repeat-y',
       backgroundSize: '10px 8px',
       borderTopLeftRadius: '2px',
@@ -72,8 +73,8 @@ const useStyles = makeStyles(theme => {
     scaleBarRegionIncompleteRight: {
       width: 10,
       height: 17.5,
-      background: `linear-gradient(225deg, #aaa 3px, transparent 1px),
-      linear-gradient(-45deg, #aaa 3px, transparent 1px)`,
+      background: `linear-gradient(225deg, black 3px, transparent 1px),
+      linear-gradient(-45deg, black 3px, transparent 1px)`,
       backgroundRepeat: 'repeat-y',
       backgroundSize: '10px 8px',
       borderTopRightRadius: '2px',
@@ -85,6 +86,7 @@ const useStyles = makeStyles(theme => {
       fontWeight: 'bold',
       lineHeight: 'normal',
       pointerEvents: 'none',
+      left: 5,
     },
     scaleBarLabel: {
       height: HEADER_OVERVIEW_HEIGHT,
@@ -124,71 +126,71 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const {
-      offsetPx,
-      width,
-      bpPerPx,
-      dynamicBlocks: visibleRegions,
-      displayedRegions,
-    } = model
+    const { offsetPx, width, bpPerPx, dynamicBlocks: visibleRegions } = model
 
+    const blocks = visibleRegions
+      .getBlocks()
+      .filter(block => block.refName !== undefined)
     overview.setVolatileWidth(width)
     overview.showAllRegions()
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
 
-    let bottomLeft: number
-    let newTopLeft: number
+    let bottomLeft: number | undefined
+    let newTopLeft: number | undefined
+    let points: (number | undefined)[][] = []
+    // iterate through blocks and find points for polygon
+    blocks.forEach((region, index) => {
+      const startPx = region.offsetPx - offsetPx
+      const endPx = startPx + (region.end - region.start) / bpPerPx
+      let topLeft = overview.bpToPx({
+        refName: region.refName,
+        coord: region.start,
+        regionNumber: region.regionNumber,
+      })
+      let topRight = overview.bpToPx({
+        refName: region.refName,
+        coord: region.end,
+        regionNumber: region.regionNumber,
+      })
+      //  p1 right to -> p2  up to -> p3  left to -> p4 and back down to p1
+      if (region.reversed) {
+        ;[topLeft, topRight] = [topRight, topLeft]
+      }
+      if (index === 0) {
+        // leftmost bottom and top points
+        bottomLeft = startPx
+        newTopLeft = topLeft
+      }
+      points = [
+        [startPx, HEADER_BAR_HEIGHT],
+        [endPx, HEADER_BAR_HEIGHT],
+        [topRight, 0],
+        [topLeft, 0],
+      ]
+      if (index === blocks.length - 1) {
+        points = [
+          [bottomLeft, HEADER_BAR_HEIGHT],
+          [endPx, HEADER_BAR_HEIGHT],
+          [topRight, 0],
+          [newTopLeft, 0],
+        ]
+      }
+    })
     return (
       <svg
         height={HEADER_BAR_HEIGHT}
         width="100%"
         className={classes.overviewSvg}
       >
-        {visibleRegions.map((region, idx) => {
-          const seqIndex = displayedRegions.findIndex(
-            seq => seq.refName === region.refName,
-          )
-          if (seqIndex === -1) {
-            return null
-          }
-          const startPx = region.offsetPx - offsetPx
-          const endPx = startPx + (region.end - region.start) / bpPerPx
-          let topLeft = overview.bpToPx({
-            refName: region.refName,
-            coord: region.start,
-            regionNumber: region.regionNumber,
-          })
-          let topRight = overview.bpToPx({
-            refName: region.refName,
-            coord: region.end,
-            regionNumber: region.regionNumber,
-          })
-          if (region.reversed) {
-            ;[topLeft, topRight] = [topRight, topLeft]
-          }
-          if (idx === 0) {
-            bottomLeft = startPx || 0
-            newTopLeft = topLeft || 0
-          }
-          if (idx === visibleRegions.length - 1) {
-            return (
-              <polygon
-                key={`${region.key}-${idx}`}
-                points={[
-                  [bottomLeft, HEADER_BAR_HEIGHT],
-                  [endPx, HEADER_BAR_HEIGHT],
-                  [topRight, 0],
-                  [newTopLeft, 0],
-                ].toString()}
-                fill={fade(polygonColor, 0.3)}
-                stroke={fade(polygonColor, 0.8)}
-              />
-            )
-          }
-          return null
-        })}
+        {points && (
+          <polygon
+            points={points.toString()}
+            fill={fade(polygonColor, 0.3)}
+            stroke={fade(polygonColor, 0.8)}
+          />
+        )}
       </svg>
     )
   },
@@ -213,19 +215,14 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         }
         const regionLength = seq.end - seq.start
         const parent = model.parentRegion(seq.assemblyName, seq.refName)
-        let regionStartSmaller = parent ? seq.start > parent.start : false
-        let regionEndSmaller = parent ? seq.end < parent.end : false
-        if (seq.reversed) {
-          ;[regionStartSmaller, regionEndSmaller] = [
-            regionEndSmaller,
-            regionStartSmaller,
-          ]
-        }
-        const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
+        const incompleteRegion = parent
+          ? parent.end - parent.start > seq.end - seq.start
+          : false
+        const numLabels = Math.round(regionLength / gridPitch.majorPitch)
         const labels = []
         for (let index = 0; index < numLabels; index++) {
           seq.reversed
-            ? labels.unshift(index * gridPitch.majorPitch + seq.start)
+            ? labels.unshift(index * gridPitch.majorPitch)
             : labels.push((index + 1) * gridPitch.majorPitch + seq.start)
         }
         return (
@@ -247,8 +244,16 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               borderColor: refNameColor,
             }}
           >
-            {regionStartSmaller && (
-              <div className={classes.scaleBarRegionIncompleteLeft} />
+            {incompleteRegion && (
+              <div
+                className={classes.scaleBarRegionIncompleteLeft}
+                style={{
+                  background: `linear-gradient(-225deg, ${refNameColor} 3px, transparent 1px),
+                linear-gradient(45deg, ${refNameColor} 3px, transparent 1px)`,
+                  backgroundSize: '10px 8px',
+                  backgroundRepeat: 'repeat-y',
+                }}
+              />
             )}
             {/* name of sequence */}
             <Typography
@@ -257,6 +262,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             >
               {seq.refName}
             </Typography>
+
             {/* where the rubberband selection boxes actually get drawn */}
             {visibleRegions.map((r, visibleRegionIdx) => {
               if (
@@ -287,7 +293,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 key={label}
                 className={classes.scaleBarLabel}
                 style={{
-                  left: ((labelIdx + 0.96) * gridPitch.majorPitch) / scale,
+                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
                   pointerEvents: 'none',
                   color: refNameColor,
                 }}
@@ -295,8 +301,16 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 {label.toLocaleString('en-US')}
               </div>
             ))}
-            {regionEndSmaller && (
-              <div className={classes.scaleBarRegionIncompleteRight} />
+            {incompleteRegion && (
+              <div
+                className={classes.scaleBarRegionIncompleteRight}
+                style={{
+                  background: `linear-gradient(225deg, ${refNameColor} 3px, transparent 1px),
+              linear-gradient(-45deg, ${refNameColor} 3px, transparent 1px)`,
+                  backgroundSize: '10px 8px',
+                  backgroundRepeat: 'repeat-y',
+                }}
+              />
             )}
           </Paper>
         )

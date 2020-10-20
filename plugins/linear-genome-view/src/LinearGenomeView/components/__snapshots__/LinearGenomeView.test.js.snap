@@ -31,31 +31,31 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 153.6px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               20
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 313.6px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               40
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 473.6px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               60
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 633.6px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               80
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 793.6px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               100
             </div>
@@ -70,7 +70,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="makeStyles-overviewSvg"
         height="48"
         width="100%"
-      />
+      >
+        <polygon
+          fill="rgba(121, 134, 203, 0.3)"
+          points="0,48,100,48,800,0,0,0"
+          stroke="rgba(121, 134, 203, 0.8)"
+        />
+      </svg>
       <div
         class="makeStyles-headerBar"
       >
@@ -816,6 +822,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               class="makeStyles-scaleBarVisibleRegion"
               style="width: 72.54545454545455px; left: -1px; pointer-events: none;"
             />
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 145.0909090909091px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              200
+            </div>
           </div>
           <div
             class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
@@ -832,31 +844,31 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 139.28727272727272px; pointer-events: none;"
+              style="left: 145.0909090909091px; pointer-events: none;"
             >
               1,200
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 284.3781818181818px; pointer-events: none;"
+              style="left: 290.1818181818182px; pointer-events: none;"
             >
               1,400
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 429.4690909090909px; pointer-events: none;"
+              style="left: 435.27272727272725px; pointer-events: none;"
             >
               1,600
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 574.56px; pointer-events: none;"
+              style="left: 580.3636363636364px; pointer-events: none;"
             >
               1,800
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 719.6509090909091px; pointer-events: none;"
+              style="left: 725.4545454545454px; pointer-events: none;"
             >
               2,000
             </div>
@@ -874,7 +886,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points=",48,800,48,580,0,,0"
+          points="0,48,800,48,580,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
