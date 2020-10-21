@@ -63,7 +63,7 @@ const coreRenderedDetails = [
 
 interface BaseCardProps {
   title: string
-  expanded: boolean
+  expanded?: boolean
 }
 
 export const BaseCard: FunctionComponent<BaseCardProps> = props => {
