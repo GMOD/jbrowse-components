@@ -1,6 +1,5 @@
 import React from 'react'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
-// import '@testing-library/jest-dom/extend-expect'
 import { render } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
@@ -10,18 +9,14 @@ import { QueryParamProvider } from 'use-query-params'
 
 import { Loader } from '../Loader'
 
-if (!window.TextEncoder) window.TextEncoder = TextEncoder
-if (!window.TextDecoder) window.TextDecoder = TextDecoder
-
-// window.requestIdleCallback = (
-//   cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
-// ) => {
-//   cb({ didTimeout: true, timeRemaining: () => 0 })
-//   return 1
-// }
+if (!window.TextEncoder) {
+  window.TextEncoder = TextEncoder
+}
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 
 const getFile = (url: string) => new LocalFile(require.resolve(`../../${url}`))
-// fakes server responses from local file object with fetchMock
 const readBuffer = async (url: string, args: RequestInit) => {
   if (url.match(/testid/)) {
     return {
@@ -74,17 +69,6 @@ jest.spyOn(global as Global, 'fetch').mockImplementation(readBuffer)
 function FallbackComponent({ error }: FallbackProps) {
   return <div>there was an error: {String(error)}</div>
 }
-
-// beforeEach(() => {
-//   // values stored in tests will also be available in other tests unless you run
-//   localStorage.clear()
-//   // or directly reset the storage
-//   localStorage.__STORE__ = {}
-//   // you could also reset all mocks, but this could impact your other mocks
-//   jest.resetAllMocks()
-//   // or individually reset a mock used
-//   localStorage.setItem.mockClear()
-// })
 
 describe('<Loader />', () => {
   afterEach(() => {

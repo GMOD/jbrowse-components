@@ -134,13 +134,13 @@ const SessionLoader = types
     adminKey: types.maybe(types.string),
   })
   .volatile(() => ({
-    noDefaultConfig: false,
     // sessionLoaded: false, // is session loading e.g. from remote shared URL
     // configLoaded: false, // is config loading e.g. downloading json config
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
-    error: undefined as Error | undefined,
+    sessionError: undefined as Error | undefined,
+    configError: undefined as Error | undefined,
     bc1:
       window.BroadcastChannel &&
       new window.BroadcastChannel('jb_request_session'),
@@ -162,32 +162,31 @@ const SessionLoader = types
     },
 
     get ready() {
-      return this.configLoaded && this.sessionLoaded && !self.noDefaultConfig
+      return this.sessionLoaded && !self.configError
+    },
+
+    get error() {
+      return self.configError || self.sessionError
     },
 
     get sessionLoaded() {
-      return !!self.error || !!self.sessionSnapshot
+      return !!self.sessionError || !!self.sessionSnapshot
     },
 
     get configLoaded() {
-      return !!self.error || !!self.configSnapshot
+      return !!self.configError || !!self.configSnapshot
     },
   }))
   .actions(self => ({
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
-    setError(error: Error) {
-      self.error = error
+    setConfigError(error: Error) {
+      self.configError = error
     },
-    // setSessionLoaded(flag: boolean) {
-    //   self.sessionLoaded = flag
-    // },
-    // setConfigLoaded(flag: boolean) {
-    //   self.configLoaded = flag
-    // },
-    setNoDefaultConfig(flag: boolean) {
-      self.noDefaultConfig = flag
+
+    setSessionError(error: Error) {
+      self.sessionError = error
     },
     setPlugins(plugins: PluginConstructor[]) {
       self.plugins = plugins
@@ -208,7 +207,7 @@ const SessionLoader = types
         const runtimePlugins = await pluginLoader.load()
         self.setPlugins([...corePlugins, ...runtimePlugins])
       } catch (error) {
-        self.setError(error)
+        self.setConfigError(error)
       }
     },
     async fetchConfig() {
@@ -225,12 +224,7 @@ const SessionLoader = types
         await this.fetchPlugins(config)
         self.setConfigSnapshot(config)
       } catch (error) {
-        if (!self.configPath) {
-          self.setNoDefaultConfig(true)
-        } else {
-          self.setError(error)
-          self.setNoDefaultConfig(true)
-        }
+        self.setConfigError(error)
       }
     },
 
@@ -266,7 +260,7 @@ const SessionLoader = types
           // clear session param, so just ignore
         }
       }
-      self.setError(new Error('Local storage session not found'))
+      self.setSessionError(new Error('Local storage session not found'))
     },
 
     async fetchSharedSession() {
@@ -302,17 +296,23 @@ const SessionLoader = types
       self.setSessionSnapshot({ ...session, id: shortid() })
     },
     async afterCreate() {
+      const { localSession, encodedSession, sharedSession, configPath } = self
+
+      // rename autosave to previousAutosave
+      const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
+      if (lastAutosave) {
+        localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
+      }
+
       try {
-        const { localSession, encodedSession, sharedSession, configPath } = self
-
-        // rename autosave to previousAutosave
-        const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
-        if (lastAutosave) {
-          localStorage.setItem(`previousAutosave-${configPath}`, lastAutosave)
-        }
-
         // fetch config
         await this.fetchConfig()
+      } catch (e) {
+        self.setConfigError(e)
+        return
+      }
+
+      try {
         if (sharedSession) {
           await this.fetchSharedSession()
         } else if (encodedSession) {
@@ -335,7 +335,7 @@ const SessionLoader = types
           }
         }
       } catch (e) {
-        self.setError(e)
+        self.setSessionError(e)
       }
     },
   }))
@@ -364,7 +364,7 @@ export function Loader() {
 const Renderer = observer(
   ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
-    const { noDefaultConfig, error, ready } = loader
+    const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
 
     // only create the pluginManager/rootModel "on mount"
@@ -377,9 +377,8 @@ const Renderer = observer(
         sessionSnapshot,
         configPath,
       } = loader
-      console.log({ ready, error })
 
-      if (ready || error) {
+      if (ready) {
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -401,11 +400,11 @@ const Renderer = observer(
           // the local session if session in query, or loads the default
           // session
           //
-          if (error) {
+          if (sessionError) {
             rootModel.setDefaultSession()
             if (rootModel.session) {
               rootModel.session.notify(
-                `Error loading session: ${error}. Loaded default session instead.`,
+                `Error loading session: ${sessionError}. Loaded default session instead.`,
               )
             }
           } else if (sessionQuery && !sessionSnapshot) {
@@ -447,13 +446,13 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, error, setPassword])
+    }, [loader, ready, sessionError, setPassword])
 
-    if (noDefaultConfig) {
+    if (configError) {
       return (
         <div>
           <NoConfigMessage />
-          {error ? (
+          {configError ? (
             <div
               style={{
                 border: '1px solid black',
@@ -461,7 +460,7 @@ const Renderer = observer(
                 margin: 2,
                 backgroundColor: '#ff8888',
               }}
-            >{`${error}`}</div>
+            >{`${configError}`}</div>
           ) : null}
         </div>
       )
