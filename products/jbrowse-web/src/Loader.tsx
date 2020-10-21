@@ -255,6 +255,7 @@ const SessionLoader = types
           const result = await resultP
           // @ts-ignore
           self.setSessionSnapshot({ ...result, id: shortid() })
+          return
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -319,8 +320,11 @@ const SessionLoader = types
           await this.decodeEncodedUrlSession()
         } else if (localSession) {
           await this.fetchSessionStorageSession()
-        } else {
+        } else if (self.sessionQuery) {
+          // if there was a sessionQuery and we don't recognize it
           throw new Error('unrecognized session format')
+        } else {
+          self.setSessionSnapshot({})
         }
         if (self.bc1) {
           self.bc1.onmessage = msg => {
@@ -409,15 +413,15 @@ const Renderer = observer(
             }
           } else if (sessionQuery && !sessionSnapshot) {
             rootModel.setDefaultSession()
-            if (rootModel.session) {
-              if (loader.localSession) {
-                rootModel.session.notify(
-                  `Session not found, loaded default session instead. If you
+            if (rootModel.session && loader.localSession) {
+              rootModel.session.notify(
+                `Session not found, loaded default session instead. If you
                   received this URL from another user, request that they send
                   you a session generated with the "Share" button`,
-                )
-              }
+              )
             }
+            rootModel.setSession(loader.sessionSnapshot)
+          } else if(sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
             rootModel.setDefaultSession()
