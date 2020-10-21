@@ -140,7 +140,8 @@ const Polygon = observer(
     let bottomLeft: number | undefined
     let newTopLeft: number | undefined
     let points: (number | undefined)[][] = []
-    // iterate through blocks and find points for polygon
+    // Iterating over blocks to find  the rightmost (endPx and topRight)
+    //  and leftmost (startPx and topLeft) points in order to draw a single polygon
     blocks.forEach((region, index) => {
       const startPx = region.offsetPx - offsetPx
       const endPx = startPx + (region.end - region.start) / bpPerPx
@@ -217,15 +218,16 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         // boolean if displayed region length is smaller than its parent's
         const incompleteRegion =
           seq.parentEnd - seq.parentStart > seq.end - seq.start
-
+        // number of labels to draw in the overview scale bar
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
-        const labels = []
+        // calculating the number labels
+        const tickLabels = []
         for (let index = 0; index < numLabels; index++) {
           const offsetLabel = (index + 1) * gridPitch.majorPitch
-          const label = seq.reversed
+          const tickLabel = seq.reversed
             ? seq.end - offsetLabel
             : offsetLabel + seq.start
-          labels.push(label)
+          tickLabels.push(tickLabel)
         }
         return (
           <Paper
@@ -289,10 +291,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               }
               return null
             })}
-            {/* the number labels */}
-            {labels.map((label, labelIdx) => (
+            {/* the number labels drawn in overview scale bar*/}
+            {tickLabels.map((tickLabel, labelIdx) => (
               <div
-                key={`${JSON.stringify(seq)}-${label}-${labelIdx}`}
+                key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                 className={classes.scaleBarLabel}
                 style={{
                   left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
@@ -300,7 +302,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   color: refNameColor,
                 }}
               >
-                {label.toLocaleString('en-US')}
+                {tickLabel.toLocaleString('en-US')}
               </div>
             ))}
             {incompleteRegion && (
