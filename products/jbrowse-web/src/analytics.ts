@@ -1,10 +1,11 @@
+import { getSnapshot } from 'mobx-state-tree'
+
 // TODOANALYTICS
 // lambda function called jbrowse-analytics needs to be migrated to a recent version of node
 // in here, on load trigger lambda function AFTER the session loading logic is complete
 // also need a trigger for google analytics
 // make google analytics acc, import google analytics here and call in the same logic loop as lambda
-
-import { util } from 'chai'
+// consider a different dynamodb table
 
 // jb1 post object
 // var stats = {
@@ -52,23 +53,58 @@ import { util } from 'chai'
 // async postToLambda, and async postToGA
 // send post and then put in the after create call
 
+// jb2 object
+// version
+// # of assemblies, session.assemblies.length
+// refSeq-count per assembly, map through assemblies do rootModel.assemblyManager.get(eachAssembly)
+// refSeq-Count: {
+//     assmelby1: values
+//     assembly2: value
+// }
+// refSeq-avLen is avg length. similar structure to above
+// number of views open on session load, session.views.length
+// number of open tracks (try to do this one)
+
+interface RefSeq {
+  [key: string]: any
+}
+
 export async function writeAWSAnalytics(rootModel: any, url: string) {
   const { session } = rootModel
   const date = new Date()
+
+  const refSeqCount: RefSeq = {}
+  let refSeqAvgLen: RefSeq
+
+  session.assemblies.map((assembly: any, idx: number) => {
+    const value = rootModel.assemblyManager.get(assembly)
+    const index = `assembly${idx}`
+    refSeqCount[index] = value
+    // refSeqAvgLen[index] = figure this out later
+  })
   const stats = {
     ver: rootModel.version,
-    'refSeq-count': session.assemblies.length,
+    'refSeq-count': refSeqCount,
     'refSeq-avgLen': session.assemblies.reduce(/* reduce to the avg length */),
-    'tracks-count': session.tracks.length,
-    plugins: '', // something with the plugin manager
+    'tracks-count': session.tracks.length, // this is all possible tracks
+    plugins: getSnapshot(rootModel.jbrowse.plugins), // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
+    'open-views': session.views.length,
 
     // screen geometry
+    'scn-h': window.screen.height,
+    'scn-w': window.screen.width,
+
+    // window geometry
+    'win-h': document.body.offsetHeight,
+    'win-w': document.body.offsetWidth,
+
+    // dont worry about container geometry
 
     // time param to prevent caching
     t: date.getTime() / 1000,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     tzoffset: date.getTimezoneOffset(),
-    loadTime: date.getTime() - 0 /* startTime*/ / 1000,
+    loadTime: date.getTime() - 0 /* startTime*/ / 1000, // potentially look if react records load times, probably need the date object though
   }
   const data = new FormData()
   data.append('stats', JSON.stringify(stats))
@@ -84,4 +120,72 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
   }
 }
 
-export async function writeGAAnalytics() {}
+// need to create a script element and write it like in jb1 before calling
+// jb1 GA
+// phones home to google analytics
+// _reportGoogleUsageStats: function( stats ) {
+//     var thisB = this;
+//     // jbrowse.org account always
+//     var jbrowseUser = 'UA-7115575-2'
+//     var accounts = [ jbrowseUser ];
+
+//     // add any custom Google Analytics accounts from config (comma-separated or array)
+//     if( this.config.googleAnalytics ) {
+//         var userAccounts = this.config.googleAnalytics.accounts;
+//         if( accounts && ! lang.isArray(userAccounts) ) {
+//             userAccounts = userAccounts.replace(/^\s*|\s*$/,'').split(/\s*,\s*/)
+//         }
+//         accounts.push.apply( accounts, userAccounts );
+//     }
+
+//     var analyticsScript = "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ ";
+//     analyticsScript += "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), ";
+//     analyticsScript += "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) ";
+//     analyticsScript += "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');";
+
+//     // set up users
+//     accounts.forEach(function(user,trackerNum) {
+//         // if we're adding jbrowse.org user, also include new dimension references (replacing ga.js custom variables)
+//         if ( user == jbrowseUser) {
+//             analyticsScript += "ga('create', '"+user+"', 'auto', 'jbrowseTracker');";
+//         }
+//         else {
+//             analyticsScript += "ga('create', '"+user+"', 'auto', 'customTracker"+trackerNum+"');";
+//         }
+//     });
+
+//     // send pageviews and custom variables
+//     accounts.forEach(function(user,viewerNum) {
+//         if ( user == jbrowseUser) {
+//             var gaData = {};
+//             var googleDimensions = 'tracks-count refSeqs-count refSeqs-avgLen ver loadTime electron plugins';
+//             var googleMetrics = 'loadTime';
+
+//             googleDimensions.split(/\s+/).forEach( function(key,index) {
+//                 gaData['dimension'+(index+1)] = stats[key];
+//             });
+
+//             gaData.metric1 = Math.round(stats.loadTime*1000);
+
+//             analyticsScript += "ga('jbrowseTracker.send', 'pageview',"+JSON.stringify(gaData)+");";
+//         }
+//         else {
+//             analyticsScript += "ga('customTracker"+viewerNum+".send', 'pageview');";
+//         }
+//     });
+
+//     var analyticsScriptNode = document.createElement('script');
+//     analyticsScriptNode.innerHTML = analyticsScript;
+
+//     document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode); // important, append the script to the head
+// },
+export async function writeGAAnalytics() {
+  // jbrowse.org account always
+  const jbrowseUser = 'fill in string'
+  const accounts = [jbrowseUser]
+
+  // do we need custom GA accounts?
+  // create script
+  // for each acc? add pageview + custom variable
+  // then append to head
+}

@@ -252,7 +252,11 @@ export function Loader() {
         }
       }
     }
-    console.log(rootModel, rootModel.session, rootModel.session?.assemblies[0])
+    console.log(
+      rootModel,
+      rootModel.session,
+      rootModel.assemblyManager?.get('volvox'),
+    )
     if (!rootModel.session) {
       if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
         const { name } = rootModel.jbrowse.savedSessions[0]
