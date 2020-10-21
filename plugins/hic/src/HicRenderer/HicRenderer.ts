@@ -1,5 +1,5 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { lighten } from '@material-ui/core/styles/colorManipulator'
+import Color from 'color'
 import ServerSideRendererType, {
   RenderArgsDeserialized,
   RenderArgs,
@@ -68,7 +68,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const w = res / (bpPerPx * Math.sqrt(2))
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    const baseColor = readConfObject(config, 'baseColor')
+    const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0
@@ -87,7 +87,6 @@ export default class HicRenderer extends ServerSideRendererType {
           counts,
           maxScore,
           baseColor,
-          lighten,
         ])
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }

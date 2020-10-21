@@ -6,15 +6,15 @@ export default ConfigurationSchema(
     baseColor: {
       type: 'color',
       description: 'base color to be used in the hic alignment',
-      defaultValue: 'red',
+      defaultValue: '#f00',
     },
     color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
-      defaultValue: `function(count, maxScore, baseColor, lighten) {
-      return lighten(baseColor, counts/(maxScore/20))
+      defaultValue: `function(counts, maxScore, baseColor) {
+      return baseColor.lighten(counts/maxScore)
 }`,
-      functionSignature: ['count, maxScore, baseColor, lighten'],
+      functionSignature: ['count', 'maxScore', 'baseColor'],
     },
 
     maxHeight: {
