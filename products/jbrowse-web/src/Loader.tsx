@@ -38,10 +38,14 @@ function NoConfigMessage() {
   // TODO: Link to docs for how to configure JBrowse
   return (
     <>
-      <h4>JBrowse has not been configured yet.</h4>
+      <h4>
+        Configuration not found. You may have arrived here if you requested a
+        config that does not exist or you have not set up your JBrowse yet.
+      </h4>
+
       {inDevelopment ? (
         <>
-          <div>Available development configs:</div>
+          <div>Sample JBrowse configs:</div>
           <ul>
             <li>
               <a href="?config=test_data/config.json">Human basic</a>
@@ -98,7 +102,24 @@ function NoConfigMessage() {
             </li>
           </ul>
         </>
-      ) : null}
+      ) : (
+        <div>
+          <p>
+            If you want to complete your setup, visit our{' '}
+            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+              Quick start guide
+            </a>
+          </p>
+          <div>Sample JBrowse config:</div>
+          <ul>
+            <li>
+              <a href="?config=test_data/volvox/config.json">
+                Volvox sample data
+              </a>
+            </li>
+          </ul>
+        </div>
+      )}
     </>
   )
 }
@@ -202,6 +223,7 @@ const SessionLoader = types
           self.setConfigLoaded(true)
         } else {
           self.setError(error)
+          self.setNoDefaultConfig(true)
         }
       }
     },
@@ -353,7 +375,7 @@ const Renderer = observer(
         sessionSnapshot,
         configPath,
       } = loader
-      if (ready || error) {
+      if (ready) {
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -374,6 +396,7 @@ const Renderer = observer(
           // in order: saves the previous autosave for recovery, tries to load
           // the local session if session in query, or loads the default
           // session
+          //
           if (error) {
             rootModel.setDefaultSession()
             if (rootModel.session) {
@@ -424,7 +447,21 @@ const Renderer = observer(
     }, [loader, ready, error, setPassword])
 
     if (noDefaultConfig) {
-      return <NoConfigMessage />
+      return (
+        <div>
+          <NoConfigMessage />
+          {error ? (
+            <div
+              style={{
+                border: '1px solid black',
+                padding: 2,
+                margin: 2,
+                backgroundColor: '#ff8888',
+              }}
+            >{`${error}`}</div>
+          ) : null}
+        </div>
+      )
     }
 
     if (pm) {
