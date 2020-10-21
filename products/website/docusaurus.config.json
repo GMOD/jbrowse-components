@@ -6,7 +6,9 @@
   "favicon": "img/favicon.ico",
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
-  "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/@jbrowse/web@0.0.1-beta.26/index.html",
+  "customFields": {
+    "currentLink": "test"
+  },
   "themeConfig": {
     "colorMode": {
       "disableSwitch": true
