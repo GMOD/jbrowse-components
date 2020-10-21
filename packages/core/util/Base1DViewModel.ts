@@ -66,6 +66,13 @@ const Base1DView = types
     get minimumBlockWidth() {
       return 20
     },
+    /**
+     * calculates the Px at which coord is found.
+     *
+     * @param refName - string, refName of region
+     * @param coord - number, bp to be translated to Px
+     * @param regionNumber - number, index of displayedRegion in displayedRegions array
+     */
     bpToPx({
       refName,
       coord,
@@ -79,6 +86,8 @@ const Base1DView = types
 
       const index = self.displayedRegions.findIndex((r, idx) => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
+          // using optional parameter ,regionNumber, as additional requirement to find
+          // a specific displayedRegion when many exist with the same refName
           if (regionNumber ? regionNumber === idx : true) {
             offsetBp += r.reversed ? r.end - coord : coord - r.start
             return true
