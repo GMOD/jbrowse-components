@@ -64,7 +64,7 @@ function MessageSnackbar({
   const [message, level] = snackbarMessage || []
   return (
     <Snackbar
-      open={open}
+      open={open&&!!message}
       onClose={handleClose}
       action={
         <IconButton aria-label="close" color="inherit" onClick={handleClose}>
