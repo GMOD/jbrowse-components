@@ -51,13 +51,15 @@ function Home() {
               A pluggable open-source platform for visualizing and integrating
               biological data
             </p>
+            <Button href="/jb2/blog" variant="contained" color="secondary">
+              Download latest release
+            </Button>
             <Button
-              href="/jb2/blog"
+              href={siteConfig.currentLink}
               variant="contained"
               color="secondary"
-              disableElevation
             >
-              Download latest release
+              Demo instance
             </Button>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
