@@ -160,7 +160,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
 
   // length of ctgA 50000 and length of ctgB is 6080 = 56080
   expect(model.displayedParentRegionsLength).toEqual(56080)
-  expect(model.idxInDisplayedRegion('ctgA')).toEqual(0)
   expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toEqual({
     index: 0,
     offsetPx: 3990,
