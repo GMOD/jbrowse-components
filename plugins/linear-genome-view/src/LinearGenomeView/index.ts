@@ -221,12 +221,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           (region: Region) => region.refName === refName,
         )
       },
-
-      idxInDisplayedRegion(refName: string | undefined) {
-        return self.displayedRegions.findIndex(
-          (region: Region) => region.refName === refName,
-        )
-      },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
           parentRegion =>
