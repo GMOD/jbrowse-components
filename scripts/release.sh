@@ -33,11 +33,10 @@ INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/$JBROWSE_WEB_TAG/in
 JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -i -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
 
 
-node -p "JSON.stringify({...require('./products/website/docusaurus.config.json'), currentLink: \"$INSTANCE\"}, null, 2)" > products/website/docusaurus.config.json
-# INSTANCE=$INSTANCE perl -p -i -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/frontpage.js > $FRONTPAGE_FILENAME
+INSTANCE=$INSTANCE node -p "JSON.stringify({...require('./products/website/docusaurus.config.json'), currentLink: process.env.INSTANCE }, null, 2)" > tmp.json
+mv tmp.json products/website/docusaurus.config.json
 
 
-echo $INSTANCE
 # git add $BLOGPOST_FILENAME
 # git commit -m "[update docs] release"
 

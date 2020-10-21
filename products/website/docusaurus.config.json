@@ -6,12 +6,17 @@
   "favicon": "img/favicon.ico",
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
-  "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/%40jbrowse/web%400.0.1-beta.26/index.html",
+  "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/@jbrowse/web@0.0.1-beta.26/index.html",
   "themeConfig": {
-    "colorMode": { "disableSwitch": true },
+    "colorMode": {
+      "disableSwitch": true
+    },
     "navbar": {
       "title": "JBrowse",
-      "logo": { "alt": "JBrowse", "src": "img/logo.svg" },
+      "logo": {
+        "alt": "JBrowse",
+        "src": "img/logo.svg"
+      },
       "items": [
         {
           "to": "docs",
@@ -19,10 +24,26 @@
           "label": "Docs",
           "position": "left"
         },
-        { "to": "blog", "label": "Blog", "position": "left" },
-        { "to": "features", "label": "Features", "position": "left" },
-        { "to": "demos", "label": "Demos", "position": "left" },
-        { "to": "contact/", "label": "Contact", "position": "left" },
+        {
+          "to": "blog",
+          "label": "Blog",
+          "position": "left"
+        },
+        {
+          "to": "features",
+          "label": "Features",
+          "position": "left"
+        },
+        {
+          "to": "demos",
+          "label": "Demos",
+          "position": "left"
+        },
+        {
+          "to": "contact/",
+          "label": "Contact",
+          "position": "left"
+        },
         {
           "href": "https://github.com/GMOD/jbrowse-components",
           "label": "GitHub",
@@ -35,20 +56,37 @@
       "links": [
         {
           "title": "Docs",
-          "items": [{ "label": "Documentation", "to": "docs/" }]
+          "items": [
+            {
+              "label": "Documentation",
+              "to": "docs/"
+            }
+          ]
         },
         {
           "title": "Community",
           "items": [
-            { "label": "Gitter", "href": "https://gitter.im/GMOD/jbrowse" },
-            { "label": "Twitter", "href": "https://twitter.com/usejbrowse" }
+            {
+              "label": "Gitter",
+              "href": "https://gitter.im/GMOD/jbrowse"
+            },
+            {
+              "label": "Twitter",
+              "href": "https://twitter.com/usejbrowse"
+            }
           ]
         },
         {
           "title": "More",
           "items": [
-            { "label": "Blog", "to": "blog" },
-            { "label": "Contact", "to": "contact" },
+            {
+              "label": "Blog",
+              "to": "blog"
+            },
+            {
+              "label": "Contact",
+              "to": "contact"
+            },
             {
               "label": "GitHub",
               "href": "https://github.com/GMOD/jbrowse-components"
