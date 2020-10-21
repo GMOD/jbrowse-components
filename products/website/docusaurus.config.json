@@ -7,7 +7,7 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentLink": "test"
+    "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/@jbrowse/web@0.0.1-beta.26/index.html"
   },
   "themeConfig": {
     "colorMode": {
