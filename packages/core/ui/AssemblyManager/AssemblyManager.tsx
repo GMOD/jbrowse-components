@@ -119,23 +119,11 @@ const AssemblyManager = observer(
         <DialogContent>
           <div className={classes.dialogContent}>
             {showAssemblyTable ? (
-              <>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<AddIcon />}
-                  onClick={() => {
-                    setFormOpen(true)
-                  }}
-                >
-                  Add New Assembly
-                </Button>
-                <AssemblyTable
-                  rootModel={rootModel}
-                  setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
-                  setAssemblyBeingEdited={setAssemblyBeingEdited}
-                />
-              </>
+              <AssemblyTable
+                rootModel={rootModel}
+                setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
+                setAssemblyBeingEdited={setAssemblyBeingEdited}
+              />
             ) : null}
             {isAssemblyBeingEdited ? (
               <AssemblyEditor assembly={assemblyBeingEdited} />
@@ -145,15 +133,27 @@ const AssemblyManager = observer(
         </DialogContent>
         <DialogActions>
           {showAssemblyTable ? (
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={() => {
-                onClose(false)
-              }}
-            >
-              Return
-            </Button>
+            <>
+              <Button
+                color="secondary"
+                variant="contained"
+                onClick={() => {
+                  onClose(false)
+                }}
+              >
+                Return
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setFormOpen(true)
+                }}
+              >
+                Add New Assembly
+              </Button>
+            </>
           ) : null}
         </DialogActions>
       </Dialog>
