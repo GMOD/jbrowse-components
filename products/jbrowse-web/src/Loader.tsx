@@ -141,7 +141,7 @@ const SessionLoader = types
     },
 
     get ready() {
-      return self.configLoaded && self.sessionLoaded
+      return self.configLoaded && self.sessionLoaded && !self.noDefaultConfig
     },
   }))
   .actions(self => ({
@@ -208,18 +208,19 @@ const SessionLoader = types
 
     async fetchSessionStorageSession() {
       const sessionStr = sessionStorage.getItem('current')
+      const query = (self.sessionQuery as string).replace('local-', '')
 
       // check if
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
-        if (self.sessionQuery === sessionSnap.id) {
+        if (query === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
           self.setSessionLoaded(true)
           return
         }
       }
       if (self.bc1) {
-        self.bc1.postMessage(self.sessionQuery)
+        self.bc1.postMessage(query)
         const resultP = new Promise((resolve, reject) => {
           if (self.bc2) {
             self.bc2.onmessage = msg => {
@@ -277,7 +278,7 @@ const SessionLoader = types
     },
     async afterCreate() {
       try {
-        const { sessionQuery, encodedSession, sharedSession, configPath } = self
+        const { localSession, encodedSession, sharedSession, configPath } = self
 
         // rename autosave to previousAutosave
         const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
@@ -291,7 +292,7 @@ const SessionLoader = types
           await this.fetchSharedSession()
         } else if (encodedSession) {
           await this.decodeEncodedUrlSession()
-        } else if (sessionQuery) {
+        } else if (localSession) {
           await this.fetchSessionStorageSession()
         } else {
           self.setSessionLoaded(true)
@@ -341,7 +342,6 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { noDefaultConfig, error, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-    const load = ready && !noDefaultConfig
 
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
@@ -353,7 +353,7 @@ const Renderer = observer(
         sessionSnapshot,
         configPath,
       } = loader
-      if (load) {
+      if (ready || error) {
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -370,12 +370,32 @@ const Renderer = observer(
             version: packagedef.version,
             configPath,
           })
-          // in order: saves the previous autosave for recovery, tries to load the local session
-          // if session in query, or loads the default session
-          if (!sessionQuery || !sessionSnapshot) {
+
+          // in order: saves the previous autosave for recovery, tries to load
+          // the local session if session in query, or loads the default
+          // session
+          if (error) {
             rootModel.setDefaultSession()
-          } else {
+            if (rootModel.session) {
+              rootModel.session.notify(
+                `Error loading session: ${error}. Loaded default session instead.`,
+              )
+            }
+          } else if (sessionQuery && !sessionSnapshot) {
+            rootModel.setDefaultSession()
+            if (rootModel.session) {
+              if (loader.localSession) {
+                rootModel.session.notify(
+                  `Session not found, loaded default session instead. If you
+                  received this URL from another user, request that they send
+                  you a session generated with the "Share" button`,
+                )
+              }
+            }
+          } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
+          } else {
+            rootModel.setDefaultSession()
           }
           // if (!rootModel.session) {
           //   throw new Error('root model did not have any session defined')
@@ -401,13 +421,10 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, load, setPassword])
+    }, [loader, ready, error, setPassword])
 
     if (noDefaultConfig) {
       return <NoConfigMessage />
-    }
-    if (error) {
-      throw error
     }
 
     if (pm) {

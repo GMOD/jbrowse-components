@@ -28,7 +28,7 @@ const JBrowse = observer(({ pluginManager }) => {
   const { id: currentSessionId } = session
 
   useEffect(() => {
-    setSessionId(currentSessionId)
+    setSessionId(`local-${currentSessionId}`)
   }, [currentSessionId, setSessionId])
 
   useEffect(() => {
