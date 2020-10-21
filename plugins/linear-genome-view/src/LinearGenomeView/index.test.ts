@@ -155,15 +155,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.offsetPx).toEqual(800)
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
   expect(model.offsetPx).toEqual(79401)
-  model.centerAt(5000, 'ctgA', 1)
-  expect(model.offsetPx).toEqual(79401)
-
-  // length of ctgA 50000 and length of ctgB is 6080 = 56080
-  expect(model.displayedParentRegionsLength).toEqual(56080)
-  expect(model.bpToPx({ refName: 'ctgA', coord: 500 })).toEqual({
-    index: 0,
-    offsetPx: 3990,
-  })
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
