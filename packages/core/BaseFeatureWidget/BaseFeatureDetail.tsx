@@ -297,31 +297,34 @@ export const BaseSubFeatures = (props: BaseProps) => {
   return (
     <>
       {subfeaturesToRender.length > 0 && (
-        <BaseCard title="SubFeatures" expanded={false}>
-          {subfeaturesToRender.map((subfeature, idx) => {
-            return (
-              <BaseAttributes
-                {...props}
-                key={idx}
-                expanded={false}
-                omit={subfeaturesOmit}
-                title={subfeature.title}
-                feature={subfeature.attributes}
-                descriptions={descriptions}
-              />
-            )
-          })}
-          {subfeaturesLoaded ? null : (
-            <Button
-              variant="contained"
-              color="secondary"
-              style={{ margin: '5px' }}
-              onClick={() => setSubfeaturesLoaded(true)}
-            >
-              Load Additional Subfeatures
-            </Button>
-          )}
-        </BaseCard>
+        <>
+          <Divider />
+          <BaseCard title="SubFeatures" expanded={false}>
+            {subfeaturesToRender.map((subfeature, idx) => {
+              return (
+                <BaseAttributes
+                  {...props}
+                  key={idx}
+                  expanded={false}
+                  omit={subfeaturesOmit}
+                  title={subfeature.title}
+                  feature={subfeature.attributes}
+                  descriptions={descriptions}
+                />
+              )
+            })}
+            {subfeaturesLoaded ? null : (
+              <Button
+                variant="contained"
+                color="secondary"
+                style={{ margin: '5px' }}
+                onClick={() => setSubfeaturesLoaded(true)}
+              >
+                Load Additional Subfeatures
+              </Button>
+            )}
+          </BaseCard>
+        </>
       )}
     </>
   )
@@ -343,7 +346,6 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
       <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
-      <Divider />
       <BaseSubFeatures feature={feat} {...props} descriptions={descriptions} />
     </Paper>
   )
