@@ -140,8 +140,8 @@ const Polygon = observer(
     let bottomLeft: number | undefined
     let newTopLeft: number | undefined
     let points: (number | undefined)[][] = []
-    // Iterating over blocks to find  the rightmost (endPx and topRight)
-    //  and leftmost (startPx and topLeft) points in order to draw a single polygon
+    // Iterating over blocks to find the rightmost (endPx and topRight)
+    // and leftmost (startPx and topLeft) points in order to draw a single polygon
     blocks.forEach((region, index) => {
       const startPx = region.offsetPx - offsetPx
       const endPx = startPx + (region.end - region.start) / bpPerPx
