@@ -134,8 +134,7 @@ const SessionLoader = types
     adminKey: types.maybe(types.string),
   })
   .volatile(() => ({
-    // sessionLoaded: false, // is session loading e.g. from remote shared URL
-    // configLoaded: false, // is config loading e.g. downloading json config
+    blankSession: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
@@ -170,7 +169,9 @@ const SessionLoader = types
     },
 
     get sessionLoaded() {
-      return !!self.sessionError || !!self.sessionSnapshot
+      return (
+        !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
+      )
     },
 
     get configLoaded() {
@@ -197,6 +198,9 @@ const SessionLoader = types
     setSessionSnapshot(snap: unknown) {
       self.sessionSnapshot = snap
       sessionStorage.setItem('current', JSON.stringify(snap))
+    },
+    setBlankSession(flag: boolean) {
+      self.blankSession = flag
     },
   }))
   .actions(self => ({
@@ -324,7 +328,8 @@ const SessionLoader = types
           // if there was a sessionQuery and we don't recognize it
           throw new Error('unrecognized session format')
         } else {
-          self.setSessionSnapshot({})
+          // placeholder for session loaded, but none found
+          self.setBlankSession(true)
         }
         if (self.bc1) {
           self.bc1.onmessage = msg => {
@@ -421,7 +426,7 @@ const Renderer = observer(
               )
             }
             rootModel.setSession(loader.sessionSnapshot)
-          } else if(sessionSnapshot) {
+          } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
             rootModel.setDefaultSession()
