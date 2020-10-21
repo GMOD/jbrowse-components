@@ -274,8 +274,6 @@ const getSubfeaturesToRender = (
   return subfeaturesToRender
 }
 
-const subfeaturesOmit = ['gene_id', 'gene_name', 'gene_type', 'gene_status']
-
 // Display a card named SUBFEATURES closed by default.
 // When open, only card with information about transcript and mRNA are displayed,
 // Accompanied with a button to load additionnal subfeature like exon/cds.
@@ -306,7 +304,6 @@ export const BaseSubFeatures = (props: BaseProps) => {
                   {...props}
                   key={idx}
                   expanded={false}
-                  omit={subfeaturesOmit}
                   title={subfeature.title}
                   feature={subfeature.attributes}
                   descriptions={descriptions}
