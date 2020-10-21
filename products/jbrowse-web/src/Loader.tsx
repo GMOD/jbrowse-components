@@ -35,92 +35,90 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 function NoConfigMessage() {
-  // TODO: Link to docs for how to configure JBrowse
   return (
-    <>
+    <div>
       <h4>
         Configuration not found. You may have arrived here if you requested a
         config that does not exist or you have not set up your JBrowse yet.
       </h4>
 
+      <p>
+        If you want to complete your setup, visit our{' '}
+        <a href="https://jbrowse.org/jb2/docs/quickstart_web">
+          Quick start guide
+        </a>
+      </p>
+
+      <div>Sample JBrowse configs:</div>
       {inDevelopment ? (
-        <>
-          <div>Sample JBrowse configs:</div>
-          <ul>
-            <li>
-              <a href="?config=test_data/config.json">Human basic</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_demo.json">Human extended</a>
-            </li>
-            <li>
-              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
-            </li>
-            <li>
-              <a href="?config=test_data/volvox/config.json">Volvox</a>
-            </li>
-            <li>
-              <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_dotplot.json">
-                Grape/Peach Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_human_dotplot.json">
-                hg19/hg38 Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_synteny_grape_peach.json">
-                Grape/Peach Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/yeast_synteny/config.json">
-                Yeast Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread.json">
-                Long Read vs. Reference Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread_linear.json">
-                Long Read vs. Reference Linear
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_many_contigs.json">
-                Many Contigs
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_honeybee.json">Honeybee</a>
-            </li>
-          </ul>
-        </>
-      ) : (
-        <div>
-          <p>
-            If you want to complete your setup, visit our{' '}
-            <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-              Quick start guide
+        <ul>
+          <li>
+            <a href="?config=test_data/config.json">Human basic</a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_demo.json">Human sample data</a>
+          </li>
+          <li>
+            <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
+          </li>
+          <li>
+            <a href="?config=test_data/volvox/config.json">Volvox</a>
+          </li>
+          <li>
+            <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_dotplot.json">
+              Grape/Peach Dotplot
             </a>
-          </p>
-          <div>Sample JBrowse config:</div>
-          <ul>
-            <li>
-              <a href="?config=test_data/volvox/config.json">
-                Volvox sample data
-              </a>
-            </li>
-          </ul>
-        </div>
+          </li>
+          <li>
+            <a href="?config=test_data/config_human_dotplot.json">
+              hg19/hg38 Dotplot
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_synteny_grape_peach.json">
+              Grape/Peach Synteny
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/yeast_synteny/config.json">
+              Yeast Synteny
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_longread.json">
+              Long Read vs. Reference Dotplot
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_longread_linear.json">
+              Long Read vs. Reference Linear
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_many_contigs.json">
+              Many Contigs
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_honeybee.json">Honeybee</a>
+          </li>
+        </ul>
+      ) : (
+        <ul>
+          <li>
+            <a href="?config=test_data/volvox/config.json">
+              Volvox sample data
+            </a>
+          </li>
+          <li>
+            <a href="?config=test_data/config_demo.json">Human sample data</a>
+          </li>
+        </ul>
       )}
-    </>
+    </div>
   )
 }
 
