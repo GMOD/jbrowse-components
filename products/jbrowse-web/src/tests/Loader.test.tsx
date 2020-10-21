@@ -1,6 +1,6 @@
 import React from 'react'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
-import '@testing-library/jest-dom/extend-expect'
+// import '@testing-library/jest-dom/extend-expect'
 import { render } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
@@ -13,12 +13,12 @@ import { Loader } from '../Loader'
 if (!window.TextEncoder) window.TextEncoder = TextEncoder
 if (!window.TextDecoder) window.TextDecoder = TextDecoder
 
-window.requestIdleCallback = (
-  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
-) => {
-  cb({ didTimeout: true, timeRemaining: () => 0 })
-  return 1
-}
+// window.requestIdleCallback = (
+//   cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
+// ) => {
+//   cb({ didTimeout: true, timeRemaining: () => 0 })
+//   return 1
+// }
 
 const getFile = (url: string) => new LocalFile(require.resolve(`../../${url}`))
 // fakes server responses from local file object with fetchMock

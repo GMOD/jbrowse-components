@@ -135,8 +135,8 @@ const SessionLoader = types
   })
   .volatile(() => ({
     noDefaultConfig: false,
-    sessionLoaded: false, // is session loading e.g. from remote shared URL
-    configLoaded: false, // is config loading e.g. downloading json config
+    // sessionLoaded: false, // is session loading e.g. from remote shared URL
+    // configLoaded: false, // is config loading e.g. downloading json config
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
@@ -162,7 +162,15 @@ const SessionLoader = types
     },
 
     get ready() {
-      return self.configLoaded && self.sessionLoaded && !self.noDefaultConfig
+      return this.configLoaded && this.sessionLoaded && !self.noDefaultConfig
+    },
+
+    get sessionLoaded() {
+      return !!self.error || !!self.sessionSnapshot
+    },
+
+    get configLoaded() {
+      return !!self.error || !!self.configSnapshot
     },
   }))
   .actions(self => ({
@@ -172,12 +180,12 @@ const SessionLoader = types
     setError(error: Error) {
       self.error = error
     },
-    setSessionLoaded(flag: boolean) {
-      self.sessionLoaded = flag
-    },
-    setConfigLoaded(flag: boolean) {
-      self.configLoaded = flag
-    },
+    // setSessionLoaded(flag: boolean) {
+    //   self.sessionLoaded = flag
+    // },
+    // setConfigLoaded(flag: boolean) {
+    //   self.configLoaded = flag
+    // },
     setNoDefaultConfig(flag: boolean) {
       self.noDefaultConfig = flag
     },
@@ -216,11 +224,9 @@ const SessionLoader = types
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
         self.setConfigSnapshot(config)
-        self.setConfigLoaded(true)
       } catch (error) {
         if (!self.configPath) {
           self.setNoDefaultConfig(true)
-          self.setConfigLoaded(true)
         } else {
           self.setError(error)
           self.setNoDefaultConfig(true)
@@ -237,7 +243,6 @@ const SessionLoader = types
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
           self.setSessionSnapshot(sessionSnap)
-          self.setSessionLoaded(true)
           return
         }
       }
@@ -261,7 +266,7 @@ const SessionLoader = types
           // clear session param, so just ignore
         }
       }
-      self.setSessionLoaded(true)
+      self.setError(new Error('Local storage session not found'))
     },
 
     async fetchSharedSession() {
@@ -287,7 +292,6 @@ const SessionLoader = types
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
       self.setSessionSnapshot({ ...session, id: shortid() })
-      self.setSessionLoaded(true)
     },
 
     async decodeEncodedUrlSession() {
@@ -296,7 +300,6 @@ const SessionLoader = types
         fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
       self.setSessionSnapshot({ ...session, id: shortid() })
-      self.setSessionLoaded(true)
     },
     async afterCreate() {
       try {
@@ -317,9 +320,8 @@ const SessionLoader = types
         } else if (localSession) {
           await this.fetchSessionStorageSession()
         } else {
-          self.setSessionLoaded(true)
+          throw new Error('unrecognized session format')
         }
-
         if (self.bc1) {
           self.bc1.onmessage = msg => {
             const ret =
@@ -375,7 +377,9 @@ const Renderer = observer(
         sessionSnapshot,
         configPath,
       } = loader
-      if (ready) {
+      console.log({ ready, error })
+
+      if (ready || error) {
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -415,7 +419,6 @@ const Renderer = observer(
                 )
               }
             }
-          } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
             rootModel.setDefaultSession()
