@@ -124,9 +124,6 @@ export const BaseCoreDetails = (props: BaseProps) => {
 }
 
 const omit = [
-  'name',
-  'start',
-  'end',
   'strand',
   'refName',
   'type',
@@ -338,11 +335,17 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model, descriptions } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
+  const baseAttributesOmit = ['name', 'start', 'end']
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feat} {...props} />
       <Divider />
-      <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
+      <BaseAttributes
+        feature={feat}
+        {...props}
+        descriptions={descriptions}
+        omit={baseAttributesOmit}
+      />
       <BaseSubFeatures feature={feat} {...props} descriptions={descriptions} />
     </Paper>
   )
