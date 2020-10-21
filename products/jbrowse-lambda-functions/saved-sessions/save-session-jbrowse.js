@@ -1,15 +1,11 @@
 // eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-const { createHash } = require('crypto')
+const { nanoid } = require('nanoid')
 const multipart = require('./multipart')
 
 const { AWS_REGION: region, sessionTable } = process.env
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10', region })
-
-function generateSessionId(session) {
-  return createHash('sha256').update(session).digest('hex')
-}
 
 async function uploadSession(sessionId, session, dateShared, referer) {
   const params = {
@@ -36,7 +32,7 @@ async function uploadSession(sessionId, session, dateShared, referer) {
 exports.handler = async event => {
   const data = multipart.parse(event)
   const { session, dateShared, referer } = data
-  const sessionId = generateSessionId(session)
+  const sessionId = nanoid()
   try {
     await uploadSession(sessionId, session, dateShared, referer)
   } catch (e) {
