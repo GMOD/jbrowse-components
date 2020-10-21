@@ -12,7 +12,7 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of each feature in a hic alignment',
       defaultValue: `function(counts, maxScore, baseColor) {
-      return baseColor.lighten(counts/maxScore).hex()
+      return baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string()
 }`,
       functionSignature: ['count', 'maxScore', 'baseColor'],
     },
