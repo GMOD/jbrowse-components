@@ -177,11 +177,9 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
 
 const ShareDialog = observer(
   ({
-    open,
     handleClose,
     session,
   }: {
-    open: boolean
     handleClose: () => void
     session: SessionModel
   }) => {
@@ -199,7 +197,7 @@ const ShareDialog = observer(
     useEffect(() => {
       let cancelled = false
       ;(async () => {
-        if (currentSetting === 'short' && open) {
+        if (currentSetting === 'short') {
           try {
             setLoading(true)
             const locationUrl = new URL(window.location.href)
@@ -226,7 +224,7 @@ const ShareDialog = observer(
       return () => {
         cancelled = true
       }
-    }, [currentSetting, url, snap, open])
+    }, [currentSetting, url, snap])
 
     // generate long URL
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`
@@ -238,7 +236,7 @@ const ShareDialog = observer(
       <>
         <Dialog
           maxWidth="xl"
-          open={open}
+          open
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
@@ -357,7 +355,9 @@ const ShareButton = observer((props: { session: SessionModel }) => {
       >
         Share
       </Button>
-      <ShareDialog open={open} handleClose={handleClose} session={session} />
+      {open ? (
+        <ShareDialog handleClose={handleClose} session={session} />
+      ) : null}
     </div>
   )
 })
