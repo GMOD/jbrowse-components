@@ -24,14 +24,14 @@
     "@jbrowse/plugin-protein": "^0.0.1-beta.13",
     "@jbrowse/plugin-svg": "^0.0.1-beta.14",
     "@material-ui/core": "^4.9.5",
+    "fontsource-roboto": "3.0.3",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
-    "rxjs": "^6.5.2",
-    "typeface-roboto": "^0.0.54"
+    "rxjs": "^6.5.2"
   },
   "unpkg": "umd/jbrowse-protein-viewer.js",
   "private": true
