@@ -6,6 +6,8 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
+
+// Table imports
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
@@ -17,8 +19,10 @@ import AddIcon from '@material-ui/icons/Add'
 import CreateIcon from '@material-ui/icons/Create'
 import DeleteIcon from '@material-ui/icons/Delete'
 
-// local
-import { readConfObject } from '../configuration'
+// Add Form imports
+import TextField from '@material-ui/core/TextField'
+import { readConfObject } from '../../configuration'
+import { ConfigurationEditor } from '../configEditor'
 
 const useStyles = makeStyles(() => ({
   titleBox: {
@@ -52,16 +56,14 @@ const AssemblyTable = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAssemblyBeingEdited: any
+    setAssemblyBeingEdited(arg: any): void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     classes: any
   }) => {
-    console.log(readConfObject(rootModel.jbrowse, 'assemblies'))
-    const assemblies = readConfObject(rootModel.jbrowse, 'assemblies')
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows = assemblies.map((assembly: any) => {
-      const { name, aliases } = assembly
+    const rows = rootModel.jbrowse.assemblies.map((assembly: any) => {
+      const name = readConfObject(assembly, 'name')
+      const aliases = readConfObject(assembly, 'aliases')
       return (
         <TableRow key={name}>
           <TableCell>{name}</TableCell>
@@ -85,14 +87,14 @@ const AssemblyTable = observer(
 
     return (
       <TableContainer component={Paper}>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Aliases</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
         <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Aliases</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
           <TableBody>{rows}</TableBody>
         </Table>
       </TableContainer>
@@ -100,9 +102,29 @@ const AssemblyTable = observer(
   },
 )
 
-const AssemblyAddForm = observer(() => {
-  return <h1>Hello im the assembly addform</h1>
-})
+const AssemblyAddForm = observer(
+  ({ setFormOpen }: { setFormOpen: Function }) => {
+    return (
+      <>
+        <form noValidate autoComplete="off">
+          <TextField
+            id="assembly-name"
+            label="Assembly Name"
+            variant="outlined"
+          />
+          <TextField id="aliases" label="Aliases" variant="outlined" />
+        </form>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => setFormOpen(false)}
+        >
+          Close
+        </Button>
+      </>
+    )
+  },
+)
 
 const AssemblyEditor = observer(
   ({
@@ -111,7 +133,12 @@ const AssemblyEditor = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assembly: any
   }) => {
-    return <h1>Hello im the assembly editor for {assembly.name}</h1>
+    return (
+      <>
+        <TextField>Rename field</TextField>
+        <ConfigurationEditor target={assembly} />
+      </>
+    )
   },
 )
 
@@ -130,14 +157,14 @@ const AssemblyManager = observer(
     const [isFormOpen, setFormOpen] = useState(false)
     const [assemblyBeingEdited, setAssemblyBeingEdited] = useState()
 
-    const showAddNewAssemblyButton = !isFormOpen && !assemblyBeingEdited
+    const showAssemblyTable = !isFormOpen && !assemblyBeingEdited
 
     return (
       <Dialog open={open}>
         <DialogTitle className={classes.titleBox}>Assembly Manager</DialogTitle>
         <DialogContent>
           <div className={classes.dialogContent}>
-            {showAddNewAssemblyButton ? (
+            {showAssemblyTable ? (
               <>
                 <Button
                   variant="contained"
@@ -159,24 +186,25 @@ const AssemblyManager = observer(
             {assemblyBeingEdited ? (
               <AssemblyEditor assembly={assemblyBeingEdited} />
             ) : null}
-            {isFormOpen ? <AssemblyAddForm /> : null}
+            {isFormOpen ? <AssemblyAddForm setFormOpen={setFormOpen} /> : null}
           </div>
         </DialogContent>
         <DialogActions>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => {
-              onClose(false)
-            }}
-          >
-            Return
-          </Button>
+          {showAssemblyTable ? (
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={() => {
+                onClose(false)
+              }}
+            >
+              Return
+            </Button>
+          ) : null}
         </DialogActions>
       </Dialog>
     )
   },
 )
 
-// remember to make observable
 export default AssemblyManager
