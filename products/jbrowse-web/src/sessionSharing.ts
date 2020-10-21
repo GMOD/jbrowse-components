@@ -1,18 +1,25 @@
 import * as crypto from 'crypto'
-import { toUrlSafeB64 } from '@jbrowse/core/util'
+import {
+  toUrlSafeB64,
+  fromUrlSafeUB64,
+  toUrlSafeUB64,
+} from '@jbrowse/core/util'
 
 // adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 const encrypt = (text: string, key: Buffer, iv: Buffer) => {
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
   let encrypted = cipher.update(text)
   encrypted = Buffer.concat([encrypted, cipher.final()])
-  return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
+  return {
+    iv: toUrlSafeUB64(iv.toString('base64')),
+    encryptedData: toUrlSafeUB64(encrypted.toString('base64')),
+  }
 }
 
 // adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
 const decrypt = (text: string, key: Buffer, password: string) => {
-  const iv = Buffer.from(password, 'hex')
-  const encryptedText = Buffer.from(text, 'hex')
+  const iv = Buffer.from(fromUrlSafeUB64(password), 'base64')
+  const encryptedText = Buffer.from(fromUrlSafeUB64(text), 'base64')
   const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
   let decrypted = decipher.update(encryptedText)
   decrypted = Buffer.concat([decrypted, decipher.final()])

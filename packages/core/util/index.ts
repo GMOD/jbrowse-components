@@ -65,6 +65,27 @@ export function fromUrlSafeB64(b64: string): string {
   return new TextDecoder().decode(inflated)
 }
 
+/*
+ * Compress a string as url-safe base64, no compression added
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param str-  a string to compress and encode
+ */
+export function toUrlSafeUB64(encoded: string): string {
+  const pos = encoded.indexOf('=')
+  return pos > 0
+    ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
+    : encoded.replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+/**
+ * Decode and a url-safe base64 to a string, no decompression added
+ * See {@link https://en.wikipedia.org/wiki/Base64#URL_applications}
+ * @param b64 - a base64 string to decode and inflate
+ */
+export function fromUrlSafeUB64(decoded: string): string {
+  return b64PadSuffix(decoded.replace(/-/g, '+').replace(/_/g, '/'))
+}
+
 /**
  * Pad the end of a base64 string with "=" to make it valid
  * @param b64 - unpadded b64 string

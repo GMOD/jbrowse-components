@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
+// eslint-disable-next-line import/no-unresolved
 const { nanoid } = require('nanoid')
 const multipart = require('./multipart')
 
