@@ -37,10 +37,12 @@ const useStyles = makeStyles(() => ({
 const AssemblyTable = observer(
   ({
     rootModel,
+    setIsAssemblyBeingEdited,
     setAssemblyBeingEdited,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
+    setIsAssemblyBeingEdited(arg: boolean): void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setAssemblyBeingEdited(arg: any): void
   }) => {
@@ -57,7 +59,10 @@ const AssemblyTable = observer(
           <TableCell className={classes.buttonCell}>
             <Button
               className={classes.button}
-              onClick={() => setAssemblyBeingEdited(assembly)}
+              onClick={() => {
+                setIsAssemblyBeingEdited(true)
+                setAssemblyBeingEdited(assembly)
+              }}
             >
               <CreateIcon color="primary" />
             </Button>
