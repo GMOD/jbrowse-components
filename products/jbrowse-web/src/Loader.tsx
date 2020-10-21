@@ -25,7 +25,7 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
-// import { writeAWSAnalytics, writeGAAnalytics } from './analytics'
+import { writeAWSAnalytics } from './analytics'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -150,22 +150,6 @@ export function Loader() {
     fetchConfig()
   }, [configQueryParam])
 
-  // useEffect(() => {
-  //   async function sendToAWS() {
-  //     if (configSnapshot) {
-  //       await writeAWSAnalytics()
-  //     }
-  //   }
-
-  //   async function sendToGA() {
-  //     if (configSnapshot) {
-  //       await writeGAAnalytics()
-  //     }
-  //   }
-  //   sendToAWS()
-  //   sendToGA()
-  // }, [configSnapshot])
-
   useEffect(() => {
     async function fetchPlugins() {
       // Load runtime plugins
@@ -230,6 +214,7 @@ export function Loader() {
   if (!rootModel) {
     throw new Error('could not instantiate root model')
   }
+
   try {
     if (sessionQueryParam) {
       const savedSessionIndex = rootModel.jbrowse.savedSessionNames.indexOf(
@@ -257,6 +242,7 @@ export function Loader() {
       rootModel.session,
       rootModel.assemblyManager?.get('volvox'),
     )
+
     if (!rootModel.session) {
       if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
         const { name } = rootModel.jbrowse.savedSessions[0]
@@ -264,6 +250,13 @@ export function Loader() {
       } else {
         rootModel.setDefaultSession()
       }
+    }
+
+    if (rootModel.session) {
+      writeAWSAnalytics(
+        rootModel,
+        `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
+      )
     }
 
     rootModel.setHistory(

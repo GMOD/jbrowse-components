@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSnapshot } from 'mobx-state-tree'
 
 // TODOANALYTICS
@@ -74,9 +75,9 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
   const date = new Date()
 
   const refSeqCount: RefSeq = {}
-  let refSeqAvgLen: RefSeq
 
-  session.assemblies.map((assembly: any, idx: number) => {
+  console.log(rootModel)
+  session.assemblies.forEach((assembly: any, idx: number) => {
     const value = rootModel.assemblyManager.get(assembly)
     const index = `assembly${idx}`
     refSeqCount[index] = value
@@ -85,9 +86,11 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
   const stats = {
     ver: rootModel.version,
     'refSeq-count': refSeqCount,
-    'refSeq-avgLen': session.assemblies.reduce(/* reduce to the avg length */),
+    'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
     'tracks-count': session.tracks.length, // this is all possible tracks
-    plugins: getSnapshot(rootModel.jbrowse.plugins), // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
+    plugins: rootModel.jbrowse.plugins
+      ? getSnapshot(rootModel.jbrowse.plugins)
+      : '', // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
     'open-views': session.views.length,
 
     // screen geometry
@@ -104,7 +107,7 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
     t: date.getTime() / 1000,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     tzoffset: date.getTimezoneOffset(),
-    loadTime: date.getTime() - 0 /* startTime*/ / 1000, // potentially look if react records load times, probably need the date object though
+    loadTime: new Date().getTime() - date.getTime() / 1000, // potentially look if react records load times, probably need the date object though
   }
   const data = new FormData()
   data.append('stats', JSON.stringify(stats))
@@ -115,6 +118,7 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
     body: data,
   })
 
+  // current progress, cors work, need to see how to upload the custom doc.dynamoDB() npm package to lambda
   if (response && response.ok) {
     console.log('success')
   }
@@ -181,11 +185,48 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
 // },
 export async function writeGAAnalytics() {
   // jbrowse.org account always
-  const jbrowseUser = 'fill in string'
+  const jbrowseUser = 'UA-7115575-5'
   const accounts = [jbrowseUser]
-
+  const stats: RefSeq = {}
   // do we need custom GA accounts?
+  // if needed,
+  // getConf(self, 'googleAnalytics')
+  // accounts.push(all accounts in the conf)
+
   // create script
+  let analyticsScript =
+    "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ "
+  analyticsScript +=
+    '(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), '
+  analyticsScript +=
+    'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) '
+  analyticsScript +=
+    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
   // for each acc? add pageview + custom variable
+  accounts.forEach((user, viewerNum) => {
+    if (user === jbrowseUser) {
+      const gaData: RefSeq = {}
+      const googleDimensions =
+        'tracks-count refSeqs-count refSeqs-avgLen ver loadTime electron plugins'
+      const googleMetrics = 'loadTime'
+
+      googleDimensions.split(/\s+/).forEach((key, index) => {
+        gaData[`dimension${index + 1}`] = stats[key]
+      })
+
+      gaData.metric1 = Math.round(stats.loadTime * 1000)
+
+      analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
+        gaData,
+      )});`
+    } else {
+      analyticsScript += `ga('customTracker${viewerNum}.send', 'pageview');`
+    }
+  })
+
+  const analyticsScriptNode = document.createElement('script')
+  analyticsScriptNode.innerHTML = analyticsScript
+
+  document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode) // important, append the script to the head
   // then append to head
 }
