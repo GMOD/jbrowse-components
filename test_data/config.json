@@ -1,7 +1,4 @@
 {
-  "configuration": {
-    "shareURL": "http://test134/"
-  },
   "assemblies": [
     {
       "name": "hg19",
