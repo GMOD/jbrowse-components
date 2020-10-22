@@ -1,6 +1,6 @@
 {
   "configuration": {
-    "useUrlSession": true
+    "shareURL": "http://test134/"
   },
   "assemblies": [
     {

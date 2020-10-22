@@ -9,10 +9,9 @@ configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
-  useUrlSession: false,
 }
 
-export function getPluginManager(initialState, adminMode = true, sessionName) {
+export function getPluginManager(initialState, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -21,17 +20,14 @@ export function getPluginManager(initialState, adminMode = true, sessionName) {
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
   })
-  if (sessionName) {
-    const { name } = rootModel.jbrowse.savedSessions.find(
-      session => session.name === sessionName,
+  if (rootModel && rootModel.jbrowse.defaultSession.length) {
+    const { name } = rootModel.jbrowse.defaultSession
+    localStorage.setItem(
+      `localSaved-1`,
+      JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
     )
     rootModel.activateSession(name)
-  } else if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-    const { name } = rootModel.jbrowse.savedSessions[0]
-    rootModel.activateSession(name)
-  } else {
-    rootModel.setDefaultSession()
-  }
+  } else rootModel.setDefaultSession()
   rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
