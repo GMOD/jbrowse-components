@@ -2,8 +2,7 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    },
-    "useUrlSession": true
+    }
   },
   "assemblies": [
     {
@@ -128,12 +127,51 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session",
+    "name": "Grape vs Peach (small)",
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "DotplotView",
+        "assemblyNames": ["peach", "grape"],
+        "hview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "vview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "tracks": [
+          {
+            "type": "DotplotTrack",
+            "configuration": "dotplot_track_small"
+          }
+        ],
+        "displayName": "Grape vs Peach dotplot",
+        "trackSelectorType": "hierarchical"
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
+      },
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
     "menuBars": [
       {
         "type": "MainMenuBar"
       }
-    ]
+    ],
+    "connections": {}
   },
   "savedSessions": [
     {
@@ -157,53 +195,6 @@
             {
               "type": "DotplotTrack",
               "configuration": "dotplot_track"
-            }
-          ],
-          "displayName": "Grape vs Peach dotplot",
-          "trackSelectorType": "hierarchical"
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": ""
-        },
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
-        }
-      },
-      "activeWidgets": {},
-      "menuBars": [
-        {
-          "type": "MainMenuBar"
-        }
-      ],
-      "connections": {}
-    },
-    {
-      "name": "Grape vs Peach (small)",
-      "views": [
-        {
-          "id": "MiDMyyWpp",
-          "type": "DotplotView",
-          "assemblyNames": ["peach", "grape"],
-          "hview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "vview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "tracks": [
-            {
-              "type": "DotplotTrack",
-              "configuration": "dotplot_track_small"
             }
           ],
           "displayName": "Grape vs Peach dotplot",

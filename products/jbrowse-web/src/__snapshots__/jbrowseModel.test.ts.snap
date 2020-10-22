@@ -6,10 +6,9 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "name": "New Session",
+    "name": "New session",
   },
   "plugins": undefined,
-  "savedSessions": Array [],
   "tracks": Array [],
 }
 `;
@@ -82,41 +81,36 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "name": "New Session",
-  },
-  "plugins": undefined,
-  "savedSessions": Array [
-    Object {
-      "activeWidgets": Object {
-        "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    "activeWidgets": Object {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    },
+    "name": "Integration test example",
+    "views": Array [
+      Object {
+        "bpPerPx": 0.05,
+        "displayedRegions": Array [
+          Object {
+            "assemblyName": "volvox",
+            "end": 50001,
+            "refName": "ctgA",
+            "start": 0,
+          },
+        ],
+        "id": "integration_test",
+        "offsetPx": 2000,
+        "type": "LinearGenomeView",
       },
-      "name": "Integration test example",
-      "views": Array [
-        Object {
-          "bpPerPx": 0.05,
-          "displayedRegions": Array [
-            Object {
-              "assemblyName": "volvox",
-              "end": 50001,
-              "refName": "ctgA",
-              "start": 0,
-            },
-          ],
-          "id": "integration_test",
-          "offsetPx": 2000,
-          "type": "LinearGenomeView",
-        },
-      ],
-      "widgets": Object {
-        "hierarchicalTrackSelector": Object {
-          "filterText": "",
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "view": "integration_test",
-        },
+    ],
+    "widgets": Object {
+      "hierarchicalTrackSelector": Object {
+        "filterText": "",
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "view": "integration_test",
       },
     },
-  ],
+  },
+  "plugins": undefined,
   "tracks": Array [
     Object {
       "adapter": Object {

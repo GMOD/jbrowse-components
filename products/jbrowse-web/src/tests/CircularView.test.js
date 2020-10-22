@@ -36,7 +36,7 @@ describe('circular views', () => {
     const configSnapshotWithCircular = JSON.parse(
       JSON.stringify(configSnapshot),
     )
-    configSnapshotWithCircular.savedSessions[0] = {
+    configSnapshotWithCircular.defaultSession = {
       name: 'Integration Test Circular',
       views: [{ id: 'integration_test_circular', type: 'CircularView' }],
     }

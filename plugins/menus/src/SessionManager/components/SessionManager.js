@@ -12,17 +12,59 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
+import Typography from '@material-ui/core/Typography'
 import DeleteIcon from '@material-ui/icons/Delete'
 import ViewListIcon from '@material-ui/icons/ViewList'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
+import pluralize from 'pluralize'
+
 import React, { useState } from 'react'
 
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(1),
   },
+  message: {
+    padding: theme.spacing(3),
+  },
 }))
+
+const AutosaveEntry = observer(({ session }) => {
+  const classes = useStyles()
+  const autosavedSession = JSON.parse(
+    localStorage.getItem(session.previousAutosaveId) || '{}',
+  ).session
+
+  const { views = [] } = autosavedSession || {}
+  const totalTracks = views
+    .map(view => view.tracks.length)
+    .reduce((a, b) => a + b, 0)
+
+  return autosavedSession ? (
+    <Paper className={classes.root}>
+      <List subheader={<ListSubheader>Previous autosaved entry</ListSubheader>}>
+        <ListItem button onClick={() => session.loadAutosaveSession()}>
+          <ListItemIcon>
+            <ViewListIcon />
+          </ListItemIcon>
+          <ListItemText
+            primary={autosavedSession.name}
+            secondary={
+              session.name === autosavedSession.name
+                ? 'Currently open'
+                : `${views.length} ${pluralize(
+                    'view',
+                    views.length,
+                  )}; ${totalTracks}
+                           open ${pluralize('track', totalTracks)}`
+            }
+          />
+        </ListItem>
+      </List>
+    </Paper>
+  ) : null
+})
 
 export default observer(({ session }) => {
   const classes = useStyles()
@@ -35,8 +77,9 @@ export default observer(({ session }) => {
   }
 
   function handleDialogClose(deleteSession = false) {
-    if (deleteSession)
+    if (deleteSession) {
       session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
+    }
     setSessionIndexToDelete(null)
     setOpen(false)
   }
@@ -48,69 +91,55 @@ export default observer(({ session }) => {
 
   return (
     <>
+      <AutosaveEntry session={session} />
       <Paper className={classes.root}>
-        <List
-          subheader={<ListSubheader>Choose a session to open</ListSubheader>}
-        >
-          {session.savedSessions.map((sessionSnapshot, idx) => {
-            const { views = [] } = sessionSnapshot
-            const openTrackCount = views.map(view => (view.tracks || []).length)
-            let viewDetails
-            switch (views.length) {
-              case 0: {
-                viewDetails = '0 views'
-                break
-              }
-              case 1: {
-                viewDetails = `1 view, ${openTrackCount[0]} open track${
-                  openTrackCount[0] === 1 ? '' : 's'
-                }`
-                break
-              }
-              case 2: {
-                viewDetails = `2 views; ${openTrackCount[0]} and ${openTrackCount[1]} open tracks`
-                break
-              }
-              default: {
-                viewDetails = `${views.length} views; ${openTrackCount
-                  .slice(0, views.length - 1)
-                  .join(', ')}, and ${
-                  openTrackCount[views.length - 1]
-                } open tracks`
-                break
-              }
-            }
-            return (
-              <ListItem
-                button
-                disabled={session.name === sessionSnapshot.name}
-                onClick={() => session.activateSession(sessionSnapshot.name)}
-                key={sessionSnapshot.name}
-              >
-                <ListItemIcon>
-                  <ViewListIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary={sessionSnapshot.name}
-                  secondary={
-                    session.name === sessionSnapshot.name
-                      ? 'Currently open'
-                      : viewDetails
-                  }
-                />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    disabled={session.name === sessionSnapshot.name}
-                    aria-label="Delete"
-                    onClick={() => handleDialogOpen(idx)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            )
-          })}
+        <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
+          {session.savedSessions.length ? (
+            session.savedSessions.map((sessionSnapshot, idx) => {
+              const { views = [] } = sessionSnapshot
+              const totalTracks = views
+                .map(view => view.tracks.length)
+                .reduce((a, b) => a + b, 0)
+              return (
+                <ListItem
+                  button
+                  disabled={session.name === sessionSnapshot.name}
+                  onClick={() => session.activateSession(sessionSnapshot.name)}
+                  key={sessionSnapshot.name}
+                >
+                  <ListItemIcon>
+                    <ViewListIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={sessionSnapshot.name}
+                    secondary={
+                      session.name === sessionSnapshot.name
+                        ? 'Currently open'
+                        : `${views.length} ${pluralize(
+                            'view',
+                            views.length,
+                          )}; ${totalTracks}
+                           open ${pluralize('track', totalTracks)}`
+                    }
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      disabled={session.name === sessionSnapshot.name}
+                      aria-label="Delete"
+                      onClick={() => handleDialogOpen(idx)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              )
+            })
+          ) : (
+            <Typography className={classes.message}>
+              No saved sessions found
+            </Typography>
+          )}
         </List>
       </Paper>
       <Dialog
