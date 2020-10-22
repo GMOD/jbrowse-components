@@ -224,10 +224,9 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         const tickLabels = []
         for (let index = 0; index < numLabels; index++) {
           const offsetLabel = (index + 1) * gridPitch.majorPitch
-          const tickLabel = seq.reversed
-            ? seq.end - offsetLabel
-            : seq.start + offsetLabel
-          tickLabels.push(tickLabel)
+          tickLabels.push(
+            seq.reversed ? seq.end - offsetLabel : seq.start + offsetLabel,
+          )
         }
         return (
           <Paper
