@@ -27,9 +27,10 @@ git push --follow-tags
 
 ## Have to avoid overlap with @jbrowse/website
 JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web@*"|head -n1)
+JBROWSE_WEB_VERSION=${JBROWSE_WEB_TAG:13}
 JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
 INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/$JBROWSE_WEB_TAG/index.html
-JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -i -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
+JBROWSE_WEB_VERSION=$JBROWSE_WEB_VERSION JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
 
 
 INSTANCE=$INSTANCE node -p "const config = require('./products/website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" > tmp.json
