@@ -18,7 +18,8 @@ yarn run lerna-publish $2
 ## This pushes only the @jbrowse/web tag first because a flood of tags causes
 ## the CI system to skip the build
 git push origin tag "@jbrowse/web*"
-
+echo "Waiting while the new jbrowse-web tag is processed on github actions before pushing the rest of the tags"
+sleep 30
 ## Push the rest of the tags
 git push --follow-tags
 
@@ -26,8 +27,7 @@ git push --follow-tags
 
 ## Have to avoid overlap with @jbrowse/website
 JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web@*"|head -n1)
-echo "Waiting while the new jbrowse-web tag is processed on github actions before pushing the rest of the tags"
-sleep 30
+
 JBROWSE_WEB_VERSION=${JBROWSE_WEB_TAG:13}
 BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWSE_WEB_VERSION}-release.md
 
