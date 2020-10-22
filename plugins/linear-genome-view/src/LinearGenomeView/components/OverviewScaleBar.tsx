@@ -221,12 +221,15 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         // number of labels to draw in the overview scale bar
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         // calculating the number labels
+        const base = seq.reversed
+          ? Math.ceil(seq.end / gridPitch.minorPitch) * gridPitch.minorPitch
+          : Math.ceil(seq.start / gridPitch.minorPitch) * gridPitch.minorPitch
         const tickLabels = []
         for (let index = 0; index < numLabels; index++) {
           const offsetLabel = (index + 1) * gridPitch.majorPitch
           const tickLabel = seq.reversed
-            ? seq.end - offsetLabel
-            : offsetLabel + seq.start
+            ? base - offsetLabel
+            : base + offsetLabel
           tickLabels.push(tickLabel)
         }
         return (
@@ -297,7 +300,7 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                 key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                 className={classes.scaleBarLabel}
                 style={{
-                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                  left: ((labelIdx + 0.95) * gridPitch.majorPitch) / scale,
                   pointerEvents: 'none',
                   color: refNameColor,
                 }}
