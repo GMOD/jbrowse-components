@@ -5,8 +5,7 @@ import Layout from '@theme/Layout'
 // eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { makeStyles } from '@material-ui/core/styles'
-
-import Button from '@material-ui/core/Button'
+import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => ({
@@ -52,9 +51,22 @@ function Home() {
               A pluggable open-source platform for visualizing and integrating
               biological data
             </p>
-            <Button variant="contained" color="secondary" disableElevation>
-              Download latest release
-            </Button>
+            <ul>
+              <li>
+                {' '}
+                <Link href="/jb2/blog" variant="contained">
+                  Download latest release
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={siteConfig.customFields.currentLink}
+                  variant="contained"
+                >
+                  Browse demo instance
+                </Link>
+              </li>
+            </ul>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
             <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
@@ -82,9 +94,9 @@ function Home() {
 
             <li>And more!</li>
           </ul>
-          <a href="features">
+          <Link href="features">
             See a summary of features and comparison to JBrowse 1 here
-          </a>
+          </Link>
         </div>
 
         <div className={classes.section}>
