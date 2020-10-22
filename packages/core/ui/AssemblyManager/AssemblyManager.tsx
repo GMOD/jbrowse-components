@@ -11,7 +11,7 @@ import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
 
 // Add Form imports
 import TextField from '@material-ui/core/TextField'
-import { IconButton } from '@material-ui/core'
+import { Container, Grid, IconButton } from '@material-ui/core'
 import { ConfigurationEditor } from '../configEditor'
 
 import AssemblyTable from './AssemblyTable'
@@ -31,25 +31,58 @@ const useStyles = makeStyles(() => ({
 }))
 
 const AssemblyAddForm = observer(
-  ({ setFormOpen }: { setFormOpen: Function }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ({
+    rootModel,
+    setFormOpen,
+    setIsAssemblyBeingEdited,
+    setAssemblyBeingEdited,
+  }: {
+    rootModel: any
+    setFormOpen: Function
+    setIsAssemblyBeingEdited(arg: boolean): void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setAssemblyBeingEdited(arg: any): void
+  }) => {
+    const [assemblyName, setAssemblyName] = useState('')
+
+    function createAssembly() {
+      if (assemblyName === '') {
+        rootModel.session.notify("Can't create an assembly without a name")
+      } else {
+        // alert(`Entered: ${assemblyName}`)
+        setFormOpen(false)
+        setIsAssemblyBeingEdited(true)
+        setAssemblyBeingEdited(
+          rootModel.jbrowse.addAssemblyConf({ name: assemblyName }),
+        )
+      }
+    }
+
     return (
-      <>
-        <form noValidate autoComplete="off">
-          <TextField
-            id="assembly-name"
-            label="Assembly Name"
-            variant="outlined"
-          />
-          <TextField id="aliases" label="Aliases" variant="outlined" />
-        </form>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => setFormOpen(false)}
-        >
-          Close
-        </Button>
-      </>
+      <Container>
+        <Grid container spacing={1} justify="center" alignItems="center">
+          <Grid item>
+            <TextField
+              id="assembly-name"
+              label="Assembly Name"
+              variant="outlined"
+              value={assemblyName}
+              onChange={event => setAssemblyName(event.target.value)}
+            />
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={createAssembly}
+            >
+              Create New Assembly
+            </Button>
+          </Grid>
+        </Grid>
+      </Container>
     )
   },
 )
@@ -128,7 +161,14 @@ const AssemblyManager = observer(
             {isAssemblyBeingEdited ? (
               <AssemblyEditor assembly={assemblyBeingEdited} />
             ) : null}
-            {isFormOpen ? <AssemblyAddForm setFormOpen={setFormOpen} /> : null}
+            {isFormOpen ? (
+              <AssemblyAddForm
+                rootModel={rootModel}
+                setFormOpen={setFormOpen}
+                setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
+                setAssemblyBeingEdited={setAssemblyBeingEdited}
+              />
+            ) : null}
           </div>
         </DialogContent>
         <DialogActions>
