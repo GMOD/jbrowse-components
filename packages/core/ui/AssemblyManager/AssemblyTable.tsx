@@ -48,6 +48,10 @@ const AssemblyTable = observer(
   }) => {
     const classes = useStyles()
 
+    function removeAssembly(name: string) {
+      rootModel.jbrowse.removeAssemblyConf(name)
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = rootModel.jbrowse.assemblies.map((assembly: any) => {
       const name = readConfObject(assembly, 'name')
@@ -66,7 +70,12 @@ const AssemblyTable = observer(
             >
               <CreateIcon color="primary" />
             </IconButton>
-            <IconButton className={classes.button}>
+            <IconButton
+              className={classes.button}
+              onClick={() => {
+                removeAssembly(name)
+              }}
+            >
               <DeleteIcon color="error" />
             </IconButton>
           </TableCell>

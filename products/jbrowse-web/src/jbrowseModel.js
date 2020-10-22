@@ -99,6 +99,11 @@ export default function JBrowseWeb(
         const length = self.assemblies.push(assemblyConf)
         return self.assemblies[length - 1]
       },
+      removeAssemblyConf(assemblyName) {
+        self.assemblies = self.assemblies.filter(
+          assembly => assembly.name === assemblyName,
+        )
+      },
       addTrackConf(trackConf) {
         const { type } = trackConf
         if (!type) throw new Error(`unknown track type ${type}`)

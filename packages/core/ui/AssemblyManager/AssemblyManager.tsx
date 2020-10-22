@@ -31,13 +31,13 @@ const useStyles = makeStyles(() => ({
 }))
 
 const AssemblyAddForm = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({
     rootModel,
     setFormOpen,
     setIsAssemblyBeingEdited,
     setAssemblyBeingEdited,
   }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
     setFormOpen: Function
     setIsAssemblyBeingEdited(arg: boolean): void
