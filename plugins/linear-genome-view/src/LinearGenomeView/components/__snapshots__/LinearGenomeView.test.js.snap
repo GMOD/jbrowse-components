@@ -31,31 +31,31 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 152px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               20
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 312px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               40
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 472px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               60
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 632px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               80
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 792px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
             >
               100
             </div>
@@ -838,31 +838,31 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 137.83636363636364px; pointer-events: none;"
+              style="left: 145.0909090909091px; pointer-events: none;"
             >
               1,200
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 282.92727272727274px; pointer-events: none;"
+              style="left: 290.1818181818182px; pointer-events: none;"
             >
               1,400
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 428.0181818181818px; pointer-events: none;"
+              style="left: 435.27272727272725px; pointer-events: none;"
             >
               1,600
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 573.1090909090909px; pointer-events: none;"
+              style="left: 580.3636363636364px; pointer-events: none;"
             >
               1,800
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 718.1999999999999px; pointer-events: none;"
+              style="left: 725.4545454545454px; pointer-events: none;"
             >
               2,000
             </div>
