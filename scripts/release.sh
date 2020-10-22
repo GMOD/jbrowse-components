@@ -29,7 +29,7 @@ git push --follow-tags
 
 JBROWSE_WEB_TAG=$(git tag --sort=creatordate -l "@jbrowse/web*"|head -n1)
 JBROWSE_DESKTOP_TAG=$(git tag --sort=creatordate -l "@jbrowse/desktop*"|head -n1)
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/$JBROWSE_WEB_TAG/index.html
+INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/$JBROWSE_WEB_TAG/index.html
 JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -i -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
 
 
