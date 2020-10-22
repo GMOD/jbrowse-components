@@ -18,20 +18,44 @@ function Contact() {
         <div className="container">
           <ul>
             <li>
-              File an issue at{' '}
-              <a href="https://github.com/gmod/jbrowse-components">
-                https://github.com/gmod/jbrowse-components
+              Ask a question on our discussion board at{' '}
+              <a
+                href="https://github.com/GMOD/jbrowse-components/discussions"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                https://github.com/GMOD/jbrowse-components/discussions
+              </a>
+            </li>
+            <li>
+              Report a bug or request a feature at{' '}
+              <a
+                href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                https://github.com/GMOD/jbrowse-components/issues/new/choose
               </a>
             </li>
             <li>
               Join our chat at{' '}
-              <a href="https://gitter.im/GMOD/jbrowse">
-                https://github.com/GMOD/jbrowse
+              <a
+                href="https://gitter.im/GMOD/jbrowse2"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                https://gitter.im/GMOD/jbrowse2
               </a>
             </li>
             <li>
-              Send an email to our mailing list at
-              gmod-ajax@lists.sourceforge.net
+              Send an email to our mailing list at{' '}
+              <a
+                href="mailto:gmod-ajax@lists.sourceforge.net"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                gmod-ajax@lists.sourceforge.net
+              </a>
             </li>
           </ul>
         </div>

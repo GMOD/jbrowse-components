@@ -1155,38 +1155,33 @@
     }
   ],
   "defaultSession": {
-    "name": "New Session"
-  },
-  "savedSessions": [
-    {
-      "name": "Integration test example",
-      "views": [
-        {
-          "id": "integration_test",
-          "type": "LinearGenomeView",
-          "offsetPx": 2000,
-          "bpPerPx": 0.05,
-          "displayedRegions": [
-            {
-              "refName": "ctgA",
-              "start": 0,
-              "end": 50001,
-              "assemblyName": "volvox"
-            }
-          ]
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "filterText": "",
-          "view": "integration_test"
-        }
-      },
-      "activeWidgets": {
-        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          }
+        ]
       }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "integration_test"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
-  ]
+  }
 }

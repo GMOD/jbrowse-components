@@ -18,7 +18,8 @@ describe('JBrowseWebSessionModel', () => {
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)
     const session = sessionModel.create({ name: 'testSession' })
-    expect(getSnapshot(session)).toMatchSnapshot()
+    const { id, ...rest } = getSnapshot(session)
+    expect(rest).toMatchSnapshot()
   })
 
   it('accepts a custom drawer width', () => {

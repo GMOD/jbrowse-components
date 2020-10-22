@@ -12,13 +12,17 @@ configuration guide, and developers guide.
 
 ### Contact information
 
-Please let us know if you have any feedback on our documentation or jbrowse in
+Please let us know if you have any feedback on our documentation or JBrowse in
 general
 
-You can contact us via github https://github.com/gmod/jbrowse-components
+You can contact us via our user discussions forum:
+https://github.com/GMOD/jbrowse-components/discussions
+
+Or file a bug report or request a feature on GitHub:
+https://github.com/GMOD/jbrowse-components/issues/new/choose
 
 You can also contact us via our chat channel on Gitter at
-https://gitter.im/GMOD/jbrowse
+https://gitter.im/GMOD/jbrowse2
 
 Finally you can send an email to `gmod-ajax@lists.sourceforge.net` for assistance
 also!

@@ -1,0 +1,20 @@
+---
+title: jbrowse-web ${JBROWSE_WEB_VERSION}
+date: ${DATE}
+tags: ["release","jbrowse 2"]
+---
+
+${NOTES}
+
+
+Latest jbrowse-web release.
+
+
+* [${JBROWSE_WEB_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG})
+
+
+
+Note: you can use the [jbrowse
+CLI](https://jbrowse.org/jb2/docs/quickstart_web) to automatically install or
+upgrade your jbrowse 2 instance or manually download the version linked here
+
