@@ -11,7 +11,6 @@ set -o pipefail
 
 NOTES=`cat $1`
 DATE=$(date +"%Y-%m-%d")
-BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-release.md
 FRONTPAGE_FILENAME=products/website/src/pages/index.js
 
 yarn run lerna-publish $2
@@ -27,7 +26,12 @@ git push --follow-tags
 
 ## Have to avoid overlap with @jbrowse/website
 JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web@*"|head -n1)
+echo "Waiting while the new jbrowse-web tag is processed on github actions before pushing the rest of the tags"
+sleep 30
 JBROWSE_WEB_VERSION=${JBROWSE_WEB_TAG:13}
+BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWSE_WEB_VERSION}-release.md
+
+
 JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
 INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/$JBROWSE_WEB_TAG/index.html
 JBROWSE_WEB_VERSION=$JBROWSE_WEB_VERSION JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
