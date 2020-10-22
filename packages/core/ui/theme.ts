@@ -93,6 +93,9 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
     MuiCheckbox: {
       size: 'small' as 'small',
     },
+    MuiLink: {
+      underline: 'always' as 'always',
+    },
   }
 }
 
@@ -112,6 +115,11 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
     MuiFab: {
       secondary: {
         backgroundColor: generatedPalette.quaternary.main,
+      },
+    },
+    MuiLink: {
+      root: {
+        color: generatedPalette.tertiary.main,
       },
     },
     MuiExpansionPanelSummary: {

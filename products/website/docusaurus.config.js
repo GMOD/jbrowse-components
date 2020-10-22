@@ -1,103 +1,10 @@
+const fs = require('fs')
+
+const data = JSON.parse(fs.readFileSync('./docusaurus.config.json'))
+
 module.exports = {
-  title: 'JBrowse',
-  tagline: 'Next generation genome browser',
-  url: 'https://jbrowse.com',
-  baseUrl: '/jb2/',
-  favicon: 'img/favicon.ico',
-  organizationName: 'GMOD', // Usually your GitHub org/user name.
-  projectName: 'jbrowse-components', // Usually your repo name.
-  themeConfig: {
-    colorMode: {
-      disableSwitch: true,
-    },
-    navbar: {
-      title: 'JBrowse',
-      logo: {
-        alt: 'JBrowse',
-        src: 'img/logo.svg',
-      },
-      items: [
-        {
-          to: 'docs',
-          activeBasePath: 'docs',
-          label: 'Docs',
-          position: 'left',
-        },
+  ...data,
 
-        {
-          to: 'blog',
-          label: 'Blog',
-          position: 'left',
-        },
-        {
-          to: 'features',
-          label: 'Features',
-          position: 'left',
-        },
-        {
-          to: 'demos',
-          label: 'Demos',
-          position: 'left',
-        },
-        {
-          to: 'contact/',
-          label: 'Contact',
-          position: 'left',
-        },
-
-        {
-          href: 'https://github.com/GMOD/jbrowse-components',
-          label: 'GitHub',
-          position: 'right',
-        },
-      ],
-    },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Documentation',
-              to: 'docs/',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Gitter',
-              href: 'https://gitter.im/GMOD/jbrowse',
-            },
-            {
-              label: 'Twitter',
-              href: 'https://twitter.com/usejbrowse',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: 'blog',
-            },
-            {
-              label: 'Contact',
-              to: 'contact',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/GMOD/jbrowse-components',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} Evolutionary Software Foundation, Inc.`,
-    },
-  },
   presets: [
     [
       '@docusaurus/preset-classic',

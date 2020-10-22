@@ -1,7 +1,4 @@
 {
-  "configuration": {
-    "useUrlSession": true
-  },
   "assemblies": [
     {
       "name": "hg19",
