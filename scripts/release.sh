@@ -7,9 +7,7 @@
 
 ## Precautionary bash tags
 set -e
-set -u
 set -o pipefail
-set -x
 
 NOTES=`cat $1`
 DATE=$(date +"%Y-%m-%d")
@@ -20,7 +18,7 @@ yarn run lerna-publish $2
 
 ## This pushes only the @jbrowse/web tag first because a flood of tags causes
 ## the CI system to skip the build
-git push origin tag \"@jbrowse/web*\"
+git push origin tag "@jbrowse/web*"
 
 ## Push the rest of the tags
 git push --follow-tags
