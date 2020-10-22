@@ -37,4 +37,4 @@ mv tmp.json products/website/docusaurus.config.json
 
 git add .
 git commit -m "[update docs] release"
-
+git push
