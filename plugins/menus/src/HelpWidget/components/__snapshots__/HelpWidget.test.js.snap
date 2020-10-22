@@ -18,18 +18,39 @@ exports[`<HelpWidget /> renders 1`] = `
   <p
     class="MuiTypography-root MuiTypography-body1"
   >
-    Thanks for using this early preview version of JBrowse. If you have any questions, please
+    Thanks for using JBrowse!
+  </p>
+  <p
+    class="MuiTypography-root MuiTypography-body1"
+  >
+    If you have questions or need help, please post in our
      
     <a
       class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
-      href="https://github.com/GMOD/jbrowse-components/issues/new"
+      href="https://github.com/GMOD/jbrowse-components/discussions"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      community discussions forum
+    </a>
+    .
+  </p>
+  <p
+    class="MuiTypography-root MuiTypography-body1"
+  >
+     
+    If you would like to report a bug or request a feature, please
+     
+    <a
+      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+      href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
       rel="noopener noreferrer"
       target="_blank"
     >
       open an issue
     </a>
      
-    on GitHub
+    on GitHub.
   </p>
 </div>
 `;
