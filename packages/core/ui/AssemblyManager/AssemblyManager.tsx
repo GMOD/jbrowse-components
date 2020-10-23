@@ -8,13 +8,11 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
-
-// Add Form imports
-import TextField from '@material-ui/core/TextField'
-import { Container, Grid, IconButton } from '@material-ui/core'
-import { ConfigurationEditor } from '../configEditor'
+import { IconButton } from '@material-ui/core/'
 
 import AssemblyTable from './AssemblyTable'
+import AssemblyAddForm from './AssemblyAddForm'
+import AssemblyEditor from './AssemblyEditor'
 
 const useStyles = makeStyles(() => ({
   titleBox: {
@@ -29,74 +27,6 @@ const useStyles = makeStyles(() => ({
     color: '#FFFFFF',
   },
 }))
-
-const AssemblyAddForm = observer(
-  ({
-    rootModel,
-    setFormOpen,
-    setIsAssemblyBeingEdited,
-    setAssemblyBeingEdited,
-  }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rootModel: any
-    setFormOpen: Function
-    setIsAssemblyBeingEdited(arg: boolean): void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAssemblyBeingEdited(arg: any): void
-  }) => {
-    const [assemblyName, setAssemblyName] = useState('')
-
-    function createAssembly() {
-      if (assemblyName === '') {
-        rootModel.session.notify("Can't create an assembly without a name")
-      } else {
-        // alert(`Entered: ${assemblyName}`)
-        setFormOpen(false)
-        setIsAssemblyBeingEdited(true)
-        setAssemblyBeingEdited(
-          rootModel.jbrowse.addAssemblyConf({ name: assemblyName }),
-        )
-      }
-    }
-
-    return (
-      <Container>
-        <Grid container spacing={1} justify="center" alignItems="center">
-          <Grid item>
-            <TextField
-              id="assembly-name"
-              label="Assembly Name"
-              variant="outlined"
-              value={assemblyName}
-              onChange={event => setAssemblyName(event.target.value)}
-            />
-          </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={createAssembly}
-            >
-              Create New Assembly
-            </Button>
-          </Grid>
-        </Grid>
-      </Container>
-    )
-  },
-)
-
-const AssemblyEditor = observer(
-  ({
-    assembly,
-  }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    assembly: any
-  }) => {
-    return <ConfigurationEditor target={assembly} />
-  },
-)
 
 const AssemblyManager = observer(
   ({
@@ -214,9 +144,8 @@ export default AssemblyManager
 /*
 TODO:
 
-- remove duplicate config editor
-- refactor components into separate files
+- make sure manager only available in admin mode (desktop?)
 - write tests
-- get tests to pass (-u for snaps)
+- get other tests to pass (-u for snaps)
 
 */
