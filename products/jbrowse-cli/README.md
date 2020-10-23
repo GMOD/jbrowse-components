@@ -98,6 +98,9 @@ OPTIONS
   --gziLocation=gziLocation
       [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
+  --out=out
+      synonym for target
+
   --overwrite
       Overwrite existing assembly if one with the same name exists
 
@@ -117,7 +120,7 @@ OPTIONS
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
   --target=target
-      [default: ./config.json] path to config file in JB2 installation directory to write out to.
+      path to config file in JB2 installation directory to write out to.
       Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -163,13 +166,14 @@ OPTIONS
   --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
                                    'connectionType-assemblyName-currentTime'
 
+  --out=out                        synonym for target
+
   --overwrite                      Overwrites any existing connections if same connection id
 
   --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
                                    directory
 
-  --target=target                  [default: ./config.json] path to config file in JB2 installation directory to write
-                                   out to.
+  --target=target                  path to config file in JB2 installation directory to write out to.
 
 EXAMPLES
   $ jbrowse add-connection http://mysite.com/jbrowse/data/
@@ -219,13 +223,14 @@ OPTIONS
   --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
                                         "density"}'
 
+  --out=out                             synonym for target
+
   --overwrite                           Overwrites existing track if it shares the same trackId
 
   --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                         directory
 
-  --target=target                       [default: ./config.json] path to config file in JB2 installation to write out
-                                        to.
+  --target=target                       path to config file in JB2 installation to write out to.
 
   --trackId=trackId                     trackId for the track, by default inferred from filename, must be unique
                                         throughout config
@@ -254,8 +259,9 @@ ARGUMENTS
 
 OPTIONS
   -u, --update     update the contents of an existing track, matched based on trackId
+  --out=out        synonym for target
 
-  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+  --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -279,9 +285,11 @@ OPTIONS
   -p, --port=port  Specifified port to start the server on;
                    Default is 9090.
 
+  --out=out        synonym for target
+
   --skipCheck      Don't check whether or not you are in a JBrowse directory
 
-  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+  --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -358,7 +366,9 @@ OPTIONS
                          DotplotView.
                          Must be provided if no default session file provided
 
-  --target=target        [default: ./config.json] path to config file in JB2 installation directory to write out to
+  --out=out              synonym for target
+
+  --target=target        path to config file in JB2 installation directory to write out to
 
   --viewId=viewId        Identifier for the view. Will be generated on default
 
