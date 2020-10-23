@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import clsx from 'clsx'
 import { Typography } from '@material-ui/core'
 import {
   LinearGenomeViewStateModel,
@@ -22,6 +23,7 @@ const useStyles = makeStyles(theme => {
   const scaleBarColor = theme.palette.tertiary
     ? theme.palette.tertiary.light
     : theme.palette.primary.light
+  const background = theme.palette.background.default
   return {
     scaleBar: {
       display: 'flex',
@@ -33,12 +35,58 @@ const useStyles = makeStyles(theme => {
       backgroundColor: theme.palette.background.default,
       position: 'relative',
       borderColor: theme.palette.text.primary,
+      borderBottomColor: 'black',
+    },
+    scaleBarContigForward: {
+      backgroundImage: `
+      linear-gradient(-45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(-135deg, ${background} 10px, transparent 10px),
+      linear-gradient(-45deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(-135deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(-45deg, ${background} 10px, transparent 10px),
+      linear-gradient(-135deg, ${background} 10px, transparent 10px)`,
+      backgroundRepeat: 'repeat',
+      backgroundSize: HEADER_OVERVIEW_HEIGHT,
+    },
+    scaleBarContigReverse: {
+      backgroundImage: `
+      linear-gradient(45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(135deg, ${background} 10px, transparent 10px),
+      linear-gradient(45deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(135deg, #e4e4e4 11px, transparent 12px),
+      linear-gradient(45deg, ${background} 10px, transparent 10px),
+      linear-gradient(135deg, ${background} 10px, transparent 10px)`,
+      backgroundRepeat: 'repeat',
+      backgroundSize: HEADER_OVERVIEW_HEIGHT,
+    },
+    scaleBarRegionIncompleteLeft: {
+      width: 10,
+      height: 17.5,
+      background: `linear-gradient(-225deg,black 3px, transparent 1px),
+      linear-gradient(45deg, black 3px, transparent 1px)`,
+      backgroundRepeat: 'repeat-y',
+      backgroundSize: '10px 8px',
+      borderTopLeftRadius: '2px',
+      borderBottomLeftRadius: '2px',
+      float: 'left',
+    },
+    scaleBarRegionIncompleteRight: {
+      width: 10,
+      height: 17.5,
+      background: `linear-gradient(225deg, black 3px, transparent 1px),
+      linear-gradient(-45deg, black 3px, transparent 1px)`,
+      backgroundRepeat: 'repeat-y',
+      backgroundSize: '10px 8px',
+      borderTopRightRadius: '2px',
+      borderBottomRightRadius: '2px',
+      float: 'right',
     },
     scaleBarRefName: {
       position: 'absolute',
       fontWeight: 'bold',
       lineHeight: 'normal',
       pointerEvents: 'none',
+      left: 5,
     },
     scaleBarLabel: {
       height: HEADER_OVERVIEW_HEIGHT,
@@ -78,69 +126,72 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const {
-      offsetPx,
-      width,
-      bpPerPx,
-      dynamicBlocks: visibleRegions,
-      displayedParentRegions,
-    } = model
+    const { offsetPx, width, bpPerPx, dynamicBlocks: visibleRegions } = model
 
+    const blocks = visibleRegions
+      .getBlocks()
+      .filter(block => block.refName !== undefined)
     overview.setVolatileWidth(width)
     overview.showAllRegions()
-
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
+
+    let bottomLeft: number | undefined
+    let newTopLeft: number | undefined
+    let points: (number | undefined)[][] = []
+    // Iterating over blocks to find the rightmost (endPx and topRight)
+    // and leftmost (startPx and topLeft) points in order to draw a single polygon
+    blocks.forEach((region, index) => {
+      const startPx = region.offsetPx - offsetPx
+      const endPx = startPx + (region.end - region.start) / bpPerPx
+      let topLeft = overview.bpToPx({
+        refName: region.refName,
+        coord: region.start,
+        regionNumber: region.regionNumber,
+      })
+      let topRight = overview.bpToPx({
+        refName: region.refName,
+        coord: region.end,
+        regionNumber: region.regionNumber,
+      })
+      //  p1 right to -> p2  up to -> p3  left to -> p4 and back down to p1
+      if (region.reversed) {
+        ;[topLeft, topRight] = [topRight, topLeft]
+      }
+      if (index === 0) {
+        // leftmost bottom and top points
+        bottomLeft = startPx
+        newTopLeft = topLeft
+      }
+      points = [
+        [startPx, HEADER_BAR_HEIGHT],
+        [endPx, HEADER_BAR_HEIGHT],
+        [topRight, 0],
+        [topLeft, 0],
+      ]
+      if (index === blocks.length - 1) {
+        points = [
+          [bottomLeft, HEADER_BAR_HEIGHT],
+          [endPx, HEADER_BAR_HEIGHT],
+          [topRight, 0],
+          [newTopLeft, 0],
+        ]
+      }
+    })
     return (
       <svg
         height={HEADER_BAR_HEIGHT}
         width="100%"
         className={classes.overviewSvg}
       >
-        {visibleRegions.map((region, idx) => {
-          const seqIndex = displayedParentRegions.findIndex(
-            seq => seq.refName === region.refName,
-          )
-          if (seqIndex === -1) {
-            return null
-          }
-          let startPx = region.offsetPx - offsetPx
-          let endPx = startPx + (region.end - region.start) / bpPerPx
-          if (region.reversed) {
-            ;[startPx, endPx] = [endPx, startPx]
-          }
-          // let totalWidth = 0
-          // for (let i = 0; i < seqIndex; i++) {
-          //   const seq = displayedParentRegions[i]
-          //   const regionLength = seq.end - seq.start
-          //   totalWidth += regionLength / scale + wholeSeqSpacer
-          // }
-          // const parentStart = displayedParentRegions[seqIndex].start
-
-          const topRight = overview.bpToPx({
-            refName: region.refName,
-            coord: region.end,
-          })
-          const topLeft = overview.bpToPx({
-            refName: region.refName,
-            coord: region.start,
-          })
-
-          return (
-            <polygon
-              key={`${region.key}-${idx}`}
-              points={[
-                [startPx, HEADER_BAR_HEIGHT],
-                [endPx, HEADER_BAR_HEIGHT],
-                [topRight, 0],
-                [topLeft, 0],
-              ].toString()}
-              fill={fade(polygonColor, 0.3)}
-              stroke={fade(polygonColor, 0.8)}
-            />
-          )
-        })}
+        {points && (
+          <polygon
+            points={points.toString()}
+            fill={fade(polygonColor, 0.3)}
+            stroke={fade(polygonColor, 0.8)}
+          />
+        )}
       </svg>
     )
   },
@@ -150,42 +201,63 @@ type LGV = Instance<LinearGenomeViewStateModel>
 
 const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
   const classes = useStyles()
-
-  const { displayedParentRegions, dynamicBlocks: visibleRegions } = model
+  const { displayedRegions, dynamicBlocks: visibleRegions } = model
   const { assemblyManager } = getSession(model)
-
   const gridPitch = chooseGridPitch(scale, 120, 15)
 
   return (
     <div className={classes.scaleBar}>
-      {displayedParentRegions.map((seq, idx) => {
+      {/* this is the entire scale bar */}
+      {displayedRegions.map((seq, idx) => {
         const assembly = assemblyManager.get(seq.assemblyName)
         let refNameColor: string | undefined
         if (assembly) {
           refNameColor = assembly.getRefNameColor(seq.refName)
         }
         const regionLength = seq.end - seq.start
+        // boolean if displayed region length is smaller than its parent's
+        const incompleteRegion =
+          seq.parentEnd - seq.parentStart > seq.end - seq.start
+        // number of labels to draw in the overview scale bar
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
-        const labels = []
+        // calculating the number labels
+        const tickLabels = []
         for (let index = 0; index < numLabels; index++) {
-          labels.push((index + 1) * gridPitch.majorPitch)
+          const offsetLabel = (index + 1) * gridPitch.majorPitch
+          tickLabels.push(
+            seq.reversed ? seq.end - offsetLabel : seq.start + offsetLabel,
+          )
         }
-
         return (
-          // each whole sequence
           <Paper
-            key={seq.refName}
+            key={`${JSON.stringify(seq)}-${idx.toLocaleString('en-US')}`}
+            variant="outlined"
+            className={clsx(
+              classes.scaleBarContig,
+              seq.reversed
+                ? classes.scaleBarContigReverse
+                : classes.scaleBarContigForward,
+            )}
             style={{
               minWidth: regionLength / scale,
               marginRight:
-                idx === displayedParentRegions.length - 1
+                idx === displayedRegions.length - 1
                   ? undefined
                   : wholeSeqSpacer,
               borderColor: refNameColor,
             }}
-            className={classes.scaleBarContig}
-            variant="outlined"
           >
+            {incompleteRegion && (
+              <div
+                className={classes.scaleBarRegionIncompleteLeft}
+                style={{
+                  backgroundImage: `linear-gradient(-225deg, ${refNameColor} 3px, transparent 1px),
+                linear-gradient(45deg, ${refNameColor} 3px, transparent 1px)`,
+                  backgroundSize: '10px 8px',
+                  backgroundRepeat: 'repeat-y',
+                }}
+              />
+            )}
             {/* name of sequence */}
             <Typography
               style={{ color: refNameColor }}
@@ -193,19 +265,24 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
             >
               {seq.refName}
             </Typography>
-            {/* where the boxes actually get drawn   */}
+
+            {/* where the rubberband selection boxes actually get drawn */}
             {visibleRegions.map((r, visibleRegionIdx) => {
               if (
                 seq.assemblyName === r.assemblyName &&
-                seq.refName === r.refName
+                seq.refName === r.refName &&
+                r.regionNumber === idx
               ) {
+                const leftStyle = r.reversed
+                  ? (seq.end - r.end) / scale - 1
+                  : (r.start - seq.start) / scale - 1
                 return (
                   <div
                     key={`${r.key}-${visibleRegionIdx}`}
                     className={classes.scaleBarVisibleRegion}
                     style={{
                       width: Math.max((r.end - r.start) / scale, 1),
-                      left: r.start / scale - 1,
+                      left: leftStyle,
                       pointerEvents: 'none',
                     }}
                   />
@@ -213,10 +290,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
               }
               return null
             })}
-            {/* the numbers */}
-            {labels.map((label, labelIdx) => (
+            {/* the number labels drawn in overview scale bar*/}
+            {tickLabels.map((tickLabel, labelIdx) => (
               <div
-                key={label}
+                key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
                 className={classes.scaleBarLabel}
                 style={{
                   left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
@@ -224,9 +301,20 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
                   color: refNameColor,
                 }}
               >
-                {label.toLocaleString()}
+                {tickLabel.toLocaleString('en-US')}
               </div>
             ))}
+            {incompleteRegion && (
+              <div
+                className={classes.scaleBarRegionIncompleteRight}
+                style={{
+                  backgroundImage: `linear-gradient(225deg, ${refNameColor} 3px, transparent 1px),
+              linear-gradient(-45deg, ${refNameColor} 3px, transparent 1px)`,
+                  backgroundSize: '10px 8px',
+                  backgroundRepeat: 'repeat-y',
+                }}
+              />
+            )}
           </Paper>
         )
       })}
@@ -242,17 +330,16 @@ function OverviewScaleBar({
   children: React.ReactNode
 }) {
   const classes = useStyles()
-  const { displayedParentRegions, displayedParentRegionsLength, width } = model
+  const { width, displayedRegions } = model
 
   const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedParentRegions)),
+    displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
   })
 
   const scale =
-    displayedParentRegionsLength /
-    (width - (displayedParentRegions.length - 1) * wholeSeqSpacer)
+    model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
 
-  if (!displayedParentRegions.length) {
+  if (!displayedRegions.length) {
     return (
       <>
         <div className={classes.scaleBar}>
