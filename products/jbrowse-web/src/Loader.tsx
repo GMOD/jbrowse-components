@@ -350,13 +350,7 @@ const SessionLoader = types
     },
   }))
 
-// if (rootModel.session) {
-//   writeAWSAnalytics(
-//     rootModel,
-//     `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
-//   )
-// }
-export function Loader() {
+export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
   const load = (param: string | null | undefined) =>
@@ -374,11 +368,17 @@ export function Loader() {
     adminKey: load(adminKey),
   })
 
-  return <Renderer loader={loader} />
+  return <Renderer loader={loader} initialTimestamp={initialTimestamp} />
 }
 
 const Renderer = observer(
-  ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
+  ({
+    loader,
+    initialTimestamp,
+  }: {
+    loader: Instance<typeof SessionLoader>
+    initialTimestamp: number
+  }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
@@ -410,6 +410,7 @@ const Renderer = observer(
             assemblyManager: {},
             version: packagedef.version,
             configPath,
+            // add initial to root
           })
 
           // in order: saves the previous autosave for recovery, tries to load
@@ -438,6 +439,16 @@ const Renderer = observer(
           } else {
             rootModel.setDefaultSession()
           }
+
+          if (rootModel.session) {
+            writeAWSAnalytics(
+              rootModel,
+              `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
+              initialTimestamp,
+            )
+          }
+
+          console.log(Date.now() - initialTimestamp)
           // if (!rootModel.session) {
           //   throw new Error('root model did not have any session defined')
           // }
@@ -462,7 +473,7 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword])
+    }, [loader, ready, sessionError, setPassword, initialTimestamp])
 
     if (configError) {
       return (
@@ -508,11 +519,11 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-export default () => {
+export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>
   )

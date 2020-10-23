@@ -66,17 +66,34 @@ import { getSnapshot } from 'mobx-state-tree'
 // number of views open on session load, session.views.length
 // number of open tracks (try to do this one)
 
+// jb2 object
+// ver
+// isElectron
+// open-views
+// additional plugins
+// number of tracks in the config
+// number of tracks where assemblyNames > 1 (number of synteny tracks)
+// screen geometry
+// window geometry
+// window.navigator.userAgent (what browser they are using), maybe look for simplier string
+// tzoffset
+// loadtime
+// amt of savedSessions (look for localSaved in their local storage)
+
 interface RefSeq {
   [key: string]: any
 }
 
-export async function writeAWSAnalytics(rootModel: any, url: string) {
+export async function writeAWSAnalytics(
+  rootModel: any,
+  url: string,
+  initialTimeStamp: number,
+) {
   const { session } = rootModel
   const date = new Date()
 
   const refSeqCount: RefSeq = {}
 
-  console.log(rootModel)
   session.assemblies.forEach((assembly: any, idx: number) => {
     const value = rootModel.assemblyManager.get(assembly)
     const index = `assembly${idx}`
@@ -101,13 +118,15 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
     'win-h': document.body.offsetHeight,
     'win-w': document.body.offsetWidth,
 
+    browser: window.navigator.userAgent,
+
     // dont worry about container geometry
 
     // time param to prevent caching
     t: date.getTime() / 1000,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     tzoffset: date.getTimezoneOffset(),
-    loadTime: new Date().getTime() - date.getTime() / 1000, // potentially look if react records load times, probably need the date object though
+    loadTime: Date.now() - initialTimeStamp, // potentially look if react records load times, probably need the date object though
   }
   const data = new FormData()
   data.append('stats', JSON.stringify(stats))
@@ -115,7 +134,7 @@ export async function writeAWSAnalytics(rootModel: any, url: string) {
   const response = await fetch(`${url}`, {
     method: 'POST',
     mode: 'cors',
-    body: data,
+    body: JSON.stringify(stats),
   })
 
   // current progress, cors work, need to see how to upload the custom doc.dynamoDB() npm package to lambda
@@ -208,7 +227,7 @@ export async function writeGAAnalytics() {
       const gaData: RefSeq = {}
       const googleDimensions =
         'tracks-count refSeqs-count refSeqs-avgLen ver loadTime electron plugins'
-      const googleMetrics = 'loadTime'
+      //   const googleMetrics = 'loadTime'
 
       googleDimensions.split(/\s+/).forEach((key, index) => {
         gaData[`dimension${index + 1}`] = stats[key]
