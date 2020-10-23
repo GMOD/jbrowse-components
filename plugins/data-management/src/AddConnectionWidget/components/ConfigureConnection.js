@@ -1,4 +1,4 @@
-import { ConfigurationEditor } from '@jbrowse/plugin-config'
+import { ConfigurationEditor } from '@jbrowse/core/ui/configEditor'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'

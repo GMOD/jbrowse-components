@@ -210,3 +210,13 @@ function returnAssemblyName(assembly: any) {
 }
 
 export default AssemblyManager
+
+/*
+TODO:
+
+- remove duplicate config editor
+- refactor components into separate files
+- write tests
+- get tests to pass (-u for snaps)
+
+*/

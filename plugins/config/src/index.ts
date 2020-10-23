@@ -59,6 +59,3 @@ export default class extends Plugin {
     })
   }
 }
-
-export { default as ConfigurationEditor } from './ConfigurationEditorWidget/components/ConfigurationEditor'
-export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'
