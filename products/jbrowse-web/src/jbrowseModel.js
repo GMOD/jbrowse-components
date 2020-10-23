@@ -100,9 +100,12 @@ export default function JBrowseWeb(
         return self.assemblies[length - 1]
       },
       removeAssemblyConf(assemblyName) {
-        self.assemblies = self.assemblies.filter(
+        const toRemove = self.assemblies.find(
           assembly => assembly.name === assemblyName,
         )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
