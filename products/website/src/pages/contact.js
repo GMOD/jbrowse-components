@@ -40,11 +40,11 @@ function Contact() {
             <li>
               Join our chat at{' '}
               <a
-                href="https://gitter.im/GMOD/jbrowse"
+                href="https://gitter.im/GMOD/jbrowse2"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                https://github.com/GMOD/jbrowse
+                https://gitter.im/GMOD/jbrowse2
               </a>
             </li>
             <li>

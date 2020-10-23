@@ -388,7 +388,6 @@ const Renderer = observer(
       const {
         plugins,
         adminKey,
-        sessionQuery,
         configSnapshot,
         sessionSnapshot,
         configPath,
@@ -419,21 +418,15 @@ const Renderer = observer(
           //
           if (sessionError) {
             rootModel.setDefaultSession()
+            // make typescript happy by checking for session after setDefaultSession
             if (rootModel.session) {
               rootModel.session.notify(
-                `Error loading session: ${sessionError}. Loaded default session instead.`,
+                `Error loading session: ${sessionError.message}. If you received this
+                URL from another user, request that they send you a session
+                generated with the "Share" button instead of copying and
+                pasting their URL`,
               )
             }
-          } else if (sessionQuery && !sessionSnapshot) {
-            rootModel.setDefaultSession()
-            if (rootModel.session && loader.localSession) {
-              rootModel.session.notify(
-                `Session not found, loaded default session instead. If you
-                  received this URL from another user, request that they send
-                  you a session generated with the "Share" button`,
-              )
-            }
-            rootModel.setSession(loader.sessionSnapshot)
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
