@@ -22,7 +22,7 @@ Or file a bug report or request a feature on GitHub:
 https://github.com/GMOD/jbrowse-components/issues/new/choose
 
 You can also contact us via our chat channel on Gitter at
-https://gitter.im/GMOD/jbrowse
+https://gitter.im/GMOD/jbrowse2
 
 Finally you can send an email to `gmod-ajax@lists.sourceforge.net` for assistance
 also!
