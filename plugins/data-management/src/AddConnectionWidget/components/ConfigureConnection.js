@@ -8,12 +8,7 @@ function ConfigureConnection(props) {
   const ConfigEditorComponent =
     connectionType.configEditorComponent || ConfigurationEditor
 
-  return (
-    <ConfigEditorComponent
-      model={{ target: model }}
-      setModelReady={setModelReady}
-    />
-  )
+  return <ConfigEditorComponent target={model} setModelReady={setModelReady} />
 }
 
 ConfigureConnection.propTypes = {
