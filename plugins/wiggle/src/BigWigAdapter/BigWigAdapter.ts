@@ -100,14 +100,14 @@ export default class BigWigAdapter
     })
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, opts: BaseOptions = {}) {
     const { refName, start, end } = region
-    const { bpPerPx, signal, statusCallback = () => {} } = opts || {}
+    const { bpPerPx, signal, statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,
-        basesPerSpan: bpPerPx,
+        basesPerSpan: (bpPerPx || 0) / 100,
       })
       ob.pipe(
         mergeAll(),
