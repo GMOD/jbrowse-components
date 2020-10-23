@@ -24,6 +24,9 @@ interface Config {
 }
 
 export default class SetDefaultSession extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Set a default session with views and tracks'
 
   static examples = [
@@ -65,7 +68,9 @@ export default class SetDefaultSession extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     help: flags.help({
       char: 'h',
@@ -74,19 +79,14 @@ export default class SetDefaultSession extends JBrowseCommand {
 
   async run() {
     const { flags: runFlags } = this.parse(SetDefaultSession)
-    const {
-      session,
-      name,
-      tracks,
-      currentSession,
-      view,
-      viewId,
-      target,
-    } = runFlags
+    const { session, name, tracks, currentSession, view, viewId } = runFlags
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
 
-    await this.checkLocation(path.dirname(target))
+    await this.checkLocation(path.dirname(this.target))
 
-    const configContents: Config = await this.readJsonFile(target)
+    const configContents: Config = await this.readJsonFile(this.target)
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
@@ -152,15 +152,15 @@ export default class SetDefaultSession extends JBrowseCommand {
         ],
       }
     }
-    this.debug(`Writing configuration to file ${target}`)
-    await this.writeJsonFile(target, configContents)
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${
         existingDefaultSession ? 'Overwrote' : 'Added'
-      } defaultSession "${name}" ${
-        existingDefaultSession ? 'in' : 'to'
-      } ${target}`,
+      } defaultSession "${name}" ${existingDefaultSession ? 'in' : 'to'} ${
+        this.target
+      }`,
     )
   }
 
