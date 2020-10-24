@@ -67,20 +67,26 @@ import { getSnapshot } from 'mobx-state-tree'
 // number of open tracks (try to do this one)
 
 // jb2 object
-// ver
-// isElectron
-// open-views
-// additional plugins
-// number of tracks in the config
-// number of tracks where assemblyNames > 1 (number of synteny tracks)
-// screen geometry
-// window geometry
-// window.navigator.userAgent (what browser they are using), maybe look for simplier string
-// tzoffset
-// loadtime
-// amt of savedSessions (look for localSaved in their local storage)
+// ver x
+// isElectron x
+// open-views x
+// additional plugins x
+// number of tracks in the config x
+// number of tracks where assemblyNames > 1 (number of synteny tracks) x
+// screen geometry x
+// window geometry x
+// window.navigator.userAgent (what browser they are using), maybe look for simplier string x
+// tzoffset x
+// loadtime x
+// amt of savedSessions (look for localSaved in their local storage) x
 
-interface RefSeq {
+interface AnalyticsObj {
+  [key: string]: any
+}
+
+interface Track {
+  trackId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 
@@ -90,9 +96,7 @@ export async function writeAWSAnalytics(
   initialTimeStamp: number,
 ) {
   const { session } = rootModel
-  const date = new Date()
-
-  const refSeqCount: RefSeq = {}
+  const refSeqCount: AnalyticsObj = {}
 
   session.assemblies.forEach((assembly: any, idx: number) => {
     const value = rootModel.assemblyManager.get(assembly)
@@ -103,12 +107,18 @@ export async function writeAWSAnalytics(
   const stats = {
     ver: rootModel.version,
     'refSeq-count': refSeqCount,
-    'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
+    // 'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
     'tracks-count': session.tracks.length, // this is all possible tracks
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
       : '', // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
     'open-views': session.views.length,
+    'synteny-tracks-count': session.tracks.filter(
+      (track: Track) => track.assemblies.length > 1,
+    ).length,
+    'saved-sessions-count': Object.keys(localStorage).filter(name =>
+      name.includes('localSaved-'),
+    ).length,
 
     // screen geometry
     'scn-h': window.screen.height,
@@ -117,15 +127,11 @@ export async function writeAWSAnalytics(
     // window geometry
     'win-h': document.body.offsetHeight,
     'win-w': document.body.offsetWidth,
-
     browser: window.navigator.userAgent,
 
     // dont worry about container geometry
 
-    // time param to prevent caching
-    t: date.getTime() / 1000,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
-    tzoffset: date.getTimezoneOffset(),
     loadTime: Date.now() - initialTimeStamp, // potentially look if react records load times, probably need the date object though
   }
   const data = new FormData()
@@ -202,11 +208,25 @@ export async function writeAWSAnalytics(
 
 //     document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode); // important, append the script to the head
 // },
-export async function writeGAAnalytics() {
+export async function writeGAAnalytics(
+  rootModel: any,
+  initialTimeStamp: number,
+) {
   // jbrowse.org account always
   const jbrowseUser = 'UA-7115575-5'
   const accounts = [jbrowseUser]
-  const stats: RefSeq = {}
+  const stats: AnalyticsObj = {
+    ver: rootModel.version,
+    // 'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
+    'tracks-count': rootModel.session.tracks.length, // this is all possible tracks
+    plugins: rootModel.jbrowse.plugins
+      ? getSnapshot(rootModel.jbrowse.plugins)
+      : '', // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
+    browser: window.navigator.userAgent,
+    electron: typeof window !== 'undefined' && Boolean(window.electron),
+    loadTime: Date.now() - initialTimeStamp, // potentially look if react records load times, probably need the date object though
+  }
+
   // do we need custom GA accounts?
   // if needed,
   // getConf(self, 'googleAnalytics')
@@ -224,9 +244,9 @@ export async function writeGAAnalytics() {
   // for each acc? add pageview + custom variable
   accounts.forEach((user, viewerNum) => {
     if (user === jbrowseUser) {
-      const gaData: RefSeq = {}
+      const gaData: AnalyticsObj = {}
       const googleDimensions =
-        'tracks-count refSeqs-count refSeqs-avgLen ver loadTime electron plugins'
+        'ver tracks-count plugin browser electron loadTime'
       //   const googleMetrics = 'loadTime'
 
       googleDimensions.split(/\s+/).forEach((key, index) => {
@@ -246,6 +266,5 @@ export async function writeGAAnalytics() {
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
 
-  document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode) // important, append the script to the head
-  // then append to head
+  document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode)
 }
