@@ -4,7 +4,7 @@
   "license": "MIT",
   "homepage": ".",
   "scripts": {
-    "copycli": "cp ../jbrowse-cli/README.md docs/cli.md",
+    "copycli": "cp ../products/jbrowse-cli/README.md docs/cli.md",
     "prestart": "npm run make",
     "start": "docusaurus start",
     "prebuild": "npm run make",
