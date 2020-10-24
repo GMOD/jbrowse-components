@@ -68,9 +68,11 @@ function Home() {
               </li>
             </ul>
           </div>
-          <div style={{ flexBasis: '50%', padding: 20 }}>
-            <img alt="screenshot of jbrowse 2" src="img/screenshot.png" />
-          </div>
+          <img
+            alt="screenshot of jbrowse 2"
+            src="img/screenshot.png"
+            width="50%"
+          />
         </div>
         <div className={classes.section}>
           <Typography variant="h4">Features</Typography>
