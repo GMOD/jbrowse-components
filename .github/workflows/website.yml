@@ -25,7 +25,7 @@ jobs:
           yarn
           yarn build
           cd docs/
-          make pdf
+          make
           cp pdfcombined.md ../../
           cp titlemod.md ../../
           cp listings.tex ../../
