@@ -4,7 +4,7 @@ title: Config guide
 toplevel: true
 ---
 
-### Intro to the config.json
+## Intro to the config.json
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
 
@@ -264,12 +264,7 @@ Example CramAdapter config
 }
 ```
 
----
-
-id: config_assembly
-title: Assembly config
-
----
+## Assembly config
 
 Because JBrowse 2 can potentially have multiple assemblies loaded at once, it
 needs to make sure each track is associated with an assembly.
@@ -438,11 +433,7 @@ parsing time.
 }
 ```
 
--;--
-id: config_dotplot_view
-title: Dotplot view config
-
----
+## Dotplot view config
 
 ### Setup
 
@@ -543,12 +534,7 @@ let's step through it
 The dotplot view is still very new, and parts of this config could change in
 the future
 
-## We will introduce JBrowse 2 from the configuration point of view
-
-id: config_hic_track
-title: Hi-C config
-
----
+## Hi-C config
 
 Technically there is no Hi-C track type but it can be implemented with a DynamicTrack
 
@@ -583,34 +569,21 @@ Example HicAdapter config
 }
 ```
 
----
-
-id: config_linear_synteny
-title: Configuring linear synteny views
-
----
-
-### Configuring synteny
+## Configuring linear synteny views
 
 Currently, configuring synteny is made by pre-configuring a session in the view
 and adding synteny tracks
 
-## TODO: This section will be expanded
+#### TODO: This section will be expanded
 
-id: config_refrenaming
-title: Configuring reference renaming
-
----
+## Configuring reference renaming
 
 Reference renaming is a process to make chromosomes that are named slighlty
 differently but which refer to the same thing render properly
 
-## TODO: expand section
+#### TODO: expand section
 
-id: config_theme
-title: Configuring the theme
-
----
+## Configuring the theme
 
 ### Color
 
@@ -694,12 +667,7 @@ options you could pass to Material-UI's
 [`createMuiTheme`](https://material-ui.com/customization/theming/#createmuitheme-options-args-theme)
 should work in the theme configuration.
 
----
-
-id: config_variant_track
-title: Variant config
-
----
+## Variant config
 
 - defaultRendering - options: 'pileup' or 'svg'. default 'svg'
 - adapter - a variant type adapter config e.g. a VcfTabixAdapter
@@ -737,12 +705,7 @@ Example VcfTabixAdapter adapter config
 }
 ```
 
----
-
-id: config_wiggle_track
-title: Wiggle config
-
----
+## Wiggle config
 
 ### General
 
