@@ -92,6 +92,10 @@
             {
               "label": "GitHub",
               "href": "https://github.com/GMOD/jbrowse-components"
+            },
+            {
+              "label": "Looking for JBrowse 1?",
+              "href": "https://jbrowse.org/jbrowse1.html"
             }
           ]
         }

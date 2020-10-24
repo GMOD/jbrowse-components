@@ -26,6 +26,10 @@ export const NoAssemblyRegion = types
     end: types.number,
     reversed: types.optional(types.boolean, false),
   })
+  .volatile(() => ({
+    parentStart: -1,
+    parentEnd: -1,
+  }))
   .actions(self => ({
     setRefName(newRefName: string): void {
       self.refName = newRefName

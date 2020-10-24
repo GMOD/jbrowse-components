@@ -107,10 +107,10 @@ describe('valid file tests', () => {
     jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, getAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findByText('ctgA')
+    await getAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
