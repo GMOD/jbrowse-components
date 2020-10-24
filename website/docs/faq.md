@@ -41,7 +41,7 @@ that can be built on.
 
 #### Can the linear genome view be reverse complemented
 
-Yes! See [here](user_navigation)
+Yes! See [here](user_guide#navigating-the-ui)
 
 ### Setup
 
@@ -87,10 +87,10 @@ jbrowse-web release tag, and unzip it into your web directory
 For other things, like add-assembly and add-track, you can manually edit the
 config.json, reviewing the config docs and sample configs will be valuable
 
-Understanding the [config basics](config_basic) will come in handy also
-because you can manually edit in advanced configs after your tracks are loaded
-however be careful because corrupt configs can produce hard to understand errors,
-because our config system is strongly typed
+Understanding the [config basics](config_guide#intro-to-the-configjson) will
+come in handy also because you can manually edit in advanced configs after your
+tracks are loaded however be careful because corrupt configs can produce hard
+to understand errors, because our config system is strongly typed
 
 Feel free to message the team if you encounter these
 

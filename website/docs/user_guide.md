@@ -128,7 +128,7 @@ This figure shows a BigWig using the XY plot renderer
 Line plot version of a BigWig
 
 There are many options for controlling the BigWig which can be accessed from
-the UI. See the [bigwig configuration guide](config_wiggle_track)
+the UI. See the [bigwig configuration guide](config_guide#wiggle-config)
 
 ## Dotplot view
 
@@ -143,7 +143,7 @@ in a way that one can add dotplot tracks in the UI but it can be manually config
 
 ![](./img/dotplot.png)
 
-See the [dotplot configuration](config_dotplot)
+See the [dotplot configuration](config_guide#dotplot-view-config)
 
 ### Long read vs reference
 
@@ -309,7 +309,9 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=tes
 ![](./img/linear_synteny.png)
 Figure showing grape vs peach synteny
 
-See the [linear synteny configuration](config_linear_synteny) for more details on manually configuring the synteny view
+See the [linear synteny
+configuration](config_guide#configuring-linear-synteny-views) for more details
+on manually configuring the synteny view
 
 ### Long read vs reference
 

@@ -88,7 +88,7 @@ below
 
 Data adapters basically are parsers for a given data format. We will review
 what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](developer_creating_data_adapters))
+see [creating data adapters](developer_guide#creating-data-adapters))
 
 Example data adapters: the `@jbrowse/plugin-alignments` plugin creates
 multiple data adapter types
@@ -107,7 +107,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](developer_creating_renderers)
+renderers](developer_guide#creating-custom-renderers)
 
 Example renderers: the `@jbrowse/plugin-alignments` exports several
 renderer types
@@ -828,7 +828,9 @@ Reading the sub-config schema is as follows
 const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
-## What is a data adapter
+## Creating data adapters
+
+### What is a data adapter
 
 A data adapter is essentially a class that parses your data type and returns
 features that jbrowse will draw
@@ -936,7 +938,7 @@ like human chromosomes which have, for example, chr1 vs 1.
 
 Returning the refNames used by a given file or resource allows JBrowse to
 automatically smooth these small naming disparities over. See [reference
-renaming](config_refrenaming)
+renaming](config_guide#configuring-reference-renaming)
 
 #### getFeatures
 
@@ -999,7 +1001,7 @@ JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 data adapters, etc), and to modify behavior of the application by adding code
 that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
-elements](developer_pluggable_elements) page.
+elements](developer_guide#pluggable-elements) page.
 
 We will go over creating an example plugin. The first thing that we have is a
 `src/index.js` which exports a default class containing the plugin registration

@@ -94,7 +94,7 @@ samtools faidx hg19.fa.gz
 jbrowse add-assembly ~/hg19.fa.gz --load copy
 ```
 
-See [configuring assemblies](config_assembly) for more info on formats
+See [configuring assemblies](config_guide#assembly-config) for more info on formats
 supported for the sequence file.
 
 #### Adding a BAM track
@@ -139,5 +139,5 @@ jbrowse add-track yourfile.vcf.gz --load copy
 Hopefully this helps you get started with JBrowse 2
 
 Check out the rest of the docs, for more information, and also see the CLI docs
-for more info [CLI tools](cli_guide) especially for details on some of the
+for more info [CLI tools](cli) especially for details on some of the
 steps shown here.
