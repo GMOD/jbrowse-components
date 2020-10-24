@@ -111,7 +111,7 @@ export async function writeAWSAnalytics(
     'tracks-count': session.tracks.length, // this is all possible tracks
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
-      : '', // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
+      : '',
     'open-views': session.views.length,
     'synteny-tracks-count': session.tracks.filter(
       (track: Track) => track.assemblies.length > 1,
@@ -129,10 +129,8 @@ export async function writeAWSAnalytics(
     'win-w': document.body.offsetWidth,
     browser: window.navigator.userAgent,
 
-    // dont worry about container geometry
-
     electron: typeof window !== 'undefined' && Boolean(window.electron),
-    loadTime: Date.now() - initialTimeStamp, // potentially look if react records load times, probably need the date object though
+    loadTime: Date.now() - initialTimeStamp,
   }
   const data = new FormData()
   data.append('stats', JSON.stringify(stats))
@@ -143,71 +141,11 @@ export async function writeAWSAnalytics(
     body: JSON.stringify(stats),
   })
 
-  // current progress, cors work, need to see how to upload the custom doc.dynamoDB() npm package to lambda
   if (response && response.ok) {
     console.log('success')
   }
 }
 
-// need to create a script element and write it like in jb1 before calling
-// jb1 GA
-// phones home to google analytics
-// _reportGoogleUsageStats: function( stats ) {
-//     var thisB = this;
-//     // jbrowse.org account always
-//     var jbrowseUser = 'UA-7115575-2'
-//     var accounts = [ jbrowseUser ];
-
-//     // add any custom Google Analytics accounts from config (comma-separated or array)
-//     if( this.config.googleAnalytics ) {
-//         var userAccounts = this.config.googleAnalytics.accounts;
-//         if( accounts && ! lang.isArray(userAccounts) ) {
-//             userAccounts = userAccounts.replace(/^\s*|\s*$/,'').split(/\s*,\s*/)
-//         }
-//         accounts.push.apply( accounts, userAccounts );
-//     }
-
-//     var analyticsScript = "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ ";
-//     analyticsScript += "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), ";
-//     analyticsScript += "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) ";
-//     analyticsScript += "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');";
-
-//     // set up users
-//     accounts.forEach(function(user,trackerNum) {
-//         // if we're adding jbrowse.org user, also include new dimension references (replacing ga.js custom variables)
-//         if ( user == jbrowseUser) {
-//             analyticsScript += "ga('create', '"+user+"', 'auto', 'jbrowseTracker');";
-//         }
-//         else {
-//             analyticsScript += "ga('create', '"+user+"', 'auto', 'customTracker"+trackerNum+"');";
-//         }
-//     });
-
-//     // send pageviews and custom variables
-//     accounts.forEach(function(user,viewerNum) {
-//         if ( user == jbrowseUser) {
-//             var gaData = {};
-//             var googleDimensions = 'tracks-count refSeqs-count refSeqs-avgLen ver loadTime electron plugins';
-//             var googleMetrics = 'loadTime';
-
-//             googleDimensions.split(/\s+/).forEach( function(key,index) {
-//                 gaData['dimension'+(index+1)] = stats[key];
-//             });
-
-//             gaData.metric1 = Math.round(stats.loadTime*1000);
-
-//             analyticsScript += "ga('jbrowseTracker.send', 'pageview',"+JSON.stringify(gaData)+");";
-//         }
-//         else {
-//             analyticsScript += "ga('customTracker"+viewerNum+".send', 'pageview');";
-//         }
-//     });
-
-//     var analyticsScriptNode = document.createElement('script');
-//     analyticsScriptNode.innerHTML = analyticsScript;
-
-//     document.getElementsByTagName('head')[0].appendChild(analyticsScriptNode); // important, append the script to the head
-// },
 export async function writeGAAnalytics(
   rootModel: any,
   initialTimeStamp: number,
@@ -217,14 +155,13 @@ export async function writeGAAnalytics(
   const accounts = [jbrowseUser]
   const stats: AnalyticsObj = {
     ver: rootModel.version,
-    // 'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
     'tracks-count': rootModel.session.tracks.length, // this is all possible tracks
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
-      : '', // something with the plugin manager, not pluginManager.plugins, most of those are core plugins and always there
+      : '',
     browser: window.navigator.userAgent,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
-    loadTime: Date.now() - initialTimeStamp, // potentially look if react records load times, probably need the date object though
+    loadTime: Date.now() - initialTimeStamp,
   }
 
   // do we need custom GA accounts?
