@@ -80,9 +80,9 @@ The jbrowse CLI tools are basically a convenience, and are not strictly required
 
 Simple tasks can be done without it
 
-For example, for jbrowse create, you can visit
-https://github.com/jbrowse-components/releases/latest and download the latest
-jbrowse-web release tag, and unzip it into your web directory
+For example, for jbrowse create, you can visit the [blog](/jb2/blog) and
+download the latest jbrowse-web release tag, and unzip it into your web
+directory
 
 For other things, like add-assembly and add-track, you can manually edit the
 config.json, reviewing the config docs and sample configs will be valuable
