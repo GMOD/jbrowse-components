@@ -828,7 +828,7 @@ Reading the sub-config schema is as follows
 const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
-### What is a data adapter
+## What is a data adapter
 
 A data adapter is essentially a class that parses your data type and returns
 features that jbrowse will draw
