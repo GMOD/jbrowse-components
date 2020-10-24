@@ -1,3 +1,7 @@
+---
+id: contact
+---
+
 # Contact us
 
 - Ask a question on our discussion board at

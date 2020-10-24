@@ -2,5 +2,6 @@
   "version": "independent",
   "npmClient": "yarn",
   "useWorkspaces": true,
-  "independent": true
+  "independent": true,
+  "nohoist": ["@jbrowse/website"]
 }

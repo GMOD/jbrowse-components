@@ -1,28 +1,23 @@
 ---
+slug: /
 id: introduction
 title: Introduction
 toplevel: true
 ---
 
-Welcome to the JBrowse 2 documentation. The JBrowse ecosystem is widely varied
-and can be approached from different contexts. In our docs, we provide a quick
-start guides for users who are installing JBrowse 2 on their website, another
-quick start guide for desktop users, and then detailed user guide,
-configuration guide, and developers guide.
+Welcome to the JBrowse 2 documentation.
+
+We provide
+
+- [Quick start guide for users setting up JBrowse 2 on their website](quickstart_web)
+- [User documentation for how to use the JBrowse 2 application](user_guide)
+- [Configuration guide for administrators setting up JBrowse 2](configuration guide)
+- [Software documentation for developers of JBrowse 2 code and plugins](developer_guide)
+- [FAQ](faq)
+
+We also keep a log of our previous training classes
 
 ### Contact information
 
-Please let us know if you have any feedback on our documentation or JBrowse in
-general
-
-You can contact us via our user discussions forum:
-https://github.com/GMOD/jbrowse-components/discussions
-
-Or file a bug report or request a feature on GitHub:
-https://github.com/GMOD/jbrowse-components/issues/new/choose
-
-You can also contact us via our chat channel on Gitter at
-https://gitter.im/GMOD/jbrowse2
-
-Finally you can send an email to `gmod-ajax@lists.sourceforge.net` for assistance
-also!
+Feel free to [contact us](contact) if you have questions, issues, suggestions,
+improvements, or feedback. Enjoy!
