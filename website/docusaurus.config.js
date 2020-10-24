@@ -13,13 +13,13 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.json'),
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/packages/website/',
+            'https://github.com/GMOD/jbrowse-components/edit/master/website/',
         },
         blog: {
           showReadingTime: true,
           // Please change this to your repo.
           editUrl:
-            'https://github.com/GMOD/jbrowse-components/edit/master/packages/website/blog/',
+            'https://github.com/GMOD/jbrowse-components/edit/master/website/blog/',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
