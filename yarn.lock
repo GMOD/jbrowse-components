@@ -13373,7 +13373,7 @@ jest-worker@^25.1.0, jest-worker@^25.5.0:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
-jest@24.9.0, jest@^24.8.0:
+jest@24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/jest/-/jest-24.9.0.tgz#987d290c05a08b52c56188c1002e368edb007171"
   integrity sha512-YvkBL1Zm7d2B1+h5fHEOdyjCG+sGMz4f8D86/0HiqJ6MB4MnDc8FgP5vdWsGnemOQro7lnYo8UakZ3+5A0jxGw==
@@ -17531,13 +17531,12 @@ react-transition-group@^4.4.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react-virtualized-tree@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/react-virtualized-tree/-/react-virtualized-tree-3.4.0.tgz#8c8e02a5e5c3ddd431295feff5c389a70b79781d"
-  integrity sha512-+eeHPcoyqHl03bklARwjI3oYhmsL8W9lEVrefnlI3RcyxMBNu9UTvaIUbPAkFJAUvplK1SLsizkp3rFqm4gf7A==
+react-virtualized-tree@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/react-virtualized-tree/-/react-virtualized-tree-3.4.1.tgz#422952f51e2c1e4eae5ab926f33ed476f26efa94"
+  integrity sha512-MolDiG9XgmflPPX9uPzf7iSWLqOHDlCZEiyA4FVYjv2pHfu6zV6/SIEFVyHdurWD80IjUuZ3Er12gq2bQQak2Q==
   dependencies:
     classnames "^2.2.5"
-    jest "^24.8.0"
     lodash "^4.17.4"
     lodash.debounce "^4.0.8"
     lodash.findindex "^4.6.0"
