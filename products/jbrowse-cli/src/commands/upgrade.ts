@@ -1,4 +1,6 @@
 import { flags } from '@oclif/command'
+import fs from 'fs'
+import path from 'path'
 import fetch from 'node-fetch'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
@@ -60,7 +62,20 @@ export default class Upgrade extends JBrowseCommand {
       this.log(`All JBrowse versions:\n${versions.join('\n')}`)
       this.exit()
     }
+
     this.debug(`Want to upgrade at: ${argsPath}`)
+    if (!argsPath) {
+      this.error(`No directory supplied`, { exit: 100 })
+    }
+
+    if (!fs.existsSync(path.join(argsPath, 'manifest.json'))) {
+      this.error(
+        `No manifest.json found in this directory, are you sure it is an
+        existing jbrowse 2 installation?`,
+        { exit: 10 },
+      )
+    }
+
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 
