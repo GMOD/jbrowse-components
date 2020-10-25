@@ -6,10 +6,9 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "name": "New Session",
+    "name": "New session",
   },
   "plugins": undefined,
-  "savedSessions": Array [],
   "tracks": Array [],
 }
 `;
@@ -48,7 +47,7 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -67,7 +66,7 @@ Object {
       "sequence": Object {
         "adapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -82,41 +81,36 @@ Object {
   "configuration": Object {},
   "connections": Array [],
   "defaultSession": Object {
-    "name": "New Session",
-  },
-  "plugins": undefined,
-  "savedSessions": Array [
-    Object {
-      "activeWidgets": Object {
-        "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    "activeWidgets": Object {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector",
+    },
+    "name": "Integration test example",
+    "views": Array [
+      Object {
+        "bpPerPx": 0.05,
+        "displayedRegions": Array [
+          Object {
+            "assemblyName": "volvox",
+            "end": 50001,
+            "refName": "ctgA",
+            "start": 0,
+          },
+        ],
+        "id": "integration_test",
+        "offsetPx": 2000,
+        "type": "LinearGenomeView",
       },
-      "name": "Integration test example",
-      "views": Array [
-        Object {
-          "bpPerPx": 0.05,
-          "displayedRegions": Array [
-            Object {
-              "assemblyName": "volvox",
-              "end": 50001,
-              "refName": "ctgA",
-              "start": 0,
-            },
-          ],
-          "id": "integration_test",
-          "offsetPx": 2000,
-          "type": "LinearGenomeView",
-        },
-      ],
-      "widgets": Object {
-        "hierarchicalTrackSelector": Object {
-          "filterText": "",
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "view": "integration_test",
-        },
+    ],
+    "widgets": Object {
+      "hierarchicalTrackSelector": Object {
+        "filterText": "",
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "view": "integration_test",
       },
     },
-  ],
+  },
+  "plugins": undefined,
   "tracks": Array [
     Object {
       "adapter": Object {
@@ -125,7 +119,7 @@ Object {
           "volvox2",
         ],
         "pafLocation": Object {
-          "uri": "test_data/volvox/volvox_fake_synteny.paf",
+          "uri": "volvox_fake_synteny.paf",
         },
         "type": "PAFAdapter",
       },
@@ -144,12 +138,12 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox.dup.vcf.gz.tbi",
+            "uri": "volvox.dup.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.dup.vcf.gz",
+          "uri": "volvox.dup.vcf.gz",
         },
       },
       "assemblyNames": Array [
@@ -166,12 +160,12 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz.tbi",
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.dup.renamed.vcf.gz",
+          "uri": "volvox.dup.renamed.vcf.gz",
         },
       },
       "assemblyNames": Array [
@@ -187,14 +181,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
+          "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.cram",
+          "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -224,14 +218,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
+          "uri": "volvox-sorted-altname.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.cram",
+          "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -262,14 +256,14 @@ Object {
       "adapter": Object {
         "subadapter": Object {
           "craiLocation": Object {
-            "uri": "test_data/volvox/volvox-sorted-altname.cram.crai",
+            "uri": "volvox-sorted-altname.cram.crai",
           },
           "cramLocation": Object {
-            "uri": "test_data/volvox/volvox-sorted-altname.cram",
+            "uri": "volvox-sorted-altname.cram",
           },
           "sequenceAdapter": Object {
             "twoBitLocation": Object {
-              "uri": "test_data/volvox/volvox.2bit",
+              "uri": "volvox.2bit",
             },
             "type": "TwoBitAdapter",
           },
@@ -295,14 +289,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+          "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram",
+          "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -332,14 +326,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+          "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram",
+          "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -367,14 +361,14 @@ Object {
       "adapter": Object {
         "subadapter": Object {
           "craiLocation": Object {
-            "uri": "test_data/volvox/volvox-sorted.cram.crai",
+            "uri": "volvox-sorted.cram.crai",
           },
           "cramLocation": Object {
-            "uri": "test_data/volvox/volvox-sorted.cram",
+            "uri": "volvox-sorted.cram",
           },
           "sequenceAdapter": Object {
             "twoBitLocation": Object {
-              "uri": "test_data/volvox/volvox.2bit",
+              "uri": "volvox.2bit",
             },
             "type": "TwoBitAdapter",
           },
@@ -400,11 +394,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam",
+          "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai",
+            "uri": "volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -435,11 +429,11 @@ Object {
       "adapter": Object {
         "subadapter": Object {
           "bamLocation": Object {
-            "uri": "test_data/volvox/volvox-sorted-altname.bam",
+            "uri": "volvox-sorted-altname.bam",
           },
           "index": Object {
             "location": Object {
-              "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
+              "uri": "volvox-sorted-altname.bam.bai",
             },
           },
           "type": "BamAdapter",
@@ -464,11 +458,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.bam",
+          "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
+            "uri": "volvox-sorted-altname.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -494,11 +488,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam",
+          "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai",
+            "uri": "volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -527,11 +521,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted-altname.bam",
+          "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted-altname.bam.bai",
+            "uri": "volvox-sorted-altname.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -561,11 +555,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam",
+          "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai",
+            "uri": "volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -596,12 +590,12 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox.test.vcf.gz.tbi",
+            "uri": "volvox.test.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.test.vcf.gz",
+          "uri": "volvox.test.vcf.gz",
         },
       },
       "assemblyNames": Array [
@@ -624,7 +618,9 @@ Object {
     },
     Object {
       "adapter": Object {
-        "rootUrlTemplate": "test_data/volvox/volvox_long_names_nclist/{refseq}/trackData.json",
+        "rootUrlTemplate": Object {
+          "uri": "volvox_long_names_nclist/{refseq}/trackData.json",
+        },
         "type": "NCListAdapter",
       },
       "assemblyNames": Array [
@@ -643,11 +639,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam.nonexist",
+          "uri": "volvox-sorted.bam.nonexist",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai",
+            "uri": "volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -676,11 +672,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam",
+          "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai.nonexist",
+            "uri": "volvox-sorted.bam.bai.nonexist",
           },
         },
         "type": "BamAdapter",
@@ -709,7 +705,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox.bw.nonexist",
+          "uri": "volvox.bw.nonexist",
         },
         "type": "BigWigAdapter",
       },
@@ -738,7 +734,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -767,7 +763,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -797,7 +793,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -827,7 +823,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.altname.bw",
+          "uri": "volvox_microarray.altname.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -911,11 +907,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads-sv.bam",
+          "uri": "volvox-long-reads-sv.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-long-reads-sv.bam.bai",
+            "uri": "volvox-long-reads-sv.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -944,14 +940,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads-sv.cram.crai",
+          "uri": "volvox-long-reads-sv.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads-sv.cram",
+          "uri": "volvox-long-reads-sv.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -981,14 +977,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads.fastq.sorted.cram.crai",
+          "uri": "volvox-long-reads.fastq.sorted.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads.fastq.sorted.cram",
+          "uri": "volvox-long-reads.fastq.sorted.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -1018,11 +1014,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-long-reads.fastq.sorted.bam",
+          "uri": "volvox-long-reads.fastq.sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-long-reads.fastq.sorted.bam.bai",
+            "uri": "volvox-long-reads.fastq.sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -1051,14 +1047,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-samspec.cram.crai",
+          "uri": "volvox-samspec.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-samspec.cram",
+          "uri": "volvox-samspec.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -1088,11 +1084,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-samspec.bam",
+          "uri": "volvox-samspec.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-samspec.bam.bai",
+            "uri": "volvox-samspec.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -1121,14 +1117,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sv.cram.crai",
+          "uri": "volvox-sv.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sv.cram",
+          "uri": "volvox-sv.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -1158,11 +1154,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sv.bam",
+          "uri": "volvox-sv.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sv.bam.bai",
+            "uri": "volvox-sv.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -1191,11 +1187,11 @@ Object {
     Object {
       "adapter": Object {
         "gffGzLocation": Object {
-          "uri": "test_data/volvox/volvox.sort.gff3.gz",
+          "uri": "volvox.sort.gff3.gz",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox.sort.gff3.gz.tbi",
+            "uri": "volvox.sort.gff3.gz.tbi",
           },
         },
         "type": "Gff3TabixAdapter",
@@ -1216,14 +1212,14 @@ Object {
     Object {
       "adapter": Object {
         "craiLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram.crai",
+          "uri": "volvox-sorted.cram.crai",
         },
         "cramLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.cram",
+          "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
           "twoBitLocation": Object {
-            "uri": "test_data/volvox/volvox.2bit",
+            "uri": "volvox.2bit",
           },
           "type": "TwoBitAdapter",
         },
@@ -1253,11 +1249,11 @@ Object {
     Object {
       "adapter": Object {
         "bamLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam",
+          "uri": "volvox-sorted.bam",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-sorted.bam.bai",
+            "uri": "volvox-sorted.bam.bai",
           },
         },
         "type": "BamAdapter",
@@ -1287,12 +1283,12 @@ Object {
       "adapter": Object {
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi",
+            "uri": "volvox.filtered.vcf.gz.tbi",
           },
         },
         "type": "VcfTabixAdapter",
         "vcfGzLocation": Object {
-          "uri": "test_data/volvox/volvox.filtered.vcf.gz",
+          "uri": "volvox.filtered.vcf.gz",
         },
       },
       "assemblyNames": Array [
@@ -1316,7 +1312,7 @@ Object {
     Object {
       "adapter": Object {
         "bigBedLocation": Object {
-          "uri": "test_data/volvox/volvox.bb",
+          "uri": "volvox.bb",
         },
         "type": "BigBedAdapter",
       },
@@ -1336,11 +1332,11 @@ Object {
     Object {
       "adapter": Object {
         "bedGzLocation": Object {
-          "uri": "test_data/volvox/volvox-bed12.bed.gz",
+          "uri": "volvox-bed12.bed.gz",
         },
         "index": Object {
           "location": Object {
-            "uri": "test_data/volvox/volvox-bed12.bed.gz.tbi",
+            "uri": "volvox-bed12.bed.gz.tbi",
           },
         },
         "type": "BedTabixAdapter",
@@ -1421,7 +1417,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1450,7 +1446,9 @@ Object {
     },
     Object {
       "adapter": Object {
-        "rootUrlTemplate": "test_data/volvox/volvox_genes_nclist/{refseq}/trackData.json",
+        "rootUrlTemplate": Object {
+          "uri": "volvox_genes_nclist/{refseq}/trackData.json",
+        },
         "type": "NCListAdapter",
       },
       "assemblyNames": Array [
@@ -1469,7 +1467,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1499,7 +1497,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray.bw",
+          "uri": "volvox_microarray.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1528,7 +1526,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_negative.bw",
+          "uri": "volvox_microarray_negative.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1558,7 +1556,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_negative.bw",
+          "uri": "volvox_microarray_negative.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1587,7 +1585,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_posneg.bw",
+          "uri": "volvox_microarray_posneg.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1617,7 +1615,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_posneg_frac.bw",
+          "uri": "volvox_microarray_posneg_frac.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1647,7 +1645,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox_microarray_posneg.bw",
+          "uri": "volvox_microarray_posneg.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1676,7 +1674,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam.coverage.bw",
+          "uri": "volvox-sorted.bam.coverage.bw",
         },
         "type": "BigWigAdapter",
       },
@@ -1706,7 +1704,7 @@ Object {
     Object {
       "adapter": Object {
         "bigWigLocation": Object {
-          "uri": "test_data/volvox/volvox-sorted.bam.coverage.bw",
+          "uri": "volvox-sorted.bam.coverage.bw",
         },
         "type": "BigWigAdapter",
       },

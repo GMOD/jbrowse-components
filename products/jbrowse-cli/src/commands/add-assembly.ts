@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import fs, { promises as fsPromises } from 'fs'
+import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
 
 function isValidJSON(string: string) {
@@ -13,13 +13,16 @@ function isValidJSON(string: string) {
 }
 
 export default class AddAssembly extends JBrowseCommand {
+  // @ts-ignore
+  target: string
+
   static description = 'Add an assembly to a JBrowse 2 configuration'
 
   static examples = [
     '$ jbrowse add-assembly GRCh38.fa --load copy',
     '$ jbrowse add-assembly GRCh38.fasta.with.custom.extension.xyz --type indexedFasta --load move',
-    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load trust',
-    '$ jbrowse add-assembly GRCh38.chrom.sizes --load trust',
+    '$ jbrowse add-assembly myFile.fa.gz --name GRCh38 --alias hg38 --load inPlace',
+    '$ jbrowse add-assembly GRCh38.chrom.sizes --load inPlace',
     '$ jbrowse add-assembly GRCh38.config.json --load copy',
     '$ jbrowse add-assembly https://example.com/data/sample.2bit',
     '$ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy',
@@ -93,14 +96,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     help: flags.help({ char: 'h' }),
     load: flags.string({
       char: 'l',
       description:
-        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use trust to modify the config without doing any file operations',
-      options: ['copy', 'symlink', 'move', 'trust'],
+        'Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations',
+      options: ['copy', 'symlink', 'move', 'inPlace'],
     }),
     skipCheck: flags.boolean({
       description:
@@ -123,7 +128,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
     if (this.needLoadData(argsSequence) && !runFlags.load) {
       this.error(
-        `Please specify the loading operation for this file with --load copy|symlink|move|trust`,
+        `Please specify the loading operation for this file with --load copy|symlink|move|inPlace`,
         { exit: 110 },
       )
     } else if (!this.needLoadData(argsSequence) && runFlags.load) {
@@ -157,11 +162,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${argsSequence}.fai`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
@@ -179,12 +186,8 @@ custom         Either a JSON file location or inline JSON that defines a custom
             ])
           : false
         if (loaded) {
-          sequenceLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(sequenceLocation)),
-          )
-          indexLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(indexLocation)),
-          )
+          sequenceLocation = path.basename(sequenceLocation)
+          indexLocation = path.basename(indexLocation)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -201,11 +204,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`compressed FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
           runFlags.faiLocation || `${sequenceLocation}.fai`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(
           `compressed FASTA index location resolved to: ${indexLocation}`,
@@ -213,6 +218,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let bgzipIndexLocation = await this.resolveFileLocation(
           runFlags.gziLocation || `${sequenceLocation}.gzi`,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
@@ -231,15 +237,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
             ])
           : false
         if (loaded) {
-          sequenceLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(sequenceLocation)),
-          )
-          indexLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(indexLocation)),
-          )
-          bgzipIndexLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(bgzipIndexLocation)),
-          )
+          sequenceLocation = path.basename(sequenceLocation)
+          indexLocation = path.basename(indexLocation)
+          bgzipIndexLocation = path.basename(bgzipIndexLocation)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -257,6 +257,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(`2bit location resolved to: ${sequenceLocation}`)
         if (!name) {
@@ -267,9 +268,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           ? await this.loadData(runFlags.load, [sequenceLocation])
           : false
         if (loaded) {
-          sequenceLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(sequenceLocation)),
-          )
+          sequenceLocation = path.basename(sequenceLocation)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -285,8 +284,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
-        this.debug(`chrome.sizes location resolved to: ${sequenceLocation}`)
+        this.debug(`chrom.sizes location resolved to: ${sequenceLocation}`)
         if (!name) {
           name = path.basename(sequenceLocation, '.chrom.sizes')
           this.debug(`Guessing name: ${name}`)
@@ -295,9 +295,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
           ? await this.loadData(runFlags.load, [sequenceLocation])
           : false
         if (loaded) {
-          sequenceLocation = await this.resolveFileLocation(
-            path.join('.', path.basename(sequenceLocation)),
-          )
+          sequenceLocation = path.basename(sequenceLocation)
         }
         sequence = {
           type: 'ReferenceSequenceTrack',
@@ -346,9 +344,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
 
-    if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(path.dirname(runFlags.target))
-    }
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)
     const { name } = runFlags
@@ -395,6 +394,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
         const refNameAliasesLocation = await this.resolveFileLocation(
           runFlags.refNameAliases,
           !(runFlags.skipCheck || runFlags.force),
+          runFlags.load === 'inPlace',
         )
         this.debug(
           `refName aliases file location resolved to: ${refNameAliasesLocation}`,
@@ -418,20 +418,17 @@ custom         Either a JSON file location or inline JSON that defines a custom
       tracks: [],
     }
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(runFlags.target)
-      this.debug(`Found existing config file ${runFlags.target}`)
-    } catch (error) {
-      this.debug('No existing config file found, using default config')
-      configContentsJson = JSON.stringify(defaultConfig)
-    }
-
     let configContents: Config
-    try {
-      configContents = { ...defaultConfig, ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file')
+
+    if (fs.existsSync(this.target)) {
+      this.debug(`Found existing config file ${this.target}`)
+      configContents = {
+        ...defaultConfig,
+        ...(await this.readJsonFile(this.target)),
+      }
+    } else {
+      this.debug(`Creating config file ${this.target}`)
+      configContents = { ...defaultConfig }
     }
 
     if (!configContents.assemblies) {
@@ -455,16 +452,13 @@ custom         Either a JSON file location or inline JSON that defines a custom
       configContents.assemblies.push(assembly)
     }
 
-    this.debug(`Writing configuration to file ${runFlags.target}`)
-    await fsPromises.writeFile(
-      runFlags.target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${assembly.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${runFlags.target}`,
+      } ${this.target}`,
     )
   }
 
@@ -507,6 +501,7 @@ custom         Either a JSON file location or inline JSON that defines a custom
 
   async loadData(load: string, filePaths: string[]) {
     let locationUrl: URL | undefined
+    const destination = this.target
     try {
       locationUrl = new URL(filePaths[0])
     } catch (error) {
@@ -518,14 +513,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.copyFile(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            if (!filePath) return undefined
+            return fsPromises.copyFile(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
@@ -533,14 +525,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.symlink(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            if (!filePath) return undefined
+            return fsPromises.symlink(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
@@ -548,19 +537,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return
-            const dataLocation = path.join('.', path.basename(filePath))
-
-            try {
-              await fsPromises.rename(filePath, dataLocation)
-            } catch (error) {
-              this.error(error, { exit: 180 })
-            }
+            if (!filePath) return undefined
+            return fsPromises.rename(
+              filePath,
+              path.join(path.dirname(destination), path.basename(filePath)),
+            )
           }),
         )
         return true
       }
-      case 'trust': {
+      case 'inPlace': {
         return false
       }
     }

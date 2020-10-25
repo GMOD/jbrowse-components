@@ -1,9 +1,9 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import ReactComponentF from './components/CircularView'
 import ModelF from './models/CircularView'
 
 export default ({ lib, load }: PluginManager) => {
-  const ViewType = lib['@gmod/jbrowse-core/pluggableElementTypes/ViewType']
+  const ViewType = lib['@jbrowse/core/pluggableElementTypes/ViewType']
 
   const ReactComponent = load(ReactComponentF)
   const { stateModel } = load(ModelF)

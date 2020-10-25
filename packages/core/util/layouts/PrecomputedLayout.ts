@@ -40,19 +40,19 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.totalHeight
   }
 
-  collides(rect: Rectangle<T>, top: number): boolean {
+  collides(_rect: Rectangle<T>, _top: number): boolean {
     throw new Error('Method not implemented.')
   }
 
-  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void {
+  addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {
     throw new Error('Method not implemented.')
   }
 
-  discardRange(left: number, right: number): void {
+  discardRange(_left: number, _right: number): void {
     throw new Error('Method not implemented.')
   }
 
-  serializeRegion(region: { start: number; end: number }): SerializedLayout {
+  serializeRegion(_region: { start: number; end: number }): SerializedLayout {
     throw new Error('Method not implemented.')
   }
 

@@ -4,12 +4,11 @@ import { observer } from 'mobx-react'
 import SimpleFeature, {
   SimpleFeatureSerialized,
   Feature,
-} from '@gmod/jbrowse-core/util/simpleFeature'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { getContainingView } from '@gmod/jbrowse-core/util'
-import { LinearGenomeViewModel } from '@gmod/jbrowse-plugin-linear-genome-view/src/LinearGenomeView'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+} from '@jbrowse/core/util/simpleFeature'
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
@@ -17,6 +16,8 @@ import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 type RectTuple = [number, number, number, number]
+
+const { parseCigar } = MismatchParser
 
 function px(
   view: LinearGenomeViewModel,

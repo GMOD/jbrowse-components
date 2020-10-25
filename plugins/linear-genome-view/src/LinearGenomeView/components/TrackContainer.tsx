@@ -1,14 +1,11 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { ResizeHandle } from '@gmod/jbrowse-core/ui'
-import {
-  useDebouncedCallback,
-  getContainingView,
-} from '@gmod/jbrowse-core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { ResizeHandle } from '@jbrowse/core/ui'
+import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
+import clsx from 'clsx'
 import Paper from '@material-ui/core/Paper'
-import Slide from '@material-ui/core/Slide'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
@@ -40,9 +37,15 @@ const useStyles = makeStyles(theme => ({
     width: '100%',
   },
   trackLabel: {
-    position: 'absolute',
     zIndex: 3,
     margin: theme.spacing(1),
+  },
+  trackLabelInline: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  trackLabelOverlap: {
+    position: 'absolute',
   },
   trackRenderingContainer: {
     overflowY: 'auto',
@@ -55,6 +58,8 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type LGV = LinearGenomeViewModel
+
 function TrackContainer(props: {
   model: LinearGenomeViewModel
   track: BaseTrackModel
@@ -62,6 +67,19 @@ function TrackContainer(props: {
   const classes = useStyles()
   const { model, track } = props
   const { horizontalScroll, draggingTrackId, moveTrack } = model
+  const { height } = track
+  const view = getContainingView(track) as LGV
+  const trackId = getConf(track, 'trackId')
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (ref.current) {
+      model.trackRefs[trackId] = ref.current
+    }
+    return () => {
+      delete model.trackRefs[trackId]
+    }
+  }, [model.trackRefs, trackId])
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
@@ -73,19 +91,26 @@ function TrackContainer(props: {
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
   const { RenderingComponent, TrackBlurb } = track
-  const view = getContainingView(track)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
 
   return (
     <div className={classes.root}>
-      <Slide direction="right" in={model.showTrackLabels}>
-        <TrackLabel track={track} className={classes.trackLabel} />
-      </Slide>
+      {view.trackLabels !== 'hidden' ? (
+        <TrackLabel
+          track={track}
+          className={clsx(
+            classes.trackLabel,
+            view.trackLabels === 'overlapping'
+              ? classes.trackLabelOverlap
+              : classes.trackLabelInline,
+          )}
+        />
+      ) : null}
 
       <Paper
         variant="outlined"
         className={classes.trackRenderingContainer}
-        style={{ height: track.height }}
+        style={{ height }}
         onScroll={event => {
           const target = event.target as HTMLDivElement
           track.setScrollTop(target.scrollTop)
@@ -98,6 +123,7 @@ function TrackContainer(props: {
         role="presentation"
       >
         <div
+          ref={ref}
           className={classes.renderingComponentContainer}
           style={{ transform: `scaleX(${model.scaleFactor})` }}
         >

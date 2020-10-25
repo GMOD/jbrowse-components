@@ -1,5 +1,5 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { featureSpanPx } from '@jbrowse/core/util'
 import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 

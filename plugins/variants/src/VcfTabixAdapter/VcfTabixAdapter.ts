@@ -1,21 +1,21 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   FileLocation,
   NoAssemblyRegion,
   Region,
-} from '@gmod/jbrowse-core/util/types'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/types'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import { GenericFilehandle } from 'generic-filehandle'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
 import MyConfigSchema from './configSchema'
 
@@ -56,6 +56,24 @@ export default class extends BaseFeatureDataAdapter {
     return this.vcf.getReferenceSequenceNames(opts)
   }
 
+  async getHeader() {
+    const header = await this.vcf.getHeader()
+    return header
+      .split('\n')
+      .filter(line => line.startsWith('##'))
+      .map(line => {
+        const str = line.slice(2)
+        const index = str.indexOf('=')
+        const [tag, data] = [str.slice(0, index), str.slice(index + 1)]
+        return { tag, data }
+      })
+  }
+
+  async getMetadata() {
+    const parser = await this.parser
+    return parser.getMetadata()
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const parser = await this.parser
@@ -94,6 +112,9 @@ export default class extends BaseFeatureDataAdapter {
     regions: Region[],
     opts: BaseOptions = {},
   ) {
+    // TODO: restore commented version below once TSDX supports Rollup v2
+    // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
+    const superGetFeaturesInMultipleRegions = super.getFeaturesInMultipleRegions
     return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
       const bytes = await this.bytesForRegions(regions)
       const stat = await this.filehandle.stat()
@@ -107,7 +128,10 @@ export default class extends BaseFeatureDataAdapter {
           `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
         )
       }
-      super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
+      superGetFeaturesInMultipleRegions
+        .call(this, regions, opts)
+        .subscribe(observer)
+      // super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
     })
   }
 

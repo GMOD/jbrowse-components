@@ -8,8 +8,8 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
-  const { iterMap } = jbrequire('@gmod/jbrowse-core/util')
-  const { Menu } = jbrequire('@gmod/jbrowse-core/ui')
+  const { iterMap } = jbrequire('@jbrowse/core/util')
+  const { Menu } = jbrequire('@jbrowse/core/ui')
 
   const ColumnMenu = observer(
     ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {

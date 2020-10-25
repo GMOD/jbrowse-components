@@ -101,6 +101,30 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
           Reference Sequence (volMyt1)
         </span>
       </label>
+      <button
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryMenu-sequenceConfigId"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
     </div>
   </div>
   <hr
@@ -216,6 +240,30 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                       Track
                     </span>
                   </label>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+                    data-testid="htsTrackEntryMenu-fooC"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
                 </div>
               </div>
               <div
@@ -325,6 +373,30 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                                   Track
                                 </span>
                               </label>
+                              <button
+                                class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+                                data-testid="htsTrackEntryMenu-barC"
+                                tabindex="0"
+                                type="button"
+                              >
+                                <span
+                                  class="MuiIconButton-label"
+                                >
+                                  <svg
+                                    aria-hidden="true"
+                                    class="MuiSvgIcon-root"
+                                    focusable="false"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                                    />
+                                  </svg>
+                                </span>
+                                <span
+                                  class="MuiTouchRipple-root"
+                                />
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -342,6 +414,29 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
   <div
     class="MuiFormGroup-root"
   />
+  <button
+    class="MuiButtonBase-root MuiFab-root makeStyles-fab MuiFab-secondary"
+    tabindex="0"
+    type="button"
+  >
+    <span
+      class="MuiFab-label"
+    >
+      <svg
+        aria-hidden="true"
+        class="MuiSvgIcon-root"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+        />
+      </svg>
+    </span>
+    <span
+      class="MuiTouchRipple-root"
+    />
+  </button>
 </div>
 `;
 
@@ -444,6 +539,30 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
           Reference Sequence (volMyt1)
         </span>
       </label>
+      <button
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryMenu-sequenceConfigId"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
     </div>
   </div>
   <hr
@@ -496,6 +615,30 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
           Track
         </span>
       </label>
+      <button
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryMenu-fooC"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
     </div>
     <div
       class="makeStyles-track"
@@ -541,10 +684,57 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
           Track
         </span>
       </label>
+      <button
+        class="MuiButtonBase-root MuiIconButton-root makeStyles-configureButton MuiIconButton-colorSecondary"
+        data-testid="htsTrackEntryMenu-barC"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiIconButton-label"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
     </div>
   </div>
   <div
     class="MuiFormGroup-root"
   />
+  <button
+    class="MuiButtonBase-root MuiFab-root makeStyles-fab MuiFab-secondary"
+    tabindex="0"
+    type="button"
+  >
+    <span
+      class="MuiFab-label"
+    >
+      <svg
+        aria-hidden="true"
+        class="MuiSvgIcon-root"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+        />
+      </svg>
+    </span>
+    <span
+      class="MuiTouchRipple-root"
+    />
+  </button>
 </div>
 `;

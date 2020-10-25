@@ -1,23 +1,21 @@
 {
-  "name": "@gmod/jbrowse-cli",
+  "name": "@jbrowse/cli",
+  "version": "0.0.1-beta.25",
   "description": "A command line tool for working with JBrowse 2",
-  "version": "0.0.1-beta.23",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "oclif"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": "https://github.com/GMOD/jbrowse-components.git",
+  "author": "JBrowse Team",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "bin": {
     "jbrowse": "./bin/run"
-  },
-  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
-  "dependencies": {
-    "@oclif/command": "^1",
-    "@oclif/config": "^1",
-    "@oclif/plugin-help": "^3",
-    "express": "^4.17.1",
-    "node-fetch": "^2.6.0",
-    "pako": "^1.0.11",
-    "tslib": "^1",
-    "unzipper": "^0.10.11"
-  },
-  "engines": {
-    "node": ">=10.0.0"
   },
   "files": [
     "/bin",
@@ -25,18 +23,8 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/GMOD/jbrowse-components",
-  "keywords": [
-    "oclif"
-  ],
-  "license": "MIT",
-  "main": "lib/index.js",
-  "oclif": {
-    "commands": "./lib/commands",
-    "bin": "jbrowse",
-    "plugins": [
-      "@oclif/plugin-help"
-    ]
+  "engines": {
+    "node": ">=10.0.0"
   },
   "scripts": {
     "build": "cp ../../yarn.lock . && oclif-dev pack && rm yarn.lock",
@@ -45,7 +33,28 @@
     "version": "oclif-dev readme && git add README.md",
     "docs": "oclif-dev readme && prettier --write README.md"
   },
-  "types": "lib/index.d.ts",
+  "dependencies": {
+    "@oclif/command": "^1",
+    "@oclif/config": "^1",
+    "@oclif/plugin-help": "^3",
+    "express": "^4.17.1",
+    "json-parse-better-errors": "^1.0.2",
+    "node-fetch": "^2.6.0",
+    "pako": "^1.0.11",
+    "tslib": "^1",
+    "unzipper": "^0.10.11"
+  },
+  "devDependencies": {
+    "typescript": "^3.0.0"
+  },
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "jbrowse",
+    "plugins": [
+      "@oclif/plugin-help"
+    ],
+    "repositoryPrefix": "<%- repo %>/blob/%40jbrowse%2Fcli%40<%- version %>/products/jbrowse-cli/<%- commandPath %>"
+  },
   "publishConfig": {
     "access": "public"
   }

@@ -1,8 +1,8 @@
-import { FatalErrorDialog } from '@gmod/jbrowse-core/ui'
+import { FatalErrorDialog } from '@jbrowse/core/ui'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import ErrorBoundary from 'react-error-boundary'
-import 'typeface-roboto'
+import 'fontsource-roboto'
 import factoryReset from './factoryReset'
 import Loader from './Loader'
 

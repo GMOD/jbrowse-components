@@ -1,7 +1,7 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AdapterClass as NCListAdapterClass,
   configSchema as ncListAdapterConfigSchema,

@@ -2,6 +2,8 @@ import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown'
 import CropFreeIcon from '@material-ui/icons/CropFree'
 import ArrowDropDown from '@material-ui/icons/ArrowDropDown'
+import ColumnMenuFactory from './ColumnMenu'
+import RowMenuFactory from './RowMenu'
 
 /* eslint-disable react/prop-types */
 export function numToColName(num) {
@@ -35,8 +37,8 @@ export default pluginManager => {
   const Tooltip = jbrequire('@material-ui/core/Tooltip')
   const FormControlLabel = jbrequire('@material-ui/core/FormControlLabel')
 
-  const ColumnMenu = jbrequire(require('./ColumnMenu'))
-  const RowMenu = jbrequire(require('./RowMenu'))
+  const ColumnMenu = jbrequire(ColumnMenuFactory)
+  const RowMenu = jbrequire(RowMenuFactory)
 
   const useStyles = makeStyles(theme => {
     return {
@@ -188,7 +190,6 @@ export default pluginManager => {
                   className={classes.rowSelector}
                   checked={rowModel.isSelected}
                   onClick={labelClick}
-                  size="small"
                 />
               )
             }
@@ -226,15 +227,9 @@ export default pluginManager => {
     if (sortSpec) {
       const { descending } = sortSpec
       return descending ? (
-        <KeyboardArrowUpIcon
-          fontSize="small"
-          className={classes.sortIndicator}
-        />
+        <KeyboardArrowUpIcon className={classes.sortIndicator} />
       ) : (
-        <KeyboardArrowDownIcon
-          fontSize="small"
-          className={classes.sortIndicator}
-        />
+        <KeyboardArrowDownIcon className={classes.sortIndicator} />
       )
     }
     return null
@@ -300,7 +295,6 @@ export default pluginManager => {
                       className={classes.unselectAllButton}
                       onClick={model.unselectAll}
                       disabled={!model.rowSet.selectedCount}
-                      size="small"
                       color="secondary"
                     >
                       <CropFreeIcon className={classes.columnButtonIcon} />

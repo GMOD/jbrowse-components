@@ -1,8 +1,8 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
   modelFactory as alignmentsTrackModelFactory,
@@ -29,10 +29,13 @@ import SNPCoverageRenderer, {
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
 
+import * as MismatchParser from './BamAdapter/MismatchParser'
 import BamAdapterF from './BamAdapter'
 import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import CramAdapterF from './CramAdapter'
 import SNPCoverageAdapterF from './SNPCoverageAdapter'
+
+export { MismatchParser }
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'

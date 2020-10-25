@@ -1,4 +1,4 @@
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import { cleanup, render, waitForElement } from '@testing-library/react'
 import React from 'react'
@@ -65,8 +65,8 @@ describe('HierarchicalTrackSelector widget', () => {
         },
       ],
     })
-    firstView.showTrack(session.tracks[0])
-    firstView.showTrack(session.tracks[1])
+    firstView.showTrack(session.sessionTracks[0].trackId)
+    firstView.showTrack(session.sessionTracks[1].trackId)
     const model = firstView.activateTrackSelector()
 
     const { container, getByTestId } = render(
@@ -120,8 +120,8 @@ describe('HierarchicalTrackSelector widget', () => {
         },
       ],
     })
-    firstView.showTrack(session.tracks[0])
-    firstView.showTrack(session.tracks[1])
+    firstView.showTrack(session.sessionTracks[0].trackId)
+    firstView.showTrack(session.sessionTracks[1].trackId)
     firstView.tracks[0].configuration.category.set(['Foo Category'])
     firstView.tracks[1].configuration.category.set([
       'Foo Category',

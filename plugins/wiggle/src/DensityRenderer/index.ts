@@ -1,9 +1,9 @@
 import {
   readConfObject,
   ConfigurationSchema,
-} from '@gmod/jbrowse-core/configuration'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/configuration'
+import { featureSpanPx } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getScale } from '../util'
 
 import ConfigSchema from '../configSchema'

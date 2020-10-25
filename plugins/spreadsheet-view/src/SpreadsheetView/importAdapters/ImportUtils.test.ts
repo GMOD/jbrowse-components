@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { TextDecoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
 import path from 'path'

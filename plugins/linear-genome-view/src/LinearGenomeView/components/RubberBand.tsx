@@ -1,5 +1,5 @@
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { stringify } from '@gmod/jbrowse-core/util'
+import { Menu } from '@jbrowse/core/ui'
+import { stringify } from '@jbrowse/core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -15,11 +15,8 @@ import { LinearGenomeViewStateModel } from '..'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const background = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      fade(theme.palette.tertiary.main, 0.7)
+    ? fade(theme.palette.tertiary.main, 0.7)
     : fade(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
@@ -36,11 +33,8 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      // @ts-ignore
       color: theme.palette.tertiary
-        ? // prettier-ignore
-          // @ts-ignore
-          theme.palette.tertiary.contrastText
+        ? theme.palette.tertiary.contrastText
         : theme.palette.primary.contrastText,
     },
     popover: {
@@ -247,6 +241,7 @@ function RubberBand({
               horizontal: 'right',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>{stringify(leftBpOffset)}</Typography>
           </Popover>
@@ -266,6 +261,7 @@ function RubberBand({
               horizontal: 'left',
             }}
             keepMounted
+            disableRestoreFocus
           >
             <Typography>{stringify(rightBpOffset)}</Typography>
           </Popover>

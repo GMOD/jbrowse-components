@@ -1,7 +1,8 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
-import * as path from 'path'
-import * as express from 'express'
+import fs, { promises as fsPromises } from 'fs'
+import crypto from 'crypto'
+import path from 'path'
+import express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
 function isValidPort(port: number) {
@@ -10,10 +11,13 @@ function isValidPort(port: number) {
 
 // generate a string of random alphanumeric characters to serve as admin key
 function generateKey() {
-  return Math.random().toString(36).slice(2)
+  return crypto.randomBytes(5).toString('hex')
 }
 
 export default class AdminServer extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Start up a small admin server for JBrowse configuration'
 
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
@@ -26,7 +30,9 @@ export default class AdminServer extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not you are in a JBrowse directory",
@@ -37,8 +43,12 @@ export default class AdminServer extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
 
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     if (!runFlags.skipCheck) {
-      await this.checkLocation(path.dirname(runFlags.target))
+      await this.checkLocation(path.dirname(this.target))
     }
 
     // check if the config file exists, if none exists write default
@@ -52,14 +62,11 @@ export default class AdminServer extends JBrowseCommand {
       tracks: [],
     }
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(runFlags.target)
-      this.debug(`Found existing config file ${runFlags.target}`)
-    } catch (error) {
-      this.debug('No existing config file found, creating default empty config')
-      configContentsJson = JSON.stringify(defaultConfig, null, 4)
-      await this.writeJsonConfig(configContentsJson)
+    if (fs.existsSync(this.target)) {
+      this.debug(`Found existing config file ${this.target}`)
+    } else {
+      this.debug(`Creating config file ${this.target}`)
+      await this.writeJsonFile('./config.json', defaultConfig)
     }
 
     // start server with admin key in URL query string
@@ -72,7 +79,7 @@ export default class AdminServer extends JBrowseCommand {
       }
     }
     // @ts-ignore
-    const app = express.default ? express.default() : express()
+    const app = express()
     app.use(express.static('.'))
 
     // POST route to save config
@@ -85,10 +92,7 @@ export default class AdminServer extends JBrowseCommand {
         if (req.body.adminKey === adminKey) {
           this.debug('Admin key matches')
           try {
-            await fsPromises.writeFile(
-              runFlags.target,
-              JSON.stringify(req.body.config, null, 4),
-            )
+            await this.writeJsonFile(this.target, req.body.config)
             res.send('Config written to disk')
           } catch {
             res.status(500).send('Could not write config file')

@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {

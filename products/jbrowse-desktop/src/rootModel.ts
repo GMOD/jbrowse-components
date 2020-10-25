@@ -1,13 +1,13 @@
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@gmod/jbrowse-core/assemblyManager'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
@@ -53,9 +53,9 @@ export default function RootModel(pluginManager: PluginManager) {
       setDefaultSession() {
         this.setSession({
           ...self.jbrowse.defaultSession,
-          name: `${self.jbrowse.defaultSession.name} ${new Date(
-            Date.now(),
-          ).toISOString()}`,
+          name: `${
+            self.jbrowse.defaultSession.name
+          } ${new Date().toLocaleString()}`,
         })
       },
       renameCurrentSession(sessionName: string) {

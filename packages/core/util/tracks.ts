@@ -68,7 +68,7 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   function makeLocation(location: string): UriLocation | LocalPathLocation {
     if (protocol === 'uri') {
-      return { uri: location }
+      return { uri: location, baseUri: '' }
     }
     if (protocol === 'localPath') {
       return { localPath: location }
@@ -278,7 +278,7 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   if (/\/trackData.jsonz?$/i.test(fileName)) {
     return {
       type: 'NCListAdapter',
-      rootUrlTemplate: fileName,
+      rootUrlTemplate: makeLocation(fileName),
     }
   }
 

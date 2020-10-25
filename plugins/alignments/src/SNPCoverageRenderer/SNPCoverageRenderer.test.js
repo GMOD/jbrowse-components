@@ -1,4 +1,4 @@
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import SNPCoverageRenderer, { configSchema, ReactComponent } from '.'
 
 function SNPCoverageRendererPlugin() {

@@ -1,13 +1,16 @@
 import { types } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 export function generateHierarchy(model, trackConfigurations, collapsed) {
   const hierarchy = { children: [] }
 
   trackConfigurations.forEach(trackConf => {
-    const categories = readConfObject(trackConf, 'category') || []
+    const categories = [...(readConfObject(trackConf, 'category') || [])]
+    if (trackConf.trackId.endsWith('sessionTrack')) {
+      categories.unshift(' Session tracks')
+    }
     let currLevel = hierarchy
     for (let i = 0; i < categories.length; i++) {
       const category = categories[i]
@@ -88,7 +91,9 @@ export default pluginManager =>
       },
 
       connectionTrackConfigurations(connection) {
-        if (!self.view) return []
+        if (!self.view) {
+          return []
+        }
         const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(

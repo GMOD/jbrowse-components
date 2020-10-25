@@ -1,6 +1,6 @@
 import React from 'react'
 import { render } from '@testing-library/react'
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import sizeMe from 'react-sizeme'
 import BreakpointSplitView from './BreakpointSplitView'
 

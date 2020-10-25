@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import AddIcon from '@material-ui/icons/Add'
 import { getSnapshot } from 'mobx-state-tree'
-import { getSession, when } from '@gmod/jbrowse-core/util'
+import { getSession, when } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
@@ -50,7 +50,6 @@ const FormRow = observer(
           }}
           error={Boolean(error)}
           disabled={Boolean(error)}
-          margin="dense"
           className={classes.importFormEntry}
         >
           {assemblyNames.map((name, idx) => (
@@ -105,7 +104,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       <p style={{ textAlign: 'center' }}>Select assemblies for synteny view</p>
-      {[...new Array(numRows)].map((element, index) => (
+      {[...new Array(numRows)].map((_, index) => (
         <FormRow
           key={`row_${index}_${selected[index]}`}
           error={error}

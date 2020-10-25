@@ -1,4 +1,5 @@
 import ClearIcon from '@material-ui/icons/Clear'
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
@@ -7,12 +8,10 @@ export default pluginManager => {
   const React = jbrequire('react')
 
   const { getPropertyType, getEnumerationValues, getSubType } = jbrequire(
-    '@gmod/jbrowse-core/util/mst-reflection',
+    '@jbrowse/core/util/mst-reflection',
   )
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const OPERATIONS = [
     'equals',
@@ -97,7 +96,6 @@ export default pluginManager => {
           value={filterModel.stringToFind}
           onChange={evt => filterModel.setString(evt.target.value)}
           className={classes.textFilterControl}
-          margin="dense"
           InputProps={{
             endAdornment: (
               <InputAdornment

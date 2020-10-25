@@ -1,15 +1,16 @@
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   SessionWithWidgets,
   isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/util'
 import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import HelpIcon from '@material-ui/icons/Help'
 import InfoIcon from '@material-ui/icons/Info'
+import SaveIcon from '@material-ui/icons/Save'
 import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
@@ -97,7 +98,7 @@ export default class extends Plugin {
       pluginManager.rootModel.insertInMenu(
         'File',
         {
-          label: 'Open Session…',
+          label: 'Open session…',
           icon: FolderOpenIcon,
           onClick: (session: SessionWithWidgets) => {
             const widget = session.addWidget('SessionManager', 'sessionManager')
@@ -109,7 +110,24 @@ export default class extends Plugin {
       pluginManager.rootModel.insertInMenu(
         'File',
         {
-          label: 'Duplicate Session',
+          label: 'Save session',
+          icon: SaveIcon,
+          onClick: (session: SessionWithWidgets) => {
+            // @ts-ignore
+            if (session.saveSessionToLocalStorage) {
+              // @ts-ignore
+              session.saveSessionToLocalStorage()
+              // @ts-ignore
+              session.notify(`Saved session "${session.name}"`, 'success')
+            }
+          },
+        },
+        1,
+      )
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Duplicate session',
           icon: FileCopyIcon,
           onClick: (session: AbstractSessionModel) => {
             session.duplicateCurrentSession()

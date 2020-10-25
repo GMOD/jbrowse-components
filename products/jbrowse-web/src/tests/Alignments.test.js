@@ -7,12 +7,13 @@ import {
   waitForElement,
 } from '@testing-library/react'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { setup, readBuffer, getPluginManager } from './util'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 expect.extend({ toMatchImageSnapshot })
@@ -23,7 +24,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('alignments track', () => {
@@ -88,7 +93,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.5, 6000)
+    state.session.views[0].setNewView(0.5, 5200)
 
     // load track
     fireEvent.click(
@@ -115,10 +120,7 @@ describe('alignments track', () => {
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
-    expect(pileupBuf).toMatchImageSnapshot({
-      failureThreshold: 0.2,
-      failureThresholdType: 'percent',
-    })
+    expect(pileupBuf).toMatchImageSnapshot()
   }, 12000)
 
   it('selects a sort, updates object and layout', async () => {
@@ -153,7 +155,10 @@ describe('alignments track', () => {
     const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
-    expect(buf).toMatchImageSnapshot()
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 
   it('test that bam with small max height displays message', async () => {

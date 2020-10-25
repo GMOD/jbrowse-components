@@ -8,11 +8,12 @@ import {
   waitForElement,
 } from '@testing-library/react'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import { setup, readBuffer, getPluginManager } from './util'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 setup()
@@ -22,13 +23,13 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 describe('valid file tests', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-    fetch.mockResponse(readBuffer)
-  })
   it('access about menu', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
@@ -106,24 +107,26 @@ describe('valid file tests', () => {
     jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, getAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findByText('ctgA')
+    await getAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
       jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before / 2)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before / 2)
     })
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
     await wait(() => {
       jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before)
     })
     expect(state.session.views[0].bpPerPx).toBe(before)
-  }, 10000)
+  }, 30000)
 
   it('opens track selector', async () => {
     const pluginManager = getPluginManager()

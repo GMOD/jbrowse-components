@@ -34,7 +34,7 @@ describe('add-assembly', () => {
 
   setup
     .command(['add-assembly', '{}', '--load', 'copy'])
-    .exit(130)
+    .catch('Must provide --name when using custom inline JSON sequence')
     .it('fails if using inline JSON sequence custom with no --name')
 
   setup
@@ -79,37 +79,13 @@ describe('add-assembly', () => {
     .it('fails if trying to add an assembly with a name that already exists')
 
   setup
-    .do(async () => {
-      await fsPromises.unlink('manifest.json')
-    })
-    .command(['add-assembly', 'simple.fasta'])
-    .exit(10)
-    .it('fails if no manifest.json found in cwd')
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
-    })
-    .command(['add-assembly', 'simple.fasta'])
-    .exit(20)
-    .it("fails if it can't parse manifest.json")
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
-    })
-    .command(['add-assembly', 'simple.fasta'])
-    .exit(30)
-    .it('fails if "name" in manifest.json is not "JBrowse"')
-
-  setup
     .command(['add-assembly', 'simple.unusual.extension.xyz', '--load', 'copy'])
     .exit(170)
     .it('fails if it cannot guess the sequence type')
 
   setup
     .command(['add-assembly', 'simple.doesNotExist.fasta', '--load', 'copy'])
-    .exit(40)
+    .catch(/Could not resolve/)
     .it('fails if it cannot find a file')
 
   setup
@@ -125,7 +101,7 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .exit(50)
+    .exit(40)
     .it('fails if using invalid inline JSON')
   setup
     .command([
@@ -862,7 +838,7 @@ describe('add-assembly', () => {
       'add-assembly',
       path.join('..', 'simple.2bit'),
       '--load',
-      'trust',
+      'inPlace',
     ])
 
   setup

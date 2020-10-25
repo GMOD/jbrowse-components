@@ -65,7 +65,7 @@ NewSessionCard.defaultProps = {
 }
 
 const emptySessionSnapshot = {
-  name: `New Session ${new Date(Date.now()).toISOString()}`,
+  name: `New session ${new Date().toLocaleString()}`,
   connections: {},
 }
 
@@ -84,9 +84,7 @@ export function NewLinearGenomeViewSession({ root }) {
   const launchLGVSession = () => {
     const snapshot = {
       ...emptySessionSnapshot,
-      name: `New Linear Genome View Session ${new Date(
-        Date.now(),
-      ).toISOString()}`,
+      name: `New session ${new Date().toLocaleString()}`,
       views: [{ type: 'LinearGenomeView' }],
     }
     root.activateSession(snapshot)
@@ -109,7 +107,7 @@ export function NewSVInspectorSession({ root }) {
   const launchSVSession = () => {
     const snapshot = {
       ...emptySessionSnapshot,
-      name: `New SV Inspector Session ${new Date(Date.now()).toISOString()}`,
+      name: `New session ${new Date().toLocaleString()}`,
       views: [
         {
           type: 'SvInspectorView',

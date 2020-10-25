@@ -1,0 +1,56 @@
+{
+  "name": "@jbrowse/plugin-gff3",
+  "version": "0.0.1-beta.15",
+  "description": "JBrowse 2 gff3.",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/gff3"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "distModule": "dist/plugin-gff3.esm.js",
+  "module": "",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "tsdx watch --verbose --noClean",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/gff3 --passWithNoTests",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js"
+  },
+  "dependencies": {
+    "@gmod/gff": "^1.1.2",
+    "@gmod/tabix": "^1.4.6",
+    "generic-filehandle": "^2.0.0"
+  },
+  "peerDependencies": {
+    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
+    "@material-ui/core": "^4.9.13",
+    "mobx-react": "^6.0.0",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.0.0",
+    "react": "^16.8.0",
+    "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "32e27bccb4eb35ee2b3ba3ab004baf68dfcbf38d"
+}

@@ -1,11 +1,12 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
 } from './HicRenderer'
+import HicAdapterFactory from './HicAdapter'
 
 import {
   configSchemaFactory as hicTrackConfigSchemaFactory,
@@ -20,7 +21,7 @@ export default class HicPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'HicAdapter',
-          ...pluginManager.jbrequire(require('./HicAdapter')),
+          ...pluginManager.jbrequire(HicAdapterFactory),
         }),
     )
     pluginManager.addRendererType(

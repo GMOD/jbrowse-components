@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
@@ -25,6 +25,7 @@ import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
+import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef, useEffect, useState } from 'react'
 import Tree, { selectors } from 'react-virtualized-tree'
@@ -54,6 +55,118 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
+
+const CloseConnectionDlg = observer(props => {
+  const { open, modalInfo, setModalInfo } = props
+  const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo || {}
+  return (
+    <Dialog
+      aria-labelledby="connection-modal-title"
+      aria-describedby="connection-modal-description"
+      open={open}
+    >
+      <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
+      <DialogContent>
+        <>
+          {dereferenceTypeCount ? (
+            <>
+              <DialogContentText>
+                Closing this connection will close:
+              </DialogContentText>
+              <List>
+                {Object.entries(dereferenceTypeCount).map(([key, value]) => (
+                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
+                ))}
+              </List>
+            </>
+          ) : null}
+          <DialogContentText>
+            Are you sure you want to close this connection?
+          </DialogContentText>
+        </>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setModalInfo()
+          }}
+          color="primary"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={
+            modalInfo
+              ? () => {
+                  if (safelyBreakConnection) safelyBreakConnection()
+                  setModalInfo()
+                }
+              : () => {}
+          }
+          color="primary"
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+})
+
+const DeleteConnectionDlg = observer(props => {
+  const { open, modalInfo, session, setModalInfo } = props
+  const { connectionConf, name, dereferenceTypeCount, safelyBreakConnection } =
+    modalInfo || {}
+  return (
+    <Dialog
+      aria-labelledby="connection-modal-title"
+      aria-describedby="connection-modal-description"
+      open={open}
+    >
+      <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
+      <DialogContent>
+        {dereferenceTypeCount ? (
+          <>
+            Closing this connection will close
+            <List>
+              {Object.entries(dereferenceTypeCount).map(([key, value]) => (
+                <ListItem key={key}>{`${value} ${key}`}</ListItem>
+              ))}
+            </List>
+          </>
+        ) : null}
+        <DialogContentText>
+          Are you sure you want to delete this connection?
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            setModalInfo()
+          }}
+          color="primary"
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={
+            modalInfo
+              ? () => {
+                  if (safelyBreakConnection) safelyBreakConnection()
+                  session.deleteConnection(connectionConf)
+                  setModalInfo()
+                }
+              : () => {}
+          }
+          color="primary"
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+})
 
 const SELECT = 3
 const EXPAND = 4
@@ -192,16 +305,26 @@ function HierarchicalTrackSelector({ model }) {
     }
   }
 
-  function breakConnection(connectionConf) {
+  function breakConnection(connectionConf, deleting = false) {
     const name = readConfObject(connectionConf, 'name')
-    const [
-      safelyBreakConnection,
-      dereferenceTypeCount,
-    ] = session.prepareToBreakConnection(connectionConf)
-    if (Object.keys(dereferenceTypeCount).length > 0) {
-      setModalInfo({ safelyBreakConnection, dereferenceTypeCount, name })
-    } else {
-      safelyBreakConnection()
+    const result = session.prepareToBreakConnection(connectionConf)
+    if (result) {
+      const [safelyBreakConnection, dereferenceTypeCount] = result
+      // always popup a warning if deleting or tracks are going to be removed
+      // from view
+      if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
+        setModalInfo({
+          connectionConf,
+          safelyBreakConnection,
+          dereferenceTypeCount,
+          name,
+          deleting,
+        })
+      } else {
+        safelyBreakConnection()
+      }
+    } else if (deleting) {
+      setModalInfo({ name, deleting, connectionConf })
     }
   }
 
@@ -210,9 +333,11 @@ function HierarchicalTrackSelector({ model }) {
   if (!assemblyName) {
     return null
   }
+
   const filterError =
-    model.trackConfigurations(assemblyName) > 0 &&
-    model.trackConfigurations(assemblyName).filter(filter).length === 0
+    model.trackConfigurations(assemblyName, session.tracks) > 0 &&
+    model.trackConfigurations(assemblyName, session.tracks).filter(filter)
+      .length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
   return (
@@ -284,35 +409,62 @@ function HierarchicalTrackSelector({ model }) {
             connectionConf =>
               readConfObject(connectionConf, 'assemblyName') === assemblyName,
           )
-          .map(connectionConf => (
-            <FormControlLabel
-              key={connectionConf.connectionId}
-              control={
-                <Switch
-                  checked={
-                    session.connectionInstances.has(assemblyName) &&
-                    !!session.connectionInstances
-                      .get(assemblyName)
-                      .find(
-                        connection =>
-                          connection.name ===
-                          readConfObject(connectionConf, 'name'),
-                      )
+          .map(connectionConf => {
+            const name = readConfObject(connectionConf, 'name')
+            const id = connectionConf.connectionId
+            return (
+              <FormGroup row key={id}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={
+                        session.connectionInstances.has(assemblyName) &&
+                        !!session.connectionInstances
+                          .get(assemblyName)
+                          .find(connection => connection.name === name)
+                      }
+                      onChange={() => handleConnectionToggle(connectionConf)}
+                    />
                   }
-                  onChange={() => handleConnectionToggle(connectionConf)}
-                  // value="checkedA"
+                  label={name}
                 />
-              }
-              label={readConfObject(connectionConf, 'name')}
-            />
-          ))}
+                <IconButton
+                  data-testid="delete-connection"
+                  onClick={() => {
+                    breakConnection(connectionConf, true)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </FormGroup>
+            )
+          })}
       </FormGroup>
-
-      {session.editConfiguration ? (
-        <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-          <AddIcon />
-        </Fab>
+      {session.connectionInstances.has(assemblyName) ? (
+        <>
+          <Typography variant="h5">Connections</Typography>
+          {session.connectionInstances.get(assemblyName).map(connection => (
+            <Paper
+              key={connection.name}
+              className={classes.connectionsPaper}
+              elevation={8}
+            >
+              <Typography variant="h6">{connection.name}</Typography>
+              <Contents
+                model={model}
+                filterPredicate={filter}
+                connection={connection}
+                assemblyName={assemblyName}
+                top
+              />
+            </Paper>
+          ))}
+        </>
       ) : null}
+
+      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+        <AddIcon />
+      </Fab>
       <Menu
         id="simple-menu"
         anchorEl={anchorEl}
@@ -322,54 +474,18 @@ function HierarchicalTrackSelector({ model }) {
         <MenuItem onClick={addConnection}>Add connection</MenuItem>
         <MenuItem onClick={addTrack}>Add track</MenuItem>
       </Menu>
-      <Dialog
-        aria-labelledby="connection-modal-title"
-        aria-describedby="connection-modal-description"
-        open={Boolean(modalInfo)}
-      >
-        <DialogTitle>
-          Close connection &quot;{modalInfo && modalInfo.name}&quot;
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Closing this connection will close:
-          </DialogContentText>
-          {modalInfo ? (
-            <List>
-              {Object.entries(modalInfo.dereferenceTypeCount).map(
-                ([key, value]) => (
-                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
-                ),
-              )}
-            </List>
-          ) : null}
-          <DialogContentText>Are you sure you want to close?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setModalInfo()
-            }}
-            color="primary"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={
-              modalInfo
-                ? () => {
-                    modalInfo.safelyBreakConnection()
-                    setModalInfo()
-                  }
-                : () => {}
-            }
-            color="primary"
-          >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CloseConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && !modalInfo.deleting}
+        session={session}
+      />
+      <DeleteConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && modalInfo.deleting}
+        session={session}
+      />
     </div>
   )
 }

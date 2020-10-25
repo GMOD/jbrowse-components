@@ -4,11 +4,11 @@ import './workerPolyfill'
 import RpcServer from '@librpc/web'
 import { useStaticRendering } from 'mobx-react'
 
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { remoteAbortRpcHandler } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import { isAbortException } from '@gmod/jbrowse-core/util'
-import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
-import PluginLoader, { PluginDefinition } from '@gmod/jbrowse-core/PluginLoader'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { isAbortException } from '@jbrowse/core/util'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
@@ -25,7 +25,7 @@ let jbPluginManager: PluginManager | undefined
 // waits for a message from the main thread containing our configuration,
 // which must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     // listen for the configuration
     self.onmessage = (event: MessageEvent) => {
       resolve(event.data as WorkerConfiguration)
@@ -78,7 +78,7 @@ function wrapForRpc(
     // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
-      .then(pluginManager =>
+      .then(() =>
         func({
           ...args,
           statusCallback: (message: string) => {

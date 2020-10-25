@@ -63,8 +63,7 @@ export default class PluginLoader {
       parsedUrl.protocol === 'https:'
     ) {
       await this.loadScript(definition.url)
-      const moduleName =
-        definition.name || this.moduleNameFromParsedUrl(parsedUrl)
+      const moduleName = definition.name
       const umdName = `JBrowsePlugin${moduleName}`
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const plugin = (window as any)[umdName] as { default: PluginConstructor }
@@ -87,10 +86,6 @@ export default class PluginLoader {
       // @ts-ignore
       target.JBrowseExports[moduleName] = module
     })
-  }
-
-  moduleNameFromParsedUrl(parsedUrl: url.UrlWithStringQuery): string {
-    return 'fogbat'
   }
 
   async load(): Promise<PluginConstructor[]> {

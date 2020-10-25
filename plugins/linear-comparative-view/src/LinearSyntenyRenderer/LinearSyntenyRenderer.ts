@@ -1,7 +1,5 @@
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-import Base1DView, {
-  Base1DViewModel,
-} from '@gmod/jbrowse-core/util/Base1DViewModel'
+import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 export default class LinearSyntenyRenderer extends ComparativeServerSideRendererType {
   async render(renderProps: {
@@ -50,7 +48,7 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    this.serializeResultsInWorker(results, args)
+    this.serializeResultsInWorker(/* results, args */)
     return results
   }
 }

@@ -1,6 +1,6 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -9,7 +9,6 @@ import Typography from '@material-ui/core/Typography'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
-import SettingsIcon from '@material-ui/icons/Settings'
 
 import clsx from 'clsx'
 import { observer } from 'mobx-react'
@@ -48,20 +47,18 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type LGV = Instance<LinearGenomeViewStateModel>
+type BaseTrack = Instance<BaseTrackStateModel>
+
 const TrackLabel = React.forwardRef(
-  (
-    props: {
-      track: Instance<BaseTrackStateModel>
-      className?: string
-    },
-    ref,
-  ) => {
+  (props: { track: BaseTrack; className?: string }, ref) => {
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
-    const view = (getContainingView(track) as unknown) as Instance<
-      LinearGenomeViewStateModel
-    >
+    const view = getContainingView(track) as LGV
+    const session = getSession(track)
+    const trackConf = track.configuration
+    const trackId = getConf(track, 'trackId')
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -69,11 +66,6 @@ const TrackLabel = React.forwardRef(
 
     const handleClose = () => {
       setAnchorEl(null)
-    }
-
-    const onConfigureClick = () => {
-      track.activateConfigurationUI()
-      handleClose()
     }
 
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
@@ -92,30 +84,19 @@ const TrackLabel = React.forwardRef(
       view.setDraggingTrackId(undefined)
     }
 
-    const session = getSession(view)
     let trackName = getConf(track, 'name')
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       trackName = 'Reference Sequence'
       session.assemblies.forEach(assembly => {
-        if (assembly.sequence === track.configuration)
+        if (assembly.sequence === trackConf) {
           trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
+        }
       })
     }
 
     function handleMenuItemClick(_: unknown, callback: Function) {
       callback()
       handleClose()
-    }
-
-    const trackMenuItems: MenuItem[] = track.canConfigure
-      ? [{ label: 'Settings', onClick: onConfigureClick, icon: SettingsIcon }]
-      : []
-
-    if (track.trackMenuItems.length) {
-      if (trackMenuItems.length) {
-        trackMenuItems.push({ type: 'divider' })
-      }
-      trackMenuItems.push(...track.trackMenuItems)
     }
 
     return (
@@ -126,17 +107,17 @@ const TrackLabel = React.forwardRef(
             className={classes.dragHandle}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
+            data-testid={`dragHandle-${view.id}-${trackId}`}
           >
-            <DragIcon fontSize="small" className={classes.dragHandleIcon} />
+            <DragIcon className={classes.dragHandleIcon} />
           </span>
           <IconButton
-            onClick={() => view.hideTrack(track.configuration)}
+            onClick={() => view.hideTrack(trackId)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
           >
-            <CloseIcon fontSize="small" />
+            <CloseIcon />
           </IconButton>
           <Typography
             variant="body1"
@@ -152,9 +133,9 @@ const TrackLabel = React.forwardRef(
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
-            disabled={!trackMenuItems.length}
+            disabled={!track.trackMenuItems.length}
           >
-            <MoreVertIcon fontSize="small" />
+            <MoreVertIcon />
           </IconButton>
         </Paper>
         <Menu
@@ -162,7 +143,12 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
           onClose={handleClose}
-          menuItems={trackMenuItems}
+          menuItems={[
+            ...(session.getTrackActionMenuItems
+              ? session.getTrackActionMenuItems(trackConf)
+              : []),
+            ...track.trackMenuItems,
+          ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
         />
       </>
     )
