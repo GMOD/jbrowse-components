@@ -19,7 +19,7 @@ const testConfig = path.join(
   'test_config.json',
 )
 
-async function initctx(ctx: any) {
+async function initctx(ctx: { dir: string }) {
   await fsPromises.copyFile(
     testConfig,
     path.join(ctx.dir, path.basename(testConfig)),
@@ -30,7 +30,7 @@ async function initctx(ctx: any) {
     path.join(ctx.dir, 'config.json'),
   )
 }
-async function init2bit(ctx: any) {
+async function init2bit(ctx: { dir: string }) {
   const simple2bit = path.join(
     __dirname,
     '..',
