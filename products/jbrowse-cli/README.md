@@ -230,6 +230,8 @@ OPTIONS
   --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                         directory
 
+  --subDir=subDir                       when using --load a file, output to a subdirectory of the target dir
+
   --target=target                       path to config file in JB2 installation to write out to.
 
   --trackId=trackId                     trackId for the track, by default inferred from filename, must be unique
