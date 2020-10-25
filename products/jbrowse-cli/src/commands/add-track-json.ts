@@ -1,6 +1,5 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import path from 'path'
 import JBrowseCommand, { Config } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {

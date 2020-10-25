@@ -2,7 +2,6 @@
 import { flags } from '@oclif/command'
 import fs, { promises as fsPromises } from 'fs'
 import path from 'path'
-import fetch from 'node-fetch'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 

@@ -1,7 +1,6 @@
 import { flags } from '@oclif/command'
 import fs, { promises as fsPromises } from 'fs'
 import crypto from 'crypto'
-import path from 'path'
 import express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
