@@ -47,10 +47,6 @@ export default class AdminServer extends JBrowseCommand {
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    if (!runFlags.skipCheck) {
-      await this.checkLocation(path.dirname(this.target))
-    }
-
     // check if the config file exists, if none exists write default
     const defaultConfig: Config = {
       assemblies: [],

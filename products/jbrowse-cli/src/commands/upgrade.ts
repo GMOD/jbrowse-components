@@ -61,9 +61,6 @@ export default class Upgrade extends JBrowseCommand {
       this.exit()
     }
     this.debug(`Want to upgrade at: ${argsPath}`)
-
-    await this.checkLocation(argsPath)
-
     const locationUrl =
       url || (tag ? await this.getTag(tag) : await this.getLatest())
 

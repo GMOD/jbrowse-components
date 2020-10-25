@@ -48,8 +48,6 @@ export default class AddTrackJson extends JBrowseCommand {
 
     this.debug(`Sequence location is: ${inputtedTrack}`)
     const { update } = runFlags
-    await this.checkLocation(path.dirname(this.target))
-
     const config: Config = await this.readJsonFile(this.target)
     this.debug(`Found existing config file ${this.target}`)
 

@@ -115,26 +115,27 @@ export default class AddTrack extends JBrowseCommand {
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
 
-    const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
-
     const { track: argsTrack } = runArgs
     const {
       config,
       skipCheck,
       force,
+      overwrite,
       category,
       description,
       load,
       subDir,
+      target,
+      out,
     } = runFlags
+
+    const output = target || out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     let { type, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
-    if (!(skipCheck || force)) {
-      await this.checkLocation(configDirectory)
-    }
 
     if (subDir) {
       const dir = path.join(configDirectory, subDir)
@@ -142,16 +143,13 @@ export default class AddTrack extends JBrowseCommand {
         fs.mkdirSync(dir)
       }
     }
-    // const { location, protocol } = await this.resolveFileLocationWithProtocol(
-    //   argsTrack,
-    //   load === 'inPlace',
-    //   subDir,
-    //   !(skipCheck || force),
-    // )
     const location = argsTrack
     const protocol = argsTrack.startsWith('http') ? 'uri' : 'localPath'
 
-    const adapter = this.guessAdapter(path.join(subDir, path.basename(location)), protocol)
+    const adapter = this.guessAdapter(
+      path.join(subDir, path.basename(location)),
+      protocol,
+    )
     if (adapter.type === 'UNKNOWN') {
       this.error('Track type is not recognized', { exit: 120 })
     }
@@ -257,7 +255,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (runFlags.force || runFlags.overwrite) {
+      if (force || overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else {
