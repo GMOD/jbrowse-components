@@ -382,7 +382,7 @@ function HierarchicalTrackSelector({ model }) {
           extensions={{
             updateTypeHandlers: {
               [SELECT]: (n, updatedNode) => {
-                model.view.toggleTrack(updatedNode.conf)
+                model.view.toggleTrack(updatedNode.conf.trackId)
                 return n
               },
               [EXPAND]: (n, updatedNode) => {
