@@ -28,10 +28,6 @@ interface LocalPathLocation {
   localPath: string
 }
 
-function basename(path: string) {
-  return path.startsWith('http') ? path : path.basename(path)
-}
-
 export default class AddTrack extends JBrowseCommand {
   // @ts-ignore
   target: string
@@ -145,6 +141,12 @@ export default class AddTrack extends JBrowseCommand {
     let { type, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
+    if (!argsTrack) {
+      this.error(
+        'No track provided. Example usage: jbrowse add-track yourfile.bam',
+        { exit: 120 },
+      )
+    }
 
     if (subDir) {
       const dir = path.join(configDirectory, subDir)
@@ -154,9 +156,25 @@ export default class AddTrack extends JBrowseCommand {
     }
     const location = argsTrack
     const adapter = this.guessAdapter(
-      path.join(subDir, basename(location)),
-      protocol,
+      location.startsWith('http')
+        ? location
+        : path.join(subDir, path.basename(location)),
+      protocol as 'uri' | 'localPath',
     )
+
+    if (location.startsWith('http') && load) {
+      this.error(
+        'The --load flag is used for local files only, but a URL was provided to add-track',
+        { exit: 100 },
+      )
+    } else if (!location.startsWith('http') && !load) {
+      this.error(
+        `The --load flag should be used if a local file is used, example --load
+        copy to copy the file into the config directory. Options for load are
+        copy/move/symlink/inPlace (inPlace for no file operations)`,
+        { exit: 110 },
+      )
+    }
     if (adapter.type === 'UNKNOWN') {
       this.error('Track type is not recognized', { exit: 120 })
     }
@@ -761,7 +779,6 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    console.log({ fileName })
     if (/\.paf/i.test(fileName)) {
       return {
         type: 'PafAdapter',

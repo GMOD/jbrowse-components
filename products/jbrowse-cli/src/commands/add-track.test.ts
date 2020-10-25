@@ -21,17 +21,14 @@ const testConfig = path.join(
 
 describe('add-track', () => {
   setup
-    .command(['add-track', '{}'])
-    .exit(180)
-    .it('fails if no data directory is specified')
+    .command(['add-track'])
+    .exit(2)
+    .it('fails if no track is specified')
   setup
     .command(['add-track', simpleBam])
     .exit(110)
-    .it('fails if load flag isnt passed')
+    .it('fails if load flag isnt passed in for a localFile')
   setup
-    .nock('https://mysite.com', site =>
-      site.head('/data/simple.bam').reply(200),
-    )
     .command([
       'add-track',
       'https://mysite.com/data/simple.bam',
@@ -198,9 +195,6 @@ describe('add-track', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
-    .nock('https://mysite.com', site =>
-      site.head('/data/simple.bam').replyWithFile(200, simpleBam),
-    )
     .command(['add-track', 'https://mysite.com/data/simple.bam'])
     .it('adds a track from a url', async ctx => {
       const contents = await fsPromises.readFile(
