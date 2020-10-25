@@ -154,19 +154,19 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
     const location = argsTrack
+
+    const isUrl = location.match(/^https?:\/\//)
     const adapter = this.guessAdapter(
-      location.startsWith('http')
-        ? location
-        : path.join(subDir, path.basename(location)),
+      isUrl ? location : path.join(subDir, path.basename(location)),
       protocol as 'uri' | 'localPath',
     )
 
-    if (location.startsWith('http') && load) {
+    if (isUrl && load) {
       this.error(
-        'The --load flag is used for local files only, but a URL was provided to add-track',
+        'The --load flag is used for local files only, but a URL was provided',
         { exit: 100 },
       )
-    } else if (!location.startsWith('http') && !load) {
+    } else if (!isUrl && !load) {
       this.error(
         `The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are

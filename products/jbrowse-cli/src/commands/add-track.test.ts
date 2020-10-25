@@ -20,10 +20,7 @@ const testConfig = path.join(
 )
 
 describe('add-track', () => {
-  setup
-    .command(['add-track'])
-    .exit(2)
-    .it('fails if no track is specified')
+  setup.command(['add-track']).exit(2).it('fails if no track is specified')
   setup
     .command(['add-track', simpleBam])
     .exit(110)
