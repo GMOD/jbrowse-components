@@ -19,6 +19,32 @@ const testConfig = path.join(
   'test_config.json',
 )
 
+async function initctx(ctx: any) {
+  await fsPromises.copyFile(
+    testConfig,
+    path.join(ctx.dir, path.basename(testConfig)),
+  )
+
+  await fsPromises.rename(
+    path.join(ctx.dir, path.basename(testConfig)),
+    path.join(ctx.dir, 'config.json'),
+  )
+}
+async function init2bit(ctx: any) {
+  const simple2bit = path.join(
+    __dirname,
+    '..',
+    '..',
+    'test',
+    'data',
+    'simple.2bit',
+  )
+  await fsPromises.copyFile(
+    simple2bit,
+    path.join(ctx.dir, path.basename(simple2bit)),
+  )
+}
+
 describe('add-track', () => {
   setup.command(['add-track']).exit(2).it('fails if no track is specified')
   setup
@@ -36,17 +62,7 @@ describe('add-track', () => {
     .it('fails if URL with load flag is passed')
 
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
     .command(['add-track', simpleBam, '--load', 'copy'])
     .exit(160)
@@ -56,17 +72,9 @@ describe('add-track', () => {
     .catch(/no such file or directory/)
     .it('Cannot add a track if there is no config file')
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-      await fsPromises.writeFile(
+    .do(initctx)
+    .do(ctx => {
+      return fsPromises.writeFile(
         path.join(ctx.dir, 'config.json'),
         '{"assemblies":[]}',
       )
@@ -76,17 +84,7 @@ describe('add-track', () => {
     .it('fails if it cannot assume the assemblyname')
 
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
     .it('adds a track', async ctx => {
       const contents = await fsPromises.readFile(
@@ -119,18 +117,88 @@ describe('add-track', () => {
         },
       ])
     })
-  setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
 
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
+  setup
+    .do(initctx)
+    .command(['add-track', simpleBam, '--load', 'copy', '--subDir', 'bam'])
+    .it('adds a track with subDir', async ctx => {
+      const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
       )
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'bam/simple.bam',
+            },
+            index: {
+              location: {
+                uri: 'bam/simple.bam.bai',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+            },
+          },
+        },
+      ])
     })
+
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--protocol',
+      'localPath',
+      '--subDir',
+      'bam',
+    ])
+    .it('adds a track with subDir', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              localPath: 'bam/simple.bam',
+            },
+            index: {
+              location: {
+                localPath: 'bam/simple.bam.bai',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
     .command([
       'add-track',
       simpleBam,
@@ -181,17 +249,7 @@ describe('add-track', () => {
     })
 
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-    })
+    .do(initctx)
     .command(['add-track', 'https://mysite.com/data/simple.bam'])
     .it('adds a track from a url', async ctx => {
       const contents = await fsPromises.readFile(
@@ -228,29 +286,8 @@ describe('add-track', () => {
   // fails when there is more than one assembly and none is specified on the
   // command line
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-      const simple2bit = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.2bit',
-      )
-      await fsPromises.copyFile(
-        simple2bit,
-        path.join(ctx.dir, path.basename(simple2bit)),
-      )
-    })
+    .do(initctx)
+    .do(init2bit)
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .command(['add-track', simpleBam, '--load', 'copy'])
     .exit(2)
@@ -259,29 +296,8 @@ describe('add-track', () => {
   // fails when there is more than one assembly and none is specified on the
   // command line
   setup
-    .do(async ctx => {
-      await fsPromises.copyFile(
-        testConfig,
-        path.join(ctx.dir, path.basename(testConfig)),
-      )
-
-      await fsPromises.rename(
-        path.join(ctx.dir, path.basename(testConfig)),
-        path.join(ctx.dir, 'config.json'),
-      )
-      const simple2bit = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.2bit',
-      )
-      await fsPromises.copyFile(
-        simple2bit,
-        path.join(ctx.dir, path.basename(simple2bit)),
-      )
-    })
+    .do(initctx)
+    .do(init2bit)
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .command([
       'add-track',
