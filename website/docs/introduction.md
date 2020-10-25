@@ -21,5 +21,5 @@ We also keep a log of our previous training classes
 
 ### Contact information
 
-Feel free to [contact us](contact) if you have questions, issues, suggestions,
+Feel free to [contact us](/contact) if you have questions, issues, suggestions,
 improvements, or feedback. Enjoy!
