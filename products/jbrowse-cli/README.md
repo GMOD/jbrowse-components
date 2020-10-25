@@ -227,6 +227,8 @@ OPTIONS
 
   --overwrite                           Overwrites existing track if it shares the same trackId
 
+  --protocol=protocol                   [default: uri] Force protocol to a specific value
+
   --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                         directory
 

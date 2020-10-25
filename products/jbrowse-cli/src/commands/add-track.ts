@@ -28,6 +28,10 @@ interface LocalPathLocation {
   localPath: string
 }
 
+function basename(path: string) {
+  return path.startsWith('http') ? path : path.basename(path)
+}
+
 export default class AddTrack extends JBrowseCommand {
   // @ts-ignore
   target: string
@@ -110,6 +114,10 @@ export default class AddTrack extends JBrowseCommand {
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
+    protocol: flags.string({
+      description: 'Force protocol to a specific value',
+      default: 'uri',
+    }),
   }
 
   async run() {
@@ -126,6 +134,7 @@ export default class AddTrack extends JBrowseCommand {
       load,
       subDir,
       target,
+      protocol,
       out,
     } = runFlags
 
@@ -144,10 +153,8 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
     const location = argsTrack
-    const protocol = argsTrack.startsWith('http') ? 'uri' : 'localPath'
-
     const adapter = this.guessAdapter(
-      path.join(subDir, path.basename(location)),
+      path.join(subDir, basename(location)),
       protocol,
     )
     if (adapter.type === 'UNKNOWN') {
@@ -330,83 +337,6 @@ export default class AddTrack extends JBrowseCommand {
       } ${this.target}`,
     )
   }
-
-  //   async resolveFileLocationWithProtocol(
-  //     location: string,
-  //     inPlace: boolean,
-  //     subDir = '',
-  //     check = true,
-  //   ) {
-  //     let locationUrl: URL | undefined
-  //     let locationPath: string | undefined
-  //     let locationObj: {
-  //       location: string
-  //       protocol: 'uri' | 'localPath'
-  //       local: boolean
-  //     }
-  //     try {
-  //       locationUrl = new URL(location)
-  //     } catch (error) {
-  //       // ignore
-  //     }
-  //     if (locationUrl) {
-  //       let response
-  //       try {
-  //         if (check) {
-  //           response = await fetch(locationUrl, { method: 'HEAD' })
-  //         }
-  //         if (!response || response.ok) {
-  //           locationObj = {
-  //             location: locationUrl.href,
-  //             protocol: 'uri',
-  //             local: false,
-  //           }
-  //           return locationObj
-  //         }
-  //       } catch (error) {
-  //         // ignore
-  //       }
-  //     }
-  //     try {
-  //       locationPath = await fsPromises.realpath(location)
-  //     } catch (e) {
-  //       // ignore
-  //     }
-  //     if (locationPath) {
-  //       // if the inPlace argument ends up being upwards from the directory from
-  //       // the target directory, output a warning
-  //       if (
-  //         check &&
-  //         inPlace &&
-  //         path.relative(this.target, locationPath).startsWith('..')
-  //       ) {
-  //         this.warn(
-  //           `The argument "${locationPath}" is not not in the same directory as
-  //           "${this.target}". We will trust this since --load inPlace was used,
-  //           but please check that this is at the least inside a web-accessible
-  //           server directory (e.g. absolute locations on the filesystem should
-  //           not be used with inPlace, instead a --load copy or something should
-  //           be used to copy the filesystem location to where the config is). Use
-  //           --skipCheck to silence this warning.`,
-  //         )
-  //       }
-
-  //       // if using inPlace, output *locationPath* (the original argument)
-  //       // directly, else output subDir+the basename(filepath) because that is
-  //       // where the file(s) will later be copied into the target directory
-  //       locationObj = {
-  //         location: inPlace
-  //           ? locationPath
-  //           : path.join(subDir, path.basename(locationPath)),
-  //         protocol: 'uri',
-  //         local: true,
-  //       }
-  //       return locationObj
-  //     }
-  //     return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-  //       exit: 180,
-  //     })
-  //   }
 
   guessFileNames(fileName: string) {
     if (/\.bam$/i.test(fileName)) {
