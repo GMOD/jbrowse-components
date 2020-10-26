@@ -28,14 +28,15 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useRef, useEffect, useState } from 'react'
-import Tree, { selectors } from 'react-virtualized-tree'
+import { FixedSizeTree } from 'react-vtree'
 
-const { getNodeRenderOptions, updateNode } = selectors
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 const useStyles = makeStyles(theme => ({
   root: {
     textAlign: 'left',
     padding: theme.spacing(1),
+    display: 'block',
   },
   searchBox: {
     marginBottom: theme.spacing(2),
@@ -225,31 +226,130 @@ const Expandable = ({ onChange, node, children, index }) => {
   )
 }
 
+// Tree component can work with any possible tree structure because it uses an
+// iterator function that the user provides. Structure, approach, and iterator
+// function below is just one of many possible variants.
+// const tree = {
+//   name: 'Root #1',
+//   id: 'root-1',
+//   children: [
+//     {
+//       children: [
+//         { id: 'child-2', name: 'Child #2' },
+//         { id: 'child-3', name: 'Child #3' },
+//       ],
+//       id: 'child-1',
+//       name: 'Child #1',
+//     },
+//     {
+//       children: [{ id: 'child-5', name: 'Child #5' }],
+//       id: 'child-4',
+//       name: 'Child #4',
+//     },
+//   ],
+// }
+
+function makeTreeWalker(nodes) {
+  console.log(nodes)
+  return function* treeWalker(refresh) {
+    const stack = []
+
+    stack.push({
+      nestingLevel: 0,
+      node: nodes,
+    })
+
+    while (stack.length !== 0) {
+      const { node, nestingLevel } = stack.pop()
+      const id = node.name
+
+      const isOpened = yield refresh
+        ? {
+            id,
+            isLeaf: node.children.length === 0,
+            isOpenByDefault: true,
+            name: node.name,
+            nestingLevel,
+          }
+        : id
+
+      if (node.children.length !== 0 && isOpened) {
+        for (let i = node.children.length - 1; i >= 0; i--) {
+          stack.push({
+            nestingLevel: nestingLevel + 1,
+            node: node.children[i],
+          })
+        }
+      }
+    }
+  }
+}
+
+// Node component receives current node height as a prop
+const Node = ({
+  data: { isLeaf, nestingLevel, name },
+  isOpen,
+  style,
+  toggle,
+}) => {
+  return (
+    <div style={style}>
+      <div
+        style={{
+          display: 'flex',
+          marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
+        }}
+      >
+        {!isLeaf && (
+          <div onClick={toggle} role="presentation">
+            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+          </div>
+        )}
+        <div>{name}</div>
+      </div>
+    </div>
+  )
+}
+
+const Example = ({ tree }) => {
+  console.log({ tree })
+  return (
+    <FixedSizeTree
+      treeWalker={makeTreeWalker({ name: 'Tracks', children: tree })}
+      itemSize={20}
+      height={1000}
+      width="100%"
+    >
+      {Node}
+    </FixedSizeTree>
+  )
+}
+
 function HierarchicalTrackSelector({ model }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
-  const [height, setHeight] = useState(0)
-  const ref = useRef(null)
+  // const [height, setHeight] = useState(0)
+  // const ref = useRef(null)
   const classes = useStyles()
   const session = getSession(model)
-  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
-  useEffect(() => {
-    if (ref.current) {
-      const h = windowHeight - ref.current.getBoundingClientRect().top
-      // little fudge factor to avoid an outer scroll (only the virtualized
-      // container gets a scroll)
-      setHeight(h - 10)
-    }
-  }, [windowHeight])
+  // const [windowHeight, setWindowHeight] = useState(window.innerHeight)
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     const h = windowHeight - ref.current.getBoundingClientRect().top
+  //     // little fudge factor to avoid an outer scroll (only the virtualized
+  //     // container gets a scroll)
+  //     setHeight(h - 10)
+  //   }
+  // }, [windowHeight])
 
-  useEffect(() => {
-    const watcher = () => setWindowHeight(window.innerHeight)
-    window.addEventListener('resize', watcher)
-    return () => {
-      window.removeEventListener('resize', watcher)
-    }
-  }, [])
+  //   useEffect(() => {
+  //     const watcher = () => setWindowHeight(window.innerHeight)
+  //     window.addEventListener('resize', watcher)
+  //     return () => {
+  //       window.removeEventListener('resize', watcher)
+  //     }
+  //   }, [])
 
   function handleTabChange(event, newIdx) {
     setAssemblyIdx(newIdx)
@@ -340,154 +440,129 @@ function HierarchicalTrackSelector({ model }) {
       .length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-  return (
-    <div
-      key={model.view.id}
-      className={classes.root}
-      data-testid="hierarchical_track_selector"
-    >
-      {assemblyNames.length > 1 ? (
-        <Tabs
-          className={classes.tabs}
-          value={assemblyIdx}
-          onChange={handleTabChange}
-        >
-          {assemblyNames.map(name => (
-            <Tab key={name} label={name} />
-          ))}
-        </Tabs>
-      ) : null}
-      <TextField
-        className={classes.searchBox}
-        label="Filter Tracks"
-        value={model.filterText}
-        error={filterError}
-        helperText={filterError ? 'No matches' : ''}
-        onChange={handleInputChange}
-        fullWidth
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton color="secondary" onClick={model.clearFilterText}>
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-      <div ref={ref} style={{ height }}>
-        <Tree
-          nodes={nodes}
-          onChange={() => {}}
-          extensions={{
-            updateTypeHandlers: {
-              [SELECT]: (n, updatedNode) => {
-                model.view.toggleTrack(updatedNode.conf.trackId)
-                return n
-              },
-              [EXPAND]: (n, updatedNode) => {
-                model.toggleCategory(updatedNode.id, updatedNode.state.expanded)
-                return n
-              },
-            },
-          }}
-        >
-          {({ style, node, ...rest }) => {
-            return (
-              <span style={style}>
-                <Expandable node={node} {...rest}>
-                  {node.name}
-                </Expandable>
-              </span>
-            )
-          }}
-        </Tree>
-      </div>
-      <FormGroup>
-        {session.connections
-          .filter(
-            connectionConf =>
-              readConfObject(connectionConf, 'assemblyName') === assemblyName,
-          )
-          .map(connectionConf => {
-            const name = readConfObject(connectionConf, 'name')
-            const id = connectionConf.connectionId
-            return (
-              <FormGroup row key={id}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        session.connectionInstances.has(assemblyName) &&
-                        !!session.connectionInstances
-                          .get(assemblyName)
-                          .find(connection => connection.name === name)
-                      }
-                      onChange={() => handleConnectionToggle(connectionConf)}
-                    />
-                  }
-                  label={name}
-                />
-                <IconButton
-                  data-testid="delete-connection"
-                  onClick={() => {
-                    breakConnection(connectionConf, true)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </FormGroup>
-            )
-          })}
-      </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
-        <>
-          <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.get(assemblyName).map(connection => (
-            <Paper
-              key={connection.name}
-              className={classes.connectionsPaper}
-              elevation={8}
-            >
-              <Typography variant="h6">{connection.name}</Typography>
-              <Contents
-                model={model}
-                filterPredicate={filter}
-                connection={connection}
-                assemblyName={assemblyName}
-                top
-              />
-            </Paper>
-          ))}
-        </>
-      ) : null}
+  console.log('here')
+  return <Example tree={nodes} />
+  // <div
+  //   key={model.view.id}
+  //   className={classes.root}
+  //   data-testid="hierarchical_track_selector"
+  // >
+  //   {assemblyNames.length > 1 ? (
+  //     <Tabs
+  //       className={classes.tabs}
+  //       value={assemblyIdx}
+  //       onChange={handleTabChange}
+  //     >
+  //       {assemblyNames.map(name => (
+  //         <Tab key={name} label={name} />
+  //       ))}
+  //     </Tabs>
+  //   ) : null}
+  //   <TextField
+  //     className={classes.searchBox}
+  //     label="Filter Tracks"
+  //     value={model.filterText}
+  //     error={filterError}
+  //     helperText={filterError ? 'No matches' : ''}
+  //     onChange={handleInputChange}
+  //     fullWidth
+  //     InputProps={{
+  //       endAdornment: (
+  //         <InputAdornment position="end">
+  //           <IconButton color="secondary" onClick={model.clearFilterText}>
+  //             <ClearIcon />
+  //           </IconButton>
+  //         </InputAdornment>
+  //       ),
+  //     }}
+  //   />
+  //   <Example />
 
-      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <AddIcon />
-      </Fab>
-      <Menu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleFabClose}
-      >
-        <MenuItem onClick={addConnection}>Add connection</MenuItem>
-        <MenuItem onClick={addTrack}>Add track</MenuItem>
-      </Menu>
-      <CloseConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && !modalInfo.deleting}
-        session={session}
-      />
-      <DeleteConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && modalInfo.deleting}
-        session={session}
-      />
-    </div>
-  )
+  //   <FormGroup>
+  //     {session.connections
+  //       .filter(
+  //         connectionConf =>
+  //           readConfObject(connectionConf, 'assemblyName') === assemblyName,
+  //       )
+  //       .map(connectionConf => {
+  //         const name = readConfObject(connectionConf, 'name')
+  //         const id = connectionConf.connectionId
+  //         return (
+  //           <FormGroup row key={id}>
+  //             <FormControlLabel
+  //               control={
+  //                 <Switch
+  //                   checked={
+  //                     session.connectionInstances.has(assemblyName) &&
+  //                     !!session.connectionInstances
+  //                       .get(assemblyName)
+  //                       .find(connection => connection.name === name)
+  //                   }
+  //                   onChange={() => handleConnectionToggle(connectionConf)}
+  //                 />
+  //               }
+  //               label={name}
+  //             />
+  //             <IconButton
+  //               data-testid="delete-connection"
+  //               onClick={() => {
+  //                 breakConnection(connectionConf, true)
+  //               }}
+  //             >
+  //               <CloseIcon />
+  //             </IconButton>
+  //           </FormGroup>
+  //         )
+  //       })}
+  //   </FormGroup>
+  //   {session.connectionInstances.has(assemblyName) ? (
+  //     <>
+  //       <Typography variant="h5">Connections</Typography>
+  //       {session.connectionInstances.get(assemblyName).map(connection => (
+  //         <Paper
+  //           key={connection.name}
+  //           className={classes.connectionsPaper}
+  //           elevation={8}
+  //         >
+  //           <Typography variant="h6">{connection.name}</Typography>
+  //           <Contents
+  //             model={model}
+  //             filterPredicate={filter}
+  //             connection={connection}
+  //             assemblyName={assemblyName}
+  //             top
+  //           />
+  //         </Paper>
+  //       ))}
+  //     </>
+  //   ) : null}
+
+  //   <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+  //     <AddIcon />
+  //   </Fab>
+  //   <Menu
+  //     id="simple-menu"
+  //     anchorEl={anchorEl}
+  //     open={Boolean(anchorEl)}
+  //     onClose={handleFabClose}
+  //   >
+  //     <MenuItem onClick={addConnection}>Add connection</MenuItem>
+  //     <MenuItem onClick={addTrack}>Add track</MenuItem>
+  //   </Menu>
+  //   <CloseConnectionDlg
+  //     modalInfo={modalInfo}
+  //     setModalInfo={setModalInfo}
+  //     open={Boolean(modalInfo) && !modalInfo.deleting}
+  //     session={session}
+  //   />
+  //   <DeleteConnectionDlg
+  //     modalInfo={modalInfo}
+  //     setModalInfo={setModalInfo}
+  //     open={Boolean(modalInfo) && modalInfo.deleting}
+  //     session={session}
+  //   />
+  // </div>
+  // )
 }
 
 HierarchicalTrackSelector.propTypes = {
