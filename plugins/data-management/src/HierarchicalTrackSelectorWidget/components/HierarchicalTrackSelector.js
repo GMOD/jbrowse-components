@@ -273,6 +273,8 @@ function makeTreeWalker(nodes, onChange) {
           }
         : id
 
+      console.log({ isOpened })
+
       if (node.children.length !== 0 && isOpened) {
         for (let i = node.children.length - 1; i >= 0; i--) {
           stack.push({
@@ -302,12 +304,10 @@ const Node = ({
         }}
       >
         {!isLeaf ? (
-          <>
-            <div onClick={toggle} role="presentation">
-              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-            </div>
-            <div>{name}</div>
-          </>
+          <div onClick={toggle} role="presentation">
+            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+            {name}
+          </div>
         ) : (
           <>
             <input
