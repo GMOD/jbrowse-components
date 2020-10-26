@@ -1,6 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { useDebounce } from '@jbrowse/core/util'
-import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
+import {
+  App,
+  StartScreen,
+  createJBrowseTheme,
+  AssemblyManager,
+} from '@jbrowse/core/ui'
 
 import CssBaseline from '@material-ui/core/CssBaseline'
 
@@ -71,7 +76,16 @@ const JBrowse = observer(({ pluginManager }) => {
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
       {rootModel.session ? (
-        <App session={rootModel.session} />
+        <>
+          <App session={rootModel.session} />
+          <AssemblyManager
+            rootModel={rootModel}
+            open={rootModel.isEditing}
+            onClose={() => {
+              rootModel.setEditing(false)
+            }}
+          />
+        </>
       ) : (
         <StartScreen
           root={rootModel}
