@@ -122,20 +122,24 @@ export default function RootModel(
             },
           ],
         },
-        {
-          label: 'Admin',
-          menuItems: [
-            {
-              label: 'Open Assembly Manager',
-              icon: SettingsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setEditing(true)
+        ...(adminMode
+          ? [
+              {
+                label: 'Admin',
+                menuItems: [
+                  {
+                    label: 'Open Assembly Manager',
+                    icon: SettingsIcon,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onClick: (session: any) => {
+                      const rootModel = getParent(session)
+                      rootModel.setEditing(true)
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
+            ]
+          : []),
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
