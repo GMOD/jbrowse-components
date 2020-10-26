@@ -241,7 +241,7 @@ const Expandable = ({ onChange, node, children, index }) => {
 //       id: 'child-1',
 //       name: 'Child #1',
 //     },
-//     {
+//     {lonal antibodies and small-molecule antagonists that target CGRP or its receptor are already having a big impact on migraine. But they have the potential to do so much more.
 //       children: [{ id: 'child-5', name: 'Child #5' }],
 //       id: 'child-4',
 //       name: 'Child #4',
@@ -249,8 +249,7 @@ const Expandable = ({ onChange, node, children, index }) => {
 //   ],
 // }
 
-function makeTreeWalker(nodes) {
-  console.log(nodes)
+function makeTreeWalker(nodes, onChange) {
   return function* treeWalker(refresh) {
     const stack = []
 
@@ -261,7 +260,7 @@ function makeTreeWalker(nodes) {
 
     while (stack.length !== 0) {
       const { node, nestingLevel } = stack.pop()
-      const id = node.name
+      const { id } = node
 
       const isOpened = yield refresh
         ? {
@@ -270,6 +269,7 @@ function makeTreeWalker(nodes) {
             isOpenByDefault: true,
             name: node.name,
             nestingLevel,
+            onChange,
           }
         : id
 
@@ -278,6 +278,7 @@ function makeTreeWalker(nodes) {
           stack.push({
             nestingLevel: nestingLevel + 1,
             node: node.children[i],
+            onChange,
           })
         }
       }
@@ -287,7 +288,7 @@ function makeTreeWalker(nodes) {
 
 // Node component receives current node height as a prop
 const Node = ({
-  data: { isLeaf, nestingLevel, name },
+  data: { isLeaf, nestingLevel, node, id, name, onChange },
   isOpen,
   style,
   toggle,
@@ -300,22 +301,35 @@ const Node = ({
           marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
         }}
       >
-        {!isLeaf && (
-          <div onClick={toggle} role="presentation">
-            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-          </div>
+        {!isLeaf ? (
+          <>
+            <div onClick={toggle} role="presentation">
+              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+            </div>
+            <div>{name}</div>
+          </>
+        ) : (
+          <>
+            <input
+              id={id}
+              data-testid={`htsTrackEntry-${id}`}
+              type="checkbox"
+              onChange={evt => onChange(id)}
+            />
+            <label htmlFor={id}>{name}</label>
+          </>
         )}
-        <div>{name}</div>
       </div>
     </div>
   )
 }
 
-const Example = ({ tree }) => {
-  console.log({ tree })
+const Example = ({ tree, model }) => {
   return (
     <FixedSizeTree
-      treeWalker={makeTreeWalker({ name: 'Tracks', children: tree })}
+      treeWalker={makeTreeWalker({ name: 'Tracks', children: tree }, id => {
+        model.view.toggleTrack(id)
+      })}
       itemSize={20}
       height={1000}
       width="100%"
@@ -440,8 +454,7 @@ function HierarchicalTrackSelector({ model }) {
       .length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-  console.log('here')
-  return <Example tree={nodes} />
+  return <Example tree={nodes} model={model} />
   // <div
   //   key={model.view.id}
   //   className={classes.root}
