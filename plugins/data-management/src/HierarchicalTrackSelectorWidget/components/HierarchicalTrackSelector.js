@@ -169,86 +169,6 @@ const DeleteConnectionDlg = observer(props => {
   )
 })
 
-const SELECT = 3
-const EXPAND = 4
-
-// this is copied from the react-virtualized-tree Expandable renderer
-const Expandable = ({ onChange, node, children, index }) => {
-  const { hasChildren, isExpanded } = getNodeRenderOptions(node)
-  const { state = {} } = node
-  const { selected } = state
-  const handleChange = () => {
-    onChange({
-      ...updateNode(node, { expanded: !isExpanded }),
-      index,
-      type: EXPAND,
-    })
-  }
-
-  return (
-    <span>
-      {hasChildren && isExpanded ? (
-        <div onClick={handleChange} role="presentation">
-          <ArrowDropDownIcon style={{ height: 16 }} />
-          {children}
-        </div>
-      ) : null}
-      {hasChildren && !isExpanded ? (
-        <div onClick={handleChange} role="presentation">
-          <ArrowRightIcon style={{ height: 16 }} />
-          {children}
-        </div>
-      ) : null}
-      {!hasChildren ? (
-        <>
-          <input
-            id={node.id}
-            data-testid={`htsTrackEntry-${node.id}`}
-            type="checkbox"
-            checked={!!selected}
-            onChange={() => {
-              onChange({
-                node: {
-                  ...node,
-                  state: {
-                    ...state,
-                    selected: !selected,
-                  },
-                },
-                type: SELECT,
-              })
-            }}
-          />
-          <label htmlFor={node.id}>{children}</label>
-        </>
-      ) : null}
-    </span>
-  )
-}
-
-// Tree component can work with any possible tree structure because it uses an
-// iterator function that the user provides. Structure, approach, and iterator
-// function below is just one of many possible variants.
-// const tree = {
-//   name: 'Root #1',
-//   id: 'root-1',
-//   children: [
-//     {
-//       children: [
-//         { id: 'child-2', name: 'Child #2' },
-//         { id: 'child-3', name: 'Child #3' },
-//       ],
-//       id: 'child-1',
-//       name: 'Child #1',
-//     },
-//     {lonal antibodies and small-molecule antagonists that target CGRP or its receptor are already having a big impact on migraine. But they have the potential to do so much more.
-//       children: [{ id: 'child-5', name: 'Child #5' }],
-//       id: 'child-4',
-//       name: 'Child #4',
-//     },
-//   ],
-// }
-
 function makeTreeWalker(nodes, onChange) {
   return function* treeWalker(refresh) {
     const stack = []
@@ -260,20 +180,19 @@ function makeTreeWalker(nodes, onChange) {
 
     while (stack.length !== 0) {
       const { node, nestingLevel } = stack.pop()
-      const { id } = node
-
+      const { id, name, selected } = node
       const isOpened = yield refresh
         ? {
             id,
             isLeaf: node.children.length === 0,
             isOpenByDefault: true,
-            name: node.name,
+            name,
+            node,
+            checked: !!selected,
             nestingLevel,
             onChange,
           }
         : id
-
-      console.log({ isOpened })
 
       if (node.children.length !== 0 && isOpened) {
         for (let i = node.children.length - 1; i >= 0; i--) {
@@ -289,12 +208,8 @@ function makeTreeWalker(nodes, onChange) {
 }
 
 // Node component receives current node height as a prop
-const Node = ({
-  data: { isLeaf, nestingLevel, node, id, name, onChange },
-  isOpen,
-  style,
-  toggle,
-}) => {
+const Node = ({ data, isOpen, style, toggle }) => {
+  const { isLeaf, nestingLevel, checked, id, name, onChange } = data
   return (
     <div style={style}>
       <div
@@ -314,6 +229,7 @@ const Node = ({
               id={id}
               data-testid={`htsTrackEntry-${id}`}
               type="checkbox"
+              checked={checked}
               onChange={evt => onChange(id)}
             />
             <label htmlFor={id}>{name}</label>
@@ -327,9 +243,12 @@ const Node = ({
 const Example = ({ tree, model }) => {
   return (
     <FixedSizeTree
-      treeWalker={makeTreeWalker({ name: 'Tracks', children: tree }, id => {
-        model.view.toggleTrack(id)
-      })}
+      treeWalker={makeTreeWalker(
+        { name: 'Tracks', id: 'Tracks', children: tree },
+        id => {
+          model.view.toggleTrack(id)
+        },
+      )}
       itemSize={20}
       height={1000}
       width="100%"

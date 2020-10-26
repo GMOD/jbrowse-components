@@ -34,9 +34,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
       id: trackConf.trackId,
       name: readConfObject(trackConf, 'name'),
       conf: trackConf,
-      state: {
-        selected: model.view.tracks.find(f => f.configuration === trackConf),
-      },
+      selected: model.view.tracks.find(f => f.configuration === trackConf),
       children: [],
     })
   })
