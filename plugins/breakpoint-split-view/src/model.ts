@@ -27,7 +27,9 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
 
   const minHeight = 40
   const defaultHeight = 400

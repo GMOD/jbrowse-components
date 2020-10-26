@@ -1,6 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
-import { ElementId } from './util/types/mst'
-import { MenuItem } from './ui'
+import { ElementId } from '../../util/types/mst'
+import { MenuItem } from '../../ui'
 
 const BaseViewModel = types
   .model('BaseView', {

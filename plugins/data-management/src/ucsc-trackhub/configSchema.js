@@ -1,4 +1,4 @@
-import baseConnectionConfig from '@jbrowse/core/baseConnectionConfig'
+import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(

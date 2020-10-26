@@ -12,7 +12,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
 import CloseIcon from '@material-ui/icons/Close'
 import MenuIcon from '@material-ui/icons/Menu'
-import { IBaseViewModel } from '../BaseViewModel'
+import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 

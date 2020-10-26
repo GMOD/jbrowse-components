@@ -55,6 +55,7 @@ import AdapterType from '../pluggableElementTypes/AdapterType'
 import TrackType from '../pluggableElementTypes/TrackType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
+import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
 import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
 import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
@@ -69,7 +70,6 @@ import * as coreIo from '../util/io'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as MUIColors from './material-ui-colors'
 import * as mstTypes from '../util/types/mst'
-import BaseViewModel from '../BaseViewModel'
 
 import ReExportsList from './list'
 
@@ -128,6 +128,7 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 
+  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
@@ -140,7 +141,6 @@ const libs = {
   '@jbrowse/core/util/Base1DViewModel': Base1DView,
   '@jbrowse/core/util/io': coreIo,
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
-  '@jbrowse/core/BaseViewModel': BaseViewModel,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,

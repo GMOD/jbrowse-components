@@ -45,7 +45,9 @@ export default pluginManager => {
   const { types, getParent, addDisposer, getSnapshot } = jbrequire(
     'mobx-state-tree',
   )
-  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
   const { getSession } = jbrequire('@jbrowse/core/util')
   const { readConfObject } = jbrequire('@jbrowse/core/configuration')
 

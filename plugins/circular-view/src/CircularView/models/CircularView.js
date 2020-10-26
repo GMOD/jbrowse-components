@@ -10,7 +10,9 @@ export default pluginManager => {
   const { Region } = jbrequire('@jbrowse/core/util/types/mst')
   const { readConfObject } = jbrequire('@jbrowse/core/configuration')
   const { clamp, getSession } = jbrequire('@jbrowse/core/util')
-  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
 
   const { calculateStaticSlices, sliceIsVisible } = jbrequire(slicesFactory)
 

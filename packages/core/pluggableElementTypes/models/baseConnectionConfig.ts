@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from './configuration'
+import { ConfigurationSchema } from '../../configuration'
 
 export default ConfigurationSchema(
   'JBrowse1Connection',

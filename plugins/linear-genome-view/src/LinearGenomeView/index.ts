@@ -1,5 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
 import { MenuItem } from '@jbrowse/core/ui'
