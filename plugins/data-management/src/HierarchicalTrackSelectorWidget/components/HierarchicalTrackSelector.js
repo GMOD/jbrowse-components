@@ -373,128 +373,128 @@ function HierarchicalTrackSelector({ model }) {
       .length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-  return <Example tree={nodes} model={model} />
-  // <div
-  //   key={model.view.id}
-  //   className={classes.root}
-  //   data-testid="hierarchical_track_selector"
-  // >
-  //   {assemblyNames.length > 1 ? (
-  //     <Tabs
-  //       className={classes.tabs}
-  //       value={assemblyIdx}
-  //       onChange={handleTabChange}
-  //     >
-  //       {assemblyNames.map(name => (
-  //         <Tab key={name} label={name} />
-  //       ))}
-  //     </Tabs>
-  //   ) : null}
-  //   <TextField
-  //     className={classes.searchBox}
-  //     label="Filter Tracks"
-  //     value={model.filterText}
-  //     error={filterError}
-  //     helperText={filterError ? 'No matches' : ''}
-  //     onChange={handleInputChange}
-  //     fullWidth
-  //     InputProps={{
-  //       endAdornment: (
-  //         <InputAdornment position="end">
-  //           <IconButton color="secondary" onClick={model.clearFilterText}>
-  //             <ClearIcon />
-  //           </IconButton>
-  //         </InputAdornment>
-  //       ),
-  //     }}
-  //   />
-  //   <Example />
+  return (
+    <div
+      key={model.view.id}
+      className={classes.root}
+      data-testid="hierarchical_track_selector"
+    >
+      {assemblyNames.length > 1 ? (
+        <Tabs
+          className={classes.tabs}
+          value={assemblyIdx}
+          onChange={handleTabChange}
+        >
+          {assemblyNames.map(name => (
+            <Tab key={name} label={name} />
+          ))}
+        </Tabs>
+      ) : null}
+      <TextField
+        className={classes.searchBox}
+        label="Filter Tracks"
+        value={model.filterText}
+        error={filterError}
+        helperText={filterError ? 'No matches' : ''}
+        onChange={handleInputChange}
+        fullWidth
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton color="secondary" onClick={model.clearFilterText}>
+                <ClearIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+      <Example tree={nodes} model={model} />
 
-  //   <FormGroup>
-  //     {session.connections
-  //       .filter(
-  //         connectionConf =>
-  //           readConfObject(connectionConf, 'assemblyName') === assemblyName,
-  //       )
-  //       .map(connectionConf => {
-  //         const name = readConfObject(connectionConf, 'name')
-  //         const id = connectionConf.connectionId
-  //         return (
-  //           <FormGroup row key={id}>
-  //             <FormControlLabel
-  //               control={
-  //                 <Switch
-  //                   checked={
-  //                     session.connectionInstances.has(assemblyName) &&
-  //                     !!session.connectionInstances
-  //                       .get(assemblyName)
-  //                       .find(connection => connection.name === name)
-  //                   }
-  //                   onChange={() => handleConnectionToggle(connectionConf)}
-  //                 />
-  //               }
-  //               label={name}
-  //             />
-  //             <IconButton
-  //               data-testid="delete-connection"
-  //               onClick={() => {
-  //                 breakConnection(connectionConf, true)
-  //               }}
-  //             >
-  //               <CloseIcon />
-  //             </IconButton>
-  //           </FormGroup>
-  //         )
-  //       })}
-  //   </FormGroup>
-  //   {session.connectionInstances.has(assemblyName) ? (
-  //     <>
-  //       <Typography variant="h5">Connections</Typography>
-  //       {session.connectionInstances.get(assemblyName).map(connection => (
-  //         <Paper
-  //           key={connection.name}
-  //           className={classes.connectionsPaper}
-  //           elevation={8}
-  //         >
-  //           <Typography variant="h6">{connection.name}</Typography>
-  //           <Contents
-  //             model={model}
-  //             filterPredicate={filter}
-  //             connection={connection}
-  //             assemblyName={assemblyName}
-  //             top
-  //           />
-  //         </Paper>
-  //       ))}
-  //     </>
-  //   ) : null}
+      <FormGroup>
+        {session.connections
+          .filter(
+            connectionConf =>
+              readConfObject(connectionConf, 'assemblyName') === assemblyName,
+          )
+          .map(connectionConf => {
+            const name = readConfObject(connectionConf, 'name')
+            const id = connectionConf.connectionId
+            return (
+              <FormGroup row key={id}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={
+                        session.connectionInstances.has(assemblyName) &&
+                        !!session.connectionInstances
+                          .get(assemblyName)
+                          .find(connection => connection.name === name)
+                      }
+                      onChange={() => handleConnectionToggle(connectionConf)}
+                    />
+                  }
+                  label={name}
+                />
+                <IconButton
+                  data-testid="delete-connection"
+                  onClick={() => {
+                    breakConnection(connectionConf, true)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </FormGroup>
+            )
+          })}
+      </FormGroup>
+      {session.connectionInstances.has(assemblyName) ? (
+        <>
+          <Typography variant="h5">Connections</Typography>
+          {session.connectionInstances.get(assemblyName).map(connection => (
+            <Paper
+              key={connection.name}
+              className={classes.connectionsPaper}
+              elevation={8}
+            >
+              <Typography variant="h6">{connection.name}</Typography>
+              <Contents
+                model={model}
+                filterPredicate={filter}
+                connection={connection}
+                assemblyName={assemblyName}
+                top
+              />
+            </Paper>
+          ))}
+        </>
+      ) : null}
 
-  //   <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-  //     <AddIcon />
-  //   </Fab>
-  //   <Menu
-  //     id="simple-menu"
-  //     anchorEl={anchorEl}
-  //     open={Boolean(anchorEl)}
-  //     onClose={handleFabClose}
-  //   >
-  //     <MenuItem onClick={addConnection}>Add connection</MenuItem>
-  //     <MenuItem onClick={addTrack}>Add track</MenuItem>
-  //   </Menu>
-  //   <CloseConnectionDlg
-  //     modalInfo={modalInfo}
-  //     setModalInfo={setModalInfo}
-  //     open={Boolean(modalInfo) && !modalInfo.deleting}
-  //     session={session}
-  //   />
-  //   <DeleteConnectionDlg
-  //     modalInfo={modalInfo}
-  //     setModalInfo={setModalInfo}
-  //     open={Boolean(modalInfo) && modalInfo.deleting}
-  //     session={session}
-  //   />
-  // </div>
-  // )
+      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
+        <AddIcon />
+      </Fab>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleFabClose}
+      >
+        <MenuItem onClick={addConnection}>Add connection</MenuItem>
+        <MenuItem onClick={addTrack}>Add track</MenuItem>
+      </Menu>
+      <CloseConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && !modalInfo.deleting}
+        session={session}
+      />
+      <DeleteConnectionDlg
+        modalInfo={modalInfo}
+        setModalInfo={setModalInfo}
+        open={Boolean(modalInfo) && modalInfo.deleting}
+        session={session}
+      />
+    </div>
+  )
 }
 
 HierarchicalTrackSelector.propTypes = {
