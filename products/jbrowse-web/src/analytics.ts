@@ -2,57 +2,7 @@
 import { getSnapshot } from 'mobx-state-tree'
 
 // TODOANALYTICS
-// lambda function called jbrowse-analytics needs to be migrated to a recent version of node
-// in here, on load trigger lambda function AFTER the session loading logic is complete
-// also need a trigger for google analytics
-// make google analytics acc, import google analytics here and call in the same logic loop as lambda
 // consider a different dynamodb table
-
-// jb1 post object
-// var stats = {
-//   ver: this.version || 'dev',
-//   'refSeqs-count': this.refSeqOrder.length,
-//   'refSeqs-avgLen':
-//     ! this.refSeqOrder.length
-//       ? null
-//       : dojof.reduce(
-//           dojo.map( this.refSeqOrder,
-//                     function(name) {
-//                         var ref = this.allRefs[name];
-//                         if( !ref )
-//                             return 0;
-//                         return ref.end - ref.start;
-//                     },
-//                     this
-//                   ),
-//           '+'
-//       ),
-//   'tracks-count': this.config.tracks.length,
-//   'plugins': dojof.keys( this.plugins ).sort().join(','),
-
-//   // screen geometry
-//   'scn-h': scn ? scn.height : null,
-//   'scn-w': scn ? scn.width  : null,
-//   // window geometry
-//   'win-h':document.body.offsetHeight,
-//   'win-w': document.body.offsetWidth,
-//   // container geometry
-//   'el-h': this.container.offsetHeight,
-//   'el-w': this.container.offsetWidth,
-
-//   // time param to prevent caching
-//   t: date.getTime()/1000,
-//   electron: Util.isElectron(),
-
-//   // also get local time zone offset
-//   tzoffset: date.getTimezoneOffset(),
-
-//   loadTime: (date.getTime() - this.startTime)/1000
-// };
-
-// in new loader, will be an action
-// async postToLambda, and async postToGA
-// send post and then put in the after create call
 
 // jb2 object
 // version
@@ -98,23 +48,22 @@ export async function writeAWSAnalytics(
   const { session } = rootModel
   const refSeqCount: AnalyticsObj = {}
 
-  session.assemblies.forEach((assembly: any, idx: number) => {
-    const value = rootModel.assemblyManager.get(assembly)
-    const index = `assembly${idx}`
-    refSeqCount[index] = value
-    // refSeqAvgLen[index] = figure this out later
-  })
+  //   session.assemblies.forEach((assembly: any, idx: number) => {
+  //     const value = rootModel.assemblyManager.get(assembly)
+  //     const index = `assembly${idx}`
+  //     refSeqCount[index] = value
+  //     // refSeqAvgLen[index] = figure this out later
+  //   })
   const stats = {
     ver: rootModel.version,
     'refSeq-count': refSeqCount,
-    // 'refSeq-avgLen': 0, // session.assemblies.reduce(/* reduce to the avg length */),
-    'tracks-count': session.tracks.length, // this is all possible tracks
+    'tracks-count': session.tracks.length,
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
       : '',
     'open-views': session.views.length,
     'synteny-tracks-count': session.tracks.filter(
-      (track: Track) => track.assemblies.length > 1,
+      (track: Track) => track.assemblyNames.length > 1,
     ).length,
     'saved-sessions-count': Object.keys(localStorage).filter(name =>
       name.includes('localSaved-'),
@@ -135,12 +84,14 @@ export async function writeAWSAnalytics(
   const data = new FormData()
   data.append('stats', JSON.stringify(stats))
 
+  // this is a GET request in JB1, ask if POST is okay
   const response = await fetch(`${url}`, {
     method: 'POST',
     mode: 'cors',
     body: JSON.stringify(stats),
   })
 
+  // have some sort of return that isnt a console.log
   if (response && response.ok) {
     console.log('success')
   }
@@ -150,7 +101,6 @@ export async function writeGAAnalytics(
   rootModel: any,
   initialTimeStamp: number,
 ) {
-  // jbrowse.org account always
   const jbrowseUser = 'UA-7115575-5'
   const accounts = [jbrowseUser]
   const stats: AnalyticsObj = {

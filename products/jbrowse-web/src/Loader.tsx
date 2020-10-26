@@ -27,7 +27,7 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
-import { writeAWSAnalytics } from './analytics'
+import { writeAWSAnalytics, writeGAAnalytics } from './analytics'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -437,11 +437,12 @@ const Renderer = observer(
             writeAWSAnalytics(
               rootModel,
               `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
+              // 'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics',
               initialTimestamp,
             )
+            writeGAAnalytics(rootModel, initialTimestamp)
           }
 
-          console.log(Date.now() - initialTimestamp)
           // if (!rootModel.session) {
           //   throw new Error('root model did not have any session defined')
           // }
