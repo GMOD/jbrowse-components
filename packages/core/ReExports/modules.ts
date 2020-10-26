@@ -52,6 +52,7 @@ import * as BaseFeatureDetail from '../BaseFeatureWidget/BaseFeatureDetail'
 import Base1DView from '../util/Base1DViewModel'
 import ViewType from '../pluggableElementTypes/ViewType'
 import AdapterType from '../pluggableElementTypes/AdapterType'
+import DisplayType from '../pluggableElementTypes/DisplayType'
 import TrackType from '../pluggableElementTypes/TrackType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
@@ -125,6 +126,7 @@ const libs = {
   '@jbrowse/core/Plugin': Plugin,
   '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
   '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
+  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
   '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 

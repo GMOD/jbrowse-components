@@ -12,6 +12,7 @@ export default [
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes/ViewType',
   '@jbrowse/core/pluggableElementTypes/AdapterType',
+  '@jbrowse/core/pluggableElementTypes/DisplayType',
   '@jbrowse/core/pluggableElementTypes/TrackType',
   '@jbrowse/core/pluggableElementTypes/WidgetType',
 

@@ -58,6 +58,15 @@ Object {
         "@jbrowse/core/pluggableElementTypes/AdapterType",
       ],
     },
+    "@jbrowse/core/pluggableElementTypes/DisplayType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "root": Array [
+        "JBrowseExports",
+        "@jbrowse/core/pluggableElementTypes/DisplayType",
+      ],
+    },
     "@jbrowse/core/pluggableElementTypes/TrackType": Object {
       "amd": "@jbrowse/core/pluggableElementTypes/TrackType",
       "commonjs": "@jbrowse/core/pluggableElementTypes/TrackType",

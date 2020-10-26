@@ -17,7 +17,6 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 
-import DotplotTrackComponent from './components/DotplotTrack'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
