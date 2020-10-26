@@ -1,4 +1,4 @@
-import ChordTrackFactory from '../../ChordTrack/models/ChordTrack'
+import { ChordTrackModelFactory } from '@jbrowse/plugin-circular-view'
 import componentsFactory from '../components'
 import renderReactionFactory from './renderReaction'
 
@@ -24,7 +24,7 @@ export default pluginManager => {
   const {
     configSchema: ChordTrackConfigSchema,
     stateModel: ChordTrackStateModel,
-  } = jbrequire(ChordTrackFactory)
+  } = jbrequire(ChordTrackModelFactory)
 
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordTrack',

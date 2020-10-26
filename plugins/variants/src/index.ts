@@ -16,6 +16,8 @@ import {
   configSchemaFactory as variantTrackConfigSchemaFactory,
   modelFactory as variantTrackModelFactory,
 } from './VariantTrack'
+import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
+import StructuralVariantChordTrackFactory from './StructuralVariantChordTrack'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -39,6 +41,14 @@ export default class VariantsPlugin extends Plugin {
         stateModel: variantTrackModelFactory(configSchema),
       })
     })
+
+    pluginManager.addTrackType(() =>
+      pluginManager.jbrequire(StructuralVariantChordTrackFactory),
+    )
+
+    pluginManager.addRendererType(() =>
+      pluginManager.jbrequire(StructuralVariantChordRendererFactory),
+    )
 
     pluginManager.addWidgetType(
       () =>

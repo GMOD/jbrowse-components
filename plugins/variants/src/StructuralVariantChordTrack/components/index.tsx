@@ -1,14 +1,16 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import LoadingF from '../../ChordTrack/components/Loading'
-import TrackErrorF from '../../ChordTrack/components/TrackError'
+import {
+  ChordTrackLoadingFactory,
+  ChordTrackErrorFactory,
+} from '@jbrowse/plugin-circular-view'
 import RpcRenderedSvgGroupF from './RpcRenderedSvgGroup'
 
 export default ({ lib, load }: PluginManager) => {
   const React = lib.react
   const { observer, PropTypes: MobxPropTypes } = lib['mobx-react']
 
-  const Loading = load(LoadingF)
-  const TrackError = load(TrackErrorF)
+  const Loading = load(ChordTrackLoadingFactory)
+  const TrackError = load(ChordTrackErrorFactory)
   const RpcRenderedSvgGroup = load(RpcRenderedSvgGroupF)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
