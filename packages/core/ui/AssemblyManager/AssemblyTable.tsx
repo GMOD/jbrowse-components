@@ -59,7 +59,7 @@ const AssemblyTable = observer(
       return (
         <TableRow key={name}>
           <TableCell>{name}</TableCell>
-          <TableCell>{aliases.toString()}</TableCell>
+          <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
           <TableCell className={classes.buttonCell}>
             <IconButton
               className={classes.button}
