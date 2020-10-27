@@ -39,7 +39,6 @@ const AssemblyManager = observer(
     open: boolean
     onClose: Function
   }) => {
-    console.log('Woohoo!!')
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
