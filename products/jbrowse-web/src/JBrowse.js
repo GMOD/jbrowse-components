@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { useQueryParam, StringParam } from 'use-query-params'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
@@ -23,9 +23,13 @@ function deleteBaseUris(config) {
 const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
+  const [firstLoad, setFirstLoad] = useState(true)
+
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
+  console.log(session.toJSON())
+  if (firstLoad && session) setFirstLoad(false)
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)

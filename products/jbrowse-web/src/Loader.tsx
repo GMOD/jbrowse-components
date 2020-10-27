@@ -376,7 +376,6 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -388,6 +387,8 @@ const Renderer = observer(
       } = loader
 
       if (ready) {
+        // this.sessionLoaded && !self.configError
+        console.log('I am ready')
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -409,7 +410,9 @@ const Renderer = observer(
           // the local session if session in query, or loads the default
           // session
           //
+          console.log('SessionError', sessionError)
           if (sessionError) {
+            // will need to got to splash Screen
             rootModel.setDefaultSession()
             // make typescript happy by checking for session after setDefaultSession
             if (rootModel.session) {
@@ -423,6 +426,7 @@ const Renderer = observer(
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
+            // will need to got to splash Screen
             rootModel.setDefaultSession()
           }
 
@@ -448,7 +452,12 @@ const Renderer = observer(
       }
     }, [loader, ready, sessionError, setPassword])
 
+    if (!configError && !loader.sessionLoaded) {
+      console.log('sessionLoaded', loader.sessionLoaded)
+      console.log(pm)
+    }
     if (configError) {
+      console.log('config error: ', configError)
       return (
         <div>
           <NoConfigMessage />
@@ -467,6 +476,8 @@ const Renderer = observer(
     }
 
     if (pm) {
+      // will need to account for when a session is not loaded
+      console.log(pm)
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
