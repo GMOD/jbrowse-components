@@ -1,6 +1,5 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme, AssemblyManager } from '@jbrowse/core/ui'
-import { toUrlSafeB64 } from '@jbrowse/core/util'
 import React, { useEffect } from 'react'
 import { useQueryParam, StringParam } from 'use-query-params'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -70,7 +69,7 @@ const JBrowse = observer(({ pluginManager }) => {
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
-      {adminMode ? (
+      {adminKey ? (
         <AssemblyManager
           rootModel={rootModel}
           open={rootModel.isEditing}
