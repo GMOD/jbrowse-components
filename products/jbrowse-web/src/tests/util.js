@@ -9,10 +9,9 @@ configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
-  useUrlSession: false,
 }
 
-export function getPluginManager(initialState, adminMode = true, sessionName) {
+export function getPluginManager(initialState, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -21,17 +20,14 @@ export function getPluginManager(initialState, adminMode = true, sessionName) {
     jbrowse: initialState || configSnapshot,
     assemblyManager: {},
   })
-  if (sessionName) {
-    const { name } = rootModel.jbrowse.savedSessions.find(
-      session => session.name === sessionName,
+  if (rootModel && rootModel.jbrowse.defaultSession.length) {
+    const { name } = rootModel.jbrowse.defaultSession
+    localStorage.setItem(
+      `localSaved-1`,
+      JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
     )
     rootModel.activateSession(name)
-  } else if (rootModel.jbrowse && rootModel.jbrowse.savedSessions.length) {
-    const { name } = rootModel.jbrowse.savedSessions[0]
-    rootModel.activateSession(name)
-  } else {
-    rootModel.setDefaultSession()
-  }
+  } else rootModel.setDefaultSession()
   rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
@@ -87,14 +83,3 @@ export function setup() {
 
 // eslint-disable-next-line no-native-reassign,no-global-assign
 window = Object.assign(window, { innerWidth: 800 })
-
-const originalError = console.error
-
-// this is here to silence a warning related to useStaticRendering
-// xref https://github.com/GMOD/jbrowse-components/issues/1277
-jest.spyOn(console, 'error').mockImplementation((...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('useLayoutEffect')) {
-    return undefined
-  }
-  return originalError.call(console, args)
-})

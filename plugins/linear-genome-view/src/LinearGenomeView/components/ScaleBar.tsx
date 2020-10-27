@@ -119,7 +119,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     (block.reversed
                       ? block.end - tick.base
                       : tick.base - block.start) / model.bpPerPx
-                  const baseNumber = (tick.base + 1).toLocaleString()
+                  const baseNumber = (tick.base + 1).toLocaleString('en-US')
                   return (
                     <div
                       key={tick.base}

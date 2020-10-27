@@ -42,7 +42,7 @@ describe('theme utils', () => {
       overrides: { MuiPaper: muiPaperStyle },
     })
     expect(theme.overrides?.MuiPaper).toEqual(muiPaperStyle)
-    expect(Object.keys(theme.overrides || {}).length).toBe(8)
+    expect(Object.keys(theme.overrides || {}).length).toBe(9)
   })
   it('allows modifying a default override', () => {
     const muiButtonStyle = { textSecondary: { color: 'orange' } }
@@ -50,18 +50,18 @@ describe('theme utils', () => {
       overrides: { MuiButton: muiButtonStyle },
     })
     expect(theme.overrides?.MuiButton).toEqual(muiButtonStyle)
-    expect(Object.keys(theme.overrides || {}).length).toBe(7)
+    expect(Object.keys(theme.overrides || {}).length).toBe(8)
   })
   it('allows adding a custom prop', () => {
     const muiPaperProps = { variant: 'outlined' as 'outlined' }
     const theme = createJBrowseTheme({ props: { MuiPaper: muiPaperProps } })
     expect(theme.props?.MuiPaper).toEqual(muiPaperProps)
-    expect(Object.keys(theme.props || {}).length).toBe(17)
+    expect(Object.keys(theme.props || {}).length).toBe(18)
   })
   it('allows modifying a prop override', () => {
     const muiButtonProps = { size: 'medium' as 'medium' }
     const theme = createJBrowseTheme({ props: { MuiButton: muiButtonProps } })
     expect(theme.props?.MuiButton).toEqual(muiButtonProps)
-    expect(Object.keys(theme.props || {}).length).toBe(16)
+    expect(Object.keys(theme.props || {}).length).toBe(17)
   })
 })

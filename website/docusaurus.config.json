@@ -1,0 +1,111 @@
+{
+  "title": "JBrowse",
+  "tagline": "Next generation genome browser",
+  "url": "https://jbrowse.com",
+  "baseUrl": "/jb2/",
+  "favicon": "img/favicon.ico",
+  "organizationName": "GMOD",
+  "projectName": "jbrowse-components",
+  "customFields": {
+    "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/@jbrowse/web@0.0.1-beta.27/index.html"
+  },
+  "themeConfig": {
+    "colorMode": {
+      "disableSwitch": true
+    },
+    "navbar": {
+      "title": "JBrowse",
+      "logo": {
+        "alt": "JBrowse",
+        "src": "img/logo.svg"
+      },
+      "items": [
+        {
+          "to": "docs/",
+          "activeBasePath": "docs",
+          "label": "Docs",
+          "position": "left"
+        },
+        {
+          "to": "blog",
+          "label": "Blog",
+          "position": "left"
+        },
+        {
+          "to": "features",
+          "label": "Features",
+          "position": "left"
+        },
+        {
+          "to": "demos",
+          "label": "Demos",
+          "position": "left"
+        },
+        {
+          "to": "contact/",
+          "label": "Contact",
+          "position": "left"
+        },
+        {
+          "href": "https://jbrowse.org/jbrowse1.html",
+          "label": "Looking for JBrowse 1?",
+          "position": "right"
+        },
+        {
+          "href": "https://github.com/GMOD/jbrowse-components",
+          "label": "GitHub",
+          "position": "right"
+        }
+      ]
+    },
+    "footer": {
+      "style": "dark",
+      "links": [
+        {
+          "title": "Docs",
+          "items": [
+            {
+              "label": "Documentation",
+              "to": "docs/"
+            }
+          ]
+        },
+        {
+          "title": "Community",
+          "items": [
+            {
+              "label": "Gitter",
+              "href": "https://gitter.im/GMOD/jbrowse2"
+            },
+            {
+              "label": "Twitter",
+              "href": "https://twitter.com/usejbrowse"
+            }
+          ]
+        },
+        {
+          "title": "More",
+          "items": [
+            {
+              "label": "Blog",
+              "to": "blog"
+            },
+            {
+              "label": "Contact",
+              "to": "contact"
+            },
+            {
+              "label": "GitHub",
+              "href": "https://github.com/GMOD/jbrowse-components"
+            },
+            {
+              "label": "Looking for JBrowse 1?",
+              "href": "https://jbrowse.org/jbrowse1.html"
+            }
+          ]
+        }
+      ],
+      "copyright": "Copyright © 2020 Evolutionary Software Foundation, Inc."
+    }
+  }
+}

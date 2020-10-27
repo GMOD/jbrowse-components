@@ -36,7 +36,7 @@ describe('dotplot view', () => {
     )
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
-    const canvas = await findByTestId('prerendered_canvas')
+    const canvas = await findByTestId('prerendered_canvas', { timeout: 10000 })
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
@@ -48,4 +48,4 @@ describe('dotplot view', () => {
       failureThresholdType: 'percent',
     })
   })
-})
+}, 20000)

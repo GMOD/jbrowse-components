@@ -5,7 +5,7 @@ import { transaction } from 'mobx'
 import { Provider } from 'mobx-react'
 import { types } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
-import 'typeface-roboto'
+import 'fontsource-roboto'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'

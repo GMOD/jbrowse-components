@@ -61,9 +61,9 @@ export default function RootModel(pluginManager: PluginManager) {
       setDefaultSession() {
         this.setSession({
           ...self.jbrowse.defaultSession,
-          name: `${self.jbrowse.defaultSession.name} ${new Date(
-            Date.now(),
-          ).toISOString()}`,
+          name: `${
+            self.jbrowse.defaultSession.name
+          } ${new Date().toLocaleString()}`,
         })
       },
       setEditing(flag: boolean) {

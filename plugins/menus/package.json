@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-menus",
-  "version": "0.0.1-beta.13",
+  "version": "0.0.1-beta.15",
   "description": "JBrowse 2 basic menus",
   "keywords": [
     "jbrowse",
@@ -37,6 +37,7 @@
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
     "file-saver": "^2.0.0",
+    "pluralize": "^8.0.0",
     "react-dropzone": "^10.1.0"
   },
   "peerDependencies": {

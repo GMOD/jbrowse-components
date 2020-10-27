@@ -1,4 +1,5 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import Color from 'color'
 import ServerSideRendererType, {
   RenderArgsDeserialized,
   RenderArgs,
@@ -67,6 +68,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const w = res / (bpPerPx * Math.sqrt(2))
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
+    const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0
@@ -81,7 +83,11 @@ export default class HicRenderer extends ServerSideRendererType {
       ctx.rotate(-Math.PI / 4)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
-        ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
+        ctx.fillStyle = readConfObject(config, 'color', [
+          counts,
+          maxScore,
+          baseColor,
+        ])
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }
     }
