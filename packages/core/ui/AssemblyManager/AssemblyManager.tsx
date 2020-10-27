@@ -39,6 +39,7 @@ const AssemblyManager = observer(
     open: boolean
     onClose: Function
   }) => {
+    console.log('Woohoo!!')
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
@@ -144,8 +145,6 @@ export default AssemblyManager
 /*
 TODO:
 
-- make sure manager only available in admin mode (desktop?)
 - write tests
-- get other tests to pass (-u for snaps)
 
 */
