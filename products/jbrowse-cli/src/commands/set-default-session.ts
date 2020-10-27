@@ -1,6 +1,5 @@
 import { flags } from '@oclif/command'
 import { promises as fsPromises } from 'fs'
-import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
@@ -83,9 +82,6 @@ export default class SetDefaultSession extends JBrowseCommand {
     const output = runFlags.target || runFlags.out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
-
-    await this.checkLocation(path.dirname(this.target))
-
     const configContents: Config = await this.readJsonFile(this.target)
 
     // if user passes current session flag, print out and exit

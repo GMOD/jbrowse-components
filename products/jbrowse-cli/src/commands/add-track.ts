@@ -1,8 +1,7 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs, { promises as fsPromises } from 'fs'
 import path from 'path'
-import fetch from 'node-fetch'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
@@ -83,6 +82,11 @@ export default class AddTrack extends JBrowseCommand {
     out: flags.string({
       description: 'synonym for target',
     }),
+    subDir: flags.string({
+      description:
+        'when using --load a file, output to a subdirectory of the target dir',
+      default: '',
+    }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
       description:
@@ -105,56 +109,71 @@ export default class AddTrack extends JBrowseCommand {
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
+    protocol: flags.string({
+      description: 'Force protocol to a specific value',
+      default: 'uri',
+    }),
   }
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
 
-    const output = runFlags.target || runFlags.out || '.'
+    const { track: argsTrack } = runArgs
+    const {
+      config,
+      skipCheck,
+      force,
+      overwrite,
+      category,
+      description,
+      load,
+      subDir,
+      target,
+      protocol,
+      out,
+    } = runFlags
+
+    const output = target || out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    const { track: argsTrack } = runArgs
-    const { config, skipCheck, force, category, description, load } = runFlags
     let { type, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
-    if (!(skipCheck || force)) {
-      await this.checkLocation(configDirectory)
+    if (!argsTrack) {
+      this.error(
+        'No track provided. Example usage: jbrowse add-track yourfile.bam',
+        { exit: 120 },
+      )
     }
-    const {
-      location,
-      protocol,
-      local,
-    } = await this.resolveFileLocationWithProtocol(
-      argsTrack,
-      !(skipCheck || force),
-      load === 'inPlace',
+
+    if (subDir) {
+      const dir = path.join(configDirectory, subDir)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
+    }
+    const location = argsTrack
+
+    const isUrl = location.match(/^https?:\/\//)
+    const adapter = this.guessAdapter(
+      isUrl ? location : path.join(subDir, path.basename(location)),
+      protocol as 'uri' | 'localPath',
     )
 
-    let trackLocation
-    if (load) {
-      if (!local) {
-        this.error(
-          `URL detected with --load flag. Please rerun the function without the --load flag`,
-          { exit: 100 },
-        )
-      }
-
-      trackLocation =
-        load === 'inPlace'
-          ? location
-          : path.join(configDirectory, path.basename(location))
-    } else if (local) {
+    if (isUrl && load) {
       this.error(
-        'Local file detected. Please select a load option for the track with the --load flag',
+        'The --load flag is used for local files only, but a URL was provided',
+        { exit: 100 },
+      )
+    } else if (!isUrl && !load) {
+      this.error(
+        `The --load flag should be used if a local file is used, example --load
+        copy to copy the file into the config directory. Options for load are
+        copy/move/symlink/inPlace (inPlace for no file operations)`,
         { exit: 110 },
       )
-    } else {
-      trackLocation = location
     }
-
-    const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
       this.error('Track type is not recognized', { exit: 120 })
     }
@@ -187,7 +206,7 @@ export default class AddTrack extends JBrowseCommand {
       this.debug(`Track is :${trackId}`)
     } else {
       trackId = path.basename(location, path.extname(location))
-    } // get filename and set as name
+    }
 
     if (name) {
       this.debug(`Name is: ${name}`)
@@ -260,7 +279,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (runFlags.force || runFlags.overwrite) {
+      if (force || overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else {
@@ -284,6 +303,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.copyFile(filePath, dataLocation)
@@ -299,6 +319,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.symlink(filePath, dataLocation)
@@ -314,6 +335,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.rename(filePath, dataLocation)
@@ -331,65 +353,6 @@ export default class AddTrack extends JBrowseCommand {
         idx !== -1 ? 'in' : 'to'
       } ${this.target}`,
     )
-  }
-
-  async resolveFileLocationWithProtocol(
-    location: string,
-    check = true,
-    warn = false,
-  ) {
-    let locationUrl: URL | undefined
-    let locationPath: string | undefined
-    let locationObj: {
-      location: string
-      protocol: 'uri' | 'localPath'
-      local: boolean
-    }
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-        }
-        if (!response || response.ok) {
-          locationObj = {
-            location: locationUrl.href,
-            protocol: 'uri',
-            local: false,
-          }
-          return locationObj
-        }
-      } catch (error) {
-        // ignore
-      }
-    }
-    try {
-      locationPath = await fsPromises.realpath(location)
-    } catch (e) {
-      // ignore
-    }
-    if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      if (warn && filePath.startsWith('..')) {
-        this.warn(
-          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-        )
-      }
-      locationObj = {
-        location: filePath,
-        protocol: 'uri',
-        local: true,
-      }
-      return locationObj
-    }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 180,
-    })
   }
 
   guessFileNames(fileName: string) {
@@ -569,6 +532,12 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (/\.hic$/i.test(fileName)) {
+      return {
+        file: fileName,
+      }
+    }
+
+    if (/\.paf$/i.test(fileName)) {
       return {
         file: fileName,
       }
@@ -806,6 +775,13 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'HicAdapter',
         hicLocation: makeLocation(fileName),
+      }
+    }
+
+    if (/\.paf/i.test(fileName)) {
+      return {
+        type: 'PafAdapter',
+        pafLocation: makeLocation(fileName),
       }
     }
 

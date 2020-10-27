@@ -38,6 +38,7 @@ that can be built on.
 - Interactively edit the configuration using the GUI
 - Circular, dotplot, stacked synteny views
 - SV inspector, that gives spreadsheet and circos overview of data in a single view
+- Linear genome view can be reverse complemented
 
 #### Can the linear genome view be reverse complemented
 
@@ -110,16 +111,13 @@ sure to run the command inside your current jbrowse2 folder e.g.
 /var/www/html/jbrowse2 or wherever you are currently setting up a config.json
 (you can have multiple configs)
 
-To add a BAM track, try
-
-    jbrowse add-track myfile.bam -i myfile.bam.bai -a hg19
-
 Note that you can also use remote URLs
 
-    jbrowse add-track http://yourremote
+    jbrowse add-track http://yourremote/myfile.bam
 
 The add-track command will do as much as possible to infer from the file
-extension how to configure this track
+extension how to configure this track, and automatically infer the index to be
+myfile.bam.bai
 
 ### Curiosities
 
