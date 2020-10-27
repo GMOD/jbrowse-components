@@ -1,8 +1,5 @@
 import { types } from 'mobx-state-tree'
-import {
-  wiggleTrackModelFactory,
-  WiggleTrackComponent,
-} from '@jbrowse/plugin-wiggle'
+import { wiggleTrackModelFactory } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Tooltip from './Tooltip'
 
@@ -17,9 +14,6 @@ const stateModelFactory = (configSchema: any) =>
       wiggleTrackModelFactory(configSchema),
       types.model({ type: types.literal('SNPCoverageTrack') }),
     )
-    .volatile(() => ({
-      ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
-    }))
     .actions(self => ({
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration

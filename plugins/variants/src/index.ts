@@ -3,6 +3,7 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   AdapterClass as VcfTabixAdapterClass,
   configSchema as vcfTabixAdapterConfigSchema,
@@ -39,6 +40,7 @@ export default class VariantsPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: variantTrackModelFactory(configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
 

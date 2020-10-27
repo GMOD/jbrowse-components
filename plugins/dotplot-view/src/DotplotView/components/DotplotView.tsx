@@ -644,11 +644,11 @@ export default (pluginManager: PluginManager) => {
               </div>
               <div className={classes.overlay}>
                 {model.tracks.map(track => {
-                  const { ReactComponent } = track
+                  const { RenderingComponent } = track
 
-                  return ReactComponent ? (
+                  return RenderingComponent ? (
                     // @ts-ignore
-                    <ReactComponent
+                    <RenderingComponent
                       key={getConf(track, 'trackId')}
                       model={track}
                     />

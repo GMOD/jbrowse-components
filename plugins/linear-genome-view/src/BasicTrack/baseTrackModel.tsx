@@ -93,7 +93,6 @@ const BaseTrack = types
     ),
   })
   .volatile(() => ({
-    ReactComponent: undefined as any,
     rendererTypeName: '',
     scrollTop: 0,
     showAbout: false,
@@ -111,17 +110,16 @@ const BaseTrack = types
 
     get RenderingComponent(): React.FC<{
       model: typeof self
-      onHorizontalScroll: Function
-      blockState: Record<string, any>
+      onHorizontalScroll?: Function
+      blockState?: Record<string, any>
     }> {
-      return (
-        self.ReactComponent ||
-        (() => (
-          <div className="TrackRenderingNotImplemented">
-            Rendering not implemented for {self.type} tracks
-          </div>
-        ))
-      )
+      const { pluginManager } = getSession(self)
+      const trackType = pluginManager.getTrackType(self.type)
+      return trackType.ReactComponent as React.FC<{
+        model: typeof self
+        onHorizontalScroll?: Function
+        blockState?: Record<string, any>
+      }>
     },
 
     get TrackBlurb(): React.FC<{ model: typeof self }> | null {

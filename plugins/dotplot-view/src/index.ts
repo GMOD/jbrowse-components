@@ -17,6 +17,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchemaFactory as dotplotTrackConfigSchemaFactory,
   stateModelFactory as dotplotTrackStateModelFactory,
+  ReactComponent as DotplotTrackReactComponent,
 } from './DotplotTrack'
 import DotplotRenderer, {
   configSchema as dotplotRendererConfigSchema,
@@ -113,6 +114,7 @@ export default class DotplotPlugin extends Plugin {
         compatibleView: 'DotplotView',
         configSchema,
         stateModel: dotplotTrackStateModelFactory(configSchema),
+        ReactComponent: DotplotTrackReactComponent,
       })
     })
 

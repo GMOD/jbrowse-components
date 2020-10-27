@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { basicTrackConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 export { default as modelFactory } from './model'
+export { default as ReactComponent } from './components/FilteringTrack'
 
 export function configSchemaFactory(pluginManager) {
   return ConfigurationSchema(

@@ -56,6 +56,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: basicTrackStateModelFactory(configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
 
@@ -66,6 +67,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: dynamicTrackStateModelFactory(configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
 

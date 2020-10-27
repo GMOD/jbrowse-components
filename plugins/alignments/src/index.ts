@@ -3,9 +3,12 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { WiggleTrackComponent } from '@jbrowse/plugin-wiggle'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
   modelFactory as alignmentsTrackModelFactory,
+  ReactComponent as AlignmentsTrackReactComponent,
 } from './AlignmentsTrack'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
@@ -48,6 +51,7 @@ export default class AlignmentsPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: pileupTrackModelFactory(pluginManager, configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
     pluginManager.addWidgetType(
@@ -67,6 +71,7 @@ export default class AlignmentsPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: snpCoverageTrackModelFactory(configSchema),
+        ReactComponent: WiggleTrackComponent,
       })
     })
     pluginManager.addTrackType(() => {
@@ -76,6 +81,7 @@ export default class AlignmentsPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
+        ReactComponent: AlignmentsTrackReactComponent,
       })
     })
     pluginManager.addAdapterType(

@@ -9,7 +9,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { MenuItem } from '@jbrowse/core/ui'
-import AlignmentsTrackComponent from './components/AlignmentsTrack'
 import { AlignmentsConfigModel } from './configSchema'
 
 const stateModelFactory = (
@@ -20,23 +19,19 @@ const stateModelFactory = (
     .compose(
       'AlignmentsTrack',
       BaseTrack,
-      types
-        .model({
-          PileupTrack: types.maybe(
-            pluginManager.getTrackType('PileupTrack').stateModel,
-          ),
-          SNPCoverageTrack: types.maybe(
-            pluginManager.getTrackType('SNPCoverageTrack').stateModel,
-          ),
-          type: types.literal('AlignmentsTrack'),
-          configuration: ConfigurationReference(configSchema),
-          height: 250,
-          showCoverage: true,
-          showPileup: true,
-        })
-        .volatile(() => ({
-          ReactComponent: (AlignmentsTrackComponent as unknown) as React.FC,
-        })),
+      types.model({
+        PileupTrack: types.maybe(
+          pluginManager.getTrackType('PileupTrack').stateModel,
+        ),
+        SNPCoverageTrack: types.maybe(
+          pluginManager.getTrackType('SNPCoverageTrack').stateModel,
+        ),
+        type: types.literal('AlignmentsTrack'),
+        configuration: ConfigurationReference(configSchema),
+        height: 250,
+        showCoverage: true,
+        showPileup: true,
+      }),
     )
     .actions(self => ({
       toggleCoverage() {

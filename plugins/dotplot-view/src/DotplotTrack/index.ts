@@ -20,6 +20,8 @@ import {
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
+export { default as ReactComponent } from './components/DotplotTrack'
+
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'DotplotTrack',
@@ -56,7 +58,6 @@ export function stateModelFactory(configSchema: any) {
           html: '',
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
-          ReactComponent: (DotplotTrackComponent as unknown) as React.FC,
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
         })),
     )

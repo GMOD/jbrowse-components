@@ -44,14 +44,14 @@ const Overlays = observer(({ model }: Props) => {
   return (
     <>
       {model.tracks.map(track => {
-        const { ReactComponent } = track
-        return ReactComponent ? (
+        const { RenderingComponent } = track
+        return RenderingComponent ? (
           <div
             className={classes.overlay}
             key={getConf(track, 'trackId')}
             style={{ height: track.height }}
           >
-            <ReactComponent model={track} />
+            <RenderingComponent model={track} />
           </div>
         ) : null
       })}

@@ -3,6 +3,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { types, Instance } from 'mobx-state-tree'
 import BaseTrack from '../BasicTrack/baseTrackModel'
+import BlockBasedTrack from '../BasicTrack/components/BlockBasedTrack'
 import { stateModelFactory, LinearGenomeViewStateModel } from '.'
 
 // a stub linear genome view state model that only accepts base track types.
@@ -19,6 +20,7 @@ stubManager.addTrackType(
         { explicitlyTyped: true },
       ),
       stateModel: BaseTrack,
+      ReactComponent: BlockBasedTrack,
     }),
 )
 stubManager.createPluggableElements()

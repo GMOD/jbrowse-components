@@ -13,9 +13,10 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import LinearComparativeTrackComponent from './components/LinearComparativeTrack'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+
+export { default as ReactComponent } from './components/LinearComparativeTrack'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
@@ -50,7 +51,6 @@ export function stateModelFactory(configSchema: any) {
           html: '',
           message: undefined as string | undefined,
           renderingComponent: undefined as any,
-          ReactComponent: (LinearComparativeTrackComponent as unknown) as React.FC,
           ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
         })),
     )

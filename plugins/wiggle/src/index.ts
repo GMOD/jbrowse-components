@@ -13,6 +13,7 @@ import DensityRenderer, {
 import {
   configSchemaFactory as wiggleTrackConfigSchemaFactory,
   modelFactory as wiggleTrackModelFactory,
+  ReactComponent as WiggleTrackReactComponent,
 } from './WiggleTrack'
 import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
@@ -38,6 +39,7 @@ export default class extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: wiggleTrackModelFactory(configSchema),
+        ReactComponent: WiggleTrackReactComponent,
       })
     })
 
@@ -90,4 +92,4 @@ export * from './util'
 export { wiggleTrackModelFactory }
 export { default as WiggleRendering } from './WiggleRendering'
 export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
-export { default as WiggleTrackComponent } from './WiggleTrack/components/WiggleTrackComponent'
+export { WiggleTrackReactComponent as WiggleTrackComponent }

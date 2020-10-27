@@ -25,7 +25,6 @@ import React from 'react'
 
 import { getNiceDomain } from '../util'
 
-import WiggleTrackComponent from './components/WiggleTrackComponent'
 import Tooltip from './components/Tooltip'
 import { FeatureStats } from '../statsUtil'
 import ConfigSchemaF from './configSchema'
@@ -59,7 +58,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         })
         .volatile(() => ({
           // avoid circular reference since WiggleTrackComponent receives this model
-          ReactComponent: (WiggleTrackComponent as unknown) as React.FC,
           ready: false,
           message: undefined as undefined | string,
           stats: observable({ scoreMin: 0, scoreMax: 50 }),

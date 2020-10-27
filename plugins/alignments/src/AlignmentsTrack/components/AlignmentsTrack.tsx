@@ -19,7 +19,7 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
     >
       <div data-testid="Blockset-snpcoverage">
         {showCoverage ? (
-          <SNPCoverageTrack.ReactComponent model={SNPCoverageTrack} />
+          <SNPCoverageTrack.RenderingComponent model={SNPCoverageTrack} />
         ) : null}
       </div>
       <ResizeHandle
@@ -45,7 +45,9 @@ function AlignmentsTrackComponent({ model }: { model: AlignmentsTrackModel }) {
           height: 3,
         }}
       >
-        {showPileup ? <PileupTrack.ReactComponent model={PileupTrack} /> : null}
+        {showPileup ? (
+          <PileupTrack.RenderingComponent model={PileupTrack} />
+        ) : null}
       </div>
     </div>
   )

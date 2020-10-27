@@ -4,6 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchemaFactory as filteringTrackConfigSchemaFactory,
   modelFactory as filteringTrackModelFactory,
+  ReactComponent as FilteringTrackReactComponent,
 } from './FilteringTrack'
 
 export default class extends Plugin {
@@ -17,6 +18,7 @@ export default class extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: filteringTrackModelFactory(configSchema),
+        ReactComponent: FilteringTrackReactComponent,
       })
     })
   }

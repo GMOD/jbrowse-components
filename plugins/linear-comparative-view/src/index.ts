@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import Plugin from '@jbrowse/core/Plugin'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -17,6 +18,7 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   configSchemaFactory as comparativeTrackConfigSchemaFactory,
   stateModelFactory as comparativeTrackStateModelFactory,
+  ReactComponent as ComparativeTrackReactComponent,
 } from './LinearComparativeTrack'
 import {
   configSchemaFactory as syntenyTrackConfigSchemaFactory,
@@ -130,6 +132,7 @@ export default class extends Plugin {
         name: 'LinearComparativeTrack',
         configSchema,
         stateModel: comparativeTrackStateModelFactory(configSchema),
+        ReactComponent: ComparativeTrackReactComponent,
       })
     })
     pluginManager.addTrackType(() => {
@@ -139,6 +142,7 @@ export default class extends Plugin {
         name: 'LinearSyntenyTrack',
         configSchema,
         stateModel: syntenyTrackStateModelFactory(configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
     pluginManager.addAdapterType(

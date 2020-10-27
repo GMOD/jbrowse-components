@@ -2,6 +2,7 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
@@ -40,6 +41,7 @@ export default class HicPlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: hicTrackModelFactory(configSchema),
+        ReactComponent: BlockBasedTrack,
       })
     })
   }

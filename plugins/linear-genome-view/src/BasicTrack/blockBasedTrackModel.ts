@@ -15,7 +15,7 @@ import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import BlockState from './util/serverSideRenderedBlock'
 import baseTrack from './baseTrackModel'
-import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
+import { Tooltip } from './components/BlockBasedTrack'
 import { LinearGenomeViewModel } from '../LinearGenomeView'
 
 export interface Layout {
@@ -38,7 +38,6 @@ const blockBasedTrack = types
       .volatile(() => ({
         message: '',
         featureIdUnderMouse: undefined as undefined | string,
-        ReactComponent: (BlockBasedTrack as unknown) as React.FC, // avoid circular reference
         contextMenuFeature: undefined as undefined | Feature,
         additionalContextMenuItemCallbacks: [] as Function[],
       })),

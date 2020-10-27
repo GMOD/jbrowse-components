@@ -3,6 +3,7 @@ import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderer
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   AdapterClass as BgzipFastaAdapterClass,
   configSchema as bgzipFastaAdapterConfigSchema,
@@ -82,6 +83,7 @@ export default class SequencePlugin extends Plugin {
         compatibleView: 'LinearGenomeView',
         configSchema,
         stateModel: sequenceTrackModelFactory(configSchema, 'SequenceTrack'),
+        ReactComponent: BlockBasedTrack,
       })
     })
 
@@ -98,6 +100,7 @@ export default class SequencePlugin extends Plugin {
           configSchema,
           'ReferenceSequenceTrack',
         ),
+        ReactComponent: BlockBasedTrack,
       })
     })
 
