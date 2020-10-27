@@ -28,7 +28,6 @@ const JBrowse = observer(({ pluginManager }) => {
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
-  console.log(session.toJSON())
   if (firstLoad && session) setFirstLoad(false)
 
   useEffect(() => {

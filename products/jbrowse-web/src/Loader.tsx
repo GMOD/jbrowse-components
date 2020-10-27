@@ -387,8 +387,9 @@ const Renderer = observer(
       } = loader
 
       if (ready) {
-        // this.sessionLoaded && !self.configError
-        console.log('I am ready')
+        // it is ready when a session has loaded and when there is no config error
+        // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
+        // changes
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -410,7 +411,6 @@ const Renderer = observer(
           // the local session if session in query, or loads the default
           // session
           //
-          console.log('SessionError', sessionError)
           if (sessionError) {
             // will need to got to splash Screen
             rootModel.setDefaultSession()
@@ -452,12 +452,7 @@ const Renderer = observer(
       }
     }, [loader, ready, sessionError, setPassword])
 
-    if (!configError && !loader.sessionLoaded) {
-      console.log('sessionLoaded', loader.sessionLoaded)
-      console.log(pm)
-    }
     if (configError) {
-      console.log('config error: ', configError)
       return (
         <div>
           <NoConfigMessage />
@@ -477,7 +472,6 @@ const Renderer = observer(
 
     if (pm) {
       // will need to account for when a session is not loaded
-      console.log(pm)
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
