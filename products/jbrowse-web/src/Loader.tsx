@@ -25,6 +25,7 @@ import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
+import StartScreen from './StartScreen'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 
@@ -389,7 +390,6 @@ const Renderer = observer(
       if (ready) {
         // it is ready when a session has loaded and when there is no config error
         // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
-        // changes
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -472,6 +472,12 @@ const Renderer = observer(
 
     if (pm) {
       // will need to account for when a session is not loaded
+      // if (sessionError) {
+      //   return <StartScreen root={pm.rootModel} bypass />
+      // }
+      // if (pm.rootModel?.session === undefined) {
+      //   return <StartScreen root={pm.rootModel} bypass />
+      // }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
