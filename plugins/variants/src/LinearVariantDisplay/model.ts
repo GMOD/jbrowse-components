@@ -2,9 +2,9 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { blockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import { VariantTrackConfigModel } from './configSchema'
+import { LinearVariantDisplayConfigModel } from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -12,15 +12,14 @@ const rendererTypes = new Map([
   ['svg', 'SvgFeatureRenderer'],
 ])
 
-export default (configSchema: VariantTrackConfigModel) =>
+export default (configSchema: LinearVariantDisplayConfigModel) =>
   types
     .compose(
-      'VariantTrack',
-      blockBasedTrackModel,
+      'LinearVariantDisplay',
+      BaseLinearDisplay,
       types.model({
-        type: types.literal('VariantTrack'),
+        type: types.literal('LinearVariantDisplay'),
         configuration: ConfigurationReference(configSchema),
-        height: types.optional(types.integer, 100),
       }),
     )
     .actions(self => ({
@@ -53,10 +52,10 @@ export default (configSchema: VariantTrackConfigModel) =>
 
       /**
        * the react props that are passed to the Renderer when data
-       * is rendered in this track
+       * is rendered in this display
        */
       get renderProps() {
-        // view -> [tracks] -> [blocks]
+        // view -> track -> [displays] -> [blocks]
         const config = self.rendererType.configSchema.create(
           getConf(self, ['renderers', self.rendererTypeName]) || {},
         )
@@ -64,7 +63,7 @@ export default (configSchema: VariantTrackConfigModel) =>
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           config,
-          trackModel: self,
+          displayModel: self,
         }
       },
     }))

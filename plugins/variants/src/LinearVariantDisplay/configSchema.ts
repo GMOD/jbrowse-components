@@ -1,9 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
-const VariantTrackConfigFactory = (pluginManager: PluginManager) => {
+export function LinearVariantDisplayConfigFactory(
+  pluginManager: PluginManager,
+) {
   const PileupRendererConfigSchema = pluginManager.getRendererType(
     'PileupRenderer',
   ).configSchema
@@ -12,9 +14,8 @@ const VariantTrackConfigFactory = (pluginManager: PluginManager) => {
   ).configSchema
 
   return ConfigurationSchema(
-    'VariantTrack',
+    'LinearVariantDisplay',
     {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup', 'svg']),
@@ -26,12 +27,13 @@ const VariantTrackConfigFactory = (pluginManager: PluginManager) => {
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
     },
-    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
 
-export type VariantTrackConfigModel = ReturnType<
-  typeof VariantTrackConfigFactory
+export type LinearVariantDisplayConfigModel = ReturnType<
+  typeof LinearVariantDisplayConfigFactory
 >
-export type VariantTrackConfig = Instance<VariantTrackConfigModel>
-export default VariantTrackConfigFactory
+export type LinearVariantDisplayConfig = Instance<
+  LinearVariantDisplayConfigModel
+>

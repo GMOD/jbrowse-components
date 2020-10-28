@@ -1,24 +1,28 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import {
-  AdapterClass as VcfTabixAdapterClass,
-  configSchema as vcfTabixAdapterConfigSchema,
-} from './VcfTabixAdapter'
+  configSchemaFactory as linearVariantDisplayConfigSchemaFactory,
+  modelFactory as linearVariantDisplayModelFactory,
+} from './LinearVariantDisplay'
 import {
   configSchema as variantFeatureWidgetConfigSchema,
   ReactComponent as VariantFeatureWidgetReactComponent,
   stateModel as variantFeatureWidgetStateModel,
 } from './VariantFeatureWidget'
 import {
-  configSchemaFactory as variantTrackConfigSchemaFactory,
-  modelFactory as variantTrackModelFactory,
-} from './VariantTrack'
-import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
-import StructuralVariantChordTrackFactory from './StructuralVariantChordTrack'
+  AdapterClass as VcfTabixAdapterClass,
+  configSchema as vcfTabixAdapterConfigSchema,
+} from './VcfTabixAdapter'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -34,23 +38,35 @@ export default class VariantsPlugin extends Plugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = variantTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'VariantTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
       return new TrackType({
         name: 'VariantTrack',
-        compatibleView: 'LinearGenomeView',
         configSchema,
-        stateModel: variantTrackModelFactory(configSchema),
-        ReactComponent: BlockBasedTrack,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'VariantTrack',
+          configSchema,
+        ),
       })
     })
 
-    pluginManager.addTrackType(() =>
-      pluginManager.jbrequire(StructuralVariantChordTrackFactory),
-    )
-
-    pluginManager.addRendererType(() =>
-      pluginManager.jbrequire(StructuralVariantChordRendererFactory),
-    )
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearVariantDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearVariantDisplay',
+        configSchema,
+        stateModel: linearVariantDisplayModelFactory(configSchema),
+        trackType: 'VariantTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
 
     pluginManager.addWidgetType(
       () =>
