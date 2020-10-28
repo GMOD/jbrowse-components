@@ -10,6 +10,7 @@ import { setup } from '../testUtil'
 const fsPromises = fs.promises
 
 const simpleBam = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bam')
+const simpleBai = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bai')
 const testConfig = path.join(
   __dirname,
   '..',
@@ -91,6 +92,10 @@ describe('add-track', () => {
         path.join(ctx.dir, 'config.json'),
         { encoding: 'utf8' },
       )
+
+      expect(fs.existsSync(path.join(ctx.dir,'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir,'simple.bam.bai'))).toBeTruthy()
+
       expect(JSON.parse(contents).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -103,8 +108,51 @@ describe('add-track', () => {
               uri: 'simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
+    .command(['add-track', simpleBam, '--load', 'copy', '--index', simpleBai])
+    .it('adds a track', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+
+
+      expect(fs.existsSync(path.join(ctx.dir,'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir,'simple.bai'))).toBeTruthy()
+
+
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'simple',
+          name: 'simple',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: 'simple.bam',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: 'simple.bai',
               },
             },
             sequenceAdapter: {
@@ -138,6 +186,7 @@ describe('add-track', () => {
               uri: 'bam/simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 uri: 'bam/simple.bam.bai',
               },
@@ -182,6 +231,7 @@ describe('add-track', () => {
               localPath: 'bam/simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 localPath: 'bam/simple.bam.bai',
               },
@@ -238,6 +288,7 @@ describe('add-track', () => {
               uri: 'simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
               },
@@ -268,6 +319,7 @@ describe('add-track', () => {
               uri: 'https://mysite.com/data/simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 uri: 'https://mysite.com/data/simple.bam.bai',
               },
@@ -324,6 +376,7 @@ describe('add-track', () => {
               uri: 'simple.bam',
             },
             index: {
+              indexType: 'BAI',
               location: {
                 uri: 'simple.bam.bai',
               },
