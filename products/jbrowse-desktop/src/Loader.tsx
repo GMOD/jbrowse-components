@@ -6,6 +6,10 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginLoader from '@jbrowse/core/PluginLoader'
+import {
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from '@jbrowse/core/util/analytics'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -23,7 +27,11 @@ const useStyles = makeStyles({
   },
 })
 
-export default function Loader() {
+export default function Loader({
+  initialTimestamp,
+}: {
+  initialTimestamp: number
+}) {
   const [configSnapshot, setConfigSnapshot] = useState<
     SnapshotIn<AnyConfigurationModel>
   >()
@@ -112,6 +120,17 @@ export default function Loader() {
     pluginManager.setRootModel(rootModel)
 
     pluginManager.configure()
+
+    // TODOANALYTICS: ask about what to do with desktop analytics
+    if (rootModel.session) {
+      writeAWSAnalytics(
+        rootModel,
+        `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
+        // 'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics',
+        initialTimestamp,
+      )
+      writeGAAnalytics(rootModel, initialTimestamp)
+    }
   }
 
   return <JBrowse pluginManager={pluginManager} />

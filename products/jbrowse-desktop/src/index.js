@@ -9,6 +9,7 @@ import Loader from './Loader'
 const { electron } = window
 const { ipcRenderer, remote } = electron
 const { BrowserWindow, getCurrentWindow } = remote
+const initialTimestamp = Date.now()
 
 window.onbeforeunload = () => {
   const thisWindowId = getCurrentWindow().id
@@ -36,7 +37,7 @@ const PlatformSpecificFatalErrorDialog = props => {
 
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-    <Loader />
+    <Loader initialTimestamp={initialTimestamp} />
   </ErrorBoundary>,
   document.getElementById('root'),
 )

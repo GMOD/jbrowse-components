@@ -21,13 +21,16 @@ import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
+import {
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from '@jbrowse/core/util/analytics'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
-import { writeAWSAnalytics, writeGAAnalytics } from './analytics'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
