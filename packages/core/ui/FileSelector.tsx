@@ -48,7 +48,7 @@ const FileLocationEditor = observer(
     ) => {
       if (newValue === 'url') {
         setFileOrUrlState('url')
-      } else {
+      } else if (isElectron) {
         setFileOrUrlState('file')
       }
     }
@@ -65,13 +65,11 @@ const FileLocationEditor = observer(
               onChange={handleFileOrUrlChange}
               aria-label="file or url picker"
             >
-              <ToggleButton
-                value="file"
-                aria-label="local file"
-                disabled={!isElectron}
-              >
-                File
-              </ToggleButton>
+              {isElectron ? (
+                <ToggleButton value="file" aria-label="local file">
+                  File
+                </ToggleButton>
+              ) : null}
               <ToggleButton value="url" aria-label="url">
                 Url
               </ToggleButton>
