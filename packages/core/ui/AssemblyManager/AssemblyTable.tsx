@@ -62,6 +62,7 @@ const AssemblyTable = observer(
           <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
           <TableCell className={classes.buttonCell}>
             <IconButton
+              data-testid={`${name}-edit`}
               className={classes.button}
               onClick={() => {
                 setIsAssemblyBeingEdited(true)
@@ -71,6 +72,7 @@ const AssemblyTable = observer(
               <CreateIcon color="primary" />
             </IconButton>
             <IconButton
+              data-testid={`${name}-delete`}
               className={classes.button}
               onClick={() => {
                 removeAssembly(name)

@@ -140,10 +140,3 @@ function returnAssemblyName(assembly: any) {
 }
 
 export default AssemblyManager
-
-/*
-TODO:
-
-- write tests
-
-*/
