@@ -110,11 +110,6 @@ export async function writeGAAnalytics(
     loadTime: Date.now() - initialTimeStamp,
   }
 
-  // do we need custom GA accounts?
-  // if needed,
-  // getConf(self, 'googleAnalytics')
-  // accounts.push(all accounts in the conf)
-
   // create script
   let analyticsScript =
     "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ "
@@ -124,37 +119,21 @@ export async function writeGAAnalytics(
     'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) '
   analyticsScript +=
     "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
-  // for each acc? add pageview + custom variable
+  analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
-  // set up users
-  accounts.forEach((user, trackerNum) => {
-    // if we're adding jbrowse.org user, also include new dimension references (replacing ga.js custom variables)
-    if (user === jbrowseUser) {
-      analyticsScript += `ga('create', '${user}', 'auto', 'jbrowseTracker');`
-    } else {
-      analyticsScript += `ga('create', '${user}', 'auto', 'customTracker${trackerNum}');`
-    }
+  const gaData: AnalyticsObj = {}
+  const googleDimensions = 'ver tracks-count plugin browser electron loadTime'
+  //   const googleMetrics = 'loadTime'
+
+  googleDimensions.split(/\s+/).forEach((key, index) => {
+    gaData[`dimension${index + 1}`] = stats[key]
   })
-  accounts.forEach((user, viewerNum) => {
-    if (user === jbrowseUser) {
-      const gaData: AnalyticsObj = {}
-      const googleDimensions =
-        'ver tracks-count plugin browser electron loadTime'
-      //   const googleMetrics = 'loadTime'
 
-      googleDimensions.split(/\s+/).forEach((key, index) => {
-        gaData[`dimension${index + 1}`] = stats[key]
-      })
+  gaData.metric1 = Math.round(stats.loadTime * 1000)
 
-      gaData.metric1 = Math.round(stats.loadTime * 1000)
-
-      analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
-        gaData,
-      )});`
-    } else {
-      analyticsScript += `ga('customTracker${viewerNum}.send', 'pageview');`
-    }
-  })
+  analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
+    gaData,
+  )});`
 
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
