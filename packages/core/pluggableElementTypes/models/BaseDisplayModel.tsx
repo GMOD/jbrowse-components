@@ -19,17 +19,16 @@ export const BaseDisplay = types
   .views(self => ({
     get RenderingComponent(): React.FC<{
       model: typeof self
-      onHorizontalScroll: Function
-      blockState: Record<string, any>
+      onHorizontalScroll?: Function
+      blockState?: Record<string, any>
     }> {
-      return (
-        self.ReactComponent ||
-        (() => (
-          <div className="DisplayRenderingNotImplemented">
-            Rendering not implemented for {self.type} displays
-          </div>
-        ))
-      )
+      const { pluginManager } = getSession(self)
+      const displayType = pluginManager.getDisplayType(self.type)
+      return displayType.ReactComponent as React.FC<{
+        model: typeof self
+        onHorizontalScroll?: Function
+        blockState?: Record<string, any>
+      }>
     },
 
     get DisplayBlurb(): React.FC<{ model: typeof self }> | null {

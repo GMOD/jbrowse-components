@@ -7,3 +7,7 @@ export type {
   BaseDisplayModel,
   BaseDisplayStateModel,
 } from './BaseDisplayModel'
+export { createBaseTrackModel } from './BaseTrackModel'
+export type { BaseTrackModel, BaseTrackStateModel } from './BaseTrackModel'
+export { createBaseTrackConfig } from './baseTrackConfig'
+export type { BaseTrackConfig, BaseTrackConfigModel } from './baseTrackConfig'

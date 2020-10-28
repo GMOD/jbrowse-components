@@ -403,7 +403,18 @@ export default class PluginManager {
   addTrackType(
     creationCallback: (pluginManager: PluginManager) => TrackType,
   ): this {
-    return this.addElementType('track', creationCallback)
+    const callback = () => {
+      const track = creationCallback(this)
+      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
+        display => {
+          if (display.trackType === track.name) {
+            track.addDisplayType(display)
+          }
+        },
+      )
+      return track
+    }
+    return this.addElementType('track', callback)
   }
 
   addDisplayType(
@@ -415,7 +426,18 @@ export default class PluginManager {
   addViewType(
     creationCallback: (pluginManager: PluginManager) => ViewType,
   ): this {
-    return this.addElementType('view', creationCallback)
+    const callback = () => {
+      const newView = creationCallback(this)
+      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
+        display => {
+          if (display.viewType === newView.name) {
+            newView.addDisplayType(display)
+          }
+        },
+      )
+      return newView
+    }
+    return this.addElementType('view', callback)
   }
 
   addWidgetType(

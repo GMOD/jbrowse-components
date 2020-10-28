@@ -36,7 +36,7 @@ export default class DisplayType extends PluggableElementBase {
       throw new Error(`no configSchema provided for display ${this.name}`)
     }
     if (!this.ReactComponent) {
-      throw new Error(`no ReactComponent provided for track ${this.name}`)
+      throw new Error(`no ReactComponent provided for display ${this.name}`)
     }
     if (!this.trackType) {
       throw new Error(`no trackType provided for display ${this.name}`)
