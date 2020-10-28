@@ -22,12 +22,13 @@ import { ElementId } from '../../util/types/mst'
 // note that multiple displayed tracks could use the same configuration.
 export function createBaseTrackModel(
   pluginManager: PluginManager,
+  trackType: string,
   baseTrackConfig: AnyConfigurationSchemaType,
 ) {
   return types
-    .model('BaseTrack', {
+    .model(trackType, {
       id: ElementId,
-      type: types.string,
+      type: types.literal(trackType),
       configuration: ConfigurationReference(baseTrackConfig),
       displays: types.array(
         pluginManager.pluggableMstType('display', 'stateModel'),

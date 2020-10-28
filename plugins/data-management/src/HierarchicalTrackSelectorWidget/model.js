@@ -64,6 +64,23 @@ export default pluginManager =>
         return relevantTrackConfigurations
       },
 
+      getRefSeqTrackConf(assemblyName) {
+        const { assemblyManager } = getSession(self)
+        const assembly = assemblyManager.get(assemblyName)
+        const trackConf = assembly?.configuration.sequence
+        const viewType = pluginManager.getViewType(self.view.type)
+        for (const display of trackConf.displays) {
+          if (
+            viewType.displayTypes.find(
+              displayType => displayType.name === display.type,
+            )
+          ) {
+            return trackConf
+          }
+        }
+        return undefined
+      },
+
       get assemblyNames() {
         return self.view ? self.view.assemblyNames : []
       },
