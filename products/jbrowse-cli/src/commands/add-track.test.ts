@@ -93,8 +93,8 @@ describe('add-track', () => {
         { encoding: 'utf8' },
       )
 
-      expect(fs.existsSync(path.join(ctx.dir,'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(path.join(ctx.dir,'simple.bam.bai'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
 
       expect(JSON.parse(contents).tracks).toEqual([
         {
@@ -133,10 +133,8 @@ describe('add-track', () => {
         { encoding: 'utf8' },
       )
 
-
-      expect(fs.existsSync(path.join(ctx.dir,'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(path.join(ctx.dir,'simple.bai'))).toBeTruthy()
-
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(path.join(ctx.dir, 'simple.bai'))).toBeTruthy()
 
       expect(JSON.parse(contents).tracks).toEqual([
         {

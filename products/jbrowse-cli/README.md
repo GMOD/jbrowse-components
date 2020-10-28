@@ -223,6 +223,8 @@ OPTIONS
   --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
                                         "density"}'
 
+  --index=index                         Optional index file for the track
+
   --out=out                             synonym for target
 
   --overwrite                           Overwrites existing track if it shares the same trackId
