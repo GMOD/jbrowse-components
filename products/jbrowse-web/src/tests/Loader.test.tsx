@@ -70,6 +70,8 @@ function FallbackComponent({ error }: FallbackProps) {
   return <div>there was an error: {String(error)}</div>
 }
 
+const initialTimestamp = 0
+
 describe('<Loader />', () => {
   afterEach(() => {
     localStorage.clear()
@@ -81,7 +83,7 @@ describe('<Loader />', () => {
       <ErrorBoundary FallbackComponent={FallbackComponent}>
         {/* @ts-ignore */}
         <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
-          <Loader />
+          <Loader initialTimestamp={initialTimestamp} />
         </QueryParamProvider>
       </ErrorBoundary>,
     )
@@ -105,7 +107,7 @@ describe('<Loader />', () => {
             '?config=test_data/volvox/config_main_thread.json&session=abcdefg',
         }}
       >
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>,
     )
 
@@ -121,7 +123,7 @@ describe('<Loader />', () => {
             '?config=test_data/volvox/config_main_thread.json&session=share-testid&password=17732efacf3f4909151acb11e1d5f057',
         }}
       >
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>,
     )
     expect(await findByText('Help')).toBeTruthy()
@@ -139,7 +141,7 @@ describe('<Loader />', () => {
               '?config=test_data/volvox/config_main_thread.json&session=share-nonexist',
           }}
         >
-          <Loader />
+          <Loader initialTimestamp={initialTimestamp} />
         </QueryParamProvider>
       </ErrorBoundary>,
     )

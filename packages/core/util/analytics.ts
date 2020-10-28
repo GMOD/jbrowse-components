@@ -25,10 +25,10 @@ import { getSnapshot } from 'mobx-state-tree'
 // number of tracks where assemblyNames > 1 (number of synteny tracks) x
 // screen geometry x
 // window geometry x
-// window.navigator.userAgent (what browser they are using), maybe look for simplier string x
 // tzoffset x
 // loadtime x
 // amt of savedSessions (look for localSaved in their local storage) x
+// is from jb2
 
 interface AnalyticsObj {
   [key: string]: any
@@ -42,11 +42,10 @@ interface Track {
 
 export async function writeAWSAnalytics(
   rootModel: any,
-  url: string,
   initialTimeStamp: number,
 ) {
-  const { session } = rootModel
-  const refSeqCount: AnalyticsObj = {}
+  const url =
+    'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse-analytics'
 
   //   session.assemblies.forEach((assembly: any, idx: number) => {
   //     const value = rootModel.assemblyManager.get(assembly)
@@ -56,13 +55,15 @@ export async function writeAWSAnalytics(
   //   })
   const stats = {
     ver: rootModel.version,
-    'refSeq-count': refSeqCount,
-    'tracks-count': session.tracks.length,
+    // add number of assemblies
+    // 'refSeq-count': refSeqCount,
+    'assemblies-count': rootModel.jbrowse.assemblies.length,
+    'tracks-count': rootModel.jbrowse.tracks.length,
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
       : '',
-    'open-views': session.views.length,
-    'synteny-tracks-count': session.tracks.filter(
+    'open-views': rootModel?.session?.views.length || undefined,
+    'synteny-tracks-count': rootModel.jbrowse.tracks.filter(
       (track: Track) => track.assemblyNames.length > 1,
     ).length,
     'saved-sessions-count': Object.keys(localStorage).filter(name =>
@@ -76,25 +77,20 @@ export async function writeAWSAnalytics(
     // window geometry
     'win-h': document.body.offsetHeight,
     'win-w': document.body.offsetWidth,
-    browser: window.navigator.userAgent,
 
     electron: typeof window !== 'undefined' && Boolean(window.electron),
-    loadTime: Date.now() - initialTimeStamp,
+    loadTime: (Date.now() - initialTimeStamp) / 1000,
+    jb2: true,
   }
-  const data = new FormData()
-  data.append('stats', JSON.stringify(stats))
 
-  // this is a GET request in JB1, ask if POST is okay
-  const response = await fetch(`${url}`, {
-    method: 'POST',
+  const qs = Object.keys(stats)
+    .map(key => `${key}=${stats[key]}`)
+    .join('&')
+
+  await fetch(`${url}?${qs}`, {
+    method: 'GET',
     mode: 'cors',
-    body: JSON.stringify(stats),
   })
-
-  // have some sort of return that isnt a console.log
-  if (response && response.ok) {
-    console.log('success')
-  }
 }
 
 export async function writeGAAnalytics(
@@ -105,7 +101,7 @@ export async function writeGAAnalytics(
   const accounts = [jbrowseUser]
   const stats: AnalyticsObj = {
     ver: rootModel.version,
-    'tracks-count': rootModel.session.tracks.length, // this is all possible tracks
+    'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
     plugins: rootModel.jbrowse.plugins
       ? getSnapshot(rootModel.jbrowse.plugins)
       : '',
@@ -129,6 +125,16 @@ export async function writeGAAnalytics(
   analyticsScript +=
     "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
   // for each acc? add pageview + custom variable
+
+  // set up users
+  accounts.forEach((user, trackerNum) => {
+    // if we're adding jbrowse.org user, also include new dimension references (replacing ga.js custom variables)
+    if (user === jbrowseUser) {
+      analyticsScript += `ga('create', '${user}', 'auto', 'jbrowseTracker');`
+    } else {
+      analyticsScript += `ga('create', '${user}', 'auto', 'customTracker${trackerNum}');`
+    }
+  })
   accounts.forEach((user, viewerNum) => {
     if (user === jbrowseUser) {
       const gaData: AnalyticsObj = {}

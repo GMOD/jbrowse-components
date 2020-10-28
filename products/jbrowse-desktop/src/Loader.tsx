@@ -122,13 +122,8 @@ export default function Loader({
     pluginManager.configure()
 
     // TODOANALYTICS: ask about what to do with desktop analytics
-    if (rootModel.session) {
-      writeAWSAnalytics(
-        rootModel,
-        `https://sozolpry01.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics`,
-        // 'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse2-analytics',
-        initialTimestamp,
-      )
+    if (rootModel) {
+      writeAWSAnalytics(rootModel, initialTimestamp)
       writeGAAnalytics(rootModel, initialTimestamp)
     }
   }
