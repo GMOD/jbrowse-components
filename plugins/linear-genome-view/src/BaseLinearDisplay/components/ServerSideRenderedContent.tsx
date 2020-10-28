@@ -6,7 +6,7 @@ import { observer, PropTypes } from 'mobx-react'
 import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
 import React, { useEffect, useRef } from 'react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
-import type { BlockModel } from '../../BasicTrack/util/serverSideRenderedBlock'
+import type { BlockModel } from '../models/serverSideRenderedBlock'
 
 function ServerSideRenderedContent(props: { model: BlockModel }) {
   const ssrContainerNode = useRef<HTMLDivElement>(null)

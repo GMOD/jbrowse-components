@@ -1,8 +1,16 @@
+import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from '@material-ui/core/styles'
-import ReactPropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import React from 'react'
 
 const useStyles = makeStyles(theme => ({
+  contentBlock: {
+    position: 'relative',
+    minHeight: '100%',
+    boxSizing: 'border-box',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+  },
   elidedBlock: {
     minHeight: '100%',
     boxSizing: 'border-box',
@@ -20,15 +28,45 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export const ElidedBlockMarker = ({ width }) => {
+interface ContentBlockProps {
+  block: BaseBlock
+  children: React.ReactNode
+}
+
+interface ElidedBlockProps {
+  width: number
+}
+
+interface InterRegionPaddingBlockProps {
+  boundary: boolean
+  width: number
+  style?: React.CSSProperties
+}
+
+const ContentBlock = observer(({ block, children }: ContentBlockProps) => {
+  const classes = useStyles()
+  return (
+    <div
+      style={{
+        width: `${block.widthPx}px`,
+      }}
+      className={classes.contentBlock}
+    >
+      {children}
+    </div>
+  )
+})
+
+function ElidedBlock({ width }: ElidedBlockProps) {
   const classes = useStyles()
   return <div className={classes.elidedBlock} style={{ width: `${width}px` }} />
 }
-ElidedBlockMarker.propTypes = {
-  width: ReactPropTypes.number.isRequired,
-}
 
-export const InterRegionPaddingBlockMarker = ({ boundary, width, style }) => {
+function InterRegionPaddingBlock({
+  boundary,
+  width,
+  style = {},
+}: InterRegionPaddingBlockProps) {
   const classes = useStyles()
   return (
     <div
@@ -44,13 +82,5 @@ export const InterRegionPaddingBlockMarker = ({ boundary, width, style }) => {
     />
   )
 }
-InterRegionPaddingBlockMarker.propTypes = {
-  boundary: ReactPropTypes.bool,
-  width: ReactPropTypes.number.isRequired,
-  style: ReactPropTypes.shape(),
-}
 
-InterRegionPaddingBlockMarker.defaultProps = {
-  boundary: false,
-  style: {},
-}
+export { ContentBlock, ElidedBlock, InterRegionPaddingBlock }

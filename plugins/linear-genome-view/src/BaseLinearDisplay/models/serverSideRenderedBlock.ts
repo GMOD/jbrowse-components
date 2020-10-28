@@ -16,7 +16,7 @@ import {
 
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
-// the MST state of a single server-side-rendered block in a track
+// the MST state of a single server-side-rendered block in a display
 const blockState = types
   .model('BlockState', {
     key: types.string,
@@ -42,14 +42,14 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const track = getParent<any>(self, 2)
+        const display = getParent<any>(self, 2)
         makeAbortableReaction(
           self as any,
           renderBlockData,
           renderBlockEffect as any, // reaction doesn't expect async here
           {
-            name: `${track.id}/${assembleLocString(self.region)} rendering`,
-            delay: track.renderDelay,
+            name: `${display.id}/${assembleLocString(self.region)} rendering`,
+            delay: display.renderDelay,
             fireImmediately: true,
           },
           this.setLoading,
@@ -154,9 +154,9 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const track = getParent(self, 2)
+        const display = getParent(self, 2)
         const { rpcManager } = getSession(self)
-        const { rendererType } = track
+        const { rendererType } = display
         const { renderArgs } = renderBlockData(cast(self))
         rendererType
           .freeResourcesInClient(
@@ -180,7 +180,11 @@ export type BlockModel = Instance<BlockStateModel>
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyManager, rpcManager } = getSession(self)
-    const track = getParent(self, 2)
+    const display = getParent(self, 2)
+    const track = getParent(self, 4)
+    if (!track.configuration) {
+      console.error('wrong one!')
+    }
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
@@ -195,10 +199,10 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       }
     }
     if (!cannotBeRenderedReason) {
-      cannotBeRenderedReason = track.regionCannotBeRendered(self.region)
+      cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
     }
-    const { renderProps } = track
-    const { rendererType } = track
+    const { renderProps } = display
+    const { rendererType } = display
     const { config } = renderProps
     // This line is to trigger the mobx reaction when the config changes
     // It won't trigger the reaction if it doesn't think we're accessing it
@@ -206,14 +210,14 @@ function renderBlockData(self: Instance<BlockStateModel>) {
 
     const adapterConfig = getConf(track, 'adapter')
 
-    const sessionId = getRpcSessionId(track)
+    const sessionId = getRpcSessionId(display)
 
     return {
       rendererType,
       rpcManager,
       renderProps,
       cannotBeRenderedReason,
-      trackError: track.error,
+      displayError: display.error,
       renderArgs: {
         statusCallback: (message: string) => {
           if (isAlive(self)) {
@@ -232,13 +236,13 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     }
   } catch (error) {
     return {
-      trackError: error,
+      displayError: error,
     }
   }
 }
 
 interface RenderProps {
-  trackError: Error
+  displayError: Error
   rendererType: any
   renderProps: { [key: string]: any }
   rpcManager: { call: Function }
@@ -247,7 +251,7 @@ interface RenderProps {
 }
 
 interface ErrorProps {
-  trackError: string
+  displayError: string
 }
 
 async function renderBlockEffect(
@@ -261,14 +265,14 @@ async function renderBlockEffect(
     rpcManager,
     renderArgs,
     cannotBeRenderedReason,
-    trackError,
+    displayError,
   } = props as RenderProps
   if (!isAlive(self)) {
     return undefined
   }
 
-  if (trackError) {
-    self.setError(trackError)
+  if (displayError) {
+    self.setError(displayError)
     return undefined
   }
   if (cannotBeRenderedReason) {

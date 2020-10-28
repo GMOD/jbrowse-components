@@ -3,22 +3,20 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
 import {
-  BaseBlock,
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import { BlockBasedTrackModel } from '../blockBasedTrackModel'
-
-import Block from './Block'
+import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
 import {
-  ElidedBlockMarker,
-  InterRegionPaddingBlockMarker,
-} from './MarkerBlocks'
+  ContentBlock as ContentBlockComponent,
+  ElidedBlock as ElidedBlockComponent,
+  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
+} from './Block'
 
 const useStyles = makeStyles({
-  trackBlocks: {
+  linearBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
@@ -38,17 +36,20 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
   },
 })
-const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
+const RenderedBlocks = observer((props: { model: BaseLinearDisplayModel }) => {
   const { model } = props
   const classes = useStyles()
   const { blockDefinitions, blockState } = model
   return (
     <>
-      {blockDefinitions.map((block: BaseBlock) => {
+      {blockDefinitions.map(block => {
         if (block instanceof ContentBlock) {
           const state = blockState.get(block.key)
           return (
-            <Block block={block} key={`${model.id}-${block.key}`}>
+            <ContentBlockComponent
+              block={block}
+              key={`${model.id}-${block.key}`}
+            >
               {state && state.ReactComponent ? (
                 <state.ReactComponent model={state} />
               ) : null}
@@ -64,12 +65,12 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
                   Max height reached
                 </div>
               ) : null}
-            </Block>
+            </ContentBlockComponent>
           )
         }
         if (block instanceof ElidedBlock) {
           return (
-            <ElidedBlockMarker
+            <ElidedBlockComponent
               key={`${model.id}-${block.key}`}
               width={block.widthPx}
             />
@@ -77,7 +78,7 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
         }
         if (block instanceof InterRegionPaddingBlock) {
           return (
-            <InterRegionPaddingBlockMarker
+            <InterRegionPaddingBlockComponent
               key={block.key}
               width={block.widthPx}
               style={{ background: 'none' }}
@@ -90,7 +91,7 @@ const RenderedBlocks = observer((props: { model: BlockBasedTrackModel }) => {
     </>
   )
 })
-function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
+function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
   const classes = useStyles()
   const { blockDefinitions } = model
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,7 +99,7 @@ function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
   return (
     <div
       data-testid="Blockset"
-      className={classes.trackBlocks}
+      className={classes.linearBlocks}
       style={{
         left: blockDefinitions.offsetPx - viewModel.offsetPx,
       }}
@@ -108,9 +109,9 @@ function TrackBlocks({ model }: { model: BlockBasedTrackModel }) {
   )
 }
 
-TrackBlocks.propTypes = {
+LinearBlocks.propTypes = {
   model: PropTypes.observableObject.isRequired,
 }
 
 export { RenderedBlocks, useStyles }
-export default observer(TrackBlocks)
+export default observer(LinearBlocks)

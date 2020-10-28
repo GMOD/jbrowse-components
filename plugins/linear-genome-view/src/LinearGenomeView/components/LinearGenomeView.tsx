@@ -68,31 +68,33 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
           <Typography color="error">{error.message}</Typography>
         </Paper>
       ) : (
-        <TracksContainer model={model}>
-          {!tracks.length ? (
-            <Paper variant="outlined" className={classes.errorMessage}>
-              <Typography>No tracks active.</Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={model.activateTrackSelector}
-                disabled={
-                  isSessionModelWithWidgets(session) &&
-                  session.visibleWidget &&
-                  session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                  // @ts-ignore
-                  session.visibleWidget.view.id === model.id
-                }
-              >
-                Select Tracks
-              </Button>
-            </Paper>
-          ) : (
-            tracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
-            ))
-          )}
-        </TracksContainer>
+        <>
+          <TracksContainer model={model}>
+            {!tracks.length ? (
+              <Paper variant="outlined" className={classes.errorMessage}>
+                <Typography>No tracks active.</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={model.activateTrackSelector}
+                  disabled={
+                    isSessionModelWithWidgets(session) &&
+                    session.visibleWidget &&
+                    session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                    // @ts-ignore
+                    session.visibleWidget.view.id === model.id
+                  }
+                >
+                  Select Tracks
+                </Button>
+              </Paper>
+            ) : (
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))
+            )}
+          </TracksContainer>
+        </>
       )}
     </div>
   )

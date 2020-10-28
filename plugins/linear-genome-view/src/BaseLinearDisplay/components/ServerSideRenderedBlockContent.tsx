@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import ServerSideRenderedContent from '../../LinearGenomeView/components/ServerSideRenderedContent'
+import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -81,8 +81,8 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   }, [])
 
   const { status: blockStatus } = model
-  const { message: trackStatus } = getParent(model, 2)
-  const status = trackStatus || blockStatus
+  const { message: displayStatus } = getParent(model, 2)
+  const status = displayStatus || blockStatus
   return shown ? (
     <div className={classes.loading}>
       <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
@@ -113,15 +113,15 @@ BlockMessage.propTypes = {
 function BlockError({
   error,
   reload,
-  trackHeight,
+  displayHeight,
 }: {
   error: Error
   reload: () => void
-  trackHeight: number
+  displayHeight: number
 }) {
   const classes = useStyles()
   return (
-    <div className={classes.blockError} style={{ height: trackHeight }}>
+    <div className={classes.blockError} style={{ height: displayHeight }}>
       {reload ? (
         <>
           <Button
@@ -162,7 +162,7 @@ const ServerSideRenderedBlockContent = observer(
           <BlockError
             error={model.error}
             reload={model.reload}
-            trackHeight={getParentRenderProps(model).trackModel.height}
+            displayHeight={getParentRenderProps(model).displayModel.height}
           />
         </Repeater>
       )

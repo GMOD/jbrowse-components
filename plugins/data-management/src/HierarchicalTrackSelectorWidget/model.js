@@ -57,9 +57,26 @@ export default pluginManager =>
         }
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf =>
-            conf.viewType === self.view.type &&
-            readConfObject(conf, 'assemblyNames').includes(assemblyName),
+          trackConf => {
+            const trackConfAssemblies = readConfObject(
+              trackConf,
+              'assemblyNames',
+            )
+            if (!trackConfAssemblies.includes(assemblyName)) {
+              return false
+            }
+            const viewType = pluginManager.getViewType(self.view.type)
+            for (const display of trackConf.displays) {
+              if (
+                viewType.displayTypes.find(
+                  displayType => displayType.name === display.type,
+                )
+              ) {
+                return true
+              }
+            }
+            return false
+          },
         )
         return relevantTrackConfigurations
       },

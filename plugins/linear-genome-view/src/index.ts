@@ -1,73 +1,77 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
-import Plugin from '@jbrowse/core/Plugin'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
-
 import {
   configSchema as baseFeatureWidgetConfigSchema,
   ReactComponent as BaseFeatureWidgetReactComponent,
   stateModel as baseFeatureWidgetStateModel,
 } from '@jbrowse/core/BaseFeatureWidget'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
-  configSchemaFactory as basicTrackConfigSchemaFactory,
-  stateModelFactory as basicTrackStateModelFactory,
-} from './BasicTrack'
+  BaseLinearDisplay,
+  BaseLinearDisplayComponent,
+  baseLinearDisplayConfigSchema,
+} from './BaseLinearDisplay'
+import { BlockModel } from './BaseLinearDisplay/models/serverSideRenderedBlock'
 import {
-  configSchemaFactory as dynamicTrackConfigSchemaFactory,
-  stateModelFactory as dynamicTrackStateModelFactory,
-} from './DynamicTrack'
+  configSchemaFactory as linearBasicDisplayConfigSchemaFactory,
+  stateModelFactory as LinearBasicDisplayStateModelFactory,
+} from './LinearBasicDisplay'
 import {
-  ReactComponent as LinearGenomeViewReactComponent,
-  stateModelFactory as linearGenomeViewStateModelFactory,
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
+  ReactComponent as LinearGenomeViewReactComponent,
+  stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
-
-import BaseTrack, {
-  BaseTrackConfig,
-  BaseTrackStateModel,
-} from './BasicTrack/baseTrackModel'
-import blockBasedTrackModel, {
-  BlockBasedTrackModel,
-} from './BasicTrack/blockBasedTrackModel'
-import BlockBasedTrack from './BasicTrack/components/BlockBasedTrack'
-import { BlockModel } from './BasicTrack/util/serverSideRenderedBlock'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
 
   exports = {
-    BaseTrack,
-    BaseTrackConfig,
-    blockBasedTrackModel,
-    BlockBasedTrack,
-    basicTrackConfigSchemaFactory,
-    basicTrackStateModelFactory,
+    BaseLinearDisplayComponent,
+    BaseLinearDisplay,
+    baseLinearDisplayConfigSchema,
   }
 
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = basicTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'FeatureTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
       return new TrackType({
-        name: 'BasicTrack',
-        compatibleView: 'LinearGenomeView',
+        name: 'FeatureTrack',
         configSchema,
-        stateModel: basicTrackStateModelFactory(configSchema),
-        ReactComponent: BlockBasedTrack,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'FeatureTrack',
+          configSchema,
+        ),
       })
     })
 
-    pluginManager.addTrackType(() => {
-      const configSchema = dynamicTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'DynamicTrack',
-        compatibleView: 'LinearGenomeView',
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearBasicDisplay',
         configSchema,
-        stateModel: dynamicTrackStateModelFactory(configSchema),
-        ReactComponent: BlockBasedTrack,
+        stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
       })
     })
 
@@ -105,18 +109,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export {
-  BaseTrack,
-  BaseTrackConfig,
-  blockBasedTrackModel,
-  BlockBasedTrack,
-  basicTrackConfigSchemaFactory,
-  basicTrackStateModelFactory,
+  BaseLinearDisplayComponent,
+  BaseLinearDisplay,
+  baseLinearDisplayConfigSchema,
 }
-
-export type {
-  BaseTrackStateModel,
-  BlockBasedTrackModel,
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-  BlockModel,
-}
+export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
