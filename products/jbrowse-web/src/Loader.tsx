@@ -25,9 +25,9 @@ import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
-import StartScreen from './StartScreen'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
+import factoryReset from './factoryReset'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -377,6 +377,7 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
+    const [defaultScreen, setDefault] = useState(true)
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -410,10 +411,9 @@ const Renderer = observer(
           // in order: saves the previous autosave for recovery, tries to load
           // the local session if session in query, or loads the default
           // session
-          //
           if (sessionError) {
             // will need to got to splash Screen
-            // rootModel.setDefaultSession()
+            rootModel.setDefaultSession()
             // make typescript happy by checking for session after setDefaultSession
             if (rootModel.session) {
               rootModel.session.notify(
@@ -425,11 +425,11 @@ const Renderer = observer(
             }
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
+            setDefault(false)
+          } else {
+            // will need to got to splash Screen
+            rootModel.setDefaultSession()
           }
-          // else {
-          //   // will need to got to splash Screen
-          //   rootModel.setDefaultSession()
-          // }
 
           // TODO use UndoManager
           // rootModel.setHistory(
@@ -451,7 +451,7 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword])
+    }, [loader, ready, defaultScreen, setDefault, sessionError, setPassword])
 
     if (configError) {
       return (
@@ -473,25 +473,19 @@ const Renderer = observer(
 
     if (pm) {
       // will need to account for when a session is not loaded
-      if (sessionError) {
-        return (
-          <StartScreen
-            root={pm.rootModel}
-            bypass
-            onFactoryReset={factoryReset}
-          />
-        )
-      }
-      if (pm.rootModel?.session === undefined) {
-        return (
-          <StartScreen
-            root={pm.rootModel}
-            bypass
-            onFactoryReset={factoryReset}
-          />
-        )
-      }
-      return <JBrowse pluginManager={pm} />
+      //  if (sessionError) or if (pm.rootModel?.session === undefined)
+      // if (defaultSession === true) {
+      //   console.log(defaultSession)
+      //   return (
+      //     <StartScreen
+      //       root={pm.rootModel}
+      //       pm={pm}
+      //       bypass
+      //       onFactoryReset={factoryReset}
+      //     />
+      //   )
+      // }
+      return <JBrowse pluginManager={pm} defaultScreen={defaultScreen} />
     }
     return <Loading />
   },
@@ -509,10 +503,10 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-function factoryReset() {
-  // @ts-ignore
-  window.location = window.location.pathname
-}
+// function factoryReset() {
+//   // @ts-ignore
+//   window.location = window.location.pathname
+// }
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
