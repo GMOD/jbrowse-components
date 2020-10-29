@@ -268,6 +268,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
             self: self as Assembly,
             options: rest,
           } as CacheData,
+          undefined,
           statusCallback,
         )
       },
