@@ -90,33 +90,15 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
           style.boxSizing = 'border-box'
           style.borderCollapse = 'collapse'
         }
-        switch (letter.toLocaleLowerCase()) {
-          case 'a': {
-            const baseColor = theme.palette.bases.A.main
-            style.backgroundColor = baseColor
-            style.color = theme.palette.bases.A.contrastText
-            break
-          }
-          case 'g': {
-            const baseColor = theme.palette.bases.G.main
-            style.backgroundColor = baseColor
-            style.color = theme.palette.bases.G.contrastText
-            break
-          }
-          case 'c': {
-            const baseColor = theme.palette.bases.C.main
-            style.backgroundColor = baseColor
-            style.color = theme.palette.bases.C.contrastText
-            break
-          }
-          case 't': {
-            const baseColor = theme.palette.bases.T.main
-            style.backgroundColor = baseColor
-            style.color = theme.palette.bases.T.contrastText
-            break
-          }
-          default:
-            break
+        type Base = keyof typeof theme.palette.bases
+        function isBase(l: string): l is Base {
+          return Object.keys(theme.palette.bases).includes(l as Base)
+        }
+        const upperLetter = letter.toUpperCase()
+        if (isBase(upperLetter)) {
+          const color = theme.palette.bases[upperLetter]
+          style.backgroundColor = color.main
+          style.color = color.contrastText
         }
         return (
           <div key={`${region.start}-${iter}`} style={style}>
