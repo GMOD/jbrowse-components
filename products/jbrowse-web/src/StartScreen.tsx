@@ -172,10 +172,12 @@ const RenameSessionDialog = ({
 
 export default function StartScreen({
   root,
+  pm,
   bypass,
   onFactoryReset,
 }: {
   root: any
+  pm: any
   bypass: boolean
   onFactoryReset: Function
 }) {
@@ -190,6 +192,7 @@ export default function StartScreen({
   const classes = useStyles()
 
   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
+  console.log(sessionNames)
   //   root.setSavedSessionNames(sessionNames)
   //   const sortedSessions = sessions
   //     ? Object.entries(sessions)
@@ -197,6 +200,8 @@ export default function StartScreen({
   //         .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
   //     : []
   const sortedSessions: any[][] = []
+  console.log('root', root)
+  console.log('pm', pm)
 
   useEffect(() => {
     ;(async () => {
@@ -209,7 +214,9 @@ export default function StartScreen({
           //   root.activateSession(
           //     JSON.parse(await ipcRenderer.invoke('loadSession', load)),
           //   )
+          console.log(`Hey I loaded: ${load}`)
         }
+        console.log(`Hey I did not load`)
       } catch (e) {
         setSessions(() => {
           throw e
@@ -230,7 +237,7 @@ export default function StartScreen({
         })
       }
     })()
-  }, [updateSessionsList]) // ipcRenderer,
+  }, [updateSessionsList])
 
   //   if (!sessions)
   //     return (
