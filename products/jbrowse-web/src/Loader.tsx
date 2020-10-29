@@ -436,7 +436,7 @@ const Renderer = observer(
             rootModel.setDefaultSession()
           }
 
-          if (rootModel) {
+          if (rootModel && !loader.configSnapshot.disableAnalytics) {
             writeAWSAnalytics(rootModel, initialTimestamp)
             writeGAAnalytics(rootModel, initialTimestamp)
           }

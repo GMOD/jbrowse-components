@@ -121,8 +121,7 @@ export default function Loader({
 
     pluginManager.configure()
 
-    // TODOANALYTICS: ask about what to do with desktop analytics
-    if (rootModel) {
+    if (rootModel && !configSnapshot.disableAnalytics) {
       writeAWSAnalytics(rootModel, initialTimestamp)
       writeGAAnalytics(rootModel, initialTimestamp)
     }

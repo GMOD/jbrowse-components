@@ -35,7 +35,7 @@ interface AnalyticsObj {
 }
 
 interface Track {
-  trackId: string
+  trackId?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
@@ -50,8 +50,6 @@ export async function writeAWSAnalytics(
   // stats to be recorded in db
   const stats: AnalyticsObj = {
     ver: rootModel.version,
-    // add number of assemblies
-    // 'refSeq-count': refSeqCount,
     'assemblies-count': rootModel.jbrowse.assemblies.length,
     'tracks-count': rootModel.jbrowse.tracks.length,
     plugins: rootModel.jbrowse.plugins
@@ -78,6 +76,11 @@ export async function writeAWSAnalytics(
     jb2: true,
   }
 
+  rootModel.jbrowse.tracks.forEach((track: Track) => {
+    stats[`track-types-${track.type}`] =
+      stats[`track-types-${track.type}`] + 1 || 1
+  })
+
   // put stats into a query string for get request
   const qs = Object.keys(stats)
     .map(key => `${key}=${stats[key]}`)
@@ -95,14 +98,13 @@ export async function writeGAAnalytics(
 ) {
   const jbrowseUser = 'UA-7115575-5'
   const stats: AnalyticsObj = {
-    ver: rootModel.version,
     'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
-    plugins: rootModel.jbrowse.plugins
-      ? getSnapshot(rootModel.jbrowse.plugins)
-      : '',
-    browser: window.navigator.userAgent,
+    ver: rootModel.version,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     loadTime: Date.now() - initialTimeStamp,
+    plugins: rootModel.jbrowse.plugins
+      ? getSnapshot(rootModel.jbrowse.plugins)
+      : undefined,
   }
 
   // create script
@@ -117,13 +119,13 @@ export async function writeGAAnalytics(
   analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
   const gaData: AnalyticsObj = {}
-  const googleDimensions = 'ver tracks-count plugin browser electron loadTime'
+  const googleDimensions = 'tracks-count ver electron loadTime plugins'
 
   googleDimensions.split(/\s+/).forEach((key, index) => {
     gaData[`dimension${index + 1}`] = stats[key]
   })
 
-  gaData.metric1 = Math.round(stats.loadTime * 1000)
+  gaData.metric1 = Math.round(stats.loadTime)
 
   analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
     gaData,
