@@ -10,7 +10,7 @@ export default ({ jbrequire }) => {
   })
 
   // 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-  const TrackError = observer(
+  const DisplayError = observer(
     ({
       model: {
         renderProps: { radius },
@@ -66,5 +66,5 @@ export default ({ jbrequire }) => {
     },
   )
 
-  return TrackError
+  return DisplayError
 }

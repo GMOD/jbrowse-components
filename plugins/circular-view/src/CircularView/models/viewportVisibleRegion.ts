@@ -1,4 +1,10 @@
-function findCircleIntersectionX(y, cx, cy, r, resultArray) {
+function findCircleIntersectionX(
+  y: number,
+  cx: number,
+  cy: number,
+  r: number,
+  resultArray: [number, number][],
+) {
   const d = Math.abs(y - cy)
   if (d > r) return
   if (d === r) {
@@ -9,7 +15,13 @@ function findCircleIntersectionX(y, cx, cy, r, resultArray) {
   resultArray.push([cx + solution, y])
 }
 
-function findCircleIntersectionY(x, cx, cy, r, resultArray) {
+function findCircleIntersectionY(
+  x: number,
+  cx: number,
+  cy: number,
+  r: number,
+  resultArray: [number, number][],
+) {
   const d = Math.abs(x - cx)
   if (d > r) return
   if (d === r) {
@@ -20,7 +32,7 @@ function findCircleIntersectionY(x, cx, cy, r, resultArray) {
   resultArray.push([x, cy + solution])
 }
 
-function cartesianToTheta(x, y) {
+function cartesianToTheta(x: number, y: number) {
   let theta = (Math.atan(y / x) + 2 * Math.PI) % (2 * Math.PI)
   if (x < 0) {
     if (y <= 0) theta += Math.PI
@@ -29,7 +41,7 @@ function cartesianToTheta(x, y) {
   return theta
 }
 
-export function cartesianToPolar(x, y) {
+export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   if (rho === 0) return [0, 0]
   const theta = cartesianToTheta(x, y)
@@ -37,7 +49,12 @@ export function cartesianToPolar(x, y) {
 }
 
 const twoPi = 2 * Math.PI
-export function thetaRangesOverlap(r1start, r1length, r2start, r2length) {
+export function thetaRangesOverlap(
+  r1start: number,
+  r1length: number,
+  r2start: number,
+  r2length: number,
+) {
   if (r1length <= 0 || r2length <= 0) return false
   if (r1length + 0.0001 >= twoPi || r2length + 0.0001 >= twoPi) return true
 
@@ -57,7 +74,11 @@ export function thetaRangesOverlap(r1start, r1length, r2start, r2length) {
 }
 
 // return which arc range has any part of the circle visible in the viewport
-export function viewportVisibleSection(viewSides, circleCenter, circleRadius) {
+export function viewportVisibleSection(
+  viewSides: [number, number, number, number],
+  circleCenter: [number, number],
+  circleRadius: number,
+) {
   let [viewL, viewR, viewT, viewB] = viewSides
   const [cx, cy] = circleCenter
 
@@ -155,7 +176,7 @@ export function viewportVisibleSection(viewSides, circleCenter, circleRadius) {
 
   // transform coordinates to have the circle as the origin and find the intersections
   // of the circle and the view rectangle
-  const vertices = [
+  const vertices: [number, number][] = [
     [viewL, viewT],
     [viewR, viewT],
     [viewL, viewB],

@@ -26,8 +26,8 @@ export default class CircularViewPlugin extends Plugin {
   }
 }
 
-export { default as ChordTrack } from './ChordTrack'
-
-export { default as ChordTrackLoadingFactory } from './ChordTrack/components/Loading'
-export { default as ChordTrackErrorFactory } from './ChordTrack/components/TrackError'
-export { default as ChordTrackModelFactory } from './ChordTrack/models/ChordTrack'
+export {
+  BaseChordDisplayModel,
+  baseChordDisplayConfig,
+  BaseChordDisplayComponentFactory,
+} from './BaseChordDisplay'

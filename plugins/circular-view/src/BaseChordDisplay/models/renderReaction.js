@@ -3,29 +3,33 @@ export default ({ jbrequire }) => {
   const { getRpcSessionId } = jbrequire('@jbrowse/core/util/tracks')
   const { getContainingView } = jbrequire('@jbrowse/core/util')
   const { getSession } = jbrequire('@jbrowse/core/util')
+  const { getParent } = jbrequire('mobx-state-tree')
 
   function renderReactionData(self) {
-    const track = self
-    const view = getContainingView(track)
-    const { rendererType, renderProps } = track
+    const display = self
+    const view = getContainingView(display)
+    const { rendererType, renderProps } = display
     const { rpcManager } = getSession(view)
 
-    return {
+    const a = {
       rendererType,
       rpcManager,
       renderProps,
       renderArgs: {
         // TODO: Figure this out for multiple assembly names
         assemblyName: view.displayedRegions[0]?.assemblyName,
-        adapterConfig: JSON.parse(JSON.stringify(getConf(track, 'adapter'))),
+        adapterConfig: JSON.parse(
+          JSON.stringify(getConf(getParent(display, 2), 'adapter')),
+        ),
         rendererType: rendererType.name,
         renderProps,
         regions: JSON.parse(JSON.stringify(view.displayedRegions)),
         blockDefinitions: view.blockDefinitions,
-        sessionId: getRpcSessionId(track),
+        sessionId: getRpcSessionId(display),
         timeout: 1000000, // 10000,
       },
     }
+    return a
   }
 
   async function renderReactionEffect(props, signal, self) {
@@ -56,7 +60,7 @@ export default ({ jbrequire }) => {
     // check renderertype compatibility
     if (!self.isCompatibleWithRenderer(rendererType))
       throw new Error(
-        `renderer ${rendererType.name} is not compatible with this track type`,
+        `renderer ${rendererType.name} is not compatible with this display type`,
       )
 
     const { html, ...data } = await rendererType.renderInClient(rpcManager, {

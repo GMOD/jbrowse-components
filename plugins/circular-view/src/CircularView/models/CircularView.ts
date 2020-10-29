@@ -1,20 +1,22 @@
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { SnapshotOrInstance, Instance } from 'mobx-state-tree'
+import { calculateStaticSlices, sliceIsVisible } from './slices'
+
 import { viewportVisibleSection } from './viewportVisibleRegion'
-import slicesFactory from './slices'
 
-export default pluginManager => {
-  const { jbrequire } = pluginManager
-  const { transaction } = jbrequire('mobx')
-  const { types, getParent, resolveIdentifier, getRoot } = jbrequire(
-    'mobx-state-tree',
-  )
-  const { Region } = jbrequire('@jbrowse/core/util/types/mst')
-  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
-  const { clamp, getSession } = jbrequire('@jbrowse/core/util')
-  const { BaseViewModel } = jbrequire(
-    '@jbrowse/core/pluggableElementTypes/models',
-  )
-
-  const { calculateStaticSlices, sliceIsVisible } = jbrequire(slicesFactory)
+export default function CircularView(pluginManager: PluginManager) {
+  const { lib } = pluginManager
+  const { transaction } = lib.mobx
+  const { types, getParent, resolveIdentifier, getRoot, cast } = lib[
+    'mobx-state-tree'
+  ]
+  const { Region } = lib['@jbrowse/core/util/types/mst']
+  const { readConfObject } = lib['@jbrowse/core/configuration']
+  const { clamp, getSession, isSessionModelWithWidgets } = lib[
+    '@jbrowse/core/util'
+  ]
+  const { BaseViewModel } = lib['@jbrowse/core/pluggableElementTypes/models']
 
   const minHeight = 40
   const minWidth = 100
@@ -56,7 +58,7 @@ export default pluginManager => {
         return calculateStaticSlices(self)
       },
       get visibleStaticSlices() {
-        return self.staticSlices.filter(sliceIsVisible.bind(this, self))
+        return this.staticSlices.filter(sliceIsVisible.bind(this, self))
       },
       get visibleSection() {
         return viewportVisibleSection(
@@ -66,30 +68,30 @@ export default pluginManager => {
             self.scrollY,
             self.scrollY + self.height,
           ],
-          self.centerXY,
-          self.radiusPx,
+          this.centerXY,
+          this.radiusPx,
         )
       },
       get circumferencePx() {
         let elidedBp = 0
-        for (const r of self.elidedRegions) {
+        for (const r of this.elidedRegions) {
           elidedBp += r.widthBp
         }
         return (
-          elidedBp / self.bpPerPx + self.spacingPx * self.elidedRegions.length
+          elidedBp / self.bpPerPx + self.spacingPx * this.elidedRegions.length
         )
       },
       get radiusPx() {
-        return self.circumferencePx / (2 * Math.PI)
+        return this.circumferencePx / (2 * Math.PI)
       },
       get bpPerRadian() {
-        return self.bpPerPx * self.radiusPx
+        return self.bpPerPx * this.radiusPx
       },
       get pxPerRadian() {
-        return self.radiusPx
+        return this.radiusPx
       },
-      get centerXY() {
-        return [self.radiusPx + self.paddingPx, self.radiusPx + self.paddingPx]
+      get centerXY(): [number, number] {
+        return [this.radiusPx + self.paddingPx, this.radiusPx + self.paddingPx]
       },
       get totalBp() {
         let total = 0
@@ -105,42 +107,43 @@ export default pluginManager => {
       },
       get maxBpPerPx() {
         const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
-        return self.totalBp / minCircumferencePx
+        return this.totalBp / minCircumferencePx
       },
       get minBpPerPx() {
         // min depends on window dimensions, clamp between old min(0.01) and max
-        const maxCircumferencePx = 2 * Math.PI * self.maximumRadiusPx
+        const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
         return clamp(
-          self.totalBp / maxCircumferencePx,
+          this.totalBp / maxCircumferencePx,
           0.0000000001,
-          self.maxBpPerPx,
+          this.maxBpPerPx,
         )
       },
       get atMaxBpPerPx() {
-        return self.bpPerPx >= self.maxBpPerPx
+        return self.bpPerPx >= this.maxBpPerPx
       },
       get atMinBpPerPx() {
-        return self.bpPerPx <= self.minBpPerPx
+        return self.bpPerPx <= this.minBpPerPx
       },
       get tooSmallToLock() {
-        return self.minBpPerPx <= 0.0000000001
+        return this.minBpPerPx <= 0.0000000001
       },
       get figureDimensions() {
         return [
-          self.radiusPx * 2 + 2 * self.paddingPx,
-          self.radiusPx * 2 + 2 * self.paddingPx,
+          this.radiusPx * 2 + 2 * self.paddingPx,
+          this.radiusPx * 2 + 2 * self.paddingPx,
         ]
       },
       get figureWidth() {
-        return self.figureDimensions[0]
+        return this.figureDimensions[0]
       },
       get figureHeight() {
-        return self.figureDimensions[1]
+        return this.figureDimensions[1]
       },
       // this is displayedRegions, post-processed to
       // elide regions that are too small to see reasonably
       get elidedRegions() {
-        const visible = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const visible: any[] = []
         self.displayedRegions.forEach(region => {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
@@ -175,7 +178,7 @@ export default pluginManager => {
       },
 
       get assemblyNames() {
-        const assemblyNames = []
+        const assemblyNames: string[] = []
         self.displayedRegions.forEach(displayedRegion => {
           if (!assemblyNames.includes(displayedRegion.assemblyName))
             assemblyNames.push(displayedRegion.assemblyName)
@@ -184,36 +187,36 @@ export default pluginManager => {
       },
     }))
     .volatile(() => ({
-      error: undefined,
+      error: undefined as Error | undefined,
     }))
     .actions(self => ({
       // toggle action with a flag stating which mode it's in
-      setWidth(newWidth) {
+      setWidth(newWidth: number) {
         self.width = Math.max(newWidth, minWidth)
         return self.width
       },
-      setHeight(newHeight) {
+      setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
         return self.height
       },
-      resizeHeight(distance) {
+      resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = self.setHeight(self.height + distance)
-        self.setModelViewWhenAdjust(!self.tooSmallToLock)
+        const newHeight = this.setHeight(self.height + distance)
+        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newHeight - oldHeight
       },
-      resizeWidth(distance) {
+      resizeWidth(distance: number) {
         const oldWidth = self.width
-        const newWidth = self.setWidth(self.width + distance)
-        self.setModelViewWhenAdjust(!self.tooSmallToLock)
+        const newWidth = this.setWidth(self.width + distance)
+        this.setModelViewWhenAdjust(!self.tooSmallToLock)
         return newWidth - oldWidth
       },
       rotateClockwiseButton() {
-        self.rotateClockwise(Math.PI / 6)
+        this.rotateClockwise(Math.PI / 6)
       },
 
       rotateCounterClockwiseButton() {
-        self.rotateCounterClockwise(Math.PI / 6)
+        this.rotateCounterClockwise(Math.PI / 6)
       },
 
       rotateClockwise(distance = 0.17) {
@@ -225,20 +228,20 @@ export default pluginManager => {
       },
 
       zoomInButton() {
-        self.setBpPerPx(self.bpPerPx / 1.4)
+        this.setBpPerPx(self.bpPerPx / 1.4)
       },
 
       zoomOutButton() {
-        self.setBpPerPx(self.bpPerPx * 1.4)
+        this.setBpPerPx(self.bpPerPx * 1.4)
       },
 
-      setBpPerPx(newVal) {
+      setBpPerPx(newVal: number) {
         self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
       },
 
-      setModelViewWhenAdjust(secondCondition) {
+      setModelViewWhenAdjust(secondCondition: boolean) {
         if (self.lockedFitToWindow && secondCondition) {
-          self.setBpPerPx(self.minBpPerPx)
+          this.setBpPerPx(self.minBpPerPx)
         }
       },
 
@@ -246,58 +249,79 @@ export default pluginManager => {
         getParent(self, 2).removeView(self)
       },
 
-      setDisplayedRegions(regions) {
+      setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
         const previouslyEmpty = self.displayedRegions.length === 0
-        self.displayedRegions = regions
+        self.displayedRegions = cast(regions)
 
-        if (previouslyEmpty) self.setBpPerPx(self.minBpPerPx)
-        else self.setBpPerPx(self.bpPerPx)
+        if (previouslyEmpty) this.setBpPerPx(self.minBpPerPx)
+        else this.setBpPerPx(self.bpPerPx)
       },
 
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
-          const selector = session.addWidget(
-            'HierarchicalTrackSelectorWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      toggleTrack(trackId) {
+      toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(trackId)
+        const hiddenCount = this.hideTrack(trackId)
         // if none had that configuration, turn one on
         if (!hiddenCount) {
-          self.showTrack(trackId)
+          this.showTrack(trackId)
         }
       },
 
-      setError(error) {
+      setError(error: Error) {
         self.error = error
       },
 
-      showTrack(trackId, initialSnapshot = {}) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
-        const name = readConfObject(configuration, 'name')
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType)
+        if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => {
+            if (
+              viewType.displayTypes.find(
+                displayType => displayType.name === d.type,
+              )
+            ) {
+              return true
+            }
+            return false
+          },
+        )
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          name,
           type: configuration.type,
           configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },
 
-      addTrackConf(configuration, initialSnapshot) {
+      addTrackConf(configuration: AnyConfigurationModel, initialSnapshot = {}) {
         const { type } = configuration
         const name = readConfObject(configuration, 'name')
         const trackType = pluginManager.getTrackType(type)
@@ -313,9 +337,15 @@ export default pluginManager => {
         self.tracks.push(track)
       },
 
-      hideTrack(trackId) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
+      hideTrack(trackId: string) {
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -327,7 +357,7 @@ export default pluginManager => {
       toggleFitToWindowLock() {
         self.lockedFitToWindow = !self.lockedFitToWindow
         // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx
-        self.setModelViewWhenAdjust(self.atMinBpPerPx)
+        this.setModelViewWhenAdjust(self.atMinBpPerPx)
         return self.lockedFitToWindow
       },
     }))
@@ -336,6 +366,11 @@ export default pluginManager => {
 
   return { stateModel }
 }
+
+export type CircularViewStateModel = ReturnType<
+  typeof CircularView
+>['stateModel']
+export type CircularViewModel = Instance<CircularViewStateModel>
 
 /*
 PLANS

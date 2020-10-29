@@ -10,10 +10,12 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import ChordVariantDisplay from './ChordVariantDisplay'
 import {
   configSchemaFactory as linearVariantDisplayConfigSchemaFactory,
   modelFactory as linearVariantDisplayModelFactory,
 } from './LinearVariantDisplay'
+import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
 import {
   configSchema as variantFeatureWidgetConfigSchema,
   ReactComponent as VariantFeatureWidgetReactComponent,
@@ -37,6 +39,9 @@ export default class VariantsPlugin extends Plugin {
         }),
     )
 
+    pluginManager.addRendererType(() =>
+      pluginManager.jbrequire(StructuralVariantChordRendererFactory),
+    )
     pluginManager.addTrackType(() => {
       const configSchema = ConfigurationSchema(
         'VariantTrack',
@@ -53,6 +58,10 @@ export default class VariantsPlugin extends Plugin {
         ),
       })
     })
+
+    pluginManager.addDisplayType(() =>
+      pluginManager.jbrequire(ChordVariantDisplay),
+    )
 
     pluginManager.addDisplayType(() => {
       const configSchema = linearVariantDisplayConfigSchemaFactory(

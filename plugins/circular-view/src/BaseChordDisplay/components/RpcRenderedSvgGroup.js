@@ -9,18 +9,20 @@ export default ({ jbrequire }) => {
     const { data, html, filled, renderProps, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
+    const hydrated = useRef(false)
 
     useEffect(() => {
       const domNode = ssrContainerNode.current
-      if (domNode) {
-        if (domNode.firstChild && domNode.firstChild.innerHTML) {
-          domNode.style.display = 'none'
-          requestIdleCallback(() => unmountComponentAtNode(domNode.firstChild))
-        }
-        domNode.innerHTML = `<g data-testid="rpc-rendered-circular-chord-track" className="ssr-container-inner"></g>`
-        if (filled) {
+      const isHydrated = hydrated.current
+      function doHydrate() {
+        if (domNode && filled) {
+          if (domNode && domNode.innerHTML && isHydrated) {
+            domNode.style.display = 'none'
+            requestIdleCallback(() => unmountComponentAtNode(domNode))
+          }
+          domNode.innerHTML = `<g data-testid="rpc-rendered-circular-chord-display" className="ssr-container-inner"></g>`
           domNode.style.display = 'inline'
-          domNode.firstChild.innerHTML = html
+          domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering
           // and hydration for when we have some free time. helps
           // keep the framerate up.
@@ -28,19 +30,17 @@ export default ({ jbrequire }) => {
             if (!isAlive(model)) return
             const mainThreadRendering = React.createElement(
               renderingComponent,
-              {
-                ...data,
-                ...renderProps,
-              },
+              { ...data, ...renderProps },
               null,
             )
             requestIdleCallback(() => {
               if (!isAlive(model)) return
-              hydrate(mainThreadRendering, domNode.firstChild)
+              hydrate(mainThreadRendering, domNode)
             })
           })
         }
       }
+      doHydrate()
     })
 
     return <g ref={ssrContainerNode} />

@@ -65,7 +65,7 @@ describe('circular views', () => {
     // expect the chord track to render eventually
     await wait(() => {
       expect(
-        getByTestId('rpc-rendered-circular-chord-track'),
+        getByTestId('rpc-rendered-circular-chord-display'),
       ).toBeInTheDocument()
     })
     // make sure a chord is rendered
@@ -79,7 +79,7 @@ describe('circular views', () => {
     // expect the track to disappear
     await wait(() => {
       expect(
-        queryByTestId('rpc-rendered-circular-chord-track'),
+        queryByTestId('rpc-rendered-circular-chord-display'),
       ).not.toBeInTheDocument()
     })
 
