@@ -127,9 +127,10 @@ export async function writeGAAnalytics(
 
   gaData.metric1 = Math.round(stats.loadTime)
 
-  analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
-    gaData,
-  )});`
+  // analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
+  //   gaData,
+  // )});`
+  analyticsScript += "ga('jbrowseTracker.send', 'pageview');"
 
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
