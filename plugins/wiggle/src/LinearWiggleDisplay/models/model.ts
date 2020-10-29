@@ -10,7 +10,7 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import {
-  blockBasedTrackModel,
+  BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
@@ -20,13 +20,14 @@ import {
   isAlive,
   types,
   Instance,
+  getParent,
 } from 'mobx-state-tree'
 import React from 'react'
 
-import { getNiceDomain } from '../util'
+import { getNiceDomain } from '../../util'
 
-import Tooltip from './components/Tooltip'
-import { FeatureStats } from '../statsUtil'
+import Tooltip from '../components/Tooltip'
+import { FeatureStats } from '../../statsUtil'
 import ConfigSchemaF from './configSchema'
 
 // using a map because it preserves order
@@ -48,41 +49,37 @@ type LGV = LinearGenomeViewModel
 const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
   types
     .compose(
-      'WiggleTrack',
-      blockBasedTrackModel,
-      types
-        .model({
-          type: types.literal('WiggleTrack'),
-          configuration: ConfigurationReference(configSchema),
-          selectedRendering: types.optional(types.string, ''),
-        })
-        .volatile(() => ({
-          // avoid circular reference since WiggleTrackComponent receives this model
-          ready: false,
-          message: undefined as undefined | string,
-          stats: observable({ scoreMin: 0, scoreMax: 50 }),
-          statsFetchInProgress: undefined as undefined | AbortController,
-        })),
+      'LinearWiggleDisplay',
+      BaseLinearDisplay,
+      types.model({
+        type: types.literal('LinearWiggleDisplay'),
+        configuration: ConfigurationReference(configSchema),
+        selectedRendering: types.optional(types.string, ''),
+      }),
     )
-    .actions(self => {
-      return {
-        updateStats(stats: { scoreMin: number; scoreMax: number }) {
-          self.stats.scoreMin = stats.scoreMin
-          self.stats.scoreMax = stats.scoreMax
-          self.ready = true
-        },
+    .volatile(() => ({
+      ready: false,
+      message: undefined as undefined | string,
+      stats: observable({ scoreMin: 0, scoreMax: 50 }),
+      statsFetchInProgress: undefined as undefined | AbortController,
+    }))
+    .actions(self => ({
+      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+        self.stats.scoreMin = stats.scoreMin
+        self.stats.scoreMax = stats.scoreMax
+        self.ready = true
+      },
 
-        setLoading(aborter: AbortController) {
-          if (
-            self.statsFetchInProgress !== undefined &&
-            !self.statsFetchInProgress.signal.aborted
-          ) {
-            self.statsFetchInProgress.abort()
-          }
-          self.statsFetchInProgress = aborter
-        },
-      }
-    })
+      setLoading(aborter: AbortController) {
+        if (
+          self.statsFetchInProgress !== undefined &&
+          !self.statsFetchInProgress.signal.aborted
+        ) {
+          self.statsFetchInProgress.abort()
+        }
+        self.statsFetchInProgress = aborter
+      },
+    }))
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
@@ -136,7 +133,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
-            trackModel: self,
+            displayModel: self,
             config,
             scaleOpts: {
               domain: this.domain,
@@ -160,7 +157,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
-        const { adapter } = self.configuration
+        const { adapter } = getParent(self, 2).configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results = (await rpcManager.call(
             getRpcSessionId(self),
@@ -195,7 +192,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              assemblyName: getTrackAssemblyNames(self)[0],
+              assemblyName: getTrackAssemblyNames(getParent(self, 2))[0],
               regions: JSON.parse(
                 JSON.stringify(
                   dynamicBlocks.contentBlocks.map(region => {
@@ -248,7 +245,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
       }
       return {
-        // re-runs stats and refresh whole track on reload
+        // re-runs stats and refresh whole display on reload
         async reload() {
           self.setError('')
           const aborter = new AbortController()
@@ -295,7 +292,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       }
     })
 
-export type WiggleTrackStateModel = ReturnType<typeof stateModelFactory>
-export type WiggleTrackModel = Instance<WiggleTrackStateModel>
+export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>
 
 export default stateModelFactory

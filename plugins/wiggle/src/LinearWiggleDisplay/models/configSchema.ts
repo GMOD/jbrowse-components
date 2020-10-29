@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-export default (pluginManager: PluginManager) => {
+export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const XYPlotRendererConfigSchema = pluginManager.getRendererType(
     'XYPlotRenderer',
   ).configSchema
@@ -15,7 +15,7 @@ export default (pluginManager: PluginManager) => {
   ).configSchema
 
   return ConfigurationSchema(
-    'WiggleTrack',
+    'LinearWiggleDisplay',
     {
       autoscale: {
         type: 'stringEnum',
@@ -57,7 +57,6 @@ export default (pluginManager: PluginManager) => {
         description: 'draw upside down',
         defaultValue: false,
       },
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       defaultRendering: {
         type: 'stringEnum',
@@ -71,9 +70,6 @@ export default (pluginManager: PluginManager) => {
         LinePlotRenderer: LinePlotRendererConfigSchema,
       }),
     },
-    {
-      baseConfiguration: BaseTrackConfig,
-      explicitlyTyped: true,
-    },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }

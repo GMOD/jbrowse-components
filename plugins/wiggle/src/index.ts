@@ -2,6 +2,12 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import {
   AdapterClass as BigWigAdapterClass,
   configSchema as bigWigAdapterConfigSchema,
@@ -11,10 +17,10 @@ import DensityRenderer, {
   ReactComponent as DensityRendererReactComponent,
 } from './DensityRenderer'
 import {
-  configSchemaFactory as wiggleTrackConfigSchemaFactory,
-  modelFactory as wiggleTrackModelFactory,
-  ReactComponent as WiggleTrackReactComponent,
-} from './WiggleTrack'
+  configSchemaFactory as linearWiggleDisplayConfigSchemaFactory,
+  modelFactory as linearWiggleDisplayModelFactory,
+  ReactComponent as LinearWiggleDisplayReactComponent,
+} from './LinearWiggleDisplay'
 import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
   ReactComponent as XYPlotRendererReactComponent,
@@ -26,20 +32,38 @@ import LinePlotRenderer, {
 import {
   WiggleGetGlobalStats,
   WiggleGetMultiRegionStats,
-} from './WiggleTrack/rpcMethods'
+} from './WiggleRPC/rpcMethods'
 
 export default class extends Plugin {
   name = 'WigglePlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = wiggleTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'QuantitativeTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
       return new TrackType({
-        name: 'WiggleTrack',
-        compatibleView: 'LinearGenomeView',
+        name: 'QuantitativeTrack',
         configSchema,
-        stateModel: wiggleTrackModelFactory(configSchema),
-        ReactComponent: WiggleTrackReactComponent,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'QuantitativeTrack',
+          configSchema,
+        ),
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearWiggleDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearWiggleDisplay',
+        configSchema,
+        stateModel: linearWiggleDisplayModelFactory(configSchema),
+        trackType: 'QuantitativeTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: LinearWiggleDisplayReactComponent,
       })
     })
 
@@ -89,7 +113,6 @@ export default class extends Plugin {
 export * from './statsUtil'
 export * from './util'
 
-export { wiggleTrackModelFactory }
 export { default as WiggleRendering } from './WiggleRendering'
 export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
-export { WiggleTrackReactComponent as WiggleTrackComponent }
+export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
