@@ -53,7 +53,7 @@ export async function writeAWSAnalytics(
   //     refSeqCount[index] = value
   //     // refSeqAvgLen[index] = figure this out later
   //   })
-  const stats = {
+  const stats: AnalyticsObj = {
     ver: rootModel.version,
     // add number of assemblies
     // 'refSeq-count': refSeqCount,
@@ -98,7 +98,6 @@ export async function writeGAAnalytics(
   initialTimeStamp: number,
 ) {
   const jbrowseUser = 'UA-7115575-5'
-  const accounts = [jbrowseUser]
   const stats: AnalyticsObj = {
     ver: rootModel.version,
     'tracks-count': rootModel.jbrowse.tracks.length, // this is all possible tracks
