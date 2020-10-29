@@ -52,12 +52,12 @@ export default function RootModel(
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
-      error: types.maybe(types.string),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
+      error: undefined as undefined | Error,
     }))
     .views(self => ({
       get savedSessions() {
@@ -220,8 +220,8 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(errorMessage: string) {
-        self.error = errorMessage
+      setError(error: Error) {
+        self.error = error
       },
     }))
     .volatile(self => ({

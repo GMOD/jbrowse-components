@@ -58,7 +58,7 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [jbrowse, session, adminKey])
 
   if (error) {
-    throw new Error(error)
+    throw error
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')

@@ -148,7 +148,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
 
   return types
     .model({
-      configuration: types.reference(assemblyConfigType),
+      configuration: types.safeReference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
       refNameAliases: types.maybe(types.map(types.array(types.string))),
     })
@@ -233,7 +233,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        getParent(self, 3).setError(String(error))
+        getParent(self, 3).setError(error)
       },
       setRegions(regions: Region[]) {
         self.regions = cast(regions)
@@ -297,29 +297,32 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
 }
 function loadAssemblyData(self: Assembly) {
-  const sequenceAdapterConfig = readConfObject(self.configuration, [
-    'sequence',
-    'adapter',
-  ])
-  const adapterConfigId = getAdapterId(sequenceAdapterConfig)
-  const { rpcManager } = getParent(self, 2)
-  const refNameAliasesAdapterConfig =
-    self.configuration.refNameAliases &&
-    readConfObject(self.configuration, ['refNameAliases', 'adapter'])
-  return {
-    sequenceAdapterConfig,
-    adapterConfigId,
-    rpcManager,
-    assemblyName: self.name,
-    refNameAliasesAdapterConfig,
+  if (self.configuration) {
+    const sequenceAdapterConfig = readConfObject(self.configuration, [
+      'sequence',
+      'adapter',
+    ])
+    const adapterConfigId = getAdapterId(sequenceAdapterConfig)
+    const { rpcManager } = getParent(self, 2)
+    const refNameAliasesAdapterConfig =
+      self.configuration.refNameAliases &&
+      readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+    return {
+      sequenceAdapterConfig,
+      adapterConfigId,
+      rpcManager,
+      assemblyName: self.name,
+      refNameAliasesAdapterConfig,
+    }
   }
+  return undefined
 }
 async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
   signal: AbortSignal,
 ) {
   if (!props) {
-    throw new Error('cannot render with no props')
+    return
   }
 
   const {
