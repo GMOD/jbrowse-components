@@ -21,6 +21,25 @@ Array [
       },
     ],
   },
+  Object {
+    "label": "Admin",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "SettingsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open Assembly Manager",
+        "onClick": [Function],
+      },
+    ],
+  },
 ]
 `;
 
@@ -41,6 +60,25 @@ Array [
           },
         },
         "label": "New session",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Admin",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "SettingsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Open Assembly Manager",
         "onClick": [Function],
       },
     ],
