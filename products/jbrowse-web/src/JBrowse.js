@@ -72,13 +72,15 @@ const JBrowse = observer(({ pluginManager }) => {
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
-      <AssemblyManager
-        rootModel={rootModel}
-        open={rootModel.isAssemblyEditing}
-        onClose={() => {
-          rootModel.setAssemblyEditing(false)
-        }}
-      />
+      {adminKey ? (
+        <AssemblyManager
+          rootModel={rootModel}
+          open={rootModel.isAssemblyEditing}
+          onClose={() => {
+            rootModel.setAssemblyEditing(false)
+          }}
+        />
+      ) : null}
     </ThemeProvider>
   )
 })
