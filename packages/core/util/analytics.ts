@@ -47,12 +47,7 @@ export async function writeAWSAnalytics(
   const url =
     'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse-analytics'
 
-  //   session.assemblies.forEach((assembly: any, idx: number) => {
-  //     const value = rootModel.assemblyManager.get(assembly)
-  //     const index = `assembly${idx}`
-  //     refSeqCount[index] = value
-  //     // refSeqAvgLen[index] = figure this out later
-  //   })
+  // stats to be recorded in db
   const stats: AnalyticsObj = {
     ver: rootModel.version,
     // add number of assemblies
@@ -83,6 +78,7 @@ export async function writeAWSAnalytics(
     jb2: true,
   }
 
+  // put stats into a query string for get request
   const qs = Object.keys(stats)
     .map(key => `${key}=${stats[key]}`)
     .join('&')
@@ -122,7 +118,6 @@ export async function writeGAAnalytics(
 
   const gaData: AnalyticsObj = {}
   const googleDimensions = 'ver tracks-count plugin browser electron loadTime'
-  //   const googleMetrics = 'loadTime'
 
   googleDimensions.split(/\s+/).forEach((key, index) => {
     gaData[`dimension${index + 1}`] = stats[key]
