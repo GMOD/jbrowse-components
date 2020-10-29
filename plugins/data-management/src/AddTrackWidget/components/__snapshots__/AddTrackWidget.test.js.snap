@@ -201,21 +201,6 @@ exports[`<AddTrackWidget /> renders 1`] = `
                         role="group"
                       >
                         <button
-                          aria-label="local file"
-                          aria-pressed="false"
-                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-                          disabled=""
-                          tabindex="-1"
-                          type="button"
-                          value="file"
-                        >
-                          <span
-                            class="MuiToggleButton-label"
-                          >
-                            File
-                          </span>
-                        </button>
-                        <button
                           aria-label="url"
                           aria-pressed="true"
                           class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
