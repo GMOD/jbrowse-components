@@ -245,6 +245,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         makeAbortableReaction(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
+          // @ts-ignore
           loadAssemblyData,
           loadAssemblyReaction,
           { name: `${self.name} assembly loading`, fireImmediately: true },
@@ -368,6 +369,7 @@ async function loadAssemblyReaction(
       refNameAliases[refNameAlias.refName] = refNameAlias.aliases
     })
   }
+  // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>
