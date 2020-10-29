@@ -56,9 +56,9 @@ test('has a viewType attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'PileupTrack',
-    trackId: 'track0',
-    name: 'Zonker Track',
+    type: 'LinearPileupDisplay',
+    displayId: 'display0',
+    name: 'Zonker Display',
   })
   expect(config.viewType).toEqual('LinearGenomeView')
 })

@@ -12,10 +12,10 @@ import {
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
-  blockBasedTrackModel,
   LinearGenomeViewModel,
+  BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { types, addDisposer, Instance, getParent } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -23,8 +23,8 @@ import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { PileupConfigModel } from './configSchema'
-import PileupTrackBlurb from './components/PileupTrackBlurb'
+import { LinearPileupDisplayConfigModel } from './configSchema'
+import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -36,14 +36,14 @@ type LGV = LinearGenomeViewModel
 
 const stateModelFactory = (
   pluginManager: PluginManager,
-  configSchema: PileupConfigModel,
+  configSchema: LinearPileupDisplayConfigModel,
 ) =>
   types
     .compose(
-      'PileupTrack',
-      blockBasedTrackModel,
+      'LinearPileupDisplay',
+      BaseLinearDisplay,
       types.model({
-        type: types.literal('PileupTrack'),
+        type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
         sortedBy: types.maybe(
@@ -92,7 +92,7 @@ const stateModelFactory = (
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [region],
-                    adapterConfig: getConf(self, 'adapter'),
+                    adapterConfig: getConf(getParent(self, 2), 'adapter'),
                     rendererType: self.rendererType.name,
                     renderProps,
                     sessionId: getRpcSessionId(self),
@@ -145,7 +145,7 @@ const stateModelFactory = (
         self.configuration = configuration
       },
 
-      async sortSelected(type: string) {
+      sortSelected(type: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
           return
@@ -176,7 +176,7 @@ const stateModelFactory = (
       },
     }))
     .actions(self => {
-      // reset the sort object and refresh whole track on reload
+      // reset the sort object and refresh whole display on reload
       const superReload = self.reload
       return {
         reload() {
@@ -235,8 +235,8 @@ const stateModelFactory = (
           return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
         },
 
-        get TrackBlurb() {
-          return PileupTrackBlurb
+        get DisplayBlurb() {
+          return LinearPileupDisplayBlurb
         },
 
         get renderProps() {
@@ -250,7 +250,7 @@ const stateModelFactory = (
             notReady:
               !self.ready ||
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
-            trackModel: self,
+            displayModel: self,
             sortedBy: self.sortedBy,
             showSoftClip: self.showSoftClipping,
             config,
@@ -297,7 +297,7 @@ const stateModelFactory = (
       }
     })
 
-export type PileupTrackStateModel = ReturnType<typeof stateModelFactory>
-export type PileupTrackModel = Instance<PileupTrackStateModel>
+export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearPileupDisplayModel = Instance<LinearPileupDisplayStateModel>
 
 export default stateModelFactory

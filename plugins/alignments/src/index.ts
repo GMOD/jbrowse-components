@@ -1,28 +1,24 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { WiggleTrackComponent } from '@jbrowse/plugin-wiggle'
-import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
-import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-  ReactComponent as AlignmentsTrackReactComponent,
-} from './AlignmentsTrack'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
 import {
-  configSchemaFactory as pileupTrackConfigSchemaFactory,
-  modelFactory as pileupTrackModelFactory,
-} from './PileupTrack'
-import {
-  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
-  modelFactory as snpCoverageTrackModelFactory,
-} from './SNPCoverageTrack'
+  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
+  modelFactory as linearPileupDisplayTrackModelFactory,
+} from './LinearPileupDisplay'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
@@ -45,13 +41,34 @@ export default class AlignmentsPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'AlignmentsTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
       return new TrackType({
-        name: 'PileupTrack',
-        compatibleView: 'LinearGenomeView',
+        name: 'AlignmentsTrack',
         configSchema,
-        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
-        ReactComponent: BlockBasedTrack,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'AlignmentsTrack',
+          configSchema,
+        ),
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearPileupDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearPileupDisplay',
+        configSchema,
+        stateModel: linearPileupDisplayTrackModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+        trackType: 'VariantTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
       })
     })
     pluginManager.addWidgetType(
@@ -64,26 +81,6 @@ export default class AlignmentsPlugin extends Plugin {
           ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )
-    pluginManager.addTrackType(() => {
-      const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'SNPCoverageTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: snpCoverageTrackModelFactory(configSchema),
-        ReactComponent: WiggleTrackComponent,
-      })
-    })
-    pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'AlignmentsTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
-        ReactComponent: AlignmentsTrackReactComponent,
-      })
-    })
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

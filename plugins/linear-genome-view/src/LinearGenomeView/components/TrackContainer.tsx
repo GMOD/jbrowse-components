@@ -91,7 +91,7 @@ function TrackContainer(props: {
     }
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent, TrackBlurb } = display
+  const { RenderingComponent, DisplayBlurb } = display
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
 
   return (
@@ -135,7 +135,7 @@ function TrackContainer(props: {
           />
         </div>
 
-        {TrackBlurb ? (
+        {DisplayBlurb ? (
           <div
             style={{
               position: 'absolute',
@@ -144,7 +144,7 @@ function TrackContainer(props: {
             }}
           >
             {' '}
-            <TrackBlurb model={display} />
+            <DisplayBlurb model={display} />
           </div>
         ) : null}
       </Paper>

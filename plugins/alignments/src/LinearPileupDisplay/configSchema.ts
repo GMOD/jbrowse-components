@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -11,16 +11,10 @@ function PileupConfigFactory(pluginManager: PluginManager) {
     'SvgFeatureRenderer',
   ).configSchema
 
-  // modify config schema to take in a sub coverage track
+  // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
-    'PileupTrack',
+    'LinearPileupDisplay',
     {
-      maxDisplayedBpPerPx: {
-        type: 'number',
-        description: 'maximum bpPerPx that is displayed in the view',
-        defaultValue: 100,
-      },
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup', 'svg']),
@@ -31,10 +25,12 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
     },
-    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
 
-export type PileupConfigModel = ReturnType<typeof PileupConfigFactory>
-export type PileupConfig = Instance<PileupConfigModel>
+export type LinearPileupDisplayConfigModel = ReturnType<
+  typeof PileupConfigFactory
+>
+export type LinearPileupDisplayConfig = Instance<LinearPileupDisplayConfigModel>
 export default PileupConfigFactory

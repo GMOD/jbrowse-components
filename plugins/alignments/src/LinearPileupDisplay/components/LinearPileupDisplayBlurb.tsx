@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import Typography from '@material-ui/core/Typography'
 
-export interface TrackBlurbProps {
+export interface LinearPileupDisplayBlurbProps {
   model: {
     sortedBy?: {
       pos: number
@@ -12,7 +12,7 @@ export interface TrackBlurbProps {
   }
 }
 
-function TrackBlurb(props: TrackBlurbProps) {
+function LinearPileupDisplayBlurb(props: LinearPileupDisplayBlurbProps) {
   const { model } = props
   const { sortedBy } = model
   return sortedBy ? (
@@ -30,4 +30,4 @@ function TrackBlurb(props: TrackBlurbProps) {
     </div>
   ) : null
 }
-export default observer(TrackBlurb)
+export default observer(LinearPileupDisplayBlurb)
