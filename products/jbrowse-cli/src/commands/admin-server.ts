@@ -1,7 +1,6 @@
 import { flags } from '@oclif/command'
 import fs, { promises as fsPromises } from 'fs'
 import crypto from 'crypto'
-import path from 'path'
 import express from 'express'
 import JBrowseCommand, { Config } from '../base'
 
@@ -46,10 +45,6 @@ export default class AdminServer extends JBrowseCommand {
     const output = runFlags.target || runFlags.out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
-
-    if (!runFlags.skipCheck) {
-      await this.checkLocation(path.dirname(this.target))
-    }
 
     // check if the config file exists, if none exists write default
     const defaultConfig: Config = {

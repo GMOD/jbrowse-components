@@ -98,11 +98,6 @@ export default class AddConnection extends JBrowseCommand {
     }
     const { config } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
-
-    if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(path.dirname(this.target))
-    }
-
     const url = await this.resolveURL(
       argsPath,
       !(runFlags.skipCheck || runFlags.force),
