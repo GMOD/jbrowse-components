@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import Button from '@material-ui/core/Button'
+import Button from '@material-ui/core/Button'
 // import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
-// import Dialog from '@material-ui/core/Dialog'
-// import DialogActions from '@material-ui/core/DialogActions'
-// import DialogContent from '@material-ui/core/DialogContent'
-// import DialogContentText from '@material-ui/core/DialogContentText'
-// import DialogTitle from '@material-ui/core/DialogTitle'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
-// import WarningIcon from '@material-ui/icons/Warning'
-// import SettingsIcon from '@material-ui/icons/Settings'
-// import IconButton from '@material-ui/core/IconButton'
-// import Input from '@material-ui/core/Input'
-// import ListItemIcon from '@material-ui/core/ListItemIcon'
-// import ListSubheader from '@material-ui/core/ListSubheader'
-// import Menu from '@material-ui/core/Menu'
-// import MenuItem from '@material-ui/core/MenuItem'
+import WarningIcon from '@material-ui/icons/Warning'
+import SettingsIcon from '@material-ui/icons/Settings'
+import IconButton from '@material-ui/core/IconButton'
+import Input from '@material-ui/core/Input'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListSubheader from '@material-ui/core/ListSubheader'
+import Menu from '@material-ui/core/Menu'
+import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import { LogoFull } from '@jbrowse/core/ui'
+import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import { inDevelopment } from '@jbrowse/core/util'
 import {
   NewEmptySession,
@@ -31,7 +31,6 @@ import {
 // import RecentSessionCard from './RecentSessionCard'
 // import FactoryResetDialog from './FactoryResetDialog'
 
-// const blankIpc = { invoke: () => {} }
 const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette.grey['300'],
@@ -46,151 +45,151 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-// const DeleteSessionDialog = ({
-//   sessionToDelete,
-//   onClose,
-// }: {
-//   sessionToDelete?: string
-//   onClose: (arg0: boolean) => void
-// }) => {
-//   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-//   const [deleteSession, setDeleteSession] = useState(false)
-//   useEffect(() => {
-//     ;(async () => {
-//       try {
-//         if (deleteSession) {
-//           setDeleteSession(false)
-//           await ipcRenderer.invoke('deleteSession', sessionToDelete)
-//           onClose(true)
-//         }
-//       } catch (e) {
-//         setDeleteSession(() => {
-//           throw e
-//         })
-//       }
-//     })()
-//   }, [deleteSession, ipcRenderer, onClose, sessionToDelete])
+const DeleteSessionDialog = ({
+  sessionToDelete,
+  onClose,
+}: {
+  sessionToDelete?: string
+  onClose: (arg0: boolean) => void
+}) => {
+  //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
+  const [deleteSession, setDeleteSession] = useState(false)
+  useEffect(() => {
+    ;(async () => {
+      try {
+        if (deleteSession) {
+          setDeleteSession(false)
+          // what method do we call to delete a session
+          // pass in a session , sessionToDelete to delete
+          console.log(sessionToDelete)
+          onClose(true)
+        }
+      } catch (e) {
+        setDeleteSession(() => {
+          throw e
+        })
+      }
+    })()
+  }, [deleteSession, onClose, sessionToDelete])
 
-//   return (
-//     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-//       <DialogTitle id="alert-dialog-title">
-//         {`Delete session "${sessionToDelete}"?`}
-//       </DialogTitle>
-//       <DialogContent>
-//         <DialogContentText id="alert-dialog-description">
-//           This action cannot be undone
-//         </DialogContentText>
-//       </DialogContent>
-//       <DialogActions>
-//         <Button onClick={() => onClose(false)} color="primary">
-//           Cancel
-//         </Button>
-//         <Button
-//           onClick={() => {
-//             setDeleteSession(true)
-//           }}
-//           color="primary"
-//           variant="contained"
-//           autoFocus
-//         >
-//           Delete
-//         </Button>
-//       </DialogActions>
-//     </Dialog>
-//   )
-// }
+  return (
+    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
+      <DialogTitle id="alert-dialog-title">
+        {`Delete session "${sessionToDelete}"?`}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          This action cannot be undone
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose(false)} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            setDeleteSession(true)
+          }}
+          color="primary"
+          variant="contained"
+          autoFocus
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
-// const RenameSessionDialog = ({
-//   sessionNames,
-//   sessionToRename,
-//   onClose,
-// }: {
-//   sessionNames: string[]
-//   sessionToRename?: string
-//   onClose: (arg0: boolean) => void
-// }) => {
-//   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-//   const [newSessionName, setNewSessionName] = useState('')
-//   const [renameSession, setRenameSession] = useState(false)
-//   useEffect(() => {
-//     ;(async () => {
-//       try {
-//         if (renameSession) {
-//           setRenameSession(false)
-//           await ipcRenderer.invoke(
-//             'renameSession',
-//             sessionToRename,
-//             newSessionName,
-//           )
-//           onClose(true)
-//         }
-//       } catch (e) {
-//         setRenameSession(() => {
-//           throw e
-//         })
-//       }
-//     })()
-//   }, [ipcRenderer, newSessionName, onClose, renameSession, sessionToRename])
+const RenameSessionDialog = ({
+  sessionNames,
+  sessionToRename,
+  onClose,
+}: {
+  sessionNames: string[]
+  sessionToRename?: string
+  onClose: (arg0: boolean) => void
+}) => {
+  //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
+  const [newSessionName, setNewSessionName] = useState('')
+  const [renameSession, setRenameSession] = useState(false)
+  useEffect(() => {
+    ;(async () => {
+      try {
+        if (renameSession) {
+          setRenameSession(false)
+          // what method do we call to rename a session
+          // pass in a session to rename with a new sessionName
+          console.log(newSessionName)
+          onClose(true)
+        }
+      } catch (e) {
+        setRenameSession(() => {
+          throw e
+        })
+      }
+    })()
+  }, [newSessionName, onClose, renameSession, sessionToRename])
 
-//   return (
-//     <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
-//       <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
-//       <DialogContent>
-//         <DialogContentText id="alert-dialog-description">
-//           Please enter a new name for the session:
-//         </DialogContentText>
-//         {sessionNames.includes(newSessionName) ? (
-//           <DialogContentText color="error">
-//             There is already a session named &quot;{newSessionName}&quot;
-//           </DialogContentText>
-//         ) : null}
-//         <Input
-//           autoFocus
-//           defaultValue={sessionToRename}
-//           onChange={event => {
-//             setNewSessionName(event.target.value)
-//           }}
-//         />
-//       </DialogContent>
-//       <DialogActions>
-//         <Button onClick={() => onClose(false)} color="primary">
-//           Cancel
-//         </Button>
-//         <Button
-//           onClick={() => {
-//             setRenameSession(true)
-//           }}
-//           color="primary"
-//           variant="contained"
-//           disabled={!newSessionName || sessionNames.includes(newSessionName)}
-//         >
-//           OK
-//         </Button>
-//       </DialogActions>
-//     </Dialog>
-//   )
-// }
+  return (
+    <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
+      <DialogTitle id="alert-dialog-title">Rename</DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          Please enter a new name for the session:
+        </DialogContentText>
+        {sessionNames.includes(newSessionName) ? (
+          <DialogContentText color="error">
+            There is already a session named &quot;{newSessionName}&quot;
+          </DialogContentText>
+        ) : null}
+        <Input
+          autoFocus
+          defaultValue={sessionToRename}
+          onChange={event => {
+            setNewSessionName(event.target.value)
+          }}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose(false)} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            setRenameSession(true)
+          }}
+          color="primary"
+          variant="contained"
+          disabled={!newSessionName || sessionNames.includes(newSessionName)}
+        >
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 export default function StartScreen({
   root,
   bypass,
-}: //   onFactoryReset,
-{
+  onFactoryReset,
+}: {
   root: any
   bypass: boolean
-  //   onFactoryReset: Function
+  onFactoryReset: Function
 }) {
   //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-  const [, setSessions] = useState<Record<string, any> | undefined>()
-  //   const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
-  //   const [sessionToRename, setSessionToRename] = useState<string | undefined>()
+  const [sessions, setSessions] = useState<Record<string, any> | undefined>()
+  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
+  const [sessionToRename, setSessionToRename] = useState<string | undefined>()
   const [sessionToLoad] = useState<string | undefined>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
-  //   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
-  //   const [, setReset] = useState(false)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
+  const [reset, setReset] = useState(false)
   const classes = useStyles()
 
-  //   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
+  const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
   //   root.setSavedSessionNames(sessionNames)
   //   const sortedSessions = sessions
   //     ? Object.entries(sessions)
@@ -249,29 +248,29 @@ export default function StartScreen({
 
   return (
     <>
-      {/* <FactoryResetDialog
+      <FactoryResetDialog
         open={reset}
         onFactoryReset={onFactoryReset}
         onClose={() => {
           setReset(false)
         }}
-      /> */}
-      {/* <RenameSessionDialog
+      />
+      <RenameSessionDialog
         sessionToRename={sessionToRename}
         sessionNames={sessionNames}
         onClose={(update: boolean) => {
           setSessionToRename(undefined)
           setUpdateSessionsList(update)
         }}
-      /> */}
-      {/* <DeleteSessionDialog
+      />
+      <DeleteSessionDialog
         sessionToDelete={sessionToDelete}
         onClose={update => {
           setSessionToDelete(undefined)
           setUpdateSessionsList(update)
         }}
-      /> */}
-      {/* <IconButton
+      />
+      <IconButton
         className={classes.settings}
         onClick={event => {
           event.stopPropagation()
@@ -279,7 +278,7 @@ export default function StartScreen({
         }}
       >
         <SettingsIcon />
-      </IconButton> */}
+      </IconButton>
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
@@ -325,7 +324,7 @@ export default function StartScreen({
         </Grid>
       </Container>
 
-      {/* <Menu
+      <Menu
         id="simple-menu"
         anchorEl={menuAnchorEl}
         keepMounted
@@ -346,7 +345,7 @@ export default function StartScreen({
           </ListItemIcon>
           <Typography variant="inherit">Factory Reset</Typography>
         </MenuItem>
-      </Menu> */}
+      </Menu>
     </>
   )
 }

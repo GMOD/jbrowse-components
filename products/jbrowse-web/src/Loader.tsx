@@ -413,7 +413,7 @@ const Renderer = observer(
           //
           if (sessionError) {
             // will need to got to splash Screen
-            rootModel.setDefaultSession()
+            // rootModel.setDefaultSession()
             // make typescript happy by checking for session after setDefaultSession
             if (rootModel.session) {
               rootModel.session.notify(
@@ -425,10 +425,11 @@ const Renderer = observer(
             }
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
-          } else {
-            // will need to got to splash Screen
-            rootModel.setDefaultSession()
           }
+          // else {
+          //   // will need to got to splash Screen
+          //   rootModel.setDefaultSession()
+          // }
 
           // TODO use UndoManager
           // rootModel.setHistory(
@@ -472,12 +473,24 @@ const Renderer = observer(
 
     if (pm) {
       // will need to account for when a session is not loaded
-      // if (sessionError) {
-      //   return <StartScreen root={pm.rootModel} bypass />
-      // }
-      // if (pm.rootModel?.session === undefined) {
-      //   return <StartScreen root={pm.rootModel} bypass />
-      // }
+      if (sessionError) {
+        return (
+          <StartScreen
+            root={pm.rootModel}
+            bypass
+            onFactoryReset={factoryReset}
+          />
+        )
+      }
+      if (pm.rootModel?.session === undefined) {
+        return (
+          <StartScreen
+            root={pm.rootModel}
+            bypass
+            onFactoryReset={factoryReset}
+          />
+        )
+      }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
