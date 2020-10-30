@@ -82,9 +82,8 @@ NewEmptySession.propTypes = {
 
 export function ProceedEmptySession({ root }) {
   function onClick() {
-    console.log('addLGV', root)
-    root.session.addView('LinearGenomeView', {})
-    // console.log(root.session.addView)
+    // console.log('proceed Empty session', root)
+    root.setDefaultSession()
   }
   return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
@@ -94,7 +93,10 @@ ProceedEmptySession.propTypes = {
 
 export function AddLinearGenomeViewToSession({ root }) {
   const launchLGV = () => {
-    console.log('add LGV', root.session)
+    // console.log('add LGV', root)
+    root.setDefaultSession()
+    // console.log('add LGV session', root.session)
+    root.session.addView('LinearGenomeView', {})
   }
 
   return (
@@ -161,7 +163,9 @@ NewSVInspectorSession.propTypes = {
 
 export function AddSVInspectorToSession({ root }) {
   const launchSVSession = () => {
-    console.log('add svi', root)
+    // console.log('add svi', root)
+    root.setDefaultSession()
+    root.session.addView('SvInspectorView', {})
   }
   return (
     <NewSessionCard
