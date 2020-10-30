@@ -80,6 +80,35 @@ NewEmptySession.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
+export function ProceedEmptySession({ root }) {
+  function onClick() {
+    console.log('addLGV', root)
+    root.session.addView('LinearGenomeView', {})
+    // console.log(root.session.addView)
+  }
+  return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
+}
+ProceedEmptySession.propTypes = {
+  root: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
+export function AddLinearGenomeViewToSession({ root }) {
+  const launchLGV = () => {
+    console.log('add LGV', root.session)
+  }
+
+  return (
+    <NewSessionCard
+      name="Linear Genome View"
+      onClick={launchLGV}
+      image={linearGenomeViewIcon}
+    />
+  )
+}
+AddLinearGenomeViewToSession.propTypes = {
+  root: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
 export function NewLinearGenomeViewSession({ root }) {
   const launchLGVSession = () => {
     const snapshot = {
@@ -127,5 +156,23 @@ export function NewSVInspectorSession({ root }) {
 }
 
 NewSVInspectorSession.propTypes = {
+  root: MobxPropTypes.objectOrObservableObject.isRequired,
+}
+
+export function AddSVInspectorToSession({ root }) {
+  const launchSVSession = () => {
+    console.log('add svi', root)
+  }
+  return (
+    <NewSessionCard
+      name="Structural Variant Inspector"
+      onClick={launchSVSession}
+      style={{ padding: 0 }}
+      image={svInspectorIcon}
+    />
+  )
+}
+
+AddSVInspectorToSession.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
 }
