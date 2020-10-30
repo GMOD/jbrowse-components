@@ -7,8 +7,8 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import ShareButton from './ShareButton'
-import StartScreen from './StartScreen'
-import factoryReset from './factoryReset'
+// import StartScreen from './StartScreen'
+// import factoryReset from './factoryReset'
 
 function deleteBaseUris(config) {
   if (typeof config === 'object') {
@@ -22,7 +22,7 @@ function deleteBaseUris(config) {
   }
 }
 
-const JBrowse = observer(({ pluginManager, defaultScreen }) => {
+const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
   const [firstLoad, setFirstLoad] = useState(true)
@@ -31,6 +31,10 @@ const JBrowse = observer(({ pluginManager, defaultScreen }) => {
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
   if (firstLoad && session) setFirstLoad(false)
+
+  console.log('pm', pluginManager)
+  console.log('rootModel', pluginManager.rootModel)
+  console.log('session', pluginManager.rootModel.session)
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
@@ -70,7 +74,7 @@ const JBrowse = observer(({ pluginManager, defaultScreen }) => {
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      {defaultScreen ? (
+      {/* {defaultScreen ? (
         <StartScreen
           root={rootModel}
           bypass={firstLoad}
@@ -81,7 +85,11 @@ const JBrowse = observer(({ pluginManager, defaultScreen }) => {
           session={session}
           HeaderButtons={<ShareButton session={session} />}
         />
-      )}
+      )} */}
+      <App
+        session={session}
+        HeaderButtons={<ShareButton session={session} />}
+      />
     </ThemeProvider>
   )
 })

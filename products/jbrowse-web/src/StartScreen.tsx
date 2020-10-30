@@ -3,6 +3,7 @@ import Button from '@material-ui/core/Button'
 // import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
 import Dialog from '@material-ui/core/Dialog'
+import Toolbar from '@material-ui/core/Toolbar'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
@@ -24,12 +25,10 @@ import React, { useEffect, useState } from 'react'
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import { inDevelopment } from '@jbrowse/core/util'
 import {
-  NewEmptySession,
-  NewLinearGenomeViewSession,
-  NewSVInspectorSession,
+  ProceedEmptySession,
+  AddLinearGenomeViewToSession,
+  AddSVInspectorToSession,
 } from '@jbrowse/core/ui/NewSessionCards'
-// import RecentSessionCard from './RecentSessionCard'
-// import FactoryResetDialog from './FactoryResetDialog'
 
 const useStyles = makeStyles(theme => ({
   newSession: {
@@ -172,15 +171,17 @@ const RenameSessionDialog = ({
 
 export default function StartScreen({
   root,
-  pm,
+  pluginManager,
   bypass,
   onFactoryReset,
 }: {
   root: any
-  pm: any
+  pluginManager: any
   bypass: boolean
   onFactoryReset: Function
 }) {
+  const classes = useStyles()
+
   //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [sessions, setSessions] = useState<Record<string, any> | undefined>()
   const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
@@ -189,10 +190,9 @@ export default function StartScreen({
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
-  const classes = useStyles()
 
   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
-  console.log(sessionNames)
+  console.log(Array.from(root.savedSessionsVolatile.values()))
   //   root.setSavedSessionNames(sessionNames)
   //   const sortedSessions = sessions
   //     ? Object.entries(sessions)
@@ -201,7 +201,8 @@ export default function StartScreen({
   //     : []
   const sortedSessions: any[][] = []
   console.log('root', root)
-  console.log('pm', pm)
+  console.log('session', root.session)
+  console.log('pm', pluginManager)
 
   useEffect(() => {
     ;(async () => {
@@ -277,15 +278,17 @@ export default function StartScreen({
           setUpdateSessionsList(update)
         }}
       />
-      <IconButton
-        className={classes.settings}
-        onClick={event => {
-          event.stopPropagation()
-          setMenuAnchorEl(event.currentTarget)
-        }}
-      >
-        <SettingsIcon />
-      </IconButton>
+      <Toolbar>
+        <IconButton
+          className={classes.settings}
+          onClick={event => {
+            event.stopPropagation()
+            setMenuAnchorEl(event.currentTarget)
+          }}
+        >
+          <SettingsIcon />
+        </IconButton>
+      </Toolbar>
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
@@ -294,13 +297,13 @@ export default function StartScreen({
           </Typography>
           <Grid container spacing={4}>
             <Grid item>
-              <NewEmptySession root={root} />
+              <ProceedEmptySession root={root} />
             </Grid>
             <Grid item>
-              <NewLinearGenomeViewSession root={root} />
+              <AddLinearGenomeViewToSession root={root} />
             </Grid>
             <Grid item>
-              <NewSVInspectorSession root={root} />
+              <AddSVInspectorToSession root={root} />
             </Grid>
           </Grid>
         </div>
@@ -312,19 +315,19 @@ export default function StartScreen({
             ? sortedSessions.map(([sessionName]: [string, any]) => (
                 <Grid item key={sessionName}>
                   <RecentSessionCard
-                      sessionName={sessionName}
-                      sessionStats={sessionData.stats}
-                      sessionScreenshot={sessionData.screenshot}
-                      onClick={() => {
-                        setSessionToLoad(sessionName)
-                      }}
-                      onDelete={() => {
-                        setSessionToDelete(sessionName)
-                      }}
-                      onRename={() => {
-                        setSessionToRename(sessionName)
-                      }}
-                    />
+                    sessionName={sessionName}
+                    sessionStats={sessionData.stats}
+                    sessionScreenshot={sessionData.screenshot}
+                    onClick={() => {
+                      setSessionToLoad(sessionName)
+                    }}
+                    onDelete={() => {
+                      setSessionToDelete(sessionName)
+                    }}
+                    onRename={() => {
+                      setSessionToRename(sessionName)
+                    }}
+                  />
                 </Grid>
               ))
             : null} */}

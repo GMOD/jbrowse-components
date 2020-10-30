@@ -28,6 +28,7 @@ import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
+import StartScreen from './StartScreen'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -377,7 +378,7 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-    const [defaultScreen, setDefault] = useState(true)
+    const [defaultScreen, setDefault] = useState(false)
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -423,12 +424,17 @@ const Renderer = observer(
                 pasting their URL`,
               )
             }
+            // setDefault(true)
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
             setDefault(false)
           } else {
-            // will need to got to splash Screen
+            // we want to default to the splash screen when there are default views
             rootModel.setDefaultSession()
+            // if (rootModel.session?.views.length === 0) {
+            //   setDefault(true)
+            // }
+            // setDefault(true)
           }
 
           // TODO use UndoManager
@@ -473,19 +479,18 @@ const Renderer = observer(
 
     if (pm) {
       // will need to account for when a session is not loaded
-      //  if (sessionError) or if (pm.rootModel?.session === undefined)
-      // if (defaultSession === true) {
-      //   console.log(defaultSession)
-      //   return (
-      //     <StartScreen
-      //       root={pm.rootModel}
-      //       pm={pm}
-      //       bypass
-      //       onFactoryReset={factoryReset}
-      //     />
-      //   )
-      // }
-      return <JBrowse pluginManager={pm} defaultScreen={defaultScreen} />
+      // if (sessionError) or if (pm.rootModel?.session === undefined)
+      if (defaultScreen === true) {
+        return (
+          <StartScreen
+            root={pm.rootModel}
+            pluginManager={pm}
+            bypass
+            onFactoryReset={factoryReset}
+          />
+        )
+      }
+      return <JBrowse pluginManager={pm} />
     }
     return <Loading />
   },
