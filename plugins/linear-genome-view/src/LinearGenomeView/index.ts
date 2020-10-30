@@ -520,11 +520,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
-        self.displayedRegions.forEach(r => {
-          const parent = self.parentRegion(r.assemblyName, r.refName)
-          r.parentStart = parent ? parent.start : -1
-          r.parentEnd = parent ? parent.end : -1
-        })
         self.zoomTo(self.bpPerPx)
       },
 

@@ -25,8 +25,6 @@ export const NoAssemblyRegion = types
     start: types.number,
     end: types.number,
     reversed: types.optional(types.boolean, false),
-    parentStart: types.optional(types.number, -1),
-    parentEnd: types.optional(types.number, -1),
   })
   .actions(self => ({
     setRefName(newRefName: string): void {
