@@ -25,6 +25,7 @@ import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -445,7 +446,10 @@ const Renderer = observer(
           }
 
           // send analytics
-          if (rootModel && !loader.configSnapshot.disableAnalytics) {
+          if (
+            rootModel &&
+            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+          ) {
             writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
             writeGAAnalytics(rootModel, initialTimestamp)
           }

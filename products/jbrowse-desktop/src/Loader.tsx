@@ -10,6 +10,7 @@ import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+import { readConfObject } from '@jbrowse/core/configuration'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -121,7 +122,10 @@ export default function Loader({
 
     pluginManager.configure()
 
-    if (rootModel && !configSnapshot.disableAnalytics) {
+    if (
+      rootModel &&
+      !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+    ) {
       writeAWSAnalytics(rootModel, initialTimestamp)
       writeGAAnalytics(rootModel, initialTimestamp)
     }

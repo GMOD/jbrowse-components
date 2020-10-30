@@ -774,18 +774,14 @@ Example BigWig adapter config
 }
 ```
 
-### Turning off analytics option
+### Disabiling Analytics
 
-This is a top level option to turn off sending analytics 
-
-- disableAnalytics - set to true to not send any analytics
+This is done via adding a field in the global configuration in the config file. For example:
 
 ```json
 {
-  "disableAnalytics": "true",
   "configuration": {
-  },
-  "assemblies": [
-  ],
+    "disableAnalytics": "true"
+  }
 }
 ```
