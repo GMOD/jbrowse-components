@@ -371,16 +371,24 @@ export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
     adminKey: load(adminKey),
   })
 
-  return <Renderer loader={loader} initialTimestamp={initialTimestamp} />
+  return (
+    <Renderer
+      loader={loader}
+      initialTimestamp={initialTimestamp}
+      initialSessionQuery={session}
+    />
+  )
 }
 
 const Renderer = observer(
   ({
     loader,
     initialTimestamp,
+    initialSessionQuery,
   }: {
     loader: Instance<typeof SessionLoader>
     initialTimestamp: number
+    initialSessionQuery: string | null | undefined
   }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
@@ -436,8 +444,9 @@ const Renderer = observer(
             rootModel.setDefaultSession()
           }
 
+          // send analytics
           if (rootModel && !loader.configSnapshot.disableAnalytics) {
-            writeAWSAnalytics(rootModel, initialTimestamp)
+            writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
             writeGAAnalytics(rootModel, initialTimestamp)
           }
 
@@ -465,7 +474,14 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword, initialTimestamp])
+    }, [
+      loader,
+      ready,
+      sessionError,
+      setPassword,
+      initialTimestamp,
+      initialSessionQuery,
+    ])
 
     if (configError) {
       return (

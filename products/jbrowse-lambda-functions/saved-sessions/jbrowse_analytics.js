@@ -1,13 +1,12 @@
 // eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-const urlParser = require('url')
+// eslint-disable-next-line @typescript-eslint/camelcase
+const url_parser = require('url')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
 
 function recordStats(event, context, done) {
-  const stats = event.queryStringParameters
-    ? { ...event.queryStringParameters }
-    : JSON.parse(event.body)
+  const stats = { ...event.queryStringParameters }
   const headers = event.headers || {}
   // console.log(JSON.stringify(headers, null, '  '))
   stats.timestamp = Date.now()
@@ -18,7 +17,7 @@ function recordStats(event, context, done) {
   stats.referer = headers.Referer || headers.referer || null
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
-  stats.host = stats.referer ? urlParser.parse(stats.referer).host : null
+  stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
   if (stats.host && stats.host.startsWith('www.'))
     stats.host = stats.host.slice(4)
   // stats.fullHeaders = event.headers
@@ -30,23 +29,43 @@ function recordStats(event, context, done) {
     if (trackTypesRe.test(key)) {
       // eslint-disable-next-line radix
       trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key])
+      delete stats[key]
     }
+  }
+  stats.trackTypes = trackTypes
+
+  stats.sessionTrackTypes = {}
+  if (stats['session-tracks-count'] > 0) {
+    const sessionTrackTypes = {}
+    const sessionTrackTypesRe = /^sessionTrack-types-/
+    for (const key in stats) {
+      if (sessionTrackTypesRe.test(key)) {
+        // eslint-disable-next-line radix
+        sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
+          stats[key],
+        )
+        delete stats[key]
+      }
+    }
+    stats.sessionTrackTypes = sessionTrackTypes
   }
 
   stats.trackTypes = trackTypes
+  const tableName =
+    stats.jb2 === 'true' ? 'JB2_Analytics_Events' : 'JB1_Analytics_Events'
+  delete stats.jb2
   const params = {
-    TableName: 'JB2_Analytical_Events',
+    TableName: tableName,
     Item: stats,
     ReturnConsumedCapacity: 'TOTAL',
   }
-  // console.log(JSON.stringify(stats, null, '  '))
   dynamo.put(params, done)
-  // dynamo.putItem({ Item: stats, TableName: 'JB2_Analytical_Events', ReturnConsumedCapacity: "TOTAL" }, done)
 }
 
 exports.handler = (event, context, callback) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const done = (err, res) =>
     callback(null, {
       statusCode: err ? '400' : '200',
@@ -59,11 +78,9 @@ exports.handler = (event, context, callback) => {
       },
     })
 
-  // const method = event.requestContext.http.method
-  // console.log(method)
-  // if (!method.includes('GET') || !method.includes('POST')) {
-  //     done(new Error(`Unsupported method "${method}"`));
-  // }
+  if (event.httpMethod !== 'GET') {
+    done(new Error(`Unsupported method "${event.httpMethod}"`))
+  }
 
   recordStats(event, context, done)
 }
