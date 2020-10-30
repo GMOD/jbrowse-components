@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig as LinearGenomeTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -8,12 +8,9 @@ const HicTrackConfigFactory = (pluginManager: PluginManager) => {
     .configSchema
 
   return ConfigurationSchema(
-    'HicTrack',
-    {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: HicRendererConfigSchema,
-    },
-    { baseConfiguration: LinearGenomeTrackConfig, explicitlyTyped: true },
+    'LinearHicDisplay',
+    { renderer: HicRendererConfigSchema },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
 

@@ -1,18 +1,17 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { blockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 export default (configSchema: AnyConfigurationSchemaType) =>
   types
     .compose(
-      'HicTrack',
-      blockBasedTrackModel,
+      'LinearHicDisplay',
+      BaseLinearDisplay,
       types.model({
-        type: types.literal('HicTrack'),
+        type: types.literal('LinearHicDisplay'),
         configuration: ConfigurationReference(configSchema),
-        height: types.optional(types.integer, 100),
       }),
     )
     .views(self => ({
