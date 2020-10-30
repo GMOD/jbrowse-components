@@ -15,7 +15,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types, addDisposer, Instance, getParent } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -92,7 +92,7 @@ const stateModelFactory = (
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [region],
-                    adapterConfig: getConf(getParent(self, 2), 'adapter'),
+                    adapterConfig: self.adapterConfig,
                     rendererType: self.rendererType.name,
                     renderProps,
                     sessionId: getRpcSessionId(self),

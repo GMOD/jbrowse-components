@@ -14,14 +14,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-  Instance,
-  getParent,
-} from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import React from 'react'
 
 import { getNiceDomain } from '../../util'
@@ -157,17 +150,13 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
-        let track = getParent(self)
-        while (!(track.configuration && getConf(track, 'trackId'))) {
-          track = getParent(track)
-        }
-        const { adapter } = track.configuration
+        const { adapterConfig } = self
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results = (await rpcManager.call(
             getRpcSessionId(self),
             'WiggleGetGlobalStats',
             {
-              adapterConfig: getSnapshot(adapter),
+              adapterConfig,
               statusCallback: (message: string) => {
                 if (isAlive(self)) {
                   self.setMessage(message)
@@ -195,8 +184,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             sessionId,
             'WiggleGetMultiRegionStats',
             {
-              adapterConfig: getSnapshot(adapter),
-              assemblyName: getTrackAssemblyNames(track)[0],
+              adapterConfig,
+              assemblyName: getTrackAssemblyNames(self.parentTrack)[0],
               regions: JSON.parse(
                 JSON.stringify(
                   dynamicBlocks.contentBlocks.map(region => {
@@ -236,7 +225,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             getRpcSessionId(self),
             'WiggleGetGlobalStats',
             {
-              adapterConfig: getSnapshot(adapter),
+              adapterConfig,
               statusCallback: (message: string) => {
                 if (isAlive(self)) {
                   self.setMessage(message)

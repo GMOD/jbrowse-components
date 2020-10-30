@@ -15,6 +15,7 @@ import {
 } from 'mobx-state-tree'
 import { AlignmentsConfigModel } from './configSchema'
 
+const minDisplayHeight = 20
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AlignmentsConfigModel,
@@ -164,6 +165,16 @@ const stateModelFactory = (
           type: 'LinearPileupDisplay',
           configuration: displayConfig,
         }
+      },
+      setHeight(displayHeight: number) {
+        if (displayHeight > minDisplayHeight) self.height = displayHeight
+        else self.height = minDisplayHeight
+        return self.height
+      },
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = this.setHeight(self.height + distance)
+        return newHeight - oldHeight
       },
     }))
 }

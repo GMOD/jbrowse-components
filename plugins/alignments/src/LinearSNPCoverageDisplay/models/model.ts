@@ -1,4 +1,5 @@
 import { types } from 'mobx-state-tree'
+import { getConf } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Tooltip from '../components/Tooltip'
@@ -19,9 +20,17 @@ const stateModelFactory = (configSchema: any) =>
         self.configuration = configuration
       },
     }))
-    .views(() => ({
+    .views(self => ({
       get TooltipComponent() {
         return Tooltip
+      },
+
+      get adapterConfig() {
+        const subadapter = getConf(self.parentTrack, 'adapter')
+        return {
+          type: 'SNPCoverageAdapter',
+          subadapter,
+        }
       },
 
       get rendererTypeName() {

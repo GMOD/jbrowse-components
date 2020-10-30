@@ -1,28 +1,49 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { types, Instance } from 'mobx-state-tree'
-import BaseTrack from '../BasicTrack/baseTrackModel'
-import BlockBasedTrack from '../BasicTrack/components/BlockBasedTrack'
-import { stateModelFactory, LinearGenomeViewStateModel } from '.'
+import { Instance, types } from 'mobx-state-tree'
+import { LinearGenomeViewStateModel, stateModelFactory } from '.'
+import { BaseLinearDisplayComponent } from '..'
+import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
 const stubManager = new PluginManager()
-stubManager.addTrackType(
-  () =>
-    new TrackType({
-      name: 'Base',
-      compatibleView: 'LinearGenomeView',
-      configSchema: ConfigurationSchema(
-        'BaseTrack',
-        {},
-        { explicitlyTyped: true },
-      ),
-      stateModel: BaseTrack,
-      ReactComponent: BlockBasedTrack,
-    }),
-)
+stubManager.addTrackType(() => {
+  const configSchema = ConfigurationSchema(
+    'FeatureTrack',
+    {},
+    {
+      baseConfiguration: createBaseTrackConfig(stubManager),
+      explicitIdentifier: 'trackId',
+    },
+  )
+  return new TrackType({
+    name: 'FeatureTrack',
+    configSchema,
+    stateModel: createBaseTrackModel(stubManager, 'FeatureTrack', configSchema),
+  })
+})
+stubManager.addDisplayType(() => {
+  const configSchema = ConfigurationSchema(
+    'BaseTrack',
+    {},
+    { explicitlyTyped: true },
+  )
+  return new DisplayType({
+    name: 'Base',
+    configSchema,
+    stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+    trackType: 'FeatureTrack',
+    viewType: 'LinearGenomeView',
+    ReactComponent: BaseLinearDisplayComponent,
+  })
+})
 stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)

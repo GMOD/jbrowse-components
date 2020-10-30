@@ -184,11 +184,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     while (!(display.configuration && getConf(display, 'displayId'))) {
       display = getParent(display)
     }
-    let track = getParent(display)
-    while (!(track.configuration && getConf(track, 'trackId'))) {
-      track = getParent(track)
-    }
-    const assemblyNames = getTrackAssemblyNames(track)
+    const assemblyNames = getTrackAssemblyNames(display.parentTrack)
     let cannotBeRenderedReason
     if (!assemblyNames.includes(self.region.assemblyName)) {
       let matchFound = false
@@ -211,7 +207,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     // It won't trigger the reaction if it doesn't think we're accessing it
     readConfObject(config)
 
-    const adapterConfig = getConf(track, 'adapter')
+    const { adapterConfig } = display
 
     const sessionId = getRpcSessionId(display)
 

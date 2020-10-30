@@ -35,7 +35,7 @@ export default (configSchema: AnyConfigurationSchemaType) =>
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           config,
-          trackModel: self,
+          displayModel: self,
         }
       },
     }))

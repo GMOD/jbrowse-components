@@ -1,9 +1,7 @@
 export default ({ jbrequire }) => {
-  const { getConf } = jbrequire('@jbrowse/core/configuration')
   const { getRpcSessionId } = jbrequire('@jbrowse/core/util/tracks')
   const { getContainingView } = jbrequire('@jbrowse/core/util')
   const { getSession } = jbrequire('@jbrowse/core/util')
-  const { getParent } = jbrequire('mobx-state-tree')
 
   function renderReactionData(self) {
     const display = self
@@ -18,9 +16,7 @@ export default ({ jbrequire }) => {
       renderArgs: {
         // TODO: Figure this out for multiple assembly names
         assemblyName: view.displayedRegions[0]?.assemblyName,
-        adapterConfig: JSON.parse(
-          JSON.stringify(getConf(getParent(display, 2), 'adapter')),
-        ),
+        adapterConfig: JSON.parse(JSON.stringify(display.adapterConfig)),
         rendererType: rendererType.name,
         renderProps,
         regions: JSON.parse(JSON.stringify(view.displayedRegions)),
