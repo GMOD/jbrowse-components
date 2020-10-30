@@ -7,6 +7,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import AddIcon from '@material-ui/icons/Add'
+import SettingsIcon from '@material-ui/icons/Settings'
 import {
   addDisposer,
   cast,
@@ -20,6 +21,7 @@ import {
   isModelType,
   isReferenceType,
   isValidReference,
+  getParent,
   getPropertyMembers,
   isMapType,
   getChildType,
@@ -108,11 +110,12 @@ export default function RootModel(
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: assemblyManagerType,
-      error: types.maybe(types.string),
       version: types.maybe(types.string),
+      isAssemblyEditing: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
+      error: undefined as undefined | Error,
     }))
     .views(self => ({
       get savedSessions() {
@@ -213,6 +216,9 @@ export default function RootModel(
           }
         }
       },
+      setAssemblyEditing(flag: boolean) {
+        self.isAssemblyEditing = flag
+      },
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
         const newSession = {
@@ -283,8 +289,8 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(errorMessage: string) {
-        self.error = errorMessage
+      setError(error: Error) {
+        self.error = error
       },
     }))
     .volatile(self => ({
@@ -307,6 +313,24 @@ export default function RootModel(
             },
           ],
         },
+        ...(adminMode
+          ? [
+              {
+                label: 'Admin',
+                menuItems: [
+                  {
+                    label: 'Open Assembly Manager',
+                    icon: SettingsIcon,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onClick: (session: any) => {
+                      const rootModel = getParent(session)
+                      rootModel.setAssemblyEditing(true)
+                    },
+                  },
+                ],
+              },
+            ]
+          : []),
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,

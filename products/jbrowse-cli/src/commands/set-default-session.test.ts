@@ -41,6 +41,7 @@ const defaultConfig = {
           uri: 'simple.bam',
         },
         index: {
+          indexType: 'BAI',
           location: {
             uri: 'simple.bam.bai',
           },

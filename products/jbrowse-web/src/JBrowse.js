@@ -58,10 +58,13 @@ const JBrowse = observer(({ pluginManager }) => {
   }, [jbrowse, session, adminKey])
 
   if (error) {
-    throw new Error(error)
+    throw error
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
+  const { AssemblyManager } = pluginManager.getPlugin(
+    'DataManagementPlugin',
+  ).exports
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
@@ -69,6 +72,15 @@ const JBrowse = observer(({ pluginManager }) => {
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
+      {adminKey ? (
+        <AssemblyManager
+          rootModel={rootModel}
+          open={rootModel.isAssemblyEditing}
+          onClose={() => {
+            rootModel.setAssemblyEditing(false)
+          }}
+        />
+      ) : null}
     </ThemeProvider>
   )
 })

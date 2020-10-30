@@ -60,6 +60,9 @@ export default class AddTrack extends JBrowseCommand {
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
+    index: flags.string({
+      description: 'Optional index file for the track',
+    }),
     description: flags.string({
       char: 'd',
       description: 'Optional description of the track',
@@ -131,6 +134,7 @@ export default class AddTrack extends JBrowseCommand {
       target,
       protocol,
       out,
+      index,
     } = runFlags
 
     const output = target || out || '.'
@@ -155,18 +159,19 @@ export default class AddTrack extends JBrowseCommand {
     }
     const location = argsTrack
 
-    const isUrl = location.match(/^https?:\/\//)
+    const isUrl = (loc: string) => loc.match(/^https?:\/\//)
     const adapter = this.guessAdapter(
-      isUrl ? location : path.join(subDir, path.basename(location)),
+      isUrl(location) ? location : path.join(subDir, path.basename(location)),
       protocol as 'uri' | 'localPath',
+      !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
     )
 
-    if (isUrl && load) {
+    if (isUrl(location) && load) {
       this.error(
         'The --load flag is used for local files only, but a URL was provided',
         { exit: 100 },
       )
-    } else if (!isUrl && !load) {
+    } else if (!isUrl(location) && !load) {
       this.error(
         `The --load flag should be used if a local file is used, example --load
         copy to copy the file into the config directory. Options for load are
@@ -196,30 +201,14 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    if (type) {
-      this.debug(`Type is: ${type}`)
-    } else {
-      type = this.guessTrackType(adapter.type)
-    }
-
-    if (trackId) {
-      this.debug(`Track is :${trackId}`)
-    } else {
-      trackId = path.basename(location, path.extname(location))
-    }
-
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    } else {
-      name = trackId
-    }
-
-    if (assemblyNames) {
-      this.debug(`Assembly name(s) is :${assemblyNames}`)
-    } else {
-      assemblyNames = configContents.assemblies[0].name
-      this.log(`Inferred default assembly name ${assemblyNames}`)
-    }
+    type = type || this.guessTrackType(adapter.type)
+    trackId = trackId || path.basename(location, path.extname(location))
+    name = name || trackId
+    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    this.debug(`Name is: ${name}`)
+    this.debug(`Type is: ${type}`)
+    this.debug(`Track is :${trackId}`)
+    this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -293,7 +282,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // copy/symlinks/moves the track into the jbrowse installation directory
-    const filePaths = Object.values(this.guessFileNames(location))
+    const filePaths = Object.values(this.guessFileNames(location, index))
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -355,23 +344,11 @@ export default class AddTrack extends JBrowseCommand {
     )
   }
 
-  guessFileNames(fileName: string) {
+  guessFileNames(fileName: string, index?: string) {
     if (/\.bam$/i.test(fileName)) {
       return {
         file: fileName,
-        index: `${fileName}.bai`,
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.bai$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
+        index: index || `${fileName}.bai`,
       }
     }
 
@@ -379,12 +356,6 @@ export default class AddTrack extends JBrowseCommand {
       return {
         file: fileName,
         index: `${fileName}.crai`,
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.crai$/i, ''),
-        index: fileName,
       }
     }
 
@@ -396,18 +367,6 @@ export default class AddTrack extends JBrowseCommand {
       return {
         file: fileName,
         index: `${fileName}.tbi`,
-      }
-    }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.tbi$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
       }
     }
 
@@ -425,18 +384,6 @@ export default class AddTrack extends JBrowseCommand {
         index: `${fileName}.tbi`,
       }
     }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.tbi$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
-      }
-    }
 
     if (/\.vcf\.idx$/i.test(fileName)) {
       return {}
@@ -447,13 +394,10 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
-      return {}
-    }
-    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
-      return {}
-    }
-    if (/\.bed.b?gz.csi/i.test(fileName)) {
-      return {}
+      return {
+        file: fileName,
+        index: index || `${fileName}.tbi`,
+      }
     }
 
     if (/\.bed\.idx$/i.test(fileName)) {
@@ -477,13 +421,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
-        index: `${fileName}.fai`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.fai$/i, ''),
-        index: fileName,
+        index: index || `${fileName}.fai`,
       }
     }
 
@@ -492,20 +430,6 @@ export default class AddTrack extends JBrowseCommand {
         file: fileName,
         index: `${fileName}.fai`,
         index2: `${fileName}.gzi`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.fai$/i, ''),
-        index: fileName,
-        index2: `${fileName.replace(/\.fai$/i, '')}.gzi`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.gzi$/i, ''),
-        index: `${fileName.replace(/\.gzi$/i, '')}.fai`,
-        index2: fileName,
       }
     }
 
@@ -547,7 +471,11 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   // find way to import this instead of having to paste it
-  guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
+  guessAdapter(
+    fileName: string,
+    protocol: 'uri' | 'localPath',
+    index?: string,
+  ) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
         return { uri: location }
@@ -561,21 +489,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'BamAdapter',
         bamLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.bai`) },
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(fileName.replace(/\.bai$/i, '')),
-        index: { location: makeLocation(fileName) },
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(index || `${fileName}.bai`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        },
       }
     }
 
@@ -584,13 +502,6 @@ export default class AddTrack extends JBrowseCommand {
         type: 'CramAdapter',
         cramLocation: makeLocation(fileName),
         craiLocation: makeLocation(`${fileName}.crai`),
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        type: 'CramAdapter',
-        cramLocation: makeLocation(fileName.replace(/\.crai$/i, '')),
-        craiLocation: makeLocation(fileName),
       }
     }
 
@@ -604,21 +515,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-      }
-    }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
-      return {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'TBI' },
-      }
-    }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
-      return {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(index || `${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -638,21 +539,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-      }
-    }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
-      return {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'TBI' },
-      }
-    }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
-      return {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(`${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -670,23 +561,13 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
       return {
-        type: 'UNSUPPORTED',
-      }
-    }
-    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    }
-    if (/\.bed.b?gz.csi/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    }
-
-    if (/\.bed\.idx$/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
+        type: 'VcfTabixAdapter',
+        bedGzLocation: makeLocation(fileName),
+        index: {
+          location: makeLocation(`${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -708,14 +589,7 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(fileName),
-        faiLocation: makeLocation(`${fileName}.fai`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-        faiLocation: makeLocation(fileName),
+        faiLocation: makeLocation(index || `${fileName}.fai`),
       }
     }
 
@@ -725,22 +599,6 @@ export default class AddTrack extends JBrowseCommand {
         fastaLocation: makeLocation(fileName),
         faiLocation: makeLocation(`${fileName}.fai`),
         gziLocation: makeLocation(`${fileName}.gzi`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-        faiLocation: makeLocation(fileName),
-        gziLocation: makeLocation(`${fileName.replace(/\.fai$/i, '')}.gzi`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.gzi$/i, '')),
-        faiLocation: makeLocation(`${fileName.replace(/\.gzi$/i, '')}.fai`),
-        gziLocation: makeLocation(fileName),
       }
     }
 
