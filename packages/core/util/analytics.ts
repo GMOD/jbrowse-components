@@ -115,7 +115,7 @@ export async function writeGAAnalytics(
   analyticsScript +=
     'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)'
   analyticsScript +=
-    "})(window,document,'script','https://www.google-analytics.com/analytics_debug.js','ga');"
+    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
   analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
   const gaData: AnalyticsObj = {}
