@@ -115,7 +115,7 @@ export async function writeGAAnalytics(
   analyticsScript +=
     'm=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)'
   analyticsScript +=
-    "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');"
+    "})(window,document,'script','https://www.google-analytics.com/analytics_debug.js','ga');"
   analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
   const gaData: AnalyticsObj = {}
@@ -127,10 +127,9 @@ export async function writeGAAnalytics(
 
   gaData.metric1 = Math.round(stats.loadTime)
 
-  // analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
-  //   gaData,
-  // )});`
-  analyticsScript += "ga('jbrowseTracker.send', 'pageview');"
+  analyticsScript += `ga('jbrowseTracker.send', 'pageview',${JSON.stringify(
+    gaData,
+  )});`
 
   const analyticsScriptNode = document.createElement('script')
   analyticsScriptNode.innerHTML = analyticsScript
