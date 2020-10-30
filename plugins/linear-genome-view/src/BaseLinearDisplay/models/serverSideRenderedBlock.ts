@@ -180,10 +180,13 @@ export type BlockModel = Instance<BlockStateModel>
 function renderBlockData(self: Instance<BlockStateModel>) {
   try {
     const { assemblyManager, rpcManager } = getSession(self)
-    const display = getParent(self, 2)
-    const track = getParent(self, 4)
-    if (!track.configuration) {
-      console.error('wrong one!')
+    let display = getParent(self)
+    while (!(display.configuration && getConf(display, 'displayId'))) {
+      display = getParent(display)
+    }
+    let track = getParent(display)
+    while (!(track.configuration && getConf(track, 'trackId'))) {
+      track = getParent(track)
     }
     const assemblyNames = getTrackAssemblyNames(track)
     let cannotBeRenderedReason

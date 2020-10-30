@@ -8,11 +8,11 @@ import {
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
-} from '../PileupRenderer'
+} from '../../PileupRenderer'
 import SNPCoverageRenderer, {
   configSchema as snpCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
-} from '../SNPCoverageRenderer'
+} from '../../SNPCoverageRenderer'
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -74,9 +74,9 @@ test('has a viewType attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'AlignmentsTrack',
-    trackId: 'track0',
-    name: 'Zonker Track',
+    type: 'LinearAlignmentsDisplay',
+    displayId: 'display0',
+    name: 'Zonker Display',
   })
 
   expect(config.viewType).toEqual('LinearGenomeView')

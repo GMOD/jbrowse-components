@@ -51,7 +51,7 @@ export const BaseDisplay = types
      * renderer
      */
     get rendererType() {
-      const session: any = getSession(self)
+      const session = getSession(self)
       const RendererType = session.pluginManager.getRendererType(
         self.rendererTypeName,
       )
@@ -70,6 +70,10 @@ export const BaseDisplay = types
      */
     get DisplayMessageComponent() {
       return undefined as undefined | React.FC<any>
+    },
+
+    get trackMenuItems(): MenuItem[] {
+      return []
     },
 
     get viewMenuActions(): MenuItem[] {

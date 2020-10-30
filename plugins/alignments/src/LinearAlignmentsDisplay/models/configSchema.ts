@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +15,7 @@ const configModelFactory = (pluginManager: PluginManager) => {
   ).configSchema
 
   return ConfigurationSchema(
-    'AlignmentsTrack',
+    'LinearAlignmentsDisplay',
     {
       autoscale: {
         type: 'stringEnum',
@@ -50,7 +50,6 @@ const configModelFactory = (pluginManager: PluginManager) => {
           'round the upper value of the SNP coverage domain scale to the nearest N',
         defaultValue: 20,
       },
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup', 'svg']),
@@ -62,7 +61,7 @@ const configModelFactory = (pluginManager: PluginManager) => {
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
     },
-    { baseConfiguration: BaseTrackConfig, explicitlyTyped: true },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
 

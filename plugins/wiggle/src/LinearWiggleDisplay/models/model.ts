@@ -157,7 +157,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
         const autoscaleType = getConf(self, 'autoscale', [])
-        const { adapter } = getParent(self, 2).configuration
+        let track = getParent(self)
+        while (!(track.configuration && getConf(track, 'trackId'))) {
+          track = getParent(track)
+        }
+        const { adapter } = track.configuration
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results = (await rpcManager.call(
             getRpcSessionId(self),
@@ -192,7 +196,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             'WiggleGetMultiRegionStats',
             {
               adapterConfig: getSnapshot(adapter),
-              assemblyName: getTrackAssemblyNames(getParent(self, 2))[0],
+              assemblyName: getTrackAssemblyNames(track)[0],
               regions: JSON.parse(
                 JSON.stringify(
                   dynamicBlocks.contentBlocks.map(region => {

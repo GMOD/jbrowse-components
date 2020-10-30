@@ -10,11 +10,6 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-// import {
-//   configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-//   modelFactory as alignmentsTrackModelFactory,
-//   ReactComponent as AlignmentsTrackReactComponent,
-// } from './AlignmentsTrack'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
@@ -26,12 +21,17 @@ import * as MismatchParser from './BamAdapter/MismatchParser'
 import CramAdapterF from './CramAdapter'
 import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import {
+  configSchemaFactory as linearAligmentsDisplayConfigSchemaFactory,
+  modelFactory as linearAlignmentsDisplayModelFactory,
+  ReactComponent as LinearAlignmentsDisplayReactComponent,
+} from './LinearAlignmentsDisplay'
+import {
   configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
-  modelFactory as linearPileupDisplayTrackModelFactory,
+  modelFactory as linearPileupDisplayModelFactory,
 } from './LinearPileupDisplay'
 import {
   configSchemaFactory as linearSNPCoverageDisplayConfigSchemaFactory,
-  modelFactory as linearSNPCoverageDisplayTrackModelFactory,
+  modelFactory as linearSNPCoverageDisplayModelFactory,
 } from './LinearSNPCoverageDisplay'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
@@ -70,7 +70,7 @@ export default class AlignmentsPlugin extends Plugin {
       return new DisplayType({
         name: 'LinearPileupDisplay',
         configSchema,
-        stateModel: linearPileupDisplayTrackModelFactory(
+        stateModel: linearPileupDisplayModelFactory(
           pluginManager,
           configSchema,
         ),
@@ -86,10 +86,26 @@ export default class AlignmentsPlugin extends Plugin {
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
-        stateModel: linearSNPCoverageDisplayTrackModelFactory(configSchema),
+        stateModel: linearSNPCoverageDisplayModelFactory(configSchema),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearAligmentsDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearAlignmentsDisplay',
+        configSchema,
+        stateModel: linearAlignmentsDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+        trackType: 'AlignmentsTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: LinearAlignmentsDisplayReactComponent,
       })
     })
     pluginManager.addWidgetType(
