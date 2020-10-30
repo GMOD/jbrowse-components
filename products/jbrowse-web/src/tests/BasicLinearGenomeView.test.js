@@ -172,4 +172,18 @@ describe('valid file tests', () => {
     expect(centerLineInfo.refName).toBe('ctgA')
     expect(centerLineInfo.offset).toEqual(120)
   })
+
+  it('test navigation with the search input box', async () => {
+    const pluginManager = getPluginManager()
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    fireEvent.click(await findByText('Help'))
+    const target = await findByTestId('search-input')
+    // const event = { target: { value: 'contigA:1-100' } }
+    fireEvent.change(target, { target: { value: 'contigA:1-200' } })
+    // target.prop('onChange').call(null, event)
+    console.log(target.value)
+    expect(target.value).toBe('ctgA:1..200')
+  })
 })
