@@ -774,7 +774,7 @@ Example BigWig adapter config
 }
 ```
 
-### Disabiling Analytics
+### Disabling Analytics
 
 This is done via adding a field in the global configuration in the config file. For example:
 
