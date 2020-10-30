@@ -3,7 +3,6 @@ import Button from '@material-ui/core/Button'
 // import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
 import Dialog from '@material-ui/core/Dialog'
-import Toolbar from '@material-ui/core/Toolbar'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
@@ -182,7 +181,6 @@ export default function StartScreen({
 }) {
   const classes = useStyles()
 
-  //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
   const [sessions, setSessions] = useState<Record<string, any> | undefined>()
   const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
   const [sessionToRename, setSessionToRename] = useState<string | undefined>()
@@ -278,17 +276,15 @@ export default function StartScreen({
           setUpdateSessionsList(update)
         }}
       />
-      <Toolbar>
-        <IconButton
-          className={classes.settings}
-          onClick={event => {
-            event.stopPropagation()
-            setMenuAnchorEl(event.currentTarget)
-          }}
-        >
-          <SettingsIcon />
-        </IconButton>
-      </Toolbar>
+      <IconButton
+        className={classes.settings}
+        onClick={event => {
+          event.stopPropagation()
+          setMenuAnchorEl(event.currentTarget)
+        }}
+      >
+        <SettingsIcon />
+      </IconButton>
       <Container maxWidth="md">
         <LogoFull />
         <div className={classes.newSession}>
