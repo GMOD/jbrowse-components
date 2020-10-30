@@ -24,9 +24,14 @@ import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
+import AssemblyManager from './AssemblyManager'
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
+
+  exports = {
+    AssemblyManager,
+  }
 
   install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(

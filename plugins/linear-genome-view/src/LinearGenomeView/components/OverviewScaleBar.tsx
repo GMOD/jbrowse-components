@@ -39,7 +39,7 @@ const useStyles = makeStyles(theme => {
     },
     scaleBarContigForward: {
       backgroundImage: `
-      linear-gradient(-45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(-45deg, ${background} 10px, transparent 10px),
       linear-gradient(-135deg, ${background} 10px, transparent 10px),
       linear-gradient(-45deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(-135deg, #e4e4e4 11px, transparent 12px),
@@ -50,7 +50,7 @@ const useStyles = makeStyles(theme => {
     },
     scaleBarContigReverse: {
       backgroundImage: `
-      linear-gradient(45deg, ${background} 10px, transparent 10px), 
+      linear-gradient(45deg, ${background} 10px, transparent 10px),
       linear-gradient(135deg, ${background} 10px, transparent 10px),
       linear-gradient(45deg, #e4e4e4 11px, transparent 12px),
       linear-gradient(135deg, #e4e4e4 11px, transparent 12px),
