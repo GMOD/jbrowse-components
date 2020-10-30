@@ -201,10 +201,10 @@ export default observer(({ model }: { model: LGV }) => {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const { dynamicBlocks } = model
+  const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {`${Math.round(dynamicBlocks.totalBp).toLocaleString('en-US')} bp`}
+      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
     </Typography>
   )
 })

@@ -14,7 +14,7 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -48,8 +48,7 @@ export interface BpOffset {
   reversed?: boolean
 }
 
-function calculateVisibleLocStrings(dynamicBlocks) {
-  const { contentBlocks } = dynamicBlocks
+function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
   }
@@ -114,7 +113,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trackRefs: {} as { [key: string]: any },
-      coarseDynamicBlocks: { contentBlocks: [] } as any,
+      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseTotalBp: 0,
     }))
     .views(self => ({
       get width(): number {
@@ -1110,17 +1110,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
-      setCoarseDynamicBlocks(blocks: any) {
-        self.coarseDynamicBlocks = blocks
+      setCoarseDynamicBlocks(blocks: BlockSet) {
+        self.coarseDynamicBlocks = blocks.contentBlocks
+        self.coarseTotalBp = blocks.totalBp
       },
       afterAttach() {
         addDisposer(
           self,
           autorun(
             () => {
-              this.setCoarseDynamicBlocks(self.dynamicBlocks)
+              if (self.initialized) {
+                this.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
             },
-            { delay: 100 },
+            { delay: 150 },
           ),
         )
       },
