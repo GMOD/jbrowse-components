@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import SNPCoverageRenderer, {
   configSchema as snpCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
-} from '../SNPCoverageRenderer' // change renderer
+} from '../../SNPCoverageRenderer' // change renderer
 import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
@@ -35,9 +35,9 @@ test('has a viewType attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'SNPCoverageTrack',
-    trackId: 'track1',
-    name: 'SNPZonker Track',
+    type: 'SNPCoverageDisplay',
+    displayId: 'display1',
+    name: 'SNPZonker Display',
   })
   expect(config.viewType).toEqual('LinearGenomeView')
 })

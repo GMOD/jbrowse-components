@@ -25,7 +25,7 @@ interface SNPCoverageRendererProps {
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  trackModel: unknown
+  displayModel: unknown
 }
 
 interface BaseInfo {
@@ -62,7 +62,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
+      const score = feature.get('score') as number
+      // console.log(score, toHeight(score))
 
       // draw total
       ctx.fillStyle = colorForBase.total

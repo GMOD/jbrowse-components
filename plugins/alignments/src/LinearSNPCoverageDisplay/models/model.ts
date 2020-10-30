@@ -1,7 +1,7 @@
 import { types } from 'mobx-state-tree'
-import { wiggleTrackModelFactory } from '@jbrowse/plugin-wiggle'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import Tooltip from './Tooltip'
+import Tooltip from '../components/Tooltip'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -10,9 +10,9 @@ const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 const stateModelFactory = (configSchema: any) =>
   types
     .compose(
-      'SNPCoverageTrack',
-      wiggleTrackModelFactory(configSchema),
-      types.model({ type: types.literal('SNPCoverageTrack') }),
+      'LinearSNPCoverageDisplay',
+      linearWiggleDisplayModelFactory(configSchema),
+      types.model({ type: types.literal('LinearSNPCoverageDisplay') }),
     )
     .actions(self => ({
       setConfig(configuration: AnyConfigurationModel) {
@@ -37,6 +37,6 @@ const stateModelFactory = (configSchema: any) =>
       },
     }))
 
-export type SNPCoverageTrackModel = ReturnType<typeof stateModelFactory>
+export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
 
 export default stateModelFactory

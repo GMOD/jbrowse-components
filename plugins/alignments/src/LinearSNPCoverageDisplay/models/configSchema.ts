@@ -1,15 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-export default (pluginManager: PluginManager) => {
+export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
   const SNPCoverageRendererConfigSchema = pluginManager.getRendererType(
     'SNPCoverageRenderer',
   ).configSchema
 
   return ConfigurationSchema(
-    'SNPCoverageTrack',
+    'LinearSNPCoverageDisplay',
     {
       autoscale: {
         type: 'stringEnum',
@@ -50,15 +50,11 @@ export default (pluginManager: PluginManager) => {
           'round the upper value of the domain scale to the nearest N',
         defaultValue: 20,
       },
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: SNPCoverageRendererConfigSchema,
       }),
     },
-    {
-      baseConfiguration: BaseTrackConfig,
-      explicitlyTyped: true,
-    },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }

@@ -24,7 +24,7 @@ export interface WiggleBaseRendererProps {
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  trackModel: unknown
+  displayModel: unknown
 }
 
 export default abstract class extends ServerSideRendererType {
