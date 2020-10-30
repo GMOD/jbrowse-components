@@ -20,8 +20,8 @@ import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
+  BlockModel,
 } from './BaseLinearDisplay'
-import { BlockModel } from './BaseLinearDisplay/models/serverSideRenderedBlock'
 import {
   configSchemaFactory as linearBasicDisplayConfigSchemaFactory,
   stateModelFactory as LinearBasicDisplayStateModelFactory,
@@ -112,6 +112,7 @@ export {
   BaseLinearDisplayComponent,
   BaseLinearDisplay,
   baseLinearDisplayConfigSchema,
+  linearBasicDisplayConfigSchemaFactory,
 }
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
 export type { BaseLinearDisplayModel } from './BaseLinearDisplay'

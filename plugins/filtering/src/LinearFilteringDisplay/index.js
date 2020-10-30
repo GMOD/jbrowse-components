@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { basicTrackConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 export { default as modelFactory } from './model'
-export { default as ReactComponent } from './components/FilteringTrack'
+export { default as ReactComponent } from './components/LinearFilteringDisplay'
 
 export function configSchemaFactory(pluginManager) {
   return ConfigurationSchema(
-    'FilteringTrack',
+    'LinearFilteringDisplay',
     {
       filterAttributes: {
         type: 'stringArray',
@@ -15,7 +15,7 @@ export function configSchemaFactory(pluginManager) {
       },
     },
     {
-      baseConfiguration: basicTrackConfigSchemaFactory(pluginManager),
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

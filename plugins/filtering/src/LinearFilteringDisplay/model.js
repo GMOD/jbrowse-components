@@ -1,12 +1,11 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
-import FilteringTrackComponent from './components/FilteringTrack'
 
-function makeFilters(trackModel) {
+function makeFilters(displayModel) {
   const filters = []
-  const { filterOut } = trackModel
+  const { filterOut } = displayModel
   for (const attrName of filterOut.keys()) {
     for (const value of filterOut.get(attrName).keys()) {
       if (filterOut.get(attrName).get(value)) {
@@ -20,14 +19,12 @@ function makeFilters(trackModel) {
 }
 
 export default configSchema => {
-  const basicTrackStateModel = basicTrackStateModelFactory(configSchema)
-
   return types.compose(
-    'FilteringTrack',
-    basicTrackStateModel,
+    'LinearFilteringDisplay',
+    BaseLinearDisplay,
     types
       .model({
-        type: types.literal('FilteringTrack'),
+        type: types.literal('LinearFilteringDisplay'),
         configuration: ConfigurationReference(configSchema),
         hideExpressions: types.optional(types.array(types.string), () => []),
         height: 193,
@@ -41,12 +38,12 @@ export default configSchema => {
           return {
             ...getParentRenderProps(self),
             ...this.composedRenderProps,
-            trackModel: self,
+            displayModel: self,
             config: self.configuration.renderer,
             filters,
           }
         },
-        get innerTrackHeight() {
+        get innerDisplayHeight() {
           return self.height - self.dragHandleHeight - self.filterControlsHeight
         },
         get filterControlsMinHeight() {
@@ -54,6 +51,9 @@ export default configSchema => {
         },
         get filterControlsMaxHeight() {
           return Math.max(self.height - 20, 0)
+        },
+        get rendererTypeName() {
+          return self.configuration.renderer.type
         },
       }))
       .actions(self => ({
@@ -77,9 +77,6 @@ export default configSchema => {
           const values = self.filterOut.get(attrName)
           values.set(String(value), !checked)
         },
-      }))
-      .volatile(() => ({
-        ReactComponent: FilteringTrackComponent,
       })),
   )
 }

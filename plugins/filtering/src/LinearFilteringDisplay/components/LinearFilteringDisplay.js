@@ -1,17 +1,17 @@
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import React from 'react'
 import FilterControls from './FilterControls'
 
 const useStyles = makeStyles(theme => ({
-  track: {
+  display: {
     background: 'white',
     height: '100%',
     overflow: 'hidden',
   },
-  innerTrack: {
+  innerDisplay: {
     overflowY: 'auto',
     overflowX: 'hidden',
   },
@@ -20,14 +20,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function FilteringTrack(props) {
+function LinearFilteringDisplay(props) {
   const { model } = props
   const classes = useStyles()
-  const { innerTrackHeight, filterControlsHeight, dragHandleHeight } = model
+  const { innerDisplayHeight, filterControlsHeight, dragHandleHeight } = model
   return (
-    <div className={classes.track}>
-      <div className={classes.innerTrack} style={{ height: innerTrackHeight }}>
-        <BlockBasedTrack {...props} />
+    <div className={classes.display}>
+      <div
+        className={classes.innerDisplay}
+        style={{ height: innerDisplayHeight }}
+      >
+        <BaseLinearDisplayComponent {...props} />
       </div>
       <ResizeHandle
         onDrag={model.resizeFilterControls}
@@ -43,8 +46,8 @@ function FilteringTrack(props) {
   )
 }
 
-FilteringTrack.propTypes = {
+LinearFilteringDisplay.propTypes = {
   model: PropTypes.observableObject.isRequired,
 }
 
-export default observer(FilteringTrack)
+export default observer(LinearFilteringDisplay)
