@@ -81,7 +81,7 @@ const Search = observer(({ model }: { model: LGV }) => {
   const inputRef = useRef<HTMLInputElement>(null)
   const classes = useStyles()
   const theme = useTheme()
-  const { visibleLocStrings } = model
+  const { coarseVisibleLocStrings: visibleLocStrings } = model
   const session = getSession(model)
 
   function navTo(locString: string) {
@@ -147,10 +147,7 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
-  const {
-    dynamicBlocks: { contentBlocks },
-    displayedRegions,
-  } = model
+  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   const setDisplayedRegion = useCallback(
     (region: Region | undefined) => {
@@ -204,10 +201,10 @@ export default observer(({ model }: { model: LGV }) => {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const { dynamicBlocks } = model
+  const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {`${Math.round(dynamicBlocks.totalBp).toLocaleString('en-US')} bp`}
+      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
     </Typography>
   )
 })
