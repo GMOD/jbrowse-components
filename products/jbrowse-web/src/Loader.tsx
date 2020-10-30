@@ -427,15 +427,18 @@ const Renderer = observer(
             // setDefault(true)
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
-            setDefault(false)
+            // setDefault(false)
           } else {
-            // we want to default to the splash screen when there are default views
             rootModel.setDefaultSession()
-            // if (rootModel.session?.views.length === 0) {
-            //   setDefault(true)
-            // }
-            // setDefault(true)
           }
+          // } else {
+          //   // we want to default to the splash screen when there are default views
+          //   if (rootModel.session?.views.length === 0) {
+          //     if (defaultScreen !== true) {
+          //       setDefault(true)
+          //     }
+          //   }
+          // }
 
           // TODO use UndoManager
           // rootModel.setHistory(
@@ -480,7 +483,11 @@ const Renderer = observer(
     if (pm) {
       // will need to account for when a session is not loaded
       // if (sessionError) or if (pm.rootModel?.session === undefined)
-      if (defaultScreen === true) {
+      if (
+        sessionError ||
+        pm.rootModel?.session === undefined ||
+        pm.rootModel?.session?.views.length === 0
+      ) {
         return (
           <StartScreen
             root={pm.rootModel}
