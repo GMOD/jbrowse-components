@@ -781,7 +781,7 @@ This is done via adding a field in the global configuration in the config file. 
 ```json
 {
   "configuration": {
-    "disableAnalytics": "true"
+    "disableAnalytics": true
   }
 }
 ```
