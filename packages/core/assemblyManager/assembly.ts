@@ -341,10 +341,11 @@ async function loadAssemblyReaction(
       aliases: string[]
     }[]
 
-    refNameAliasesList.forEach(refNameAlias => {
-      refNameAlias.aliases.forEach(alias => {
+    refNameAliasesList.forEach(({ refName, aliases }) => {
+      aliases.forEach(alias => {
         checkRefName(alias)
-        refNameAliases[alias] = refNameAlias.refName
+        refNameAliases[alias] = refName
+        refNameAliases[refName] = refName
       })
     })
   }
