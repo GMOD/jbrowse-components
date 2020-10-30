@@ -2,6 +2,7 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   readConfObject,
+  getConf,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
@@ -32,6 +33,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
+import shortid from 'shortid'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -42,7 +44,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
-      name: types.identifier,
+      id: types.optional(types.identifier, shortid()),
+      name: types.string,
       margin: 0,
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
@@ -60,7 +63,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
-
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
@@ -81,6 +83,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       task: undefined,
     }))
     .views(self => ({
+      get shareURL() {
+        return getConf(getParent(self).jbrowse, 'shareURL')
+      },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
       },
@@ -94,7 +99,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return getParent(self).jbrowse.tracks
+        return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
       },
       get connections() {
         return getParent(self).jbrowse.connections
@@ -103,10 +108,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent(self).adminMode
       },
       get savedSessions() {
-        return getParent(self).jbrowse.savedSessions
+        return getParent(self).savedSessions
+      },
+      get previousAutosaveId() {
+        return getParent(self).previousAutosaveId
       },
       get savedSessionNames() {
-        return getParent(self).jbrowse.savedSessionNames
+        return getParent(self).savedSessionNames
       },
       get history() {
         return getParent(self).history
@@ -114,7 +122,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get menus() {
         return getParent(self).menus
       },
-
       get assemblyManager() {
         return getParent(self).assemblyManager
       },
@@ -156,6 +163,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setName(str: string) {
+        self.name = str
+      },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -229,20 +240,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const assemblyConnections =
           self.connectionInstances.get(assemblyName) || []
         const connection = assemblyConnections.find(c => c.name === name)
-        connection.tracks.forEach((track: any) => {
-          const referring = self.getReferring(track)
-          this.removeReferring(
-            referring,
-            track,
-            callbacksToDereferenceTrack,
-            dereferenceTypeCount,
-          )
-        })
-        const safelyBreakConnection = () => {
-          callbacksToDereferenceTrack.forEach(cb => cb())
-          this.breakConnection(configuration)
+        if (connection) {
+          connection.tracks.forEach((track: any) => {
+            const referring = self.getReferring(track)
+            this.removeReferring(
+              referring,
+              track,
+              callbacksToDereferenceTrack,
+              dereferenceTypeCount,
+            )
+          })
+          const safelyBreakConnection = () => {
+            callbacksToDereferenceTrack.forEach(cb => cb())
+            this.breakConnection(configuration)
+          }
+          return [safelyBreakConnection, dereferenceTypeCount]
         }
-        return [safelyBreakConnection, dereferenceTypeCount]
+        return undefined
       },
 
       breakConnection(configuration: AnyConfigurationModel) {
@@ -253,6 +267,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`connections for ${assemblyName} not found`)
         const connection = connectionInstances.find(c => c.name === name)
         connectionInstances.remove(connection)
+      },
+
+      deleteConnection(configuration: AnyConfigurationModel) {
+        return getParent(self).jbrowse.deleteConnectionConf(configuration)
       },
 
       updateDrawerWidth(drawerWidth: number) {
@@ -314,11 +332,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       deleteTrackConf(trackConf: AnyConfigurationModel) {
-        const { trackId } = trackConf
-        const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-        if (idx === -1) {
-          return undefined
-        }
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const referring = self.getReferring(trackConf)
@@ -329,6 +342,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           dereferenceTypeCount,
         )
         callbacksToDereferenceTrack.forEach(cb => cb())
+        if (self.adminMode) {
+          return getParent(self).jbrowse.deleteTrackConf(trackConf)
+        }
+        const { trackId } = trackConf
+        const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
         return self.sessionTracks.splice(idx, 1)
       },
 
@@ -431,11 +452,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).jbrowse.addSavedSession(sessionSnapshot)
+        return getParent(self).addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent(self).jbrowse.removeSavedSession(sessionSnapshot)
+        return getParent(self).removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {
@@ -445,13 +466,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       duplicateCurrentSession() {
         return getParent(self).duplicateCurrentSession()
       },
-
       activateSession(sessionName: any) {
         return getParent(self).activateSession(sessionName)
       },
-
       setDefaultSession() {
         return getParent(self).setDefaultSession()
+      },
+      saveSessionToLocalStorage() {
+        return getParent(self).saveSessionToLocalStorage()
+      },
+      loadAutosaveSession() {
+        return getParent(self).loadAutosaveSession()
       },
     }))
     .extend(() => {
@@ -542,8 +567,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
                 JSON.stringify(getSnapshot(config)),
               )
               trackSnapshot.trackId += `-${Date.now()}`
+              // the -sessionTrack suffix to trackId is used as metadata for
+              // the track selector to store the track in a special category,
+              // and default category is also cleared
+              if (!session.adminMode) {
+                trackSnapshot.trackId += '-sessionTrack'
+                trackSnapshot.category = undefined
+              }
               trackSnapshot.name += ' (copy)'
-              trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
@@ -554,6 +585,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
+export type SessionModel = Instance<SessionStateModel>
 
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -41,6 +41,7 @@ const defaultConfig = {
           uri: 'simple.bam',
         },
         index: {
+          indexType: 'BAI',
           location: {
             uri: 'simple.bam.bai',
           },
@@ -154,28 +155,7 @@ describe('set-default-session', () => {
     .command(['set-default-session', '--session', simpleBam])
     .exit(160)
     .it('fails when file is does not have a default session to read')
-  setup
-    .do(async () => {
-      await fsPromises.unlink('manifest.json')
-    })
-    .command(['set-default-session', '--session', simpleDefaultSession])
-    .exit(10)
-    .it('fails if no manifest.json found in cwd')
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
-    })
-    .command(['set-default-session', '--session', simpleDefaultSession])
-    .exit(20)
-    .it("fails if it can't parse manifest.json")
 
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
-    })
-    .command(['set-default-session', '--session', simpleDefaultSession])
-    .exit(30)
-    .it('fails if "name" in manifest.json is not "JBrowse"')
   setupWithAddTrack
     .do(async ctx => {
       await fsPromises.copyFile(

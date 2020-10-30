@@ -81,9 +81,6 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
     MuiInputBase: {
       margin: 'dense' as 'dense',
     },
-    MuiInputLabel: {
-      margin: 'dense' as 'dense',
-    },
     MuiList: {
       dense: true,
     },
@@ -115,6 +112,9 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
     MuiCheckbox: {
       size: 'small' as 'small',
     },
+    MuiLink: {
+      underline: 'always' as 'always',
+    },
   }
 }
 
@@ -134,6 +134,11 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
     MuiFab: {
       secondary: {
         backgroundColor: generatedPalette.quaternary.main,
+      },
+    },
+    MuiLink: {
+      root: {
+        color: generatedPalette.tertiary.main,
       },
     },
     MuiExpansionPanelSummary: {

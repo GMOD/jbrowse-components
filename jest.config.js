@@ -29,6 +29,8 @@ module.exports = {
   setupFiles: [
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
+    '<rootDir>/config/jest/console.js',
+    'jest-localstorage-mock',
   ],
   testEnvironment: 'jest-environment-jsdom-fourteen',
   testURL: 'http://localhost',

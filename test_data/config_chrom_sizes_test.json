@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/grape.chrom.sizes.nonexist"
+            "uri": "grape.chrom.sizes.nonexist"
           }
         }
       }
@@ -21,75 +21,73 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/grape.chrom.sizes"
+            "uri": "grape.chrom.sizes"
           }
         }
       }
     }
   ],
-  "savedSessions": [
-    {
-      "name": "Chrom sizes",
-      "views": [
-        {
-          "id": "chrom_sizes",
-          "type": "LinearGenomeView",
-          "offsetPx": 0,
-          "bpPerPx": 0.5,
-          "displayedRegions": [
-            {
-              "refName": "chr1",
-              "start": 0,
-              "end": 23037639,
-              "assemblyName": "grape"
-            }
-          ],
-          "tracks": [
-            {
-              "type": "ReferenceSequenceTrack",
-              "configuration": "grape_ref_seq"
-            }
-          ]
-        },
-        {
-          "id": "chrom_sizes2",
-          "type": "LinearGenomeView",
-          "offsetPx": 0,
-          "bpPerPx": 0.5,
-          "displayedRegions": [
-            {
-              "refName": "chr1",
-              "start": 0,
-              "end": 23037639,
-              "assemblyName": "grape2"
-            }
-          ],
-          "tracks": [
-            {
-              "type": "ReferenceSequenceTrack",
-              "configuration": "grape2_ref_seq"
-            }
-          ]
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": "",
-          "view": "chrom_sizes"
-        }
+  "defaultSession": {
+    "name": "Chrom sizes",
+    "views": [
+      {
+        "id": "chrom_sizes",
+        "type": "LinearGenomeView",
+        "offsetPx": 0,
+        "bpPerPx": 0.5,
+        "displayedRegions": [
+          {
+            "refName": "chr1",
+            "start": 0,
+            "end": 23037639,
+            "assemblyName": "grape"
+          }
+        ],
+        "tracks": [
+          {
+            "type": "ReferenceSequenceTrack",
+            "configuration": "grape_ref_seq"
+          }
+        ]
       },
-      "activeWidgets": {
-        "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+      {
+        "id": "chrom_sizes2",
+        "type": "LinearGenomeView",
+        "offsetPx": 0,
+        "bpPerPx": 0.5,
+        "displayedRegions": [
+          {
+            "refName": "chr1",
+            "start": 0,
+            "end": 23037639,
+            "assemblyName": "grape2"
+          }
+        ],
+        "tracks": [
+          {
+            "type": "ReferenceSequenceTrack",
+            "configuration": "grape2_ref_seq"
+          }
+        ]
       }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": "",
+        "view": "chrom_sizes"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
-  ],
+  },
+  "savedSessions": [],
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    },
-    "useUrlSession": false
+    }
   }
 }

@@ -14,12 +14,11 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { transaction } from 'mobx'
+import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
   types,
@@ -27,6 +26,7 @@ import {
   Instance,
   getRoot,
   resolveIdentifier,
+  addDisposer,
 } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -44,6 +44,26 @@ export interface BpOffset {
   offset: number
   start?: number
   end?: number
+  coord?: number
+  reversed?: boolean
+}
+
+function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+  if (!contentBlocks.length) {
+    return ''
+  }
+  const isSingleAssemblyName = contentBlocks.every(
+    block => block.assemblyName === contentBlocks[0].assemblyName,
+  )
+  const locs = contentBlocks.map(block =>
+    assembleLocString({
+      ...block,
+      start: Math.round(block.start),
+      end: Math.round(block.end),
+      assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+    }),
+  )
+  return locs.join(';')
 }
 
 export interface NavLocation {
@@ -93,6 +113,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trackRefs: {} as { [key: string]: any },
+      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseTotalBp: 0,
     }))
     .views(self => ({
       get width(): number {
@@ -214,20 +236,37 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
         return assemblyNames
       },
-
-      idxInParentRegion(refName: string | undefined) {
-        return this.displayedParentRegions.findIndex(
-          (region: Region) => region.refName === refName,
+      parentRegion(assemblyName: string, refName: string) {
+        return this.displayedParentRegions.find(
+          parentRegion =>
+            parentRegion.assemblyName === assemblyName &&
+            parentRegion.refName === refName,
         )
       },
-
-      bpToPx({ refName, coord }: { refName: string; coord: number }) {
+      /**
+       * @param refName - refName of the displayedRegion
+       * @param coord - coordinate at the displayed Region
+       * @param regionNumber - optional param used as identifier when
+       * there are multiple displayedRegions with the same refName
+       * @returns offsetPx of the displayed region that it lands in
+       */
+      bpToPx({
+        refName,
+        coord,
+        regionNumber,
+      }: {
+        refName: string
+        coord: number
+        regionNumber?: number
+      }) {
         let offsetBp = 0
 
-        const index = self.displayedRegions.findIndex(r => {
+        const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += r.reversed ? r.end - coord : coord - r.start
-            return true
+            if (regionNumber ? regionNumber === idx : true) {
+              offsetBp += r.reversed ? r.end - coord : coord - r.start
+              return true
+            }
           }
           offsetBp += r.end - r.start
           return false
@@ -239,6 +278,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
+
         return undefined
       },
       /**
@@ -480,6 +520,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
+        self.displayedRegions.forEach(r => {
+          const parent = self.parentRegion(r.assemblyName, r.refName)
+          r.parentStart = parent ? parent.start : -1
+          r.parentEnd = parent ? parent.end : -1
+        })
         self.zoomTo(self.bpPerPx)
       },
 
@@ -772,69 +817,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
       zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
         if (leftPx === undefined || rightPx === undefined) return
 
-        const singleRefSeq = leftPx.refName === rightPx.refName
+        const singleRefSeq =
+          leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
+        // zooming into one displayed Region
         if (
           (singleRefSeq && rightPx.offset < leftPx.offset) ||
-          self.idxInParentRegion(leftPx.refName) >
-            self.idxInParentRegion(rightPx.refName)
+          leftPx.index > rightPx.index
         ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
-
-        const selectionStart = Math.round(leftPx.offset)
-        const selectionEnd = Math.round(rightPx.offset)
-        const startIdx = self.idxInParentRegion(leftPx.refName)
-        const endIdx = self.idxInParentRegion(rightPx.refName)
-
-        const refSeqSelections: Region[] = []
-
-        if (singleRefSeq)
-          refSeqSelections.push({
-            ...self.displayedParentRegions[startIdx],
-            start: selectionStart,
-            end: selectionEnd,
-          })
-        else {
-          // when selecting over multiple ref seq, convert into correct selections
-          // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
-          for (let i = startIdx; i <= endIdx; i++) {
-            const ref = self.displayedParentRegions[i]
-            // modify start of first refSeq
-            if (!refSeqSelections.length && ref.refName === leftPx.refName)
-              refSeqSelections.push({
-                ...ref,
-                start: selectionStart,
-              })
-            // modify end of last refSeq
-            else if (ref.refName === rightPx.refName)
-              refSeqSelections.push({
-                ...ref,
-                end: selectionEnd,
-              })
-            else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
-          }
+        const startOffset = {
+          start: leftPx.start,
+          end: leftPx.end,
+          index: leftPx.index,
+          offset: leftPx.offset,
         }
-        let startOffset: BpOffset | undefined
-        let endOffset: BpOffset | undefined
-        self.displayedRegions.forEach((region, index) => {
-          refSeqSelections.forEach(seq => {
-            if (
-              region.refName === seq.refName &&
-              doesIntersect2(region.start, region.end, seq.start, seq.end)
-            ) {
-              if (!startOffset) {
-                const offset = region.reversed
-                  ? Math.max(region.end - seq.end, 0)
-                  : Math.max(seq.start - region.start, 0)
-                startOffset = { index, offset }
-              }
-              const offset = region.reversed
-                ? Math.min(region.end - seq.start, region.end - region.start)
-                : Math.min(seq.end - region.start, region.end - region.start)
-              endOffset = { index, offset }
-            }
-          })
-        })
+        const endOffset = {
+          start: rightPx.start,
+          end: rightPx.end,
+          index: rightPx.index,
+          offset: rightPx.offset,
+        }
         if (startOffset && endOffset) {
           this.moveTo(startOffset, endOffset)
         } else {
@@ -910,16 +913,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp -
-       * @param refName -
+       * @param bp-basepair at which you want to center the view
+       * @param refName-refName of the displayedRegion you are centering at
+       * @param regionIndex-index of the displayedRegion
        */
-      centerAt(bp: number, refName: string) {
-        const centerPx = self.bpToPx({ refName, coord: bp })
+      centerAt(bp: number, refName: string, regionIndex: number) {
+        const centerPx = self.bpToPx({
+          refName,
+          coord: bp,
+          regionNumber: regionIndex,
+        })
         if (centerPx) {
-          const centerPxOffset = centerPx.offsetPx
-          self.scrollTo(Math.round(centerPxOffset - self.width / 2))
+          self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
-        /* TODO: Handle displayed regions */
       },
 
       center() {
@@ -1096,27 +1102,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return calculateDynamicBlocks(self)
         },
         get visibleLocStrings() {
-          const { contentBlocks } = this.dynamicBlocks
-          if (!contentBlocks.length) {
-            return ''
-          }
-          const isSingleAssemblyName = contentBlocks.every(
-            block => block.assemblyName === contentBlocks[0].assemblyName,
-          )
-          const locs = contentBlocks.map(block =>
-            assembleLocString({
-              ...block,
-              start: Math.round(block.start),
-              end: Math.round(block.end),
-              assemblyName: isSingleAssemblyName
-                ? undefined
-                : block.assemblyName,
-            }),
-          )
-          return locs.join(';')
+          return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
+        },
+        get coarseVisibleLocStrings() {
+          return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
       }
     })
+    .actions(self => ({
+      setCoarseDynamicBlocks(blocks: BlockSet) {
+        self.coarseDynamicBlocks = blocks.contentBlocks
+        self.coarseTotalBp = blocks.totalBp
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                this.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+      },
+    }))
 
   return types.compose(BaseViewModel, model)
 }

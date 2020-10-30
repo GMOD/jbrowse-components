@@ -310,6 +310,7 @@ const BaseTrackWithReferences = types
         {
           label: 'About this track',
           icon: InfoIcon,
+          priority: 10,
           onClick: () => {
             self.setShowAbout(true)
           },

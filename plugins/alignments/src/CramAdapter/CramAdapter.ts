@@ -78,6 +78,10 @@ export class CramAdapter extends BaseFeatureDataAdapter {
     }
   }
 
+  async getHeader(opts?: BaseOptions) {
+    return this.cram.cram.getSamHeader(opts)
+  }
+
   private async seqFetch(seqId: number, start: number, end: number) {
     start -= 1 // convert from 1-based closed to interbase
 
