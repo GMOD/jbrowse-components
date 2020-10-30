@@ -1102,7 +1102,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return calculateDynamicBlocks(self)
         },
         get visibleLocStrings() {
-          return calculateVisibleLocStrings(this.dynamicBlocks)
+          return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
         },
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
