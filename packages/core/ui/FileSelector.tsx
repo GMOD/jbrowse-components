@@ -37,9 +37,13 @@ const FileLocationEditor = observer(
     setLocation: Function
     name?: string
     description?: string
+    localFileAllowed: boolean
   }) => {
-    const { location, name, description } = props
-    const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
+    const { location, name, description, localFileAllowed = isElectron } = props
+    const fileOrUrl =
+      (location && isUriLocation(location)) || !localFileAllowed
+        ? 'url'
+        : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     const handleFileOrUrlChange = (
@@ -48,7 +52,7 @@ const FileLocationEditor = observer(
     ) => {
       if (newValue === 'url') {
         setFileOrUrlState('url')
-      } else {
+      } else if (localFileAllowed) {
         setFileOrUrlState('file')
       }
     }
@@ -65,13 +69,11 @@ const FileLocationEditor = observer(
               onChange={handleFileOrUrlChange}
               aria-label="file or url picker"
             >
-              <ToggleButton
-                value="file"
-                aria-label="local file"
-                disabled={!isElectron}
-              >
-                File
-              </ToggleButton>
+              {localFileAllowed ? (
+                <ToggleButton value="file" aria-label="local file">
+                  File
+                </ToggleButton>
+              ) : null}
               <ToggleButton value="url" aria-label="url">
                 Url
               </ToggleButton>

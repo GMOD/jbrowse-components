@@ -92,6 +92,7 @@ export default pluginManager => {
                 <FileSelector
                   location={model.fileSource}
                   setLocation={model.setFileSource}
+                  localFileAllowed
                 />
               </FormGroup>
             </FormControl>

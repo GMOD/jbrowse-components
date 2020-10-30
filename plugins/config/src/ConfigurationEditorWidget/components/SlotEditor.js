@@ -394,16 +394,20 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
       <div className={classes.slotModeSwitch}>
-        <IconButton
-          className={classes.slotModeIcon}
-          onClick={() =>
-            slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
-          }
-          title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
-          color="secondary"
-        >
-          {!slot.isCallback ? <RadioButtonUncheckedIcon /> : <SvgCheckbox />}
-        </IconButton>
+        {slot.functionSignature.length ? (
+          <IconButton
+            className={classes.slotModeIcon}
+            onClick={() =>
+              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+            }
+            title={`convert to ${
+              slot.isCallback ? 'regular value' : 'callback'
+            }`}
+            color="secondary"
+          >
+            {!slot.isCallback ? <RadioButtonUncheckedIcon /> : <SvgCheckbox />}
+          </IconButton>
+        ) : null}
       </div>
     </Paper>
   )
