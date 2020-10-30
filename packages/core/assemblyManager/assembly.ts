@@ -71,20 +71,9 @@ async function loadRefNameMap(
 
   refNames.forEach((refName: string) => {
     checkRefName(refName)
-    const aliases = refNameAliases.get(refName)
-    if (aliases) {
-      aliases.forEach(refNameAlias => {
-        refNameMap[refNameAlias] = refName
-      })
-    } else {
-      refNameAliases.forEach((configAliases, configRefName) => {
-        if (configAliases.includes(refName)) {
-          refNameMap[configRefName] = refName
-          configAliases.forEach(refNameAlias => {
-            if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
-          })
-        }
-      })
+    const canon = assembly.getCanonicalRefName(refName)
+    if (canon) {
+      refNameMap[canon] = refName
     }
   })
 
@@ -115,7 +104,7 @@ function getAdapterId(adapterConf: unknown) {
   return jsonStableStringify(adapterConf)
 }
 
-type RefNameAliases = Record<string, string[]>
+type RefNameAliases = Record<string, string>
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -150,7 +139,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     .model({
       configuration: types.reference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
-      refNameAliases: types.maybe(types.map(types.array(types.string))),
+      refNameAliases: types.maybe(types.map(types.string)),
     })
     .views(self => ({
       get name(): string {
@@ -188,22 +177,12 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
     .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!self.refNames || !self.refNameAliases) {
+        if (!self.refNameAliases) {
           throw new Error(
-            'assembly not loaded, getCanonicalRefName should not be used until the assembly is loaded',
+            'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        if (self.refNames.includes(refName)) {
-          return refName
-        }
-        for (const [rName, aliases] of self.refNameAliases) {
-          if (aliases.includes(refName)) {
-            return rName
-          }
-        }
-        throw new Error(
-          `unknown reference sequence name ${refName}, this reference does not appear in the assembly`,
-        )
+        return self.refNameAliases.get(refName)
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -361,8 +340,8 @@ async function loadAssemblyReaction(
     refNameAliasesList.forEach(refNameAlias => {
       refNameAlias.aliases.forEach(alias => {
         checkRefName(alias)
+        refNameAliases[alias] = refNameAlias.refName
       })
-      refNameAliases[refNameAlias.refName] = refNameAlias.aliases
     })
   }
   return { adapterRegionsWithAssembly, refNameAliases }
