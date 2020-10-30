@@ -1,11 +1,18 @@
 import React, { useRef, useState } from 'react'
+import { getSession } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 import SearchIcon from '@material-ui/icons/Search'
 import TextField from '@material-ui/core/TextField'
+import { useTheme } from '@material-ui/core/styles'
+import { fade } from '@material-ui/core/styles/colorManipulator'
+import { LinearGenomeViewModel } from '..'
 
-export default observer(({ model }: { model: LGV }) => {
+const WIDGET_HEIGHT = 32
+const SPACING = 7
+
+export default observer(({ model }: { model: LinearGenomeViewModel }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
-  const classes = useStyles()
   const theme = useTheme()
   const { coarseVisibleLocStrings: visibleLocStrings } = model
   const session = getSession(model)
@@ -32,11 +39,11 @@ export default observer(({ model }: { model: LGV }) => {
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
         onChange={event => setValue(event.target.value)}
-        className={classes.input}
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
         InputProps={{
+          'data-testid': 'search-input',
           startAdornment: <SearchIcon />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
