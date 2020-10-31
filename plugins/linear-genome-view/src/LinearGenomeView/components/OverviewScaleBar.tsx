@@ -23,7 +23,6 @@ const useStyles = makeStyles(theme => {
   const scaleBarColor = theme.palette.tertiary
     ? theme.palette.tertiary.light
     : theme.palette.primary.light
-  const background = theme.palette.background.default
   return {
     scaleBar: {
       display: 'flex',
@@ -38,26 +37,12 @@ const useStyles = makeStyles(theme => {
       borderBottomColor: 'black',
     },
     scaleBarContigForward: {
-      backgroundImage: `
-      linear-gradient(-45deg, ${background} 10px, transparent 10px),
-      linear-gradient(-135deg, ${background} 10px, transparent 10px),
-      linear-gradient(-45deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(-135deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(-45deg, ${background} 10px, transparent 10px),
-      linear-gradient(-135deg, ${background} 10px, transparent 10px)`,
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
       backgroundRepeat: 'repeat',
-      backgroundSize: HEADER_OVERVIEW_HEIGHT,
     },
     scaleBarContigReverse: {
-      backgroundImage: `
-      linear-gradient(45deg, ${background} 10px, transparent 10px),
-      linear-gradient(135deg, ${background} 10px, transparent 10px),
-      linear-gradient(45deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(135deg, #e4e4e4 11px, transparent 12px),
-      linear-gradient(45deg, ${background} 10px, transparent 10px),
-      linear-gradient(135deg, ${background} 10px, transparent 10px)`,
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
       backgroundRepeat: 'repeat',
-      backgroundSize: HEADER_OVERVIEW_HEIGHT,
     },
     scaleBarRegionIncompleteLeft: {
       width: 10,
