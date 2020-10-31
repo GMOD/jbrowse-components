@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
