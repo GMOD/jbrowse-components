@@ -45,6 +45,7 @@
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.2.1",
+    "crypto-js": "^4.0.0",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
