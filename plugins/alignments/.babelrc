@@ -1,0 +1,7 @@
+{
+  "presets": [
+    ["@babel/preset-env", { "loose": false }],
+    // can remove this if all .js files are converted to .ts
+    "@babel/preset-react"
+  ]
+}
