@@ -80,15 +80,28 @@ export default class extends Plugin {
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToMenu('File', {
-        label: 'Open new track',
+        label: 'Open track',
         icon: NoteAddIcon,
         onClick: (session: SessionWithWidgets) => {
-          const widget = session.addWidget('AddTrackWidget', 'addTrackWidget')
-          session.showWidget(widget)
+          if (session.views.length === 0) {
+            session.notify('Please open a view to add a track first')
+          } else if (session.views.length >= 1) {
+            const widget = session.addWidget(
+              'AddTrackWidget',
+              'addTrackWidget',
+              { view: session.views[0].id },
+            )
+            session.showWidget(widget)
+            if (session.views.length > 1) {
+              session.notify(
+                `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+              )
+            }
+          }
         },
       })
       pluginManager.rootModel.appendToMenu('File', {
-        label: 'Open new connection',
+        label: 'Open connection',
         icon: InputIcon,
         onClick: (session: SessionWithWidgets) => {
           const widget = session.addWidget(

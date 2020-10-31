@@ -715,6 +715,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'SequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
+      PafAdapter: 'LinearSyntenyTrack',
     }
     return known[adapterType] || 'BasicTrack'
   }

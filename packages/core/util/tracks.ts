@@ -309,6 +309,7 @@ export function guessTrackType(adapterType: string): string {
     TwoBitAdapter: 'SequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
+    PafAdapter: 'LinearSyntenyTrack',
   }
   return known[adapterType] || 'BasicTrack'
 }
