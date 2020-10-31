@@ -48,35 +48,6 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(1),
   },
 }))
-
-function getInputComponent(trackSource, trackData, setTrackData) {
-  // mock the slots so we can use the slotEditor components here
-  switch (trackSource) {
-    case 'fromFile':
-      return (
-        <FileSelector
-          name="dataSourceLocation"
-          description=""
-          location={trackData}
-          setLocation={setTrackData}
-        />
-      )
-    case 'fromConfig':
-      return (
-        <JsonEditor
-          slot={{
-            name: 'track data',
-            description: 'A JSON representation of the features in the track',
-            value: trackData.config,
-            set: value => setTrackData({ config: value }),
-          }}
-        />
-      )
-    default:
-      return <Typography>Unknown track source</Typography>
-  }
-}
-
 function handleChange(event, setTrackSource, setTrackData) {
   setTrackSource(event.target.value)
   switch (event.target.value) {
@@ -100,33 +71,19 @@ function TrackSourceSelect({
   const classes = useStyles()
   return (
     <div className={classes.root}>
-      <FormControl component="fieldset">
-        <RadioGroup
-          aria-label="Data location"
-          value={trackSource}
-          onChange={event => handleChange(event, setTrackSource, setTrackData)}
-          name="TrackSourceSelectRadioGroup"
-        >
-          <FormControlLabel
-            value="fromFile"
-            control={
-              <Radio inputProps={{ 'data-testid': 'addTrackFromFileRadio' }} />
-            }
-            label="Enter data source"
-          />
-          <FormControlLabel
-            value="fromConfig"
-            control={
-              <Radio
-                inputProps={{ 'data-testid': 'addTrackFromConfigRadio' }}
-              />
-            }
-            label="Enter data manually"
-          />
-        </RadioGroup>
-      </FormControl>
       <Paper className={classes.paper}>
-        {getInputComponent(trackSource, trackData, setTrackData)}
+        <FileSelector
+          name="URL"
+          description=""
+          location={trackData}
+          setLocation={setTrackData}
+        />
+        <FileSelector
+          name="Index URL (optional)"
+          description=""
+          location={trackData}
+          setLocation={setTrackData}
+        />
       </Paper>
     </div>
   )

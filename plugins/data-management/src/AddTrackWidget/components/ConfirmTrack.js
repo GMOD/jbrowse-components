@@ -24,6 +24,7 @@ const useStyles = makeStyles(theme => ({
 function ConfirmTrack({
   trackData,
   trackName,
+  fileName,
   setTrackAdapter,
   setTrackName,
   trackType,
@@ -175,7 +176,7 @@ function ConfirmTrack({
           label="trackName"
           helperText="A name for this track"
           fullWidth
-          value={trackName}
+          value={trackName || fileName}
           onChange={event => setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
@@ -233,7 +234,7 @@ function ConfirmTrack({
           {session.assemblies.map(assemblyConf => {
             const assemblyName = readConfObject(assemblyConf, 'name')
             return (
-              <MenuItem key={assemblyName} value={assemblyConf}>
+              <MenuItem key={assemblyName} value={assemblyName}>
                 {assemblyName}
               </MenuItem>
             )
@@ -257,6 +258,7 @@ ConfirmTrack.propTypes = {
     config: PropTypes.array,
   }).isRequired,
   trackName: PropTypes.string.isRequired,
+  fileName: PropTypes.string,
   setTrackName: PropTypes.func.isRequired,
   trackType: PropTypes.string,
   setTrackType: PropTypes.func.isRequired,
@@ -273,6 +275,7 @@ ConfirmTrack.propTypes = {
 ConfirmTrack.defaultProps = {
   assembly: '',
   trackType: '',
+  fileName: '',
 }
 
 export default observer(ConfirmTrack)
