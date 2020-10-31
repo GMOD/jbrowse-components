@@ -208,7 +208,7 @@ export function guessAdapter(
   if (/\/trackData.jsonz?$/i.test(fileName)) {
     return {
       type: 'NCListAdapter',
-      rootUrlTemplate: fileName,
+      rootUrlTemplate: makeLocation(fileName),
     }
   }
 
