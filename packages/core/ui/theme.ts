@@ -1,3 +1,4 @@
+import { blue, green, red, amber } from '@material-ui/core/colors'
 import { createMuiTheme, ThemeOptions } from '@material-ui/core/styles'
 import { PaletteOptions } from '@material-ui/core/styles/createPalette'
 import deepmerge from 'deepmerge'
@@ -22,10 +23,22 @@ declare module '@material-ui/core/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
+    bases: {
+      A: Palette['primary']
+      C: Palette['primary']
+      G: Palette['primary']
+      T: Palette['primary']
+    }
   }
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
     quaternary?: PaletteOptions['primary']
+    bases?: {
+      A?: PaletteOptions['primary']
+      C?: PaletteOptions['primary']
+      G?: PaletteOptions['primary']
+      T?: PaletteOptions['primary']
+    }
   }
 }
 
@@ -40,6 +53,12 @@ export const jbrowseDefaultPalette = {
   secondary: { main: grape },
   tertiary: refTheme.palette.augmentColor({ main: forest }),
   quaternary: refTheme.palette.augmentColor({ main: mandarin }),
+  bases: {
+    A: refTheme.palette.augmentColor(green),
+    C: refTheme.palette.augmentColor(blue),
+    G: refTheme.palette.augmentColor(amber),
+    T: refTheme.palette.augmentColor(red),
+  },
 }
 
 export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {

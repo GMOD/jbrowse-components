@@ -1,3 +1,4 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
@@ -9,6 +10,7 @@ import {
   WiggleBaseRenderer,
 } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { ThemeOptions } from '@material-ui/core'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
@@ -26,6 +28,7 @@ interface SNPCoverageRendererProps {
   sessionId: string
   signal: AbortSignal
   trackModel: unknown
+  theme: ThemeOptions
 }
 
 interface BaseInfo {
@@ -38,7 +41,16 @@ interface BaseInfo {
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
-    const { features, regions, bpPerPx, scaleOpts, height } = props
+    const {
+      features,
+      regions,
+      bpPerPx,
+      scaleOpts,
+      height,
+      theme: configTheme,
+    } = props
+    const theme = createJBrowseTheme(configTheme)
+
     const [region] = regions
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
@@ -49,10 +61,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     const insRegex = /^ins.[A-Za-z0-9]/
     const colorForBase: { [key: string]: string } = {
-      A: '#00bf00',
-      C: '#4747ff',
-      G: '#ffa500',
-      T: '#f00',
+      A: theme.palette.bases.A.main,
+      C: theme.palette.bases.C.main,
+      G: theme.palette.bases.G.main,
+      T: theme.palette.bases.T.main,
       total: 'lightgrey',
     }
 
