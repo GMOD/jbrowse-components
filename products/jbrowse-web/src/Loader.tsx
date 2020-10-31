@@ -21,6 +21,11 @@ import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
+import {
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from '@jbrowse/core/util/analytics'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -349,7 +354,7 @@ const SessionLoader = types
     },
   }))
 
-export function Loader() {
+export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
   const load = (param: string | null | undefined) =>
@@ -367,11 +372,25 @@ export function Loader() {
     adminKey: load(adminKey),
   })
 
-  return <Renderer loader={loader} />
+  return (
+    <Renderer
+      loader={loader}
+      initialTimestamp={initialTimestamp}
+      initialSessionQuery={session}
+    />
+  )
 }
 
 const Renderer = observer(
-  ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
+  ({
+    loader,
+    initialTimestamp,
+    initialSessionQuery,
+  }: {
+    loader: Instance<typeof SessionLoader>
+    initialTimestamp: number
+    initialSessionQuery: string | null | undefined
+  }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
@@ -402,6 +421,7 @@ const Renderer = observer(
             assemblyManager: {},
             version: packagedef.version,
             configPath,
+            // add initial to root
           })
 
           // in order: saves the previous autosave for recovery, tries to load
@@ -436,6 +456,19 @@ const Renderer = observer(
             rootModel.setDefaultSession()
           }
 
+          // send analytics
+          if (
+            rootModel &&
+            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+          ) {
+            writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+            writeGAAnalytics(rootModel, initialTimestamp)
+          }
+
+          // if (!rootModel.session) {
+          //   throw new Error('root model did not have any session defined')
+          // }
+
           // TODO use UndoManager
           // rootModel.setHistory(
           //   UndoManager.create({}, { targetStore: rootModel.session }),
@@ -456,7 +489,14 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword])
+    }, [
+      loader,
+      ready,
+      sessionError,
+      setPassword,
+      initialTimestamp,
+      initialSessionQuery,
+    ])
 
     if (configError) {
       return (
@@ -502,11 +542,11 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-export default () => {
+export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>
   )

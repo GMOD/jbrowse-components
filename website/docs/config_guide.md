@@ -773,3 +773,15 @@ Example BigWig adapter config
   "bigWigLocation": { "uri": "http://yourhost/file.bw" }
 }
 ```
+
+## Disabling Analytics
+
+This is done via adding a field in the global configuration in the config file. For example:
+
+```json
+{
+  "configuration": {
+    "disableAnalytics": true
+  }
+}
+```
