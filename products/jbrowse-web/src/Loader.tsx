@@ -403,18 +403,7 @@ const Renderer = observer(
               )
             }
           } else if (sessionSnapshot) {
-            try {
-              rootModel.setSession(loader.sessionSnapshot)
-            } catch (error) {
-              console.error(error)
-              rootModel.setDefaultSession()
-              const errorMessage = (error.message || '')
-                .replace('[mobx-state-tree] ', '')
-                .replace(/\(.+/, '')
-              rootModel.session?.notify(
-                `Session could not be loaded. ${errorMessage}`,
-              )
-            }
+            rootModel.setSession(loader.sessionSnapshot)
           } else {
             rootModel.setDefaultSession()
           }
