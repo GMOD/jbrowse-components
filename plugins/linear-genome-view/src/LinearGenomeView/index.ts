@@ -536,7 +536,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      navToLocString(locString: string) {
+      async navToLocString(locString: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const locStrings = locString.split(';')
@@ -549,7 +549,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const displayedRegion = self.displayedRegions[0]
         const { assemblyName } = displayedRegion
-        let assembly = assemblyManager.get(assemblyName)
+        let assembly = await assemblyManager.waitForAssembly(assemblyName)
         if (!assembly) {
           throw new Error(
             `Could not find assembly ${displayedRegion.assemblyName}`,
@@ -631,17 +631,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.navToMultiple([query])
       },
 
-      navToMultiple(locations: NavLocation[]) {
+      async navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
-        const { start, end, assemblyName } = firstLocation
+        const {
+          start,
+          end,
+          assemblyName = self.assemblyNames[0],
+        } = firstLocation
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
         const session = getSession(self)
-        const assembly = session.assemblyManager.get(
-          assemblyName || self.assemblyNames[0],
-        )
+        const { assemblyManager } = session
+        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+        console.log(assembly)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {

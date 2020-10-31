@@ -28,6 +28,7 @@ export default observer(({ model }: { model: LinearGenomeViewModel }) => {
 
   return (
     <form
+      data-testid="search-form"
       onSubmit={event => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
@@ -42,8 +43,10 @@ export default observer(({ model }: { model: LinearGenomeViewModel }) => {
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
-        InputProps={{
+        inputProps={{
           'data-testid': 'search-input',
+        }}
+        InputProps={{
           startAdornment: <SearchIcon />,
           style: {
             background: fade(theme.palette.background.paper, 0.8),
