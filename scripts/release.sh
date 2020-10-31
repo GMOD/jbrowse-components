@@ -33,7 +33,7 @@ BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWS
 
 
 JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/$JBROWSE_WEB_TAG/index.html
+INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$JBROWSE_WEB_TAG/index.html
 JBROWSE_WEB_VERSION=$JBROWSE_WEB_VERSION JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
 
 
