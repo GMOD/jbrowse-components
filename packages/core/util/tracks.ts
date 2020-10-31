@@ -152,7 +152,7 @@ export function guessAdapter(
 
   if (/\.bed\.b?gz$/i.test(fileName)) {
     return {
-      type: 'VcfTabixAdapter',
+      type: 'BedTabixAdapter',
       bedGzLocation: makeLocation(fileName),
       index: {
         location: makeLocation(`${fileName}.tbi`),

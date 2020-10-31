@@ -561,7 +561,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
       return {
-        type: 'VcfTabixAdapter',
+        type: 'BedTabixAdapter',
         bedGzLocation: makeLocation(fileName),
         index: {
           location: makeLocation(`${fileName}.tbi`),
