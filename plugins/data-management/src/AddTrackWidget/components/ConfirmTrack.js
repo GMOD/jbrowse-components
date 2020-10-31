@@ -25,6 +25,7 @@ function ConfirmTrack({
   trackData,
   trackName,
   fileName,
+  indexTrackData,
   setTrackAdapter,
   setTrackName,
   trackType,
@@ -253,6 +254,11 @@ ConfirmTrack.propTypes = {
   ]),
   setAssembly: PropTypes.func.isRequired,
   trackData: PropTypes.shape({
+    uri: PropTypes.string,
+    localPath: PropTypes.string,
+    config: PropTypes.array,
+  }).isRequired,
+  indexTrackData: PropTypes.shape({
     uri: PropTypes.string,
     localPath: PropTypes.string,
     config: PropTypes.array,

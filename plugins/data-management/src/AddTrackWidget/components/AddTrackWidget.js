@@ -37,6 +37,7 @@ function AddTrackWidget({ model }) {
   const [activeStep, setActiveStep] = useState(0)
   const [trackSource, setTrackSource] = useState('fromFile')
   const [trackData, setTrackData] = useState({ uri: '' })
+  const [indexTrackData, setIndexTrackData] = useState({ uri: '' })
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
@@ -59,6 +60,8 @@ function AddTrackWidget({ model }) {
             setTrackSource={setTrackSource}
             trackData={trackData}
             setTrackData={setTrackData}
+            indexTrackData={indexTrackData}
+            setIndexTrackData={setIndexTrackData}
           />
         )
       case 1:
@@ -66,6 +69,7 @@ function AddTrackWidget({ model }) {
           <ConfirmTrack
             fileName={fileName}
             session={session}
+            indexTrackData={indexTrackData}
             trackData={trackData}
             trackName={trackName}
             setTrackName={setTrackName}
