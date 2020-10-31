@@ -561,7 +561,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
       return {
-        type: 'VcfTabixAdapter',
+        type: 'BedTabixAdapter',
         bedGzLocation: makeLocation(fileName),
         index: {
           location: makeLocation(`${fileName}.tbi`),
@@ -618,7 +618,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\/trackData.jsonz?$/i.test(fileName)) {
       return {
         type: 'NCListAdapter',
-        rootUrlTemplate: fileName,
+        rootUrlTemplate: makeLocation(fileName),
       }
     }
 
@@ -715,6 +715,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'SequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
+      PafAdapter: 'LinearSyntenyTrack',
     }
     return known[adapterType] || 'BasicTrack'
   }

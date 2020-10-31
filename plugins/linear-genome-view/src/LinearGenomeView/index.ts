@@ -229,12 +229,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
       get assemblyNames() {
-        const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        return assemblyNames
+        return [
+          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
+        ]
       },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
