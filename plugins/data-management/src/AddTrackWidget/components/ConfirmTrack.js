@@ -47,7 +47,10 @@ function ConfirmTrack({
         !trackData.uri.startsWith('http')
       ) {
         setError(
-          'Warning: one or more of your files do not start with http, this might be ok but generally absolute HTTP URLs are supplied to this widget. Please double check your inputs. FTP links are not supported',
+          `Warning: one or more of your files do not start with http, this
+          might be ok but generally absolute HTTP URLs are supplied to this
+          widget. Please double check your inputs. FTP links are not
+          supported`,
         )
       }
     }
