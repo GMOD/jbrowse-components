@@ -65,6 +65,8 @@ function handleChange(event, setTrackSource, setTrackData) {
 function TrackSourceSelect({
   trackSource,
   setTrackSource,
+  indexTrackData,
+  setIndexTrackData,
   trackData,
   setTrackData,
 }) {
@@ -80,9 +82,9 @@ function TrackSourceSelect({
         />
         <FileSelector
           name="Index URL (optional)"
-          description=""
-          location={trackData}
-          setLocation={setTrackData}
+          description="Automatically inferred from the URL if not supplied"
+          location={indexTrackData}
+          setLocation={setIndexTrackData}
         />
       </Paper>
     </div>
@@ -93,7 +95,9 @@ TrackSourceSelect.propTypes = {
   trackSource: PropTypes.string.isRequired,
   setTrackSource: PropTypes.func.isRequired,
   trackData: PropTypes.objectOf(PropTypes.any).isRequired,
+  indexTrackData: PropTypes.objectOf(PropTypes.any).isRequired,
   setTrackData: PropTypes.func.isRequired,
+  setIndexTrackData: PropTypes.func.isRequired,
 }
 
 export default TrackSourceSelect
