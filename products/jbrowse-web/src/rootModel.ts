@@ -73,12 +73,14 @@ function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
       filterSessionInPlace(child, childType)
     })
   } else if (isModelType(nodeType)) {
-    // iterate over children
-    const { properties } = getPropertyMembers(node)
-    Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
-      filterSessionInPlace(node[pname], ptype)
-    })
+    // iterate over children, check for node in case of a types.maybe
+    if (node) {
+      const { properties } = getPropertyMembers(node)
+      Object.entries(properties).forEach(([pname, ptype]) => {
+        // @ts-ignore
+        filterSessionInPlace(node[pname], ptype)
+      })
+    }
   }
 }
 
