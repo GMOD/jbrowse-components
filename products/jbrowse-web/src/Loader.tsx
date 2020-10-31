@@ -39,6 +39,21 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 function NoConfigMessage() {
+  const s = window.location.search
+  const links = [
+    ['test_data/volvox/config.json', 'Volvox sample data'],
+    ['test_data/config.json', 'Human basic'],
+    ['test_data/config_demo.json', 'Human sample data'],
+    ['test_data/tomato/config.json', 'Tomato SVs'],
+    ['test_data/breakpoint/config.json', 'Breakpoint'],
+    ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
+    ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
+    ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
+    ['test_data/config_longread.json', 'Long read vs. ref (dotplot)'],
+    ['test_data/config_longread_linear.json', 'Long read vs. ref (linear)'],
+    ['test_data/config_many_contigs.json', 'Many contigs'],
+    ['test_data/config_honeybee.json', 'Honeybee'],
+  ]
   return (
     <div>
       <h4>
@@ -57,59 +72,11 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            <li>
-              <a href="?config=test_data/config.json">Human basic</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_demo.json">Human sample data</a>
-            </li>
-            <li>
-              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
-            </li>
-            <li>
-              <a href="?config=test_data/volvox/config.json">Volvox</a>
-            </li>
-            <li>
-              <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_dotplot.json">
-                Grape/Peach Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_human_dotplot.json">
-                hg19/hg38 Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_synteny_grape_peach.json">
-                Grape/Peach Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/yeast_synteny/config.json">
-                Yeast Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread.json">
-                Long Read vs. Reference Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread_linear.json">
-                Long Read vs. Reference Linear
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_many_contigs.json">
-                Many Contigs
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_honeybee.json">Honeybee</a>
-            </li>
+            {links.map(([link, name]) => (
+              <li>
+                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
+              </li>
+            ))}
           </ul>
         </>
       ) : (

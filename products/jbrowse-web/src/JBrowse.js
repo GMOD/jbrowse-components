@@ -22,6 +22,7 @@ function deleteBaseUris(config) {
 
 const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [adminServer] = useQueryParam('adminServer', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
@@ -35,10 +36,10 @@ const JBrowse = observer(({ pluginManager }) => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
         const config = JSON.parse(JSON.stringify(snapshot))
-        deleteBaseUris(snapshot)
+        deleteBaseUris(config)
         const payload = { adminKey, config }
 
-        const response = await fetch('/updateConfig', {
+        const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +56,7 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, session, adminKey])
+  }, [jbrowse, session, adminKey, adminServer])
 
   if (error) {
     throw error
