@@ -60,7 +60,7 @@ export default class AddTrack extends JBrowseCommand {
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
-    index: flags.string({
+    indexFile: flags.string({
       description: 'Optional index file for the track',
     }),
     description: flags.string({
@@ -134,7 +134,7 @@ export default class AddTrack extends JBrowseCommand {
       target,
       protocol,
       out,
-      index,
+      indexFile: index,
     } = runFlags
 
     const output = target || out || '.'
