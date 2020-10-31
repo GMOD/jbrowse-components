@@ -16,7 +16,6 @@ import { types, Instance, SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import * as crypto from 'crypto'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
@@ -274,8 +273,6 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
-      const key = crypto.createHash('sha256').update('JBrowse').digest()
-
       // raw readConf alternative for before conf is initialized
       const readConf = (
         conf: { configuration?: { [key: string]: string } },
@@ -290,7 +287,6 @@ const SessionLoader = types
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
-        key,
         self.password || '',
       )
 
