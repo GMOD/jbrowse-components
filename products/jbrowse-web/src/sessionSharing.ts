@@ -1,15 +1,9 @@
 import { toUrlSafeB64 } from '@jbrowse/core/util'
 
-const AES = require('crypto-js/aes')
-const Utf8 = require('crypto-js/enc-utf8')
+import AES from 'crypto-js/aes'
+import Utf8 from 'crypto-js/enc-utf8'
 
-// adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
-const encrypt = (text: string, password: string) => {
-  const encrypted = AES.encrypt(text, password).toString()
-  return encrypted
-}
-
-// from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+// from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {
   return window
     .btoa(
@@ -21,20 +15,13 @@ function generateUID(length: number) {
     .substring(0, length)
 }
 
-// adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
+const encrypt = (text: string, password: string) => {
+  return AES.encrypt(text, password).toString()
+}
+
 const decrypt = (text: string, password: string) => {
-  // const iv = Buffer.from(password, 'hex')
-  // const encryptedText = Buffer.from(text, 'hex')
-  // const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
-  // let decrypted = decipher.update(encryptedText)
-  // decrypted = Buffer.concat([decrypted, decipher.final()])
-  // AES.decrypt(ciphertext, 'secret key 123');
   const bytes = AES.decrypt(text, password)
-  console.log({ bytes })
   return bytes.toString(Utf8)
-  // return new TextDecoder('utf8').decode(bytes)
-  // return bytes.toString(enc.Utf8)
-  // return decrypted.toString()
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
@@ -43,7 +30,6 @@ export async function shareSessionToDynamo(
   referer: string,
 ) {
   const sess = `${toUrlSafeB64(JSON.stringify(session))}`
-  // const password = crypto.randomBytes(16).toString()
   const password = generateUID(5)
   const encryptedSession = encrypt(sess, password)
 
