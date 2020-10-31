@@ -179,11 +179,18 @@ describe('valid file tests', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(await findByText('Help'))
+
+    // need this to complete
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId('track-volvox_alignments')
+
     const target = await findByTestId('search-input')
+    const form = await findByTestId('search-form')
     // const event = { target: { value: 'contigA:1-100' } }
     fireEvent.change(target, { target: { value: 'contigA:1-200' } })
+    form.submit()
+    // fireEvent.keyDown(target, { key: 'Enter', code: 'Enter' })
     // target.prop('onChange').call(null, event)
-    console.log(target.value)
     expect(target.value).toBe('ctgA:1..200')
   })
 })
