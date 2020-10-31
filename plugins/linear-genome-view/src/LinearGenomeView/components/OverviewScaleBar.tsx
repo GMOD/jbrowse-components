@@ -216,8 +216,10 @@ const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
         }
         const regionLength = seq.end - seq.start
         // boolean if displayed region length is smaller than its parent's
-        const incompleteRegion =
-          seq.parentEnd - seq.parentStart > seq.end - seq.start
+        const parent = model.parentRegion(seq.assemblyName, seq.refName)
+        const incompleteRegion = parent
+          ? parent.end - parent.start > seq.end - seq.start
+          : false
         // number of labels to draw in the overview scale bar
         const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
         // calculating the number labels
