@@ -3,15 +3,19 @@ import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
+import Typography from '@material-ui/core/Typography'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import { makeStyles } from '@material-ui/core/styles'
-// used for multi-way synteny, not implemented yet
+import { FileSelector } from '@jbrowse/core/ui'
+import { LinearSyntenyViewModel } from '../model'
+
+// the below importsused for multi-way synteny, not implemented yet
 // import AddIcon from '@material-ui/icons/Add'
 // import IconButton from '@material-ui/core/IconButton'
-import { LinearSyntenyViewModel } from '../model'
+//
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -68,6 +72,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([0, 0])
   const [error, setError] = useState('')
   const [numRows] = useState(2)
+  const [trackData, setTrackData] = useState({ uri: '' })
   const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
   if (!assemblyNames.length) {
     setError('No configured assemblies')
@@ -101,6 +106,29 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
     )
 
     model.views.forEach(view => view.setWidth(model.width))
+
+    if (trackData) {
+      const fileName = trackData.uri
+        ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+        : null
+
+      // @ts-ignore
+      const configuration = getSession(model).addTrackConf({
+        trackId: `fileName-${Date.now()}`,
+        name: fileName,
+        assemblyNames: selected.map(selection => assemblyNames[selection]),
+        type: 'LinearSyntenyTrack',
+        adapter: {
+          type: 'PAFAdapter',
+          pafLocation: trackData,
+          assemblyNames: selected.map(selection => assemblyNames[selection]),
+        },
+        renderer: {
+          type: 'LinearSyntenyRenderer',
+        },
+      })
+      model.toggleTrack(configuration)
+    }
   }
 
   return (
@@ -122,21 +150,35 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             model={model}
           />
         ))}
-        {/* ability to add another assembly commented out for now
-    Add another assembly...
-        <IconButton
-          onClick={() => setNumRows(rows => rows + 1)}
-          color="primary"
-        >
-          <AddIcon />
-      </IconButton>*/}
 
-        <Button onClick={onOpenClick} variant="contained" color="primary">
-          Open
-        </Button>
+        <div style={{ margin: 'auto' }}>
+          <Typography>Add a PAF file for the synteny view</Typography>
+          <FileSelector
+            name="URL"
+            description=""
+            location={trackData}
+            setLocation={setTrackData}
+          />
+        </div>
+
+        <div>
+          <Button onClick={onOpenClick} variant="contained" color="primary">
+            Open
+          </Button>
+        </div>
       </Grid>
     </Container>
   )
 })
 
 export default ImportForm
+
+/* ability to add another assembly commented out for now
+    Add another assembly...
+        <IconButton
+          onClick={() => setNumRows(rows => rows + 1)}
+          color="primary"
+        >
+          <AddIcon />
+      </IconButton>
+            */
