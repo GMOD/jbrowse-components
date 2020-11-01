@@ -99,7 +99,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       ),
     )
 
-    // model.views.forEach(view => view.showAllRegions())
+    model.views.forEach(view => view.setWidth(model.width))
   }
 
   return (

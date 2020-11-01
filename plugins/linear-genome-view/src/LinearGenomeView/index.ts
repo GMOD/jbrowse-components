@@ -128,6 +128,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        console.log('here',self.volatileWidth, self.displayedRegions.length)
         return (
           self.volatileWidth !== undefined && self.displayedRegions.length > 0
         )
