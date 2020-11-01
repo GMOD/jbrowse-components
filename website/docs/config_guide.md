@@ -608,12 +608,12 @@ JBrowse uses 4 colors that can be changed. For example, this is the default
 theme:
 
 ![JBrowse using the default theme](./img/default_theme.png)
-
-And this is a customized theme:
+Example of the default theme
 
 ![JBrowse using a customized theme](./img/customized_theme.png)
+Example of a customized theme
 
-This is the configuration for the above theme, using:
+The customized theme screenshot uses the below configuration
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |

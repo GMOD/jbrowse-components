@@ -4,6 +4,67 @@ toplevel: true
 title: User guide
 ---
 
+## Navigating the UI
+
+### Linear genome view usage
+
+To start a linear genome view, use the menu bar
+
+File->Add->Linear genome view
+
+#### Using the location search box
+
+- Use the search box in the LGV
+- Enter syntax chr1:1-100 or chr1:1..100
+- You can also specify an assembly name with the locstring {hg19}chr1:1-100
+
+Note: searching by gene name is not yet available but will be added soon!
+
+#### Scrolling
+
+Mouse wheel can scroll side to side, as well as click and drag. The pan buttons
+also exist in the header of the linear genome view
+
+#### Zooming
+
+The zoom buttons exist in the header of the linear genome view, and there is
+also a slider bar to zoom in and out.
+
+Note: You can also hold the "Ctrl" key and use your mousewheel or trackpad to
+scroll and this will zoom in and out
+
+#### Re-ordering tracks
+
+There is a drag handle on the track labels indicating by the six dots, clicking
+and dragging on this part of the track label can reorder tracks
+
+#### Rubberband selection
+
+The scale bars accept a click and drag action to select a region
+
+<!--
+https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
+-->
+
+![](./img/rubberband.png)
+Rubberband selection can be performed on both the region and overview scale bars
+
+#### Horizontally flip
+
+The view can be horizontally flipped, or reverse complemented, to make the
+coordinates go from right to left instead of left to right
+
+We use triangles pointing in the direction of the orientation in the overview
+bar to help indicate whether the app is horizontally flipped or not
+
+Here is an example of before and after horizontally flipping the view
+
+![](./img/horizontally_flip_before.png)
+Before horizontally flipping
+
+![](./img/horizontally_flip_after.png)
+After horizontally flipping
+
 ## Alignments tracks
 
 Visualizing alignments is an important aspect of genome browsers. This guide
@@ -138,25 +199,32 @@ versus the genome
 
 ### Opening the dotplot view
 
-Currently the workflow for launching a dotplot is not fully fleshed out
-in a way that one can add dotplot tracks in the UI but it can be manually configured
+Currently the workflow for launching a dotplot is done by navigating in the
+header bar to the File->Add->Dotplot view
+
+This will let you select the genome assemblies of interest
+
+Then you can also provide a synteny file in the form of PAF via the Add track
+workflow
+
+Then currently you must configuration edit the PAFAdapter to indicate the two
+assemblies in the PAFAdapter
 
 ![](./img/dotplot.png)
+Example of a dotplot visualization of the grape vs the peach genome
 
-See the [dotplot configuration](config_guide#dotplot-view-config)
+See the [dotplot configuration](config_guide#dotplot-view-config) for more
+detailed descriptions
 
-### Long read vs reference
+## Long read vs reference
 
-One can also launch a dotplot view that compares a long read to the reference genome
+One can also launch a dotplot view that compares a long read to the reference
+genome by just right clicking an alignment in an alignments track and selecting
+"Dotplot read vs ref" or "Linear read vs ref"
 
 ![](./img/dotplot_longread.png)
 
 Right click on an alignments feature and select "Open dotplot view"
-
-### Notes
-
-The dotplot view is still very new, but we wanted to make it available to
-demonstrate new comparative views
 
 ## Hi-C tracks
 
@@ -177,56 +245,6 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=tes
 
 ![](./img/hic_track.png)
 Screenshot showing a Hi-C track
-
-## Navigating the UI
-
-### Linear genome view usage
-
-To start a linear genome view, use the menu bar
-
-File->Add->Linear genome view
-
-#### Using the location search box
-
-- Use the search box in the LGV
-- Enter syntax chr1:1-100 or chr1:1..100
-- You can also specify an assembly name with the locstring {hg19}chr1:1-100
-
-Note: no searching by gene name available at this time
-
-#### Scrolling
-
-Mouse wheel can scroll side to side, as well as click and drag. The pan buttons
-also exist in the header of the linear genome view
-
-#### Zooming
-
-The zoom buttons exist in the header of the linear genome view, and there is
-also a slider
-
-#### Re-ordering tracks
-
-There is a drag handle on the track labels indicating by the six dots, clicking
-and dragging on this part of the track label can reorder tracks
-
-#### Rubberband selection
-
-The scale bars accept a click and drag action to select a region
-
-<!--
-http://localhost:3000/?config=test_data%2Fconfig.json&session=eJx1klFP4zAQhP8K8nOK4jRNk7wBlQAJQUWjO-kQQltnk1jnOj3btHBV_jvrBIUWiUfvTmY-j3NgGjbIcnaP-7MVWitbfRaFUTgJ5xOeFGGaxzyfJudzHv1hAduAqaVmeRiw0sAezW9Zuobl0zQO2E7i3rL86cBkSZaQLs11qf_f0neltFsF7_dDWFPzjIbufetPd1IjmGvU7QZ_kQVt2qqy6JZvZJyl2Sxg6-0SjT9Hs4SfT1OexTFP4ilPR28sH7Em_IHAYPUZxsnPOjCup0ZNaFGcRbMwiXhAuh0aizSsQFkMGFiLm7U6Qe2eCdaA-Ht0u38Pcv6oVvri6yKXYKUovI5mDcq6oUweUqpodSXrVwOOAEmphZLWvdSo0b6MEY0s8QahRDPSfI0eiNMXPK56oBUqFK41xUDQSDRgRCMFKH_tpt33PHewRkXwzrziML5C7dD46j8NPcD4pDU6Uh9O_IrjPL_sa_hZMdZy85NkcRTHfElKwbZ_i0MXsEoqIizwjUpkbPi7Tv6qjkQgnNzh4ht31zeuKYTqvtX0-lpgv-g-AP24_Mw
--->
-
-![](./img/rubberband.png)
-Rubberband selection can be performed on both the region and overview scale bars
-
-#### Horizontally flip
-
-The view can be horizontally flipped, or reverse complemented, to make the
-coordinates go from right to left instead of left to right
-
-![](./img/horizontally_flip.png)
-Example of a horizontally flipped view
 
 ## SV inspector
 
