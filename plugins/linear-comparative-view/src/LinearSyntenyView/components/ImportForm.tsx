@@ -67,7 +67,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const [selected, setSelected] = useState([0, 0])
   const [error, setError] = useState('')
-  const [numRows, setNumRows] = useState(2)
+  const [numRows] = useState(2)
   const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
   if (!assemblyNames.length) {
     setError('No configured assemblies')

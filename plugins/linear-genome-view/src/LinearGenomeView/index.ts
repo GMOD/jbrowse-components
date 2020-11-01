@@ -128,7 +128,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
-        console.log('here',self.volatileWidth, self.displayedRegions.length)
         return (
           self.volatileWidth !== undefined && self.displayedRegions.length > 0
         )
@@ -1000,6 +999,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 isSessionModelWithWidgets(session) &&
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                // @ts-ignore
+                session.visibleWidget.view &&
                 // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
