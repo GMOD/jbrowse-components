@@ -1,25 +1,18 @@
 import React, { useState } from 'react'
-import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
-import TextFieldMUI from '@material-ui/core/TextField'
+import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { FileSelector } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
+import Button from '@material-ui/core/Button'
+import Container from '@material-ui/core/Container'
+import Grid from '@material-ui/core/Grid'
+import MenuItem from '@material-ui/core/MenuItem'
+import TextField from '@material-ui/core/TextField'
 import { DotplotViewModel } from '../model'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default (pluginManager: any) => {
-  const { jbrequire } = pluginManager
-  const { observer } = jbrequire('mobx-react')
-  const { getSession } = jbrequire('@jbrowse/core/util')
-  const Button = jbrequire('@material-ui/core/Button')
-  const Container = jbrequire('@material-ui/core/Container')
-  const Grid = jbrequire('@material-ui/core/Grid')
-  const MenuItem = jbrequire('@material-ui/core/MenuItem')
-  const TextField: typeof TextFieldMUI = jbrequire(
-    '@material-ui/core/TextField',
-  )
-  const { makeStyles } = jbrequire('@material-ui/core/styles')
-
-  const useStyles = (makeStyles as typeof makeStylesMUI)(theme => ({
+export default () => {
+  const useStyles = makeStyles(theme => ({
     importFormContainer: {
       padding: theme.spacing(4),
     },
