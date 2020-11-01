@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import AddIcon from '@material-ui/icons/Add'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession, when } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
@@ -9,12 +8,14 @@ import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
 import { makeStyles } from '@material-ui/core/styles'
-import IconButton from '@material-ui/core/IconButton'
+// used for multi-way synteny, not implemented yet
+// import AddIcon from '@material-ui/icons/Add'
+// import IconButton from '@material-ui/core/IconButton'
 import { LinearSyntenyViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
-    margin: theme.spacing(4),
+    padding: theme.spacing(4),
   },
   importFormEntry: {
     minWidth: 180,
@@ -98,37 +99,37 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       ),
     )
 
-    model.views.forEach(view => view.showAllRegions())
+    // model.views.forEach(view => view.showAllRegions())
   }
 
   return (
     <Container className={classes.importFormContainer}>
-      <p style={{ textAlign: 'center' }}>Select assemblies for synteny view</p>
-      {[...new Array(numRows)].map((_, index) => (
-        <FormRow
-          key={`row_${index}_${selected[index]}`}
-          error={error}
-          selected={selected[index]}
-          onChange={val => {
-            const copy = selected.slice(0)
-            copy[index] = val
-            setSelected(copy)
-          }}
-          model={model}
-        />
-      ))}
-
       <Grid container item justify="center" spacing={4} alignItems="center">
-        Add another assembly...
+        <p style={{ textAlign: 'center' }}>
+          Select assemblies for synteny view
+        </p>
+        {[...new Array(numRows)].map((_, index) => (
+          <FormRow
+            key={`row_${index}_${selected[index]}`}
+            error={error}
+            selected={selected[index]}
+            onChange={val => {
+              const copy = selected.slice(0)
+              copy[index] = val
+              setSelected(copy)
+            }}
+            model={model}
+          />
+        ))}
+        {/* ability to add another assembly commented out for now
+    Add another assembly...
         <IconButton
           onClick={() => setNumRows(rows => rows + 1)}
           color="primary"
         >
           <AddIcon />
-        </IconButton>
-      </Grid>
+      </IconButton>*/}
 
-      <Grid container item justify="center" spacing={4} alignItems="center">
         <Button onClick={onOpenClick} variant="contained" color="primary">
           Open
         </Button>
