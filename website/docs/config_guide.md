@@ -607,6 +607,17 @@ Users can also open synteny views using the File->Add->Dotplot view workflow
 Currently, configuring synteny is made by pre-configuring a session in the view
 and adding synteny tracks
 
+In order to configure linear synteny views, generally we will use PAF tracks
+
+We can add a LinearSyntenyTrack from PAF with the CLI e.g. with
+
+    jbrowse add-track myfile.paf --type LinearSyntenyTrack --assemblyNames \
+        grape,peach --load copy --out /var/www/html/jbrowse2
+
+This will copy the myfile.paf to your jbrowse2 installation at
+/var/www/html/jbrowse2, it says column 1 of the PAF is grape and column 2 of
+the PAF is peach, and it loads it as a LinearSyntenyTrack
+
 ### LinearSyntenyView with MCScanAnchorsAdapter
 
 This is a complete synteny view config with a default session that is
