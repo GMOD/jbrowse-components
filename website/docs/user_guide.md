@@ -59,11 +59,8 @@ bar to help indicate whether the app is horizontally flipped or not
 
 Here is an example of before and after horizontally flipping the view
 
-![](./img/horizontally_flip_before.png)
-Before horizontally flipping
-
-![](./img/horizontally_flip_after.png)
-After horizontally flipping
+![](./img/horizontally_flip.png)
+Before and after horizontally flipping
 
 ## Alignments tracks
 

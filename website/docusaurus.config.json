@@ -37,6 +37,11 @@
           "position": "left"
         },
         {
+          "to": "gallery",
+          "label": "Gallery",
+          "position": "left"
+        },
+        {
           "to": "demos",
           "label": "Demos",
           "position": "left"
