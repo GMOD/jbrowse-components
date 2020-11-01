@@ -134,24 +134,26 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   return (
     <Container className={classes.importFormContainer}>
       <Grid container item justify="center" spacing={4} alignItems="center">
-        <p style={{ textAlign: 'center' }}>
-          Select assemblies for synteny view
-        </p>
-        {[...new Array(numRows)].map((_, index) => (
-          <FormRow
-            key={`row_${index}_${selected[index]}`}
-            error={error}
-            selected={selected[index]}
-            onChange={val => {
-              const copy = selected.slice(0)
-              copy[index] = val
-              setSelected(copy)
-            }}
-            model={model}
-          />
-        ))}
+        <Grid item>
+          <p style={{ textAlign: 'center' }}>
+            Select assemblies for synteny view
+          </p>
+          {[...new Array(numRows)].map((_, index) => (
+            <FormRow
+              key={`row_${index}_${selected[index]}`}
+              error={error}
+              selected={selected[index]}
+              onChange={val => {
+                const copy = selected.slice(0)
+                copy[index] = val
+                setSelected(copy)
+              }}
+              model={model}
+            />
+          ))}
+        </Grid>
 
-        <div style={{ margin: 'auto' }}>
+        <Grid item>
           <Typography>Add a PAF file for the synteny view</Typography>
           <FileSelector
             name="URL"
@@ -159,13 +161,13 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             location={trackData}
             setLocation={setTrackData}
           />
-        </div>
+        </Grid>
 
-        <div>
+        <Grid item>
           <Button onClick={onOpenClick} variant="contained" color="primary">
             Open
           </Button>
-        </div>
+        </Grid>
       </Grid>
     </Container>
   )
