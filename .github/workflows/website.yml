@@ -29,10 +29,11 @@ jobs:
           cp pdfcombined.md ../../
           cp titlemod.md ../../
           cp listings.tex ../../
-          cd ..
+          cd ../../
+          ln -s website/docs/img
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf titlemod.md pdfcombined.md
+          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
       - name: Upload
         run: |
           cd website/
