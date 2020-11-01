@@ -79,19 +79,85 @@ Here is a complete config.json file containing only a hg19
 }
 ```
 
+## Configuring reference name aliasing
+
+Reference name aliasing is a process to make chromosomes that are named slighlty
+differently but which refer to the same thing render properly
+
+The refNameAliases in the above config provides this functionality
+
+```
+"refNameAliases": {
+  "adapter": {
+    "type": "RefNameAliasAdapter",
+    "location": {
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+    }
+  }
+}
+```
+
+The hg19_aliases then is a tab delimited file that looks like this
+
+The first column should be the names that are in your FASTA sequence, and the
+rest of the columns are aliases
+
+```
+1	chr1
+2	chr2
+3	chr3
+4	chr4
+5	chr5
+6	chr6
+7	chr7
+8	chr8
+9	chr9
+10	chr10
+11	chr11
+12	chr12
+13	chr13
+14	chr14
+15	chr15
+16	chr16
+17	chr17
+18	chr18
+19	chr19
+20	chr20
+21	chr21
+22	chr22
+X	chrX
+Y	chrY
+M	chrM	MT
+```
+
 ## Adding an assembly with the CLI
 
-See https://github.com/GMOD/jbrowse-components/tree/master/products/jbrowse-cli#jbrowse-add-assembly-sequence
+Generally we add a new assembly with the CLI using something like
+
+```
+# use samtools to make a fasta index for your reference genome
+samtools faidx myfile.fa
+
+# install the jbrowse CLI
+npm install -g @jbrowse/cli
+
+# add the assembly using the jbrowse CLI, this will automatically copy the
+myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
+jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
+```
+
+See our CLI docs for the add-assembly for more details here -- [add-assembly](cli#jbrowse-add-assembly-sequence)
 
 ## Track configurations
 
-All tracks contain
+All tracks can contain
 
 - trackId - internal track ID, must be unique
 - name - displayed track name
 - assemblyNames - an array of assembly names a track is associated with, often
   just a single assemblyName
-- category - optional array of categories to display in a hierarchical track selector
+- category - (optional) array of categories to display in a hierarchical track
+  selector
 
 Example config.json containing a track config
 
@@ -574,15 +640,6 @@ Example HicAdapter config
 Currently, configuring synteny is made by pre-configuring a session in the view
 and adding synteny tracks
 
-#### TODO: This section will be expanded
-
-## Configuring reference renaming
-
-Reference renaming is a process to make chromosomes that are named slighlty
-differently but which refer to the same thing render properly
-
-#### TODO: expand section
-
 ## Configuring the theme
 
 ### Color
@@ -705,6 +762,40 @@ Example VcfTabixAdapter adapter config
 }
 ```
 
+## Hi-C track
+
+Example Hi-C track config
+
+````json
+{
+  "type": "HicTrack",
+  "trackId": "hic",
+  "name": "Hic Track",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "HicAdapter",
+    "hicLocation": {
+      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    }
+  },
+  "renderer": {
+    "type": "HicRenderer",
+    "baseColor": "blue"
+  }
+}
+```
+
+## HicRenderer config
+
+- baseColor - the default baseColor of the Hi-C plot is red #f00, you can
+  change it to blue so then the shading will be done in blue with #00f
+- color - this is a color callback that adapts the current Hi-C contact feature
+  with the baseColor to generate a shaded block. The default color callback
+  function is `function(count, maxScore, baseColor) { return
+  baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string() }` where it
+  receives the count for a particular block, the maxScore over the region, and
+  the baseColor from the baseColor config
+
 ## Wiggle config
 
 ### General
@@ -759,7 +850,7 @@ value for the autoscale bar
     "bigWigLocation": { "uri": "http://yourhost/file.bw" }
   }
 }
-```
+````
 
 ### BigWig adapter configuration options
 
@@ -776,7 +867,8 @@ Example BigWig adapter config
 
 ## Disabling Analytics
 
-This is done via adding a field in the global configuration in the config file. For example:
+This is done via adding a field in the global configuration in the config file.
+For example:
 
 ```json
 {
