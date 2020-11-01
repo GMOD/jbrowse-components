@@ -190,7 +190,7 @@ Line plot version of a BigWig
 There are many options for controlling the BigWig which can be accessed from
 the UI. See the [bigwig configuration guide](config_guide#wiggle-config)
 
-## Dotplot view
+## Linear synteny and dotplot view
 
 The dotplot view is a 2D comparative view that can display alignments between
 different genome assemblies, or even compare a long-read or NGS short-read
@@ -209,11 +209,31 @@ workflow
 Then currently you must configuration edit the PAFAdapter to indicate the two
 assemblies in the PAFAdapter
 
+![](./img/dotplot_menu)
+Adding a new dotplot or synteny view via the menubar
+
+![](./img/dotplot_add.png)
+Example of the import form for a dotplot or synteny view. Allows you to select
+two different assemblies and a PAF file can be supplied via a URL
+
 ![](./img/dotplot.png)
 Example of a dotplot visualization of the grape vs the peach genome
 
 See the [dotplot configuration](config_guide#dotplot-view-config) for more
 detailed descriptions
+
+### Opening the linear synteny view
+
+Use the main menu bar to select
+
+File->Add->Linear synteny view
+
+![](./img/linear_synteny.png)
+Figure showing grape vs peach synteny
+
+See the [linear synteny
+configuration](config_guide#configuring-linear-synteny-views) for more details
+on manually configuring the synteny view
 
 ## Long read vs reference plots
 
@@ -315,23 +335,6 @@ view"
 
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
-
-## Linear synteny view
-
-The linear synteny view allows visualizing matching regions between genomes
-
-### Opening the linear synteny view
-
-Use the main menu bar to select
-
-File->Add->Linear synteny view
-
-![](./img/linear_synteny.png)
-Figure showing grape vs peach synteny
-
-See the [linear synteny
-configuration](config_guide#configuring-linear-synteny-views) for more details
-on manually configuring the synteny view
 
 ### Long read vs reference
 
