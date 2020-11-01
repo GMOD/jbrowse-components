@@ -14,7 +14,7 @@ import { LinearSyntenyViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
-    marginBottom: theme.spacing(4),
+    margin: theme.spacing(4),
   },
   importFormEntry: {
     minWidth: 180,
