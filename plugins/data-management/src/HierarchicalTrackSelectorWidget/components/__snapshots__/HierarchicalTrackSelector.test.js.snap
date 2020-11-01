@@ -134,18 +134,18 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
     class="MuiFormGroup-root"
   />
   <div
-    class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
     style="margin-top: 4px;"
   >
     <div
       aria-disabled="false"
       aria-expanded="true"
-      class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+        class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
       >
         <p
           class="MuiTypography-root MuiTypography-body2"
@@ -156,7 +156,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
       <div
         aria-disabled="false"
         aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+        class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
       >
         <span
           class="MuiIconButton-label"
@@ -191,7 +191,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
             role="region"
           >
             <div
-              class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+              class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
               <div
                 class="MuiFormGroup-root"
@@ -267,18 +267,18 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+                class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
                 style="margin-top: 4px;"
               >
                 <div
                   aria-disabled="false"
                   aria-expanded="true"
-                  class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+                  class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
                   role="button"
                   tabindex="0"
                 >
                   <div
-                    class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+                    class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body2"
@@ -289,7 +289,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                   <div
                     aria-disabled="false"
                     aria-hidden="true"
-                    class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
                   >
                     <span
                       class="MuiIconButton-label"
@@ -324,7 +324,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                         role="region"
                       >
                         <div
-                          class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+                          class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
                         >
                           <div
                             class="MuiFormGroup-root"

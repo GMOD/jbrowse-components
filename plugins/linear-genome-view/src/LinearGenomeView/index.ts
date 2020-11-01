@@ -1000,6 +1000,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
                 // @ts-ignore
+                session.visibleWidget.view &&
+                // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
             {

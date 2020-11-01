@@ -9,18 +9,18 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
     class="MuiPaper-root makeStyles-paperRoot MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
-      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+      class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
       style="margin-top: 4px;"
     >
       <div
         aria-disabled="false"
         aria-expanded="true"
-        class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+        class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
         role="button"
         tabindex="0"
       >
         <div
-          class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+          class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
         >
           <span
             class="MuiTypography-root MuiTypography-button"
@@ -32,7 +32,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
         <div
           aria-disabled="false"
           aria-hidden="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+          class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
         >
           <span
             class="MuiIconButton-label"
@@ -67,7 +67,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
               role="region"
             >
               <div
-                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+                class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
                   class="makeStyles-field"
@@ -127,18 +127,18 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
       class="MuiDivider-root"
     />
     <div
-      class="MuiPaper-root MuiExpansionPanel-root MuiExpansionPanel-expanded MuiExpansionPanel-rounded MuiPaper-elevation1 MuiPaper-rounded"
+      class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
       style="margin-top: 4px;"
     >
       <div
         aria-disabled="false"
         aria-expanded="true"
-        class="MuiButtonBase-root MuiExpansionPanelSummary-root MuiExpansionPanelSummary-expanded"
+        class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
         role="button"
         tabindex="0"
       >
         <div
-          class="MuiExpansionPanelSummary-content MuiExpansionPanelSummary-expanded"
+          class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
         >
           <span
             class="MuiTypography-root MuiTypography-button"
@@ -150,7 +150,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
         <div
           aria-disabled="false"
           aria-hidden="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiExpansionPanelSummary-expandIcon MuiExpansionPanelSummary-expanded MuiIconButton-edgeEnd"
+          class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
         >
           <span
             class="MuiIconButton-label"
@@ -185,7 +185,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
               role="region"
             >
               <div
-                class="MuiExpansionPanelDetails-root makeStyles-expansionPanelDetails"
+                class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
                   style="display: flex;"

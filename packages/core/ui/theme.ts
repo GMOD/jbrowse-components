@@ -141,11 +141,11 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
         color: generatedPalette.tertiary.main,
       },
     },
-    MuiExpansionPanelSummary: {
+    MuiAccordionSummary: {
       root: {
         background: generatedPalette.tertiary.main,
         '&$expanded': {
-          // overrides the subclass e.g. .MuiExpansionPanelSummary-root-311.MuiExpansionPanelSummary-expanded-312
+          // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
           minHeight: 0,
           margin: 0,
           color: generatedPalette.tertiary.contrastText,
