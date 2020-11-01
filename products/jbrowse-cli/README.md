@@ -1,6 +1,7 @@
 ---
 title: Command line tools
 id: cli
+toplevel: true
 ---
 
 This document covers the CLI tools.
