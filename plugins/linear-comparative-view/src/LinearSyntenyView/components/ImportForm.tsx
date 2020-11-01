@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { getSession, when } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
@@ -81,9 +81,10 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
       await Promise.all(
         selected
           .map(async selection => {
-            const assembly = assemblyManager.get(assemblyNames[selection])
+            const assembly = await assemblyManager.waitForAssembly(
+              assemblyNames[selection],
+            )
             if (assembly) {
-              await when(() => Boolean(assembly.regions))
               return {
                 type: 'LinearGenomeView',
                 bpPerPx: 1,
