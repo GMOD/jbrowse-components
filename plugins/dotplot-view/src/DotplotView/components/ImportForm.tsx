@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { makeStyles as makeStylesMUI } from '@material-ui/core/styles'
 import TextFieldMUI from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
@@ -17,8 +18,6 @@ export default (pluginManager: any) => {
     '@material-ui/core/TextField',
   )
   const { makeStyles } = jbrequire('@material-ui/core/styles')
-  const React = jbrequire('react')
-  const { useState } = React
 
   const useStyles = (makeStyles as typeof makeStylesMUI)(theme => ({
     importFormContainer: {
