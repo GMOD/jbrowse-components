@@ -178,7 +178,7 @@ export default withContentRect('bounds')(
               IconProps={{ className: classes.icon }}
             />
             <div className={classes.grow} />
-            <Tooltip title="Rename View" arrow>
+            <Tooltip title="Rename view" arrow>
               <EditableTypography
                 value={
                   view.displayName ||
