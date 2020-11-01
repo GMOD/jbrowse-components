@@ -260,7 +260,8 @@ the Juicebox software suite. It uses the hic-straw module developed by the
 juicebox/igv.js team to visualize it in jbrowse.
 
 Currently configuration options are basic for Hi-C tracks, see
-[configuration](config-guide#hi-c-config) for info about configuring Hi-C
+[configuration](config_guide#hictrack-config) for info about configuring Hi-C
+
 tracks
 
 <!--
