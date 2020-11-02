@@ -407,16 +407,17 @@ const Renderer = observer(
                 pasting their URL`,
               )
             }
-            console.log(rootModel?.session)
             if (rootModel.session?.views.length === 0) {
-              console.log(rootModel?.session)
               setDefaultScreen(true)
             }
-            console.log('screen?', defaultScreen)
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
             setDefaultScreen(false)
-            console.log('screen?', defaultScreen)
+          } else {
+            rootModel.setDefaultSession()
+            if (rootModel.session?.views.length === 0) {
+              setDefaultScreen(true)
+            }
           }
           // else {
           //   rootModel.setDefaultSession()
@@ -506,7 +507,7 @@ const Renderer = observer(
       if (
         sessionError ||
         pm.rootModel?.session === undefined ||
-        defaultScreen
+        (defaultScreen && pm.rootModel?.session?.views.length === 0)
       ) {
         return (
           <StartScreen
