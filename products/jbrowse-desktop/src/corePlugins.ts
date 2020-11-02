@@ -1,11 +1,12 @@
 import Alignments from '@jbrowse/plugin-alignments'
 import Bed from '@jbrowse/plugin-bed'
+import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import Filtering from '@jbrowse/plugin-filtering'
-import Gff3 from '@jbrowse/plugin-gff3'
+import Gff3Tabix from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
@@ -19,6 +20,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
+import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
   Alignments,
@@ -28,7 +30,7 @@ export default [
   DataManagement,
   DotplotView,
   Filtering,
-  Gff3,
+  Gff3Tabix,
   LegacyJBrowse,
   LinearGenomeView,
   LinearComparativeView,
@@ -42,4 +44,6 @@ export default [
   Wiggle,
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
+  BreakpointSplitView,
+  HicPlugin,
 ]

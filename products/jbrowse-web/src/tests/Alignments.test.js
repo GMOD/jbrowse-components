@@ -7,12 +7,13 @@ import {
   waitForElement,
 } from '@testing-library/react'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { setup, readBuffer, getPluginManager } from './util'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 expect.extend({ toMatchImageSnapshot })
@@ -23,7 +24,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('alignments track', () => {
@@ -150,7 +155,10 @@ describe('alignments track', () => {
     const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
-    expect(buf).toMatchImageSnapshot()
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 
   it('test that bam with small max height displays message', async () => {

@@ -1,6 +1,7 @@
 ---
 title: Command line tools
 id: cli
+toplevel: true
 ---
 
 This document covers the CLI tools.
@@ -98,6 +99,9 @@ OPTIONS
   --gziLocation=gziLocation
       [default: <fastaLocation>.gzi] FASTA gzip index file or URL
 
+  --out=out
+      synonym for target
+
   --overwrite
       Overwrite existing assembly if one with the same name exists
 
@@ -117,7 +121,7 @@ OPTIONS
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 
   --target=target
-      [default: ./config.json] path to config file in JB2 installation directory to write out to.
+      path to config file in JB2 installation directory to write out to.
       Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -130,7 +134,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -163,13 +167,14 @@ OPTIONS
   --connectionId=connectionId      Id for the connection that must be unique to JBrowse.  Defaults to
                                    'connectionType-assemblyName-currentTime'
 
+  --out=out                        synonym for target
+
   --overwrite                      Overwrites any existing connections if same connection id
 
   --skipCheck                      Don't check whether or not the data directory URL exists or if you are in a JBrowse
                                    directory
 
-  --target=target                  [default: ./config.json] path to config file in JB2 installation directory to write
-                                   out to.
+  --target=target                  path to config file in JB2 installation directory to write out to.
 
 EXAMPLES
   $ jbrowse add-connection http://mysite.com/jbrowse/data/
@@ -183,7 +188,7 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -219,13 +224,20 @@ OPTIONS
   --config=config                       Any extra config settings to add to a track. i.e '{"defaultRendering":
                                         "density"}'
 
+  --indexFile=indexFile                 Optional index file for the track
+
+  --out=out                             synonym for target
+
   --overwrite                           Overwrites existing track if it shares the same trackId
+
+  --protocol=protocol                   [default: uri] Force protocol to a specific value
 
   --skipCheck                           Skip check for whether or not the file or URL exists or if you are in a JBrowse
                                         directory
 
-  --target=target                       [default: ./config.json] path to config file in JB2 installation to write out
-                                        to.
+  --subDir=subDir                       when using --load a file, output to a subdirectory of the target dir
+
+  --target=target                       path to config file in JB2 installation to write out to.
 
   --trackId=trackId                     trackId for the track, by default inferred from filename, must be unique
                                         throughout config
@@ -239,7 +251,7 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -254,8 +266,9 @@ ARGUMENTS
 
 OPTIONS
   -u, --update     update the contents of an existing track, matched based on trackId
+  --out=out        synonym for target
 
-  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+  --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -263,7 +276,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -279,9 +292,11 @@ OPTIONS
   -p, --port=port  Specifified port to start the server on;
                    Default is 9090.
 
+  --out=out        synonym for target
+
   --skipCheck      Don't check whether or not you are in a JBrowse directory
 
-  --target=target  [default: ./config.json] path to config file in JB2 installation directory to write out to.
+  --target=target  path to config file in JB2 installation directory to write out to.
                    Creates ./config.json if nonexistent
 
 EXAMPLES
@@ -289,7 +304,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -320,7 +335,7 @@ EXAMPLES
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -358,7 +373,9 @@ OPTIONS
                          DotplotView.
                          Must be provided if no default session file provided
 
-  --target=target        [default: ./config.json] path to config file in JB2 installation directory to write out to
+  --out=out              synonym for target
+
+  --target=target        path to config file in JB2 installation directory to write out to
 
   --viewId=viewId        Identifier for the view. Will be generated on default
 
@@ -370,7 +387,7 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -400,7 +417,7 @@ EXAMPLES
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.23/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

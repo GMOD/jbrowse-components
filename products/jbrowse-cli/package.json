@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "0.0.1-beta.23",
+  "version": "0.0.1-beta.26",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -37,6 +37,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",

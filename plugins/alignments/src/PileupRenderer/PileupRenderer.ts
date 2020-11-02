@@ -4,6 +4,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import BoxRendererType, {
   LayoutSession,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -19,6 +20,7 @@ import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { ThemeOptions } from '@material-ui/core'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
@@ -37,12 +39,13 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
+  showSoftClip: boolean
   sortedBy: {
     type: string
     pos: number
     refName: string
   }
-  showSoftClip: boolean
+  theme: ThemeOptions
 }
 
 interface LayoutRecord {
@@ -725,7 +728,9 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      theme: configTheme,
     } = props
+    const theme = createJBrowseTheme(configTheme)
     const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)

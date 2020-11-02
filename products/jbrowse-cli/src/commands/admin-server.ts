@@ -1,8 +1,8 @@
 import { flags } from '@oclif/command'
-import fs from 'fs'
+import fs, { promises as fsPromises } from 'fs'
 import crypto from 'crypto'
-import path from 'path'
 import express from 'express'
+import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
 
 function isValidPort(port: number) {
@@ -15,6 +15,9 @@ function generateKey() {
 }
 
 export default class AdminServer extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Start up a small admin server for JBrowse configuration'
 
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
@@ -27,7 +30,9 @@ export default class AdminServer extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not you are in a JBrowse directory",
@@ -38,9 +43,9 @@ export default class AdminServer extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
 
-    if (!runFlags.skipCheck) {
-      await this.checkLocation(path.dirname(runFlags.target))
-    }
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
 
     // check if the config file exists, if none exists write default
     const defaultConfig: Config = {
@@ -53,10 +58,10 @@ export default class AdminServer extends JBrowseCommand {
       tracks: [],
     }
 
-    if (fs.existsSync(runFlags.target)) {
-      this.debug(`Found existing config file ${runFlags.target}`)
+    if (fs.existsSync(this.target)) {
+      this.debug(`Found existing config file ${this.target}`)
     } else {
-      this.debug(`Creating config file ${runFlags.target}`)
+      this.debug(`Creating config file ${this.target}`)
       await this.writeJsonFile('./config.json', defaultConfig)
     }
 
@@ -72,6 +77,7 @@ export default class AdminServer extends JBrowseCommand {
     // @ts-ignore
     const app = express()
     app.use(express.static('.'))
+    app.use(cors())
 
     // POST route to save config
     app.use(express.json())
@@ -83,7 +89,7 @@ export default class AdminServer extends JBrowseCommand {
         if (req.body.adminKey === adminKey) {
           this.debug('Admin key matches')
           try {
-            await this.writeJsonFile(runFlags.target, req.body.config)
+            await this.writeJsonFile(this.target, req.body.config)
             res.send('Config written to disk')
           } catch {
             res.status(500).send('Could not write config file')
@@ -111,7 +117,7 @@ export default class AdminServer extends JBrowseCommand {
     const adminKey = generateKey()
     const server = app.listen(port)
     this.log(
-      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.`,
+      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.\n\nIf you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
     )
   }
 }

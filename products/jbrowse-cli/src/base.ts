@@ -95,38 +95,6 @@ interface GithubRelease {
 export default abstract class JBrowseCommand extends Command {
   async init() {}
 
-  async checkLocation(location: string) {
-    let manifestJson: string
-    try {
-      manifestJson = await fsPromises.readFile(
-        path.join(location, 'manifest.json'),
-        {
-          encoding: 'utf8',
-        },
-      )
-    } catch (error) {
-      this.error(
-        'Could not find the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 10 },
-      )
-    }
-    let manifest: { name?: string } = {}
-    try {
-      manifest = parseJSON(manifestJson)
-    } catch (error) {
-      this.error(
-        'Could not parse the file "manifest.json". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 20 },
-      )
-    }
-    if (manifest.name !== 'JBrowse') {
-      this.error(
-        '"name" in file "manifest.json" is not "JBrowse". Please make sure you are in the top level of a JBrowse 2 installation.',
-        { exit: 30 },
-      )
-    }
-  }
-
   async readFile(location: string) {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }

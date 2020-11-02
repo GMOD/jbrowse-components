@@ -65,7 +65,11 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
-export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
+export function guessAdapter(
+  fileName: string,
+  protocol: 'uri' | 'localPath',
+  index?: string,
+) {
   function makeLocation(location: string): UriLocation | LocalPathLocation {
     if (protocol === 'uri') {
       return { uri: location }
@@ -79,21 +83,10 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     return {
       type: 'BamAdapter',
       bamLocation: makeLocation(fileName),
-      index: { location: makeLocation(`${fileName}.bai`) },
-    }
-  }
-  if (/\.bai$/i.test(fileName)) {
-    return {
-      type: 'BamAdapter',
-      bamLocation: makeLocation(fileName.replace(/\.bai$/i, '')),
-      index: { location: makeLocation(fileName) },
-    }
-  }
-  if (/\.bam.csi$/i.test(fileName)) {
-    return {
-      type: 'BamAdapter',
-      bamLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-      index: { location: makeLocation(fileName), indexType: 'CSI' },
+      index: {
+        location: makeLocation(index || `${fileName}.bai`),
+        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+      },
     }
   }
 
@@ -104,17 +97,10 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
       craiLocation: makeLocation(`${fileName}.crai`),
     }
   }
-  if (/\.crai$/i.test(fileName)) {
-    return {
-      type: 'CramAdapter',
-      cramLocation: makeLocation(fileName.replace(/\.crai$/i, '')),
-      craiLocation: makeLocation(fileName),
-    }
-  }
 
   if (/\.gff3?$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
@@ -122,33 +108,22 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     return {
       type: 'Gff3TabixAdapter',
       gffGzLocation: makeLocation(fileName),
-      index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-    }
-  }
-  if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-      index: { location: makeLocation(fileName), indexType: 'TBI' },
-    }
-  }
-  if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-      index: { location: makeLocation(fileName), indexType: 'CSI' },
+      index: {
+        location: makeLocation(index || `${fileName}.tbi`),
+        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+      },
     }
   }
 
   if (/\.gtf?$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
   if (/\.vcf$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
@@ -156,55 +131,33 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     return {
       type: 'VcfTabixAdapter',
       vcfGzLocation: makeLocation(fileName),
-      index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-    }
-  }
-  if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-      index: { location: makeLocation(fileName), indexType: 'TBI' },
-    }
-  }
-  if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-      index: { location: makeLocation(fileName), indexType: 'CSI' },
+      index: {
+        location: makeLocation(`${fileName}.tbi`),
+        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+      },
     }
   }
 
   if (/\.vcf\.idx$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
   if (/\.bed$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
   if (/\.bed\.b?gz$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
-    }
-  }
-  if (/\.bed.b?gz.tbi$/i.test(fileName)) {
-    return {
-      type: UNSUPPORTED,
-    }
-  }
-  if (/\.bed.b?gz.csi/i.test(fileName)) {
-    return {
-      type: UNSUPPORTED,
-    }
-  }
-
-  if (/\.bed\.idx$/i.test(fileName)) {
-    return {
-      type: UNSUPPORTED,
+      type: 'BedTabixAdapter',
+      bedGzLocation: makeLocation(fileName),
+      index: {
+        location: makeLocation(`${fileName}.tbi`),
+        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+      },
     }
   }
 
@@ -226,14 +179,7 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(`${fileName}.fai`),
-    }
-  }
-  if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
-    return {
-      type: 'IndexedFastaAdapter',
-      fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-      faiLocation: makeLocation(fileName),
+      faiLocation: makeLocation(index || `${fileName}.fai`),
     }
   }
 
@@ -243,22 +189,6 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
       fastaLocation: makeLocation(fileName),
       faiLocation: makeLocation(`${fileName}.fai`),
       gziLocation: makeLocation(`${fileName}.gzi`),
-    }
-  }
-  if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-      faiLocation: makeLocation(fileName),
-      gziLocation: makeLocation(`${fileName.replace(/\.fai$/i, '')}.gzi`),
-    }
-  }
-  if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
-    return {
-      type: 'BgzipFastaAdapter',
-      fastaLocation: makeLocation(fileName.replace(/\.gzi$/i, '')),
-      faiLocation: makeLocation(`${fileName.replace(/\.gzi$/i, '')}.fai`),
-      gziLocation: makeLocation(fileName),
     }
   }
 
@@ -271,14 +201,14 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
 
   if (/\.sizes$/i.test(fileName)) {
     return {
-      type: UNSUPPORTED,
+      type: 'UNSUPPORTED',
     }
   }
 
   if (/\/trackData.jsonz?$/i.test(fileName)) {
     return {
       type: 'NCListAdapter',
-      rootUrlTemplate: fileName,
+      rootUrlTemplate: makeLocation(fileName),
     }
   }
 
@@ -293,6 +223,13 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
     return {
       type: 'HicAdapter',
       hicLocation: makeLocation(fileName),
+    }
+  }
+
+  if (/\.paf/i.test(fileName)) {
+    return {
+      type: 'PafAdapter',
+      pafLocation: makeLocation(fileName),
     }
   }
 
@@ -372,6 +309,7 @@ export function guessTrackType(adapterType: string): string {
     TwoBitAdapter: 'SequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
+    PafAdapter: 'LinearSyntenyTrack',
   }
   return known[adapterType] || 'BasicTrack'
 }

@@ -1,96 +1,45 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import React, { useEffect } from 'react'
+import { getConf } from '@jbrowse/core/configuration'
+import { useQueryParam, StringParam } from 'use-query-params'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
-import { toUrlSafeB64 } from '@jbrowse/core/util'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import { getSnapshot, onSnapshot } from 'mobx-state-tree'
-import { StringParam, useQueryParam } from 'use-query-params'
-import React, { useEffect } from 'react'
+import { onSnapshot } from 'mobx-state-tree'
+import ShareButton from './ShareButton'
 
-const MAX_SESSION_SIZE_IN_URL = 1000000
-
-// adapted from https://github.com/jashkenas/underscore/blob/5d8ab5e37c9724f6f1181c5f95d0020815e4cb77/underscore.js#L894-L925
-function debounce(func, wait) {
-  let timeout
-  let result
-  const later = (...args) => {
-    timeout = null
-    result = func(...args)
-  }
-  const debounced = (...args) => {
-    if (timeout) {
-      clearTimeout(timeout)
+function deleteBaseUris(config) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        deleteBaseUris(config[key])
+      } else if (key === 'uri') {
+        delete config.baseUri
+      }
     }
-    timeout = setTimeout(() => {
-      return later(...args)
-    }, wait)
-    return result
   }
-  debounced.cancel = () => {
-    clearTimeout(timeout)
-    timeout = null
-  }
-  return debounced
 }
 
 const JBrowse = observer(({ pluginManager }) => {
-  const [, setSession] = useQueryParam('session', StringParam)
-  const [adminKeyParam] = useQueryParam('adminKey', StringParam)
-  const adminMode = adminKeyParam !== undefined
-
+  const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [adminServer] = useQueryParam('adminServer', StringParam)
+  const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
-  const { session, jbrowse, error } = rootModel || {}
-  const useLocalStorage = jbrowse
-    ? readConfObject(jbrowse.configuration, 'useLocalStorage')
-    : false
-
-  const useUpdateUrl = jbrowse
-    ? readConfObject(jbrowse.configuration, 'useUrlSession')
-    : false
-
-  // Set session URL on first render only, before `onSnapshot` has fired
-  useEffect(() => {
-    if (useUpdateUrl) {
-      const json = JSON.stringify(getSnapshot(session))
-      const sess =
-        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
-      setSession(sess)
-    }
-  }, [session, setSession, useUpdateUrl])
+  const { error, jbrowse, session } = rootModel || {}
+  const { id: currentSessionId } = session
 
   useEffect(() => {
-    function updateUrl(snapshot) {
-      const json = JSON.stringify(snapshot)
-      const sess =
-        json.length < MAX_SESSION_SIZE_IN_URL ? toUrlSafeB64(json) : undefined
-
-      setSession(sess)
-      if (rootModel && rootModel.session) {
-        rootModel.jbrowse.updateSavedSession(snapshot)
-      }
-      if (useLocalStorage) {
-        localStorage.setItem('jbrowse-web-session', JSON.stringify(snapshot))
-      }
-    }
-
-    let disposer = () => {}
-    if (session && useUpdateUrl) {
-      const updater = debounce(updateUrl, 400)
-      const snapshotDisposer = onSnapshot(session, updater)
-      disposer = () => {
-        snapshotDisposer()
-        updater.cancel()
-      }
-    }
-    return disposer
-  }, [rootModel, setSession, useLocalStorage, useUpdateUrl, session])
+    setSessionId(`local-${currentSessionId}`)
+  }, [currentSessionId, setSessionId])
 
   useEffect(() => {
-    onSnapshot(rootModel, async snapshot => {
-      if (adminMode) {
-        const payload = { adminKey: adminKeyParam, config: snapshot.jbrowse }
-        const response = await fetch('/updateConfig', {
+    onSnapshot(jbrowse, async snapshot => {
+      if (adminKey) {
+        const config = JSON.parse(JSON.stringify(snapshot))
+        deleteBaseUris(config)
+        const payload = { adminKey, config }
+
+        const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -99,7 +48,7 @@ const JBrowse = observer(({ pluginManager }) => {
         })
         if (!response.ok) {
           const message = await response.text()
-          rootModel.session.notify(
+          session.notify(
             `Admin server error: ${response.status} (${response.statusText}) ${
               message || ''
             }`,
@@ -107,17 +56,32 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [rootModel, adminMode, adminKeyParam])
+  }, [jbrowse, session, adminKey, adminServer])
 
   if (error) {
-    throw new Error(error)
+    throw error
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
+  const { AssemblyManager } = pluginManager.getPlugin(
+    'DataManagementPlugin',
+  ).exports
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      <App session={rootModel.session} />
+      <App
+        session={session}
+        HeaderButtons={<ShareButton session={session} />}
+      />
+      {adminKey ? (
+        <AssemblyManager
+          rootModel={rootModel}
+          open={rootModel.isAssemblyEditing}
+          onClose={() => {
+            rootModel.setAssemblyEditing(false)
+          }}
+        />
+      ) : null}
     </ThemeProvider>
   )
 })

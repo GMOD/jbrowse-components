@@ -9,7 +9,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/large.chrom.sizes"
+            "uri": "large.chrom.sizes"
           }
         }
       }

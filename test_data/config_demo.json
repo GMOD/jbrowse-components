@@ -27,7 +27,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
@@ -58,7 +58,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "test_data/GRCh38_RefSeq2UCSC.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
           }
         }
       }
@@ -110,7 +110,9 @@
       "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/hg19/gencode/{refseq}/trackData.json"
+        },
         "refNames": [
           "chr1",
           "chr2",
@@ -219,7 +221,9 @@
       "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz",
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/{refseq}/trackData.jsonz"
+        },
         "refNames": [
           "chr1",
           "chr2",
@@ -368,7 +372,9 @@
       "category": ["Annotation"],
       "adapter": {
         "type": "NCListAdapter",
-        "rootUrlTemplate": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz",
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq_analysis_set/{refseq}/trackData.jsonz"
+        },
         "refNames": [
           "chr1",
           "chr2",
@@ -420,11 +426,11 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
       },
@@ -1229,11 +1235,11 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
       }
@@ -1545,7 +1551,7 @@
       }
     },
     {
-      "type": "DynamicTrack",
+      "type": "HicTrack",
       "trackId": "hic",
       "name": "Hic Track",
       "assemblyNames": ["hg19"],
