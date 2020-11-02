@@ -66,12 +66,11 @@ export default pluginManager =>
               return false
             }
             const viewType = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = viewType.displayTypes.map(
+              displayType => displayType.name,
+            )
             for (const display of trackConf.displays) {
-              if (
-                viewType.displayTypes.find(
-                  displayType => displayType.name === display.type,
-                )
-              ) {
+              if (compatibleDisplays.includes(display.type)) {
                 return true
               }
             }
