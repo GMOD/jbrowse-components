@@ -13,7 +13,7 @@ import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
-    marginBottom: theme.spacing(4),
+    padding: theme.spacing(2),
   },
   importFormEntry: {
     minWidth: 180,
