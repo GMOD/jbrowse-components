@@ -75,7 +75,7 @@ function NoConfigMessage() {
           <div>Sample JBrowse configs:</div>
           <ul>
             {links.map(([link, name]) => (
-              <li>
+              <li key={name}>
                 <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
               </li>
             ))}
@@ -360,7 +360,7 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-    const [defaultScreen, setDefault] = useState(false)
+    const [defaultScreen, setDefaultScreen] = useState(false)
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -407,13 +407,27 @@ const Renderer = observer(
                 pasting their URL`,
               )
             }
-            // setDefault(true)
+            console.log(rootModel?.session)
+            if (rootModel.session?.views.length === 0) {
+              console.log(rootModel?.session)
+              setDefaultScreen(true)
+            }
+            console.log('screen?', defaultScreen)
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
-            // setDefault(false)
-          } else {
-            rootModel.setDefaultSession()
+            setDefaultScreen(false)
+            console.log('screen?', defaultScreen)
           }
+          // else {
+          //   rootModel.setDefaultSession()
+          //   console.log(rootModel?.session)
+
+          //   if (rootModel.session?.views.length === 0) {
+          //     console.log(rootModel?.session)
+          //     setDefaultScreen(true)
+          //   }
+          //   console.log('screen?', defaultScreen)
+          // }
           // } else {
           //   // we want to default to the splash screen when there are default views
           //   if (rootModel.session?.views.length === 0) {
@@ -464,7 +478,7 @@ const Renderer = observer(
       initialTimestamp,
       initialSessionQuery,
       defaultScreen,
-      setDefault,
+      setDefaultScreen,
     ])
 
     if (configError) {
@@ -488,10 +502,11 @@ const Renderer = observer(
     if (pm) {
       // will need to account for when a session is not loaded
       // if (sessionError) or if (pm.rootModel?.session === undefined)
+      console.log('screen?', defaultScreen)
       if (
         sessionError ||
         pm.rootModel?.session === undefined ||
-        pm.rootModel?.session?.views.length === 0
+        defaultScreen
       ) {
         return (
           <StartScreen
