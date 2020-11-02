@@ -20,7 +20,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 // import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 // import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
-// import HicPlugin from '@jbrowse/plugin-hic'
+import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
   SVG,
@@ -45,5 +45,5 @@ export default [
   // SpreadsheetViewPlugin,
   // SvInspectorPlugin,
   // BreakpointSplitView,
-  // HicPlugin,
+  HicPlugin,
 ]
