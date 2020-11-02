@@ -49,6 +49,19 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data
 ![](./img/rubberband.png)
 Rubberband selection can be performed on both the region and overview scale bars
 
+#### Track label positioning
+
+Track labels can be positioned on their own row or overlapping the data to save
+vertical screen space. They can also be hidden. This is done by clicking on the
+hamburger menu for a specific view.
+
+<!--
+http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=share-1RbMciFHOT&password=wYEDf
+-->
+
+![](./img/tracklabels.png)
+Example of using the overlap and offset track label positioning options
+
 #### Horizontally flip
 
 The view can be horizontally flipped, or reverse complemented, to make the
