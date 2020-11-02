@@ -212,7 +212,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        getParent(self, 3).setError(error)
+        if (!getParent(self, 3).isAssemblyEditing) {
+          getParent(self, 3).setError(error)
+        }
       },
       setRegions(regions: Region[]) {
         self.regions = cast(regions)
