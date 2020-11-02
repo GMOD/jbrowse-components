@@ -81,14 +81,6 @@ interface CachedPileupLayout {
   linkSuppReads: boolean
 }
 
-const colorForBase: { [key: string]: string } = {
-  A: '#00bf00',
-  C: '#4747ff',
-  G: '#ffa500',
-  T: '#f00',
-  deletion: 'grey',
-}
-
 enum Flags {
   PAIRED = 1,
   PROPER_PAIR = 2,
@@ -612,6 +604,7 @@ export default class PileupRenderer extends BoxRendererType {
     },
     mismatches: Mismatch[],
     props: PileupRenderProps,
+    colorForBase: { [key: string]: string },
   ) {
     const { config, bpPerPx, regions, showSoftClip } = props
     const [region] = regions
@@ -731,6 +724,13 @@ export default class PileupRenderer extends BoxRendererType {
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
+    const colorForBase: { [key: string]: string } = {
+      A: theme.palette.bases.A.main,
+      C: theme.palette.bases.C.main,
+      G: theme.palette.bases.G.main,
+      T: theme.palette.bases.T.main,
+      deletion: '#808080', // gray
+    }
     const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)
@@ -797,12 +797,14 @@ export default class PileupRenderer extends BoxRendererType {
           { feature: read1, heightPx, topPx },
           read1.get('mismatches'),
           props,
+          colorForBase,
         )
         this.drawMismatches(
           ctx,
           { feature: read2, heightPx, topPx },
           read2.get('mismatches'),
           props,
+          colorForBase,
         )
       } else if (feature.get('subfeatures')) {
         const [leftPx, rightPx] = bpSpanPx(
@@ -824,6 +826,7 @@ export default class PileupRenderer extends BoxRendererType {
             { feature: subfeat, heightPx, topPx },
             subfeat.get('mismatches'),
             props,
+            colorForBase,
           )
         })
       } else {
@@ -832,7 +835,7 @@ export default class PileupRenderer extends BoxRendererType {
         const mismatches: Mismatch[] = feature.get('mismatches')
 
         if (mismatches) {
-          this.drawMismatches(ctx, feat, mismatches, props)
+          this.drawMismatches(ctx, feat, mismatches, props, colorForBase)
           // Display all bases softclipped off in lightened colors
           if (showSoftClip) {
             const seq = feature.get('seq')
