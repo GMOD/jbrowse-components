@@ -38,12 +38,18 @@ const stateModelFactory = (
         showPileup: true,
       }),
     )
+    .volatile(() => ({
+      scrollTop: 0,
+    }))
     .actions(self => ({
       toggleCoverage() {
         self.showCoverage = !self.showCoverage
       },
       togglePileup() {
         self.showPileup = !self.showPileup
+      },
+      setScrollTop(scrollTop: number) {
+        self.scrollTop = scrollTop
       },
     }))
     .views(self => {
