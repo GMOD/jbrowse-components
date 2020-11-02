@@ -1,8 +1,12 @@
 import { types } from 'mobx-state-tree'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import {
+  BaseLinearDisplay,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { getContainingView } from '@jbrowse/core/util'
 
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -21,6 +25,13 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getParentRenderProps(self),
           config: self.configuration.renderer,
         }
+      },
+      regionCannotBeRendered(/* region */) {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (view && view.bpPerPx >= 1) {
+          return 'Zoom in to see sequence'
+        }
+        return undefined
       },
 
       get rendererTypeName() {
