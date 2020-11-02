@@ -420,7 +420,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
+        return self.widgets.has(widget.id)
       },
 
       hideWidget(widget: any) {
