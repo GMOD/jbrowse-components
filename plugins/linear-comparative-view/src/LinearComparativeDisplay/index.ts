@@ -6,64 +6,54 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import { BaseTrackConfig, BaseTrack } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
   getSession,
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
-export { default as ReactComponent } from './components/LinearComparativeTrack'
+export { default as ReactComponent } from './components/LinearComparativeDisplay'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
-    'LinearComparativeTrack',
-    {
-      viewType: 'LinearComparativeView',
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
-    },
-    {
-      baseConfiguration: BaseTrackConfig,
-      explicitlyTyped: true,
-    },
+    'LinearComparativeDisplay',
+    { renderer: pluginManager.pluggableConfigSchemaType('renderer') },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
 
 export function stateModelFactory(configSchema: any) {
   return types
     .compose(
-      'LinearComparativeTrack',
-      BaseTrack,
-      types
-        .model('LinearComparativeTrack', {
-          type: types.literal('LinearComparativeTrack'),
-          configuration: ConfigurationReference(configSchema),
-        })
-        .volatile((/* self */) => ({
-          // avoid circular typescript reference by casting to generic functional component
-          renderInProgress: undefined as AbortController | undefined,
-          filled: false,
-          data: undefined as any,
-          html: '',
-          message: undefined as string | undefined,
-          renderingComponent: undefined as any,
-          ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
-        })),
+      'LinearComparativeDisplay',
+      BaseDisplay,
+      types.model({
+        type: types.literal('LinearComparativeDisplay'),
+        configuration: ConfigurationReference(configSchema),
+        height: 100,
+      }),
     )
+    .volatile((/* self */) => ({
+      renderInProgress: undefined as AbortController | undefined,
+      filled: false,
+      data: undefined as any,
+      html: '',
+      message: undefined as string | undefined,
+      renderingComponent: undefined as any,
+      ReactComponent2: (ServerSideRenderedBlockContent as unknown) as React.FC,
+    }))
     .views(self => ({
       get rendererTypeName() {
         return getConf(self, 'renderer').type
       },
-      get adapterConfig() {
-        return getConf(self, 'adapter')
-      },
       get renderProps() {
         return {
-          trackModel: self,
+          displayModel: self,
         }
       },
     }))
@@ -139,11 +129,14 @@ export function stateModelFactory(configSchema: any) {
       }
     })
 }
-function renderBlockData(self: LinearComparativeTrack) {
+function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self) as any
-  const track = self
+  const display = self
 
-  const { renderProps, rendererType } = track
+  const {
+    renderProps,
+    rendererType,
+  }: { renderProps: any; rendererType: any } = display
 
   // Alternative to readConfObject(config) is below
   // used because renderProps is something under our control.
@@ -187,5 +180,5 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   return { html, data, renderingComponent: rendererType.ReactComponent }
 }
 
-export type LinearComparativeTrackModel = ReturnType<typeof stateModelFactory>
-export type LinearComparativeTrack = Instance<LinearComparativeTrackModel>
+export type LinearComparativeDisplayModel = ReturnType<typeof stateModelFactory>
+export type LinearComparativeDisplay = Instance<LinearComparativeDisplayModel>

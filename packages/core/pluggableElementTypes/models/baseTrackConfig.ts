@@ -53,7 +53,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       actions: (self: any) => ({
         afterCreate() {
           const displayTypes = new Set()
-          self.displays.forEach((d: any) => displayTypes.add(d.type))
+          self.displays.forEach((d: any) => d && displayTypes.add(d.type))
           const trackType = pluginManager.getTrackType(self.type)
           trackType.displayTypes.forEach(displayType => {
             if (!displayTypes.has(displayType.name)) {
@@ -68,7 +68,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           const { type } = displayConf
           if (!type) throw new Error(`unknown display type ${type}`)
           const display = self.displays.find(
-            (d: any) => d.displayId === displayConf.displayId,
+            (d: any) => d && d.displayId === displayConf.displayId,
           )
           if (display) {
             return display

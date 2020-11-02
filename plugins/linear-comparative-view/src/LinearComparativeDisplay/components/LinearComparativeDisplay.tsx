@@ -1,10 +1,10 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { LinearComparativeTrack as LCT } from '..'
+import { LinearComparativeDisplay as LCD } from '..'
 
-const LinearComparativeTrack: React.FC<{
-  model: LCT
+const LinearComparativeDisplay: React.FC<{
+  model: LCD
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
@@ -15,12 +15,12 @@ const LinearComparativeTrack: React.FC<{
     </div>
   )
 }
-LinearComparativeTrack.propTypes = {
+LinearComparativeDisplay.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.element,
 }
 
-LinearComparativeTrack.defaultProps = {
+LinearComparativeDisplay.defaultProps = {
   children: null,
 }
-export default observer(LinearComparativeTrack)
+export default observer(LinearComparativeDisplay)

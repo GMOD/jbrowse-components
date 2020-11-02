@@ -11,7 +11,7 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import { LinearSyntenyTrackModel } from '../../LinearSyntenyTrack'
+import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -62,7 +62,7 @@ function layoutMatches(features: Feature[][]) {
 function LinearSyntenyRendering(props: {
   width: number
   height: number
-  trackModel: LinearSyntenyTrackModel
+  displayModel: LinearComparativeDisplay
   highResolutionScaling: number
   features: SimpleFeatureSerialized[][]
   trackIds: string[]
@@ -71,7 +71,7 @@ function LinearSyntenyRendering(props: {
   const {
     height,
     width,
-    trackModel = {},
+    displayModel = {},
     highResolutionScaling = 1,
     features,
     trackIds,
@@ -87,7 +87,7 @@ function LinearSyntenyRendering(props: {
     [features],
   )
 
-  const parentView = getContainingView(trackModel) as LinearSyntenyViewModel
+  const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
   const { views } = parentView
   const matches = layoutMatches(deserializedFeatures)
   const offsets = views.map(view => view.offsetPx)
@@ -102,8 +102,8 @@ function LinearSyntenyRendering(props: {
     }
     ctx.clearRect(0, 0, width, height)
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.fillStyle = getConf(trackModel, ['renderer', 'color'])
-    ctx.strokeStyle = getConf(trackModel, ['renderer', 'color'])
+    ctx.fillStyle = getConf(displayModel, ['renderer', 'color'])
+    ctx.strokeStyle = getConf(displayModel, ['renderer', 'color'])
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false

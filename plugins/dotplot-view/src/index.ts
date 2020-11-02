@@ -107,16 +107,16 @@ export default class DotplotPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
-    pluginManager.addTrackType(() => {
-      const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'DotplotTrack',
-        compatibleView: 'DotplotView',
-        configSchema,
-        stateModel: dotplotTrackStateModelFactory(configSchema),
-        ReactComponent: DotplotTrackReactComponent,
-      })
-    })
+    // pluginManager.addTrackType(() => {
+    //   const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
+    //   return new TrackType({
+    //     name: 'DotplotTrack',
+    //     compatibleView: 'DotplotView',
+    //     configSchema,
+    //     stateModel: dotplotTrackStateModelFactory(configSchema),
+    //     ReactComponent: DotplotTrackReactComponent,
+    //   })
+    // })
 
     pluginManager.addRendererType(
       () =>

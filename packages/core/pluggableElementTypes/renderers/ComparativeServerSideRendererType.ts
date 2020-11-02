@@ -17,7 +17,7 @@ export interface RenderArgs {
   bpPerPx: number
   regions?: any
   config: Record<string, any>
-  renderProps: { trackModel: any }
+  renderProps: { displayModel: any }
   width: number
   height: number
 }
@@ -42,7 +42,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       // @ts-ignore
       blockKey: args.blockKey,
 
-      trackModel: {},
+      displayModel: {},
     }
 
     return args

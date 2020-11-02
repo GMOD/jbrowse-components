@@ -4,12 +4,12 @@ import Bed from '@jbrowse/plugin-bed'
 import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
-// import DotplotView from '@jbrowse/plugin-dotplot-view'
+import DotplotView from '@jbrowse/plugin-dotplot-view'
 import Filtering from '@jbrowse/plugin-filtering'
 import Gff3Tabix from '@jbrowse/plugin-gff3'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
-// import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
+import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import Lollipop from '@jbrowse/plugin-lollipop'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
@@ -30,11 +30,11 @@ export default [
   CircularView,
   Config,
   DataManagement,
-  // DotplotView,
+  DotplotView,
   Filtering,
   Gff3Tabix,
   LegacyJBrowse,
-  // LinearComparativeView,
+  LinearComparativeView,
   Lollipop,
   Menus,
   RDF,

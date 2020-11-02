@@ -1,4 +1,4 @@
-import { types, Instance } from 'mobx-state-tree'
+import { types, Instance, getParent } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
@@ -9,19 +9,17 @@ import { getContainingView } from '@jbrowse/core/util'
 import {
   configSchemaFactory as baseConfigFactory,
   stateModelFactory as baseModelFactory,
-} from '../LinearComparativeTrack'
+} from '../LinearComparativeDisplay'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'LinearSyntenyTrack',
+    'LinearSyntenyDisplay',
     {
-      viewType: 'LinearSyntenyView',
       trackIds: {
         type: 'stringArray',
         defaultValue: [],
       },
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
       middle: { type: 'boolean', defaultValue: true },
     },
@@ -37,10 +35,10 @@ export function stateModelFactory(
 ) {
   return types
     .compose(
-      'LinearSyntenyTrack',
+      'LinearSyntenyDisplay',
       baseModelFactory(configSchema),
-      types.model('LinearSyntenyTrack', {
-        type: types.literal('LinearSyntenyTrack'),
+      types.model({
+        type: types.literal('LinearSyntenyDisplay'),
         configuration: ConfigurationReference(configSchema),
       }),
     )
@@ -52,7 +50,7 @@ export function stateModelFactory(
       get renderProps() {
         const parentView = getContainingView(self) as LinearSyntenyViewModel
         return {
-          trackModel: self,
+          displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,
           height: 100,
@@ -64,9 +62,9 @@ export function stateModelFactory(
       get adapterConfig() {
         // TODO possibly enriches with the adapters from associated trackIds
         return {
-          name: self.configuration.adapter.type,
+          name: self.parentTrack.configuration.adapter.type,
           assemblyNames: getConf(self, 'assemblyNames'),
-          ...getConf(self, 'adapter'),
+          ...getConf(self.parentTrack, 'adapter'),
         }
       },
 
@@ -76,5 +74,7 @@ export function stateModelFactory(
     }))
 }
 
-export type LinearSyntenyTrackStateModel = ReturnType<typeof stateModelFactory>
-export type LinearSyntenyTrackModel = Instance<LinearSyntenyTrackStateModel>
+export type LinearSyntenyDisplayStateModel = ReturnType<
+  typeof stateModelFactory
+>
+export type LinearSyntenyDisplayModel = Instance<LinearSyntenyDisplayStateModel>

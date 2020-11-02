@@ -13,7 +13,6 @@ export const BaseDisplay = types
     type: types.string,
   })
   .volatile(() => ({
-    ReactComponent: undefined as any,
     rendererTypeName: '',
     error: undefined as Error | string | undefined,
   }))
