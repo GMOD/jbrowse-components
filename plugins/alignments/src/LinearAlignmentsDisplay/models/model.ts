@@ -72,7 +72,7 @@ const stateModelFactory = (
         },
 
         get DisplayBlurb() {
-          return self.PileupDisplay.DisplayBlurb
+          return self.PileupDisplay?.DisplayBlurb
         },
 
         get sortedBy() {

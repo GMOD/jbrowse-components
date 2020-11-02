@@ -164,4 +164,22 @@ export default class AlignmentsPlugin extends Plugin {
         }),
     )
   }
+
+  configure(pluginManager: PluginManager) {
+    const track = pluginManager.getTrackType('AlignmentsTrack')
+    const pileupIdx = track.displayTypes.findIndex(
+      displayType => displayType.name === 'LinearPileupDisplay',
+    )
+    const snpCoverageIdx = track.displayTypes.findIndex(
+      displayType => displayType.name === 'LinearSNPCoverageDisplay',
+    )
+    const alignmentsIdx = track.displayTypes.findIndex(
+      displayType => displayType.name === 'LinearAlignmentsDisplay',
+    )
+    track.displayTypes.splice(
+      Math.min(pileupIdx, snpCoverageIdx),
+      0,
+      track.displayTypes.splice(alignmentsIdx, 1)[0],
+    )
+  }
 }
