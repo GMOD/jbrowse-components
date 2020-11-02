@@ -354,14 +354,6 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-### Long read vs reference
-
-One can also launch a linear synteny view that compares a long read to the
-reference genome
-
-![](./img/linear_synteny_longread.png)
-Figure showing a PacBio long read versus the reference genome, with additional tracks
-
 ## Variant tracks
 
 Visualizing variant tracks from the VCF format alongside the original alignment
