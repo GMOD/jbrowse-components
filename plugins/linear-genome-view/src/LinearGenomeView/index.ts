@@ -454,6 +454,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
             return false
           },
         )
+        if (!displayConf) {
+          throw new Error(
+            `could not find a compatible display for view type ${self.type}`,
+          )
+        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,

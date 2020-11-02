@@ -47,7 +47,37 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       //   defaultValue: [],
       // },
     },
-    { explicitIdentifier: 'trackId', explicitlyTyped: true },
+    {
+      explicitIdentifier: 'trackId',
+      explicitlyTyped: true,
+      actions: (self: any) => ({
+        afterCreate() {
+          const displayTypes = new Set()
+          self.displays.forEach((d: any) => displayTypes.add(d.type))
+          const trackType = pluginManager.getTrackType(self.type)
+          trackType.displayTypes.forEach(displayType => {
+            if (!displayTypes.has(displayType.name)) {
+              self.addDisplayConf({
+                displayId: `${self.trackId}-${displayType.name}`,
+                type: displayType.name,
+              })
+            }
+          })
+        },
+        addDisplayConf(displayConf: { type: string; displayId: string }) {
+          const { type } = displayConf
+          if (!type) throw new Error(`unknown display type ${type}`)
+          const display = self.displays.find(
+            (d: any) => d.displayId === displayConf.displayId,
+          )
+          if (display) {
+            return display
+          }
+          const length = self.displays.push(displayConf)
+          return self.displays[length - 1]
+        },
+      }),
+    },
   )
 }
 

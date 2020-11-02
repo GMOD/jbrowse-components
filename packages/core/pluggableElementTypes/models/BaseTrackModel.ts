@@ -97,23 +97,6 @@ export function createBaseTrackModel(
             }))
         )
       },
-      get trackMenuItems(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.trackMenuItems)
-        })
-        return [
-          {
-            label: 'About this track',
-            icon: InfoIcon,
-            priority: 10,
-            onClick: () => {
-              self.setShowAbout(true)
-            },
-          },
-          ...menuItems,
-        ]
-      },
       // distinct set of track items that are particular to this track type. for
       // base, there are none
       //
@@ -175,6 +158,82 @@ export function createBaseTrackModel(
         )
         transaction(() => shownDisplays.forEach(d => self.displays.remove(d)))
         return shownDisplays.length
+      },
+      replaceDisplay(
+        oldDisplayId: string,
+        newDisplayId: string,
+        initialSnapshot = {},
+      ) {
+        const displayIdx = self.displays.findIndex(
+          d => d.configuration.displayId === oldDisplayId,
+        )
+        if (displayIdx === -1) {
+          throw new Error(
+            `could not find display id ${oldDisplayId} to replace`,
+          )
+        }
+        const displayTypeConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'display',
+        )
+        const configuration = resolveIdentifier(
+          displayTypeConfigSchema,
+          getRoot(self),
+          newDisplayId,
+        )
+        const displayType = pluginManager.getDisplayType(configuration.type)
+        if (!displayType) {
+          throw new Error(`unknown display type ${configuration.type}`)
+        }
+        self.displays.splice(displayIdx, 1, {
+          ...initialSnapshot,
+          type: configuration.type,
+          configuration,
+        })
+      },
+    }))
+    .views(self => ({
+      get trackMenuItems(): MenuItem[] {
+        const menuItems: MenuItem[] = []
+        self.displays.forEach(display => {
+          menuItems.push(...display.trackMenuItems)
+        })
+        const displayChoices: MenuItem[] = []
+        const view = getContainingView(self)
+        const viewType = pluginManager.getViewType(view.type)
+        const compatibleDisplayTypes = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
+        const compatibleDisplays = self.configuration.displays.filter(
+          (displayConf: any) =>
+            compatibleDisplayTypes.includes(displayConf.type),
+        )
+        const shownId = self.displays[0].configuration.displayId
+        if (compatibleDisplays.length > 1) {
+          displayChoices.push({ type: 'divider' })
+          compatibleDisplays.forEach((displayConf: any) => {
+            displayChoices.push({
+              type: 'radio',
+              label: `Show display ${displayConf.type}`,
+              icon: InfoIcon,
+              onClick: () => {
+                self.replaceDisplay(shownId, displayConf.displayId)
+              },
+              checked: displayConf.displayId === shownId,
+            })
+          })
+        }
+        return [
+          {
+            label: 'About this track',
+            icon: InfoIcon,
+            priority: 10,
+            onClick: () => {
+              self.setShowAbout(true)
+            },
+          },
+          ...menuItems,
+          ...displayChoices,
+        ]
       },
     }))
 }

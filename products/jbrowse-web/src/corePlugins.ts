@@ -23,6 +23,8 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 // import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
+  SVG,
+  LinearGenomeView,
   Alignments,
   Bed,
   CircularView,
@@ -32,13 +34,11 @@ export default [
   Filtering,
   Gff3Tabix,
   LegacyJBrowse,
-  LinearGenomeView,
   // LinearComparativeView,
   Lollipop,
   Menus,
   RDF,
   Sequence,
-  SVG,
   TrackHubRegistry,
   Variants,
   Wiggle,

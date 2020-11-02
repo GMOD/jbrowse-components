@@ -102,7 +102,7 @@ export default class SequencePlugin extends Plugin {
         name: 'LinearReferenceSequenceDisplay',
         configSchema: linearReferenceSequenceDisplayConfigSchema,
         stateModel,
-        trackType: 'SequenceTrack',
+        trackType: 'ReferenceSequenceTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
       }
