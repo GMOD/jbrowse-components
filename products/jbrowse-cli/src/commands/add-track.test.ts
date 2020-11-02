@@ -126,7 +126,14 @@ describe('add-track', () => {
 
   setup
     .do(initctx)
-    .command(['add-track', simpleBam, '--load', 'copy', '--index', simpleBai])
+    .command([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--indexFile',
+      simpleBai,
+    ])
     .it('adds a track', async ctx => {
       const contents = await fsPromises.readFile(
         path.join(ctx.dir, 'config.json'),

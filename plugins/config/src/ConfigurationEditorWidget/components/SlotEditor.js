@@ -330,11 +330,17 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
+function createSetLocation(slot) {
+  return location => {
+    slot.set({ ...slot.value, ...location })
+  }
+}
+
 const FileSelectorWrapper = observer(({ slot }) => {
   return (
     <FileSelector
       location={slot.value}
-      setLocation={slot.set}
+      setLocation={createSetLocation(slot)}
       name={slot.name}
       description={slot.description}
     />

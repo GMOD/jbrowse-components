@@ -1,22 +1,27 @@
-import * as crypto from 'crypto'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
 
-// adapted encrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
-const encrypt = (text: string, key: Buffer, iv: Buffer) => {
-  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
-  let encrypted = cipher.update(text)
-  encrypted = Buffer.concat([encrypted, cipher.final()])
-  return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
+import AES from 'crypto-js/aes'
+import Utf8 from 'crypto-js/enc-utf8'
+
+// from https://stackoverflow.com/questions/1349404/
+function generateUID(length: number) {
+  return window
+    .btoa(
+      Array.from(window.crypto.getRandomValues(new Uint8Array(length * 2)))
+        .map(b => String.fromCharCode(b))
+        .join(''),
+    )
+    .replace(/[+/]/g, '')
+    .substring(0, length)
 }
 
-// adapted decrypt from https://gist.github.com/vlucas/2bd40f62d20c1d49237a109d491974eb
-const decrypt = (text: string, key: Buffer, password: string) => {
-  const iv = Buffer.from(password, 'hex')
-  const encryptedText = Buffer.from(text, 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
-  let decrypted = decipher.update(encryptedText)
-  decrypted = Buffer.concat([decrypted, decipher.final()])
-  return decrypted.toString()
+const encrypt = (text: string, password: string) => {
+  return AES.encrypt(text, password).toString()
+}
+
+const decrypt = (text: string, password: string) => {
+  const bytes = AES.decrypt(text, password)
+  return bytes.toString(Utf8)
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
@@ -25,12 +30,11 @@ export async function shareSessionToDynamo(
   referer: string,
 ) {
   const sess = `${toUrlSafeB64(JSON.stringify(session))}`
-  const key = crypto.createHash('sha256').update('JBrowse').digest()
-  const iv = crypto.randomBytes(16)
-  const encryptedSession = encrypt(sess, key, iv)
+  const password = generateUID(5)
+  const encryptedSession = encrypt(sess, password)
 
   const data = new FormData()
-  data.append('session', encryptedSession.encryptedData)
+  data.append('session', encryptedSession)
   data.append('dateShared', `${Date.now()}`)
   data.append('referer', referer)
 
@@ -47,13 +51,13 @@ export async function shareSessionToDynamo(
   return {
     json,
     encryptedSession,
+    password,
   }
 }
 
 export async function readSessionFromDynamo(
   baseUrl: string,
   sessionQueryParam: string,
-  key: Buffer,
   password: string,
   signal?: AbortSignal,
 ) {
@@ -77,5 +81,5 @@ export async function readSessionFromDynamo(
     throw new Error(`Unable to fetch session ${sessionId}`)
   }
   const json = JSON.parse(text)
-  return decrypt(json.session, key, password)
+  return decrypt(json.session, password)
 }

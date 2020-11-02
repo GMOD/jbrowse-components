@@ -16,6 +16,7 @@ import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
   types,
   getParent,
+  getRoot,
   onAction,
   addDisposer,
   Instance,
@@ -180,34 +181,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      toggleTrack(configuration: any) {
+      toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(configuration)
+        const hiddenCount = this.hideTrack(trackId)
         // if none had that configuration, turn one on
-        if (!hiddenCount) this.showTrack(configuration)
+        if (!hiddenCount) {
+          this.showTrack(trackId)
+        }
       },
 
-      showTrack(configuration: any, initialSnapshot = {}) {
-        const { type } = configuration
-        if (!type) {
-          throw new Error('track configuration has no `type` listed')
-        }
-
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType)
+          throw new Error(`unknown track type ${configuration.type}`)
 
-        if (!trackType) {
-          throw new Error(`unknown track type ${type}`)
-        }
         self.tracks.push({
           ...initialSnapshot,
           name,
-          type,
+          type: configuration.type,
           configuration,
         })
       },
 
-      hideTrack(configuration: any) {
+      hideTrack(trackId: string) {
+        const IT = pluginManager.pluggableConfigSchemaType('track')
+        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,

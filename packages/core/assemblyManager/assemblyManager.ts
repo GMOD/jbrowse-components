@@ -120,6 +120,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .actions(self => ({
+      removeAssembly(asm: Instance<typeof Assembly>) {
+        self.assemblies.remove(asm)
+      },
       afterAttach() {
         addDisposer(
           self,
@@ -130,6 +133,11 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],
             ) => {
+              self.assemblies.forEach(asm => {
+                if (!asm.configuration) {
+                  this.removeAssembly(asm)
+                }
+              })
               assemblyConfigs.forEach(assemblyConfig => {
                 const existingAssemblyIdx = self.assemblies.findIndex(
                   assembly =>

@@ -79,19 +79,85 @@ Here is a complete config.json file containing only a hg19
 }
 ```
 
+## Configuring reference name aliasing
+
+Reference name aliasing is a process to make chromosomes that are named slighlty
+differently but which refer to the same thing render properly
+
+The refNameAliases in the above config provides this functionality
+
+```
+"refNameAliases": {
+  "adapter": {
+    "type": "RefNameAliasAdapter",
+    "location": {
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+    }
+  }
+}
+```
+
+The hg19_aliases then is a tab delimited file that looks like this
+
+The first column should be the names that are in your FASTA sequence, and the
+rest of the columns are aliases
+
+```
+1	chr1
+2	chr2
+3	chr3
+4	chr4
+5	chr5
+6	chr6
+7	chr7
+8	chr8
+9	chr9
+10	chr10
+11	chr11
+12	chr12
+13	chr13
+14	chr14
+15	chr15
+16	chr16
+17	chr17
+18	chr18
+19	chr19
+20	chr20
+21	chr21
+22	chr22
+X	chrX
+Y	chrY
+M	chrM	MT
+```
+
 ## Adding an assembly with the CLI
 
-See https://github.com/GMOD/jbrowse-components/tree/master/products/jbrowse-cli#jbrowse-add-assembly-sequence
+Generally we add a new assembly with the CLI using something like
+
+```
+# use samtools to make a fasta index for your reference genome
+samtools faidx myfile.fa
+
+# install the jbrowse CLI
+npm install -g @jbrowse/cli
+
+# add the assembly using the jbrowse CLI, this will automatically copy the
+myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
+jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
+```
+
+See our CLI docs for the add-assembly for more details here -- [add-assembly](cli#jbrowse-add-assembly-sequence)
 
 ## Track configurations
 
-All tracks contain
+All tracks can contain
 
 - trackId - internal track ID, must be unique
 - name - displayed track name
 - assemblyNames - an array of assembly names a track is associated with, often
   just a single assemblyName
-- category - optional array of categories to display in a hierarchical track selector
+- category - (optional) array of categories to display in a hierarchical track
+  selector
 
 Example config.json containing a track config
 
@@ -433,7 +499,7 @@ parsing time.
 }
 ```
 
-## Dotplot view config
+## DotplotView configuration
 
 ### Setup
 
@@ -495,93 +561,414 @@ let's step through it
       }
     }
   ],
-  "savedSessions": [
+  "defaultSession": {
+    "name": "Grape vs Peach",
+    "views": [
+      {
+        "id": "dotplotview",
+        "type": "DotplotView",
+        "assemblyNames": ["peach", "grape"],
+        "hview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "vview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "tracks": [
+          {
+            "type": "DotplotTrack",
+            "configuration": "dotplot_track"
+          }
+        ],
+        "height": 600,
+        "displayName": "Grape vs Peach dotplot",
+        "trackSelectorType": "hierarchical"
+      }
+    ]
+  }
+}
+```
+
+### DotplotView notes
+
+The dotplot view is still very new, and parts of this config could change in
+the future
+
+Note that configuring the dotplot involves creating a "defaultSession"
+
+Users can also open synteny views using the File->Add->Dotplot view workflow
+
+## LinearSyntenyView configuration
+
+Currently, configuring synteny is made by pre-configuring a session in the view
+and adding synteny tracks
+
+In order to configure linear synteny views, generally we will use PAF tracks
+
+We can add a LinearSyntenyTrack from PAF with the CLI e.g. with
+
+    jbrowse add-track myfile.paf --type LinearSyntenyTrack --assemblyNames \
+        grape,peach --load copy --out /var/www/html/jbrowse2
+
+This will copy the myfile.paf to your jbrowse2 installation at
+/var/www/html/jbrowse2, it says column 1 of the PAF is grape and column 2 of
+the PAF is peach, and it loads it as a LinearSyntenyTrack
+
+### LinearSyntenyView with MCScanAnchorsAdapter
+
+This is a complete synteny view config with a default session that is
+preconfigured for grape vs peach. It contains a LinearSyntenyTrack using
+MCScanAnchorsAdapter for grape and peach, which requires has subadapters that
+refer to the reference gene tracks of peach and grape
+
+```json
+{
+  "defaultSession": {
+    "name": "New Session",
+    "menuBars": [
+      {
+        "type": "MainMenuBar"
+      }
+    ]
+  },
+  "defaultSession": {
+    "name": "Grape vs Peach Demo",
+    "drawerWidth": 384,
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "id": "test1",
+        "headerHeight": 44,
+        "datasetName": "grape_vs_peach_dataset",
+        "tracks": [
+          {
+            "type": "LinearSyntenyTrack",
+            "height": 100,
+            "configuration": "grape_peach_synteny_mcscan"
+          }
+        ],
+        "height": 400,
+        "displayName": "Grape vs Peach",
+        "trackSelectorType": "hierarchical",
+        "views": [
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_1",
+            "offsetPx": 28249,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "Pp01",
+                "assemblyName": "peach",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "BasicTrack",
+                "height": 100,
+                "configuration": "peach_genes",
+                "selectedRendering": ""
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          },
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_2",
+            "offsetPx": 0,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "chr1",
+                "assemblyName": "grape",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "BasicTrack",
+                "height": 100,
+                "configuration": "grape_genes",
+                "selectedRendering": ""
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
+      },
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
+    "connections": {}
+  },
+  "assemblies": [
     {
-      "name": "Grape vs Peach",
-      "views": [
-        {
-          "id": "dotplotview",
-          "type": "DotplotView",
-          "assemblyNames": ["peach", "grape"],
-          "hview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "vview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "tracks": [
-            {
-              "type": "DotplotTrack",
-              "configuration": "dotplot_track"
-            }
-          ],
-          "height": 600,
-          "displayName": "Grape vs Peach dotplot",
-          "trackSelectorType": "hierarchical"
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
         }
-      ]
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "grape_peach_synteny_mcscan",
+      "type": "LinearSyntenyTrack",
+      "assemblyNames": ["peach", "grape"],
+      "trackIds": [],
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanAnchorsLocation": {
+          "uri": "grape.peach.anchors"
+        },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            }
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            }
+          }
+        ],
+        "assemblyNames": ["peach", "grape"],
+        "type": "MCScanAnchorsAdapter"
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer"
+      },
+      "name": "Grape peach synteny (MCScan)",
+      "category": ["Annotation"]
+    },
+    {
+      "trackId": "peach_genes",
+      "type": "BasicTrack",
+      "assemblyNames": ["peach"],
+      "name": "mcscan",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+        }
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
+    },
+    {
+      "trackId": "grape_genes",
+      "type": "BasicTrack",
+      "name": "mcscan",
+      "assemblyNames": ["grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+        }
+      },
+      "renderer": {
+        "type": "PileupRenderer"
+      }
     }
   ]
 }
 ```
 
-### Notes
+### LinearSyntenyView with PAFAdapter
 
-The dotplot view is still very new, and parts of this config could change in
-the future
-
-## Hi-C config
-
-Technically there is no Hi-C track type but it can be implemented with a DynamicTrack
-
-```json
+```
 {
-  "type": "DynamicTrack",
-  "trackId": "hic",
-  "name": "Hic Track",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "HicAdapter",
-    "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grape.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "peach.chrom.sizes"
+          }
+        },
+        "rendering": {
+          "type": "DivSequenceRenderer"
+        }
+      }
     }
-  },
-  "renderer": {
-    "type": "HicRenderer"
+  ],
+  "tracks": [
+    {
+      "trackId": "grape_peach_synteny_linear_paf",
+      "type": "LinearSyntenyTrack",
+      "assemblyNames": ["peach", "grape"],
+      "trackIds": [],
+      "renderDelay": 100,
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+        },
+        "assemblyNames": ["peach", "grape"]
+      },
+      "renderer": {
+        "type": "LinearSyntenyRenderer",
+        "color": "#00fa"
+      },
+      "name": "Grape peach synteny (PAF)",
+      "category": ["Annotation"]
+    }
+  ],
+  "defaultSession": {
+    "name": "Grape vs Peach (small)",
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "LinearSyntenyView",
+        "height": 400,
+        "displayName": "Grape vs Peach dotplot",
+        "trackSelectorType": "hierarchical",
+        "showIntraviewLinks": true,
+        "linkViews": false,
+        "interactToggled": false,
+        "tracks": [
+          {
+            "id": "YzHQQgj77",
+            "type": "LinearSyntenyTrack",
+            "height": 100,
+            "configuration": "grape_peach_synteny_linear_paf"
+          }
+        ],
+        "views": [
+          {
+            "id": "test1_1",
+            "type": "LinearGenomeView",
+            "offsetPx": 28249,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "Pp01",
+                "start": 0,
+                "end": 100000000,
+                "reversed": false,
+                "assemblyName": "peach"
+              }
+            ],
+            "tracks": [],
+            "hideHeader": true,
+            "hideHeaderOverview": false,
+            "trackSelectorType": "hierarchical",
+            "trackLabels": "overlapping",
+            "showCenterLine": false
+          },
+          {
+            "id": "test1_2",
+            "type": "LinearGenomeView",
+            "offsetPx": 0,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "chr1",
+                "start": 0,
+                "end": 100000000,
+                "reversed": false,
+                "assemblyName": "grape"
+              }
+            ],
+            "tracks": [],
+            "hideHeader": true,
+            "hideHeaderOverview": false,
+            "trackSelectorType": "hierarchical",
+            "trackLabels": "overlapping",
+            "showCenterLine": false
+          }
+        ],
+      }
+    ]
   }
 }
+
 ```
 
-### HicAdapter configuration options
+### LinearSyntenyView notes
 
-- hicLocation - a 'file location' for the a .hic file
+The linear synteny view is still very new, and parts of this config could
+change in the future
 
-Example HicAdapter config
+Note that configuring the dotplot involves creating a "defaultSession"
 
-```json
-{
-  "type": "HicAdapter",
-  "hicLocation": { "uri": "http://yourhost/file.hic" }
-}
-```
-
-## Configuring linear synteny views
-
-Currently, configuring synteny is made by pre-configuring a session in the view
-and adding synteny tracks
-
-#### TODO: This section will be expanded
-
-## Configuring reference renaming
-
-Reference renaming is a process to make chromosomes that are named slighlty
-differently but which refer to the same thing render properly
-
-#### TODO: expand section
+Users can also open synteny views using the File->Add->Linear synteny view
+workflow
 
 ## Configuring the theme
 
@@ -608,12 +995,12 @@ JBrowse uses 4 colors that can be changed. For example, this is the default
 theme:
 
 ![JBrowse using the default theme](./img/default_theme.png)
-
-And this is a customized theme:
+Example of the default theme
 
 ![JBrowse using a customized theme](./img/customized_theme.png)
+Example of a customized theme
 
-This is the configuration for the above theme, using:
+The customized theme screenshot uses the below configuration
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |
@@ -667,7 +1054,58 @@ options you could pass to Material-UI's
 [`createMuiTheme`](https://material-ui.com/customization/theming/#createmuitheme-options-args-theme)
 should work in the theme configuration.
 
-## Variant config
+## HicTrack config
+
+Example Hi-C track config
+
+````json
+{
+  "type": "HicTrack",
+  "trackId": "hic",
+  "name": "Hic Track",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "HicAdapter",
+    "hicLocation": {
+      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    }
+  },
+  "renderer": {
+    "type": "HicRenderer",
+    "baseColor": "blue"
+  }
+}
+```
+
+### HicAdapter config
+
+We just simply supply a hicLocation currently for the HicAdapter
+
+```json
+
+{
+  "type": "HicAdapter",
+  "hicLocation": {
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+  }
+}
+
+```
+
+### HicRenderer config
+
+- baseColor - the default baseColor of the Hi-C plot is red #f00, you can
+  change it to blue so then the shading will be done in blue with #00f
+- color - this is a color callback that adapts the current Hi-C contact feature
+  with the baseColor to generate a shaded block. The default color callback
+  function is `function(count, maxScore, baseColor) { return
+  baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string() }` where it
+  receives the count for a particular block, the maxScore over the region, and
+  the baseColor from the baseColor config
+
+
+
+## VariantTrack config
 
 - defaultRendering - options: 'pileup' or 'svg'. default 'svg'
 - adapter - a variant type adapter config e.g. a VcfTabixAdapter
@@ -704,15 +1142,14 @@ Example VcfTabixAdapter adapter config
   "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
 }
 ```
+## WiggleTrack config
 
-## Wiggle config
-
-### General
+### General WiggleTrack options
 
 - scaleType - options: linear, log, to display the coverage data. default: linear
 - adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
 
-### Autoscale
+### Autoscale options for WiggleTrack
 
 Options for autoscale
 
@@ -721,7 +1158,7 @@ Options for autoscale
 - localsd - mean value +- N stddevs of what is visible on screen
 - globalsd - mean value +/- N stddevs of everything in the dataset
 
-### Manually setting min or max values
+### Score min/max for WiggleTrack
 
 These options overrides the autoscale options and provides a minimum or maximum
 value for the autoscale bar
@@ -729,7 +1166,7 @@ value for the autoscale bar
 - minScore
 - maxScore
 
-### Drawing options
+### WiggleTrack drawing options
 
 - inverted - draws upside down
 - defaultRendering - can be density, xyplot, or line
@@ -759,9 +1196,9 @@ value for the autoscale bar
     "bigWigLocation": { "uri": "http://yourhost/file.bw" }
   }
 }
-```
+````
 
-### BigWig adapter configuration options
+### BigWigAdapter options
 
 - bigWigLocation - a 'file location' for the bigwig
 
@@ -771,5 +1208,18 @@ Example BigWig adapter config
 {
   "type": "BigWig",
   "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+}
+```
+
+## Disabling analytics
+
+This is done via adding a field in the global configuration in the config file.
+For example:
+
+```json
+{
+  "configuration": {
+    "disableAnalytics": true
+  }
 }
 ```

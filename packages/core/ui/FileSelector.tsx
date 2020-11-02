@@ -37,7 +37,7 @@ const FileLocationEditor = observer(
     setLocation: Function
     name?: string
     description?: string
-    localFileAllowed: boolean
+    localFileAllowed?: boolean
   }) => {
     const { location, name, description, localFileAllowed = isElectron } = props
     const fileOrUrl =

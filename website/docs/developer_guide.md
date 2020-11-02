@@ -40,6 +40,10 @@ For example, jbrowse-web is a React web application that is made with [Create
 React App (CRA)](https://create-react-app.dev/), and jbrowse-cli is a
 command-line tool implemented with [OCLIF](https://oclif.io/).
 
+![](./img/product_architecture.png)
+This figure summarizes the general architecture of our state model and React
+component tree
+
 ## What's in a plugin
 
 A plugin is an independently distributed package of code that is designed to
@@ -180,10 +184,6 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process. The Wiggle track for
 example registers `WiggleGetGlobalStats` and `WiggleGetMultiRegionStats`
-
-## jbrowse-web and jbrowse-desktop Architecture
-
-![](./img/product_architecture.png)
 
 ### MenuItems
 
