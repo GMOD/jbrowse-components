@@ -4,7 +4,6 @@
   "license": "MIT",
   "homepage": ".",
   "scripts": {
-    "copycli": "cp ../products/jbrowse-cli/README.md docs/cli.md",
     "prestart": "npm run make",
     "start": "docusaurus start",
     "prebuild": "npm run make",
@@ -13,7 +12,7 @@
     "predeploy": "npm run build",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
-    "make": "npm run copycli && cd docs; make md; cd -"
+    "make": "cd docs; make md; cd -"
   },
   "dependencies": {
     "@docusaurus/core": "^2.0.0-alpha.66",

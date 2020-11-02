@@ -178,21 +178,28 @@ export default withContentRect('bounds')(
               IconProps={{ className: classes.icon }}
             />
             <div className={classes.grow} />
-            {view.displayName ? (
-              <Tooltip title="Rename View" arrow>
-                <EditableTypography
-                  value={view.displayName}
-                  setValue={view.setDisplayName}
-                  variant="body2"
-                  classes={{
-                    input: classes.input,
-                    inputBase: classes.inputBase,
-                    inputRoot: classes.inputRoot,
-                    inputFocused: classes.inputFocused,
-                  }}
-                />
-              </Tooltip>
-            ) : null}
+            <Tooltip title="Rename view" arrow>
+              <EditableTypography
+                value={
+                  view.displayName ||
+                  // @ts-ignore
+                  (view.assemblyNames
+                    ? // @ts-ignore
+                      view.assemblyNames.join(',')
+                    : 'Untitled view')
+                }
+                setValue={val => {
+                  view.setDisplayName(val)
+                }}
+                variant="body2"
+                classes={{
+                  input: classes.input,
+                  inputBase: classes.inputBase,
+                  inputRoot: classes.inputRoot,
+                  inputFocused: classes.inputFocused,
+                }}
+              />
+            </Tooltip>
             <div className={classes.grow} />
             <IconButton
               data-testid="close_view"

@@ -4,6 +4,64 @@ toplevel: true
 title: User guide
 ---
 
+## Navigating the UI
+
+### Linear genome view usage
+
+To start a linear genome view, use the menu bar
+
+File->Add->Linear genome view
+
+#### Using the location search box
+
+- Use the search box in the LGV
+- Enter syntax chr1:1-100 or chr1:1..100
+- You can also specify an assembly name with the locstring {hg19}chr1:1-100
+
+Note: searching by gene name is not yet available but will be added soon!
+
+#### Scrolling
+
+Mouse wheel can scroll side to side, as well as click and drag. The pan buttons
+also exist in the header of the linear genome view
+
+#### Zooming
+
+The zoom buttons exist in the header of the linear genome view, and there is
+also a slider bar to zoom in and out.
+
+Note: You can also hold the "Ctrl" key and use your mousewheel or trackpad to
+scroll and this will zoom in and out
+
+#### Re-ordering tracks
+
+There is a drag handle on the track labels indicating by the six dots, clicking
+and dragging on this part of the track label can reorder tracks
+
+#### Rubberband selection
+
+The scale bars accept a click and drag action to select a region
+
+<!--
+https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
+-->
+
+![](./img/rubberband.png)
+Rubberband selection can be performed on both the region and overview scale bars
+
+#### Horizontally flip
+
+The view can be horizontally flipped, or reverse complemented, to make the
+coordinates go from right to left instead of left to right
+
+We use triangles pointing in the direction of the orientation in the overview
+bar to help indicate whether the app is horizontally flipped or not
+
+Here is an example of before and after horizontally flipping the view
+
+![](./img/horizontally_flip.png)
+Before and after horizontally flipping
+
 ## Alignments tracks
 
 Visualizing alignments is an important aspect of genome browsers. This guide
@@ -21,8 +79,7 @@ the reference genome, or blue if they aligned to the reverse strand.
 
 ### Coverage visualization
 
-The coverage visualization shows the depth-of-coverage of the reads at each
-position on the genome, and also draws using colored boxes any occurence of
+The coverage visualization shows the depth-of-coverage of the reads at eacposition on the genome, and also draws using colored boxes any occurence of
 mismatches between the read and the reference genome, so if 50% of the reads
 had a T instead of the reference A, half the height of the coverage histogram
 would contain a 'red' box
@@ -130,41 +187,82 @@ Line plot version of a BigWig
 There are many options for controlling the BigWig which can be accessed from
 the UI. See the [bigwig configuration guide](config_guide#wiggle-config)
 
-## Dotplot view
+## Linear synteny and dotplot views
 
 The dotplot view is a 2D comparative view that can display alignments between
 different genome assemblies, or even compare a long-read or NGS short-read
 versus the genome
 
-### Opening the dotplot view
+### Opening a dotplot view
 
-Currently the workflow for launching a dotplot is not fully fleshed out
-in a way that one can add dotplot tracks in the UI but it can be manually configured
+Currently the workflow for launching a dotplot is done by navigating in the
+header bar to the File->Add->Dotplot view
+
+This will let you select the genome assemblies of interest
+
+Then you can also provide a synteny file in the form of PAF via the Add track
+workflow
+
+Then currently you must configuration edit the PAFAdapter to indicate the two
+assemblies in the PAFAdapter
+
+![](./img/dotplot_menu.png)
+Adding a new dotplot or synteny view via the menubar
+
+![](./img/dotplot_add.png)
+Example of the import form for a dotplot or synteny view. Allows you to select
+two different assemblies and a PAF file can be supplied via a URL
 
 ![](./img/dotplot.png)
+Example of a dotplot visualization of the grape vs the peach genome
 
-See the [dotplot configuration](config_guide#dotplot-view-config)
+See the [dotplot configuration](config_guide#dotplot-view-config) for more
+detailed descriptions
 
-### Long read vs reference
+### Opening a linear synteny view
 
-One can also launch a dotplot view that compares a long read to the reference genome
+Use the main menu bar to select
+
+File->Add->Linear synteny view
+
+![](./img/dotplot_menu.png)
+Adding a new linear-synteny-view via the menubar
+
+![](./img/dotplot_add.png)
+Example of the import form for a synteny view allowing you to select two
+different assemblies and optionally adding a PAF file via a URL
+
+![](./img/linear_synteny.png)
+Figure showing grape vs peach synteny
+
+See the [linear synteny
+configuration](config_guide#configuring-linear-synteny-views) for more details
+on manually configuring the synteny view
+
+## Long read vs reference plots
+
+One can also launch a dotplot view that compares a long read to the reference
+genome by
+
+- Right clicking an alignment
+- Select "Dotplot read vs ref" or "Linear read vs ref" in the context menu
 
 ![](./img/dotplot_longread.png)
+Example of a dotplot of a long read vs the reference genome
 
-Right click on an alignments feature and select "Open dotplot view"
-
-### Notes
-
-The dotplot view is still very new, but we wanted to make it available to
-demonstrate new comparative views
+![](./img/linear_longread.png)
+Example of a "synteny" view of a long read vs the reference genome
 
 ## Hi-C tracks
 
-Visualizing Hi-C data can reveal contact points across large regions of the genome
+Visualizing Hi-C data can be performed with .hic files which are generated by
+the Juicebox software suite. It uses the hic-straw module developed by the
+juicebox/igv.js team to visualize it in jbrowse.
 
-JBrowse 2 offsers some basic Hi-C support.
+Currently configuration options are basic for Hi-C tracks, see
+[configuration](config_guide#hictrack-config) for info about configuring Hi-C
 
-It is very new so additional information is coming
+tracks
 
 <!--
 image info:
@@ -177,56 +275,6 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=tes
 
 ![](./img/hic_track.png)
 Screenshot showing a Hi-C track
-
-## Navigating the UI
-
-### Linear genome view usage
-
-To start a linear genome view, use the menu bar
-
-File->Add->Linear genome view
-
-#### Using the location search box
-
-- Use the search box in the LGV
-- Enter syntax chr1:1-100 or chr1:1..100
-- You can also specify an assembly name with the locstring {hg19}chr1:1-100
-
-Note: no searching by gene name available at this time
-
-#### Scrolling
-
-Mouse wheel can scroll side to side, as well as click and drag. The pan buttons
-also exist in the header of the linear genome view
-
-#### Zooming
-
-The zoom buttons exist in the header of the linear genome view, and there is
-also a slider
-
-#### Re-ordering tracks
-
-There is a drag handle on the track labels indicating by the six dots, clicking
-and dragging on this part of the track label can reorder tracks
-
-#### Rubberband selection
-
-The scale bars accept a click and drag action to select a region
-
-<!--
-http://localhost:3000/?config=test_data%2Fconfig.json&session=eJx1klFP4zAQhP8K8nOK4jRNk7wBlQAJQUWjO-kQQltnk1jnOj3btHBV_jvrBIUWiUfvTmY-j3NgGjbIcnaP-7MVWitbfRaFUTgJ5xOeFGGaxzyfJudzHv1hAduAqaVmeRiw0sAezW9Zuobl0zQO2E7i3rL86cBkSZaQLs11qf_f0neltFsF7_dDWFPzjIbufetPd1IjmGvU7QZ_kQVt2qqy6JZvZJyl2Sxg6-0SjT9Hs4SfT1OexTFP4ilPR28sH7Em_IHAYPUZxsnPOjCup0ZNaFGcRbMwiXhAuh0aizSsQFkMGFiLm7U6Qe2eCdaA-Ht0u38Pcv6oVvri6yKXYKUovI5mDcq6oUweUqpodSXrVwOOAEmphZLWvdSo0b6MEY0s8QahRDPSfI0eiNMXPK56oBUqFK41xUDQSDRgRCMFKH_tpt33PHewRkXwzrziML5C7dD46j8NPcD4pDU6Uh9O_IrjPL_sa_hZMdZy85NkcRTHfElKwbZ_i0MXsEoqIizwjUpkbPi7Tv6qjkQgnNzh4ht31zeuKYTqvtX0-lpgv-g-AP24_Mw
--->
-
-![](./img/rubberband.png)
-Rubberband selection can be performed on both the region and overview scale bars
-
-#### Horizontally flip
-
-The view can be horizontally flipped, or reverse complemented, to make the
-coordinates go from right to left instead of left to right
-
-![](./img/horizontally_flip.png)
-Example of a horizontally flipped view
 
 ## SV inspector
 
@@ -257,7 +305,8 @@ We can start the SV inspector workflow by opening up this file containing
 translocation events called from a breast cancer cell line SKBR3, based on
 these published data http://schatz-lab.org/publications/SKBR3/
 
-    https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
+    ## Example VCF for use in the SV inspector
+    https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
 
 Copy this URL and paste it into the import form and select hg19
 
@@ -291,27 +340,6 @@ view"
 
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
-
-## Linear synteny view
-
-The linear synteny view allows visualizing matching regions between genomes
-
-### Opening the linear synteny view
-
-Currently the workflow for launching a linear synteny view is not fully fleshed
-out in a way that one can add linear synteny views in the UI, however linear
-synteny views can be manually configured
-
-<!--
-https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=test_data%2Fconfig_synteny_grape_peach.json&session=eJzNVNuO2jAQ_RXk53QVQggoj11a2GrbRYDoTStknElikTiRbW5F-feOHZbbgnp7ad4yPj5z5pyRd0TQHEhI-pKW0FipxhAoSxs9yAvikJzKhAsSug6JJF2D_MwjnZKw1fUdsuKwViT8viM8QgYNSjfxjt6WhvCRC6ByvBUaxHaKUDxKgSepJmHTNYRclRndfrrW39BIyhZjyIDpQk5qzpSDpJKlnNEMISot1g8CgUYJ9lugGi2X4JAMf6a1vJhmCiscdSCjnhRJkkF0qNs2J1O0F0_u1O2_925MMjH4y1FYIWKeLCXVvEC3SGKGmZVmkpmq781yphgVpHq-btzslXV9EEUOe-eKOFaghxsSet2WF9wFzU7T67pNvx20HTIvhyDNIao5OgvRCBIUVLeSEO-tHpauaaY0ldpGCyKqr9rPQegKpDoxiSoF-Tx7ycoOZie5dO-HHyzfje43qX-c5i1VnP2WbbVhCQhQlj3lEQyARiBfcj1WnlCi8fE8yF_vixXySOeQHZbFlO_B7Icxfk9YOWfpvFqHG-m8abWCu2676_mB53a8Vsfz_zQelsp_i8du39V45IevX3xfjb4N_iaeeqv_k3iejYLDm5SARvzujHFy2tEcWgtuIw6ODG5BeiftiPEny2hpg9hVDol5hhonsEH_CMGCAqXQuY9U0ASOCi7Kh7bj83qFDPhe8RX0LqasbDQCJSH8QeCiCAb2oPoJuqr5pA
--->
-
-![](./img/linear_synteny.png)
-Figure showing grape vs peach synteny
-
-See the [linear synteny
-configuration](config_guide#configuring-linear-synteny-views) for more details
-on manually configuring the synteny view
 
 ### Long read vs reference
 

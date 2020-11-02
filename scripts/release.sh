@@ -11,7 +11,7 @@ set -o pipefail
 
 NOTES=`cat $1`
 DATE=$(date +"%Y-%m-%d")
-FRONTPAGE_FILENAME=products/website/src/pages/index.js
+FRONTPAGE_FILENAME=website/src/pages/index.js
 
 yarn run lerna-publish $2
 
@@ -29,16 +29,16 @@ git push --follow-tags
 JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web@*"|head -n1)
 
 JBROWSE_WEB_VERSION=${JBROWSE_WEB_TAG:13}
-BLOGPOST_FILENAME=products/website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWSE_WEB_VERSION}-release.md
+BLOGPOST_FILENAME=website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWSE_WEB_VERSION}-release.md
 
 
 JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/beta/$JBROWSE_WEB_TAG/index.html
+INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$JBROWSE_WEB_TAG/index.html
 JBROWSE_WEB_VERSION=$JBROWSE_WEB_VERSION JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
 
 
-INSTANCE=$INSTANCE node -p "const config = require('./products/website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" > tmp.json
-mv tmp.json products/website/docusaurus.config.json
+INSTANCE=$INSTANCE node -p "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" > tmp.json
+mv tmp.json website/docusaurus.config.json
 
 
 git add .

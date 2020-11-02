@@ -6,10 +6,10 @@ import * as serviceWorker from './serviceWorker'
 serviceWorker.register()
 
 const Main = lazy(() => import('./Loader'))
-
+const initialTimeStamp = Date.now()
 ReactDOM.render(
   <Suspense fallback={<Loading />}>
-    <Main />
+    <Main initialTimestamp={initialTimeStamp} />
   </Suspense>,
   document.getElementById('root'),
 )

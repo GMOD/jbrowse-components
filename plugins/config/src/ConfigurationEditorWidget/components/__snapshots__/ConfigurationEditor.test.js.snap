@@ -39,32 +39,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -90,21 +65,6 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             class="MuiToggleButtonGroup-root"
             role="group"
           >
-            <button
-              aria-label="local file"
-              aria-pressed="false"
-              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-              disabled=""
-              tabindex="-1"
-              type="button"
-              value="file"
-            >
-              <span
-                class="MuiToggleButton-label"
-              >
-                File
-              </span>
-            </button>
             <button
               aria-label="url"
               aria-pressed="true"
@@ -151,32 +111,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -335,32 +270,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -624,32 +534,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -685,32 +570,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -746,32 +606,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -808,32 +643,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -891,32 +701,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
 </div>
 `;
@@ -960,32 +745,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1099,32 +859,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1160,32 +895,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1254,32 +964,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1377,32 +1062,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1602,32 +1262,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <div
     class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1723,32 +1358,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <label
     class="MuiFormLabel-root"
@@ -1785,7 +1395,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               BamAdapter
             </div>
             <input
-              type="hidden"
+              aria-hidden="true"
+              class="MuiSelect-nativeInput"
+              tabindex="-1"
               value="BamAdapter"
             />
             <svg
@@ -1835,21 +1447,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 role="group"
               >
                 <button
-                  aria-label="local file"
-                  aria-pressed="false"
-                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                  value="file"
-                >
-                  <span
-                    class="MuiToggleButton-label"
-                  >
-                    File
-                  </span>
-                </button>
-                <button
                   aria-label="url"
                   aria-pressed="true"
                   class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
@@ -1893,32 +1490,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         </div>
         <div
           class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+        />
       </div>
       <label
         class="MuiFormLabel-root"
@@ -1958,7 +1530,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     BAI
                   </div>
                   <input
-                    type="hidden"
+                    aria-hidden="true"
+                    class="MuiSelect-nativeInput"
+                    tabindex="-1"
                     value="BAI"
                   />
                   <svg
@@ -1977,32 +1551,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2028,21 +1577,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     class="MuiToggleButtonGroup-root"
                     role="group"
                   >
-                    <button
-                      aria-label="local file"
-                      aria-pressed="false"
-                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                      value="file"
-                    >
-                      <span
-                        class="MuiToggleButton-label"
-                      >
-                        File
-                      </span>
-                    </button>
                     <button
                       aria-label="url"
                       aria-pressed="true"
@@ -2087,32 +1621,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
         </div>
       </div>
@@ -2146,32 +1655,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         </div>
         <div
           class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+        />
       </div>
       <div
         class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2203,32 +1687,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         </div>
         <div
           class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+        />
       </div>
       <div
         class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2326,32 +1785,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         </div>
         <div
           class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+        />
       </div>
     </div>
   </div>
@@ -2382,7 +1816,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             pileup
           </div>
           <input
-            type="hidden"
+            aria-hidden="true"
+            class="MuiSelect-nativeInput"
+            tabindex="-1"
             value="pileup"
           />
           <svg
@@ -2401,32 +1837,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
   <label
     class="MuiFormLabel-root"
@@ -2678,7 +2089,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     normal
                   </div>
                   <input
-                    type="hidden"
+                    aria-hidden="true"
+                    class="MuiSelect-nativeInput"
+                    tabindex="-1"
                     value="normal"
                   />
                   <svg
@@ -2701,32 +2114,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2762,32 +2150,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2823,32 +2186,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -2884,32 +2222,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -3795,7 +3108,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     normal
                   </div>
                   <input
-                    type="hidden"
+                    aria-hidden="true"
+                    class="MuiSelect-nativeInput"
+                    tabindex="-1"
                     value="normal"
                   />
                   <svg
@@ -3818,32 +3133,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -3879,32 +3169,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
           <div
             class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -3940,32 +3205,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <div
               class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
+            />
           </div>
         </div>
       </div>
@@ -4009,32 +3249,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
     </div>
     <div
       class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
+    />
   </div>
 </div>
 `;
