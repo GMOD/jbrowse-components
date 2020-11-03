@@ -504,11 +504,7 @@ const Renderer = observer(
       // will need to account for when a session is not loaded
       // if (sessionError) or if (pm.rootModel?.session === undefined)
       console.log('screen?', defaultScreen)
-      if (
-        sessionError ||
-        pm.rootModel?.session === undefined ||
-        (defaultScreen && pm.rootModel?.session?.views.length === 0)
-      ) {
+      if (defaultScreen) {
         return (
           <StartScreen
             root={pm.rootModel}

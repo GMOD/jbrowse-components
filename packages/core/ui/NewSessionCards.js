@@ -83,10 +83,12 @@ NewEmptySession.propTypes = {
 
 export function ProceedEmptySession({ root }) {
   function onClick() {
-    // console.log('proceed Empty session', root)
     const snapshot = getSnapshot(root?.session)
-    sessionStorage.setItem('current', JSON.stringify({ session: snapshot }))
+    console.log(snapshot)
+    root.addSavedSession({ name: snapshot.name })
     root.setSession(snapshot)
+    localStorage.setItem(snapshot.id, { session: root.session })
+    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
   }
   return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
@@ -96,10 +98,15 @@ ProceedEmptySession.propTypes = {
 
 export function AddLinearGenomeViewToSession({ root }) {
   const launchLGV = () => {
+    console.log('add lgv', root)
     root.session.addView('LinearGenomeView', {})
     const snapshot = getSnapshot(root?.session)
+    console.log(snapshot)
     root.addSavedSession({ name: snapshot.name })
     root.setSession(snapshot)
+
+    localStorage.setItem(snapshot.id, { session: root.session })
+    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
   }
 
   return (
@@ -166,13 +173,14 @@ NewSVInspectorSession.propTypes = {
 
 export function AddSVInspectorToSession({ root }) {
   const launchSVSession = () => {
-    // console.log('add svi', root)
+    console.log('add svi', root)
     root.session.addView('SvInspectorView', {})
     const snapshot = getSnapshot(root?.session)
+    console.log(snapshot)
     root.addSavedSession({ name: snapshot.name })
-    root.setSession(snapshot)
-    root.saveSessionToLocalStorage()
+    localStorage.setItem(snapshot.id, { session: snapshot })
     sessionStorage.setItem('current', JSON.stringify({ session: snapshot }))
+    root.setSession(snapshot)
   }
   return (
     <NewSessionCard
