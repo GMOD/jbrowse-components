@@ -155,13 +155,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         if (!(this.refNames && self.refNameAliases)) {
           return undefined
         }
-        const aliases: string[] = []
-        self.refNameAliases.forEach((_canonicalName, alias) => {
-          if (this.refNames && !this.refNames.includes(alias)) {
-            aliases.push(alias)
-          }
-        })
-        return [...this.refNames, ...aliases]
+        return Array.from(self.refNameAliases.keys())
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
