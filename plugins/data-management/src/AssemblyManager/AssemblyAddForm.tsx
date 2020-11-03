@@ -82,6 +82,19 @@ const AdapterSelector = observer(
   },
 )
 
+const AdapterInput = observer(() => {
+  const [textContent, setTextContent] = useState('test')
+
+  return (
+    <TextField
+      id="assembly-name"
+      label="Assembly Name"
+      variant="outlined"
+      value={textContent}
+      onChange={event => setTextContent(event.target.value)}
+    />
+  )
+})
 
 const AssemblyAddForm = observer(
   ({
@@ -144,6 +157,9 @@ const AssemblyAddForm = observer(
                 setAdapterSelection={setAdapterSelection}
                 adapterTypes={adapterTypes}
               />
+            </Grid>
+            <Grid item>
+              <AdapterInput />
             </Grid>
           </Grid>
         </Paper>
