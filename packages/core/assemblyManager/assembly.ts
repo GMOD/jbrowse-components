@@ -155,9 +155,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         if (!(this.refNames && self.refNameAliases)) {
           return undefined
         }
-        let aliases: string[] = []
-        self.refNameAliases.forEach(aliasList => {
-          aliases = aliases.concat(aliasList)
+        const aliases: string[] = []
+        self.refNameAliases.forEach((_canonicalName, alias) => {
+          if (this.refNames && !this.refNames.includes(alias)) {
+            aliases.push(alias)
+          }
         })
         return [...this.refNames, ...aliases]
       },
