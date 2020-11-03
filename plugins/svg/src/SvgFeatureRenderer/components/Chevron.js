@@ -56,6 +56,7 @@ function Chevron(props) {
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
+
   return (
     <>
       <rect
@@ -79,15 +80,15 @@ function Chevron(props) {
           ]}
         />
       ) : null}
-      {direction > 0 && widthWithinBlock === width ? (
+      {direction > 0 && leftWithinBlock + widthWithinBlock < screenWidth ? (
         <polygon
           {...shapeProps}
           stroke={selected ? color2 : undefined}
           fill={selected ? emphasizedColor : color}
           points={[
-            [widthWithinBlock, top],
-            [widthWithinBlock + height / 2, top + height / 2],
-            [widthWithinBlock, top + height],
+            [leftWithinBlock + widthWithinBlock, top],
+            [leftWithinBlock + widthWithinBlock + height / 2, top + height / 2],
+            [leftWithinBlock + widthWithinBlock, top + height],
           ]}
         />
       ) : null}
