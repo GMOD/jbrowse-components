@@ -33,14 +33,21 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   }
 
   function onOpenClick() {
+    console.log(selectedRegion)
     if (selectedRegion) {
       model.setDisplayedRegions([selectedRegion])
-      model.setDisplayName(selectedRegion.assemblyName)
     }
   }
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const displayName =
     assemblyNames[selectedAssemblyIdx] && !error ? selectedAssemblyIdx : ''
+
+  console.log({
+    selectedRegion,
+    error,
+    selectedAssemblyIdx,
+    asm: error ? undefined : assemblyNames[selectedAssemblyIdx],
+  })
   return (
     <Container className={classes.importFormContainer}>
       <Grid container spacing={1} justify="center" alignItems="center">
