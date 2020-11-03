@@ -35,59 +35,49 @@
   ],
   "tracks": [],
   "defaultSession": {
-    "name": "New Session",
+    "name": "hg19 vs hg38",
+    "width": 1850,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "DotplotView",
+        "assemblyNames": ["hg38", "hg19"],
+        "hview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "vview": {
+          "displayedRegions": [],
+          "bpPerPx": 200000,
+          "offsetPx": 0
+        },
+        "headerHeight": 44,
+        "width": 1850,
+        "height": 600,
+        "displayName": "hg19 vs hg38 dotplot",
+        "trackSelectorType": "hierarchical"
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
+      },
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
     "menuBars": [
       {
         "type": "MainMenuBar"
       }
-    ]
-  },
-  "savedSessions": [
-    {
-      "name": "hg19 vs hg38",
-      "width": 1850,
-      "drawerWidth": 384,
-      "views": [
-        {
-          "id": "MiDMyyWpp",
-          "type": "DotplotView",
-          "assemblyNames": ["hg38", "hg19"],
-          "hview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "vview": {
-            "displayedRegions": [],
-            "bpPerPx": 200000,
-            "offsetPx": 0
-          },
-          "headerHeight": 44,
-          "width": 1850,
-          "height": 600,
-          "displayName": "hg19 vs hg38 dotplot",
-          "trackSelectorType": "hierarchical"
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": ""
-        },
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
-        }
-      },
-      "activeWidgets": {},
-      "menuBars": [
-        {
-          "type": "MainMenuBar"
-        }
-      ],
-      "connections": {}
-    }
-  ]
+    ],
+    "connections": {}
+  }
 }
