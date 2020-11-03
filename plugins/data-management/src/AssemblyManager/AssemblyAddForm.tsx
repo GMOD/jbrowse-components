@@ -1,9 +1,87 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import TextField from '@material-ui/core/TextField'
-import { Container, Grid } from '@material-ui/core'
+import { Grid, MenuItem, Paper } from '@material-ui/core'
+import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import AddIcon from '@material-ui/icons/Add'
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      flexGrow: 1,
+      overflow: 'hidden',
+      padding: theme.spacing(0, 3),
+    },
+    paper: {
+      maxWidth: 400,
+      margin: `${theme.spacing(1)}px auto`,
+      padding: theme.spacing(2),
+    },
+    createButton: {
+      margin: `5px 0px 5px 200px`,
+    },
+  }),
+)
+
+const useSlotEditorStyles = makeStyles(theme => ({
+  paper: {
+    display: 'flex',
+    marginBottom: theme.spacing(2),
+    position: 'relative',
+    overflow: 'visible',
+  },
+  paperContent: {
+    flex: 'auto',
+    padding: theme.spacing(1),
+    overflow: 'auto',
+  },
+  slotModeSwitch: {
+    width: 24,
+    background: theme.palette.secondary.light,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+}))
+
+const AdapterSelector = observer(
+  ({
+    adapterSelection,
+    setAdapterSelection,
+    adapterTypes,
+  }: {
+    adapterSelection: string
+    setAdapterSelection: Function
+    adapterTypes: Array<string>
+  }) => {
+    const classes = useSlotEditorStyles()
+
+    return (
+      <Paper className={classes.paper}>
+        <div className={classes.paperContent}>
+          <TextField
+            value={adapterSelection}
+            label="Type"
+            select
+            helperText="Type of adapter to use"
+            fullWidth
+            onChange={event => {
+              setAdapterSelection(event.target.value)
+            }}
+          >
+            {adapterTypes.map(str => (
+              <MenuItem key={str} value={str}>
+                {str}
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>
+      </Paper>
+    )
+  },
+)
+
 
 const AssemblyAddForm = observer(
   ({
@@ -19,7 +97,16 @@ const AssemblyAddForm = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setAssemblyBeingEdited(arg: any): void
   }) => {
+    const classes = useStyles()
+
+    const adapterTypes = [
+      'IndexedFastaAdapter',
+      'BgzipFastaAdapter',
+      'TwoBitAdapter',
+    ]
+
     const [assemblyName, setAssemblyName] = useState('')
+    const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
 
     function createAssembly() {
       if (assemblyName === '') {
@@ -35,29 +122,41 @@ const AssemblyAddForm = observer(
     }
 
     return (
-      <Container>
-        <Grid container spacing={1} justify="center" alignItems="center">
-          <Grid item>
-            <TextField
-              id="assembly-name"
-              label="Assembly Name"
-              variant="outlined"
-              value={assemblyName}
-              onChange={event => setAssemblyName(event.target.value)}
-            />
+      <div className={classes.root}>
+        <Paper className={classes.paper}>
+          <Grid container wrap="nowrap" spacing={2}>
+            <Grid item>
+              <TextField
+                id="assembly-name"
+                label="Assembly Name"
+                variant="outlined"
+                value={assemblyName}
+                onChange={event => setAssemblyName(event.target.value)}
+              />
+            </Grid>
           </Grid>
-          <Grid item>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={createAssembly}
-            >
-              Create New Assembly
-            </Button>
+        </Paper>
+        <Paper className={classes.paper}>
+          <Grid container wrap="nowrap" spacing={2}>
+            <Grid item>
+              <AdapterSelector
+                adapterSelection={adapterSelection}
+                setAdapterSelection={setAdapterSelection}
+                adapterTypes={adapterTypes}
+              />
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
+        </Paper>
+        <Button
+          className={classes.createButton}
+          variant="contained"
+          color="secondary"
+          startIcon={<AddIcon />}
+          onClick={createAssembly}
+        >
+          Create New Assembly
+        </Button>
+      </div>
     )
   },
 )
