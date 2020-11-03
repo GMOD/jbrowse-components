@@ -155,11 +155,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         if (!(this.refNames && self.refNameAliases)) {
           return undefined
         }
-        let aliases: string[] = []
-        self.refNameAliases.forEach(aliasList => {
-          aliases = aliases.concat(aliasList)
-        })
-        return [...this.refNames, ...aliases]
+        return Array.from(self.refNameAliases.keys())
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
