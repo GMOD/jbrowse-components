@@ -84,7 +84,6 @@
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
   },
-  "savedSessions": [],
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"

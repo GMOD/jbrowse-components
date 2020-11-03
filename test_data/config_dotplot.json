@@ -61,7 +61,13 @@
         "type": "MCScanAnchorsAdapter"
       },
       "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"]
+      "category": ["Annotation"],
+      "displays": [
+        {
+          "type": "LinearSyntenyDisplay",
+          "displayId": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
+        }
+      ]
     },
     {
       "trackId": "grape_peach_synteny_linear_paf",
@@ -77,7 +83,13 @@
         "assemblyNames": ["peach", "grape"]
       },
       "name": "Grape peach synteny (PAF)",
-      "category": ["Annotation"]
+      "category": ["Annotation"],
+      "displays": [
+        {
+          "type": "LinearSyntenyDisplay",
+          "displayId": "grape_peach_synteny_linear_paf-LinearSyntenyDisplay"
+        }
+      ]
     },
     {
       "type": "DotplotTrack",
@@ -126,11 +138,11 @@
         "tracks": [
           {
             "type": "DotplotTrack",
-            "configuration": "dotplot_track",
+            "configuration": "dotplot_track_small",
             "displays": [
               {
                 "type": "DotplotDisplay",
-                "configuration": "dotplot_track-DotplotDisplay"
+                "configuration": "dotplot_track_small-DotplotDisplay"
               }
             ]
           }

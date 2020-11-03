@@ -22,9 +22,6 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {
@@ -52,16 +49,13 @@
               "end": 4992
             }
           ]
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }
   ],
   "tracks": [
     {
-      "type": "LinearSyntenyTrack",
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track",
       "name": "dotplot",
       "assemblyNames": ["longread", "hg19"],
@@ -70,14 +64,17 @@
         "pafLocation": {
           "uri": "longread_vs_ref.paf"
         },
-        "assemblyNames": ["longread", "hg19"]
-      },
-      "renderer": {
-        "type": "LinearSyntenyRenderer"
+        "assemblyNames": ["longread", "hg19"],
+        "displays": [
+          {
+            "displayId": "dotplot_track_linear",
+            "type": "LinearSyntenyDisplay"
+          }
+        ]
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
       "assemblyNames": ["hg19"],
@@ -116,15 +113,21 @@
           "chrMT"
         ]
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('gene_name') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "nclist_genes_hg19_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "trackId": "ngmlr_cov",
       "name": "SKBR3 pacbio coverage (NGMLR)",
       "assemblyNames": ["hg19"],
@@ -134,103 +137,88 @@
         "bigWigLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
         }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
       }
     }
   ],
   "defaultSession": {
-    "name": "New Session",
+    "name": "SKBR3 PacBio vs Ref",
+    "width": 1850,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "LinearSyntenyView",
+        "assemblyNames": ["longread", "hg19"],
+        "views": [
+          {
+            "type": "LinearGenomeView",
+            "displayedRegions": [
+              {
+                "refName": "m150119_155609_00118_c100767352550000001823169407221597_s1_p0/48046/0_23941",
+                "start": 0,
+                "end": 24000,
+                "assemblyName": "longread"
+              }
+            ],
+            "bpPerPx": 30,
+            "offsetPx": 0
+          },
+          {
+            "type": "LinearGenomeView",
+            "displayedRegions": [
+              {
+                "refName": "chr5",
+                "start": 70166510,
+                "end": 70177159,
+                "assemblyName": "hg19"
+              },
+              {
+                "refName": "chr1",
+                "start": 858506,
+                "end": 881099,
+                "assemblyName": "hg19"
+              }
+            ],
+            "bpPerPx": 100,
+            "offsetPx": 0
+          }
+        ],
+        "tracks": [
+          {
+            "type": "SyntenyTrack",
+            "configuration": "dotplot_track",
+            "displays": [
+              {
+                "type": "LinearSyntenyDisplay",
+                "configuration": "dotplot_track_linear"
+              }
+            ]
+          }
+        ],
+        "headerHeight": 44,
+        "height": 500,
+        "name": "SKBR3 PacBio vs Ref",
+        "trackSelectorType": "hierarchical"
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
+      },
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
     "menuBars": [
       {
         "type": "MainMenuBar"
       }
-    ]
-  },
-  "savedSessions": [
-    {
-      "name": "SKBR3 PacBio vs Ref",
-      "width": 1850,
-      "drawerWidth": 384,
-      "views": [
-        {
-          "id": "MiDMyyWpp",
-          "type": "LinearSyntenyView",
-          "assemblyNames": ["longread", "hg19"],
-          "views": [
-            {
-              "type": "LinearGenomeView",
-              "displayedRegions": [
-                {
-                  "refName": "m150119_155609_00118_c100767352550000001823169407221597_s1_p0/48046/0_23941",
-                  "start": 0,
-                  "end": 24000,
-                  "assemblyName": "longread"
-                }
-              ],
-              "bpPerPx": 30,
-              "offsetPx": 0
-            },
-            {
-              "type": "LinearGenomeView",
-              "displayedRegions": [
-                {
-                  "refName": "chr5",
-                  "start": 70166510,
-                  "end": 70177159,
-                  "assemblyName": "hg19"
-                },
-                {
-                  "refName": "chr1",
-                  "start": 858506,
-                  "end": 881099,
-                  "assemblyName": "hg19"
-                }
-              ],
-              "bpPerPx": 100,
-              "offsetPx": 0
-            }
-          ],
-          "tracks": [
-            {
-              "type": "LinearSyntenyTrack",
-              "configuration": "dotplot_track"
-            }
-          ],
-          "headerHeight": 44,
-          "height": 500,
-          "name": "SKBR3 PacBio vs Ref",
-          "trackSelectorType": "hierarchical"
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": ""
-        },
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
-        }
-      },
-      "activeWidgets": {},
-      "menuBars": [
-        {
-          "type": "MainMenuBar"
-        }
-      ],
-      "connections": {}
-    }
-  ]
+    ],
+    "connections": {}
+  }
 }

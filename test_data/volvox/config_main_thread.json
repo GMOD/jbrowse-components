@@ -16,9 +16,6 @@
           "twoBitLocation": {
             "uri": "volvox.2bit"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {

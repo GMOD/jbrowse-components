@@ -14,7 +14,12 @@ export default pluginManager => {
   const { getParentRenderProps } = jbrequire('@jbrowse/core/util/tracks')
   const configSchema = ConfigurationSchema(
     'ChordVariantDisplay',
-    { renderer: pluginManager.pluggableConfigSchemaType('renderer') },
+    {
+      renderer: types.optional(
+        pluginManager.pluggableConfigSchemaType('renderer'),
+        { type: 'StructuralVariantChordRenderer' },
+      ),
+    },
     { baseConfiguration: baseChordDisplayConfig, explicitlyTyped: true },
   )
 

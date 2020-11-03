@@ -65,16 +65,7 @@
             "uri": "volvox.dup.vcf.gz.tbi"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "volvox_sv_test_chord",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
-        }
-      ]
+      }
     },
     {
       "type": "VariantTrack",
@@ -92,16 +83,7 @@
             "uri": "volvox.dup.renamed.vcf.gz.tbi"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "volvox_sv_test_renamed_chord",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
-        }
-      ]
+      }
     },
     {
       "type": "AlignmentsTrack",
@@ -427,16 +409,7 @@
             "uri": "volvox.test.vcf.gz.tbi"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "volvox_test_vcf_chord",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
@@ -922,16 +895,7 @@
             "uri": "volvox.filtered.vcf.gz.tbi"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "ChordVariantDisplay",
-          "displayId": "volvox_filtered_vcf_chord",
-          "renderer": {
-            "type": "StructuralVariantChordRenderer"
-          }
-        }
-      ]
+      }
     },
     {
       "type": "FeatureTrack",
