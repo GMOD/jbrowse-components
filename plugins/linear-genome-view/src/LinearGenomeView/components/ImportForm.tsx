@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
@@ -33,9 +34,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
-      if (!done) {
-        // @ts-ignore
-        setSelectedRegion(assembly.regions[0])
+      if (!done && assembly && assembly.regions) {
+        setSelectedRegion(getSnapshot(assembly.regions[0]))
       }
     })()
     return () => {
