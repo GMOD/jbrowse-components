@@ -104,11 +104,11 @@ export default ({ jbrequire }) => {
     const {
       features,
       config,
-      trackModel,
+      displayModel,
       blockDefinitions,
       radius,
       bezierRadius,
-      trackModel: { selectedFeatureId },
+      displayModel: { selectedFeatureId },
 
       onChordClick,
     } = props
@@ -134,7 +134,7 @@ export default ({ jbrequire }) => {
           key={id}
           feature={feature}
           config={config}
-          trackModel={trackModel}
+          displayModel={displayModel}
           radius={radius}
           bezierRadius={bezierRadius}
           blocksForRefs={blocksForRefsMemo}
@@ -143,7 +143,7 @@ export default ({ jbrequire }) => {
         />,
       )
     }
-    const trackStyleId = `chords-${trackModel.id}`
+    const trackStyleId = `chords-${displayModel.id}`
     return (
       <g id={trackStyleId}>
         <style
@@ -165,7 +165,7 @@ export default ({ jbrequire }) => {
   StructuralVariantChords.propTypes = {
     features: PropTypes.instanceOf(Map).isRequired,
     config: CommonPropTypes.ConfigSchema.isRequired,
-    trackModel: MobxPropTypes.objectOrObservableObject,
+    displayModel: MobxPropTypes.objectOrObservableObject,
     blockDefinitions: PropTypes.arrayOf(MobxPropTypes.objectOrObservableObject)
       .isRequired,
     radius: PropTypes.number.isRequired,
@@ -175,7 +175,7 @@ export default ({ jbrequire }) => {
   }
 
   StructuralVariantChords.defaultProps = {
-    trackModel: undefined,
+    displayModel: undefined,
     selectedFeatureId: '',
     onChordClick: undefined,
   }

@@ -52,17 +52,6 @@ export function createBaseTrackModel(
       },
 
       /**
-       * the react props that are passed to the Renderer when data
-       * is rendered in this track
-       */
-      get renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          trackModel: self,
-        }
-      },
-
-      /**
        * the PluggableElementType for the currently defined adapter
        */
       get adapterType() {
