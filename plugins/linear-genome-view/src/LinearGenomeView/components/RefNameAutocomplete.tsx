@@ -77,88 +77,78 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
   },
 )
 
-const RefNameAutocomplete = observer(
-  ({
-    model,
-    onSelect,
-    assemblyName,
-    defaultRegionName,
-    style,
-    TextFieldProps = {},
-  }: {
-    model: LinearGenomeViewModel
-    onSelect: (region: Region | undefined) => void
-    assemblyName?: string
-    defaultRegionName?: string
-    style?: React.CSSProperties
-    TextFieldProps?: TFP
-  }) => {
-    const { assemblyManager } = getSession(model)
-    const assembly = assemblyName && assemblyManager.get(assemblyName)
-    const regions = (assembly && assembly.regions) || []
-    const loading = !regions.length
-    const [selected, setSelected] = useState(defaultRegionName)
-    const current =
-      selected || (regions.length ? regions[0].refName : undefined)
+function RefNameAutocomplete({
+  model,
+  onSelect,
+  assemblyName,
+  defaultRegionName,
+  style,
+  TextFieldProps = {},
+}: {
+  model: LinearGenomeViewModel
+  onSelect: (region: Region | undefined) => void
+  assemblyName?: string
+  defaultRegionName?: string
+  style?: React.CSSProperties
+  TextFieldProps?: TFP
+}) {
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyName && assemblyManager.get(assemblyName)
+  const regions = (assembly && assembly.regions) || []
+  const loading = !regions.length
+  const [selected, setSelected] = useState(defaultRegionName)
+  const current = selected || (regions.length ? regions[0].refName : undefined)
 
-    useEffect(() => {
-      const newRegion = regions.find(region => region.refName === current)
+  function onChange(_: unknown, newRegionName: string | null) {
+    if (newRegionName) {
+      setSelected(newRegionName)
+      const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
         onSelect(getSnapshot(newRegion))
       }
-    }, [onSelect, current, regions])
-
-    function onChange(_: unknown, newRegionName: string | null) {
-      if (newRegionName) {
-        setSelected(newRegionName)
-      }
     }
+  }
 
-    return (
-      <Autocomplete
-        id={`refNameAutocomplete-${model.id}`}
-        disableListWrap
-        disableClearable
-        ListboxComponent={
-          ListboxComponent as React.ComponentType<
-            React.HTMLAttributes<HTMLElement>
-          >
+  return (
+    <Autocomplete
+      id={`refNameAutocomplete-${model.id}`}
+      disableListWrap
+      disableClearable
+      ListboxComponent={
+        ListboxComponent as React.ComponentType<
+          React.HTMLAttributes<HTMLElement>
+        >
+      }
+      options={regions.map(region => region.refName)}
+      loading
+      value={current || ''}
+      disabled={!assemblyName || loading}
+      style={style}
+      onChange={onChange}
+      renderInput={params => {
+        const { helperText, InputProps = {} } = TextFieldProps
+        const TextFieldInputProps = {
+          ...params.InputProps,
+          ...InputProps,
+          endAdornment: (
+            <>
+              {loading ? <CircularProgress color="inherit" size={20} /> : null}
+              {params.InputProps.endAdornment}
+            </>
+          ),
         }
-        options={regions.map(region => region.refName)}
-        loading
-        value={current || ''}
-        disabled={!assemblyName || loading}
-        style={style}
-        onChange={onChange}
-        renderInput={params => {
-          const { helperText, InputProps = {} } = TextFieldProps
-          const TextFieldInputProps = {
-            ...params.InputProps,
-            ...InputProps,
-            endAdornment: (
-              <>
-                {loading ? (
-                  <CircularProgress color="inherit" size={20} />
-                ) : null}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }
-          return (
-            <TextField
-              {...params}
-              {...TextFieldProps}
-              helperText={helperText}
-              InputProps={TextFieldInputProps}
-            />
-          )
-        }}
-        renderOption={regionName => (
-          <Typography noWrap>{regionName}</Typography>
-        )}
-      />
-    )
-  },
-)
+        return (
+          <TextField
+            {...params}
+            {...TextFieldProps}
+            helperText={helperText}
+            InputProps={TextFieldInputProps}
+          />
+        )
+      }}
+      renderOption={regionName => <Typography noWrap>{regionName}</Typography>}
+    />
+  )
+}
 
-export default RefNameAutocomplete
+export default observer(RefNameAutocomplete)
