@@ -30,15 +30,6 @@ function Chevron(props) {
 
   const strand = feature.get('strand')
   const direction = strand * (reversed ? -1 : 1)
-
-  const shapeProps = {
-    'data-testid': feature.id(),
-    // transform:
-    //   direction < 0
-    //     ? `rotate(180,${left + width / 2},${top + height / 2})`
-    //     : undefined,
-  }
-
   const color = isUTR(feature)
     ? readConfObject(config, 'color3', [feature])
     : readConfObject(config, 'color1', [feature])
@@ -60,7 +51,7 @@ function Chevron(props) {
   return (
     <>
       <rect
-        {...shapeProps}
+        data-testid={feature.id()}
         stroke={selected ? color2 : undefined}
         fill={selected ? emphasizedColor : color}
         x={leftWithinBlock}
@@ -70,7 +61,6 @@ function Chevron(props) {
       />
       {direction < 0 && diff === 0 ? (
         <polygon
-          {...shapeProps}
           stroke={selected ? color2 : undefined}
           fill={selected ? emphasizedColor : color}
           points={[
@@ -82,7 +72,6 @@ function Chevron(props) {
       ) : null}
       {direction > 0 && leftWithinBlock + widthWithinBlock < screenWidth ? (
         <polygon
-          {...shapeProps}
           stroke={selected ? color2 : undefined}
           fill={selected ? emphasizedColor : color}
           points={[
@@ -94,45 +83,6 @@ function Chevron(props) {
       ) : null}
     </>
   )
-
-  // To restore indents on back of Chevron: un-comment the last point in the
-  // first polygon and replace the second polygon with the commented-out polyline
-  // return width > height / 2 ? (
-  //   <polygon
-  //     {...shapeProps}
-  //     stroke={selected ? color2 : undefined}
-  //     fill={selected ? emphasizedColor : color}
-  //     points={[
-  //       [leftWithinBlock, top],
-  //       [leftWithinBlock + widthWithinBlock - height / 2, top],
-  //       [leftWithinBlock + widthWithinBlock, top + height / 2],
-  //       [leftWithinBlock + widthWithinBlock - height / 2, top + height],
-  //       [leftWithinBlock, top + height],
-  //       // [left + height / 2, top + height / 2],
-  //     ]}
-  //   />
-  // ) : (
-  //   <polygon
-  //     {...shapeProps}
-  //     fill={selected ? emphasizedColor : color}
-  //     points={[
-  //       [leftWithinBlock, top],
-  //       [leftWithinBlock + widthWithinBlock, top + height / 2],
-  //       [leftWithinBlock, top + height],
-  //     ]}
-  //     stroke={selected ? emphasizedColor : color}
-  //   />
-  //   // <polyline
-  //   //   {...shapeProps}
-  //   //   points={[
-  //   //     [left, top],
-  //   //     [left + width, top + height / 2],
-  //   //     [left, top + height],
-  //   //   ]}
-  //   //   stroke={selected ? emphasizedColor : color}
-  //   //   fill="none"
-  //   // />
-  // )
 }
 
 Chevron.propTypes = {
