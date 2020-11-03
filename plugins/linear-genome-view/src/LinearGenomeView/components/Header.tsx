@@ -147,7 +147,10 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
-  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
+  const {
+    coarseDynamicBlocks: contentBlocks,
+    displayedRegions,
+  } = model
 
   const setDisplayedRegion = useCallback(
     (region: Region | undefined) => {
@@ -160,6 +163,7 @@ export default observer(({ model }: { model: LGV }) => {
   )
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
+
   const controls = (
     <div className={classes.headerBar}>
       <Controls model={model} />

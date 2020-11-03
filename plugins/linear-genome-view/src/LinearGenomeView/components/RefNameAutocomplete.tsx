@@ -94,14 +94,13 @@ function RefNameAutocomplete({
 }) {
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions = (assembly && assembly.regions) || []
+  const regions: any[] = (assembly && assembly.regions) || []
   const loading = !regions.length
-  const [selected, setSelected] = useState(defaultRegionName)
-  const current = selected || (regions.length ? regions[0].refName : undefined)
+  const current =
+    defaultRegionName || (regions.length ? regions[0].refName : undefined)
 
   function onChange(_: unknown, newRegionName: string | null) {
     if (newRegionName) {
-      setSelected(newRegionName)
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
         onSelect(getSnapshot(newRegion))
