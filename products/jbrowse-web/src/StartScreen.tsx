@@ -18,7 +18,6 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
-// import { getSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {
@@ -118,10 +117,6 @@ export default function StartScreen({
     ;(async () => {
       try {
         if (sessionToLoad) {
-          // const name: string = sessionToLoad
-          // const snapshot = JSON.parse(JSON.stringify(getSnapshot(name)))
-          // root.setSession(snapshot)
-          // root.setSession(sessionToLoad)
           root.activateSession(sessionToLoad)
         }
       } catch (e) {
