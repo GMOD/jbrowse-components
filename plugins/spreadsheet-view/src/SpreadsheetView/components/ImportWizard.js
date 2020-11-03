@@ -207,10 +207,7 @@ export default pluginManager => {
       <>
         {model.error ? (
           <Container className={classes.errorContainer}>
-            <ErrorDisplay
-              errorMessage={String(model.error.message)}
-              stackTrace={model.error.stackTrace}
-            />
+            <ErrorDisplay errorMessage={`${model.error}`} />
           </Container>
         ) : null}
         <ImportForm model={model} />
