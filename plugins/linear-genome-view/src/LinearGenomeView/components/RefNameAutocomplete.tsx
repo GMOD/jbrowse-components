@@ -118,7 +118,7 @@ function RefNameAutocomplete({
         >
       }
       options={regions.map(region => region.refName)}
-      loading
+      loading={loading}
       value={current || ''}
       disabled={!assemblyName || loading}
       style={style}
