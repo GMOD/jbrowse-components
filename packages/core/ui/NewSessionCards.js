@@ -83,13 +83,24 @@ NewEmptySession.propTypes = {
 
 export function ProceedEmptySession({ root }) {
   function onClick() {
-    console.log('I clicked')
-    const lastAutosave = localStorage.getItem(`autosave-${root.configPath}`)
-    if (lastAutosave) {
-      localStorage.setItem(`previousAutosave-${root.configPath}`, lastAutosave)
-    }
-    root.setDefaultSession()
-    // root.loadAutosaveSession()
+    const snapshot = getSnapshot(root?.session)
+    console.log(snapshot)
+    localStorage.setItem(
+      `autosave-${root.configPath}`,
+      JSON.stringify({
+        session: {
+          ...snapshot,
+          name: `${snapshot.name}-autosaved`,
+        },
+      }),
+    )
+    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
+    console.log(localStorage.getItem(`autosave-${root.configPath}`))
+    const newSessionSnapshot = localStorage.getItem(
+      `autosave-${root.configPath}`,
+    )
+    console.log(JSON.parse(newSessionSnapshot).session)
+    root.setSession(JSON.parse(newSessionSnapshot).session)
   }
   return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }

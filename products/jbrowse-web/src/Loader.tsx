@@ -407,7 +407,10 @@ const Renderer = observer(
                 pasting their URL`,
               )
             }
-            if (rootModel.session?.views.length === 0) {
+            if (
+              rootModel.session?.views.length === 0 &&
+              defaultScreen === false
+            ) {
               setDefaultScreen(true)
             }
           } else if (sessionSnapshot) {
@@ -415,7 +418,10 @@ const Renderer = observer(
             setDefaultScreen(false)
           } else {
             rootModel.setDefaultSession()
-            if (rootModel.session?.views.length === 0) {
+            if (
+              rootModel.session?.views.length === 0 &&
+              defaultScreen === false
+            ) {
               setDefaultScreen(true)
             }
           }
@@ -485,8 +491,11 @@ const Renderer = observer(
     if (pm) {
       // will need to account for when a session is not loaded
       // if (sessionError) or if (pm.rootModel?.session === undefined)
-      console.log('screen?', defaultScreen)
-      if (defaultScreen) {
+      if (
+        sessionError ||
+        pm.rootModel?.session === undefined ||
+        (pm.rootModel?.session?.views.length === 0 && defaultScreen)
+      ) {
         return (
           <StartScreen
             root={pm.rootModel}
@@ -496,6 +505,17 @@ const Renderer = observer(
           />
         )
       }
+      // console.log('screen?', defaultScreen)
+      // if (defaultScreen) {
+      //   return (
+      //     <StartScreen
+      //       root={pm.rootModel}
+      //       pluginManager={pm}
+      //       bypass
+      //       onFactoryReset={factoryReset}
+      //     />
+      //   )
+      // }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
