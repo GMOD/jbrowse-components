@@ -192,11 +192,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return self.refNameColors[idx % self.refNameColors.length]
       },
       isValidRefName(refName: string) {
-        if (!self.allRefNames)
+        if (!self.refNameAliases)
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
-        return self.allRefNames.includes(refName)
+        return !!this.getCanonicalRefName(refName)
       },
     }))
     .actions(self => ({
