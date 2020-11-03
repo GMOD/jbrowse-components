@@ -377,13 +377,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   hideHeader: true,
                 },
               ],
-              tracks: [
-                {
-                  configuration: 'grape_peach_synteny_mcscan',
-                  type: 'LinearSyntenyTrack',
-                },
-              ],
-              displayName: 'A vs B',
             }
 
             session.addView('LinearSyntenyView', viewSnapshot)
