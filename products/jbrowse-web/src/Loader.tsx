@@ -49,8 +49,6 @@ function NoConfigMessage() {
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
     ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
-    ['test_data/config_longread.json', 'Long read vs. ref (dotplot)'],
-    ['test_data/config_longread_linear.json', 'Long read vs. ref (linear)'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
   ]
