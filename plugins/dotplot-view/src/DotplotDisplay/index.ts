@@ -9,8 +9,8 @@ import {
   getParentRenderProps,
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import { BaseTrackConfig, BaseTrack } from '@jbrowse/plugin-linear-genome-view'
 import {
   getContainingView,
   getSession,
@@ -20,38 +20,32 @@ import {
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
-export { default as ReactComponent } from './components/DotplotTrack'
+export { default as ReactComponent } from './components/DotplotDisplay'
 
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
-    'DotplotTrack',
+    'DotplotDisplay',
     {
-      viewType: 'DotplotView',
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: types.optional(
         pluginManager.pluggableConfigSchemaType('renderer'),
         { type: 'DotplotRenderer' },
       ),
     },
-    {
-      baseConfiguration: BaseTrackConfig,
-      explicitlyTyped: true,
-    },
+    { explicitIdentifier: 'displayId', explicitlyTyped: true },
   )
 }
 
 export function stateModelFactory(configSchema: any) {
   return types
     .compose(
-      'DotplotTrack',
-      BaseTrack,
+      'DotplotDisplay',
+      BaseDisplay,
       types
-        .model('DotplotTrack', {
-          type: types.literal('DotplotTrack'),
+        .model({
+          type: types.literal('DotplotDisplay'),
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(() => ({
-          // avoid circular typescript reference by casting to generic functional component
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,
@@ -65,13 +59,10 @@ export function stateModelFactory(configSchema: any) {
       get rendererTypeName() {
         return getConf(self, 'renderer').type
       },
-      get adapterConfig() {
-        return getConf(self, 'adapter')
-      },
       get renderProps() {
         return {
           ...getParentRenderProps(self),
-          trackModel: self,
+          displayModel: self,
         }
       },
     }))
@@ -83,7 +74,7 @@ export function stateModelFactory(configSchema: any) {
           makeAbortableReaction(
             self as any,
             renderBlockData,
-            renderBlockEffect,
+            renderBlockEffect as any,
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,
@@ -148,11 +139,11 @@ export function stateModelFactory(configSchema: any) {
     })
 }
 
-function renderBlockData(self: DotplotTrackModel) {
+function renderBlockData(self: DotplotDisplayModel) {
   const { rpcManager } = getSession(self)
-  const track = self
+  const display = self
 
-  const { renderProps, rendererType } = track
+  const { renderProps, rendererType } = display
 
   // Alternative to readConfObject(config) is below
   // used because renderProps is something under our control.
@@ -203,5 +194,5 @@ async function renderBlockEffect(
   return { html, data, renderingComponent: rendererType.ReactComponent }
 }
 
-export type DotplotTrackStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotTrackModel = Instance<DotplotTrackStateModel>
+export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>

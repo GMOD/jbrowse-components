@@ -85,13 +85,15 @@ export default pluginManager =>
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
         const viewType = pluginManager.getViewType(self.view.type)
-        for (const display of trackConf.displays) {
-          if (
-            viewType.displayTypes.find(
-              displayType => displayType.name === display.type,
-            )
-          ) {
-            return trackConf
+        if (trackConf) {
+          for (const display of trackConf.displays) {
+            if (
+              viewType.displayTypes.find(
+                displayType => displayType.name === display.type,
+              )
+            ) {
+              return trackConf
+            }
           }
         }
         return undefined

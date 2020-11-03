@@ -2,10 +2,10 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
 import { getContainingView } from '@jbrowse/core/util'
-import { DotplotTrackModel } from '..'
+import { DotplotDisplayModel } from '..'
 
-const DotplotTrack: React.FC<{
-  model: DotplotTrackModel
+const DotplotDisplay: React.FC<{
+  model: DotplotDisplayModel
   children?: React.ReactNode
 }> = props => {
   const { model, children } = props
@@ -29,12 +29,12 @@ const DotplotTrack: React.FC<{
     </div>
   )
 }
-DotplotTrack.propTypes = {
+DotplotDisplay.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,
   children: PropTypes.element,
 }
 
-DotplotTrack.defaultProps = {
+DotplotDisplay.defaultProps = {
   children: null,
 }
-export default observer(DotplotTrack)
+export default observer(DotplotDisplay)

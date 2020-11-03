@@ -1,6 +1,11 @@
 import Plugin from '@jbrowse/core/Plugin'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -9,16 +14,16 @@ import {
   isAbstractMenuManager,
   getSession,
 } from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, ConfigurationSchema } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
-  configSchemaFactory as dotplotTrackConfigSchemaFactory,
-  stateModelFactory as dotplotTrackStateModelFactory,
-  ReactComponent as DotplotTrackReactComponent,
-} from './DotplotTrack'
+  configSchemaFactory as dotplotDisplayConfigSchemaFactory,
+  stateModelFactory as dotplotDisplayStateModelFactory,
+  ReactComponent as DotplotDisplayReactComponent,
+} from './DotplotDisplay'
 import DotplotRenderer, {
   configSchema as dotplotRendererConfigSchema,
   ReactComponent as DotplotRendererReactComponent,
@@ -107,16 +112,36 @@ export default class DotplotPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
-    // pluginManager.addTrackType(() => {
-    //   const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
-    //   return new TrackType({
-    //     name: 'DotplotTrack',
-    //     compatibleView: 'DotplotView',
-    //     configSchema,
-    //     stateModel: dotplotTrackStateModelFactory(configSchema),
-    //     ReactComponent: DotplotTrackReactComponent,
-    //   })
-    // })
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'DotplotTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'DotplotTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'DotplotTrack',
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = dotplotDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'DotplotDisplay',
+        configSchema,
+        stateModel: dotplotDisplayStateModelFactory(configSchema),
+        trackType: 'DotplotTrack',
+        viewType: 'DotplotView',
+        ReactComponent: DotplotDisplayReactComponent,
+      })
+    })
 
     pluginManager.addRendererType(
       () =>
