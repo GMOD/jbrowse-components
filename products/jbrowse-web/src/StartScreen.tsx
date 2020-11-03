@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import Button from '@material-ui/core/Button'
-// import CircularProgress from '@material-ui/core/CircularProgress'
+import Button from '@material-ui/core/Button'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Container from '@material-ui/core/Container'
-// import Dialog from '@material-ui/core/Dialog'
-// import DialogActions from '@material-ui/core/DialogActions'
-// import DialogContent from '@material-ui/core/DialogContent'
-// import DialogContentText from '@material-ui/core/DialogContentText'
-// import DialogTitle from '@material-ui/core/DialogTitle'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
@@ -18,15 +18,15 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+// import { getSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
-import { inDevelopment } from '@jbrowse/core/util'
 import {
   ProceedEmptySession,
   AddLinearGenomeViewToSession,
   AddSVInspectorToSession,
 } from '@jbrowse/core/ui/NewSessionCards'
+import RecentSessionCard from './RecentSessionCard'
 
 const useStyles = makeStyles(theme => ({
   newSession: {
@@ -42,109 +42,87 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-// const DeleteSessionDialog = ({
-//   sessionToDelete,
-//   onClose,
-// }: {
-//   sessionToDelete?: string
-//   onClose: (arg0: boolean) => void
-// }) => {
-//   //   const ipcRenderer = window.electronBetterIpc.ipcRenderer || blankIpc
-//   const [deleteSession, setDeleteSession] = useState(false)
-//   useEffect(() => {
-//     ;(async () => {
-//       try {
-//         if (deleteSession) {
-//           setDeleteSession(false)
-//           // what method do we call to delete a session
-//           // pass in a session , sessionToDelete to delete
-//           console.log(sessionToDelete)
-//           onClose(true)
-//         }
-//       } catch (e) {
-//         setDeleteSession(() => {
-//           throw e
-//         })
-//       }
-//     })()
-//   }, [deleteSession, onClose, sessionToDelete])
+const DeleteSessionDialog = ({
+  sessionToDelete,
+  onClose,
+  root,
+}: {
+  sessionToDelete?: string
+  onClose: (arg0: boolean) => void
+  root: any
+}) => {
+  const [deleteSession, setDeleteSession] = useState(false)
+  useEffect(() => {
+    ;(async () => {
+      try {
+        if (deleteSession) {
+          setDeleteSession(false)
+          root.removeSavedSession({ name: sessionToDelete })
+          onClose(true)
+        }
+      } catch (e) {
+        setDeleteSession(() => {
+          throw e
+        })
+      }
+    })()
+  }, [deleteSession, onClose, root, sessionToDelete])
 
-//   return (
-//     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-//       <DialogTitle id="alert-dialog-title">
-//         {`Delete session "${sessionToDelete}"?`}
-//       </DialogTitle>
-//       <DialogContent>
-//         <DialogContentText id="alert-dialog-description">
-//           This action cannot be undone
-//         </DialogContentText>
-//       </DialogContent>
-//       <DialogActions>
-//         <Button onClick={() => onClose(false)} color="primary">
-//           Cancel
-//         </Button>
-//         <Button
-//           onClick={() => {
-//             setDeleteSession(true)
-//           }}
-//           color="primary"
-//           variant="contained"
-//           autoFocus
-//         >
-//           Delete
-//         </Button>
-//       </DialogActions>
-//     </Dialog>
-//   )
-// }
+  return (
+    <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
+      <DialogTitle id="alert-dialog-title">
+        {`Delete session "${sessionToDelete}"?`}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          This action cannot be undone
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => onClose(false)} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            setDeleteSession(true)
+          }}
+          color="primary"
+          variant="contained"
+          autoFocus
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 export default function StartScreen({
   root,
-  pluginManager,
-  bypass,
   onFactoryReset,
 }: {
   root: any
-  pluginManager: any
-  bypass: boolean
   onFactoryReset: Function
 }) {
   const classes = useStyles()
 
   const [sessions, setSessions] = useState<Record<string, any> | undefined>()
-  // const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
-  const [sessionToLoad] = useState<string | undefined>()
+  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
+  const [sessionToLoad, setSessionToLoad] = useState<string | undefined>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
 
-  // const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
-  console.log(Array.from(root.savedSessionsVolatile.values()))
-  // root.setSavedSessionNames(sessionNames)
-  const sortedSessions = sessions
-    ? Object.entries(sessions)
-        .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
-        .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
-    : []
-  console.log('root', root)
-  console.log('session', root.session.toJSON())
-  console.log('pm', pluginManager)
-
+  const sessionNames = sessions !== undefined ? sessions : []
   useEffect(() => {
     ;(async () => {
       try {
-        // console.log(bypass)
-        // console.log(inDevelopment)
-        // console.log(sortedSessions)
-        const load =
-          bypass && inDevelopment && sortedSessions.length
-            ? sortedSessions[0][0]
-            : sessionToLoad
-        if (load) {
-          //   root.activateSession(
-          //     JSON.parse(await ipcRenderer.invoke('loadSession', load)),
-          //   )
-          console.log(`Hey I loaded: ${load}`)
+        if (sessionToLoad) {
+          // const name: string = sessionToLoad
+          // const snapshot = JSON.parse(JSON.stringify(getSnapshot(name)))
+          // root.setSession(snapshot)
+          // root.setSession(sessionToLoad)
+          root.activateSession(sessionToLoad)
         }
       } catch (e) {
         setSessions(() => {
@@ -152,13 +130,19 @@ export default function StartScreen({
         })
       }
     })()
-  }, [bypass, root, sessionToLoad, sortedSessions])
+  }, [root, sessionToLoad])
 
   useEffect(() => {
     ;(async () => {
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
+          const savedRootSessions = root.savedSessions.map(
+            (rootSavedSession: any) => {
+              return JSON.parse(JSON.stringify(rootSavedSession))?.name
+            },
+          )
+          setSessions(savedRootSessions)
         }
       } catch (e) {
         setSessions(() => {
@@ -166,21 +150,21 @@ export default function StartScreen({
         })
       }
     })()
-  }, [updateSessionsList])
+  }, [root.savedSessions, updateSessionsList])
 
-  //   if (!sessions)
-  //     return (
-  //       <CircularProgress
-  //         style={{
-  //           position: 'fixed',
-  //           top: '50%',
-  //           left: '50%',
-  //           marginTop: -25,
-  //           marginLeft: -25,
-  //         }}
-  //         size={50}
-  //       />
-  //     )
+  if (!sessions)
+    return (
+      <CircularProgress
+        style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          marginTop: -25,
+          marginLeft: -25,
+        }}
+        size={50}
+      />
+    )
 
   return (
     <>
@@ -191,13 +175,14 @@ export default function StartScreen({
           setReset(false)
         }}
       />
-      {/* <DeleteSessionDialog
+      <DeleteSessionDialog
+        root={root}
         sessionToDelete={sessionToDelete}
         onClose={update => {
           setSessionToDelete(undefined)
           setUpdateSessionsList(update)
         }}
-      /> */}
+      />
       <IconButton
         className={classes.settings}
         onClick={event => {
@@ -229,21 +214,21 @@ export default function StartScreen({
           Recent sessions
         </Typography>
         <Grid container spacing={4}>
-          {/* {sortedSessions
-            ? sortedSessions.map(([sessionName]: [string, any]) => (
+          {sessionNames
+            ? sessionNames.slice(0, 3).map((sessionName: string) => (
                 <Grid item key={sessionName}>
                   <RecentSessionCard
                     sessionName={sessionName}
-                    sessionStats={sessionData.stats}
-                    sessionScreenshot={sessionData.screenshot}
                     onClick={() => {
                       setSessionToLoad(sessionName)
                     }}
+                    onDelete={() => {
+                      setSessionToDelete(sessionName)
                     }}
                   />
                 </Grid>
               ))
-            : null} */}
+            : null}
         </Grid>
       </Container>
 
@@ -275,5 +260,4 @@ export default function StartScreen({
 
 StartScreen.propTypes = {
   root: MobxPropTypes.objectOrObservableObject.isRequired,
-  bypass: PropTypes.bool.isRequired,
 }
