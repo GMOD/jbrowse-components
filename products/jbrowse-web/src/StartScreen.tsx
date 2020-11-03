@@ -133,9 +133,9 @@ export default function StartScreen({
   useEffect(() => {
     ;(async () => {
       try {
-        console.log(bypass)
-        console.log(inDevelopment)
-        console.log(sortedSessions)
+        // console.log(bypass)
+        // console.log(inDevelopment)
+        // console.log(sortedSessions)
         const load =
           bypass && inDevelopment && sortedSessions.length
             ? sortedSessions[0][0]
@@ -146,7 +146,6 @@ export default function StartScreen({
           //   )
           console.log(`Hey I loaded: ${load}`)
         }
-        console.log(`Hey I did not load`)
       } catch (e) {
         setSessions(() => {
           throw e

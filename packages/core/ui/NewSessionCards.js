@@ -99,13 +99,32 @@ ProceedEmptySession.propTypes = {
 
 export function AddLinearGenomeViewToSession({ root }) {
   const launchLGV = () => {
+    // console.log('add lgv', root)
+    // root.session.addView('LinearGenomeView', {})
+    // const snapshot = getSnapshot(root?.session)
+    // console.log(snapshot)
+    // root.addSavedSession({ name: snapshot.name })
+
+    // // localStorage.setItem(snapshot.id, { session: root.session })
+    // localStorage.setItem(
+    //   `autosave-${root.configPath}`,
+    //   JSON.stringify({
+    //     session: {
+    //       ...snapshot,
+    //       name: `${snapshot.name}-autosaved`,
+    //     },
+    //   }),
+    // )
+    // sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
+    // root.setSession(snapshot)
+    // console.log(root)
     console.log('add lgv', root)
     root.session.addView('LinearGenomeView', {})
     const snapshot = getSnapshot(root?.session)
     console.log(snapshot)
-    root.addSavedSession({ name: snapshot.name })
 
-    // localStorage.setItem(snapshot.id, { session: root.session })
+    // root.addSavedSession({ name: snapshot.name })
+
     localStorage.setItem(
       `autosave-${root.configPath}`,
       JSON.stringify({
@@ -116,8 +135,12 @@ export function AddLinearGenomeViewToSession({ root }) {
       }),
     )
     sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
-    root.setSession(snapshot)
-    console.log(root)
+    console.log(localStorage.getItem(`autosave-${root.configPath}`))
+    const newSessionSnapshot = localStorage.getItem(
+      `autosave-${root.configPath}`,
+    )
+    console.log(JSON.parse(newSessionSnapshot).session)
+    root.setSession(JSON.parse(newSessionSnapshot).session)
   }
 
   return (

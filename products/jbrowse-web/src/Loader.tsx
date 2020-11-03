@@ -419,24 +419,6 @@ const Renderer = observer(
               setDefaultScreen(true)
             }
           }
-          // else {
-          //   rootModel.setDefaultSession()
-          //   console.log(rootModel?.session)
-
-          //   if (rootModel.session?.views.length === 0) {
-          //     console.log(rootModel?.session)
-          //     setDefaultScreen(true)
-          //   }
-          //   console.log('screen?', defaultScreen)
-          // }
-          // } else {
-          //   // we want to default to the splash screen when there are default views
-          //   if (rootModel.session?.views.length === 0) {
-          //     if (defaultScreen !== true) {
-          //       setDefault(true)
-          //     }
-          //   }
-          // }
 
           // send analytics
           if (

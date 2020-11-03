@@ -33,9 +33,9 @@ const JBrowse = observer(({ pluginManager }) => {
   const { id: currentSessionId } = session
   if (firstLoad && session) setFirstLoad(false)
 
-  console.log('pm', pluginManager)
-  console.log('rootModel', pluginManager.rootModel)
-  console.log('session', pluginManager.rootModel.session)
+  // console.log('pm', pluginManager)
+  // console.log('rootModel', pluginManager.rootModel)
+  // console.log('session', pluginManager.rootModel.session)
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
@@ -78,18 +78,6 @@ const JBrowse = observer(({ pluginManager }) => {
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
-      {/* {defaultScreen ? (
-        <StartScreen
-          root={rootModel}
-          bypass={firstLoad}
-          onFactoryReset={factoryReset}
-        />
-      ) : (
-        <App
-          session={session}
-          HeaderButtons={<ShareButton session={session} />}
-        />
-      )} */}
       <App
         session={session}
         HeaderButtons={<ShareButton session={session} />}
