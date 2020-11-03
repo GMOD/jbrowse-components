@@ -442,17 +442,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
         const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => {
-            if (
-              viewType.displayTypes.find(
-                displayType => displayType.name === d.type,
-              )
-            ) {
-              return true
-            }
-            return false
-          },
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
         )
         if (!displayConf) {
           throw new Error(

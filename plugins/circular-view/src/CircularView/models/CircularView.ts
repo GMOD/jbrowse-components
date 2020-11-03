@@ -300,17 +300,11 @@ export default function CircularView(pluginManager: PluginManager) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
         const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => {
-            if (
-              viewType.displayTypes.find(
-                displayType => displayType.name === d.type,
-              )
-            ) {
-              return true
-            }
-            return false
-          },
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
         )
         const track = trackType.stateModel.create({
           ...initialSnapshot,
@@ -328,11 +322,19 @@ export default function CircularView(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        )
         const track = trackType.stateModel.create({
           ...initialSnapshot,
           name,
           type,
           configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },

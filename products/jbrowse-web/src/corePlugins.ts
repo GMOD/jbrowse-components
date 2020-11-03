@@ -18,8 +18,8 @@ import SVG from '@jbrowse/plugin-svg'
 import TrackHubRegistry from '@jbrowse/plugin-trackhub-registry'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
-// import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
-// import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
+import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
+import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
@@ -42,8 +42,8 @@ export default [
   TrackHubRegistry,
   Variants,
   Wiggle,
-  // SpreadsheetViewPlugin,
-  // SvInspectorPlugin,
+  SpreadsheetViewPlugin,
+  SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
 ]
