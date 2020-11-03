@@ -2,6 +2,7 @@ import { flags } from '@oclif/command'
 import fs, { promises as fsPromises } from 'fs'
 import crypto from 'crypto'
 import express from 'express'
+import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
 
 function isValidPort(port: number) {
@@ -76,6 +77,7 @@ export default class AdminServer extends JBrowseCommand {
     // @ts-ignore
     const app = express()
     app.use(express.static('.'))
+    app.use(cors())
 
     // POST route to save config
     app.use(express.json())
@@ -115,7 +117,7 @@ export default class AdminServer extends JBrowseCommand {
     const adminKey = generateKey()
     const server = app.listen(port)
     this.log(
-      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.`,
+      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.\n\nIf you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
     )
   }
 }

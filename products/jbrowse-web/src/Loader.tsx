@@ -16,11 +16,15 @@ import { types, Instance, SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import * as crypto from 'crypto'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
+import {
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from '@jbrowse/core/util/analytics'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -35,6 +39,21 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 function NoConfigMessage() {
+  const s = window.location.search
+  const links = [
+    ['test_data/volvox/config.json', 'Volvox sample data'],
+    ['test_data/config.json', 'Human basic'],
+    ['test_data/config_demo.json', 'Human sample data'],
+    ['test_data/tomato/config.json', 'Tomato SVs'],
+    ['test_data/breakpoint/config.json', 'Breakpoint'],
+    ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
+    ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
+    ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
+    ['test_data/config_longread.json', 'Long read vs. ref (dotplot)'],
+    ['test_data/config_longread_linear.json', 'Long read vs. ref (linear)'],
+    ['test_data/config_many_contigs.json', 'Many contigs'],
+    ['test_data/config_honeybee.json', 'Honeybee'],
+  ]
   return (
     <div>
       <h4>
@@ -53,59 +72,11 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            <li>
-              <a href="?config=test_data/config.json">Human basic</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_demo.json">Human sample data</a>
-            </li>
-            <li>
-              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
-            </li>
-            <li>
-              <a href="?config=test_data/volvox/config.json">Volvox</a>
-            </li>
-            <li>
-              <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_dotplot.json">
-                Grape/Peach Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_human_dotplot.json">
-                hg19/hg38 Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_synteny_grape_peach.json">
-                Grape/Peach Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/yeast_synteny/config.json">
-                Yeast Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread.json">
-                Long Read vs. Reference Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread_linear.json">
-                Long Read vs. Reference Linear
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_many_contigs.json">
-                Many Contigs
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_honeybee.json">Honeybee</a>
-            </li>
+            {links.map(([link, name]) => (
+              <li key={name}>
+                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
+              </li>
+            ))}
           </ul>
         </>
       ) : (
@@ -269,8 +240,6 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
-      const key = crypto.createHash('sha256').update('JBrowse').digest()
-
       // raw readConf alternative for before conf is initialized
       const readConf = (
         conf: { configuration?: { [key: string]: string } },
@@ -285,7 +254,6 @@ const SessionLoader = types
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
-        key,
         self.password || '',
       )
 
@@ -349,7 +317,7 @@ const SessionLoader = types
     },
   }))
 
-export function Loader() {
+export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
   const load = (param: string | null | undefined) =>
@@ -367,11 +335,25 @@ export function Loader() {
     adminKey: load(adminKey),
   })
 
-  return <Renderer loader={loader} />
+  return (
+    <Renderer
+      loader={loader}
+      initialTimestamp={initialTimestamp}
+      initialSessionQuery={session}
+    />
+  )
 }
 
 const Renderer = observer(
-  ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
+  ({
+    loader,
+    initialTimestamp,
+    initialSessionQuery,
+  }: {
+    loader: Instance<typeof SessionLoader>
+    initialTimestamp: number
+    initialSessionQuery: string | null | undefined
+  }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
@@ -402,6 +384,7 @@ const Renderer = observer(
             assemblyManager: {},
             version: packagedef.version,
             configPath,
+            // add initial to root
           })
 
           // in order: saves the previous autosave for recovery, tries to load
@@ -425,6 +408,19 @@ const Renderer = observer(
             rootModel.setDefaultSession()
           }
 
+          // send analytics
+          if (
+            rootModel &&
+            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+          ) {
+            writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+            writeGAAnalytics(rootModel, initialTimestamp)
+          }
+
+          // if (!rootModel.session) {
+          //   throw new Error('root model did not have any session defined')
+          // }
+
           // TODO use UndoManager
           // rootModel.setHistory(
           //   UndoManager.create({}, { targetStore: rootModel.session }),
@@ -445,7 +441,14 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword])
+    }, [
+      loader,
+      ready,
+      sessionError,
+      setPassword,
+      initialTimestamp,
+      initialSessionQuery,
+    ])
 
     if (configError) {
       return (
@@ -491,11 +494,11 @@ function factoryReset() {
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-export default () => {
+export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>
   )

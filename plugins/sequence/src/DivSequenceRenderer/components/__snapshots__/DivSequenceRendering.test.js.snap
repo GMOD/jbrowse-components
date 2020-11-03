@@ -18,7 +18,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
     style="display: flex;"
   >
     <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(0, 191, 0); color: white; border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(76, 175, 80); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
     >
       A
     </div>
@@ -28,7 +28,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       B
     </div>
     <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(71, 71, 255); color: white; border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(33, 150, 243); color: rgb(255, 255, 255); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
     >
       C
     </div>
@@ -48,7 +48,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       F
     </div>
     <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(255, 165, 0); color: white; border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(255, 193, 7); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
     >
       G
     </div>
@@ -90,7 +90,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
     style="display: flex;"
   >
     <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(0, 191, 0); color: white;"
+      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(76, 175, 80); color: rgba(0, 0, 0, 0.87);"
     />
     <div
       style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87);"
