@@ -31,28 +31,29 @@ export function yPos(
   level: number,
   views: Instance<LinearGenomeViewStateModel>[],
   tracks: {
-    height: number
-    scrollTop: number
-    SNPCoverageTrack?: { height: number }
-    showCoverage?: boolean
+    displays: [
+      {
+        height: number
+        scrollTop: number
+        SNPCoverageDisplay?: { height: number }
+        showCoverage?: boolean
+      },
+    ]
   }[], // basic track requirements
   c: LayoutRecord,
 ) {
+  const display = tracks[level].displays[0]
   const min = 0
-  const max = tracks[level].height
+  const max = display.height
   let offset = 0
-  const { showCoverage, SNPCoverageTrack } = tracks[level]
-  if (SNPCoverageTrack && showCoverage) {
-    offset = SNPCoverageTrack.height + 5
+  const { showCoverage, SNPCoverageDisplay } = display
+  if (SNPCoverageDisplay && showCoverage) {
+    offset = SNPCoverageDisplay.height + 5
   }
   return (
-    clamp(
-      c[TOP] - tracks[level].scrollTop + cheight(c) / 2 + offset,
-      min,
-      max,
-    ) +
+    clamp(c[TOP] - display.scrollTop + cheight(c) / 2 + offset, min, max) +
     heightFromSpecificLevel(views, trackConfigId, level) +
-    tracks[level].scrollTop
+    display.scrollTop
   )
 }
 

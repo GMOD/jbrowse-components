@@ -70,7 +70,7 @@ function TrackContainer(props: {
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = display
   const view = getContainingView(display) as LGV
-  const trackId = getConf(display, 'trackId')
+  const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
 
   useEffect(() => {

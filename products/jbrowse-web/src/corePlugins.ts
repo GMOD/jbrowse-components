@@ -1,6 +1,6 @@
 import Alignments from '@jbrowse/plugin-alignments'
 import Bed from '@jbrowse/plugin-bed'
-// import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
+import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
@@ -44,6 +44,6 @@ export default [
   Wiggle,
   // SpreadsheetViewPlugin,
   // SvInspectorPlugin,
-  // BreakpointSplitView,
+  BreakpointSplitView,
   HicPlugin,
 ]
