@@ -73,7 +73,7 @@ function NoConfigMessage() {
           <div>Sample JBrowse configs:</div>
           <ul>
             {links.map(([link, name]) => (
-              <li>
+              <li key={name}>
                 <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
               </li>
             ))}
