@@ -489,8 +489,6 @@ const Renderer = observer(
     }
 
     if (pm) {
-      // will need to account for when a session is not loaded
-      // if (sessionError) or if (pm.rootModel?.session === undefined)
       if (
         sessionError ||
         pm.rootModel?.session === undefined ||
@@ -505,17 +503,6 @@ const Renderer = observer(
           />
         )
       }
-      // console.log('screen?', defaultScreen)
-      // if (defaultScreen) {
-      //   return (
-      //     <StartScreen
-      //       root={pm.rootModel}
-      //       pluginManager={pm}
-      //       bypass
-      //       onFactoryReset={factoryReset}
-      //     />
-      //   )
-      // }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
@@ -534,10 +521,6 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-// function factoryReset() {
-//   // @ts-ignore
-//   window.location = window.location.pathname
-// }
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
