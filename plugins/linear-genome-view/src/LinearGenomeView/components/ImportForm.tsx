@@ -85,6 +85,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
               error ? undefined : assemblyNames[selectedAssemblyIdx]
             }
             onSelect={setSelectedRegion}
+            value={selectedRegion && selectedRegion.refName}
             TextFieldProps={{
               margin: 'normal',
               variant: 'outlined',

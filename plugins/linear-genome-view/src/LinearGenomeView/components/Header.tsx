@@ -147,10 +147,7 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
-  const {
-    coarseDynamicBlocks: contentBlocks,
-    displayedRegions,
-  } = model
+  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   const setDisplayedRegion = useCallback(
     (region: Region | undefined) => {
@@ -173,7 +170,7 @@ export default observer(({ model }: { model: LGV }) => {
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}
-          defaultRegionName={displayedRegions.length > 1 ? '' : refName}
+          value={displayedRegions.length > 1 ? '' : refName}
           model={model}
           TextFieldProps={{
             variant: 'outlined',
