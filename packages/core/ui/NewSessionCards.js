@@ -4,7 +4,6 @@ import Container from '@material-ui/core/Container'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import PropTypes from 'prop-types'
 import React, { useState } from 'react'
 import emptyIcon from './emptyIcon.png'
@@ -83,24 +82,12 @@ NewEmptySession.propTypes = {
 
 export function ProceedEmptySession({ root }) {
   function onClick() {
-    const snapshot = getSnapshot(root?.session)
-    console.log(snapshot)
-    localStorage.setItem(
-      `autosave-${root.configPath}`,
-      JSON.stringify({
-        session: {
-          ...snapshot,
-          name: `${snapshot.name}-autosaved`,
-        },
-      }),
-    )
-    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
-    console.log(localStorage.getItem(`autosave-${root.configPath}`))
-    const newSessionSnapshot = localStorage.getItem(
-      `autosave-${root.configPath}`,
-    )
-    console.log(JSON.parse(newSessionSnapshot).session)
-    root.setSession(JSON.parse(newSessionSnapshot).session)
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New session ${new Date().toLocaleString()}`,
+      views: [],
+    }
+    root.setSession(snapshot)
   }
   return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
@@ -110,48 +97,12 @@ ProceedEmptySession.propTypes = {
 
 export function AddLinearGenomeViewToSession({ root }) {
   const launchLGV = () => {
-    // console.log('add lgv', root)
-    // root.session.addView('LinearGenomeView', {})
-    // const snapshot = getSnapshot(root?.session)
-    // console.log(snapshot)
-    // root.addSavedSession({ name: snapshot.name })
-
-    // // localStorage.setItem(snapshot.id, { session: root.session })
-    // localStorage.setItem(
-    //   `autosave-${root.configPath}`,
-    //   JSON.stringify({
-    //     session: {
-    //       ...snapshot,
-    //       name: `${snapshot.name}-autosaved`,
-    //     },
-    //   }),
-    // )
-    // sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
-    // root.setSession(snapshot)
-    // console.log(root)
-    console.log('add lgv', root)
-    root.session.addView('LinearGenomeView', {})
-    const snapshot = getSnapshot(root?.session)
-    console.log(snapshot)
-
-    // root.addSavedSession({ name: snapshot.name })
-
-    localStorage.setItem(
-      `autosave-${root.configPath}`,
-      JSON.stringify({
-        session: {
-          ...snapshot,
-          name: `${snapshot.name}-autosaved`,
-        },
-      }),
-    )
-    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
-    console.log(localStorage.getItem(`autosave-${root.configPath}`))
-    const newSessionSnapshot = localStorage.getItem(
-      `autosave-${root.configPath}`,
-    )
-    console.log(JSON.parse(newSessionSnapshot).session)
-    root.setSession(JSON.parse(newSessionSnapshot).session)
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New session ${new Date().toLocaleString()}`,
+      views: [{ type: 'LinearGenomeView' }],
+    }
+    root.setSession(snapshot)
   }
 
   return (
@@ -218,13 +169,11 @@ NewSVInspectorSession.propTypes = {
 
 export function AddSVInspectorToSession({ root }) {
   const launchSVSession = () => {
-    console.log('add svi', root)
-    root.session.addView('SvInspectorView', {})
-    const snapshot = getSnapshot(root?.session)
-    console.log(snapshot)
-    root.addSavedSession({ name: snapshot.name })
-    localStorage.setItem(snapshot.id, { session: snapshot })
-    sessionStorage.setItem('current', JSON.stringify({ session: snapshot }))
+    const snapshot = {
+      ...emptySessionSnapshot,
+      name: `New session ${new Date().toLocaleString()}`,
+      views: [{ type: 'SvInspectorView' }],
+    }
     root.setSession(snapshot)
   }
   return (
