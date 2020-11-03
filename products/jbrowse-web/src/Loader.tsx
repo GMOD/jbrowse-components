@@ -417,12 +417,18 @@ const Renderer = observer(
             rootModel.setSession(loader.sessionSnapshot)
             setDefaultScreen(false)
           } else {
-            rootModel.setDefaultSession()
-            if (
-              rootModel.session?.views.length === 0 &&
-              defaultScreen === false
-            ) {
-              setDefaultScreen(true)
+            // rootModel.setDefaultSession()
+            // if (
+            //   rootModel.session?.views.length === 0 &&
+            //   defaultScreen === false
+            // ) {
+            //   setDefaultScreen(true)
+            // }
+            const defaultJBrowseSession = rootModel.jbrowse.defaultSession
+            if (defaultJBrowseSession?.views) {
+              if (defaultJBrowseSession.views.length > 0) {
+                rootModel.setDefaultSession()
+              }
             }
           }
 
@@ -489,19 +495,8 @@ const Renderer = observer(
     }
 
     if (pm) {
-      if (
-        sessionError ||
-        pm.rootModel?.session === undefined ||
-        (pm.rootModel?.session?.views.length === 0 && defaultScreen)
-      ) {
-        return (
-          <StartScreen
-            root={pm.rootModel}
-            pluginManager={pm}
-            bypass
-            onFactoryReset={factoryReset}
-          />
-        )
+      if (!pm.rootModel?.session) {
+        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
       }
       return <JBrowse pluginManager={pm} />
     }
