@@ -30,6 +30,10 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   })
 
   const data = line.split('\t').map(d => (d === '.' ? '' : d))
+  // no format column, add blank
+  if (data.length === 8) {
+    data.push('')
+  }
   const row: Row = {
     id: String(lineNumber + 1),
     extendedData: { vcfFeature: vcfFeature.toJSON() },
