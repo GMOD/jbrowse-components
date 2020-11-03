@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
@@ -9,7 +10,6 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
-import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles(theme => ({

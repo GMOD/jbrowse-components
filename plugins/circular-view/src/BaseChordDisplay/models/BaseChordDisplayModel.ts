@@ -57,7 +57,8 @@ export const BaseChordDisplayModel = types
 
       const slices = JSON.parse(JSON.stringify(origSlices))
 
-      slices.forEach(slice => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      slices.forEach((slice: any) => {
         const regions = slice.region.elided
           ? slice.region.regions
           : [slice.region]

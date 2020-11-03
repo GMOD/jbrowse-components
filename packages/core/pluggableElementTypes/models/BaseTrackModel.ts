@@ -10,7 +10,6 @@ import {
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
 import { getContainingView, getSession } from '../../util'
-import { getParentRenderProps } from '../../util/tracks'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export const baseLinearDisplayConfigSchema = ConfigurationSchema(

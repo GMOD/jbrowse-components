@@ -186,7 +186,7 @@ async function renderBlockEffect(
 
   const { rendererType, rpcManager, renderArgs } = props
 
-  const { html, ...data } = await rendererType.renderInClient(
+  const { html, ...data } = await (rendererType as any).renderInClient(
     rpcManager,
     renderArgs,
   )

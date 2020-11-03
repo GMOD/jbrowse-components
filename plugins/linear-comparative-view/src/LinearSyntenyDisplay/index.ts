@@ -1,4 +1,4 @@
-import { types, Instance, getParent } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,

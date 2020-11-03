@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import ExpansionPanel from '@material-ui/core/ExpansionPanel'
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
@@ -16,7 +17,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Tooltip from '@material-ui/core/Tooltip'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import isObject from 'is-object'
-import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {

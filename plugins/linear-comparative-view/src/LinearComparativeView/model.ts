@@ -9,7 +9,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
@@ -25,7 +24,6 @@ import {
   ISerializedActionCall,
   getRoot,
 } from 'mobx-state-tree'
-import { BaseTrack } from '@jbrowse/core/pluggableElementTypes/models'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export default function stateModelFactory(pluginManager: PluginManager) {

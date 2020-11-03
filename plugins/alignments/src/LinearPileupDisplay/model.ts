@@ -89,7 +89,8 @@ const stateModelFactory = (
                   }
 
                   // render just the sorted region first
-                  await self.rendererType.renderInClient(rpcManager, {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  await (self.rendererType as any).renderInClient(rpcManager, {
                     assemblyName,
                     regions: [region],
                     adapterConfig: self.adapterConfig,
