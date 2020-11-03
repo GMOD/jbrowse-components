@@ -83,12 +83,13 @@ NewEmptySession.propTypes = {
 
 export function ProceedEmptySession({ root }) {
   function onClick() {
-    const snapshot = getSnapshot(root?.session)
-    console.log(snapshot)
-    root.addSavedSession({ name: snapshot.name })
-    root.setSession(snapshot)
-    localStorage.setItem(snapshot.id, { session: root.session })
-    sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
+    console.log('I clicked')
+    const lastAutosave = localStorage.getItem(`autosave-${root.configPath}`)
+    if (lastAutosave) {
+      localStorage.setItem(`previousAutosave-${root.configPath}`, lastAutosave)
+    }
+    root.setDefaultSession()
+    // root.loadAutosaveSession()
   }
   return <NewSessionCard name="Empty" onClick={onClick} image={emptyIcon} />
 }
@@ -103,10 +104,20 @@ export function AddLinearGenomeViewToSession({ root }) {
     const snapshot = getSnapshot(root?.session)
     console.log(snapshot)
     root.addSavedSession({ name: snapshot.name })
-    root.setSession(snapshot)
 
-    localStorage.setItem(snapshot.id, { session: root.session })
+    // localStorage.setItem(snapshot.id, { session: root.session })
+    localStorage.setItem(
+      `autosave-${root.configPath}`,
+      JSON.stringify({
+        session: {
+          ...snapshot,
+          name: `${snapshot.name}-autosaved`,
+        },
+      }),
+    )
     sessionStorage.setItem('current', JSON.stringify({ session: root.session }))
+    root.setSession(snapshot)
+    console.log(root)
   }
 
   return (

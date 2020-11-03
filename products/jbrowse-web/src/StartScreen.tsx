@@ -133,6 +133,9 @@ export default function StartScreen({
   useEffect(() => {
     ;(async () => {
       try {
+        console.log(bypass)
+        console.log(inDevelopment)
+        console.log(sortedSessions)
         const load =
           bypass && inDevelopment && sortedSessions.length
             ? sortedSessions[0][0]
