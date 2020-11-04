@@ -246,7 +246,6 @@ export default function RootModel(
             {
               label: 'Return to splash screen',
               icon: AppsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: () => {
                 self.setSession(undefined)
               },
