@@ -636,7 +636,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               )
             }
           }
-          this.navTo(parsedLocString)
+return           this.navTo(parsedLocString)
         }
       },
 
@@ -651,8 +651,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param location - a proposed location to navigate to
        */
-      navTo(query: NavLocation) {
-        this.navToMultiple([query])
+      async navTo(query: NavLocation) {
+        return this.navToMultiple([query])
       },
 
       async navToMultiple(locations: NavLocation[]) {
@@ -663,6 +663,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           end,
           assemblyName = self.assemblyNames[0],
         } = firstLocation
+
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
