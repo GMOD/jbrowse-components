@@ -1,26 +1,16 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { blockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
-import {
-  addDisposer,
-  getSnapshot,
-  isAlive,
-  types,
-  Instance,
-} from 'mobx-state-tree'
+import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['pileup', 'PileupRenderer'],
-  ['svg', 'SvgFeatureRenderer'],
-])
+import { types, Instance } from 'mobx-state-tree'
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
-const stateModelFactory = (configSchema: unknown) =>
+const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
     .compose(
       'FeatureTrack',
-      blockBasedTrackModel,
+      basicTrackStateModelFactory(configSchema),
       types
         .model({
           type: types.literal('FeatureTrack'),
@@ -43,13 +33,6 @@ const stateModelFactory = (configSchema: unknown) =>
     .views(self => {
       const { trackMenuItems } = self
       return {
-        /**
-         * the renderer type name is based on the "view"
-         * selected in the UI: pileup, coverage, etc
-         */
-        get rendererTypeName() {
-          return 'SvgFeatureRenderer'
-        },
         get trackMenuItems(): MenuItem[] {
           const displayModes = [
             'compact',
