@@ -55,14 +55,14 @@ export default pluginManager => {
     return undefined
   }
 
-  function openBreakpointSplitViewFromTableRow(
+  async function openBreakpointSplitViewFromTableRow(
     svInspectorView,
     spreadsheetView,
     spreadsheet,
     row,
     rowNumber,
   ) {
-    const viewSnapshot = breakpointSplitViewSnapshotFromTableRow(
+    const viewSnapshot = await breakpointSplitViewSnapshotFromTableRow(
       svInspectorView,
       spreadsheetView,
       spreadsheet,
