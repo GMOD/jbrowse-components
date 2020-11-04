@@ -7,50 +7,55 @@ exports[`<HelpWidget /> renders 1`] = `
   <h4
     class="MuiTypography-root MuiTypography-h4 MuiTypography-colorPrimary MuiTypography-alignCenter"
   >
-    Help
+    JBrowse 2
   </h4>
   <h6
     class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
-  >
-    JBrowse 
-    
-  </h6>
-  <p
-    class="MuiTypography-root MuiTypography-body1"
-  >
-    Thanks for using JBrowse!
+  />
+  <p>
+    Here are some resources to get help. Please report the version number above when asking questions. Thanks!
   </p>
-  <p
-    class="MuiTypography-root MuiTypography-body1"
-  >
-    If you have questions or need help, please post in our
-     
-    <a
-      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
-      href="https://github.com/GMOD/jbrowse-components/discussions"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      community discussions forum
-    </a>
-    .
-  </p>
-  <p
-    class="MuiTypography-root MuiTypography-body1"
-  >
-     
-    If you would like to report a bug or request a feature, please
-     
-    <a
-      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
-      href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      open an issue
-    </a>
-     
-    on GitHub.
-  </p>
+  <ul>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://github.com/GMOD/jbrowse-components/discussions"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Question & answer forum
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Report a bug
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://jbrowse.org/jb2/docs/user_guide"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        User guide
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://jbrowse.org/jb2/docs/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Documentation
+      </a>
+    </li>
+  </ul>
 </div>
 `;
