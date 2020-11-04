@@ -49,6 +49,7 @@ export default observer(({ model }: { model: LinearGenomeViewModel }) => {
         inputProps={{
           'data-testid': 'search-input',
         }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
         InputProps={{
           startAdornment: <SearchIcon />,
           style: {
