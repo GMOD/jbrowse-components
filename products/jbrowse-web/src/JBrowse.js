@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { useQueryParam, StringParam } from 'use-query-params'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
