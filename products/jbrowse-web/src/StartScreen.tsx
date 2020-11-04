@@ -8,6 +8,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Grid from '@material-ui/core/Grid'
+import List from '@material-ui/core/List'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
 import IconButton from '@material-ui/core/IconButton'
@@ -208,23 +209,22 @@ export default function StartScreen({
         <Typography variant="h5" className={classes.header}>
           Recent sessions
         </Typography>
-        <Grid container spacing={4} style={{ overflow: 'auto', height: 400 }}>
+        <List style={{ overflow: 'auto', maxHeight: 200 }}>
           {sessionNames
             ? sessionNames.map((sessionName: string) => (
-                <Grid item key={sessionName}>
-                  <RecentSessionCard
-                    sessionName={sessionName}
-                    onClick={() => {
-                      setSessionToLoad(sessionName)
-                    }}
-                    onDelete={() => {
-                      setSessionToDelete(sessionName)
-                    }}
-                  />
-                </Grid>
+                <RecentSessionCard
+                  key={sessionName}
+                  sessionName={sessionName}
+                  onClick={() => {
+                    setSessionToLoad(sessionName)
+                  }}
+                  onDelete={() => {
+                    setSessionToDelete(sessionName)
+                  }}
+                />
               ))
             : null}
-        </Grid>
+        </List>
       </Container>
 
       <Menu
