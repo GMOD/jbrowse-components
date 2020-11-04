@@ -20,7 +20,10 @@ export function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringArray',
         defaultValue: [],
       },
-      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+      renderer: types.optional(
+        pluginManager.pluggableConfigSchemaType('renderer'),
+        { type: 'LinearSyntenyRenderer' },
+      ),
       middle: { type: 'boolean', defaultValue: true },
     },
     {

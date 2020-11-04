@@ -14,7 +14,7 @@
             "configuration": "grape_peach_synteny_mcscan",
             "displays": [
               {
-                "configuration": "grape_peach_synteny_mcscan_linear",
+                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay",
                 "height": 100,
                 "type": "LinearSyntenyDisplay"
               }
@@ -151,16 +151,7 @@
         "type": "MCScanAnchorsAdapter"
       },
       "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"],
-      "displays": [
-        {
-          "type": "LinearSyntenyDisplay",
-          "displayId": "grape_peach_synteny_mcscan_linear",
-          "renderer": {
-            "type": "LinearSyntenyRenderer"
-          }
-        }
-      ]
+      "category": ["Annotation"]
     },
     {
       "trackId": "peach_genes",

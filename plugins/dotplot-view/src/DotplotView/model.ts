@@ -386,6 +386,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // add the specific evidence tracks to the LGVs in the split view
           // note: scales the bpPerPx by scaling proportional of the dotplot
           // width to the eventual lgv width
+          const tracks: {
+            type: string
+            configuration: AnyConfigurationModel
+            displays: {
+              type: string
+              configuration: AnyConfigurationModel
+            }[]
+          }[] = []
+          self.tracks.forEach(track => {
+            const trackConf = track.configuration
+            const displayConf = trackConf.displays.find(
+              (display: AnyConfigurationModel) =>
+                display.type === 'LinearSyntenyDisplay',
+            )
+            if (displayConf) {
+              tracks.push({
+                type: trackConf.type,
+                configuration: trackConf,
+                displays: [
+                  { type: displayConf.type, configuration: displayConf },
+                ],
+              })
+            }
+          })
           const viewSnapshot = {
             type: 'LinearSyntenyView',
             views: [
@@ -402,12 +426,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 hideHeader: true,
               },
             ],
-            tracks: [
-              {
-                configuration: 'grape_peach_synteny_mcscan',
-                type: 'LinearSyntenyTrack',
-              },
-            ],
+            tracks,
             displayName: 'A vs B',
           }
 

@@ -55,7 +55,7 @@
   ],
   "tracks": [
     {
-      "type": "DotplotTrack",
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track",
       "name": "dotplot",
       "assemblyNames": ["longread", "hg19"],
@@ -109,7 +109,7 @@
         },
         "tracks": [
           {
-            "type": "DotplotTrack",
+            "type": "SyntenyTrack",
             "configuration": "dotplot_track",
             "displays": [
               {

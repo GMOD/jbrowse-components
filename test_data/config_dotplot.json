@@ -61,41 +61,13 @@
         "type": "MCScanAnchorsAdapter"
       },
       "name": "Grape peach synteny (MCScan)",
-      "category": ["Annotation"],
-      "displays": [
-        {
-          "type": "LinearSyntenyDisplay",
-          "displayId": "grape_peach_synteny_mcscan-LinearSyntenyDisplay"
-        }
-      ]
+      "category": ["Annotation"]
     },
     {
-      "trackId": "grape_peach_synteny_linear_paf",
+      "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",
+      "name": "Grape vs Peach (PAF)",
       "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
-        },
-        "assemblyNames": ["peach", "grape"]
-      },
-      "name": "Grape peach synteny (PAF)",
-      "category": ["Annotation"],
-      "displays": [
-        {
-          "type": "LinearSyntenyDisplay",
-          "displayId": "grape_peach_synteny_linear_paf-LinearSyntenyDisplay"
-        }
-      ]
-    },
-    {
-      "type": "DotplotTrack",
-      "trackId": "dotplot_track",
-      "name": "Grape vs peach (PAF)",
-      "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
@@ -105,7 +77,7 @@
       }
     },
     {
-      "type": "DotplotTrack",
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track_small",
       "name": "Grape vs peach small (PAF)",
       "assemblyNames": ["grape", "peach"],
@@ -137,7 +109,7 @@
         },
         "tracks": [
           {
-            "type": "DotplotTrack",
+            "type": "SyntenyTrack",
             "configuration": "dotplot_track_small",
             "displays": [
               {

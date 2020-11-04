@@ -64,13 +64,7 @@
         "pafLocation": {
           "uri": "longread_vs_ref.paf"
         },
-        "assemblyNames": ["longread", "hg19"],
-        "displays": [
-          {
-            "displayId": "dotplot_track_linear",
-            "type": "LinearSyntenyDisplay"
-          }
-        ]
+        "assemblyNames": ["longread", "hg19"]
       }
     },
     {
@@ -190,7 +184,7 @@
             "displays": [
               {
                 "type": "LinearSyntenyDisplay",
-                "configuration": "dotplot_track_linear"
+                "configuration": "dotplot_track-LinearSyntenyDisplay"
               }
             ]
           }
