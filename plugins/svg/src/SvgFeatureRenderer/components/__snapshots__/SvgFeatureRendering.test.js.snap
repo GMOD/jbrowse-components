@@ -19,28 +19,28 @@ exports[`one feature (compact mode) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="4px"
+    height="5px"
     style="display: block;"
     width="333.3333333333333px"
   >
     <g>
       <polyline
         data-testid="one"
-        points="1991.7,1.6666666666666667,3248.0333333333333,1.6666666666666667,3247.2,0.8333333333333334,3247.2,2.5,3248.0333333333333,1.6666666666666667"
+        points="1991.7,2.5,3248.0333333333333,2.5,3246.7833333333333,1.25,3246.7833333333333,3.75,3248.0333333333333,2.5"
         stroke="black"
       />
       <rect
         data-testid="one-0"
         fill="#357089"
-        height="2.166666666666667"
+        height="3.25"
         width="44.666666666666664"
         x="1991.7"
-        y="0.5833333333333334"
+        y="0.875"
       />
       <rect
         data-testid="one-2"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="12.666666666666666"
         x="2036.7"
         y="0"
@@ -48,7 +48,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-3"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="22.666666666666668"
         x="2205.0333333333333"
         y="0"
@@ -56,7 +56,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-4"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="94"
         x="2252.7"
         y="0"
@@ -64,7 +64,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-5"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="59"
         x="2380.7"
         y="0"
@@ -72,7 +72,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-6"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="92"
         x="2470.366666666667"
         y="0"
@@ -80,7 +80,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-7"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="34"
         x="2582.7"
         y="0"
@@ -88,7 +88,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-8"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="48.333333333333336"
         x="2651.0333333333333"
         y="0"
@@ -96,7 +96,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-9"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="51.333333333333336"
         x="2722.0333333333333"
         y="0"
@@ -104,7 +104,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-10"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="65"
         x="2806.366666666667"
         y="0"
@@ -112,7 +112,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-11"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="34.333333333333336"
         x="2902.7"
         y="0"
@@ -120,7 +120,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-12"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="104"
         x="2975.7"
         y="0"
@@ -128,7 +128,7 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-13"
         fill="goldenrod"
-        height="3.3333333333333335"
+        height="5"
         width="26.666666666666668"
         x="3138.0333333333333"
         y="0"
@@ -136,10 +136,10 @@ exports[`one feature (compact mode) 1`] = `
       <rect
         data-testid="one-15"
         fill="#357089"
-        height="2.166666666666667"
+        height="3.25"
         width="83"
         x="3165.0333333333333"
-        y="0.5833333333333334"
+        y="0.875"
       />
     </g>
   </svg>
