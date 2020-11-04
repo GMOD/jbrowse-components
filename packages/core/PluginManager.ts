@@ -403,11 +403,17 @@ export default class PluginManager {
   addTrackType(
     creationCallback: (pluginManager: PluginManager) => TrackType,
   ): this {
+    // Goes through the already-created displays and registers the ones that
+    // specify this track type
     const callback = () => {
       const track = creationCallback(this)
       ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
         display => {
-          if (display.trackType === track.name) {
+          if (
+            display.trackType === track.name &&
+            // track may have already added the displayType in its creationCallback
+            !track.displayTypes.includes(display)
+          ) {
             track.addDisplayType(display)
           }
         },
@@ -430,7 +436,11 @@ export default class PluginManager {
       const newView = creationCallback(this)
       ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
         display => {
-          if (display.viewType === newView.name) {
+          if (
+            display.viewType === newView.name &&
+            // view may have already added the displayType in its creationCallback
+            !newView.displayTypes.includes(display)
+          ) {
             newView.addDisplayType(display)
           }
         },

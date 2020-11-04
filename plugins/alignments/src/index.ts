@@ -55,7 +55,7 @@ export default class AlignmentsPlugin extends Plugin {
         {},
         { baseConfiguration: createBaseTrackConfig(pluginManager) },
       )
-      return new TrackType({
+      const track = new TrackType({
         name: 'AlignmentsTrack',
         configSchema,
         stateModel: createBaseTrackModel(
@@ -64,6 +64,14 @@ export default class AlignmentsPlugin extends Plugin {
           configSchema,
         ),
       })
+      const linearAlignmentsDisplay = pluginManager.getDisplayType(
+        'LinearAlignmentsDisplay',
+      )
+      // Add LinearAlignmentsDisplay here so that it has priority over the other
+      // linear displays (defaults to order the displays are added, but we have
+      // to add the Pileup and SNPCoverage displays first).
+      track.addDisplayType(linearAlignmentsDisplay)
+      return track
     })
     pluginManager.addDisplayType(() => {
       const configSchema = linearPileupDisplayConfigSchemaFactory(pluginManager)
@@ -162,24 +170,6 @@ export default class AlignmentsPlugin extends Plugin {
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
         }),
-    )
-  }
-
-  configure(pluginManager: PluginManager) {
-    const track = pluginManager.getTrackType('AlignmentsTrack')
-    const pileupIdx = track.displayTypes.findIndex(
-      displayType => displayType.name === 'LinearPileupDisplay',
-    )
-    const snpCoverageIdx = track.displayTypes.findIndex(
-      displayType => displayType.name === 'LinearSNPCoverageDisplay',
-    )
-    const alignmentsIdx = track.displayTypes.findIndex(
-      displayType => displayType.name === 'LinearAlignmentsDisplay',
-    )
-    track.displayTypes.splice(
-      Math.min(pileupIdx, snpCoverageIdx),
-      0,
-      track.displayTypes.splice(alignmentsIdx, 1)[0],
     )
   }
 }
