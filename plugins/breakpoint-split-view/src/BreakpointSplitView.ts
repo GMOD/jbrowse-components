@@ -8,7 +8,10 @@ import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
 
 class BreakpointSplitViewType extends ViewType {
-  snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {
+  async snapshotFromBreakendFeature(
+    feature: Feature,
+    view: LinearGenomeViewModel,
+  ) {
     const breakendSpecification = (feature.get('ALT') || [])[0]
     const startPos = feature.get('start')
     let endPos
@@ -16,7 +19,9 @@ class BreakpointSplitViewType extends ViewType {
 
     // TODO: Figure this out for multiple assembly names
     const { assemblyName } = view.displayedRegions[0]
-    const assembly = getSession(view).assemblyManager.get(assemblyName)
+    const assembly = await getSession(view).assemblyManager.waitForAssembly(
+      assemblyName,
+    )
     const { getCanonicalRefName } = assembly as Assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
 

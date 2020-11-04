@@ -11,32 +11,38 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
   session.setSelection(feature)
   const view = getContainingView(chordTrack)
   const viewType = pluginManager.getViewType('BreakpointSplitView')
-  const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+  viewType
+    .snapshotFromBreakendFeature(feature, view)
+    .then(viewSnapshot => {
+      // open any evidence tracks defined in configRelationships for this track
+      const tracks = getConf(chordTrack, 'configRelationships')
+        .map(entry => {
+          const type = pluginManager.pluggableConfigSchemaType('track')
+          const trackConfig = resolveIdentifier(type, session, entry.target)
+          return trackConfig
+            ? {
+                type: trackConfig.type,
+                height: 100,
+                configuration: trackConfig.trackId,
+                selectedRendering: '',
+              }
+            : null
+        })
+        .filter(f => !!f)
+      viewSnapshot.views[0].tracks = tracks
+      viewSnapshot.views[1].tracks = tracks
 
-  // open any evidence tracks defined in configRelationships for this track
-  const tracks = getConf(chordTrack, 'configRelationships')
-    .map(entry => {
-      const type = pluginManager.pluggableConfigSchemaType('track')
-      const trackConfig = resolveIdentifier(type, session, entry.target)
-      return trackConfig
-        ? {
-            type: trackConfig.type,
-            height: 100,
-            configuration: trackConfig.trackId,
-            selectedRendering: '',
-          }
-        : null
+      // try to center the offsetPx
+      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+      viewSnapshot.featureData = feature.data
+
+      session.addView('BreakpointSplitView', viewSnapshot)
     })
-    .filter(f => !!f)
-  viewSnapshot.views[0].tracks = tracks
-  viewSnapshot.views[1].tracks = tracks
-
-  // try to center the offsetPx
-  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-  viewSnapshot.featureData = feature.data
-
-  session.addView('BreakpointSplitView', viewSnapshot)
+    .catch(e => {
+      console.error(e)
+      session.notify('${e}')
+    })
 }
 
 export default pluginManager => {
