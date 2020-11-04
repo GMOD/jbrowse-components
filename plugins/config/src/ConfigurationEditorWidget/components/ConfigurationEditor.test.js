@@ -5,7 +5,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Alignments from '@jbrowse/plugin-alignments'
 import SVG from '@jbrowse/plugin-svg'
-import { modelFactory as linearPileupDisplayModelFactory } from '@jbrowse/plugin-alignments/src/LinearPileupDisplay'
+import { configSchemaFactory as linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments/src/LinearPileupDisplay'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import ConfigurationEditor from './ConfigurationEditor'
 
 describe('ConfigurationEditor widget', () => {
@@ -85,9 +86,11 @@ describe('ConfigurationEditor widget', () => {
     const pluginManager = new PluginManager([new Alignments(), new SVG()])
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    const PileupTrackSchema = linearPileupDisplayModelFactory(pluginManager)
+    const PileupDisplaySchema = linearBasicDisplayConfigSchemaFactory(
+      pluginManager,
+    )
     const { container } = render(
-      <ConfigurationEditor model={{ target: PileupTrackSchema.create() }} />,
+      <ConfigurationEditor model={{ target: PileupDisplaySchema.create() }} />,
     )
     expect(container.firstChild).toMatchSnapshot()
   })

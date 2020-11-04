@@ -46,7 +46,7 @@ class SvgFeatureRendererPlugin extends Plugin {
   }
 }
 
-test('has a viewType attr', () => {
+test('has a type attr', () => {
   const configSchema = configSchemaFactory(
     new PluginManager([
       new PileupRendererPlugin(),
@@ -60,5 +60,5 @@ test('has a viewType attr', () => {
     displayId: 'display0',
     name: 'Zonker Display',
   })
-  expect(config.viewType).toEqual('LinearGenomeView')
+  expect(config.type).toEqual('LinearPileupDisplay')
 })

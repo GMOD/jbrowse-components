@@ -6,8 +6,8 @@ test('create config', () => {
   const pluginManager = new PluginManager([new ThisPlugin()])
   expect(() =>
     configSchemaFactory(pluginManager).create({
-      trackId: 'grape_peach_synteny_mcscan',
-      type: 'LinearSyntenyTrack',
+      displayId: 'grape_peach_synteny_mcscan',
+      type: 'LinearSyntenyDisplay',
       assemblyNames: ['peach', 'grape'],
       trackIds: [],
       renderDelay: 100,
@@ -28,9 +28,6 @@ test('create config', () => {
           },
         ],
         type: 'MCScanAnchorsAdapter',
-      },
-      renderer: {
-        type: 'LinearSyntenyRenderer',
       },
       name: 'Grape peach synteny (MCScan)',
       category: ['Annotation'],

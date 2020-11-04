@@ -28,16 +28,16 @@ class SNPCoverageRendererPlugin extends Plugin {
   }
 }
 
-test('has a viewType attr', () => {
+test('has a type attr', () => {
   const configSchema = configSchemaFactory(
     new PluginManager([new SNPCoverageRendererPlugin()])
       .createPluggableElements()
       .configure(),
   )
   const config = configSchema.create({
-    type: 'SNPCoverageDisplay',
+    type: 'LinearSNPCoverageDisplay',
     displayId: 'display1',
     name: 'SNPZonker Display',
   })
-  expect(config.viewType).toEqual('LinearGenomeView')
+  expect(config.type).toEqual('LinearSNPCoverageDisplay')
 })

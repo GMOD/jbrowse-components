@@ -9,7 +9,7 @@ import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg/src/SvgFeatureRenderer'
-import configSchemaFactory from './configSchema'
+import { LinearVariantDisplayConfigFactory as configSchemaFactory } from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
 beforeEach(() => {
@@ -56,9 +56,9 @@ test('has a viewType attr', () => {
       .configure(),
   )
   const config = configSchema.create({
-    type: 'VariantTrack',
-    trackId: 'trackId0',
-    name: 'Zonker Track',
+    type: 'LinearVariantDisplay',
+    displayId: 'diplayId0',
+    name: 'Zonker Display',
   })
-  expect(config.viewType).toEqual('LinearGenomeView')
+  expect(config.type).toEqual('LinearVariantDisplay')
 })

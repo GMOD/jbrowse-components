@@ -933,484 +933,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
       class="makeStyles-paperContent"
     >
       <div
-        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-      >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-          data-shrink="true"
-        >
-          name
-        </label>
-        <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-        >
-          <input
-            aria-invalid="false"
-            class="MuiInputBase-input MuiInput-input"
-            type="text"
-            value="Track"
-          />
-        </div>
-        <p
-          class="MuiFormHelperText-root MuiFormHelperText-filled"
-        >
-          descriptive name of the track
-        </p>
-      </div>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated"
-      >
-        assemblyNames
-      </label>
-      <ul
-        class="MuiList-root"
-      >
-        <li
-          class="MuiListItem-root"
-        >
-          <div
-            class="MuiFormControl-root MuiTextField-root"
-          >
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
-            >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                type="text"
-                value="assemblyName"
-              />
-              <div
-                class="MuiInputAdornment-root"
-              >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                  tabindex="0"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                      />
-                    </svg>
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-        </li>
-        <li
-          class="MuiListItem-root"
-        >
-          <div
-            class="MuiFormControl-root MuiTextField-root"
-          >
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
-            >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                placeholder="add new"
-                type="text"
-                value=""
-              />
-              <div
-                class="MuiInputAdornment-root"
-              >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                      />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <p
-        class="MuiFormHelperText-root"
-      >
-        name of the assembly (or assemblies) track belongs to
-      </p>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <div
-        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-      >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated"
-          data-shrink="false"
-        >
-          description
-        </label>
-        <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-        >
-          <input
-            aria-invalid="false"
-            class="MuiInputBase-input MuiInput-input"
-            type="text"
-            value=""
-          />
-        </div>
-        <p
-          class="MuiFormHelperText-root"
-        >
-          a description of the track
-        </p>
-      </div>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <label
-        class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated"
-      >
-        category
-      </label>
-      <ul
-        class="MuiList-root"
-      >
-        <li
-          class="MuiListItem-root"
-        >
-          <div
-            class="MuiFormControl-root MuiTextField-root"
-          >
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
-            >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                placeholder="add new"
-                type="text"
-                value=""
-              />
-              <div
-                class="MuiInputAdornment-root"
-              >
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                >
-                  <span
-                    class="MuiIconButton-label"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                      />
-                    </svg>
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <p
-        class="MuiFormHelperText-root"
-      >
-        the category and sub-categories of a track
-      </p>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <div
-        class="MuiFormControl-root"
-      >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
-          data-shrink="true"
-          for="callback-editor"
-        >
-          metadata
-        </label>
-        <div
-          class="makeStyles-callbackEditor"
-          style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
-        >
-          <textarea
-            autocapitalize="off"
-            autocomplete="off"
-            autocorrect="off"
-            class="npm__react-simple-code-editor__textarea"
-            data-gramm="false"
-            spellcheck="false"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
-          >
-            {}
-          </textarea>
-          <pre
-            aria-hidden="true"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
-          >
-            <pre
-              class="makeStyles-syntaxHighlighter"
-              style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
-            >
-              <code
-                class="language-json"
-                style="white-space: pre;"
-              >
-                <span
-                  class="comment linenumber react-syntax-highlighter-line-number"
-                  style="display: inline-block; min-width: 1em; padding-right: 1em; text-align: right; user-select: none;"
-                >
-                  1
-                </span>
-                <span>
-                  {}
-                </span>
-              </code>
-            </pre>
-          </pre>
-          <style
-            type="text/css"
-          >
-            
-/**
- * Reset the text fill color so that placeholder is visible
- */
-.npm__react-simple-code-editor__textarea:empty {
-  -webkit-text-fill-color: inherit !important;
-}
-
-/**
- * Hack to apply on some CSS on IE10 and IE11
- */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /**
-    * IE doesn't support '-webkit-text-fill-color'
-    * So we use 'color: transparent' to make the text transparent on IE
-    * Unlike other browsers, it doesn't affect caret color in IE
-    */
-  .npm__react-simple-code-editor__textarea {
-    color: transparent !important;
-  }
-
-  .npm__react-simple-code-editor__textarea::selection {
-    background-color: #accef7 !important;
-    color: transparent !important;
-  }
-}
-
-          </style>
-        </div>
-        <p
-          class="MuiFormHelperText-root"
-        >
-          anything to add about this track
-        </p>
-      </div>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <div
         class="MuiFormControl-root"
       >
         <label
@@ -1434,8 +956,8 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
           >
             function(feature) {
-      return feature.get('name')
-      }
+  return feature.get('name')
+}
           </textarea>
           <pre
             aria-hidden="true"
@@ -1476,7 +998,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
 
                 </span>
                 <span>
-                        
+                    
                 </span>
                 <span
                   style="color: rgb(121, 40, 161);"
@@ -1495,7 +1017,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                   )
 
                 </span>
-                      }
+                }
 
               </code>
             </pre>
@@ -1590,7 +1112,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             aria-invalid="false"
             class="MuiInputBase-input MuiInput-input"
             type="number"
-            value="100"
+            value="1.7976931348623157e+308"
           />
         </div>
         <p
@@ -1629,131 +1151,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
       </button>
     </div>
   </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
-      <div
-        class="MuiFormControl-root"
-      >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
-          data-shrink="true"
-          for="callback-editor"
-        >
-          configRelationships
-        </label>
-        <div
-          class="makeStyles-callbackEditor"
-          style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
-        >
-          <textarea
-            autocapitalize="off"
-            autocomplete="off"
-            autocorrect="off"
-            class="npm__react-simple-code-editor__textarea"
-            data-gramm="false"
-            spellcheck="false"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
-          >
-            []
-          </textarea>
-          <pre
-            aria-hidden="true"
-            style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
-          >
-            <pre
-              class="makeStyles-syntaxHighlighter"
-              style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
-            >
-              <code
-                class="language-json"
-                style="white-space: pre;"
-              >
-                <span
-                  class="comment linenumber react-syntax-highlighter-line-number"
-                  style="display: inline-block; min-width: 1em; padding-right: 1em; text-align: right; user-select: none;"
-                >
-                  1
-                </span>
-                <span>
-                  []
-                </span>
-              </code>
-            </pre>
-          </pre>
-          <style
-            type="text/css"
-          >
-            
-/**
- * Reset the text fill color so that placeholder is visible
- */
-.npm__react-simple-code-editor__textarea:empty {
-  -webkit-text-fill-color: inherit !important;
-}
-
-/**
- * Hack to apply on some CSS on IE10 and IE11
- */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /**
-    * IE doesn't support '-webkit-text-fill-color'
-    * So we use 'color: transparent' to make the text transparent on IE
-    * Unlike other browsers, it doesn't affect caret color in IE
-    */
-  .npm__react-simple-code-editor__textarea {
-    color: transparent !important;
-  }
-
-  .npm__react-simple-code-editor__textarea::selection {
-    background-color: #accef7 !important;
-    color: transparent !important;
-  }
-}
-
-          </style>
-        </div>
-        <p
-          class="MuiFormHelperText-root"
-        />
-      </div>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
   <label
     class="MuiFormLabel-root"
   >
-    adapter
+    renderer
   </label>
   <div
     class="makeStyles-subSchemaContainer"
@@ -1782,11 +1183,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               role="button"
               tabindex="0"
             >
-              BamAdapter
+              PileupRenderer
             </div>
             <input
               type="hidden"
-              value="BamAdapter"
+              value="PileupRenderer"
             />
             <svg
               aria-hidden="true"
@@ -1802,7 +1203,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           <p
             class="MuiFormHelperText-root MuiFormHelperText-filled"
           >
-            Type of adapter to use
+            Type of renderer to use
           </p>
         </div>
       </div>
@@ -1810,426 +1211,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     <div
       class="MuiFormGroup-root"
     >
-      <div
-        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-      >
-        <div
-          class="makeStyles-paperContent"
-        >
-          <label
-            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
-            data-shrink="true"
-            for="callback-editor"
-          >
-            bamLocation
-          </label>
-          <div
-            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
-          >
-            <div
-              class="MuiGrid-root MuiGrid-item"
-            >
-              <div
-                aria-label="file or url picker"
-                class="MuiToggleButtonGroup-root"
-                role="group"
-              >
-                <button
-                  aria-label="local file"
-                  aria-pressed="false"
-                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-                  disabled=""
-                  tabindex="-1"
-                  type="button"
-                  value="file"
-                >
-                  <span
-                    class="MuiToggleButton-label"
-                  >
-                    File
-                  </span>
-                </button>
-                <button
-                  aria-label="url"
-                  aria-pressed="true"
-                  class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
-                  tabindex="0"
-                  type="button"
-                  value="url"
-                >
-                  <span
-                    class="MuiToggleButton-label"
-                  >
-                    Url
-                  </span>
-                  <span
-                    class="MuiTouchRipple-root"
-                  />
-                </button>
-              </div>
-            </div>
-            <div
-              class="MuiGrid-root MuiGrid-item"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="text"
-                    value="/path/to/my.bam"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <p
-            class="MuiFormHelperText-root"
-          />
-        </div>
-        <div
-          class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
-      </div>
-      <label
-        class="MuiFormLabel-root"
-      >
-        index
-      </label>
-      <div
-        class="makeStyles-subSchemaContainer"
-      >
-        <div
-          class="MuiFormGroup-root"
-        >
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  indexType
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <div
-                    aria-haspopup="listbox"
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                    role="button"
-                    tabindex="0"
-                  >
-                    BAI
-                  </div>
-                  <input
-                    type="hidden"
-                    value="BAI"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSelect-icon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
-                </div>
-                
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <label
-                class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink"
-                data-shrink="true"
-                for="callback-editor"
-              >
-                location
-              </label>
-              <div
-                class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
-              >
-                <div
-                  class="MuiGrid-root MuiGrid-item"
-                >
-                  <div
-                    aria-label="file or url picker"
-                    class="MuiToggleButtonGroup-root"
-                    role="group"
-                  >
-                    <button
-                      aria-label="local file"
-                      aria-pressed="false"
-                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-disabled MuiButtonBase-disabled"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                      value="file"
-                    >
-                      <span
-                        class="MuiToggleButton-label"
-                      >
-                        File
-                      </span>
-                    </button>
-                    <button
-                      aria-label="url"
-                      aria-pressed="true"
-                      class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
-                      tabindex="0"
-                      type="button"
-                      value="url"
-                    >
-                      <span
-                        class="MuiToggleButton-label"
-                      >
-                        Url
-                      </span>
-                      <span
-                        class="MuiTouchRipple-root"
-                      />
-                    </button>
-                  </div>
-                </div>
-                <div
-                  class="MuiGrid-root MuiGrid-item"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                  >
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input"
-                        type="text"
-                        value="/path/to/my.bam.bai"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <p
-                class="MuiFormHelperText-root"
-              />
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-      >
-        <div
-          class="makeStyles-paperContent"
-        >
-          <div
-            class="MuiFormControl-root MuiTextField-root"
-          >
-            <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-              data-shrink="true"
-            >
-              chunkSizeLimit
-            </label>
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-            >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input"
-                type="number"
-                value="100000000"
-              />
-            </div>
-            
-          </div>
-        </div>
-        <div
-          class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
-      </div>
-      <div
-        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-      >
-        <div
-          class="makeStyles-paperContent"
-        >
-          <div
-            class="MuiFormControl-root MuiTextField-root"
-          >
-            <label
-              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-              data-shrink="true"
-            >
-              fetchSizeLimit
-            </label>
-            <div
-              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-            >
-              <input
-                aria-invalid="false"
-                class="MuiInputBase-input MuiInput-input"
-                type="number"
-                value="500000000"
-              />
-            </div>
-            
-          </div>
-        </div>
-        <div
-          class="makeStyles-slotModeSwitch"
-        >
-          <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-            tabindex="0"
-            title="convert to callback"
-            type="button"
-          >
-            <span
-              class="MuiIconButton-label"
-            >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
-      </div>
       <div
         class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
       >
@@ -2244,7 +1225,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               data-shrink="true"
               for="callback-editor"
             >
-              sequenceAdapter
+              color
             </label>
             <div
               class="makeStyles-callbackEditor"
@@ -2259,7 +1240,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 spellcheck="false"
                 style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
               >
-                null
+                function(feature) {
+  var s = feature.get('strand');
+  return s === -1 ? '#8F8FD8': '#EC8B8B'
+}
               </textarea>
               <pre
                 aria-hidden="true"
@@ -2270,20 +1254,93 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                   style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
                 >
                   <code
-                    class="language-json"
+                    class="language-javascript"
                     style="white-space: pre;"
                   >
                     <span
-                      class="comment linenumber react-syntax-highlighter-line-number"
-                      style="display: inline-block; min-width: 1em; padding-right: 1em; text-align: right; user-select: none;"
+                      class="hljs-function"
+                      style="color: rgb(121, 40, 161);"
                     >
-                      1
+                      function
+                    </span>
+                    <span
+                      class="hljs-function"
+                    >
+                      (
+                    </span>
+                    <span
+                      class="hljs-function"
+                      style="color: rgb(170, 93, 0);"
+                    >
+                      feature
+                    </span>
+                    <span
+                      class="hljs-function"
+                    >
+                      ) 
+                    </span>
+                    <span>
+                      {
+
+                    </span>
+                    <span>
+                        
+                    </span>
+                    <span
+                      style="color: rgb(121, 40, 161);"
+                    >
+                      var
+                    </span>
+                    <span>
+                       s = feature.get(
+                    </span>
+                    <span
+                      style="color: rgb(0, 128, 0);"
+                    >
+                      'strand'
+                    </span>
+                    <span>
+                      );
+
+                    </span>
+                    <span>
+                        
+                    </span>
+                    <span
+                      style="color: rgb(121, 40, 161);"
+                    >
+                      return
+                    </span>
+                    <span>
+                       s === 
                     </span>
                     <span
                       style="color: rgb(170, 93, 0);"
                     >
-                      null
+                      -1
                     </span>
+                    <span>
+                       ? 
+                    </span>
+                    <span
+                      style="color: rgb(0, 128, 0);"
+                    >
+                      '#8F8FD8'
+                    </span>
+                    <span>
+                      : 
+                    </span>
+                    <span
+                      style="color: rgb(0, 128, 0);"
+                    >
+                      '#EC8B8B'
+                    </span>
+                    <span>
+                      
+
+                    </span>
+                    }
+
                   </code>
                 </pre>
               </pre>
@@ -2321,7 +1378,86 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             </div>
             <p
               class="MuiFormHelperText-root"
+            >
+              the color of each feature in a pileup alignment
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            tabindex="0"
+            title="convert to regular value"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
             />
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
+            >
+              displayMode
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+            >
+              <div
+                aria-haspopup="listbox"
+                class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                role="button"
+                tabindex="0"
+              >
+                normal
+              </div>
+              <input
+                type="hidden"
+                value="normal"
+              />
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSelect-icon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M7 10l5 5 5-5z"
+                />
+              </svg>
+            </div>
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
+            >
+              Alternative display modes
+            </p>
           </div>
         </div>
         <div
@@ -2353,1620 +1489,248 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           </button>
         </div>
       </div>
-    </div>
-  </div>
-  <div
-    class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-  >
-    <div
-      class="makeStyles-paperContent"
-    >
       <div
-        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
       >
-        <label
-          class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-          data-shrink="true"
-        >
-          defaultRendering
-        </label>
         <div
-          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+          class="makeStyles-paperContent"
         >
           <div
-            aria-haspopup="listbox"
-            class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-            role="button"
+            class="MuiFormControl-root MuiTextField-root"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
+            >
+              minSubfeatureWidth
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input"
+                type="number"
+                value="0"
+              />
+            </div>
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
+            >
+              the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
             tabindex="0"
+            title="convert to callback"
+            type="button"
           >
-            pileup
-          </div>
-          <input
-            type="hidden"
-            value="pileup"
-          />
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSelect-icon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M7 10l5 5 5-5z"
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
             />
-          </svg>
-        </div>
-        
-      </div>
-    </div>
-    <div
-      class="makeStyles-slotModeSwitch"
-    >
-      <button
-        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-        tabindex="0"
-        title="convert to callback"
-        type="button"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-            />
-          </svg>
-        </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
-      </button>
-    </div>
-  </div>
-  <label
-    class="MuiFormLabel-root"
-  >
-    renderers
-  </label>
-  <div
-    class="makeStyles-subSchemaContainer"
-  >
-    <div
-      class="MuiFormGroup-root"
-    >
-      <label
-        class="MuiFormLabel-root"
-      >
-        PileupRenderer
-      </label>
-      <div
-        class="makeStyles-subSchemaContainer"
-      >
-        <div
-          class="MuiFormGroup-root"
-        >
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
-                  data-shrink="true"
-                  for="callback-editor"
-                >
-                  color
-                </label>
-                <div
-                  class="makeStyles-callbackEditor"
-                  style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
-                >
-                  <textarea
-                    autocapitalize="off"
-                    autocomplete="off"
-                    autocorrect="off"
-                    class="npm__react-simple-code-editor__textarea"
-                    data-gramm="false"
-                    spellcheck="false"
-                    style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
-                  >
-                    function(feature) {
-  var s = feature.get('strand');
-  return s === -1 ? '#8F8FD8': '#EC8B8B'
-}
-                  </textarea>
-                  <pre
-                    aria-hidden="true"
-                    style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
-                  >
-                    <pre
-                      class="makeStyles-syntaxHighlighter"
-                      style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
-                    >
-                      <code
-                        class="language-javascript"
-                        style="white-space: pre;"
-                      >
-                        <span
-                          class="hljs-function"
-                          style="color: rgb(121, 40, 161);"
-                        >
-                          function
-                        </span>
-                        <span
-                          class="hljs-function"
-                        >
-                          (
-                        </span>
-                        <span
-                          class="hljs-function"
-                          style="color: rgb(170, 93, 0);"
-                        >
-                          feature
-                        </span>
-                        <span
-                          class="hljs-function"
-                        >
-                          ) 
-                        </span>
-                        <span>
-                          {
-
-                        </span>
-                        <span>
-                            
-                        </span>
-                        <span
-                          style="color: rgb(121, 40, 161);"
-                        >
-                          var
-                        </span>
-                        <span>
-                           s = feature.get(
-                        </span>
-                        <span
-                          style="color: rgb(0, 128, 0);"
-                        >
-                          'strand'
-                        </span>
-                        <span>
-                          );
-
-                        </span>
-                        <span>
-                            
-                        </span>
-                        <span
-                          style="color: rgb(121, 40, 161);"
-                        >
-                          return
-                        </span>
-                        <span>
-                           s === 
-                        </span>
-                        <span
-                          style="color: rgb(170, 93, 0);"
-                        >
-                          -1
-                        </span>
-                        <span>
-                           ? 
-                        </span>
-                        <span
-                          style="color: rgb(0, 128, 0);"
-                        >
-                          '#8F8FD8'
-                        </span>
-                        <span>
-                          : 
-                        </span>
-                        <span
-                          style="color: rgb(0, 128, 0);"
-                        >
-                          '#EC8B8B'
-                        </span>
-                        <span>
-                          
-
-                        </span>
-                        }
-
-                      </code>
-                    </pre>
-                  </pre>
-                  <style
-                    type="text/css"
-                  >
-                    
-/**
- * Reset the text fill color so that placeholder is visible
- */
-.npm__react-simple-code-editor__textarea:empty {
-  -webkit-text-fill-color: inherit !important;
-}
-
-/**
- * Hack to apply on some CSS on IE10 and IE11
- */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /**
-    * IE doesn't support '-webkit-text-fill-color'
-    * So we use 'color: transparent' to make the text transparent on IE
-    * Unlike other browsers, it doesn't affect caret color in IE
-    */
-  .npm__react-simple-code-editor__textarea {
-    color: transparent !important;
-  }
-
-  .npm__react-simple-code-editor__textarea::selection {
-    background-color: #accef7 !important;
-    color: transparent !important;
-  }
-}
-
-                  </style>
-                </div>
-                <p
-                  class="MuiFormHelperText-root"
-                >
-                  the color of each feature in a pileup alignment
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to regular value"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  displayMode
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <div
-                    aria-haspopup="listbox"
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                    role="button"
-                    tabindex="0"
-                  >
-                    normal
-                  </div>
-                  <input
-                    type="hidden"
-                    value="normal"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSelect-icon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  Alternative display modes
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  minSubfeatureWidth
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="0"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  maxHeight
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="600"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the maximum height to be used in a pileup rendering
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  maxClippingSize
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="10000"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the max clip size to be used in a pileup rendering
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  height
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="7"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the height of each feature in a pileup alignment
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
+          </button>
         </div>
       </div>
-      <label
-        class="MuiFormLabel-root"
-      >
-        SvgFeatureRenderer
-      </label>
       <div
-        class="makeStyles-subSchemaContainer"
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
       >
         <div
-          class="MuiFormGroup-root"
+          class="makeStyles-paperContent"
         >
           <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+            class="MuiFormControl-root MuiTextField-root"
           >
-            <div
-              class="makeStyles-paperContent"
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
             >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color1
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                  style="color: goldenrod; border-right-width: 25px; border-right-style: solid; border-right-color: goldenrod;"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="text"
-                    value="goldenrod"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the main color of each feature
-                </p>
-              </div>
+              maxHeight
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input"
+                type="number"
+                value="600"
+              />
             </div>
-            <div
-              class="makeStyles-slotModeSwitch"
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
             >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
+              the maximum height to be used in a pileup rendering
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            tabindex="0"
+            title="convert to callback"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                 />
-              </button>
-            </div>
-          </div>
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
           <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+            class="MuiFormControl-root MuiTextField-root"
           >
-            <div
-              class="makeStyles-paperContent"
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
             >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color2
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                  style="color: black; border-right-width: 25px; border-right-style: solid; border-right-color: black;"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="text"
-                    value="black"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the secondary color of each feature, used for connecting lines, etc
-                </p>
-              </div>
+              maxClippingSize
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input"
+                type="number"
+                value="10000"
+              />
             </div>
-            <div
-              class="makeStyles-slotModeSwitch"
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
             >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
+              the max clip size to be used in a pileup rendering
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            tabindex="0"
+            title="convert to callback"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                 />
-              </button>
-            </div>
-          </div>
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
           <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+            class="MuiFormControl-root MuiTextField-root"
           >
-            <div
-              class="makeStyles-paperContent"
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
             >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  color3
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                  style="color: rgb(53, 112, 137); border-right-width: 25px; border-right-style: solid; border-right-color: #357089;"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="text"
-                    value="#357089"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the tertiary color of each feature, often used for contrasting fills, like on UTRs
-                </p>
-              </div>
+              height
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+            >
+              <input
+                aria-invalid="false"
+                class="MuiInputBase-input MuiInput-input"
+                type="number"
+                value="7"
+              />
             </div>
-            <div
-              class="makeStyles-slotModeSwitch"
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
             >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
+              the height of each feature in a pileup alignment
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
+            tabindex="0"
+            title="convert to callback"
+            type="button"
+          >
+            <span
+              class="MuiIconButton-label"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
                 />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  height
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="10"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  height in pixels of the main body of each feature
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <label
-            class="MuiFormLabel-root"
-          >
-            labels
-          </label>
-          <div
-            class="makeStyles-subSchemaContainer"
-          >
-            <div
-              class="MuiFormGroup-root"
-            >
-              <div
-                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <div
-                  class="makeStyles-paperContent"
-                >
-                  <div
-                    class="MuiFormControl-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
-                      data-shrink="true"
-                      for="callback-editor"
-                    >
-                      name
-                    </label>
-                    <div
-                      class="makeStyles-callbackEditor"
-                      style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
-                    >
-                      <textarea
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        class="npm__react-simple-code-editor__textarea"
-                        data-gramm="false"
-                        spellcheck="false"
-                        style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
-                      >
-                        function(feature) { return feature.get('name') || feature.get('id') }
-                      </textarea>
-                      <pre
-                        aria-hidden="true"
-                        style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
-                      >
-                        <pre
-                          class="makeStyles-syntaxHighlighter"
-                          style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
-                        >
-                          <code
-                            class="language-javascript"
-                            style="white-space: pre;"
-                          >
-                            <span
-                              class="comment linenumber react-syntax-highlighter-line-number"
-                              style="display: inline-block; min-width: 1em; padding-right: 1em; text-align: right; user-select: none;"
-                            >
-                              1
-                            </span>
-                            <span
-                              class="hljs-function"
-                              style="color: rgb(121, 40, 161);"
-                            >
-                              function
-                            </span>
-                            <span
-                              class="hljs-function"
-                            >
-                              (
-                            </span>
-                            <span
-                              class="hljs-function"
-                              style="color: rgb(170, 93, 0);"
-                            >
-                              feature
-                            </span>
-                            <span
-                              class="hljs-function"
-                            >
-                              ) 
-                            </span>
-                            <span>
-                              { 
-                            </span>
-                            <span
-                              style="color: rgb(121, 40, 161);"
-                            >
-                              return
-                            </span>
-                            <span>
-                               feature.get(
-                            </span>
-                            <span
-                              style="color: rgb(0, 128, 0);"
-                            >
-                              'name'
-                            </span>
-                            <span>
-                              ) || feature.get(
-                            </span>
-                            <span
-                              style="color: rgb(0, 128, 0);"
-                            >
-                              'id'
-                            </span>
-                            <span>
-                              ) }
-                            </span>
-                          </code>
-                        </pre>
-                      </pre>
-                      <style
-                        type="text/css"
-                      >
-                        
-/**
- * Reset the text fill color so that placeholder is visible
- */
-.npm__react-simple-code-editor__textarea:empty {
-  -webkit-text-fill-color: inherit !important;
-}
-
-/**
- * Hack to apply on some CSS on IE10 and IE11
- */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /**
-    * IE doesn't support '-webkit-text-fill-color'
-    * So we use 'color: transparent' to make the text transparent on IE
-    * Unlike other browsers, it doesn't affect caret color in IE
-    */
-  .npm__react-simple-code-editor__textarea {
-    color: transparent !important;
-  }
-
-  .npm__react-simple-code-editor__textarea::selection {
-    background-color: #accef7 !important;
-    color: transparent !important;
-  }
-}
-
-                      </style>
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root"
-                    >
-                      the primary name of the feature to show, if space is available
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-slotModeSwitch"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    title="convert to regular value"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <div
-                  class="makeStyles-paperContent"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                      data-shrink="true"
-                    >
-                      nameColor
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                      style="color: black; border-right-width: 25px; border-right-style: solid; border-right-color: black;"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input"
-                        type="text"
-                        value="black"
-                      />
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root MuiFormHelperText-filled"
-                    >
-                      the color of the name label, if shown
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-slotModeSwitch"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    title="convert to callback"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <div
-                  class="makeStyles-paperContent"
-                >
-                  <div
-                    class="MuiFormControl-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink"
-                      data-shrink="true"
-                      for="callback-editor"
-                    >
-                      description
-                    </label>
-                    <div
-                      class="makeStyles-callbackEditor"
-                      style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
-                    >
-                      <textarea
-                        autocapitalize="off"
-                        autocomplete="off"
-                        autocorrect="off"
-                        class="npm__react-simple-code-editor__textarea"
-                        data-gramm="false"
-                        spellcheck="false"
-                        style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
-                      >
-                        function(feature) { return feature.get('note') || feature.get('description') }
-                      </textarea>
-                      <pre
-                        aria-hidden="true"
-                        style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
-                      >
-                        <pre
-                          class="makeStyles-syntaxHighlighter"
-                          style="display: block; overflow-x: auto; background: none; color: rgb(84, 84, 84); padding: 0px;"
-                        >
-                          <code
-                            class="language-javascript"
-                            style="white-space: pre;"
-                          >
-                            <span
-                              class="comment linenumber react-syntax-highlighter-line-number"
-                              style="display: inline-block; min-width: 1em; padding-right: 1em; text-align: right; user-select: none;"
-                            >
-                              1
-                            </span>
-                            <span
-                              class="hljs-function"
-                              style="color: rgb(121, 40, 161);"
-                            >
-                              function
-                            </span>
-                            <span
-                              class="hljs-function"
-                            >
-                              (
-                            </span>
-                            <span
-                              class="hljs-function"
-                              style="color: rgb(170, 93, 0);"
-                            >
-                              feature
-                            </span>
-                            <span
-                              class="hljs-function"
-                            >
-                              ) 
-                            </span>
-                            <span>
-                              { 
-                            </span>
-                            <span
-                              style="color: rgb(121, 40, 161);"
-                            >
-                              return
-                            </span>
-                            <span>
-                               feature.get(
-                            </span>
-                            <span
-                              style="color: rgb(0, 128, 0);"
-                            >
-                              'note'
-                            </span>
-                            <span>
-                              ) || feature.get(
-                            </span>
-                            <span
-                              style="color: rgb(0, 128, 0);"
-                            >
-                              'description'
-                            </span>
-                            <span>
-                              ) }
-                            </span>
-                          </code>
-                        </pre>
-                      </pre>
-                      <style
-                        type="text/css"
-                      >
-                        
-/**
- * Reset the text fill color so that placeholder is visible
- */
-.npm__react-simple-code-editor__textarea:empty {
-  -webkit-text-fill-color: inherit !important;
-}
-
-/**
- * Hack to apply on some CSS on IE10 and IE11
- */
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /**
-    * IE doesn't support '-webkit-text-fill-color'
-    * So we use 'color: transparent' to make the text transparent on IE
-    * Unlike other browsers, it doesn't affect caret color in IE
-    */
-  .npm__react-simple-code-editor__textarea {
-    color: transparent !important;
-  }
-
-  .npm__react-simple-code-editor__textarea::selection {
-    background-color: #accef7 !important;
-    color: transparent !important;
-  }
-}
-
-                      </style>
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root"
-                    >
-                      the text description to show, if space is available
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-slotModeSwitch"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    title="convert to regular value"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <div
-                  class="makeStyles-paperContent"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                      data-shrink="true"
-                    >
-                      descriptionColor
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                      style="color: blue; border-right-width: 25px; border-right-style: solid; border-right-color: blue;"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input"
-                        type="text"
-                        value="blue"
-                      />
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root MuiFormHelperText-filled"
-                    >
-                      the color of the description, if shown
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-slotModeSwitch"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    title="convert to callback"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-              </div>
-              <div
-                class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-              >
-                <div
-                  class="makeStyles-paperContent"
-                >
-                  <div
-                    class="MuiFormControl-root MuiTextField-root"
-                  >
-                    <label
-                      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                      data-shrink="true"
-                    >
-                      fontSize
-                    </label>
-                    <div
-                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                    >
-                      <input
-                        aria-invalid="false"
-                        class="MuiInputBase-input MuiInput-input"
-                        type="number"
-                        value="13"
-                      />
-                    </div>
-                    <p
-                      class="MuiFormHelperText-root MuiFormHelperText-filled"
-                    >
-                      height in pixels of the text to use for names and descriptions
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-slotModeSwitch"
-                >
-                  <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                    tabindex="0"
-                    title="convert to callback"
-                    type="button"
-                  >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  displayMode
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <div
-                    aria-haspopup="listbox"
-                    class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
-                    role="button"
-                    tabindex="0"
-                  >
-                    normal
-                  </div>
-                  <input
-                    type="hidden"
-                    value="normal"
-                  />
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSelect-icon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  Alternative display modes
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  maxFeatureGlyphExpansion
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="500"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  maximum number of pixels on each side of a feature's bounding coordinates that a glyph is allowed to use
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
-          <div
-            class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
-          >
-            <div
-              class="makeStyles-paperContent"
-            >
-              <div
-                class="MuiFormControl-root MuiTextField-root"
-              >
-                <label
-                  class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
-                  data-shrink="true"
-                >
-                  maxHeight
-                </label>
-                <div
-                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
-                >
-                  <input
-                    aria-invalid="false"
-                    class="MuiInputBase-input MuiInput-input"
-                    type="number"
-                    value="600"
-                  />
-                </div>
-                <p
-                  class="MuiFormHelperText-root MuiFormHelperText-filled"
-                >
-                  the maximum height to be used in a svg rendering
-                </p>
-              </div>
-            </div>
-            <div
-              class="makeStyles-slotModeSwitch"
-            >
-              <button
-                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary"
-                tabindex="0"
-                title="convert to callback"
-                type="button"
-              >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
-            </div>
-          </div>
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
         </div>
       </div>
     </div>
