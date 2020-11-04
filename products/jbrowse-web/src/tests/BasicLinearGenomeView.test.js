@@ -180,17 +180,19 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByText('Help'))
 
-    // need this to complete
+    // need this to complete before we can try to search
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId('track-volvox_alignments')
 
     const target = await findByTestId('search-input')
     const form = await findByTestId('search-form')
-    // const event = { target: { value: 'contigA:1-100' } }
     fireEvent.change(target, { target: { value: 'contigA:1-200' } })
     form.submit()
+    // can't just hit enter it seems
     // fireEvent.keyDown(target, { key: 'Enter', code: 'Enter' })
-    // target.prop('onChange').call(null, event)
+    await wait(() => {
+      expect(target.value).toBe('ctgA:1..200')
+    })
     expect(target.value).toBe('ctgA:1..200')
   })
 })

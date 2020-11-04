@@ -672,7 +672,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const session = getSession(self)
         const { assemblyManager } = session
         const assembly = await assemblyManager.waitForAssembly(assemblyName)
-        console.log(assembly)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
