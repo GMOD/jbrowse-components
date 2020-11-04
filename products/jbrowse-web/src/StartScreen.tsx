@@ -194,13 +194,13 @@ export default function StartScreen({
             Start a new session
           </Typography>
           <Grid container spacing={4}>
-            <Grid item>
+            <Grid item data-testid="emptySession">
               <ProceedEmptySession root={root} />
             </Grid>
-            <Grid item>
+            <Grid item data-testid="emptyLGVSession">
               <AddLinearGenomeViewToSession root={root} />
             </Grid>
-            <Grid item>
+            <Grid item data-testid="emptySVSession">
               <AddSVInspectorToSession root={root} />
             </Grid>
           </Grid>
@@ -208,9 +208,9 @@ export default function StartScreen({
         <Typography variant="h5" className={classes.header}>
           Recent sessions
         </Typography>
-        <Grid container spacing={4}>
+        <Grid container spacing={4} style={{ overflow: 'auto', height: 400 }}>
           {sessionNames
-            ? sessionNames.slice(0, 3).map((sessionName: string) => (
+            ? sessionNames.map((sessionName: string) => (
                 <Grid item key={sessionName}>
                   <RecentSessionCard
                     sessionName={sessionName}
