@@ -155,11 +155,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         if (!(this.refNames && self.refNameAliases)) {
           return undefined
         }
-        let aliases: string[] = []
-        self.refNameAliases.forEach(aliasList => {
-          aliases = aliases.concat(aliasList)
-        })
-        return [...this.refNames, ...aliases]
+        return Array.from(self.refNameAliases.keys())
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -192,11 +188,11 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return self.refNameColors[idx % self.refNameColors.length]
       },
       isValidRefName(refName: string) {
-        if (!self.allRefNames)
+        if (!self.refNameAliases)
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
-        return self.allRefNames.includes(refName)
+        return !!this.getCanonicalRefName(refName)
       },
     }))
     .actions(self => ({
@@ -212,7 +208,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        getParent(self, 3).setError(error)
+        if (!getParent(self, 3).isAssemblyEditing) {
+          getParent(self, 3).setError(error)
+        }
       },
       setRegions(regions: Region[]) {
         self.regions = cast(regions)

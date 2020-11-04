@@ -1,104 +1,94 @@
 {
   "defaultSession": {
-    "name": "New Session",
-    "menuBars": [
+    "name": "Grape vs Peach Demo",
+    "drawerWidth": 384,
+    "views": [
       {
-        "type": "MainMenuBar"
+        "type": "LinearSyntenyView",
+        "id": "test1",
+        "headerHeight": 44,
+        "datasetName": "grape_vs_peach_dataset",
+        "tracks": [
+          {
+            "type": "LinearSyntenyTrack",
+            "height": 100,
+            "configuration": "grape_peach_synteny_mcscan"
+          }
+        ],
+        "height": 400,
+        "displayName": "Grape vs Peach",
+        "trackSelectorType": "hierarchical",
+        "views": [
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_1",
+            "offsetPx": 28249,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "Pp01",
+                "assemblyName": "peach",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "BasicTrack",
+                "height": 100,
+                "configuration": "peach_genes",
+                "selectedRendering": ""
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          },
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_2",
+            "offsetPx": 0,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "chr1",
+                "assemblyName": "grape",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "BasicTrack",
+                "height": 100,
+                "configuration": "grape_genes",
+                "selectedRendering": ""
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          }
+        ]
       }
-    ]
-  },
-  "savedSessions": [
-    {
-      "name": "Grape vs Peach Demo",
-      "drawerWidth": 384,
-      "views": [
-        {
-          "type": "LinearSyntenyView",
-          "id": "test1",
-          "headerHeight": 44,
-          "datasetName": "grape_vs_peach_dataset",
-          "tracks": [
-            {
-              "type": "LinearSyntenyTrack",
-              "height": 100,
-              "configuration": "grape_peach_synteny_mcscan"
-            }
-          ],
-          "height": 400,
-          "displayName": "Grape vs Peach",
-          "trackSelectorType": "hierarchical",
-          "views": [
-            {
-              "type": "LinearGenomeView",
-              "id": "test1_1",
-              "offsetPx": 28249,
-              "bpPerPx": 1000,
-              "displayedRegions": [
-                {
-                  "refName": "Pp01",
-                  "assemblyName": "peach",
-                  "start": 0,
-                  "end": 100000000
-                }
-              ],
-              "tracks": [
-                {
-                  "type": "BasicTrack",
-                  "height": 100,
-                  "configuration": "peach_genes",
-                  "selectedRendering": ""
-                }
-              ],
-              "hideControls": false,
-              "hideHeader": true,
-              "hideCloseButton": true,
-              "trackSelectorType": "hierarchical"
-            },
-            {
-              "type": "LinearGenomeView",
-              "id": "test1_2",
-              "offsetPx": 0,
-              "bpPerPx": 1000,
-              "displayedRegions": [
-                {
-                  "refName": "chr1",
-                  "assemblyName": "grape",
-                  "start": 0,
-                  "end": 100000000
-                }
-              ],
-              "tracks": [
-                {
-                  "type": "BasicTrack",
-                  "height": 100,
-                  "configuration": "grape_genes",
-                  "selectedRendering": ""
-                }
-              ],
-              "hideControls": false,
-              "hideHeader": true,
-              "hideCloseButton": true,
-              "trackSelectorType": "hierarchical"
-            }
-          ]
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": ""
-        },
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
-        }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
       },
-      "activeWidgets": {},
-      "connections": {}
-    }
-  ],
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
+    "connections": {}
+  },
   "assemblies": [
     {
       "name": "grape",

@@ -1819,6 +1819,5 @@
   "connections": [],
   "defaultSession": {
     "name": "New Session"
-  },
-  "savedSessions": []
+  }
 }
