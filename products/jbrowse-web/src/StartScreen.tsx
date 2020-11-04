@@ -206,25 +206,32 @@ export default function StartScreen({
             </Grid>
           </Grid>
         </div>
-        <Typography variant="h5" className={classes.header}>
-          Recent sessions
-        </Typography>
-        <List style={{ overflow: 'auto', maxHeight: 200 }}>
-          {sessionNames
-            ? sessionNames.map((sessionName: string) => (
-                <RecentSessionCard
-                  key={sessionName}
-                  sessionName={sessionName}
-                  onClick={() => {
-                    setSessionToLoad(sessionName)
-                  }}
-                  onDelete={() => {
-                    setSessionToDelete(sessionName)
-                  }}
-                />
-              ))
-            : null}
-        </List>
+        <div>
+          <Typography variant="h5" className={classes.header}>
+            Recent sessions
+          </Typography>
+          <List
+            style={{
+              overflow: 'auto',
+              maxHeight: 200,
+            }}
+          >
+            {sessionNames
+              ? sessionNames.map((sessionName: string) => (
+                  <RecentSessionCard
+                    key={sessionName}
+                    sessionName={sessionName}
+                    onClick={() => {
+                      setSessionToLoad(sessionName)
+                    }}
+                    onDelete={() => {
+                      setSessionToDelete(sessionName)
+                    }}
+                  />
+                ))
+              : null}
+          </List>
+        </div>
       </Container>
 
       <Menu
