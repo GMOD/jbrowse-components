@@ -97,9 +97,7 @@ export default pluginManager => {
     if (featureData) {
       const viewType = pluginManager.getViewType('BreakpointSplitView')
       const feature = new SimpleFeature(featureData)
-      const ret = viewType.isBreakendFeature(feature)
-      console.log({ ret })
-      return ret
+      return viewType.isBreakendFeature(feature)
     }
 
     return false

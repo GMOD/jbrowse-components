@@ -41,7 +41,7 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
     })
     .catch(e => {
       console.error(e)
-      session.notify('${e}')
+      session.notify(`${e}`)
     })
 }
 
