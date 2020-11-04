@@ -1,13 +1,10 @@
-import {
-  ConfigurationReference,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { MenuItem } from '@jbrowse/core/ui'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import VisibilityIcon from '@material-ui/icons/Visibility'
 
-import { types, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
@@ -31,14 +28,19 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
     }))
     .views(self => {
-      const { trackMenuItems, renderProps } = self
+      const { trackMenuItems } = self
       return {
-        get newConf() {
-          return self.rendererType.configSchema.create({
-            showLabels: self.showLabels,
+        get renderProps() {
+          const config = self.rendererType.configSchema.create({
+            ...getConf(self, 'renderer'),
             displayMode: self.displayMode,
-            ...getSnapshot(renderProps.config),
+            showLabels: self.showLabels,
           })
+          return {
+            ...self.composedRenderProps,
+            ...getParentRenderProps(self),
+            config,
+          }
         },
         get trackMenuItems(): MenuItem[] {
           const displayModes = [
@@ -69,12 +71,6 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               })),
             },
           ]
-        },
-        get renderProps() {
-          return {
-            ...renderProps,
-            config: this.newConf,
-          }
         },
       }
     })
