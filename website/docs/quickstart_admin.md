@@ -30,7 +30,7 @@ Visit the link that is returned in your web browser.
 ### Adding an Assembly
 
 A key first step in configuring a genome browser is adding an assembly to view.
-In order to do this, use the navigation bar to open up the Assembly Manager (`Admin > Open Assembly Manager`)
+In order to do this, use the navigation bar to open up the Assembly Manager (`Admin > Open Assembly Manager`).
 
 This opens up a table which can be used to create, edit, and delete assemblies in your application
 
@@ -58,3 +58,30 @@ After clicking the back arrow to return to the table of assemblies, we see that 
 ![](./img/hg38_assembly_table.png)
 
 The assembly can be edited or deleted, but for now we will return to the application.
+
+### Accessing Configuration Settings
+
+In JBrowse 2, all assemblies and tracks are graphically configurable in Admin Mode.
+To illustrate how to access this, first we will open a Linear Genome View using the navigation bar (`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
+
+The configuration settings are accesible by clicking on the ellipses by each track
+
+![](./img/admin_settings_access.png)
+
+To demonstrate how this works, select the reference sequence track to activate it, and zoom in to view the bases on the Linear Genome View.
+Next, open the configuration editor for the track by clicking on the "Settings" button shown above.
+You can use the configuration editor to live edit any configurable value for a given track.
+
+Increase the height field in the rendering section
+
+![](./img/admin_height.png)
+
+You will be able to see this change live in the Linear Genome View.
+
+### Conclusion
+
+This quickstart showed how to launch the `admin-server` in the JBrowse2 CLI tools to perform graphical configuration of your application.
+Specifically, we looked at how to access and use the assembly manager, as well as how to access the configuration editor for tracks.
+Importantly, all tracks have different configuration options available in the configuration editor.
+
+Make sure to take a look for any tracks you add to JBrowse 2 that you might want to further configure!
