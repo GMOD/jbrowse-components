@@ -228,9 +228,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
-          <form>
+          <form
+            data-testid="search-form"
+          >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
@@ -250,6 +252,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
+                  data-testid="search-input"
                   type="text"
                   value="ctgA:1..100"
                 />
@@ -1037,9 +1040,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
-          <form>
+          <form
+            data-testid="search-form"
+          >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
@@ -1059,6 +1064,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
+                  data-testid="search-input"
                   type="text"
                   value="ctgA:1..100;ctgB:1,001..1,698"
                 />
