@@ -48,22 +48,27 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       // },
     },
     {
-      explicitIdentifier: 'trackId',
-      explicitlyTyped: true,
-      actions: (self: any) => ({
-        afterCreate() {
-          const displayTypes = new Set()
-          self.displays.forEach((d: any) => d && displayTypes.add(d.type))
-          const trackType = pluginManager.getTrackType(self.type)
+      preProcessSnapshot: s => {
+        const snap = JSON.parse(JSON.stringify(s))
+        const displayTypes = new Set()
+        const { displays = [] } = snap
+        if (snap.trackId !== 'placeholderId') {
+          displays.forEach((d: any) => d && displayTypes.add(d.type))
+          const trackType = pluginManager.getTrackType(snap.type)
           trackType.displayTypes.forEach(displayType => {
             if (!displayTypes.has(displayType.name)) {
-              self.addDisplayConf({
-                displayId: `${self.trackId}-${displayType.name}`,
+              displays.push({
+                displayId: `${snap.trackId}-${displayType.name}`,
                 type: displayType.name,
               })
             }
           })
-        },
+        }
+        return { ...snap, displays }
+      },
+      explicitIdentifier: 'trackId',
+      explicitlyTyped: true,
+      actions: (self: any) => ({
         addDisplayConf(displayConf: { type: string; displayId: string }) {
           const { type } = displayConf
           if (!type) throw new Error(`unknown display type ${type}`)
