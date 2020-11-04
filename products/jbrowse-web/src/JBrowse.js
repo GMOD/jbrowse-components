@@ -7,8 +7,6 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import ShareButton from './ShareButton'
-// import StartScreen from './StartScreen'
-// import factoryReset from './factoryReset'
 
 function deleteBaseUris(config) {
   if (typeof config === 'object') {
@@ -26,7 +24,6 @@ const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [adminServer] = useQueryParam('adminServer', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
-
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
