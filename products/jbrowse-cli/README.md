@@ -36,6 +36,7 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
 - [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
 - [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+- [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
@@ -276,6 +277,34 @@ EXAMPLES
 ```
 
 _See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/add-track-json.ts)_
+
+## `jbrowse admin-server`
+
+Start up a small admin server for JBrowse configuration
+
+```
+USAGE
+  $ jbrowse admin-server
+
+OPTIONS
+  -h, --help       show CLI help
+
+  -p, --port=port  Specifified port to start the server on;
+                   Default is 9090.
+
+  --out=out        synonym for target
+
+  --skipCheck      Don't check whether or not you are in a JBrowse directory
+
+  --target=target  path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
+
+EXAMPLES
+  $ jbrowse admin-server
+  $ jbrowse admin-server -p 8888
+```
+
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/%40jbrowse%2Fcli%400.0.1-beta.26/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
