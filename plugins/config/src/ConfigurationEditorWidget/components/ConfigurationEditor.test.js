@@ -5,7 +5,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Alignments from '@jbrowse/plugin-alignments'
 import SVG from '@jbrowse/plugin-svg'
-import { configSchemaFactory as linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments/src/LinearPileupDisplay'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import ConfigurationEditor from './ConfigurationEditor'
 

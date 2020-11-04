@@ -109,7 +109,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
   expect(model.trackSelectorType).toBe('hierarchical')
 })
 
-test.only('can instantiate a model that lets you navigate', () => {
+test('can instantiate a model that lets you navigate', () => {
   const session = Session.create({
     configuration: {},
   })

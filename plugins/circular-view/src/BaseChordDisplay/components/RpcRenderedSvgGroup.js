@@ -20,7 +20,6 @@ export default ({ jbrequire }) => {
             domNode.style.display = 'none'
             requestIdleCallback(() => unmountComponentAtNode(domNode))
           }
-          domNode.innerHTML = `<g data-testid="rpc-rendered-circular-chord-display" className="ssr-container-inner"></g>`
           domNode.style.display = 'inline'
           domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering

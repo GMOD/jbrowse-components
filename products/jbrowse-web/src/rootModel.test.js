@@ -70,6 +70,7 @@ describe('Root MST model', () => {
             aliases: ['assemblyA'],
             sequence: {
               trackId: 'sequenceConfigId',
+              type: 'ReferenceSequenceTrack',
               adapter: {
                 type: 'FromConfigAdapter',
                 features: [

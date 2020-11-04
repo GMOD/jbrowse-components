@@ -81,7 +81,7 @@ export default ({ jbrequire }) => {
       ])
       return (
         <path
-          data-testid={feature.id()}
+          data-testid={`chord-${feature.id()}`}
           d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
           style={{ stroke: strokeColor }}
           onClick={evt =>
@@ -145,7 +145,7 @@ export default ({ jbrequire }) => {
     }
     const trackStyleId = `chords-${displayModel.id}`
     return (
-      <g id={trackStyleId}>
+      <g id={trackStyleId} data-testid="structuralVariantChordRenderer">
         <style
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{

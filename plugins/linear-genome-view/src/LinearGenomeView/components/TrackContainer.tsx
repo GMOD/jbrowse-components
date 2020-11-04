@@ -118,7 +118,7 @@ function TrackContainer(props: {
         }}
         onDragEnter={debouncedOnDragEnter}
         data-testid={`trackRenderingContainer-${view.id}-${getConf(
-          display,
+          track,
           'trackId',
         )}`}
         role="presentation"

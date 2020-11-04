@@ -3,7 +3,6 @@ import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import sizeMe from 'react-sizeme'
 import 'requestidlecallback-polyfill'
-import { getSnapshot } from 'mobx-state-tree'
 import LinearGenomeView from './LinearGenomeView'
 
 sizeMe.noPlaceholders = true
