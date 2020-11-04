@@ -219,6 +219,21 @@ export default class AddTrack extends JBrowseCommand {
       trackConfig.description = description
     }
 
+    // any special track modifications go here
+    switch (type) {
+      case 'AlignmentsTrack': {
+        const assembly = configContents.assemblies.find(
+          asm => asm.name === assemblyNames,
+        )
+        if (assembly) {
+          trackConfig.adapter.sequenceAdapter = assembly.sequence.adapter
+        } else if (!skipCheck) {
+          this.error(`Failed to find assemblyName ${assemblyNames}`)
+        }
+        break
+      }
+    }
+
     if (!configContents.tracks) {
       configContents.tracks = []
     }
