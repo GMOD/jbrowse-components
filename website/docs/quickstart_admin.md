@@ -30,9 +30,7 @@ Visit the link that is returned in your web browser.
 ### Adding an Assembly
 
 A key first step in configuring a genome browser is adding an assembly to view.
-In order to do this, use the navigation bar to open up the Assembly Manager:
-
-![](./img/open_assembly_manager.png)
+In order to do this, use the navigation bar to open up the Assembly Manager (`Admin > Open Assembly Manager`)
 
 This opens up a table which can be used to create, edit, and delete assemblies in your application
 
