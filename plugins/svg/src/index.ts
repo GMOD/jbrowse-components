@@ -25,7 +25,7 @@ export default class SVGPlugin extends Plugin {
         }),
     )
     pluginManager.addTrackType(() => {
-      const configSchema = featuresTrackConfigSchema
+      const configSchema = featuresTrackConfigSchema(pluginManager)
       return new TrackType({
         name: 'FeatureTrack',
         stateModel: featuresTrackModelFactory(configSchema),

@@ -1,18 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-// import {
-//   isAbortException,
-//   getSession,
-//   getContainingView,
-// } from '@jbrowse/core/util'
-// import {
-//   getParentRenderProps,
-//   getRpcSessionId,
-//   getTrackAssemblyNames,
-// } from '@jbrowse/core/util/tracks'
 import { blockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
-// import { autorun, observable } from 'mobx'
 import {
   addDisposer,
   getSnapshot,
@@ -21,34 +10,20 @@ import {
   Instance,
 } from 'mobx-state-tree'
 
-// import { getNiceDomain } from '../util'
-
-// import FeatureTrackComponent from './components/FeatureTrackComponent'
-// import Tooltip from './components/Tooltip'
-// import { FeatureStats } from '../statsUtil'
-
 // using a map because it preserves order
-// const rendererTypes = new Map([
-//   ['xyplot', 'XYPlotRenderer'],
-//   ['density', 'DensityRenderer'],
-//   ['line', 'LinePlotRenderer'],
-// ])
-
-// function logb(x: number, y: number) {
-//   return Math.log(y) / Math.log(x)
-// }
-// function round(v: number, b = 1.5) {
-//   return (v >= 0 ? 1 : -1) * Math.pow(b, 1 + Math.floor(logb(b, Math.abs(v))))
-// }
+const rendererTypes = new Map([
+  ['pileup', 'PileupRenderer'],
+  ['svg', 'SvgFeatureRenderer'],
+])
 
 const stateModelFactory = (configSchema: unknown) =>
   types
     .compose(
-      'FeaturesTrack',
+      'FeatureTrack',
       blockBasedTrackModel,
       types
         .model({
-          type: types.literal('FeaturesTrack'),
+          type: types.literal('FeatureTrack'),
           showLabels: types.maybe(types.boolean, true),
           displayMode: types.maybe(types.string, 'normal'),
           configuration: ConfigurationReference(configSchema),
@@ -68,6 +43,13 @@ const stateModelFactory = (configSchema: unknown) =>
     .views(self => {
       const { trackMenuItems } = self
       return {
+        /**
+         * the renderer type name is based on the "view"
+         * selected in the UI: pileup, coverage, etc
+         */
+        get rendererTypeName() {
+          return 'SvgFeatureRenderer'
+        },
         get trackMenuItems(): MenuItem[] {
           const displayModes = [
             'compact',
