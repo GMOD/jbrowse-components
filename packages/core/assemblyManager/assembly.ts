@@ -343,10 +343,14 @@ async function loadAssemblyReaction(
       aliases.forEach(alias => {
         checkRefName(alias)
         refNameAliases[alias] = refName
-        refNameAliases[refName] = refName
       })
     })
   }
+
+  // add identity to the refNameAliases list
+  adapterRegionsWithAssembly.forEach(region => {
+    refNameAliases[region.refName] = region.refName
+  })
   // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
