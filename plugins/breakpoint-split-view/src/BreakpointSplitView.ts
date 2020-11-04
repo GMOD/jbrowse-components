@@ -8,6 +8,22 @@ import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
 
 class BreakpointSplitViewType extends ViewType {
+  isBreakendFeature(feature) {
+    const breakendSpecification = (feature.get('ALT') || [])[0]
+    if (breakendSpecification) {
+      // a VCF breakend feature
+      if (breakendSpecification === '<TRA>') {
+        return true
+      }
+      if (breakendSpecification.MatePosition) {
+        return true
+      }
+    }
+    if (feature.get('mate')) {
+      return true
+    }
+  }
+
   async snapshotFromBreakendFeature(
     feature: Feature,
     view: LinearGenomeViewModel,

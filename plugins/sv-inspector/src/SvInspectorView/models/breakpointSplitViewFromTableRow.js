@@ -27,7 +27,7 @@ export default pluginManager => {
     return undefined
   }
 
-  function breakpointSplitViewSnapshotFromTableRow(
+  async function breakpointSplitViewSnapshotFromTableRow(
     svInspectorView,
     spreadsheetView,
     spreadsheet,
@@ -46,7 +46,7 @@ export default pluginManager => {
       session.setSelection(feature)
       const viewType = pluginManager.getViewType('BreakpointSplitView')
       const { circularView } = svInspectorView
-      const viewSnapshot = viewType.snapshotFromBreakendFeature(
+      const viewSnapshot = await viewType.snapshotFromBreakendFeature(
         feature,
         circularView,
       )
@@ -88,14 +88,16 @@ export default pluginManager => {
     rowNumber,
   ) {
     try {
-      const viewSnapshot = breakpointSplitViewSnapshotFromTableRow(
-        svInspectorView,
-        spreadsheetView,
+      const featureData = getSerializedFeatureForRow(
+        session,
         spreadsheet,
         row,
         rowNumber,
       )
-      return Boolean(viewSnapshot)
+      if (featureData) {
+        const viewType = pluginManager.getViewType('BreakpointSplitView')
+        return viewType.isBreakendFeature(feature)
+      }
     } catch (e) {
       return false
     }
