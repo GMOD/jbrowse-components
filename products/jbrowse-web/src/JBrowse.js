@@ -26,16 +26,10 @@ const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
   const [adminServer] = useQueryParam('adminServer', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
-  const [firstLoad, setFirstLoad] = useState(true)
 
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
-  if (firstLoad && session) setFirstLoad(false)
-
-  // console.log('pm', pluginManager)
-  // console.log('rootModel', pluginManager.rootModel)
-  // console.log('session', pluginManager.rootModel.session)
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
