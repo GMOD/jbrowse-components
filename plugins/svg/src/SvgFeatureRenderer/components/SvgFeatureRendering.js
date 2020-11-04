@@ -37,14 +37,15 @@ function RenderedFeatureGlyph(props) {
   let fontHeight
   let expansion
   if (labelsAllowed) {
+    const showLabels = readConfObject(config, 'showLabels')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
     expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-    shouldShowName = /\S/.test(name)
+    shouldShowName = /\S/.test(name) && showLabels
 
     description =
       readConfObject(config, ['labels', 'description'], [feature]) || ''
-    shouldShowDescription = /\S/.test(description)
+    shouldShowDescription = /\S/.test(description) && showLabels
     const fontWidth = fontHeight * fontWidthScaleFactor
     const textVerticalPadding = 2
 

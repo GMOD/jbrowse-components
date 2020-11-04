@@ -1,9 +1,13 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
-import { types, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
@@ -11,27 +15,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     .compose(
       'FeatureTrack',
       basicTrackStateModelFactory(configSchema),
-      types
-        .model({
-          type: types.literal('FeatureTrack'),
-          showLabels: types.maybe(types.boolean, true),
-          displayMode: types.maybe(types.string, 'normal'),
-          configuration: ConfigurationReference(configSchema),
-        })
-        .volatile(() => ({
-          // avoid circular reference since FeatureTrackComponent receives this model
-        })),
+      types.model({
+        type: types.literal('FeatureTrack'),
+        showLabels: types.optional(types.boolean, true),
+        displayMode: types.optional(types.string, 'normal'),
+        configuration: ConfigurationReference(configSchema),
+      }),
     )
     .actions(self => ({
-      setShowLabels(val: boolean) {
-        self.showLabels = val
+      toggleShowLabels() {
+        self.showLabels = !self.showLabels
       },
       setDisplayMode(val: string) {
         self.displayMode = val
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
+      const { trackMenuItems, renderProps } = self
       return {
         get trackMenuItems(): MenuItem[] {
           const displayModes = [
@@ -46,28 +46,32 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               label: 'Show labels',
               icon: VisibilityIcon,
               type: 'checkbox',
-              onClick: val => {
-                self.setShowLabels(val)
+              checked: self.showLabels,
+              onClick: () => {
+                self.toggleShowLabels()
               },
             },
-            // {
-            //   label: 'Display mode',
-            //   icon: VisibilityIcon,
-            //   type: 'checkbox',
-            //   subMenu: [
-            //     {
-            //       'label': 'Compact',
-            //       onClick: () => {
-            //         self.setDisplayMode
-            //       }
-
-            //     },
-
-            //   ]
-            //   onClick: self.toggleCoverage,
-            //   checked: self.showCoverage,
-            // },
+            {
+              label: 'Display mode',
+              icon: VisibilityIcon,
+              subMenu: displayModes.map(val => ({
+                label: val,
+                onClick: () => {
+                  self.setDisplayMode(val)
+                },
+              })),
+            },
           ]
+        },
+        get renderProps() {
+          return {
+            ...renderProps,
+            config: self.rendererType.configSchema.create({
+              showLabels: self.showLabels,
+              displayMode: self.displayMode,
+              ...getSnapshot(renderProps.config),
+            }),
+          }
         },
       }
     })
