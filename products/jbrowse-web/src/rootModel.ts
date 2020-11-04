@@ -8,6 +8,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
 import {
   addDisposer,
   cast,
@@ -240,6 +241,14 @@ export default function RootModel(
                   localStorage.setItem(self.previousAutosaveId, lastAutosave)
                 }
                 session.setDefaultSession()
+              },
+            },
+            {
+              label: 'Return to splash screen',
+              icon: AppsIcon,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: () => {
+                self.setSession(undefined)
               },
             },
           ],
