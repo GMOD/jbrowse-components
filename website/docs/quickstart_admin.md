@@ -68,15 +68,8 @@ The configuration settings are accesible by clicking on the ellipses by each tra
 
 ![](./img/admin_settings_access.png)
 
-To demonstrate how this works, select the reference sequence track to activate it, and zoom in to view the bases on the Linear Genome View.
-Next, open the configuration editor for the track by clicking on the "Settings" button shown above.
+Open the configuration editor for the track by clicking on the "Settings" button shown above.
 You can use the configuration editor to live edit any configurable value for a given track.
-
-Increase the height field in the rendering section
-
-![](./img/admin_height.png)
-
-You will be able to see this change live in the Linear Genome View.
 
 ### Conclusion
 
