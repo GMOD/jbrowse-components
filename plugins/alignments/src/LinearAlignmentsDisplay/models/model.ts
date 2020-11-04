@@ -3,7 +3,6 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import VisibilityIcon from '@material-ui/icons/Visibility'
 import deepEqual from 'deep-equal'
 import { autorun } from 'mobx'
 import {

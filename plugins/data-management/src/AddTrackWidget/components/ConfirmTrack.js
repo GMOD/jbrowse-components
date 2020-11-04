@@ -12,7 +12,7 @@ import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const useStyles = makeStyles(theme => ({
   spacing: {
@@ -23,6 +23,8 @@ const useStyles = makeStyles(theme => ({
 function ConfirmTrack({
   trackData,
   trackName,
+  fileName,
+  indexTrackData,
   setTrackAdapter,
   setTrackName,
   trackType,
@@ -33,11 +35,49 @@ function ConfirmTrack({
   session,
 }) {
   const classes = useStyles()
+  const [error, setError] = useState()
   useEffect(() => {
     if (trackData.uri) {
-      const adapter = guessAdapter(trackData.uri, 'uri')
+      const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
       setTrackAdapter(adapter)
       setTrackType(guessTrackType(adapter.type))
+
+      // check for whether the user entered an absolute URL
+      if (
+        !(
+          (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
+          trackData.uri.startsWith('http')
+        )
+      ) {
+        setError(
+          `Warning: one or more of your files do not provide the protocol e.g.
+          https://, please provide an absolute URL unless you are sure a
+          relative URL is intended.`,
+        )
+      }
+
+      // check for accessing an http url when we are running on https, which is
+      // disallowed
+      else if (
+        window.location.protocol === 'https:' &&
+        ((indexTrackData.uri && indexTrackData.uri.startsWith('http://')) ||
+          trackData.uri.startsWith('http://'))
+      ) {
+        setError(
+          `Warning: You entered a http:// resources but we cannot access HTTP
+          resources from JBrowse when it is running on https. Please use an
+          https URL for your track, or access the JBrowse app from the http
+          protocol`,
+        )
+      }
+
+      // check for ftp url inputs
+      else if (
+        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
+        trackData.uri.startsWith('ftp://')
+      ) {
+        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
+      }
     }
     if (trackData.localPath) {
       const adapter = guessAdapter(trackData.localPath, 'localPath')
@@ -45,7 +85,7 @@ function ConfirmTrack({
       setTrackType(guessTrackType(adapter.type))
     }
     if (trackData.config) setTrackAdapter({ type: 'FromConfigAdapter' })
-  }, [trackData, setTrackAdapter, setTrackType])
+  }, [trackData, setTrackAdapter, indexTrackData, setTrackType])
 
   function handleAssemblyChange(event) {
     setAssembly(event.target.value)
@@ -169,12 +209,15 @@ function ConfirmTrack({
     return (
       <>
         {message}
+        {error ? (
+          <Typography style={{ color: 'orange' }}>{error}</Typography>
+        ) : null}
         <TextField
           className={classes.spacing}
           label="trackName"
           helperText="A name for this track"
           fullWidth
-          value={trackName}
+          value={trackName || fileName}
           onChange={event => setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
@@ -217,7 +260,7 @@ function ConfirmTrack({
           {session.assemblies.map(assemblyConf => {
             const assemblyName = readConfObject(assemblyConf, 'name')
             return (
-              <MenuItem key={assemblyName} value={assemblyConf}>
+              <MenuItem key={assemblyName} value={assemblyName}>
                 {assemblyName}
               </MenuItem>
             )
@@ -240,7 +283,13 @@ ConfirmTrack.propTypes = {
     localPath: PropTypes.string,
     config: PropTypes.array,
   }).isRequired,
+  indexTrackData: PropTypes.shape({
+    uri: PropTypes.string,
+    localPath: PropTypes.string,
+    config: PropTypes.array,
+  }).isRequired,
   trackName: PropTypes.string.isRequired,
+  fileName: PropTypes.string,
   setTrackName: PropTypes.func.isRequired,
   trackType: PropTypes.string,
   setTrackType: PropTypes.func.isRequired,
@@ -257,6 +306,7 @@ ConfirmTrack.propTypes = {
 ConfirmTrack.defaultProps = {
   assembly: '',
   trackType: '',
+  fileName: '',
 }
 
 export default observer(ConfirmTrack)

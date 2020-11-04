@@ -4,9 +4,9 @@ import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
 import Typography from '@material-ui/core/Typography'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
@@ -63,16 +63,16 @@ export const BaseCard: React.FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title } = props
   return (
-    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded>
-      <ExpansionPanelSummary
+    <Accordion style={{ marginTop: '4px' }} defaultExpanded>
+      <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
         <Typography variant="button"> {title}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.expansionPanelDetails}>
+      </AccordionSummary>
+      <AccordionDetails className={classes.expansionPanelDetails}>
         {children}
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+      </AccordionDetails>
+    </Accordion>
   )
 }
 

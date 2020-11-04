@@ -7,8 +7,16 @@ const { AWS_REGION: region, sessionTable } = process.env
 
 const dynamodb = new AWS.DynamoDB({ apiVersion: '2012-08-10', region })
 
+// slice of session hash in base64, add a math.random so that same session maps
+// to new id
 function generateSessionId(session) {
-  return createHash('sha256').update(session).digest('hex')
+  return createHash('sha256')
+    .update(session + Math.random())
+    .digest('base64')
+    .slice(0, 10)
+    .replace('+', '-')
+    .replace('/', '_')
+    .replace(/=+$/, '')
 }
 
 async function uploadSession(sessionId, session, dateShared, referer) {

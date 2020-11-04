@@ -84,13 +84,6 @@ async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
 
 describe('admin-server', () => {
   setupWithCreate
-    .do(async () => {
-      await fsPromises.unlink('manifest.json')
-    })
-    .command(['admin-server'])
-    .exit(10)
-    .it('fails if no manifest.json found in cwd')
-  setupWithCreate
     .command(['admin-server', '--port', '9091'])
     .finally(async ctx => {
       await killExpress(ctx, 9091)

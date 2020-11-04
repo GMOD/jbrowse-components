@@ -1,5 +1,3 @@
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-
 // material ui things
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
@@ -34,7 +32,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
-  const session = getSession(model)
 
   // the AboutDialog is shown at this level because if it is
   // rendered as a child of the TracksContainer, then clicking on
@@ -77,13 +74,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                   variant="contained"
                   color="primary"
                   onClick={model.activateTrackSelector}
-                  disabled={
-                    isSessionModelWithWidgets(session) &&
-                    session.visibleWidget &&
-                    session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                    // @ts-ignore
-                    session.visibleWidget.view.id === model.id
-                  }
                 >
                   Select Tracks
                 </Button>

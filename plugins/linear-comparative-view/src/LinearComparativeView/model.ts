@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import CompositeMap from '@jbrowse/core/util/compositeMap'
-
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import {
@@ -8,7 +7,6 @@ import {
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import PluginManager from '@jbrowse/core/PluginManager'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
@@ -32,34 +30,38 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
   const defaultHeight = 400
   return types
-    .model('LinearComparativeView', {
-      id: ElementId,
-      type: types.literal('LinearComparativeView'),
-      height: defaultHeight,
-      displayName: 'synteny detail',
-      trackSelectorType: 'hierarchical',
-      showIntraviewLinks: true,
-      linkViews: false,
-      interactToggled: false,
-      tracks: types.array(
-        pluginManager.pluggableMstType('track', 'stateModel'),
-      ),
-      views: types.array(
-        pluginManager.getViewType('LinearGenomeView')
-          .stateModel as LinearGenomeViewStateModel,
-      ),
+    .compose(
+      'LinearComparativeView',
+      BaseViewModel,
+      types.model({
+        id: ElementId,
+        type: types.literal('LinearComparativeView'),
+        height: defaultHeight,
+        displayName: 'synteny detail',
+        trackSelectorType: 'hierarchical',
+        showIntraviewLinks: true,
+        linkViews: false,
+        interactToggled: false,
+        tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        ),
+        views: types.array(
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
+        ),
 
-      // this represents tracks specific to this view
-      // specifically used for read vs ref dotplots where
-      // this track would not really apply elsewhere
-      viewTrackConfigs: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
+        // this represents tracks specific to this view
+        // specifically used for read vs ref dotplots where
+        // this track would not really apply elsewhere
+        viewTrackConfigs: types.array(
+          pluginManager.pluggableConfigSchemaType('track'),
+        ),
 
-      // this represents assemblies in the specialized
-      // read vs ref dotplot view
-      viewAssemblyConfigs: types.array(types.frozen()),
-    })
+        // this represents assemblies in the specialized
+        // read vs ref dotplot view
+        viewAssemblyConfigs: types.array(types.frozen()),
+      }),
+    )
     .volatile(() => ({
       headerHeight: 0,
       width: 800,
@@ -79,13 +81,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
       },
 
-      // Get a composite map of featureId->feature map for a track
-      // across multiple views
-      getTrackFeatures(trackIds: string[]) {
-        // @ts-ignore
-        const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
-        return new CompositeMap<string, Feature>(tracks.map(t => t.features))
-      },
+      // // Get a composite map of featureId->feature map for a track
+      // // across multiple views
+      // getTrackFeatures(trackIds: string[]) {
+      //   // @ts-ignore
+      //   const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
+      //   return new CompositeMap<string, Feature>(tracks.map(t => t.features))
+      // },
     }))
     .actions(self => ({
       afterAttach() {
@@ -118,10 +120,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             view[actionName](args[0])
           }
         })
-      },
-
-      setDisplayName(name: string) {
-        self.displayName = name
       },
 
       setWidth(newWidth: number) {

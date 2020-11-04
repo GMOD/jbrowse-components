@@ -117,10 +117,7 @@ function TrackContainer(props: {
           display.setScrollTop(target.scrollTop)
         }}
         onDragEnter={debouncedOnDragEnter}
-        data-testid={`trackRenderingContainer-${view.id}-${getConf(
-          track,
-          'trackId',
-        )}`}
+        data-testid={`trackRenderingContainer-${view.id}-${trackId}`}
         role="presentation"
       >
         <div

@@ -214,7 +214,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           } catch (err1) {
             // ignore
           }
-          if (this.hasWidget(node)) {
+
+          // @ts-ignore
+          if (self.widgets.has(node.id)) {
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'

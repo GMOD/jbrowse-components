@@ -20,6 +20,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam' }}
+        indexTrackData={{ uri: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -43,6 +44,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam' }}
+        indexTrackData={{ uri: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -67,6 +69,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ localPath: 'test.bam' }}
+        indexTrackData={{ localPath: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -91,6 +94,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam', config: [] }}
+        indexTrackData={{ uri: 'test.bam.bai', config: [] }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
