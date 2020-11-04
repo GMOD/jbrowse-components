@@ -39,11 +39,6 @@ function NewSessionCard({ name, onClick, image }) {
         raised={Boolean(hovered)}
       >
         <CardMedia className={classes.media} image={image} />
-        {/* <CardContent
-          style={{ textAlign: 'center', margin: 'auto', padding: 0 }}
-        >
-          {children}
-        </CardContent> */}
       </Card>
       <Typography variant="subtitle2" className={classes.name}>
         {name}
