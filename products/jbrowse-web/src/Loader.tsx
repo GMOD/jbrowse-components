@@ -357,7 +357,6 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-    const [defaultScreen, setDefaultScreen] = useState(false)
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -397,21 +396,14 @@ const Renderer = observer(
             // setDefaultSession, even though we know this exists now
             if (rootModel.session) {
               rootModel.session.notify(
-                `Error loading session: ${sessionError.message}. If you received this
-                URL from another user, request that they send you a session
-                generated with the "Share" button instead of copying and
-                pasting their URL`,
+                `Error loading session: ${sessionError.message}. If you
+                received this URL from another user, request that they send you
+                a session generated with the "Share" button instead of copying
+                and pasting their URL`,
               )
-            }
-            if (
-              rootModel.session?.views.length === 0 &&
-              defaultScreen === false
-            ) {
-              setDefaultScreen(true)
             }
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
-            setDefaultScreen(false)
           } else {
             const defaultJBrowseSession = rootModel.jbrowse.defaultSession
             if (defaultJBrowseSession?.views) {
@@ -457,8 +449,6 @@ const Renderer = observer(
       setPassword,
       initialTimestamp,
       initialSessionQuery,
-      defaultScreen,
-      setDefaultScreen,
     ])
 
     if (configError) {
