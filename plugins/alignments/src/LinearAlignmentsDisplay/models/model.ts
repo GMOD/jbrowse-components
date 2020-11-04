@@ -108,20 +108,6 @@ const stateModelFactory = (
         get trackMenuItems(): MenuItem[] {
           return [
             ...trackMenuItems,
-            {
-              label: 'Show coverage display',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              onClick: self.toggleCoverage,
-              checked: self.showCoverage,
-            },
-            {
-              label: 'Show pileup display',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showPileup,
-              onClick: self.togglePileup,
-            },
             ...self.PileupDisplay.composedTrackMenuItems,
             ...self.SNPCoverageDisplay.composedTrackMenuItems,
           ]

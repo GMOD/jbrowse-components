@@ -197,12 +197,14 @@ export function createBaseTrackModel(
         )
         const shownId = self.displays[0].configuration.displayId
         if (compatibleDisplays.length > 1) {
-          displayChoices.push({ type: 'divider' })
+          displayChoices.push(
+            { type: 'divider' },
+            { type: 'subHeader', label: 'Display types' },
+          )
           compatibleDisplays.forEach((displayConf: any) => {
             displayChoices.push({
               type: 'radio',
-              label: `Show display ${displayConf.type}`,
-              icon: InfoIcon,
+              label: `${displayConf.type}`,
               onClick: () => {
                 self.replaceDisplay(shownId, displayConf.displayId)
               },
