@@ -301,79 +301,18 @@ export function guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
   }
 }
 
-export function guessSubadapter(
-  fileName: string,
-  protocol: string,
-  mainAdapter: string,
-) {
-  if (/\.bam$/i.test(fileName)) {
-    return {
-      type: mainAdapter,
-      subadapter: {
-        type: 'BamAdapter',
-        bamLocation: { [protocol]: fileName },
-        index: { location: { [protocol]: `${fileName}.bai` } },
-      },
-    }
-  }
-  if (/\.bai$/i.test(fileName)) {
-    return {
-      type: mainAdapter,
-      subadapter: {
-        type: 'BamAdapter',
-        bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
-        index: { location: { [protocol]: fileName } },
-      },
-    }
-  }
-  if (/\.bam.csi$/i.test(fileName)) {
-    return {
-      type: mainAdapter,
-      subadapter: {
-        type: 'BamAdapter',
-        bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
-        index: { location: { [protocol]: fileName }, indexType: 'CSI' },
-      },
-    }
-  }
-
-  if (/\.cram$/i.test(fileName)) {
-    return {
-      type: mainAdapter,
-      subadapter: {
-        type: 'CramAdapter',
-        cramLocation: { [protocol]: fileName },
-        craiLocation: { [protocol]: `${fileName}.crai` },
-      },
-    }
-  }
-  if (/\.crai$/i.test(fileName)) {
-    return {
-      type: mainAdapter,
-      subadapter: {
-        type: 'CramAdapter',
-        cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },
-        craiLocation: { [protocol]: fileName },
-      },
-    }
-  }
-  return {
-    type: UNSUPPORTED,
-  }
-}
-
 export function guessTrackType(adapterType: string): string {
   const known: { [key: string]: string | undefined } = {
     BamAdapter: 'AlignmentsTrack',
     CramAdapter: 'AlignmentsTrack',
-    BgzipFastaAdapter: 'SequenceTrack',
-    BigWigAdapter: 'WiggleTrack',
-    IndexedFastaAdapter: 'SequenceTrack',
-    TwoBitAdapter: 'SequenceTrack',
+    BgzipFastaAdapter: 'ReferenceSequenceTrack',
+    BigWigAdapter: 'QuantitativeTrack',
+    IndexedFastaAdapter: 'ReferenceSequenceTrack',
+    TwoBitAdapter: 'ReferenceSequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
   }
-  return known[adapterType] || 'BasicTrack'
+  return known[adapterType] || 'FeatureTrack'
 }
 
 export function generateUnsupportedTrackConf(
@@ -382,7 +321,7 @@ export function generateUnsupportedTrackConf(
   categories: string[] | undefined,
 ) {
   const conf = {
-    type: 'BasicTrack',
+    type: 'FeatureTrack',
     name: `${trackName} (Unsupported)`,
     description: `Support not yet implemented for "${trackUrl}"`,
     category: categories,
@@ -398,7 +337,7 @@ export function generateUnknownTrackConf(
   categories: string[] | undefined,
 ) {
   const conf = {
-    type: 'BasicTrack',
+    type: 'FeatureTrack',
     name: `${trackName} (Unknown)`,
     description: `Could not determine track type for "${trackUrl}"`,
     category: categories,
