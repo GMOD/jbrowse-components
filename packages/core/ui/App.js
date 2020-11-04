@@ -74,7 +74,6 @@ function App({ session, HeaderButtons }) {
       session.renameCurrentSession(newName)
     }
   }
-  // may need to render the splash screen here after modified folder packages/app-core
   return (
     <div
       className={classes.root}
