@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseTrackConfig } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-export function configSchemaFactory(pluginManager: PluginManager) {
+export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'FeatureTrack',
     {
