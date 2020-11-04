@@ -33,6 +33,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     .views(self => {
       const { trackMenuItems, renderProps } = self
       return {
+        get newConf() {
+          return self.rendererType.configSchema.create({
+            showLabels: self.showLabels,
+            displayMode: self.displayMode,
+            ...getSnapshot(renderProps.config),
+          })
+        },
         get trackMenuItems(): MenuItem[] {
           const displayModes = [
             'compact',
@@ -66,11 +73,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         get renderProps() {
           return {
             ...renderProps,
-            config: self.rendererType.configSchema.create({
-              showLabels: self.showLabels,
-              displayMode: self.displayMode,
-              ...getSnapshot(renderProps.config),
-            }),
+            config: this.newConf,
           }
         },
       }
