@@ -386,16 +386,15 @@ const Renderer = observer(
             assemblyManager: {},
             version: packagedef.version,
             configPath,
-            // add initial to root
           })
 
           // in order: saves the previous autosave for recovery, tries to load
           // the local session if session in query, or loads the default
           // session
           if (sessionError) {
-            // will need to got to splash Screen
             rootModel.setDefaultSession()
-            // make typescript happy by checking for session after setDefaultSession
+            // make typescript happy by checking for session after
+            // setDefaultSession, even though we know this exists now
             if (rootModel.session) {
               rootModel.session.notify(
                 `Error loading session: ${sessionError.message}. If you received this
@@ -414,13 +413,6 @@ const Renderer = observer(
             rootModel.setSession(loader.sessionSnapshot)
             setDefaultScreen(false)
           } else {
-            // rootModel.setDefaultSession()
-            // if (
-            //   rootModel.session?.views.length === 0 &&
-            //   defaultScreen === false
-            // ) {
-            //   setDefaultScreen(true)
-            // }
             const defaultJBrowseSession = rootModel.jbrowse.defaultSession
             if (defaultJBrowseSession?.views) {
               if (defaultJBrowseSession.views.length > 0) {
@@ -437,10 +429,6 @@ const Renderer = observer(
             writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
             writeGAAnalytics(rootModel, initialTimestamp)
           }
-
-          // if (!rootModel.session) {
-          //   throw new Error('root model did not have any session defined')
-          // }
 
           // TODO use UndoManager
           // rootModel.setHistory(
