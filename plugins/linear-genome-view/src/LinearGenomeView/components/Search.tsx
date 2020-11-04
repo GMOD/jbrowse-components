@@ -33,6 +33,9 @@ export default observer(({ model }: { model: LinearGenomeViewModel }) => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
+
+        // need to manually call the action of blur here
+        setValue(undefined)
       }}
     >
       <TextField
