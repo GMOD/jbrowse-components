@@ -87,20 +87,22 @@ export default pluginManager => {
     row,
     rowNumber,
   ) {
-    try {
-      const featureData = getSerializedFeatureForRow(
-        session,
-        spreadsheet,
-        row,
-        rowNumber,
-      )
-      if (featureData) {
-        const viewType = pluginManager.getViewType('BreakpointSplitView')
-        return viewType.isBreakendFeature(feature)
-      }
-    } catch (e) {
-      return false
+    const session = getSession(spreadsheetView)
+    const featureData = getSerializedFeatureForRow(
+      session,
+      spreadsheet,
+      row,
+      rowNumber,
+    )
+    if (featureData) {
+      const viewType = pluginManager.getViewType('BreakpointSplitView')
+      const feature = new SimpleFeature(featureData)
+      const ret = viewType.isBreakendFeature(feature)
+      console.log({ ret })
+      return ret
     }
+
+    return false
   }
 
   return {

@@ -8,7 +8,7 @@ import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
 
 class BreakpointSplitViewType extends ViewType {
-  isBreakendFeature(feature) {
+  isBreakendFeature(feature: Feature) {
     const breakendSpecification = (feature.get('ALT') || [])[0]
     if (breakendSpecification) {
       // a VCF breakend feature
@@ -22,6 +22,7 @@ class BreakpointSplitViewType extends ViewType {
     if (feature.get('mate')) {
       return true
     }
+    return false
   }
 
   async snapshotFromBreakendFeature(
