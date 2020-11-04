@@ -14,7 +14,7 @@ This tutorial requires having the following software installed
 
 - [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-install-jbrowse)
 
-### Starting JBrowse2 Admin Server
+### Starting JBrowse 2 admin server
 
 One useful feature provided with the JBrowse 2 CLI tools is the admin server.
 This server enables an administrator to quickly launch their instance of JBrowse 2 in "admin mode", which can be used for graphical configuration of your application.
@@ -27,7 +27,7 @@ jbrowse admin-server
 
 Visit the link that is returned in your web browser.
 
-### Adding an Assembly
+### Adding an assembly
 
 A key first step in configuring a genome browser is adding an assembly to view.
 In order to do this, use the navigation bar to open up the Assembly Manager (`Admin > Open Assembly Manager`).
@@ -59,7 +59,7 @@ After clicking the back arrow to return to the table of assemblies, we see that 
 
 The assembly can be edited or deleted, but for now we will return to the application.
 
-### Accessing Configuration Settings
+### Accessing configuration settings
 
 In JBrowse 2, all assemblies and tracks are graphically configurable in Admin Mode.
 To illustrate how to access this, first we will open a Linear Genome View using the navigation bar (`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
