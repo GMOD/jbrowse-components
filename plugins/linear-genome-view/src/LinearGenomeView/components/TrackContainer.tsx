@@ -87,7 +87,7 @@ function TrackContainer(props: {
       isAlive(display) &&
       draggingTrackId !== display.id
     ) {
-      moveTrack(draggingTrackId, display.id)
+      moveTrack(draggingTrackId, track.id)
     }
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
