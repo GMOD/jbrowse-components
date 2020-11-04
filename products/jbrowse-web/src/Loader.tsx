@@ -297,7 +297,6 @@ const SessionLoader = types
           throw new Error('unrecognized session format')
         } else {
           // placeholder for session loaded, but none found
-          // TODO: redirect to the splash screen when blank session
           self.setBlankSession(true)
         }
         if (self.bc1) {
