@@ -8,6 +8,12 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+      // overrides base
+      maxDisplayedBpPerPx: {
+        type: 'number',
+        description: 'maximum bpPerPx that is displayed in the view',
+        defaultValue: 300,
+      },
     },
     { explicitlyTyped: true, baseConfiguration: BaseTrackConfig },
   )
