@@ -12,7 +12,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       maxDisplayedBpPerPx: {
         type: 'number',
         description: 'maximum bpPerPx that is displayed in the view',
-        defaultValue: 300,
+        defaultValue: 1000,
       },
     },
     { explicitlyTyped: true, baseConfiguration: BaseTrackConfig },
