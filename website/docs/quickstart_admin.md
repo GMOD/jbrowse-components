@@ -1,5 +1,5 @@
 ---
-id: web_graphical_configuration
+id: quickstart_admin
 title: Web graphical configuration
 toplevel: true
 ---

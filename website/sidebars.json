@@ -6,11 +6,7 @@
     {
       "type": "category",
       "label": "Quickstart guides",
-      "items": [
-        "web_cli_install",
-        "web_graphical_configuration",
-        "desktop_install"
-      ]
+      "items": ["quickstart_web", "quickstart_admin", "quickstart_desktop"]
     },
     "user_guide",
     "config_guide",

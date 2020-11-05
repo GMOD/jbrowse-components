@@ -1,5 +1,5 @@
 ---
-id: web_cli_install
+id: quickstart_web
 title: Web CLI installation
 toplevel: true
 ---

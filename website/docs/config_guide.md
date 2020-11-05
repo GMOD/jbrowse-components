@@ -148,7 +148,7 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 
 See our CLI docs for the add-assembly for more details here -- [add-assembly](cli#jbrowse-add-assembly-sequence)
 
-Note: assemblies can also be added graphically using the assembly manager. See the quickstart guide for more details. (TODO: link to quickstart)
+Note: assemblies can also be added graphically using the assembly manager. See the [quickstart guide](quickstart_admin#adding-an-assembly) for more details.
 
 ## Adding tracks
 

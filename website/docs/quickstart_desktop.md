@@ -1,5 +1,5 @@
 ---
-id: desktop_install
+id: quickstart_desktop
 title: Desktop installation
 toplevel: true
 ---
