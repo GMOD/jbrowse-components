@@ -38,6 +38,42 @@ scroll and this will zoom in and out
 There is a drag handle on the track labels indicating by the six dots, clicking
 and dragging on this part of the track label can reorder tracks
 
+## Adding tracks
+
+To add a new track or connection, you can use the menu bar in the app to open
+the form for adding a track:
+
+File->Open Track
+
+![](img/add_track_form.png)
+The "Add track form"
+
+Note: There is also a circular "+" button inside the track selector menu that
+can also be used to access the "Add track" form.
+
+![](img/add_track_tracklist.png)
+The "Add track button" in the tracklist
+
+In the "Add track" form, you can provide a URL to a file to load, and
+optionally a URL to the index file too
+
+- Tabixed VCF
+- Tabixed BED
+- Tabixed GFF
+- BAM
+- CRAM
+- BigWig
+- BigBed
+- .hic file (Juicebox)
+
+For tabixed files, TBI or CSI indexes are allowed. CSI or BAI is allowed for
+BAM. Only CRAI is allowed for CRAM. The index will be inferred if plain BAI or
+TBI is being used for BAM/tabix file inputs
+
+Note: If you are an administrator, note that you can add tracks with the
+JBrowse CLI or with the admin server [add-track](cli#jbrowse-add-track) or
+[admin-server guide](quickstart_admin)
+
 #### Rubberband selection
 
 The scale bars accept a click and drag action to select a region
