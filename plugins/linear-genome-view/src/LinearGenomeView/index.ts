@@ -134,7 +134,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = assemblyNames.every(
           asm => assemblyManager.get(asm)?.initialized,
         )
-        console.log(assembliesInitialized)
         return (
           self.volatileWidth !== undefined &&
           self.displayedRegions.length > 0 &&
@@ -568,7 +567,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
-      async navToLocString(locString: string) {
+      navToLocString(locString: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const locStrings = locString.split(';')
@@ -581,7 +580,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const displayedRegion = self.displayedRegions[0]
         const { assemblyName } = displayedRegion
-        let assembly = await assemblyManager.waitForAssembly(assemblyName)
+        let assembly = assemblyManager.get(assemblyName)
         if (!assembly) {
           throw new Error(
             `Could not find assembly ${displayedRegion.assemblyName}`,
@@ -659,11 +658,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param location - a proposed location to navigate to
        */
-      async navTo(query: NavLocation) {
-        return this.navToMultiple([query])
+      navTo(query: NavLocation) {
+        this.navToMultiple([query])
       },
 
-      async navToMultiple(locations: NavLocation[]) {
+      navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
         const {
@@ -677,7 +676,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const session = getSession(self)
         const { assemblyManager } = session
-        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+        const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
