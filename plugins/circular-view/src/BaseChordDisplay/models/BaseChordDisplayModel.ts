@@ -223,7 +223,8 @@ export const BaseChordDisplayModel = types
             self.setRefNameMap(refNameMap)
           },
           error => {
-            self.setError(String(error))
+            console.error(error)
+            self.setError(error)
           },
         )
       },
