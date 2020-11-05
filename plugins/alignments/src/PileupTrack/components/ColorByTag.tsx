@@ -62,6 +62,8 @@ export default function ColorByTagDlg(props: {
             >
               <MenuItem value="" />
               <MenuItem value="HP">HP (haplotype)</MenuItem>
+              <MenuItem value="XS">XS (RNA-seq strandedness)</MenuItem>
+              <MenuItem value="TS">TS (RNA-seq strandedness)</MenuItem>
               <MenuItem value="YC">YC (color encoded)</MenuItem>
             </TextField>
             <Button

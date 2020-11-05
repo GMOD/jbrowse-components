@@ -553,8 +553,17 @@ export default class PileupRenderer extends BoxRendererType {
       case 'tag': {
         const tag = colorBy.tag as string
         const isCram = feature.get('tags')
-        const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
-        ctx.fillStyle = colorMap[val]
+        if (tag === 'HP') {
+          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+          ctx.fillStyle = colorMap[val]
+        } else if (tag === 'XS' || tag === 'TS') {
+          const map: { [key: string]: string | undefined } = {
+            '-': 'color_rev_strand',
+            '+': 'color_fwd_strand',
+          }
+          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+          ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
+        }
         break
       }
       case 'insertSizeAndPairOrientation':
