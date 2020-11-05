@@ -125,7 +125,7 @@ describe('admin-server', () => {
     })
     .it('uses port 9090 if not specified', async ctx => {
       expect(ctx.stdoutWrite.mock.calls[0][0]).toMatch(
-        /Navigate to http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12} to configure your JBrowse installation graphically\./,
+        /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12}/,
       )
     })
   setupWithCreate
