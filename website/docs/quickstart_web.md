@@ -1,6 +1,6 @@
 ---
 id: quickstart_web
-title: Web CLI installation
+title: Quick start guide using the CLI tools
 toplevel: true
 ---
 

@@ -1,6 +1,6 @@
 ---
 id: quickstart_admin
-title: Web graphical configuration
+title: Quick start guide for the admin-server
 toplevel: true
 ---
 
