@@ -100,6 +100,10 @@ const Search = observer(({ model }: { model: LGV }) => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
+
+        // have to manually call setValue(undefined) for react-testing-library
+        // purposes, the below onBlur is not called
+        setValue(undefined)
       }}
     >
       <TextField
