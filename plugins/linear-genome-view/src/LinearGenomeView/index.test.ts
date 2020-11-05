@@ -48,63 +48,51 @@ stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 
-const assemblies = new Map([
-  [
-    'volvox',
-    {
-      getCanonicalRefName(refName: string) {
-        if (refName === 'contigA') {
-          return 'ctgA'
-        }
-        return refName
-      },
-      get regions() {
-        return [
-          {
-            assemblyName: 'volvox',
-            start: 0,
-            end: 50001,
-            refName: 'ctgA',
-            reversed: false,
-          },
-          {
-            assemblyName: 'volvox',
-            start: 0,
-            end: 6079,
-            refName: 'ctgB',
-            reversed: false,
-          },
-        ]
-      },
-    },
-  ],
-])
-const AssemblyManager = types
-  .model({})
-  .volatile(() => ({
-    assemblies,
-  }))
-  .views(self => ({
-    get(asm: string) {
-      return self.assemblies.get(asm)
-    },
-    waitForAssembly(asm: string) {
-      return self.assemblies.get(asm)
-    },
-  }))
 const Session = types
   .model({
     name: 'testSession',
     pluginManager: 'pluginManagerExists',
     view: types.maybe(LinearGenomeModel),
     configuration: types.map(types.string),
-    assemblyManager: types.optional(AssemblyManager, {}),
   })
   .actions(self => ({
     setView(view: Instance<LinearGenomeViewStateModel>) {
       self.view = view
       return view
     },
+  }))
+  .volatile((/* self */) => ({
+    assemblyManager: new Map([
+      [
+        'volvox',
+        {
+          getCanonicalRefName(refName: string) {
+            if (refName === 'contigA') {
+              return 'ctgA'
+            }
+            return refName
+          },
+          get regions() {
+            return [
+              {
+                assemblyName: 'volvox',
+                start: 0,
+                end: 50001,
+                refName: 'ctgA',
+                reversed: false,
+              },
+              {
+                assemblyName: 'volvox',
+                start: 0,
+                end: 6079,
+                refName: 'ctgB',
+                reversed: false,
+              },
+            ]
+          },
+        },
+      ],
+    ]),
   }))
 
 test('can instantiate a mostly empty model and read a default configuration value', () => {
@@ -193,34 +181,6 @@ test('can instantiate a model that has multiple displayed regions', () => {
   expect(model.offsetPx).toEqual(79401)
 })
 
-// test('wtf', async () => {
-//   const session = Session.create({
-//     configuration: {},
-//   })
-//   const width = 800
-//   const model = session.setView(
-//     LinearGenomeModel.create({
-//       id: 'test3',
-//       type: 'LinearGenomeView',
-//       tracks: [{ name: 'foo track', type: 'PileupTrack' }],
-//     }),
-//   )
-//   model.setWidth(width)
-//   model.setDisplayedRegions([
-//     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
-//     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
-//   ])
-
-//   // async function t1() {
-//   //   return model.navTo({ refName: 'ctgA', start: 200, end: 100 })
-//   // }
-//   // await expect(t1()).rejects.toThrow('start "201" is greater than end "100"')
-
-//   await expect(
-//     model.navTo({ refName: 'ctgA', start: 200, end: 100 }),
-//   ).rejects.toThrow('start "201" is greater than end "100"')
-// })
-
 test('can instantiate a model that tests navTo/moveTo', async () => {
   const session = Session.create({
     configuration: {},
@@ -240,48 +200,46 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
   ])
   expect(model.maxBpPerPx).toEqual(20)
 
-  await model.navTo({ refName: 'ctgA', start: 0, end: 100 })
+  model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
-  await model.navTo({ refName: 'ctgA' })
+  model.navTo({ refName: 'ctgA' })
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(12.5)
 
-  await model.navTo({ refName: 'contigA', start: 0, end: 100 })
+  model.navTo({ refName: 'contigA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(0.125)
 
-  await expect(
-    model.navTo({ refName: 'ctgA', start: 200, end: 100 }),
-  ).rejects.toThrow('start "201" is greater than end "100"')
+  expect(() => model.navTo({ refName: 'ctgA', start: 200, end: 100 })).toThrow(
+    'start "201" is greater than end "100"',
+  )
 
-  await expect(
+  expect(() =>
     model.navTo({ refName: 'ctgDoesNotExist', start: 0, end: 100 }),
-  ).rejects.toThrow('could not find a region with refName "ctgDoesNotExist"')
+  ).toThrow('could not find a region with refName "ctgDoesNotExist"')
 
-  await expect(model.navTo({ refName: 'ctgA', end: 20100 })).rejects.toThrow(
+  expect(() => model.navTo({ refName: 'ctgA', end: 20100 })).toThrow(
     'could not find a region with refName "ctgA" that contained an end position 20100',
   )
 
-  expect(model.navTo({ refName: 'ctgA', start: 20000 })).rejects.toThrow(
+  expect(() => model.navTo({ refName: 'ctgA', start: 20000 })).toThrow(
     'could not find a region with refName "ctgA" that contained a start position 20001',
   )
 
-  await expect(
+  expect(() =>
     model.navTo({ refName: 'ctgA', start: 20000, end: 20100 }),
-  ).rejects.toThrow(
+  ).toThrow(
     'could not find a region that completely contained "ctgA:20,001..20,100"',
   )
 
-  await expect(() =>
-    model.navTo({ refName: 'ctgA', start: 0, end: 20000 }),
-  ).rejects.toThrow(
+  expect(() => model.navTo({ refName: 'ctgA', start: 0, end: 20000 })).toThrow(
     'could not find a region that completely contained "ctgA:1..20,000"',
   )
 })
 
-test('can navToMultiple', async () => {
+test('can navToMultiple', () => {
   const session = Session.create({
     configuration: {},
   })
@@ -301,18 +259,18 @@ test('can navToMultiple', async () => {
     { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
   ])
 
-  await model.navToMultiple([{ refName: 'ctgA', start: 0, end: 10000 }])
+  model.navToMultiple([{ refName: 'ctgA', start: 0, end: 10000 }])
   expect(model.offsetPx).toBe(0)
   expect(model.bpPerPx).toBe(12.5)
 
-  await model.navToMultiple([
+  model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 5000 },
   ])
   expect(model.offsetPx).toBe(399)
   expect(model.bpPerPx).toBeCloseTo(12.531)
 
-  await model.navToMultiple([
+  model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
@@ -320,37 +278,33 @@ test('can navToMultiple', async () => {
   expect(model.offsetPx).toBe(199)
   expect(model.bpPerPx).toBeCloseTo(25.126)
 
-  await model.navToMultiple([
+  model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
   expect(model.offsetPx).toBe(2799)
   expect(model.bpPerPx).toBeCloseTo(12.531)
 
-  await expect(
+  expect(() =>
     model.navToMultiple([
       { refName: 'ctgB', start: 5000, end: 10000 },
       { refName: 'ctgC', start: 5000, end: 10000 },
     ]),
-  ).rejects.toThrow(
-    'Start of region ctgC:5,001..10,000 should be 1, but it is not',
-  )
+  ).toThrow('Start of region ctgC:5,001..10,000 should be 1, but it is not')
 
-  await expect(
+  expect(() =>
     model.navToMultiple([
       { refName: 'ctgB', start: 0, end: 5000 },
       { refName: 'ctgC', start: 0, end: 5000 },
     ]),
-  ).rejects.toThrow(
-    'End of region ctgB:1..5,000 should be 10,000, but it is not',
-  )
+  ).toThrow('End of region ctgB:1..5,000 should be 10,000, but it is not')
 
-  await expect(
+  expect(() =>
     model.navToMultiple([
       { refName: 'ctgA', start: 5000, end: 10000 },
       { refName: 'ctgA', start: 0, end: 5000 },
     ]),
-  ).rejects.toThrow(
+  ).toThrow(
     'Entered location ctgA:1..5,000 does not match with displayed regions',
   )
 })
