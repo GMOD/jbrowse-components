@@ -531,22 +531,22 @@ export default class PileupRenderer extends BoxRendererType {
       const flipper = revflag ? -1 : 1
       // proper pairing
       if (flags & 2) {
-        return strand * flipper == 1 ? 'color_rev_strand' : 'color_fwd_strand'
+        return strand * flipper === 1 ? 'color_rev_strand' : 'color_fwd_strand'
       }
       if (feature.get('multi_segment_next_segment_unmapped')) {
         return strand * flipper === 1
           ? 'color_rev_missing_mate'
           : 'color_fwd_missing_mate'
       }
-      if (feature.get('seq_id') == feature.get('next_seq_id')) {
-        return strand * flipper == 1
+      if (feature.get('seq_id') === feature.get('next_seq_id')) {
+        return strand * flipper === 1
           ? 'color_rev_strand_not_proper'
           : 'color_fwd_strand_not_proper'
       }
       // should only leave aberrant chr
-      return strand == 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
+      return strand === 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
     }
-    return strand == 1 ? 'color_fwd_strand' : 'color_rev_strand'
+    return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
 
   drawRect(
