@@ -11,9 +11,9 @@ JBrowse 2.
 
 This tutorial requires having the following software installed
 
-- [JBrowse 2 CLI tools](web_cli_install#install-the-cli-tools)
+- [JBrowse 2 CLI tools](quickstart_web#install-the-cli-tools)
 
-- [JBrowse 2 web application](web_cli_install#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-install-jbrowse)
 
 ### Starting JBrowse 2 admin server
 
