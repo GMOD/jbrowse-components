@@ -4,7 +4,7 @@ import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
-import { makeAbortableReaction, when } from '../util'
+import { makeAbortableReaction, getSession, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
 
 // Based on the UCSC Genome Browser chromosome color palette:
@@ -47,6 +47,7 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ) {
   const { sessionId } = options
+  const { pluginManager } = getSession(assembly)
   await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
     signal,
     name: 'when assembly ready',
@@ -62,7 +63,6 @@ async function loadRefNameMap(
     },
     { timeout: 1000000 },
   )
-
   const refNameMap: Record<string, string> = {}
   const { refNameAliases } = assembly
   if (!refNameAliases) {
@@ -159,6 +159,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           return undefined
         }
         return Array.from(self.refNameAliases.keys())
+      },
+      get pluginManager() {
+        return getParent(self, 2).pluginManager
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -292,6 +295,7 @@ function loadAssemblyData(self: Assembly) {
       sequenceAdapterConfig,
       adapterConfigId,
       rpcManager,
+      assembly: self,
       assemblyName: self.name,
       refNameAliasesAdapterConfig,
     }
@@ -308,18 +312,18 @@ async function loadAssemblyReaction(
 
   const {
     sequenceAdapterConfig,
-    rpcManager,
     assemblyName,
+    assembly,
     refNameAliasesAdapterConfig,
   } = props
 
-  const sessionId = `assembly-${assemblyName}`
-  const adapterRegions = (await rpcManager.call(
-    sessionId,
-    'CoreGetRegions',
-    { sessionId, adapterConfig: sequenceAdapterConfig, signal },
-    { timeout: 1000000 },
-  )) as Region[]
+  const { pluginManager } = assembly
+  const dataAdapterType = pluginManager.getAdapterType(
+    sequenceAdapterConfig.type,
+  )
+  const adapter = new dataAdapterType.AdapterClass(sequenceAdapterConfig)
+  const adapterRegions = await adapter.getRegions()
+
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
     const { refName } = adapterRegion
     checkRefName(refName)
@@ -327,20 +331,13 @@ async function loadAssemblyReaction(
   })
   const refNameAliases: RefNameAliases = {}
   if (refNameAliasesAdapterConfig) {
-    const refNameAliasesAborter = new AbortController()
-    const refNameAliasesList = (await rpcManager.call(
-      sessionId,
-      'CoreGetRefNameAliases',
-      {
-        sessionId,
-        adapterConfig: refNameAliasesAdapterConfig,
-        signal: refNameAliasesAborter.signal,
-      },
-      { timeout: 1000000 },
-    )) as {
-      refName: string
-      aliases: string[]
-    }[]
+    const refAliasAdapterType = pluginManager.getAdapterType(
+      refNameAliasesAdapterConfig.type,
+    )
+    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+      refNameAliasesAdapterConfig,
+    )
+    const refNameAliasesList = await refNameAliasAdapter.getRefNameAliases()
 
     refNameAliasesList.forEach(({ refName, aliases }) => {
       aliases.forEach(alias => {
