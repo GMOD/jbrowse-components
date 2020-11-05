@@ -1,6 +1,6 @@
 ---
 id: quickstart_admin
-title: JBrowse 2 admin quickstart
+title: Graphical configuration quickstart
 toplevel: true
 ---
 
@@ -70,6 +70,11 @@ The configuration settings are accesible by clicking on the ellipses by each tra
 
 Open the configuration editor for the track by clicking on the "Settings" button shown above.
 You can use the configuration editor to live edit any configurable value for a given track.
+
+### Additional resources
+
+There are a number of additional features for configuring JBrowse 2.
+Make sure to refer to the [config guide](config_guide.md) for topics such as [adding tracks](config_guide.md#adding-tracks-and-connections) or [adding an assembly with the CLI](config_guide.md#adding-an-assembly-with-the-cli)
 
 ### Conclusion
 
