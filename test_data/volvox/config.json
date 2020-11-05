@@ -1153,6 +1153,56 @@
           "uri": "volvox-sorted.bam.coverage.bw"
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "paired_rnaseq",
+      "name": "paired_rnaseq",
+      "category": ["RNA-seq"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "paired_rnaseq.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "paired_rnaseq.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-rnasim",
+      "name": "volvox-rnasim",
+      "category": ["RNA-seq"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-rnasim.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-rnasim.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {
