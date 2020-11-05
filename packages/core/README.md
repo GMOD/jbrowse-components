@@ -15,4 +15,4 @@ This package was written with funding from the [NHGRI](http://genome.gov) as par
 
 ## License
 
-Apache-2.0 © JBrowse Team
+Apache-2.0 © Evolutionary Software Foundation
