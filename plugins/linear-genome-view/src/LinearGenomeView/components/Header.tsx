@@ -108,7 +108,8 @@ const Search = observer(({ model }: { model: LGV }) => {
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
 
-        // need to manually call the action of blur here
+        // need to manually call the action of blur here for
+        // react-testing-library
         setValue(undefined)
       }}
     >
