@@ -15,9 +15,6 @@
           "chromSizesLocation": {
             "uri": "grape.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     },
@@ -31,9 +28,6 @@
           "chromSizesLocation": {
             "uri": "peach.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }
@@ -41,7 +35,7 @@
   "tracks": [
     {
       "trackId": "grape_peach_synteny_mcscan",
-      "type": "LinearSyntenyTrack",
+      "type": "SyntenyTrack",
       "assemblyNames": ["peach", "grape"],
       "trackIds": [],
       "renderDelay": 100,
@@ -66,53 +60,26 @@
         "assemblyNames": ["peach", "grape"],
         "type": "MCScanAnchorsAdapter"
       },
-      "renderer": {
-        "type": "LinearSyntenyRenderer"
-      },
       "name": "Grape peach synteny (MCScan)",
       "category": ["Annotation"]
     },
-
     {
-      "trackId": "grape_peach_synteny_linear_paf",
-      "type": "LinearSyntenyTrack",
+      "trackId": "grape_peach_paf",
+      "type": "SyntenyTrack",
+      "name": "Grape vs Peach (PAF)",
       "assemblyNames": ["peach", "grape"],
-      "trackIds": [],
-      "renderDelay": 100,
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
         },
         "assemblyNames": ["peach", "grape"]
-      },
-      "renderer": {
-        "type": "LinearSyntenyRenderer",
-        "color": "#00fa"
-      },
-      "name": "Grape peach synteny (PAF)",
-      "category": ["Annotation"]
-    },
-    {
-      "type": "DotplotTrack",
-      "trackId": "dotplot_track",
-      "name": "Grape vs peach (PAF)",
-      "assemblyNames": ["grape", "peach"],
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
-        },
-        "assemblyNames": ["peach", "grape"]
-      },
-      "renderer": {
-        "type": "DotplotRenderer"
       }
     },
     {
-      "type": "DotplotTrack",
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track_small",
-      "name": "Grape vs peach (PAF)",
+      "name": "Grape vs peach small (PAF)",
       "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
@@ -120,9 +87,6 @@
           "uri": "peach_grape_small.paf"
         },
         "assemblyNames": ["peach", "grape"]
-      },
-      "renderer": {
-        "type": "DotplotRenderer"
       }
     }
   ],
@@ -145,32 +109,18 @@
         },
         "tracks": [
           {
-            "type": "DotplotTrack",
-            "configuration": "dotplot_track_small"
+            "type": "SyntenyTrack",
+            "configuration": "dotplot_track_small",
+            "displays": [
+              {
+                "type": "DotplotDisplay",
+                "configuration": "dotplot_track_small-DotplotDisplay"
+              }
+            ]
           }
         ],
-        "displayName": "Grape vs Peach dotplot",
-        "trackSelectorType": "hierarchical"
+        "displayName": "Grape vs Peach dotplot"
       }
-    ],
-    "widgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
-        "type": "HierarchicalTrackSelectorWidget",
-        "collapsed": {},
-        "filterText": ""
-      },
-      "sessionManager": {
-        "id": "sessionManager",
-        "type": "SessionManager"
-      }
-    },
-    "activeWidgets": {},
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ],
-    "connections": {}
+    ]
   }
 }

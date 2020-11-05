@@ -1,5 +1,5 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import { getConf } from '@jbrowse/core/configuration'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -35,6 +35,7 @@ import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -145,7 +146,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
       get trackHeights() {
-        return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
+        return self.tracks
+          .map(t => t.displays[0].height)
+          .reduce((a, b) => a + b, 0)
       },
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
@@ -444,24 +447,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
-        const name = readConfObject(configuration, 'name')
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType)
+        if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        )
+        if (!displayConf) {
+          throw new Error(
+            `could not find a compatible display for view type ${self.type}`,
+          )
+        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          name,
           type: configuration.type,
           configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },
 
       hideTrack(trackId: string) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,

@@ -568,7 +568,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),
               )
-              trackSnapshot.trackId += `-${Date.now()}`
+              const now = Date.now()
+              trackSnapshot.trackId += `-${now}`
+              trackSnapshot.displays.forEach(
+                (display: { displayId: string }) => {
+                  display.displayId += `-${now}`
+                },
+              )
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
               // and default category is also cleared

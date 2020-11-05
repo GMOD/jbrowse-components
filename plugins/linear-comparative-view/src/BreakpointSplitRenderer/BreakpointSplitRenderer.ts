@@ -18,7 +18,7 @@ import {
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 interface BreakpointSplitRenderProps {
-  trackModel?: any
+  displayModel?: any
   imageData: any
   config: any
   height: number

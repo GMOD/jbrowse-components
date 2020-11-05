@@ -65,24 +65,26 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
           <Typography color="error">{error.message}</Typography>
         </Paper>
       ) : (
-        <TracksContainer model={model}>
-          {!tracks.length ? (
-            <Paper variant="outlined" className={classes.errorMessage}>
-              <Typography>No tracks active.</Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={model.activateTrackSelector}
-              >
-                Select Tracks
-              </Button>
-            </Paper>
-          ) : (
-            tracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
-            ))
-          )}
-        </TracksContainer>
+        <>
+          <TracksContainer model={model}>
+            {!tracks.length ? (
+              <Paper variant="outlined" className={classes.errorMessage}>
+                <Typography>No tracks active.</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={model.activateTrackSelector}
+                >
+                  Select Tracks
+                </Button>
+              </Paper>
+            ) : (
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))
+            )}
+          </TracksContainer>
+        </>
       )}
     </div>
   )

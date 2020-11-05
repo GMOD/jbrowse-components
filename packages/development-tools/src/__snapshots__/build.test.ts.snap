@@ -22,15 +22,6 @@ Object {
         "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
       ],
     },
-    "@jbrowse/core/BaseViewModel": Object {
-      "amd": "@jbrowse/core/BaseViewModel",
-      "commonjs": "@jbrowse/core/BaseViewModel",
-      "commonjs2": "@jbrowse/core/BaseViewModel",
-      "root": Array [
-        "JBrowseExports",
-        "@jbrowse/core/BaseViewModel",
-      ],
-    },
     "@jbrowse/core/Plugin": Object {
       "amd": "@jbrowse/core/Plugin",
       "commonjs": "@jbrowse/core/Plugin",
@@ -67,6 +58,15 @@ Object {
         "@jbrowse/core/pluggableElementTypes/AdapterType",
       ],
     },
+    "@jbrowse/core/pluggableElementTypes/DisplayType": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/DisplayType",
+      "root": Array [
+        "JBrowseExports",
+        "@jbrowse/core/pluggableElementTypes/DisplayType",
+      ],
+    },
     "@jbrowse/core/pluggableElementTypes/TrackType": Object {
       "amd": "@jbrowse/core/pluggableElementTypes/TrackType",
       "commonjs": "@jbrowse/core/pluggableElementTypes/TrackType",
@@ -92,6 +92,15 @@ Object {
       "root": Array [
         "JBrowseExports",
         "@jbrowse/core/pluggableElementTypes/WidgetType",
+      ],
+    },
+    "@jbrowse/core/pluggableElementTypes/models": Object {
+      "amd": "@jbrowse/core/pluggableElementTypes/models",
+      "commonjs": "@jbrowse/core/pluggableElementTypes/models",
+      "commonjs2": "@jbrowse/core/pluggableElementTypes/models",
+      "root": Array [
+        "JBrowseExports",
+        "@jbrowse/core/pluggableElementTypes/models",
       ],
     },
     "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType": Object {

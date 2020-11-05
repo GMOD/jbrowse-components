@@ -46,7 +46,13 @@
         "tracks": [
           {
             "type": "ReferenceSequenceTrack",
-            "configuration": "grape_ref_seq"
+            "configuration": "grape_ref_seq",
+            "displays": [
+              {
+                "type": "LinearReferenceSequenceDisplay",
+                "configuration": "grape_ref_seq-LinearReferenceSequenceDisplay"
+              }
+            ]
           }
         ]
       },
@@ -66,7 +72,13 @@
         "tracks": [
           {
             "type": "ReferenceSequenceTrack",
-            "configuration": "grape2_ref_seq"
+            "configuration": "grape2_ref_seq",
+            "displays": [
+              {
+                "type": "LinearReferenceSequenceDisplay",
+                "configuration": "grape2_ref_seq-LinearReferenceSequenceDisplay"
+              }
+            ]
           }
         ]
       }

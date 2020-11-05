@@ -7,7 +7,7 @@ import React from 'react'
 type LayoutRecord = [number, number, number, number]
 interface SvgOverlayProps {
   region: Region
-  trackModel: {
+  displayModel: {
     blockLayoutFeatures: Map<string, Map<string, LayoutRecord>>
     selectedFeatureId?: string
     featureIdUnderMouse?: string
@@ -100,7 +100,7 @@ function OverlayRect({
 }
 
 function SvgOverlay({
-  trackModel: {
+  displayModel: {
     blockLayoutFeatures,
     selectedFeatureId,
     featureIdUnderMouse,

@@ -10,9 +10,9 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
-import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { observable, autorun, transaction } from 'mobx'
-import { BaseTrackStateModel } from '@jbrowse/plugin-linear-genome-view'
+import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
@@ -21,9 +21,10 @@ import {
   minmax,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 function approxPixelStringLen(str: string) {
   return str.length * 0.7 * 12
@@ -280,24 +281,54 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
 
         showTrack(trackId: string, initialSnapshot = {}) {
-          const IT = pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(IT, getRoot(self), trackId)
-          const name = readConfObject(configuration, 'name')
+          const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+            'track',
+          )
+          const configuration = resolveIdentifier(
+            trackConfigSchema,
+            getRoot(self),
+            trackId,
+          )
           const trackType = pluginManager.getTrackType(configuration.type)
-          if (!trackType)
+          if (!trackType) {
             throw new Error(`unknown track type ${configuration.type}`)
+          }
+          const viewType = pluginManager.getViewType(self.type)
+          const displayConf = configuration.displays.find(
+            (d: AnyConfigurationModel) => {
+              if (
+                viewType.displayTypes.find(
+                  displayType => displayType.name === d.type,
+                )
+              ) {
+                return true
+              }
+              return false
+            },
+          )
+          if (!displayConf) {
+            throw new Error(
+              `could not find a compatible display for view type ${self.type}`,
+            )
+          }
           const track = trackType.stateModel.create({
             ...initialSnapshot,
-            name,
             type: configuration.type,
             configuration,
+            displays: [{ type: displayConf.type, configuration: displayConf }],
           })
           self.tracks.push(track)
         },
 
         hideTrack(trackId: string) {
-          const IT = pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(IT, getRoot(self), trackId)
+          const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+            'track',
+          )
+          const configuration = resolveIdentifier(
+            trackConfigSchema,
+            getRoot(self),
+            trackId,
+          )
           // if we have any tracks with that configuration, turn them off
           const shownTracks = self.tracks.filter(
             t => t.configuration === configuration,
@@ -361,6 +392,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // add the specific evidence tracks to the LGVs in the split view
             // note: scales the bpPerPx by scaling proportional of the dotplot
             // width to the eventual lgv width
+            const tracks: {
+              type: string
+              configuration: AnyConfigurationModel
+              displays: {
+                type: string
+                configuration: AnyConfigurationModel
+              }[]
+            }[] = []
+            self.tracks.forEach(track => {
+              const trackConf = track.configuration
+              const displayConf = trackConf.displays.find(
+                (display: AnyConfigurationModel) =>
+                  display.type === 'LinearSyntenyDisplay',
+              )
+              if (displayConf) {
+                tracks.push({
+                  type: trackConf.type,
+                  configuration: trackConf,
+                  displays: [
+                    { type: displayConf.type, configuration: displayConf },
+                  ],
+                })
+              }
+            })
             const viewSnapshot = {
               type: 'LinearSyntenyView',
               views: [
@@ -377,6 +432,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   hideHeader: true,
                 },
               ],
+              tracks,
             }
 
             session.addView('LinearSyntenyView', viewSnapshot)

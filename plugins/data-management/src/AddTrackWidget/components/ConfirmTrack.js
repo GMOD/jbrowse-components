@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   guessAdapter,
-  guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
@@ -231,21 +230,6 @@ function ConfirmTrack({
           fullWidth
           onChange={event => {
             setTrackType(event.target.value)
-            // selecting SNPCoverageTrack sets up SNPCoverage adapter.
-            // In future make generic for others with subadapter
-            // If switching from track w sub to non-sub, restore old adapter
-            if (event.target.value === 'SNPCoverageTrack') {
-              const adapter = trackData.uri
-                ? guessSubadapter(trackData.uri, 'uri', 'SNPCoverageAdapter')
-                : guessSubadapter(
-                    trackData.localPath,
-                    'localPath',
-                    'SNPCoverageAdapter',
-                  )
-              setTrackAdapter(adapter)
-            } else if (trackAdapter.subadapter) {
-              setTrackAdapter(trackAdapter.subadapter)
-            }
           }}
           SelectProps={{
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },

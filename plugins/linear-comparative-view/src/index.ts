@@ -1,37 +1,43 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import {
+  AbstractSessionModel,
+  getSession,
+  isAbstractMenuManager,
+} from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+import AddIcon from '@material-ui/icons/Add'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import AddIcon from '@material-ui/icons/Add'
 import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-  getSession,
-} from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
+  configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
+  ReactComponent as LinearComparativeDisplayReactComponent,
+  stateModelFactory as linearComparativeDisplayStateModelFactory,
+} from './LinearComparativeDisplay'
+import LinearComparativeViewFactory from './LinearComparativeView'
 import {
-  configSchemaFactory as comparativeTrackConfigSchemaFactory,
-  stateModelFactory as comparativeTrackStateModelFactory,
-} from './LinearComparativeTrack'
-import {
-  configSchemaFactory as syntenyTrackConfigSchemaFactory,
-  stateModelFactory as syntenyTrackStateModelFactory,
-} from './LinearSyntenyTrack'
-import {
-  configSchema as MCScanAnchorsConfigSchema,
-  AdapterClass as MCScanAnchorsAdapter,
-} from './MCScanAnchorsAdapter'
+  configSchemaFactory as linearSyntenyDisplayConfigSchemaFactory,
+  stateModelFactory as linearSyntenyDisplayStateModelFactory,
+} from './LinearSyntenyDisplay'
 import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
-import LinearComparativeViewFactory from './LinearComparativeView'
 import LinearSyntenyViewFactory from './LinearSyntenyView'
+import {
+  AdapterClass as MCScanAnchorsAdapter,
+  configSchema as MCScanAnchorsConfigSchema,
+} from './MCScanAnchorsAdapter'
 
 const { parseCigar } = MismatchParser
 
@@ -124,21 +130,45 @@ export default class extends Plugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'SyntenyTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
       return new TrackType({
-        compatibleView: 'LinearComparativeView',
-        name: 'LinearComparativeTrack',
+        name: 'SyntenyTrack',
         configSchema,
-        stateModel: comparativeTrackStateModelFactory(configSchema),
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'SyntenyTrack',
+          configSchema,
+        ),
       })
     })
-    pluginManager.addTrackType(() => {
-      const configSchema = syntenyTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        compatibleView: 'LinearSyntenyView',
-        name: 'LinearSyntenyTrack',
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearComparativeDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearComparativeDisplay',
         configSchema,
-        stateModel: syntenyTrackStateModelFactory(configSchema),
+        stateModel: linearComparativeDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'LinearComparativeView',
+        ReactComponent: LinearComparativeDisplayReactComponent,
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearSyntenyDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearSyntenyDisplay',
+        configSchema,
+        stateModel: linearSyntenyDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'LinearSyntenyView',
+        ReactComponent: LinearComparativeDisplayReactComponent,
       })
     })
     pluginManager.addAdapterType(

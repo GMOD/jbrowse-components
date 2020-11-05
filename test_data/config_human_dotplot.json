@@ -10,9 +10,6 @@
           "chromSizesLocation": {
             "uri": "hg19.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     },
@@ -26,9 +23,6 @@
           "chromSizesLocation": {
             "uri": "hg38.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }
@@ -59,25 +53,6 @@
         "displayName": "hg19 vs hg38 dotplot",
         "trackSelectorType": "hierarchical"
       }
-    ],
-    "widgets": {
-      "hierarchicalTrackSelector": {
-        "id": "hierarchicalTrackSelector",
-        "type": "HierarchicalTrackSelectorWidget",
-        "collapsed": {},
-        "filterText": ""
-      },
-      "sessionManager": {
-        "id": "sessionManager",
-        "type": "SessionManager"
-      }
-    },
-    "activeWidgets": {},
-    "menuBars": [
-      {
-        "type": "MainMenuBar"
-      }
-    ],
-    "connections": {}
+    ]
   }
 }

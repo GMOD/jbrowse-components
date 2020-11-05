@@ -37,7 +37,7 @@
   "connections": [],
   "tracks": [
     {
-      "type": "DotplotTrack",
+      "type": "SyntenyTrack",
       "trackId": "dotplot_track",
       "assemblyNames": ["YJM1447", "R64"],
       "name": "dotplot",
@@ -47,9 +47,6 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
         },
         "assemblyNames": ["YJM1447", "R64"]
-      },
-      "renderer": {
-        "type": "DotplotRenderer"
       }
     }
   ],
@@ -74,8 +71,14 @@
         },
         "tracks": [
           {
-            "type": "DotplotTrack",
-            "configuration": "dotplot_track"
+            "type": "SyntenyTrack",
+            "configuration": "dotplot_track",
+            "displays": [
+              {
+                "type": "DotplotDisplay",
+                "configuration": "dotplot_track-DotplotDisplay"
+              }
+            ]
           }
         ],
         "headerHeight": 44,

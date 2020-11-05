@@ -34,7 +34,7 @@ interface BaseRenderArgs {
   }
   bpPerPx: number
   renderProps: {
-    trackModel: { id: string; selectedFeatureId?: string }
+    displayModel: { id: string; selectedFeatureId?: string }
     blockKey: string
   }
   regions: Region[]
@@ -73,7 +73,7 @@ export default class ServerSideRenderer extends RendererType {
    * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
    *
-   * the base class replaces the `renderProps.trackModel` param
+   * the base class replaces the `renderProps.displayModel` param
    * (which on the client is a MST model) with a stub
    * that only contains the `selectedFeature`, since
    * this is the only part of the track model that most
@@ -83,14 +83,14 @@ export default class ServerSideRenderer extends RendererType {
    * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
-    const { trackModel } = args.renderProps
-    if (trackModel) {
+    const { displayModel } = args.renderProps
+    if (displayModel) {
       args.renderProps = {
         ...args.renderProps,
         blockKey: args.blockKey,
-        trackModel: {
-          id: trackModel.id,
-          selectedFeatureId: trackModel.selectedFeatureId,
+        displayModel: {
+          id: displayModel.id,
+          selectedFeatureId: displayModel.selectedFeatureId,
         },
       }
     }

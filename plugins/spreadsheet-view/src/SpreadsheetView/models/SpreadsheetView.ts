@@ -39,7 +39,7 @@ export default (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { mobx } = lib
   const { types, getParent, getRoot, getEnv } = lib['mobx-state-tree']
-  const BaseViewModel = lib['@jbrowse/core/BaseViewModel']
+  const { BaseViewModel } = lib['@jbrowse/core/pluggableElementTypes/models']
 
   const SpreadsheetModel = load(Spreadsheet)
   const ImportWizardModel = load(ImportWizard)

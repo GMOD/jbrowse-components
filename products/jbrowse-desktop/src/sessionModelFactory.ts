@@ -528,7 +528,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),
               )
-              trackSnapshot.trackId += `-${Date.now()}`
+              const now = Date.now()
+              trackSnapshot.trackId += `-${now}`
+              trackSnapshot.displays.forEach(
+                (display: { displayId: string }) => {
+                  display.displayId += `-${now}`
+                },
+              )
               trackSnapshot.name += ' (copy)'
               trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)

@@ -1,5 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
 import Divider from '@material-ui/core/Divider'
 import FormGroup from '@material-ui/core/FormGroup'
 import { makeStyles } from '@material-ui/core/styles'
@@ -46,15 +44,9 @@ function Contents({
         categories.push([name, contents])
       }
     })
-  const { assemblyManager } = getSession(model)
-  const assembly = assemblyManager.get(assemblyName)
 
-  const showRefSeqTrack =
-    top &&
-    !connection &&
-    assembly &&
-    assembly.configuration.sequence &&
-    model.view.type === getConf(assembly, ['sequence', 'viewType'])
+  const refSeqTrackConf = model.getRefSeqTrackConf(assemblyName)
+  const showRefSeqTrack = top && !connection && refSeqTrackConf
 
   return (
     <>
@@ -63,7 +55,7 @@ function Contents({
           <FormGroup>
             <TrackEntry
               model={model}
-              trackConf={assembly.configuration.sequence}
+              trackConf={refSeqTrackConf}
               assemblyName={assemblyName}
             />
           </FormGroup>

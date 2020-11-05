@@ -229,7 +229,6 @@ export default class AddTrack extends JBrowseCommand {
 
     // any special track modifications go here
     switch (type) {
-      case 'PileupTrack':
       case 'AlignmentsTrack': {
         const assembly = configContents.assemblies.find(
           asm => asm.name === assemblyNames,
@@ -239,21 +238,6 @@ export default class AddTrack extends JBrowseCommand {
         } else if (!skipCheck) {
           this.error(`Failed to find assemblyName ${assemblyNames}`)
         }
-        break
-      }
-      case 'SNPCoverageTrack': {
-        const idx = configContents.assemblies.findIndex(
-          assemblies => assemblies.name === assemblyNames,
-        )
-        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
-        const subAdapter = this.guessSubadapter(
-          location,
-          protocol,
-          'SNPCoverageAdapter',
-        )
-
-        trackConfig.adapter = subAdapter
-        trackConfig.adapter.subadapter.sequenceAdapter = sequenceAdapter
         break
       }
     }
@@ -648,75 +632,18 @@ export default class AddTrack extends JBrowseCommand {
     }
   }
 
-  guessSubadapter(fileName: string, protocol: string, mainAdapter: string) {
-    if (/\.bam$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName },
-          index: { location: { [protocol]: `${fileName}.bai` } },
-        },
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
-          index: { location: { [protocol]: fileName } },
-        },
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
-          index: { location: { [protocol]: fileName }, indexType: 'CSI' },
-        },
-      }
-    }
-
-    if (/\.cram$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'CramAdapter',
-          cramLocation: { [protocol]: fileName },
-          craiLocation: { [protocol]: `${fileName}.crai` },
-        },
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'CramAdapter',
-          cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },
-          craiLocation: { [protocol]: fileName },
-        },
-      }
-    }
-    return {
-      type: 'UNSUPPORTED',
-    }
-  }
-
   guessTrackType(adapterType: string): string {
     const known: { [key: string]: string | undefined } = {
       BamAdapter: 'AlignmentsTrack',
       CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'SequenceTrack',
-      BigWigAdapter: 'WiggleTrack',
-      IndexedFastaAdapter: 'SequenceTrack',
-      TwoBitAdapter: 'SequenceTrack',
+      BgzipFastaAdapter: 'ReferenceSequenceTrack',
+      BigWigAdapter: 'QuantitativeTrack',
+      IndexedFastaAdapter: 'ReferenceSequenceTrack',
+      TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
       PafAdapter: 'LinearSyntenyTrack',
     }
-    return known[adapterType] || 'BasicTrack'
+    return known[adapterType] || 'FeatureTrack'
   }
 }

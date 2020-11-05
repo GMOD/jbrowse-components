@@ -377,7 +377,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           style="width: 1024px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 100px;"
         >
           <div
@@ -437,7 +437,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="background: none; width: 1024px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 100px;"
             >
               <div
@@ -551,19 +551,19 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig"
+            class="makeStyles-display"
+            data-testid="display-testConfig-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -572,30 +572,21 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -610,7 +601,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"
@@ -1188,7 +1179,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           style="width: 1024px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 100px;"
         >
           <div
@@ -1225,7 +1216,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           style="width: 2px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 1000px;"
         >
           <div
@@ -1465,7 +1456,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="background: none; width: 1024px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 100px;"
             >
               <div
@@ -1484,7 +1475,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="background: none; width: 2px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 1000px;"
             >
               <div
@@ -1655,19 +1646,19 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig"
+            class="makeStyles-display"
+            data-testid="display-testConfig-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -1676,30 +1667,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -1709,30 +1691,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 2px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="397"
+                  data-html-size="126"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:1000px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                      width="2000"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="1000"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="1000px"
                     />
                   </div>
                 </div>
@@ -1747,7 +1720,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"
@@ -1837,19 +1810,19 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig2"
+            class="makeStyles-display"
+            data-testid="display-testConfig2-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -1858,30 +1831,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -1891,30 +1855,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 2px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="397"
+                  data-html-size="126"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:1000px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                      width="2000"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="1000"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="1000px"
                     />
                   </div>
                 </div>
@@ -1929,7 +1884,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"

@@ -1,5 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
@@ -15,9 +15,10 @@ import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
-  configSchemaFactory as dotplotTrackConfigSchemaFactory,
-  stateModelFactory as dotplotTrackStateModelFactory,
-} from './DotplotTrack'
+  configSchemaFactory as dotplotDisplayConfigSchemaFactory,
+  stateModelFactory as dotplotDisplayStateModelFactory,
+  ReactComponent as DotplotDisplayReactComponent,
+} from './DotplotDisplay'
 import DotplotRenderer, {
   configSchema as dotplotRendererConfigSchema,
   ReactComponent as DotplotRendererReactComponent,
@@ -106,13 +107,16 @@ export default class DotplotPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
-    pluginManager.addTrackType(() => {
-      const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'DotplotTrack',
-        compatibleView: 'DotplotView',
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = dotplotDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'DotplotDisplay',
         configSchema,
-        stateModel: dotplotTrackStateModelFactory(configSchema),
+        stateModel: dotplotDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'DotplotView',
+        ReactComponent: DotplotDisplayReactComponent,
       })
     })
 
@@ -254,7 +258,7 @@ export default class DotplotPlugin extends Plugin {
                   },
                   viewTrackConfigs: [
                     {
-                      type: 'DotplotTrack',
+                      type: 'SyntenyTrack',
                       assemblyNames,
                       adapter: {
                         type: 'FromConfigAdapter',
@@ -281,7 +285,7 @@ export default class DotplotPlugin extends Plugin {
                   tracks: [
                     {
                       configuration: trackId,
-                      type: 'DotplotTrack',
+                      type: 'SyntenyTrack',
                     },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,

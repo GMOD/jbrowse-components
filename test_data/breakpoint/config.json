@@ -11,17 +11,14 @@
           "chromSizesLocation": {
             "uri": "../hg19.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }
   ],
   "tracks": [
     {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "sv_chord_track",
+      "type": "VariantTrack",
+      "trackId": "sv_track",
       "name": "human chord test",
       "assemblyNames": ["hg19"],
       "adapter": {
@@ -34,9 +31,6 @@
             "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "StructuralVariantChordRenderer"
       }
     },
     {
@@ -55,14 +49,6 @@
             "uri": "pacbio_chr3_chr6.vcf.gz.tbi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -80,14 +66,6 @@
           "location": {
             "uri": "pacbio_chr3_chr6.bam.bai"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     }
@@ -126,15 +104,23 @@
             "tracks": [
               {
                 "type": "AlignmentsTrack",
-                "height": 100,
                 "configuration": "pacbio_hg002_breakpoints",
-                "selectedRendering": ""
+                "displays": [
+                  {
+                    "type": "LinearAlignmentsDisplay",
+                    "configuration": "pacbio_hg002_breakpoints-LinearAlignmentsDisplay"
+                  }
+                ]
               },
               {
                 "type": "VariantTrack",
-                "height": 100,
                 "configuration": "pacbio_vcf",
-                "selectedRendering": ""
+                "displays": [
+                  {
+                    "type": "LinearVariantDisplay",
+                    "configuration": "pacbio_vcf-LinearVariantDisplay"
+                  }
+                ]
               }
             ],
             "hideControls": false,
@@ -163,15 +149,23 @@
             "tracks": [
               {
                 "type": "AlignmentsTrack",
-                "height": 100,
                 "configuration": "pacbio_hg002_breakpoints",
-                "selectedRendering": ""
+                "displays": [
+                  {
+                    "type": "LinearAlignmentsDisplay",
+                    "configuration": "pacbio_hg002_breakpoints-LinearAlignmentsDisplay"
+                  }
+                ]
               },
               {
                 "type": "VariantTrack",
-                "height": 100,
                 "configuration": "pacbio_vcf",
-                "selectedRendering": ""
+                "displays": [
+                  {
+                    "type": "LinearVariantDisplay",
+                    "configuration": "pacbio_vcf-LinearVariantDisplay"
+                  }
+                ]
               }
             ],
             "hideControls": false,
