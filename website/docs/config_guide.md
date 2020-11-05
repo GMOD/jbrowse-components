@@ -148,6 +148,27 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 
 See our CLI docs for the add-assembly for more details here -- [add-assembly](cli#jbrowse-add-assembly-sequence)
 
+Note: assemblies can also be added graphically using the assembly manager. See the quickstart guide for more details. (TODO: link to quickstart)
+
+## Adding tracks and connections
+
+To add a new track or connection, use the menu bar in the app
+
+File->Open Track
+
+to open the form for adding a track.
+
+Similarly, to add a new connection, navigate to
+
+File->Open Connection
+
+for the form.
+
+There is also a circular "+" button in the track selector menu that can also be used to access these forms.
+
+Note: There is also a CLI command for adding tracks.
+See our CLI docs for the add-track for more details here -- [add-track](cli#jbrowse-add-track)
+
 ## Track configurations
 
 All tracks can contain
