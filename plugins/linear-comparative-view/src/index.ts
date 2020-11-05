@@ -217,7 +217,11 @@ export default class extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(track, 'assemblyNames')[0]
+                const trackAssembly = getConf(
+                  // @ts-ignore
+                  track.parentTrack,
+                  'assemblyNames',
+                )[0]
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
@@ -324,7 +328,7 @@ export default class extends Plugin {
                   ],
                   viewTrackConfigs: [
                     {
-                      type: 'LinearSyntenyTrack',
+                      type: 'SyntenyTrack',
                       assemblyNames,
                       adapter: {
                         type: 'FromConfigAdapter',
@@ -340,7 +344,13 @@ export default class extends Plugin {
                   tracks: [
                     {
                       configuration: trackId,
-                      type: 'LinearSyntenyTrack',
+                      type: 'SyntenyTrack',
+                      displays: [
+                        {
+                          type: 'LinearSyntenyDisplay',
+                          configuration: `${trackId}-LinearSyntenyDisplay`,
+                        },
+                      ],
                     },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
@@ -353,17 +363,23 @@ export default class extends Plugin {
     function addContextMenu(view: View) {
       if (view.type === 'LinearGenomeView') {
         view.tracks.forEach(track => {
-          if (
-            track.type === 'PileupTrack' &&
-            !track.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.addAdditionalContextMenuItemCallback(cb)
-          } else if (
-            track.type === 'AlignmentsTrack' &&
-            track.PileupTrack &&
-            !track.PileupTrack.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
+          if (track.type === 'AlignmentsTrack') {
+            track.displays.forEach(display => {
+              if (
+                display.type === 'LinearPileupDisplay' &&
+                !display.additionalContextMenuItemCallbacks.includes(cb)
+              ) {
+                display.addAdditionalContextMenuItemCallback(cb)
+              } else if (
+                display.type === 'LinearAlignmentsDisplay' &&
+                display.PileupDisplay &&
+                !display.PileupDisplay.additionalContextMenuItemCallbacks.includes(
+                  cb,
+                )
+              ) {
+                display.PileupDisplay.addAdditionalContextMenuItemCallback(cb)
+              }
+            })
           }
         })
       }
