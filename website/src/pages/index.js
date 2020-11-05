@@ -118,7 +118,10 @@ function Home() {
         <div className={classes.section}>
           <Typography variant="h4">License</Typography>
           <hr />
-          <Typography>JBrowse 2 is released under the MIT License</Typography>
+          <Typography>
+            JBrowse is released under the Apache-2.0 License, see the JBrowse
+            LICENSE file.
+          </Typography>
         </div>
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>

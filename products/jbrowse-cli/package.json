@@ -7,7 +7,7 @@
     "jbrowse2",
     "oclif"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
