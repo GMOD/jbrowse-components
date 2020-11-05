@@ -147,6 +147,13 @@ Object {
   },
   "displays": Array [
     Object {
+      "displayId": "trackId0-LinearFeatureDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearFeatureDisplay",
+    },
+    Object {
       "displayId": "trackId0-LinearBasicDisplay",
       "renderer": Object {
         "type": "SvgFeatureRenderer",
