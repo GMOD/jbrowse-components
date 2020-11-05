@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { SnapshotIn, Instance } from 'mobx-state-tree'
-import { InstanceOfModelReturnedBy } from '@jbrowse/core/util'
+import { getSession, InstanceOfModelReturnedBy } from '@jbrowse/core/util'
 import DoneIcon from '@material-ui/icons/Done'
 import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
@@ -38,7 +38,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
 export default (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { mobx } = lib
-  const { types, getParent, getRoot, getEnv } = lib['mobx-state-tree']
+  const { types, getParent, getEnv } = lib['mobx-state-tree']
   const BaseViewModel = lib['@jbrowse/core/BaseViewModel']
 
   const SpreadsheetModel = load(Spreadsheet)
@@ -83,6 +83,15 @@ export default (pluginManager: PluginManager) => {
       rowMenuItems: mobx.observable(defaultRowMenuItems),
     }))
     .views(self => ({
+      get initialized() {
+        const { assemblyManager } = getSession(self)
+        const assemblyName = this.assembly
+        if (assemblyName) {
+          const assembly = assemblyManager.get(assemblyName)
+          return Boolean(assembly && assembly.refNameAliases)
+        }
+        return true
+      },
       get readyToDisplay() {
         return !!self.spreadsheet && self.spreadsheet.isLoaded
       },
@@ -102,8 +111,9 @@ export default (pluginManager: PluginManager) => {
 
       get assembly() {
         if (self.spreadsheet && self.spreadsheet.assemblyName) {
+          const session = getSession(self)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const assemblies = getRoot(self).jbrowse.assemblies as any[]
+          const assemblies = session.assemblies as any[]
           const assembly = (assemblies || []).find(
             asm =>
               readConfObject(asm, 'name') === self.spreadsheet?.assemblyName,
