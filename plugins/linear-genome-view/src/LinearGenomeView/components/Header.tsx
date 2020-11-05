@@ -79,7 +79,6 @@ const Controls = observer(({ model }: { model: LGV }) => {
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
-  const classes = useStyles()
   const theme = useTheme()
   const { coarseVisibleLocStrings: visibleLocStrings } = model
   const session = getSession(model)
@@ -101,8 +100,7 @@ const Search = observer(({ model }: { model: LGV }) => {
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
 
-        // have to manually call setValue(undefined) for react-testing-library
-        // purposes, the below onBlur is not called
+        // need to manually call the action of blur here
         setValue(undefined)
       }}
     >
@@ -111,11 +109,12 @@ const Search = observer(({ model }: { model: LGV }) => {
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
         onChange={event => setValue(event.target.value)}
-        className={classes.input}
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
-        inputProps={{ 'data-testid': 'search-input' }}
+        inputProps={{
+          'data-testid': 'search-input',
+        }}
         // eslint-disable-next-line react/jsx-no-duplicate-props
         InputProps={{
           startAdornment: <SearchIcon />,
