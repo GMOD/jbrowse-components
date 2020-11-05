@@ -70,6 +70,15 @@ export default (pluginManager: PluginManager) => {
       isLoaded: false,
     }))
     .views(self => ({
+      get initialized() {
+        const session = getSession(self)
+        const name = self.assemblyName
+        if (name) {
+          const asm = session.assemblyManager.get(name)
+          return asm && asm.initialized
+        }
+        return true
+      },
       get hideRowSelection() {
         // just delegates to parent
         return getParent(self).hideRowSelection

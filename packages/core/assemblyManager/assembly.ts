@@ -142,6 +142,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       refNameAliases: types.maybe(types.map(types.string)),
     })
     .views(self => ({
+      get initialized() {
+        return Boolean(self.refNameAliases)
+      },
       get name(): string {
         return readConfObject(self.configuration, 'name')
       },
@@ -152,7 +155,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return self.regions && self.regions.map(region => region.refName)
       },
       get allRefNames() {
-        if (!(this.refNames && self.refNameAliases)) {
+        if (!self.refNameAliases) {
           return undefined
         }
         return Array.from(self.refNameAliases.keys())
