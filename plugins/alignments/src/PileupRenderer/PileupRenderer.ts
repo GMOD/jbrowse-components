@@ -522,6 +522,33 @@ export default class PileupRenderer extends BoxRendererType {
       : `hsl(${Math.abs(feature.get('template_length')) / 10},50%,50%)`
   }
 
+  colorByReverseTemplate(feature: Feature, _config: AnyConfigurationModel) {
+    const flags = feature.get('flags')
+    const strand = feature.get('strand')
+    // is paired
+    if (flags & 1) {
+      const revflag = flags & 64
+      const flipper = revflag ? -1 : 1
+      // proper pairing
+      if (flags & 2) {
+        return strand * flipper == 1 ? 'color_rev_strand' : 'color_fwd_strand'
+      }
+      if (feature.get('multi_segment_next_segment_unmapped')) {
+        return strand * flipper === 1
+          ? 'color_rev_missing_mate'
+          : 'color_fwd_missing_mate'
+      }
+      if (feature.get('seq_id') == feature.get('next_seq_id')) {
+        return strand * flipper == 1
+          ? 'color_rev_strand_not_proper'
+          : 'color_fwd_strand_not_proper'
+      }
+      // should only leave aberrant chr
+      return strand == 1 ? 'color_fwd_diff_chr' : 'color_rev_diff_chr'
+    }
+    return strand == 1 ? 'color_fwd_strand' : 'color_rev_strand'
+  }
+
   drawRect(
     ctx: CanvasRenderingContext2D,
     feat: {
@@ -549,6 +576,10 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
+        break
+      case 'reverseTemplate':
+        ctx.fillStyle =
+          alignmentColoring[this.colorByReverseTemplate(feature, config)]
         break
       case 'tag': {
         const tag = colorBy.tag as string

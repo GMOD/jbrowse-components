@@ -369,6 +369,12 @@ const stateModelFactory = (
                     self.setDialogComponent(ColorByTagDlg)
                   },
                 },
+                {
+                  label: 'Stranded-seq',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'reverseTemplate' })
+                  },
+                },
               ],
             },
           ]
