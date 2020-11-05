@@ -129,8 +129,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        const { assemblyNames } = this
+        const { assemblyManager } = getSession(self)
+        const assembliesInitialized = assemblyNames.every(
+          asm => assemblyManager.get(asm)?.initialized,
+        )
+        console.log(assembliesInitialized)
         return (
-          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+          self.volatileWidth !== undefined &&
+          self.displayedRegions.length > 0 &&
+          assembliesInitialized
         )
       },
       get scaleBarHeight() {
@@ -636,7 +644,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               )
             }
           }
-return           this.navTo(parsedLocString)
+          return this.navTo(parsedLocString)
         }
       },
 
