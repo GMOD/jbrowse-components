@@ -19,6 +19,20 @@ Array [
         "label": "New session",
         "onClick": [Function],
       },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
+        "onClick": [Function],
+      },
     ],
   },
 ]
@@ -41,6 +55,20 @@ Array [
           },
         },
         "label": "New session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
         "onClick": [Function],
       },
     ],
