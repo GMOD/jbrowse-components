@@ -42,12 +42,16 @@ import {
 const { parseCigar } = MismatchParser
 
 interface Track {
-  addAdditionalContextMenuItemCallback: Function
-  additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PileupTrack: any
+  displays: {
+    addAdditionalContextMenuItemCallback: Function
+    additionalContextMenuItemCallbacks: Function[]
+    id: string
+    type: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    PileupDisplay: any
+  }[]
 }
 interface View {
   tracks: Track[]
