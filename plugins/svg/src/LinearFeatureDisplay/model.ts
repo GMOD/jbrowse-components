@@ -1,7 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { MenuItem } from '@jbrowse/core/ui'
-import { basicTrackStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 
 import { types, Instance } from 'mobx-state-tree'
@@ -10,10 +10,10 @@ import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configur
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
     .compose(
-      'FeatureTrack',
-      basicTrackStateModelFactory(configSchema),
+      'LinearFeatureDisplay',
+      BaseLinearDisplay,
       types.model({
-        type: types.literal('FeatureTrack'),
+        type: types.literal('LinearFeatureDisplay'),
         showLabels: types.optional(types.boolean, true),
         displayMode: types.optional(types.string, 'normal'),
         configuration: ConfigurationReference(configSchema),
@@ -30,6 +30,10 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     .views(self => {
       const { trackMenuItems } = self
       return {
+        get rendererTypeName() {
+          const renderer = getConf(self, 'renderer')
+          return renderer.type
+        },
         get renderProps() {
           const config = self.rendererType.configSchema.create({
             ...getConf(self, 'renderer'),

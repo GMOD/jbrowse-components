@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BaseTrackConfig } from '@jbrowse/plugin-linear-genome-view'
+import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+
 import PluginManager from '@jbrowse/core/PluginManager'
 
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'FeatureTrack',
+    'LinearFeatureDisplay',
     {
-      adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
       // overrides base
       maxDisplayedBpPerPx: {
@@ -15,6 +15,6 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: 1000,
       },
     },
-    { explicitlyTyped: true, baseConfiguration: BaseTrackConfig },
+    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )
 }
