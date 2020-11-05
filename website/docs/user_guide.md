@@ -38,6 +38,24 @@ scroll and this will zoom in and out
 There is a drag handle on the track labels indicating by the six dots, clicking
 and dragging on this part of the track label can reorder tracks
 
+## Adding tracks
+
+To add a new track or connection, use the menu bar in the app
+
+File->Open Track
+
+to open the form for adding a track:
+
+![](img/add_track_form.png)
+The "Add track form"
+
+Note: There is also a circular "+" button inside the track selector menu that
+can also be used to access the "Add track" form.
+
+Note: If you are an administrator, note that you can add tracks with the
+JBrowse CLI or with the admin server [add-track](cli#jbrowse-add-track) or
+[admin-server guide](quickstart_admin)
+
 #### Rubberband selection
 
 The scale bars accept a click and drag action to select a region

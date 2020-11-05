@@ -146,24 +146,12 @@ myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-See our CLI docs for the add-assembly for more details here -- [add-assembly](cli#jbrowse-add-assembly-sequence)
+See our CLI docs for the add-assembly for more details here --
+[add-assembly](cli#jbrowse-add-assembly-sequence)
 
-Note: assemblies can also be added graphically using the assembly manager. See the [quickstart guide](quickstart_admin#adding-an-assembly) for more details.
-
-## Adding tracks
-
-To add a new track or connection, use the menu bar in the app
-
-File->Open Track
-
-to open the form for adding a track:
-
-![](img/add_track_form.png)
-
-There is also a circular "+" button in the track selector menu that can also be used to access the form.
-
-Note: There is also a CLI command for adding tracks.
-See our CLI docs for the add-track for more details here -- [add-track](cli#jbrowse-add-track)
+Note: assemblies can also be added graphically using the assembly manager when
+you are using the so-called admin-server. See the [quickstart
+guide](quickstart_admin#adding-an-assembly) for more details.
 
 ## Track configurations
 
