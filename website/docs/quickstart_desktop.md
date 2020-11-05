@@ -1,6 +1,6 @@
 ---
-id: quickstart_desktop
-title: JBrowse 2 desktop quickstart
+id: desktop_install
+title: Desktop installation
 toplevel: true
 ---
 

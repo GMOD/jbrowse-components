@@ -5,8 +5,12 @@
     "combined_pdf",
     {
       "type": "category",
-      "label": "Quickstart guide",
-      "items": ["quickstart_web", "quickstart_desktop", "quickstart_admin"]
+      "label": "Quickstart guides",
+      "items": [
+        "web_cli_install",
+        "web_graphical_configuration",
+        "desktop_install"
+      ]
     },
     "user_guide",
     "config_guide",

@@ -1,6 +1,6 @@
 ---
-id: quickstart_web
-title: JBrowse 2 web quickstart
+id: web_cli_install
+title: Web CLI installation
 toplevel: true
 ---
 
