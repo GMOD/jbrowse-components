@@ -1,5 +1,4 @@
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
-import { CircularProgress } from '@material-ui/core'
 import ImportWizardFactory from './ImportWizard'
 import SpreadsheetFactory from './Spreadsheet'
 import GlobalFilterControlsFactory from './GlobalFilterControls'
