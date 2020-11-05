@@ -46,10 +46,10 @@ Object {
       },
       "sequence": Object {
         "adapter": Object {
-          "twoBitLocation": Object {
-            "uri": "volvox.2bit",
+          "faiLocation": Object {
+            "uri": "volvox.fa.fai",
           },
-          "type": "TwoBitAdapter",
+          "type": "IndexedFastaAdapter",
         },
         "displays": Array [
           Object {
