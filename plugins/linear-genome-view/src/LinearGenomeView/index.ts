@@ -643,7 +643,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               )
             }
           }
-          return this.navTo(parsedLocString)
+          this.navTo(parsedLocString)
         }
       },
 

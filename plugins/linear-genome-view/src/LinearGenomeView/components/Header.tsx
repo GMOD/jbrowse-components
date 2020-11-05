@@ -80,7 +80,15 @@ const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
   const theme = useTheme()
-  const { coarseVisibleLocStrings: visibleLocStrings } = model
+  const {
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
+  } = model
+
+  // use regular visibleLocStrings if coarseVisibleLocStrings is undefined
+  const visibleLocStrings =
+    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+
   const session = getSession(model)
 
   function navTo(locString: string) {
