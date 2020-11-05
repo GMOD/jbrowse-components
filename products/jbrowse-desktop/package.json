@@ -2,7 +2,7 @@
   "name": "@jbrowse/desktop",
   "version": "0.0.1-beta.27",
   "description": "JBrowse desktop application specialized to inspect structural variants",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "./",
   "author": "JBrowse Team",
   "main": "public/electron.js",

@@ -1,7 +1,7 @@
 {
   "name": "@jbrowse/website",
   "version": "0.0.1-beta.17",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
     "prestart": "npm run make",

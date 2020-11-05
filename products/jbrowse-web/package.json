@@ -1,7 +1,7 @@
 {
   "name": "@jbrowse/web",
   "version": "0.0.1-beta.28",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": ".",
   "main": "build",
   "dir": "src",
@@ -75,7 +75,7 @@
       "not dead",
       "not op_mini all"
     ],
-    "license": "MIT",
+    "license": "Apache-2.0",
     "development": [
       "last 1 chrome version"
     ]

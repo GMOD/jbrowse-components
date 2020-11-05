@@ -2,7 +2,7 @@
   "name": "@jbrowse/protein-widget",
   "version": "0.0.1-beta.23",
   "description": "an embeddable protein viewer widget",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "umd/jbrowse-protein-viewer.js",
   "files": [
     "umd"
