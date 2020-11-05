@@ -4,8 +4,13 @@ title: Quick start guide for the admin-server
 toplevel: true
 ---
 
-This guide will introduce several new administration features provided with
-JBrowse 2.
+JBrowse 2 offsers a "graphical configuration editor" called the `admin-server`
+that let's you add genome assemblies, tracks, and edit their configs in the web
+browser
+
+This guide will introduce how to use the admin-server
+
+**Note: the admin-server is meant to be used temporarily for configuration, not in production**
 
 ### Pre-requisites
 
