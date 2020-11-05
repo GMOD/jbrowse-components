@@ -232,7 +232,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             data-testid="search-form"
           >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
@@ -1035,7 +1035,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             data-testid="search-form"
           >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
