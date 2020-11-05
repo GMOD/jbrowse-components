@@ -34,12 +34,16 @@ import DotplotViewFactory from './DotplotView'
 const { parseCigar } = MismatchParser
 
 interface Track {
-  addAdditionalContextMenuItemCallback: Function
-  additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PileupTrack: any
+  displays: {
+    addAdditionalContextMenuItemCallback: Function
+    additionalContextMenuItemCallbacks: Function[]
+    id: string
+    type: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    PileupDisplay: any
+  }[]
 }
 interface View {
   tracks: Track[]
@@ -153,14 +157,14 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, track: IAnyStateTreeNode) => {
+    const cb = (feature: Feature, display: IAnyStateTreeNode) => {
       return feature
         ? [
             {
               label: 'Dotplot of read vs ref',
               icon: AddIcon,
               onClick: () => {
-                const session = getSession(track)
+                const session = getSession(display)
                 const clipPos = feature.get('clipPos')
                 const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
@@ -170,7 +174,11 @@ export default class DotplotPlugin extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(track, 'assemblyNames')[0]
+                const trackAssembly = getConf(
+                  // @ts-ignore
+                  display.parentTrack,
+                  'assemblyNames',
+                )[0]
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
@@ -286,6 +294,12 @@ export default class DotplotPlugin extends Plugin {
                     {
                       configuration: trackId,
                       type: 'SyntenyTrack',
+                      displays: [
+                        {
+                          type: 'DotplotDisplay',
+                          configuration: `${trackId}-DotplotDisplay`,
+                        },
+                      ],
                     },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
@@ -298,17 +312,23 @@ export default class DotplotPlugin extends Plugin {
     function addContextMenu(view: View) {
       if (view.type === 'LinearGenomeView') {
         view.tracks.forEach(track => {
-          if (
-            track.type === 'PileupTrack' &&
-            !track.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.addAdditionalContextMenuItemCallback(cb)
-          } else if (
-            track.type === 'AlignmentsTrack' &&
-            track.PileupTrack &&
-            !track.PileupTrack.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
+          if (track.type === 'AlignmentsTrack') {
+            track.displays.forEach(display => {
+              if (
+                display.type === 'LinearPileupDisplay' &&
+                !display.additionalContextMenuItemCallbacks.includes(cb)
+              ) {
+                display.addAdditionalContextMenuItemCallback(cb)
+              } else if (
+                display.type === 'LinearAlignmentsDisplay' &&
+                display.PileupDisplay &&
+                !display.PileupDisplay.additionalContextMenuItemCallbacks.includes(
+                  cb,
+                )
+              ) {
+                display.PileupDisplay.addAdditionalContextMenuItemCallback(cb)
+              }
+            })
           }
         })
       }
