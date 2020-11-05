@@ -4,19 +4,20 @@ import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
+import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
-import Search from './Search'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -74,6 +75,56 @@ const Controls = observer(({ model }: { model: LGV }) => {
     </ToggleButton>
   )
 })
+
+const Search = observer(({ model }: { model: LGV }) => {
+  const [value, setValue] = useState<string | undefined>()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const classes = useStyles()
+  const theme = useTheme()
+  const { coarseVisibleLocStrings: visibleLocStrings } = model
+  const session = getSession(model)
+
+  function navTo(locString: string) {
+    try {
+      model.navToLocString(locString)
+    } catch (e) {
+      console.warn(e)
+      session.notify(`${e}`, 'warning')
+    }
+  }
+
+  return (
+    <form
+      data-testid="search-form"
+      onSubmit={event => {
+        event.preventDefault()
+        inputRef && inputRef.current && inputRef.current.blur()
+        value && navTo(value)
+      }}
+    >
+      <TextField
+        inputRef={inputRef}
+        onFocus={() => setValue(visibleLocStrings)}
+        onBlur={() => setValue(undefined)}
+        onChange={event => setValue(event.target.value)}
+        className={classes.input}
+        variant="outlined"
+        value={value === undefined ? visibleLocStrings : value}
+        style={{ margin: SPACING, marginLeft: SPACING * 3 }}
+        inputProps={{ 'data-testid': 'search-input' }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
+        InputProps={{
+          startAdornment: <SearchIcon />,
+          style: {
+            background: fade(theme.palette.background.paper, 0.8),
+            height: WIDGET_HEIGHT,
+          },
+        }}
+      />
+    </form>
+  )
+})
+
 function PanControls({ model }: { model: LGV }) {
   const classes = useStyles()
   return (
