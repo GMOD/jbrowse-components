@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "0.0.1-beta.17",
+  "version": "1.0.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",

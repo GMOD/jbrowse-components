@@ -1,3 +1,13 @@
+# [1.0.0](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.11...v1.0.0) (2020-11-06)
+
+### Reverts
+
+- Revert "make rootModel setSession check and attempt to remove undefined MST references" ([c2c06d6](https://github.com/GMOD/jbrowse-components/commit/c2c06d6e18c60a09a4cdda15f53de1c3da7bc520))
+- Revert "Bump @docusaurus alpha version" ([32b604a](https://github.com/GMOD/jbrowse-components/commit/32b604a1ef829f2d2e17fa3822184577ea951e69))
+- Revert "Remove checkLocation from CLI base class" ([d399135](https://github.com/GMOD/jbrowse-components/commit/d399135e364d3553130c919bdfccbf17e14d6a9b))
+- Revert "Allow touchscreen using pointer events (#1112)" the pointer ([404546e](https://github.com/GMOD/jbrowse-components/commit/404546e5a1c71510a90a777957d32cd2c8f71ed1)), closes [#1112](https://github.com/GMOD/jbrowse-components/issues/1112)
+- Revert "Simplify command unzip (#1075)" ([9c0b975](https://github.com/GMOD/jbrowse-components/commit/9c0b97504b7a423a9c356ac3ffffc2754224c65a)), closes [#1075](https://github.com/GMOD/jbrowse-components/issues/1075)
+
 ## [0.0.1-beta.30](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.11...v0.0.1-beta.30) (2020-10-31)
 
 ### Reverts
