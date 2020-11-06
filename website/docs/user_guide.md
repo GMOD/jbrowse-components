@@ -54,8 +54,13 @@ can also be used to access the "Add track" form.
 ![](img/add_track_tracklist.png)
 The "Add track button" in the tracklist
 
-In the "Add track" form, you can provide a URL to a file to load, and
-optionally a URL to the index file too
+In the "Add track" form, you can provide a URL to a file to load. Opening files
+from your local machine is not supported currently in the jbrowse-web app
+(jbrowse-desktop does allow this though, and may be added to jbrowse-web in the
+future)
+
+Paste a URL to a file and optionally provide an index file URL too. The
+following file formats are supported
 
 - Tabixed VCF
 - Tabixed BED
@@ -66,13 +71,59 @@ optionally a URL to the index file too
 - BigBed
 - .hic file (Juicebox)
 
-For tabixed files, TBI or CSI indexes are allowed. CSI or BAI is allowed for
-BAM. Only CRAI is allowed for CRAM. The index will be inferred if plain BAI or
-TBI is being used for BAM/tabix file inputs
+For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
+Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
+as filename+'.bai' for example, but if it is different than this, make sure to
+specify the index file explicitly.
 
-Note: If you are an administrator, note that you can add tracks with the
-JBrowse CLI or with the admin server [add-track](cli#jbrowse-add-track) or
-[admin-server guide](quickstart_admin)
+Note: If you are an administrator, you can add tracks with the command line or
+with the admin server [add-track](cli#jbrowse-add-track) or [admin-server
+guide](quickstart_admin)
+
+### Sharing sessions
+
+The main menu bar has a "Share" button to enable users to share their sessions
+with other people. The share button generates a URL that can be sent to other
+users. It is not possible to copy your URL bar and send this to another user
+currently, because sessions can become too large for the address bar in many
+cases.
+
+Note that you can copy and paste URLs between different tabs in your local
+browser though
+
+![](img/share_button.png)
+
+The session URL will contain
+
+- what views are on the screen, and settings for the views (e.g. track labels
+  overlapping or offset)
+- what tracks are in the view
+- extra tracks that you added with the "Add track workflow"
+- for the alignments track, the show soft clipping and sort settings on the
+  pileup
+- etc
+
+All this stuff gets included in the session
+
+This means you can share links with your custom tracks with other users,
+without being a JBrowse admin!
+
+### Editing track configs
+
+Currently, in order to edit a track config, you have to make a copy of the track
+
+![](img/copy_track.png)
+Figure showing how to copy a track, note that settings button is disabled
+because we don't "own this track" as a non-priviledged user
+
+After you have copied the track, you can edit the track settings
+
+![](img/session_track_settings.png)
+Figure showing the settings button is now enabled on the session track, and you
+have full control over your session tracks
+
+Your new track is a so-called "session track" and can be shared with other
+users with the "Share" button
 
 #### Rubberband selection
 
