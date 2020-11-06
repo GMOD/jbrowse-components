@@ -89,15 +89,6 @@ function ConfirmTrack({
 
   function handleAssemblyChange(event) {
     setAssembly(event.target.value)
-    if (trackAdapter.type === 'CramAdapter') {
-      setTrackAdapter({
-        ...trackAdapter,
-        sequenceAdapter: readConfObject(event.target.value, [
-          'sequence',
-          'adapter',
-        ]),
-      })
-    }
   }
 
   if (trackAdapter.type === UNSUPPORTED)
