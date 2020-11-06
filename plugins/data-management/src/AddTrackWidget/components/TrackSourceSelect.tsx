@@ -3,6 +3,7 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
 import React from 'react'
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -14,12 +15,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function TrackSourceSelect({
-  indexTrackData,
-  setIndexTrackData,
-  trackData,
-  setTrackData,
-}) {
+function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   return (
     <div className={classes.root}>
@@ -27,14 +23,14 @@ function TrackSourceSelect({
         <FileSelector
           name="URL"
           description=""
-          location={trackData}
-          setLocation={setTrackData}
+          location={model.trackData}
+          setLocation={model.setTrackData}
         />
         <FileSelector
           name="Index URL (optional)"
           description="Automatically inferred from the URL if not supplied"
-          location={indexTrackData}
-          setLocation={setIndexTrackData}
+          location={model.indexTrackData}
+          setLocation={model.setIndexTrackData}
         />
       </Paper>
     </div>
