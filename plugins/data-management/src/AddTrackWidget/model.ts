@@ -1,7 +1,7 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { guessTrackType } from '@jbrowse/core/util/tracks'
 
 export default function f(pluginManager: PluginManager) {
   return types
@@ -14,11 +14,14 @@ export default function f(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       trackSource: 'fromFile',
-      trackData: { uri: '' } as FileLocation,
-      indexTrackData: { uri: '' } as FileLocation,
+      trackData: { uri: '' } as any,
+      indexTrackData: { uri: '' } as any,
+
+      // alts
       altAssemblyName: '',
-      trackName: '',
-      trackType: '',
+      altTrackName: '',
+      altTrackType: '',
+
       trackAdapter: {} as any,
     }))
     .actions(self => ({
@@ -38,10 +41,10 @@ export default function f(pluginManager: PluginManager) {
         self.altAssemblyName = str
       },
       setTrackName(str: string) {
-        self.trackName = str
+        self.altTrackName = str
       },
       setTrackType(str: string) {
-        self.trackType = str
+        self.altTrackType = str
       },
     }))
     .views(self => ({
@@ -49,7 +52,8 @@ export default function f(pluginManager: PluginManager) {
         // @ts-ignore
         const uri = self.trackData?.uri
         return (
-          self.trackName || (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null)
+          self.altTrackName ||
+          (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null)
         )
       },
 
@@ -57,6 +61,10 @@ export default function f(pluginManager: PluginManager) {
         return (
           self.altAssemblyName || self.view.displayedRegions[0].assemblyName
         )
+      },
+
+      get trackType() {
+        return self.altTrackType || guessTrackType(self.trackAdapter.type)
       },
     }))
 }

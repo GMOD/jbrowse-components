@@ -1,10 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  guessAdapter,
-  guessTrackType,
-  UNKNOWN,
-  UNSUPPORTED,
-} from '@jbrowse/core/util/tracks'
+import { getSession } from '@jbrowse/core/util'
+import { guessAdapter, UNKNOWN, UNSUPPORTED } from '@jbrowse/core/util/tracks'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
@@ -13,6 +9,7 @@ import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect } from 'react'
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   spacing: {
@@ -20,58 +17,28 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-/**
- * check if a string looks like an abolute URL, e.g. a
- * full URL e.g. "https://mysite.org/myfile.txt",
- * implicit protocol URL e.g. "//mysite.org/myfile.txt", or
- * implicit domain name URL e.g. "/myfile.txt"
- * @param {String} url URL
- */
-function isAbsoluteUrl(url) {
-  try {
-    // eslint-disable-next-line no-new
-    new URL(url)
-    return true
-  } catch (error) {
-    return url.startsWith('/')
-  }
-}
-
-function ConfirmTrack({
-  trackData,
-  trackName,
-  fileName,
-  indexTrackData,
-  setTrackAdapter,
-  setTrackName,
-  trackType,
-  setTrackType,
-  trackAdapter,
-  assembly,
-  setAssembly,
-  session,
-}) {
+function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const [error, setError] = useState()
+  const session = getSession(model)
+  const [error, setError] = useState<string>()
+  const {
+    trackName,
+    trackData,
+    trackAdapter,
+    trackType,
+    indexTrackData,
+    assembly,
+  } = model
   useEffect(() => {
-    if (trackData.uri) {
+    if (trackData?.uri) {
       const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
-      setTrackAdapter(adapter)
-      setTrackType(guessTrackType(adapter.type))
-
-      // check for ftp url inputs
-      if (
-        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
-        trackData.uri.startsWith('ftp://')
-      ) {
-        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
-      }
+      model.setTrackAdapter(adapter)
 
       // check for whether the user entered an absolute URL
-      else if (
+      if (
         !(
-          (indexTrackData.uri && isAbsoluteUrl(indexTrackData.uri)) ||
-          isAbsoluteUrl(trackData.uri)
+          (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
+          trackData.uri.startsWith('http')
         )
       ) {
         setError(
@@ -95,18 +62,20 @@ function ConfirmTrack({
           protocol`,
         )
       }
+
+      // check for ftp url inputs
+      else if (
+        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
+        trackData.uri.startsWith('ftp://')
+      ) {
+        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
+      }
     }
     if (trackData.localPath) {
       const adapter = guessAdapter(trackData.localPath, 'localPath')
-      setTrackAdapter(adapter)
-      setTrackType(guessTrackType(adapter.type))
+      model.setTrackAdapter(adapter)
     }
-    if (trackData.config) setTrackAdapter({ type: 'FromConfigAdapter' })
-  }, [trackData, setTrackAdapter, indexTrackData, setTrackType])
-
-  function handleAssemblyChange(event) {
-    setAssembly(event.target.value)
-  }
+  }, [trackData, indexTrackData])
 
   if (trackAdapter.type === UNSUPPORTED)
     return (
@@ -157,16 +126,16 @@ function ConfirmTrack({
         </Typography>
         <TextField
           className={classes.spacing}
-          value=""
+          value={trackAdapter}
           label="adapterType"
           helperText="An adapter type"
           select
           fullWidth
           onChange={event => {
-            setTrackAdapter({ type: event.target.value })
-            setTrackType(guessTrackType(event.target.value))
+            model.setTrackAdapter({ type: event.target.value })
           }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
           }}
         >
@@ -225,8 +194,8 @@ function ConfirmTrack({
           label="trackName"
           helperText="A name for this track"
           fullWidth
-          value={trackName || fileName}
-          onChange={event => setTrackName(event.target.value)}
+          value={trackName}
+          onChange={event => model.setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
         <TextField
@@ -237,9 +206,10 @@ function ConfirmTrack({
           select
           fullWidth
           onChange={event => {
-            setTrackType(event.target.value)
+            model.setTrackType(event.target.value)
           }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
         >
@@ -260,8 +230,11 @@ function ConfirmTrack({
           helperText="Assembly to which the track will be added"
           select
           fullWidth
-          onChange={handleAssemblyChange}
+          onChange={event => {
+            model.setAssembly(event.target.value)
+          }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           }}
         >
