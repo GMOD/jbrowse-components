@@ -15,8 +15,6 @@ linear genome view.
 This has been a massive effort by the team to get us to this 1.0.0 release,
 and we greatly thank all the beta users who have helped us with testing.
 
-Enjoy!
-
 Changes
 
 - fixed bug with reference sequences that don't use the alias system
@@ -38,6 +36,8 @@ Changes
   import forms
 - updated @material-ui/core version
 - clearer output printed when using admin-server
+
+Enjoy!
 
 - [@jbrowse/web@1.0.0](https://github.com/GMOD/jbrowse-components/releases/tag/@jbrowse/web@1.0.0)
 
