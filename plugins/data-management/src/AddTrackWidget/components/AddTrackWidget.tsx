@@ -11,6 +11,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -33,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWidget({ model }) {
+function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const [trackSource, setTrackSource] = useState('fromFile')
   const [trackData, setTrackData] = useState({ uri: '' })
@@ -51,7 +52,7 @@ function AddTrackWidget({ model }) {
 
   const session = getSession(model)
 
-  function getStepContent(step) {
+  function getStepContent(step: number) {
     switch (step) {
       case 0:
         return (
