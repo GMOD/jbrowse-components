@@ -6,8 +6,7 @@ import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import React, { useState, useEffect } from 'react'
 import { AddTrackModel } from '../model'
 
@@ -75,9 +74,9 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       const adapter = guessAdapter(trackData.localPath, 'localPath')
       model.setTrackAdapter(adapter)
     }
-  }, [trackData, indexTrackData])
+  }, [model, trackData, indexTrackData])
 
-  if (trackAdapter.type === UNSUPPORTED)
+  if (trackAdapter.type === UNSUPPORTED) {
     return (
       <Typography className={classes.spacing}>
         This version of JBrowse cannot display data of this type. It is
@@ -101,7 +100,8 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
         and add a feature request for this data type.
       </Typography>
     )
-  if (trackAdapter.type === UNKNOWN)
+  }
+  if (trackAdapter.type === UNKNOWN) {
     return (
       <>
         <Typography className={classes.spacing}>
@@ -154,10 +154,12 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
         </TextField>
       </>
     )
-  if (!trackAdapter.type)
+  }
+  if (!trackAdapter.type) {
     // TODO: if file type is unrecognized, provide some way of specifying
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this data type.</Typography>
+  }
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
     if (trackData.uri || trackData.localPath) {
@@ -251,43 +253,6 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     )
   }
   return <></>
-}
-
-ConfirmTrack.propTypes = {
-  assembly: PropTypes.oneOfType([
-    PropTypes.string,
-    MobxPropTypes.observableObject,
-  ]),
-  setAssembly: PropTypes.func.isRequired,
-  trackData: PropTypes.shape({
-    uri: PropTypes.string,
-    localPath: PropTypes.string,
-    config: PropTypes.array,
-  }).isRequired,
-  indexTrackData: PropTypes.shape({
-    uri: PropTypes.string,
-    localPath: PropTypes.string,
-    config: PropTypes.array,
-  }).isRequired,
-  trackName: PropTypes.string.isRequired,
-  fileName: PropTypes.string,
-  setTrackName: PropTypes.func.isRequired,
-  trackType: PropTypes.string,
-  setTrackType: PropTypes.func.isRequired,
-  trackAdapter: PropTypes.shape({
-    type: PropTypes.string,
-    subadapter: PropTypes.shape({
-      type: PropTypes.string,
-    }),
-  }).isRequired,
-  setTrackAdapter: PropTypes.func.isRequired,
-  session: MobxPropTypes.observableObject.isRequired,
-}
-
-ConfirmTrack.defaultProps = {
-  assembly: '',
-  trackType: '',
-  fileName: '',
 }
 
 export default observer(ConfirmTrack)
