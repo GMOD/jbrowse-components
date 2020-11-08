@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`<ConfirmTrack /> renders 1`] = `
-<p
-  class="MuiTypography-root MuiTypography-body1"
->
-  Could not recognize this data type.
-</p>
-`;
