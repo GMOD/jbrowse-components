@@ -18,9 +18,6 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {
@@ -49,9 +46,6 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {
@@ -66,7 +60,7 @@
   ],
   "tracks": [
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": ["hg19"],
@@ -81,13 +75,10 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "repeats_hg19",
       "name": "Repeats",
       "assemblyNames": ["hg19"],
@@ -97,13 +88,10 @@
         "bigBedLocation": {
           "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
       "assemblyNames": ["hg19"],
@@ -142,15 +130,21 @@
           "chrMT"
         ]
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('gene_name') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "nclist_genes_hg19_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "hg19_gaps",
       "name": "Gaps",
       "assemblyNames": ["hg19"],
@@ -160,13 +154,10 @@
         "bigBedLocation": {
           "uri": "https://jbrowse.org/genomes/hg19/gaps.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg19",
       "name": "Clinvar CNV",
       "assemblyNames": ["hg19"],
@@ -176,13 +167,10 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
       "name": "Clinvar variants",
       "assemblyNames": ["hg19"],
@@ -192,13 +180,10 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "repeats_hg38",
       "name": "Repeats",
       "assemblyNames": ["hg38"],
@@ -208,13 +193,10 @@
         "bigBedLocation": {
           "uri": "https://jbrowse.org/genomes/GRCh38/repeats.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "Gencode v32",
       "assemblyNames": ["hg38"],
@@ -253,15 +235,21 @@
           "chrMT"
         ]
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('gene_name') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg38",
       "name": "Clinvar CNV",
       "assemblyNames": ["hg38"],
@@ -271,13 +259,10 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "clinvar_hg38",
       "name": "Clinvar variants",
       "assemblyNames": ["hg38"],
@@ -287,13 +272,10 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "mane_hg38",
       "name": "MANE 0.6",
       "assemblyNames": ["hg38"],
@@ -304,15 +286,21 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.6.bb"
         }
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('geneName2') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "mane_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('geneName2') }"
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "gdc_features",
       "name": "GDC Cancer",
       "assemblyNames": ["hg38"],
@@ -322,13 +310,10 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gdcCancer/gdcCancer.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "hg38_gaps",
       "name": "Gaps",
       "assemblyNames": ["hg38"],
@@ -338,13 +323,10 @@
         "bigBedLocation": {
           "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "ncbi_refseq_109_hg38",
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": ["hg38"],
@@ -359,13 +341,10 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "ncbi_refseq_analysis_set",
       "name": "NCBI RefSeq (NCList)",
       "assemblyNames": ["hg38"],
@@ -403,69 +382,6 @@
           "chrY",
           "chrMT"
         ]
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    },
-    {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "human_chord_test",
-      "name": "HG002 PacBio PBSV BND",
-      "assemblyNames": ["hg19"],
-      "configRelationships": [
-        {
-          "type": "AlignmentEvidence",
-          "target": "pacbio_hg002"
-        },
-        {
-          "type": "VariantCalls",
-          "target": "pacbio_sv_vcf"
-        }
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "StructuralVariantChordRenderer"
-      }
-    },
-    {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "breast_cancer_hg19_chords",
-      "name": "SKBR3 Sniffles TRA",
-      "assemblyNames": ["hg19"],
-      "configRelationships": [
-        {
-          "type": "AlignmentEvidence",
-          "target": "ngmlr"
-        },
-        {
-          "type": "VariantCalls",
-          "target": "breast_cancer_sniffles_hg19"
-        }
-      ],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "StructuralVariantChordRenderer"
       }
     },
     {
@@ -597,14 +513,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878-minion-ul_GRCh37.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -623,14 +531,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.splitters.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -648,14 +548,6 @@
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.down.bam.bai"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -688,7 +580,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "trackId": "ngmlr_cov",
       "name": "SKBR3 pacbio coverage (NGMLR)",
       "assemblyNames": ["hg19"],
@@ -697,17 +589,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -727,14 +608,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/HG002.hs37d5.2x250.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -752,14 +625,6 @@
           "location": {
             "uri": "https://jbrowse.org/genomes/hg19/pacbio/m64011_181218_235052.8M.HG002.hs37d5.11kb.bam.bai"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -791,14 +656,6 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -827,14 +684,6 @@
             "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -852,14 +701,6 @@
           "location": {
             "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/NA12878/exome_alignment/NA12878.mapped.ILLUMINA.bwa.CEU.exome.20121211.bam.bai"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -891,14 +732,6 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -929,18 +762,10 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "trackId": "nanopore_ultralong_cram_coverage",
       "name": "HG002 Nanopore ultralong coverage",
       "assemblyNames": ["hg19"],
@@ -949,17 +774,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ultra-long-ont_hs37d5_phased.bam.regions.bw"
-        }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
         }
       }
     },
@@ -988,14 +802,6 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -1027,14 +833,6 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -1053,18 +851,10 @@
             "uri": "https://s3.amazonaws.com/1000genomes/phase3/data/HG00096/alignment/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam.bai"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "trackId": "wiggle_global_autoscale",
       "name": "Encode global autoscale",
       "assemblyNames": ["hg19"],
@@ -1075,21 +865,10 @@
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "trackId": "wiggle_local_autoscale",
       "name": "Encode local autoscale",
       "assemblyNames": ["hg19"],
@@ -1099,21 +878,10 @@
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         }
-      },
-      "renderers": {
-        "DensityRenderer": {
-          "type": "DensityRenderer"
-        },
-        "XYPlotRenderer": {
-          "type": "XYPlotRenderer"
-        },
-        "LinePlotRenderer": {
-          "type": "LinePlotRenderer"
-        }
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "bigbed_peaks",
       "name": "Encode peaks",
       "assemblyNames": ["hg19"],
@@ -1123,9 +891,6 @@
         "bigBedLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
         }
-      },
-      "renderer": {
-        "type": "PileupRenderer"
       }
     },
     {
@@ -1144,14 +909,6 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.vcf.gz.tbi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
@@ -1169,14 +926,6 @@
           "location": {
             "uri": "https://1000genomes.s3.amazonaws.com/phase1/analysis_results/consensus_call_sets/indels/ALL.wgs.VQSR_V2_GLs_polarized.20101123.indels.low_coverage.genotypes.vcf.gz.tbi"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -1199,7 +948,7 @@
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "variants_hg002",
       "name": "HG002 GIAB consensus SV (VCF)",
       "assemblyNames": ["hg19"],
@@ -1214,13 +963,10 @@
             "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "variants_hg002_ncbi",
       "name": "HG002 GIAB consensus SV NCBI (BED)",
       "assemblyNames": ["hg19"],
@@ -1235,9 +981,6 @@
             "uri": "https://jbrowse.org/genomes/hg19/giab/variants_for_nstd175.sorted.bed.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
@@ -1256,18 +999,10 @@
             "uri": "https://jbrowse.org/genomes/hg19/pacbio/chm.full.37d5.vcf.gz.tbi"
           }
         }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "sparql_togogenome",
       "name": "TogoGenome SPARQL Genes",
       "assemblyNames": ["hg19"],
@@ -1307,13 +1042,10 @@
           "MT"
         ],
         "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "sparql_togovar",
       "name": "TogoVar SPARQL Variants",
       "assemblyNames": ["hg19"],
@@ -1353,9 +1085,6 @@
           "MT"
         ],
         "additionalQueryParams": ["format=application%2Fsparql-results%2Bjson"]
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
       }
     },
     {
@@ -1514,9 +1243,6 @@
         "hicLocation": {
           "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
         }
-      },
-      "renderer": {
-        "type": "HicRenderer"
       }
     },
     {
@@ -1674,7 +1400,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign100mer",
       "name": "wgEncodeCrgMapabilityAlign100mer",
@@ -1687,7 +1413,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign24mer",
       "name": "wgEncodeCrgMapabilityAlign24mer",
@@ -1700,7 +1426,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign36mer",
       "name": "wgEncodeCrgMapabilityAlign36mer",
@@ -1713,7 +1439,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign40mer",
       "name": "wgEncodeCrgMapabilityAlign40mer",
@@ -1726,7 +1452,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign50mer",
       "name": "wgEncodeCrgMapabilityAlign50mer",
@@ -1739,7 +1465,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeCrgMapabilityAlign75mer",
       "name": "wgEncodeCrgMapabilityAlign75mer",
@@ -1752,7 +1478,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeDukeMapabilityUniqueness20bp",
       "name": "wgEncodeDukeMapabilityUniqueness20bp",
@@ -1765,7 +1491,7 @@
       }
     },
     {
-      "type": "WiggleTrack",
+      "type": "QuantitativeTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeDukeMapabilityUniqueness35bp",
       "name": "wgEncodeDukeMapabilityUniqueness35bp",
@@ -1778,7 +1504,7 @@
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "category": ["Mappability"],
       "trackId": "wgEncodeDukeMapabilityRegionsExcludable.bed",
       "name": "wgEncodeDukeMapabilityRegionsExcludable.bed",
@@ -1797,7 +1523,7 @@
       }
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "wgEncodeDacMapabilityConsensusExcludable.bed",
       "name": "wgEncodeDacMapabilityConsensusExcludable.bed",
       "category": ["Mappability"],
@@ -1819,6 +1545,5 @@
   "connections": [],
   "defaultSession": {
     "name": "New Session"
-  },
-  "savedSessions": []
+  }
 }

@@ -56,7 +56,7 @@ test('lollipop track test', async () => {
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
-  await findByTestId('track-lollipop_track')
+  await findByTestId('display-lollipop_track_linear')
   await expect(findByTestId('three')).resolves.toBeTruthy()
 })
 
@@ -69,7 +69,9 @@ test('variant track test - opens feature detail view', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-  state.session.views[0].tracks[0].setFeatureIdUnderMouse('test-vcf-604452')
+  state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
+    'test-vcf-604452',
+  )
   const feats1 = await findAllByTestId('test-vcf-604452')
   fireEvent.click(feats1[0])
 

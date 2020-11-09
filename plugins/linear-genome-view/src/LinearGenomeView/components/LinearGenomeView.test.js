@@ -11,6 +11,7 @@ const assemblyConf = {
   name: 'volMyt1',
   sequence: {
     trackId: 'sequenceConfigId',
+    type: 'ReferenceSequenceTrack',
     adapter: {
       type: 'FromConfigAdapter',
       features: [
@@ -45,7 +46,7 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       assemblyNames: ['volMyt1'],
       name: 'Foo Track',
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -56,9 +57,15 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'BasicTrack',
+          type: 'FeatureTrack',
           height: 20,
           configuration: 'testConfig',
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              configuration: 'testConfig-LinearBasicDisplay',
+            },
+          ],
         },
       ],
       displayedRegions: [
@@ -79,14 +86,14 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       name: 'Foo Track',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -105,15 +112,27 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'BasicTrack',
+          type: 'FeatureTrack',
           height: 20,
           configuration: 'testConfig',
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              configuration: 'testConfig-LinearBasicDisplay',
+            },
+          ],
         },
         {
           id: 'bar',
-          type: 'BasicTrack',
+          type: 'FeatureTrack',
           height: 20,
           configuration: 'testConfig2',
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              configuration: 'testConfig2-LinearBasicDisplay',
+            },
+          ],
         },
       ],
       configuration: {},

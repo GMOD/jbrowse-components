@@ -16,9 +16,6 @@
           "gziLocation": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/tomato/SL4.0/S_lycopersicum_chromosomes.4.00.fa.gz.gzi"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }

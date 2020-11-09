@@ -23,6 +23,7 @@ import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
+  SVG,
   Alignments,
   Bed,
   CircularView,
@@ -38,7 +39,6 @@ export default [
   Menus,
   RDF,
   Sequence,
-  SVG,
   TrackHubRegistry,
   Variants,
   Wiggle,

@@ -27,7 +27,9 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const BaseViewModel = jbrequire('@jbrowse/core/BaseViewModel')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
 
   const minHeight = 40
   const defaultHeight = 400
@@ -108,7 +110,7 @@ export default function stateModelFactory(pluginManager: any) {
       getTrackFeatures(trackConfigId: string) {
         const tracks = this.getMatchedTracks(trackConfigId)
         return new CompositeMap<string, Feature>(
-          (tracks || []).map(t => t.features),
+          (tracks || []).map(t => t.displays[0].features),
         )
       },
 
@@ -213,7 +215,7 @@ export default function stateModelFactory(pluginManager: any) {
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
             const level = tracks.findIndex(track => {
-              layout = track.layoutFeatures.get(feature.id())
+              layout = track.displays[0].layoutFeatures.get(feature.id())
               return layout
             })
             return {

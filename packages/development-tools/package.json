@@ -1,12 +1,12 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "0.0.1-beta.30",
+  "version": "1.0.0",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": {
@@ -31,7 +31,7 @@
     "postpublish": "git push origin master --follow-tags"
   },
   "dependencies": {
-    "@jbrowse/core": "^0.0.1-beta.25",
+    "@jbrowse/core": "^1.0.0",
     "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",

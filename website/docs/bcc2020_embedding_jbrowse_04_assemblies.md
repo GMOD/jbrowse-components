@@ -108,9 +108,9 @@ that list is our assembly. You can see the name, alias, sequence, and reference
 name aliases we specified in our command. If for some reason the index files
 were unusually named, you could change them in the "faiLocation" and
 "gziLocation" entries, but these look right. Create a new file called
-"assemblies.js" and have it export this object, like this:
+"assembly.js" and have it export this object, like this:
 
-```javascript title="assemblies.js"
+```javascript title="assembly.js"
 export default {
   name: 'GRCh38',
   sequence: {

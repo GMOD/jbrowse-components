@@ -38,6 +38,93 @@ scroll and this will zoom in and out
 There is a drag handle on the track labels indicating by the six dots, clicking
 and dragging on this part of the track label can reorder tracks
 
+## Adding tracks
+
+To add a new track or connection, you can use the menu bar in the app to open
+the form for adding a track:
+
+File->Open Track
+
+![](img/add_track_form.png)
+The "Add track form"
+
+Note: There is also a circular "+" button inside the track selector menu that
+can also be used to access the "Add track" form.
+
+![](img/add_track_tracklist.png)
+The "Add track button" in the tracklist
+
+In the "Add track" form, you can provide a URL to a file to load. Opening files
+from your local machine is not supported currently in the jbrowse-web app
+(jbrowse-desktop does allow this though, and may be added to jbrowse-web in the
+future)
+
+Paste a URL to a file and optionally provide an index file URL too. The
+following file formats are supported
+
+- Tabixed VCF
+- Tabixed BED
+- Tabixed GFF
+- BAM
+- CRAM
+- BigWig
+- BigBed
+- .hic file (Juicebox)
+
+For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
+Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
+as filename+'.bai' for example, but if it is different than this, make sure to
+specify the index file explicitly.
+
+Note: If you are an administrator, you can add tracks with the command line or
+with the admin server [add-track](cli#jbrowse-add-track) or [admin-server
+guide](quickstart_admin)
+
+### Sharing sessions
+
+The main menu bar has a "Share" button to enable users to share their sessions
+with other people. The share button generates a URL that can be sent to other
+users. It is not possible to copy your URL bar and send this to another user
+currently, because sessions can become too large for the address bar in many
+cases.
+
+Note that you can copy and paste URLs between different tabs in your local
+browser though
+
+![](img/share_button.png)
+
+The session URL will contain
+
+- what views are on the screen, and settings for the views (e.g. track labels
+  overlapping or offset)
+- what tracks are in the view
+- extra tracks that you added with the "Add track workflow"
+- for the alignments track, the show soft clipping and sort settings on the
+  pileup
+- etc
+
+All this stuff gets included in the session
+
+This means you can share links with your custom tracks with other users,
+without being a JBrowse admin!
+
+### Editing track configs
+
+Currently, in order to edit a track config, you have to make a copy of the track
+
+![](img/copy_track.png)
+Figure showing how to copy a track, note that settings button is disabled
+because we don't "own this track" as a non-priviledged user
+
+After you have copied the track, you can edit the track settings
+
+![](img/session_track_settings.png)
+Figure showing the settings button is now enabled on the session track, and you
+have full control over your session tracks
+
+Your new track is a so-called "session track" and can be shared with other
+users with the "Share" button
+
 #### Rubberband selection
 
 The scale bars accept a click and drag action to select a region
@@ -48,6 +135,19 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data
 
 ![](./img/rubberband.png)
 Rubberband selection can be performed on both the region and overview scale bars
+
+#### Track label positioning
+
+Track labels can be positioned on their own row or overlapping the data to save
+vertical screen space. They can also be hidden. This is done by clicking on the
+hamburger menu for a specific view.
+
+<!--
+http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=share-1RbMciFHOT&password=wYEDf
+-->
+
+![](./img/tracklabels.png)
+Example of using the overlap and offset track label positioning options
 
 #### Horizontally flip
 
@@ -340,14 +440,6 @@ view"
 
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
-
-### Long read vs reference
-
-One can also launch a linear synteny view that compares a long read to the
-reference genome
-
-![](./img/linear_synteny_longread.png)
-Figure showing a PacBio long read versus the reference genome, with additional tracks
 
 ## Variant tracks
 

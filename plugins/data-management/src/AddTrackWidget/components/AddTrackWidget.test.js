@@ -36,7 +36,7 @@ describe('<AddTrackWidget />', () => {
     })
     session.addTrackConf({
       trackId: 'i3jUPmrgMOS',
-      type: 'FilteringTrack',
+      type: 'FeatureTrack',
       name: 'Filter Test',
       assemblyNames: ['volMyt1'],
       adapter: {
@@ -80,10 +80,6 @@ describe('<AddTrackWidget />', () => {
           },
         ],
       },
-      renderer: {
-        type: 'SvgFeatureRenderer',
-        labels: {},
-      },
       filterAttributes: ['type', 'start', 'end'],
     })
     const view = session.addView('LinearGenomeView', {
@@ -117,8 +113,8 @@ describe('<AddTrackWidget />', () => {
     })
     const trackTypeSelect = getByTestId('trackTypeSelect')
     fireEvent.mouseDown(trackTypeSelect)
-    const basicTrack = await waitForElement(() => getByText('BasicTrack'))
-    fireEvent.click(basicTrack)
+    const featureTrack = await waitForElement(() => getByText('FeatureTrack'))
+    fireEvent.click(featureTrack)
     const assemblyNameSelect = getByTestId('assemblyNameSelect')
     fireEvent.mouseDown(assemblyNameSelect)
     const volMyt1 = await waitForElement(() => getByText('volMyt1'))

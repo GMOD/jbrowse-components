@@ -31,6 +31,8 @@ import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
+import factoryReset from './factoryReset'
+import StartScreen from './StartScreen'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -49,8 +51,6 @@ function NoConfigMessage() {
     ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
     ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
-    ['test_data/config_longread.json', 'Long read vs. ref (dotplot)'],
-    ['test_data/config_longread_linear.json', 'Long read vs. ref (linear)'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
   ]
@@ -73,7 +73,7 @@ function NoConfigMessage() {
           <div>Sample JBrowse configs:</div>
           <ul>
             {links.map(([link, name]) => (
-              <li>
+              <li key={name}>
                 <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
               </li>
             ))}
@@ -357,7 +357,6 @@ const Renderer = observer(
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -369,6 +368,8 @@ const Renderer = observer(
       } = loader
 
       if (ready) {
+        // it is ready when a session has loaded and when there is no config error
+        // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -384,28 +385,32 @@ const Renderer = observer(
             assemblyManager: {},
             version: packagedef.version,
             configPath,
-            // add initial to root
           })
 
           // in order: saves the previous autosave for recovery, tries to load
           // the local session if session in query, or loads the default
           // session
-          //
           if (sessionError) {
             rootModel.setDefaultSession()
-            // make typescript happy by checking for session after setDefaultSession
+            // make typescript happy by checking for session after
+            // setDefaultSession, even though we know this exists now
             if (rootModel.session) {
               rootModel.session.notify(
-                `Error loading session: ${sessionError.message}. If you received this
-                URL from another user, request that they send you a session
-                generated with the "Share" button instead of copying and
-                pasting their URL`,
+                `Error loading session: ${sessionError.message}. If you
+                received this URL from another user, request that they send you
+                a session generated with the "Share" button instead of copying
+                and pasting their URL`,
               )
             }
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
-            rootModel.setDefaultSession()
+            const defaultJBrowseSession = rootModel.jbrowse.defaultSession
+            if (defaultJBrowseSession?.views) {
+              if (defaultJBrowseSession.views.length > 0) {
+                rootModel.setDefaultSession()
+              }
+            }
           }
 
           // send analytics
@@ -416,10 +421,6 @@ const Renderer = observer(
             writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
             writeGAAnalytics(rootModel, initialTimestamp)
           }
-
-          // if (!rootModel.session) {
-          //   throw new Error('root model did not have any session defined')
-          // }
 
           // TODO use UndoManager
           // rootModel.setHistory(
@@ -469,6 +470,9 @@ const Renderer = observer(
     }
 
     if (pm) {
+      if (!pm.rootModel?.session) {
+        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+      }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
@@ -487,10 +491,6 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-function factoryReset() {
-  // @ts-ignore
-  window.location = window.location.pathname
-}
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }

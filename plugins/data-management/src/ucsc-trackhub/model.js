@@ -1,4 +1,4 @@
-import connectionModelFactory from '@jbrowse/core/BaseConnectionModel'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   ConfigurationReference,
   readConfObject,
@@ -16,7 +16,7 @@ import {
 export default function (pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
-    connectionModelFactory(pluginManager),
+    BaseConnectionModelFactory(pluginManager),
     types
       .model({
         configuration: ConfigurationReference(configSchema),

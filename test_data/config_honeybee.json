@@ -16,7 +16,7 @@
   ],
   "tracks": [
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "gencode_nclist_hg38",
       "name": "NCBI RefSeq 104 (NCList)",
       "assemblyNames": ["amel"],
@@ -27,15 +27,21 @@
           "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/apis_mellifera/NCBI_RefSeq_104/{refseq}/trackData.jsonz"
         }
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('gene_name') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "type": "BasicTrack",
+      "type": "FeatureTrack",
       "trackId": "gencode_nclist_hg38_gfftabix",
       "assemblyNames": ["amel"],
       "name": "NCBI RefSeq 104 (GFF3Tabix)",
@@ -51,12 +57,18 @@
           }
         }
       },
-      "renderer": {
-        "type": "SvgFeatureRenderer",
-        "labels": {
-          "description": "function(feature) { return feature.get('gene_name') }"
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_hg38_gfftabix_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
         }
-      }
+      ]
     }
   ]
 }

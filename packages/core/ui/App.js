@@ -74,7 +74,6 @@ function App({ session, HeaderButtons }) {
       session.renameCurrentSession(newName)
     }
   }
-
   return (
     <div
       className={classes.root}

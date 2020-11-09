@@ -32,7 +32,7 @@ describe('AssemblyManager GUI', () => {
     const { getByText } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
     )
-    expect(getByText('Assembly Manager')).toBeTruthy()
+    expect(getByText('Assembly manager')).toBeTruthy()
   })
 
   it('opens up the Add Assembly Form when clicked', () => {

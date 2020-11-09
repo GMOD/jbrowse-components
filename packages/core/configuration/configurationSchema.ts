@@ -45,6 +45,7 @@ interface ConfigurationSchemaOptions {
   actions?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   views?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   extend?: (self: unknown) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  preProcessSnapshot?: (snapshot: {}) => {}
 }
 
 function preprocessConfigurationSchemaArguments(
@@ -204,6 +205,10 @@ function makeConfigurationSchemaModel<
     })
     return newSnap
   })
+
+  if (options.preProcessSnapshot) {
+    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
+  }
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const schemaType = types.optional(

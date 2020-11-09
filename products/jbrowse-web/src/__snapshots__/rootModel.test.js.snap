@@ -19,6 +19,20 @@ Array [
         "label": "New session",
         "onClick": [Function],
       },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
+        "onClick": [Function],
+      },
     ],
   },
 ]
@@ -41,6 +55,20 @@ Array [
           },
         },
         "label": "New session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
         "onClick": [Function],
       },
     ],
@@ -97,9 +125,15 @@ Object {
       ],
       "type": "FromConfigAdapter",
     },
-    "rendering": Object {
-      "type": "DivSequenceRenderer",
-    },
+    "displays": Array [
+      Object {
+        "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
+        "renderer": Object {
+          "type": "DivSequenceRenderer",
+        },
+        "type": "LinearReferenceSequenceDisplay",
+      },
+    ],
     "trackId": "sequenceConfigId",
     "type": "ReferenceSequenceTrack",
   },
@@ -111,11 +145,31 @@ Object {
   "adapter": Object {
     "type": "BamAdapter",
   },
-  "renderer": Object {
-    "type": "PileupRenderer",
-  },
+  "displays": Array [
+    Object {
+      "displayId": "trackId0-LinearBasicDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearBasicDisplay",
+    },
+    Object {
+      "displayId": "trackId0-LinearFilteringDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearFilteringDisplay",
+    },
+    Object {
+      "displayId": "trackId0-LinearLollipopDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearLollipopDisplay",
+    },
+  ],
   "trackId": "trackId0",
-  "type": "BasicTrack",
+  "type": "FeatureTrack",
 }
 `;
 

@@ -77,7 +77,7 @@ function LollipopRendering(props) {
     layout,
     config,
     features,
-    trackModel: { selectedFeatureId },
+    displayModel: { selectedFeatureId },
   } = props
 
   const [region] = regions
@@ -157,7 +157,7 @@ LollipopRendering.propTypes = {
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.instanceOf(Map),
   config: CommonPropTypes.ConfigSchema.isRequired,
-  trackModel: ReactPropTypes.shape({
+  displayModel: ReactPropTypes.shape({
     /** id of the currently selected feature, if any */
     selectedFeatureId: ReactPropTypes.string,
   }),
@@ -172,7 +172,7 @@ LollipopRendering.propTypes = {
 }
 
 LollipopRendering.defaultProps = {
-  trackModel: {},
+  displayModel: {},
 
   features: new Map(),
 

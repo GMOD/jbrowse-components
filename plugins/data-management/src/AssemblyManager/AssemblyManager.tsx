@@ -14,17 +14,20 @@ import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   titleBox: {
-    color: '#FFFFFF',
-    backgroundColor: '#0D233F',
+    color: '#fff',
+    backgroundColor: theme.palette.primary.main,
     textAlign: 'center',
   },
   dialogContent: {
     width: 600,
   },
   backButton: {
-    color: '#FFFFFF',
+    color: '#fff',
+    position: 'absolute',
+    left: theme.spacing(4),
+    top: theme.spacing(4),
   },
 }))
 
@@ -49,33 +52,29 @@ const AssemblyManager = observer(
     return (
       <Dialog open={open}>
         <DialogTitle className={classes.titleBox}>
-          {showAssemblyTable ? <p>Assembly Manager</p> : null}
+          {showAssemblyTable ? 'Assembly manager' : null}
           {isFormOpen ? (
             <>
-              <div style={{ textAlign: 'left' }}>
-                <IconButton
-                  aria-label="back"
-                  className={classes.backButton}
-                  onClick={() => setFormOpen(false)}
-                >
-                  <ArrowBackIosIcon />
-                </IconButton>
-              </div>
-              <p>Add New Assembly</p>
+              <IconButton
+                aria-label="back"
+                className={classes.backButton}
+                onClick={() => setFormOpen(false)}
+              >
+                <ArrowBackIosIcon />
+              </IconButton>
+              Add new assembly
             </>
           ) : null}
           {isAssemblyBeingEdited ? (
             <>
-              <div style={{ textAlign: 'left' }}>
-                <IconButton
-                  aria-label="back"
-                  className={classes.backButton}
-                  onClick={() => setIsAssemblyBeingEdited(false)}
-                >
-                  <ArrowBackIosIcon />
-                </IconButton>
-              </div>
-              <p>{returnAssemblyName(assemblyBeingEdited)}</p>
+              <IconButton
+                aria-label="back"
+                className={classes.backButton}
+                onClick={() => setIsAssemblyBeingEdited(false)}
+              >
+                <ArrowBackIosIcon />
+              </IconButton>
+              {returnAssemblyName(assemblyBeingEdited)}
             </>
           ) : null}
         </DialogTitle>
