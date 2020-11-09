@@ -89,7 +89,14 @@ export default function JBrowseDesktop(
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
-        const length = self.assemblies.push(assemblyConf)
+        const length = self.assemblies.push({
+          ...assemblyConf,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-${Date.now()}`,
+            ...(assemblyConf.sequence || {}),
+          },
+        })
         return self.assemblies[length - 1]
       },
       removeAssemblyConf(assemblyName) {
