@@ -15,7 +15,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
