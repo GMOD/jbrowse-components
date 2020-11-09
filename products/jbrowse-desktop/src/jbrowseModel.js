@@ -92,6 +92,14 @@ export default function JBrowseDesktop(
         const length = self.assemblies.push(assemblyConf)
         return self.assemblies[length - 1]
       },
+      removeAssemblyConf(assemblyName) {
+        const toRemove = self.assemblies.find(
+          assembly => assembly.name === assemblyName,
+        )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
+      },
       addTrackConf(trackConf) {
         const { type } = trackConf
         if (!type) throw new Error(`unknown track type ${type}`)
