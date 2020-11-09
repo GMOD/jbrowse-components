@@ -55,9 +55,9 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     additionalContextMenuItemCallbacks: [] as Function[],
-
     scrollTop: 0,
     userBpPerPxLimit: undefined as undefined | number,
+    DialogComponent: undefined as any,
   }))
   .views(self => ({
     /**
@@ -203,6 +203,9 @@ export const BaseLinearDisplay = types
     }
   })
   .actions(self => ({
+    setDialogComponent(dlg: any) {
+      self.DialogComponent = dlg
+    },
     afterAttach() {
       // watch the parent's blocks to update our block state when they change
       const blockWatchDisposer = autorun(() => {
