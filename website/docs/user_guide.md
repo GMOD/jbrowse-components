@@ -114,7 +114,7 @@ Currently, in order to edit a track config, you have to make a copy of the track
 
 ![](img/copy_track.png)
 Figure showing how to copy a track, note that settings button is disabled
-because we don't "own this track" as a non-priviledged user
+because we don't "own this track" as a non-privileged user
 
 After you have copied the track, you can edit the track settings
 
@@ -179,7 +179,7 @@ the reference genome, or blue if they aligned to the reverse strand.
 
 ### Coverage visualization
 
-The coverage visualization shows the depth-of-coverage of the reads at eacposition on the genome, and also draws using colored boxes any occurence of
+The coverage visualization shows the depth-of-coverage of the reads at each position on the genome, and also draws using colored boxes any occurrence of
 mismatches between the read and the reference genome, so if 50% of the reads
 had a T instead of the reference A, half the height of the coverage histogram
 would contain a 'red' box
@@ -203,7 +203,7 @@ If a read contains bases that do not map the the genome properly, they can
 either be removed from the alignment (hard clipping) or can be included, and
 not shown by default (soft clipping)
 
-JBrowse 2 also contains an option to "show the soft clipping" that has occured.
+JBrowse 2 also contains an option to "show the soft clipping" that has occurred.
 This can be valuable to show the signal around a region that contains
 structural variation or difficult mappability
 

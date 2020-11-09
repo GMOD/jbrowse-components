@@ -17,7 +17,7 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
     /* list of assembly configurations, e.g. the genomes being viewed */
   ],
   "tracks": [
-    /* array of tracks being loaded, contain reference to which assembl(ies)
+    /* array of tracks being loaded, contain reference to which assembl(y/ies)
     they belong to */
   ],
   "defaultSession": {
@@ -78,7 +78,7 @@ Here is a complete config.json file containing only a hg19
 
 ## Configuring reference name aliasing
 
-Reference name aliasing is a process to make chromosomes that are named slighlty
+Reference name aliasing is a process to make chromosomes that are named slightly
 differently but which refer to the same thing render properly
 
 The refNameAliases in the above config provides this functionality
@@ -395,7 +395,7 @@ Example AlignmentsTrack config
 #### BamAdapter configuration options
 
 - bamLocation - a 'file location' for the BAM
-- index: a subconfigurations chema containing
+- index: a subconfiguration schema containing
   - indexType: options BAI or CSI. default: BAI
   - location: a 'file location' of the index
 
@@ -490,7 +490,7 @@ Example config
 #### VcfTabixAdapter configuration options
 
 - vcfGzLocation - a 'file location' for the BigWig
-- index: a subconfigurations chema containing
+- index: a subconfiguration schema containing
   - indexType: options TBI or CSI. default TBI
   - location: the location of the index
 

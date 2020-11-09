@@ -4,7 +4,7 @@ title: Quick start guide for the admin-server
 toplevel: true
 ---
 
-JBrowse 2 offsers a "graphical configuration editor" called the `admin-server`
+JBrowse 2 offers a "graphical configuration editor" called the `admin-server`
 that let's you add genome assemblies, tracks, and edit their configs in the web
 browser
 
@@ -97,7 +97,7 @@ Mode. To illustrate how to access this, first we will open a Linear Genome
 View using the navigation bar (`File > Add > Linear Genome View`), and click on
 the "Select Tracks" button.
 
-The configuration settings are accesible by clicking on the ellipses by each
+The configuration settings are accessible by clicking on the ellipses by each
 track
 
 ![](./img/admin_settings_access.png)
