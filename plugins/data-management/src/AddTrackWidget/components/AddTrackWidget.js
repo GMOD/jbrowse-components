@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
@@ -94,12 +95,17 @@ function AddTrackWidget({ model }) {
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
+
+    const assemblyInstance = session.assemblyManager.get(assembly)
     session.addTrackConf({
       trackId,
       type: trackType,
       name: trackName || fileName,
       assemblyNames: [assembly],
-      adapter: trackAdapter,
+      adapter: {
+        ...trackAdapter,
+        sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
+      },
     })
     if (model.view) {
       model.view.showTrack(trackId)

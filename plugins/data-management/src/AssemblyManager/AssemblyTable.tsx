@@ -28,10 +28,6 @@ const useStyles = makeStyles(() => ({
     minHeight: 0,
     minWidth: 0,
   },
-
-  dialogContent: {
-    width: 600,
-  },
 }))
 
 const AssemblyTable = observer(

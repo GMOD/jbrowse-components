@@ -12,9 +12,11 @@ export default [
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes/ViewType',
   '@jbrowse/core/pluggableElementTypes/AdapterType',
+  '@jbrowse/core/pluggableElementTypes/DisplayType',
   '@jbrowse/core/pluggableElementTypes/TrackType',
   '@jbrowse/core/pluggableElementTypes/WidgetType',
 
+  '@jbrowse/core/pluggableElementTypes/models',
   '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
   '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType',
@@ -27,7 +29,6 @@ export default [
   '@jbrowse/core/util/Base1DViewModel',
   '@jbrowse/core/util/io',
   '@jbrowse/core/util/mst-reflection',
-  '@jbrowse/core/BaseViewModel',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
 
   '@jbrowse/core/data_adapters/BaseAdapter',

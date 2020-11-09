@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import Accordion from '@material-ui/core/Accordion'
 import AccordionDetails from '@material-ui/core/AccordionDetails'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
@@ -16,7 +17,6 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Tooltip from '@material-ui/core/Tooltip'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import isObject from 'is-object'
-import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {

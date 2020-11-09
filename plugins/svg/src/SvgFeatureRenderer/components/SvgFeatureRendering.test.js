@@ -395,7 +395,7 @@ test('svg selected', () => {
         height={500}
         blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{
+        displayModel={{
           blockLayoutFeatures,
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',

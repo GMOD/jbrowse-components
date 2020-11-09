@@ -1,12 +1,12 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "0.0.1-beta.15",
+  "version": "1.0.0",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": {
@@ -41,7 +41,7 @@
     "set-value": "^3.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^1.0.0",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   },

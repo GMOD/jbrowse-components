@@ -57,11 +57,46 @@ export default pluginManager =>
         }
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf =>
-            conf.viewType === self.view.type &&
-            readConfObject(conf, 'assemblyNames').includes(assemblyName),
+          trackConf => {
+            const trackConfAssemblies = readConfObject(
+              trackConf,
+              'assemblyNames',
+            )
+            if (!trackConfAssemblies.includes(assemblyName)) {
+              return false
+            }
+            const viewType = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = viewType.displayTypes.map(
+              displayType => displayType.name,
+            )
+            for (const display of trackConf.displays) {
+              if (compatibleDisplays.includes(display.type)) {
+                return true
+              }
+            }
+            return false
+          },
         )
         return relevantTrackConfigurations
+      },
+
+      getRefSeqTrackConf(assemblyName) {
+        const { assemblyManager } = getSession(self)
+        const assembly = assemblyManager.get(assemblyName)
+        const trackConf = assembly?.configuration.sequence
+        const viewType = pluginManager.getViewType(self.view.type)
+        if (trackConf) {
+          for (const display of trackConf.displays) {
+            if (
+              viewType.displayTypes.find(
+                displayType => displayType.name === display.type,
+              )
+            ) {
+              return trackConf
+            }
+          }
+        }
+        return undefined
       },
 
       get assemblyNames() {

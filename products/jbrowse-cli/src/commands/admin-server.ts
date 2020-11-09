@@ -1,6 +1,9 @@
 import { flags } from '@oclif/command'
 import fs, { promises as fsPromises } from 'fs'
 import crypto from 'crypto'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import os from 'os'
 import express from 'express'
 import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
@@ -116,8 +119,48 @@ export default class AdminServer extends JBrowseCommand {
 
     const adminKey = generateKey()
     const server = app.listen(port)
+    // Server message adapted from `serve`
+    // https://github.com/vercel/serve/blob/f65ac293c20058f809769a4dbf4951acc21df6df/bin/serve.js
+    const details = server.address()
+    let localAddress = ''
+    let networkAddress = ''
+
+    if (typeof details === 'string') {
+      localAddress = details
+    } else if (details && typeof details === 'object') {
+      const address = details.address === '::' ? 'localhost' : details.address
+      const ip = getNetworkAddress()
+
+      localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
+      networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+    }
+    let message = chalk.green(
+      'Now serving JBrowse\nNavigate to the below URL to configure',
+    )
+    if (localAddress) {
+      const prefix = networkAddress ? '- ' : ''
+      const space = networkAddress ? '            ' : '  '
+
+      message += `\n\n${chalk.bold(`${prefix}Local:`)}${space}${localAddress}`
+    }
+    if (networkAddress) {
+      message += `\n${chalk.bold('- On Your Network:')}  ${networkAddress}`
+    }
+    this.log(boxen(message, { padding: 1, borderColor: 'blue', margin: 1 }))
     this.log(
-      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.\n\nIf you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
+      `If you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
     )
   }
+}
+
+function getNetworkAddress() {
+  for (const network of Object.values(os.networkInterfaces())) {
+    for (const networkInterface of network || []) {
+      const { address, family, internal } = networkInterface
+      if (family === 'IPv4' && !internal) {
+        return address
+      }
+    }
+  }
+  throw new Error('Could not determine IP address')
 }

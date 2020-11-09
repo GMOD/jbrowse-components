@@ -29,6 +29,7 @@ describe('HierarchicalTrackSelector widget', () => {
       name: 'volMyt1',
       sequence: {
         trackId: 'sequenceConfigId',
+        type: 'ReferenceSequenceTrack',
         adapter: {
           type: 'FromConfigAdapter',
           features: [
@@ -46,13 +47,13 @@ describe('HierarchicalTrackSelector widget', () => {
     session.addTrackConf({
       trackId: 'fooC',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'barC',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     const firstView = session.addView('LinearGenomeView', {
@@ -84,6 +85,7 @@ describe('HierarchicalTrackSelector widget', () => {
       name: 'volMyt1',
       sequence: {
         trackId: 'sequenceConfigId',
+        type: 'ReferenceSequenceTrack',
         adapter: {
           type: 'FromConfigAdapter',
           features: [
@@ -101,13 +103,13 @@ describe('HierarchicalTrackSelector widget', () => {
     session.addTrackConf({
       trackId: 'fooC',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'barC',
       assemblyNames: ['volMyt1'],
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     const firstView = session.addView('LinearGenomeView', {

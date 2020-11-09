@@ -68,7 +68,7 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import connectionModelFactory from '@jbrowse/core/BaseConnectionModel'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'
@@ -76,7 +76,7 @@ import { fetchData, transformData } from './myStuff'
 function modelFactory(pluginManager) {
   return types.compose(
     'MyConnection',
-    connectionModelFactory(pluginManager),
+    BaseConnectionModelFactory(pluginManager),
     types.model().actions(self => ({
       // `connectionConf` contains the configuration defined for this connection
       connect(connectionConf) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
@@ -9,7 +10,6 @@ import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
 
 import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
-import { BaseTrackModel } from '../../BasicTrack/baseTrackModel'
 import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles(theme => ({
@@ -66,9 +66,10 @@ function TrackContainer(props: {
 }) {
   const classes = useStyles()
   const { model, track } = props
+  const display = track.displays[0]
   const { horizontalScroll, draggingTrackId, moveTrack } = model
-  const { height } = track
-  const view = getContainingView(track) as LGV
+  const { height } = display
+  const view = getContainingView(display) as LGV
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
 
@@ -83,15 +84,15 @@ function TrackContainer(props: {
   function onDragEnter() {
     if (
       draggingTrackId !== undefined &&
-      isAlive(track) &&
-      draggingTrackId !== track.id
+      isAlive(display) &&
+      draggingTrackId !== display.id
     ) {
       moveTrack(draggingTrackId, track.id)
     }
   }
   const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent, TrackBlurb } = track
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== track.id
+  const { RenderingComponent, DisplayBlurb } = display
+  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
 
   return (
     <div className={classes.root}>
@@ -113,7 +114,7 @@ function TrackContainer(props: {
         style={{ height }}
         onScroll={event => {
           const target = event.target as HTMLDivElement
-          track.setScrollTop(target.scrollTop)
+          display.setScrollTop(target.scrollTop)
         }}
         onDragEnter={debouncedOnDragEnter}
         data-testid={`trackRenderingContainer-${view.id}-${trackId}`}
@@ -125,35 +126,35 @@ function TrackContainer(props: {
           style={{ transform: `scaleX(${model.scaleFactor})` }}
         >
           <RenderingComponent
-            model={track}
+            model={display}
             blockState={{}}
             onHorizontalScroll={horizontalScroll}
           />
         </div>
 
-        {TrackBlurb ? (
+        {DisplayBlurb ? (
           <div
             style={{
               position: 'absolute',
               left: 0,
-              top: track.height - 20,
+              top: display.height - 20,
             }}
           >
             {' '}
-            <TrackBlurb model={track} />
+            <DisplayBlurb model={display} />
           </div>
         ) : null}
       </Paper>
       <div
         className={classes.overlay}
         style={{
-          height: track.height,
+          height: display.height,
           background: dimmed ? 'rgba(0, 0, 0, 0.4)' : undefined,
         }}
         onDragEnter={debouncedOnDragEnter}
       />
       <ResizeHandle
-        onDrag={track.resizeHeight}
+        onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />
     </div>

@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   guessAdapter,
-  guessSubadapter,
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
@@ -42,16 +41,42 @@ function ConfirmTrack({
       const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
       setTrackAdapter(adapter)
       setTrackType(guessTrackType(adapter.type))
+
+      // check for whether the user entered an absolute URL
       if (
-        !indexTrackData.uri.startsWith('http') ||
-        !trackData.uri.startsWith('http')
+        !(
+          (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
+          trackData.uri.startsWith('http')
+        )
       ) {
         setError(
-          `Warning: one or more of your files do not start with http, this
-          might be ok but generally absolute HTTP URLs are supplied to this
-          widget. Please double check your inputs. FTP links are not
-          supported`,
+          `Warning: one or more of your files do not provide the protocol e.g.
+          https://, please provide an absolute URL unless you are sure a
+          relative URL is intended.`,
         )
+      }
+
+      // check for accessing an http url when we are running on https, which is
+      // disallowed
+      else if (
+        window.location.protocol === 'https:' &&
+        ((indexTrackData.uri && indexTrackData.uri.startsWith('http://')) ||
+          trackData.uri.startsWith('http://'))
+      ) {
+        setError(
+          `Warning: You entered a http:// resources but we cannot access HTTP
+          resources from JBrowse when it is running on https. Please use an
+          https URL for your track, or access the JBrowse app from the http
+          protocol`,
+        )
+      }
+
+      // check for ftp url inputs
+      else if (
+        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
+        trackData.uri.startsWith('ftp://')
+      ) {
+        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
       }
     }
     if (trackData.localPath) {
@@ -64,15 +89,6 @@ function ConfirmTrack({
 
   function handleAssemblyChange(event) {
     setAssembly(event.target.value)
-    if (trackAdapter.type === 'CramAdapter') {
-      setTrackAdapter({
-        ...trackAdapter,
-        sequenceAdapter: readConfObject(event.target.value, [
-          'sequence',
-          'adapter',
-        ]),
-      })
-    }
   }
 
   if (trackAdapter.type === UNSUPPORTED)
@@ -205,21 +221,6 @@ function ConfirmTrack({
           fullWidth
           onChange={event => {
             setTrackType(event.target.value)
-            // selecting SNPCoverageTrack sets up SNPCoverage adapter.
-            // In future make generic for others with subadapter
-            // If switching from track w sub to non-sub, restore old adapter
-            if (event.target.value === 'SNPCoverageTrack') {
-              const adapter = trackData.uri
-                ? guessSubadapter(trackData.uri, 'uri', 'SNPCoverageAdapter')
-                : guessSubadapter(
-                    trackData.localPath,
-                    'localPath',
-                    'SNPCoverageAdapter',
-                  )
-              setTrackAdapter(adapter)
-            } else if (trackAdapter.subadapter) {
-              setTrackAdapter(trackAdapter.subadapter)
-            }
           }}
           SelectProps={{
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
