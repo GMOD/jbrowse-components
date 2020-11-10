@@ -159,7 +159,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg19",
-      "name": "Clinvar CNV",
+      "name": "ClinVar CNV (UCSC)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
@@ -172,13 +172,49 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
-      "name": "Clinvar variants",
+      "name": "ClinVar variants (UCSC)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "clinvar_ncbi",
+      "name": "ClinVar variants (NCBI)",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "clinvar_ncbi_hg38",
+      "name": "ClinVar variants (NCBI)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi"
+          }
         }
       }
     },
@@ -251,7 +287,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg38",
-      "name": "Clinvar CNV",
+      "name": "ClinVar CNV (UCSC)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -264,7 +300,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg38",
-      "name": "Clinvar variants",
+      "name": "ClinVar variants (UCSC)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -1538,6 +1574,84 @@
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/mappability/wgEncodeDacMapabilityConsensusExcludable.bed.gz.tbi"
           },
           "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenGeneDisease",
+      "name": "ClinGen Gene-Disease mapping",
+      "assemblyNames": ["hg38"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenGeneDisease.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenHaplo",
+      "name": "ClinGen haplosensitivity",
+      "assemblyNames": ["hg38"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenHaplo.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenTriplo",
+      "name": "ClinGen triplosensitivity",
+      "assemblyNames": ["hg38"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinGen/clinGenTriplo.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenDiesease_hg19",
+      "name": "ClinGen Gene-Disease mapping",
+      "assemblyNames": ["hg19"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenHaplo_hg19",
+      "name": "ClinGen haplosensitivity",
+      "assemblyNames": ["hg19"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenHaplo.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinGenTriplo_hg19",
+      "name": "ClinGen triplosensitivity",
+      "assemblyNames": ["hg19"],
+      "category": ["ClinGen"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenTriplo.bb"
         }
       }
     }
