@@ -46,7 +46,7 @@ function mockTagSuccess(gitHubApi: Scope) {
 
 function mockReleases(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases?page=0')
+    .get('/repos/GMOD/jbrowse-components/releases?page=1')
     .reply(200, releaseArray)
 }
 
