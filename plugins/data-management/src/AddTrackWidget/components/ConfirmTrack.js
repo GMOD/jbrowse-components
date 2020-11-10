@@ -42,8 +42,16 @@ function ConfirmTrack({
       setTrackAdapter(adapter)
       setTrackType(guessTrackType(adapter.type))
 
-      // check for whether the user entered an absolute URL
+      // check for ftp url inputs
       if (
+        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
+        trackData.uri.startsWith('ftp://')
+      ) {
+        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
+      }
+
+      // check for whether the user entered an absolute URL
+      else if (
         !(
           (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
           trackData.uri.startsWith('http')
@@ -69,14 +77,6 @@ function ConfirmTrack({
           https URL for your track, or access the JBrowse app from the http
           protocol`,
         )
-      }
-
-      // check for ftp url inputs
-      else if (
-        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
-        trackData.uri.startsWith('ftp://')
-      ) {
-        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
       }
     }
     if (trackData.localPath) {
