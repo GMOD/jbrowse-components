@@ -159,7 +159,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg19",
-      "name": "Clinvar CNV",
+      "name": "Clinvar CNV (UCSC)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
@@ -172,13 +172,49 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
-      "name": "Clinvar variants",
+      "name": "Clinvar variants (UCSC)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinvar_ncbi",
+      "name": "Clinvar variants (NCBI)",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "clinvar_ncbi_hg38",
+      "name": "Clinvar variants (NCBI)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi"
+          }
         }
       }
     },
@@ -251,7 +287,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_cnv_hg38",
-      "name": "Clinvar CNV",
+      "name": "Clinvar CNV (UCSC)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -264,7 +300,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg38",
-      "name": "Clinvar variants",
+      "name": "Clinvar variants (UCSC)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
