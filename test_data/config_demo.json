@@ -183,7 +183,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "clinvar_ncbi",
       "name": "ClinVar variants (NCBI)",
       "assemblyNames": ["hg19"],
@@ -201,7 +201,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "clinvar_ncbi_hg38",
       "name": "ClinVar variants (NCBI)",
       "assemblyNames": ["hg38"],
