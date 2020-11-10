@@ -222,14 +222,14 @@ export default abstract class JBrowseCommand extends Command {
       )
       if (response.ok) {
         // eslint-disable-next-line no-await-in-loop
-        result = await response.json()
+        result = (await response.json()) as GithubRelease[]
 
         yield result.filter(release =>
           release.tag_name.startsWith('@jbrowse/web'),
         )
         page++
       } else {
-        throw new Error(`${result.statusText}`)
+        throw new Error(`${response.statusText}`)
       }
     } while (result && result.length > 0)
   }
