@@ -112,8 +112,8 @@ this example we provide a small example BAM, but for your data you will replace
 the file name with the names of your data files.
 
 For this track we will assume the data is on your computer at the locations
-`/data/volvox.bam` and `/data/volvox.bam.bai`. You can down these file here if
-you want to run this example:
+`/data/volvox.bam` and `/data/volvox.bam.bai`. You can download these file here
+if you want to run this example:
 [BAM](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
 [BAM index](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai).
 
