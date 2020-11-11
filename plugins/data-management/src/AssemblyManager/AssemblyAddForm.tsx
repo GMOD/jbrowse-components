@@ -226,26 +226,18 @@ const AssemblyAddForm = observer(
     return (
       <div className={classes.root}>
         <Paper className={classes.paper}>
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <TextField
-                id="assembly-name"
-                label="Assembly Name"
-                variant="outlined"
-                value={assemblyName}
-                onChange={event => setAssemblyName(event.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
-        <Paper className={classes.paper}>
+          <TextField
+            id="assembly-name"
+            label="Assembly Name"
+            variant="outlined"
+            value={assemblyName}
+            onChange={event => setAssemblyName(event.target.value)}
+          />
           <AdapterSelector
             adapterSelection={adapterSelection}
             setAdapterSelection={setAdapterSelection}
             adapterTypes={adapterTypes}
           />
-        </Paper>
-        <Paper className={classes.paper}>
           <div className={classes.paperContent}>
             <AdapterInput
               adapterSelection={adapterSelection}
