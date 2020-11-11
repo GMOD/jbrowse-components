@@ -114,7 +114,7 @@ export default function RootModel(pluginManager: PluginManager) {
           label: 'Edit',
           menuItems: [
             {
-              label: 'Open Assembly Manager',
+              label: 'Open assembly manager',
               icon: SettingsIcon,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
