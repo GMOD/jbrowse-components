@@ -16,17 +16,23 @@ import { types, Instance, SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
-import * as crypto from 'crypto'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
+import {
+  writeAWSAnalytics,
+  writeGAAnalytics,
+} from '@jbrowse/core/util/analytics'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
+import factoryReset from './factoryReset'
+import StartScreen from './StartScreen'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -35,6 +41,19 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 function NoConfigMessage() {
+  const s = window.location.search
+  const links = [
+    ['test_data/volvox/config.json', 'Volvox sample data'],
+    ['test_data/config.json', 'Human basic'],
+    ['test_data/config_demo.json', 'Human sample data'],
+    ['test_data/tomato/config.json', 'Tomato SVs'],
+    ['test_data/breakpoint/config.json', 'Breakpoint'],
+    ['test_data/config_dotplot.json', 'Grape/Peach dotplot'],
+    ['test_data/config_synteny_grape_peach.json', 'Grape/Peach synteny'],
+    ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
+    ['test_data/config_many_contigs.json', 'Many contigs'],
+    ['test_data/config_honeybee.json', 'Honeybee'],
+  ]
   return (
     <div>
       <h4>
@@ -53,59 +72,11 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            <li>
-              <a href="?config=test_data/config.json">Human basic</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_demo.json">Human sample data</a>
-            </li>
-            <li>
-              <a href="?config=test_data/tomato/config.json">Tomato SVs</a>
-            </li>
-            <li>
-              <a href="?config=test_data/volvox/config.json">Volvox</a>
-            </li>
-            <li>
-              <a href="?config=test_data/breakpoint/config.json">Breakpoint</a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_dotplot.json">
-                Grape/Peach Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_human_dotplot.json">
-                hg19/hg38 Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_synteny_grape_peach.json">
-                Grape/Peach Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/yeast_synteny/config.json">
-                Yeast Synteny
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread.json">
-                Long Read vs. Reference Dotplot
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_longread_linear.json">
-                Long Read vs. Reference Linear
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_many_contigs.json">
-                Many Contigs
-              </a>
-            </li>
-            <li>
-              <a href="?config=test_data/config_honeybee.json">Honeybee</a>
-            </li>
+            {links.map(([link, name]) => (
+              <li key={name}>
+                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
+              </li>
+            ))}
           </ul>
         </>
       ) : (
@@ -269,8 +240,6 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
-      const key = crypto.createHash('sha256').update('JBrowse').digest()
-
       // raw readConf alternative for before conf is initialized
       const readConf = (
         conf: { configuration?: { [key: string]: string } },
@@ -285,7 +254,6 @@ const SessionLoader = types
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
-        key,
         self.password || '',
       )
 
@@ -349,7 +317,7 @@ const SessionLoader = types
     },
   }))
 
-export function Loader() {
+export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
   const load = (param: string | null | undefined) =>
@@ -367,15 +335,28 @@ export function Loader() {
     adminKey: load(adminKey),
   })
 
-  return <Renderer loader={loader} />
+  return (
+    <Renderer
+      loader={loader}
+      initialTimestamp={initialTimestamp}
+      initialSessionQuery={session}
+    />
+  )
 }
 
 const Renderer = observer(
-  ({ loader }: { loader: Instance<typeof SessionLoader> }) => {
+  ({
+    loader,
+    initialTimestamp,
+    initialSessionQuery,
+  }: {
+    loader: Instance<typeof SessionLoader>
+    initialTimestamp: number
+    initialSessionQuery: string | null | undefined
+  }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
     const { sessionError, configError, ready } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
-
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
       const {
@@ -387,6 +368,8 @@ const Renderer = observer(
       } = loader
 
       if (ready) {
+        // it is ready when a session has loaded and when there is no config error
+        // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
         const pluginManager = new PluginManager(plugins.map(P => new P()))
 
         pluginManager.createPluggableElements()
@@ -407,22 +390,36 @@ const Renderer = observer(
           // in order: saves the previous autosave for recovery, tries to load
           // the local session if session in query, or loads the default
           // session
-          //
           if (sessionError) {
             rootModel.setDefaultSession()
-            // make typescript happy by checking for session after setDefaultSession
+            // make typescript happy by checking for session after
+            // setDefaultSession, even though we know this exists now
             if (rootModel.session) {
               rootModel.session.notify(
-                `Error loading session: ${sessionError.message}. If you received this
-                URL from another user, request that they send you a session
-                generated with the "Share" button instead of copying and
-                pasting their URL`,
+                `Error loading session: ${sessionError.message}. If you
+                received this URL from another user, request that they send you
+                a session generated with the "Share" button instead of copying
+                and pasting their URL`,
               )
             }
           } else if (sessionSnapshot) {
             rootModel.setSession(loader.sessionSnapshot)
           } else {
-            rootModel.setDefaultSession()
+            const defaultJBrowseSession = rootModel.jbrowse.defaultSession
+            if (defaultJBrowseSession?.views) {
+              if (defaultJBrowseSession.views.length > 0) {
+                rootModel.setDefaultSession()
+              }
+            }
+          }
+
+          // send analytics
+          if (
+            rootModel &&
+            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+          ) {
+            writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+            writeGAAnalytics(rootModel, initialTimestamp)
           }
 
           // TODO use UndoManager
@@ -445,7 +442,14 @@ const Renderer = observer(
           setPassword(undefined)
         }
       }
-    }, [loader, ready, sessionError, setPassword])
+    }, [
+      loader,
+      ready,
+      sessionError,
+      setPassword,
+      initialTimestamp,
+      initialSessionQuery,
+    ])
 
     if (configError) {
       return (
@@ -466,6 +470,9 @@ const Renderer = observer(
     }
 
     if (pm) {
+      if (!pm.rootModel?.session) {
+        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+      }
       return <JBrowse pluginManager={pm} />
     }
     return <Loading />
@@ -484,18 +491,14 @@ function addRelativeUris(config: Config, configUri: URL) {
   }
 }
 
-function factoryReset() {
-  // @ts-ignore
-  window.location = window.location.pathname
-}
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
   return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
 }
-export default () => {
+export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
-        <Loader />
+        <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>
   )

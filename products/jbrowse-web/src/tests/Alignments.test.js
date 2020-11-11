@@ -99,7 +99,9 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
     )
-    await findByTestId('track-volvox-long-reads-sv-bam')
+    await findByTestId(
+      'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -134,7 +136,7 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('track-volvox-long-reads-cram')
+    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping

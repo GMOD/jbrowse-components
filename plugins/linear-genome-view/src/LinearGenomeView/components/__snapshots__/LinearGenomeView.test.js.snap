@@ -10,14 +10,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="makeStyles-rubberBandControl"
-        data-testid="rubberBand_controls"
         role="presentation"
       >
         <div
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
             style="min-width: 800px; border-color: rgb(153, 102, 0);"
           >
             <p
@@ -28,19 +27,37 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </p>
             <div
               class="makeStyles-scaleBarVisibleRegion"
-              style="width: 8000px; left: -1px; pointer-events: none;"
+              style="width: 800px; left: -1px; pointer-events: none;"
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
             >
-              5
+              20
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              40
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              60
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
+            >
+              80
             </div>
             <div
               class="makeStyles-scaleBarLabel"
               style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
             >
-              10
+              100
             </div>
           </div>
         </div>
@@ -56,7 +73,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,,0,0,0"
+          points="0,48,100,48,800,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
@@ -360,7 +377,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           style="width: 1024px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 100px;"
         >
           <div
@@ -420,7 +437,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="background: none; width: 1024px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 100px;"
             >
               <div
@@ -534,19 +551,19 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig"
+            class="makeStyles-display"
+            data-testid="display-testConfig-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -555,30 +572,21 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -593,7 +601,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"
@@ -636,7 +644,9 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             volMyt1
           </div>
           <input
-            type="hidden"
+            aria-hidden="true"
+            class="MuiSelect-nativeInput"
+            tabindex="-1"
             value="0"
           />
           <svg
@@ -786,15 +796,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="makeStyles-rubberBandControl"
-        data-testid="rubberBand_controls"
         role="presentation"
       >
         <div
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig MuiPaper-outlined MuiPaper-rounded"
-            style="min-width: 800px; border-color: rgb(153, 102, 0);"
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
+            style="min-width: 72.54545454545455px; margin-right: 2px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -804,19 +813,51 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </p>
             <div
               class="makeStyles-scaleBarVisibleRegion"
-              style="width: 8000px; left: -1px; pointer-events: none;"
+              style="width: 72.54545454545455px; left: -1px; pointer-events: none;"
+            />
+          </div>
+          <div
+            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
+            style="min-width: 725.4545454545454px;"
+          >
+            <p
+              class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
+            >
+              ctgB
+            </p>
+            <div
+              class="makeStyles-scaleBarVisibleRegion"
+              style="width: 506.36727272727273px; left: -1px; pointer-events: none;"
             />
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 145.0909090909091px; pointer-events: none;"
             >
-              5
+              1,200
             </div>
             <div
               class="makeStyles-scaleBarLabel"
-              style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+              style="left: 290.1818181818182px; pointer-events: none;"
             >
-              10
+              1,400
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 435.27272727272725px; pointer-events: none;"
+            >
+              1,600
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 580.3636363636364px; pointer-events: none;"
+            >
+              1,800
+            </div>
+            <div
+              class="makeStyles-scaleBarLabel"
+              style="left: 725.4545454545454px; pointer-events: none;"
+            >
+              2,000
             </div>
           </div>
         </div>
@@ -832,7 +873,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,,0,0,0"
+          points="0,48,800,48,580,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
@@ -917,6 +958,76 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               class="MuiTouchRipple-root"
             />
           </button>
+          <div
+            aria-expanded="false"
+            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+            role="combobox"
+          >
+            <div
+              class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
+              style="margin: 7px;"
+            >
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+              >
+                <input
+                  aria-autocomplete="list"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+                  id="refNameAutocomplete-lgv"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA"
+                />
+                <div
+                  class="MuiAutocomplete-endAdornment"
+                >
+                  <button
+                    aria-label="Open"
+                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
+                    tabindex="-1"
+                    title="Open"
+                    type="button"
+                  >
+                    <span
+                      class="MuiIconButton-label"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M7 10l5 5 5-5z"
+                        />
+                      </svg>
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+                <fieldset
+                  aria-hidden="true"
+                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+                  style="padding-left: 8px;"
+                >
+                  <legend
+                    class="PrivateNotchedOutline-legend"
+                    style="width: 0.01px;"
+                  >
+                    <span>
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
           <form>
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-input"
@@ -1068,7 +1179,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           style="width: 1024px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 100px;"
         >
           <div
@@ -1105,7 +1216,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           style="width: 2px;"
         />
         <div
-          class="makeStyles-block"
+          class="makeStyles-contentBlock"
           style="width: 1000px;"
         >
           <div
@@ -1345,7 +1456,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="background: none; width: 1024px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 100px;"
             >
               <div
@@ -1364,7 +1475,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="background: none; width: 2px;"
             />
             <div
-              class="makeStyles-block"
+              class="makeStyles-contentBlock"
               style="width: 1000px;"
             >
               <div
@@ -1535,19 +1646,19 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig"
+            class="makeStyles-display"
+            data-testid="display-testConfig-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -1556,30 +1667,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -1589,30 +1691,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 2px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="397"
+                  data-html-size="126"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:1000px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                      width="2000"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="1000"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="1000px"
                     />
                   </div>
                 </div>
@@ -1627,7 +1720,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"
@@ -1717,19 +1810,19 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="MuiPaper-root makeStyles-trackRenderingContainer MuiPaper-outlined MuiPaper-rounded"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         role="presentation"
-        style="height: 20px;"
+        style="height: 100px;"
       >
         <div
           class="makeStyles-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="makeStyles-track"
-            data-testid="track-testConfig2"
+            class="makeStyles-display"
+            data-testid="display-testConfig2-LinearBasicDisplay"
             role="presentation"
           >
             <div
-              class="makeStyles-trackBlocks"
+              class="makeStyles-linearBlocks"
               data-testid="Blockset"
               style="left: -1024px;"
             >
@@ -1738,30 +1831,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 1024px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="393"
+                  data-html-size="125"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:100px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:100px;height:1px;position:absolute;left:0;top:0"
-                      width="200"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="100"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="100px"
                     />
                   </div>
                 </div>
@@ -1771,30 +1855,21 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="background: none; width: 2px;"
               />
               <div
-                class="makeStyles-block"
+                class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
                 <div
                   class="ssr-container"
-                  data-html-size="397"
+                  data-html-size="126"
                 >
                   <div
-                    class="PileupRendering"
-                    data-testid="pileup-normal"
-                    style="position:relative;width:1000px;height:1px"
+                    style="position:relative"
                   >
-                    <canvas
-                      data-testid="prerendered_canvas"
-                      height="2"
-                      style="width:1000px;height:1px;position:absolute;left:0;top:0"
-                      width="2000"
-                    />
-                    <canvas
-                      class="highlightOverlayCanvas"
-                      data-testid="pileup_overlay_canvas"
-                      height="1"
-                      style="position:absolute;left:0;top:0"
-                      width="1000"
+                    <svg
+                      class="SvgFeatureRendering"
+                      height="0px"
+                      style="display:block"
+                      width="1000px"
                     />
                   </div>
                 </div>
@@ -1809,7 +1884,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
       <div
         class="makeStyles-overlay"
-        style="height: 20px;"
+        style="height: 100px;"
       />
       <div
         class="makeStyles-horizontalHandle makeStyles-resizeHandle"

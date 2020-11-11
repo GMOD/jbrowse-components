@@ -9,6 +9,7 @@ import Link from '@material-ui/core/Link'
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(2),
+    fontSize: '1.2em',
   },
   subtitle: {
     margin: theme.spacing(),
@@ -21,35 +22,54 @@ function Help({ model }: { model?: IAnyStateTreeNode }) {
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center" color="primary">
-        Help
+        JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
-        JBrowse {root.version}
+        {root.version}
       </Typography>
-      <Typography>Thanks for using JBrowse!</Typography>
-      <Typography>
-        If you have questions or need help, please post in our{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/discussions"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          community discussions forum
-        </Link>
-        .
-      </Typography>
-      <Typography>
-        {' '}
-        If you would like to report a bug or request a feature, please{' '}
-        <Link
-          href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          open an issue
-        </Link>{' '}
-        on GitHub.
-      </Typography>
+
+      <p>
+        Here are some resources to get help. Please report the version number
+        above when asking questions. Thanks!
+      </p>
+      <ul>
+        <li>
+          <Link
+            href="https://github.com/GMOD/jbrowse-components/discussions"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Question & answer forum
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Report a bug
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="https://jbrowse.org/jb2/docs/user_guide"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            User guide
+          </Link>
+        </li>
+        <li>
+          <Link
+            href="https://jbrowse.org/jb2/docs/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </Link>
+        </li>
+      </ul>
     </div>
   )
 }

@@ -1,8 +1,7 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs, { promises as fsPromises } from 'fs'
 import path from 'path'
-import fetch from 'node-fetch'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
@@ -29,6 +28,9 @@ interface LocalPathLocation {
 }
 
 export default class AddTrack extends JBrowseCommand {
+  // @ts-ignore
+  target: string
+
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
@@ -58,6 +60,9 @@ export default class AddTrack extends JBrowseCommand {
       description:
         'Name of the track. Will be defaulted to the trackId if none specified',
     }),
+    indexFile: flags.string({
+      description: 'Optional index file for the track',
+    }),
     description: flags.string({
       char: 'd',
       description: 'Optional description of the track',
@@ -76,7 +81,14 @@ export default class AddTrack extends JBrowseCommand {
     }),
     target: flags.string({
       description: 'path to config file in JB2 installation to write out to.',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
+    }),
+    subDir: flags.string({
+      description:
+        'when using --load a file, output to a subdirectory of the target dir',
+      default: '',
     }),
     help: flags.help({ char: 'h' }),
     trackId: flags.string({
@@ -100,59 +112,73 @@ export default class AddTrack extends JBrowseCommand {
       char: 'f',
       description: 'Equivalent to `--skipCheck --overwrite`',
     }),
+    protocol: flags.string({
+      description: 'Force protocol to a specific value',
+      default: 'uri',
+    }),
   }
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddTrack)
+
     const { track: argsTrack } = runArgs
     const {
       config,
       skipCheck,
       force,
+      overwrite,
       category,
       description,
       load,
+      subDir,
       target,
+      protocol,
+      out,
+      indexFile: index,
     } = runFlags
+
+    const output = target || out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     let { type, trackId, name, assemblyNames } = runFlags
 
-    const configDirectory = path.dirname(target)
-    if (!(skipCheck || force)) {
-      await this.checkLocation(configDirectory)
+    const configDirectory = path.dirname(this.target)
+    if (!argsTrack) {
+      this.error(
+        'No track provided. Example usage: jbrowse add-track yourfile.bam',
+        { exit: 120 },
+      )
     }
-    const {
-      location,
-      protocol,
-      local,
-    } = await this.resolveFileLocationWithProtocol(
-      argsTrack,
-      !(skipCheck || force),
-      load === 'inPlace',
+
+    if (subDir) {
+      const dir = path.join(configDirectory, subDir)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+      }
+    }
+    const location = argsTrack
+
+    const isUrl = (loc: string) => loc.match(/^https?:\/\//)
+    const adapter = this.guessAdapter(
+      isUrl(location) ? location : path.join(subDir, path.basename(location)),
+      protocol as 'uri' | 'localPath',
+      !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
     )
 
-    let trackLocation
-    if (load) {
-      if (!local) {
-        this.error(
-          `URL detected with --load flag. Please rerun the function without the --load flag`,
-          { exit: 100 },
-        )
-      }
-
-      trackLocation =
-        load === 'inPlace'
-          ? location
-          : path.join(configDirectory, path.basename(location))
-    } else if (local) {
+    if (isUrl(location) && load) {
       this.error(
-        'Local file detected. Please select a load option for the track with the --load flag',
+        'The --load flag is used for local files only, but a URL was provided',
+        { exit: 100 },
+      )
+    } else if (!isUrl(location) && !load) {
+      this.error(
+        `The --load flag should be used if a local file is used, example --load
+        copy to copy the file into the config directory. Options for load are
+        copy/move/symlink/inPlace (inPlace for no file operations)`,
         { exit: 110 },
       )
-    } else {
-      trackLocation = location
     }
-
-    const adapter = this.guessAdapter(trackLocation, protocol)
     if (adapter.type === 'UNKNOWN') {
       this.error('Track type is not recognized', { exit: 120 })
     }
@@ -161,7 +187,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // only add track if there is an existing config.json
-    const configContents: Config = await this.readJsonFile(target)
+    const configContents: Config = await this.readJsonFile(this.target)
 
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error('No assemblies found. Please add one before adding tracks', {
@@ -175,30 +201,14 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    if (type) {
-      this.debug(`Type is: ${type}`)
-    } else {
-      type = this.guessTrackType(adapter.type)
-    }
-
-    if (trackId) {
-      this.debug(`Track is :${trackId}`)
-    } else {
-      trackId = path.basename(location, path.extname(location))
-    } // get filename and set as name
-
-    if (name) {
-      this.debug(`Name is: ${name}`)
-    } else {
-      name = trackId
-    }
-
-    if (assemblyNames) {
-      this.debug(`Assembly name(s) is :${assemblyNames}`)
-    } else {
-      assemblyNames = configContents.assemblies[0].name
-      this.log(`Inferred default assembly name ${assemblyNames}`)
-    }
+    type = type || this.guessTrackType(adapter.type)
+    trackId = trackId || path.basename(location, path.extname(location))
+    name = name || trackId
+    assemblyNames = assemblyNames || configContents.assemblies[0].name
+    this.debug(`Name is: ${name}`)
+    this.debug(`Type is: ${type}`)
+    this.debug(`Track is :${trackId}`)
+    this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
@@ -219,7 +229,6 @@ export default class AddTrack extends JBrowseCommand {
 
     // any special track modifications go here
     switch (type) {
-      case 'PileupTrack':
       case 'AlignmentsTrack': {
         const assembly = configContents.assemblies.find(
           asm => asm.name === assemblyNames,
@@ -229,21 +238,6 @@ export default class AddTrack extends JBrowseCommand {
         } else if (!skipCheck) {
           this.error(`Failed to find assemblyName ${assemblyNames}`)
         }
-        break
-      }
-      case 'SNPCoverageTrack': {
-        const idx = configContents.assemblies.findIndex(
-          assemblies => assemblies.name === assemblyNames,
-        )
-        const sequenceAdapter = configContents.assemblies[idx].sequence.adapter
-        const subAdapter = this.guessSubadapter(
-          location,
-          protocol,
-          'SNPCoverageAdapter',
-        )
-
-        trackConfig.adapter = subAdapter
-        trackConfig.adapter.subadapter.sequenceAdapter = sequenceAdapter
         break
       }
     }
@@ -258,7 +252,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (idx !== -1) {
       this.debug(`Found existing trackId ${trackId} in configuration`)
-      if (runFlags.force || runFlags.overwrite) {
+      if (force || overwrite) {
         this.debug(`Overwriting track ${trackId} in configuration`)
         configContents.tracks[idx] = trackConfig
       } else {
@@ -272,7 +266,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // copy/symlinks/moves the track into the jbrowse installation directory
-    const filePaths = Object.values(this.guessFileNames(location))
+    const filePaths = Object.values(this.guessFileNames(location, index))
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -282,6 +276,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.copyFile(filePath, dataLocation)
@@ -297,6 +292,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.symlink(filePath, dataLocation)
@@ -312,6 +308,7 @@ export default class AddTrack extends JBrowseCommand {
             }
             const dataLocation = path.join(
               configDirectory,
+              subDir,
               path.basename(filePath),
             )
             return fsPromises.rename(filePath, dataLocation)
@@ -321,92 +318,21 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    this.debug(`Writing configuration to file ${target}`)
-    await this.writeJsonFile(target, configContents)
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} track "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${target}`,
+      } ${this.target}`,
     )
   }
 
-  async resolveFileLocationWithProtocol(
-    location: string,
-    check = true,
-    warn = false,
-  ) {
-    let locationUrl: URL | undefined
-    let locationPath: string | undefined
-    let locationObj: {
-      location: string
-      protocol: 'uri' | 'localPath'
-      local: boolean
-    }
-    try {
-      locationUrl = new URL(location)
-    } catch (error) {
-      // ignore
-    }
-    if (locationUrl) {
-      let response
-      try {
-        if (check) {
-          response = await fetch(locationUrl, { method: 'HEAD' })
-        }
-        if (!response || response.ok) {
-          locationObj = {
-            location: locationUrl.href,
-            protocol: 'uri',
-            local: false,
-          }
-          return locationObj
-        }
-      } catch (error) {
-        // ignore
-      }
-    }
-    try {
-      locationPath = await fsPromises.realpath(location)
-    } catch (e) {
-      // ignore
-    }
-    if (locationPath) {
-      const filePath = path.relative(process.cwd(), locationPath)
-      if (warn && filePath.startsWith('..')) {
-        this.warn(
-          `Location ${filePath} is not in the JBrowse directory. Make sure it is still in your server directory.`,
-        )
-      }
-      locationObj = {
-        location: filePath,
-        protocol: 'uri',
-        local: true,
-      }
-      return locationObj
-    }
-    return this.error(`Could not resolve to a file or a URL: "${location}"`, {
-      exit: 180,
-    })
-  }
-
-  guessFileNames(fileName: string) {
+  guessFileNames(fileName: string, index?: string) {
     if (/\.bam$/i.test(fileName)) {
       return {
         file: fileName,
-        index: `${fileName}.bai`,
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.bai$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
+        index: index || `${fileName}.bai`,
       }
     }
 
@@ -414,12 +340,6 @@ export default class AddTrack extends JBrowseCommand {
       return {
         file: fileName,
         index: `${fileName}.crai`,
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.crai$/i, ''),
-        index: fileName,
       }
     }
 
@@ -431,18 +351,6 @@ export default class AddTrack extends JBrowseCommand {
       return {
         file: fileName,
         index: `${fileName}.tbi`,
-      }
-    }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.tbi$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
       }
     }
 
@@ -460,18 +368,6 @@ export default class AddTrack extends JBrowseCommand {
         index: `${fileName}.tbi`,
       }
     }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.tbi$/i, ''),
-        index: fileName,
-      }
-    }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.csi$/i, ''),
-        index: fileName,
-      }
-    }
 
     if (/\.vcf\.idx$/i.test(fileName)) {
       return {}
@@ -482,13 +378,10 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
-      return {}
-    }
-    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
-      return {}
-    }
-    if (/\.bed.b?gz.csi/i.test(fileName)) {
-      return {}
+      return {
+        file: fileName,
+        index: index || `${fileName}.tbi`,
+      }
     }
 
     if (/\.bed\.idx$/i.test(fileName)) {
@@ -512,13 +405,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
-        index: `${fileName}.fai`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.fai$/i, ''),
-        index: fileName,
+        index: index || `${fileName}.fai`,
       }
     }
 
@@ -527,20 +414,6 @@ export default class AddTrack extends JBrowseCommand {
         file: fileName,
         index: `${fileName}.fai`,
         index2: `${fileName}.gzi`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.fai$/i, ''),
-        index: fileName,
-        index2: `${fileName.replace(/\.fai$/i, '')}.gzi`,
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
-      return {
-        file: fileName.replace(/\.gzi$/i, ''),
-        index: `${fileName.replace(/\.gzi$/i, '')}.fai`,
-        index2: fileName,
       }
     }
 
@@ -572,11 +445,21 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
+    if (/\.paf$/i.test(fileName)) {
+      return {
+        file: fileName,
+      }
+    }
+
     return {}
   }
 
   // find way to import this instead of having to paste it
-  guessAdapter(fileName: string, protocol: 'uri' | 'localPath') {
+  guessAdapter(
+    fileName: string,
+    protocol: 'uri' | 'localPath',
+    index?: string,
+  ) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
         return { uri: location }
@@ -590,21 +473,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'BamAdapter',
         bamLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.bai`) },
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(fileName.replace(/\.bai$/i, '')),
-        index: { location: makeLocation(fileName) },
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(index || `${fileName}.bai`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        },
       }
     }
 
@@ -613,13 +486,6 @@ export default class AddTrack extends JBrowseCommand {
         type: 'CramAdapter',
         cramLocation: makeLocation(fileName),
         craiLocation: makeLocation(`${fileName}.crai`),
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        type: 'CramAdapter',
-        cramLocation: makeLocation(fileName.replace(/\.crai$/i, '')),
-        craiLocation: makeLocation(fileName),
       }
     }
 
@@ -633,21 +499,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'Gff3TabixAdapter',
         gffGzLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-      }
-    }
-    if (/\.gff3?\.b?gz.tbi$/i.test(fileName)) {
-      return {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'TBI' },
-      }
-    }
-    if (/\.gff3?\.b?gz.csi$/i.test(fileName)) {
-      return {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(index || `${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -667,21 +523,11 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName),
-        index: { location: makeLocation(`${fileName}.tbi`), indexType: 'TBI' },
-      }
-    }
-    if (/\.vcf\.b?gz\.tbi$/i.test(fileName)) {
-      return {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(fileName.replace(/\.tbi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'TBI' },
-      }
-    }
-    if (/\.vcf\.b?gz\.csi$/i.test(fileName)) {
-      return {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(fileName.replace(/\.csi$/i, '')),
-        index: { location: makeLocation(fileName), indexType: 'CSI' },
+        index: {
+          location: makeLocation(`${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -699,23 +545,13 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.bed\.b?gz$/i.test(fileName)) {
       return {
-        type: 'UNSUPPORTED',
-      }
-    }
-    if (/\.bed.b?gz.tbi$/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    }
-    if (/\.bed.b?gz.csi/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
-      }
-    }
-
-    if (/\.bed\.idx$/i.test(fileName)) {
-      return {
-        type: 'UNSUPPORTED',
+        type: 'BedTabixAdapter',
+        bedGzLocation: makeLocation(fileName),
+        index: {
+          location: makeLocation(`${fileName}.tbi`),
+          indexType:
+            index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        },
       }
     }
 
@@ -737,14 +573,7 @@ export default class AddTrack extends JBrowseCommand {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: makeLocation(fileName),
-        faiLocation: makeLocation(`${fileName}.fai`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.fai$/i.test(fileName)) {
-      return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-        faiLocation: makeLocation(fileName),
+        faiLocation: makeLocation(index || `${fileName}.fai`),
       }
     }
 
@@ -754,22 +583,6 @@ export default class AddTrack extends JBrowseCommand {
         fastaLocation: makeLocation(fileName),
         faiLocation: makeLocation(`${fileName}.fai`),
         gziLocation: makeLocation(`${fileName}.gzi`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.fai$/i.test(fileName)) {
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.fai$/i, '')),
-        faiLocation: makeLocation(fileName),
-        gziLocation: makeLocation(`${fileName.replace(/\.fai$/i, '')}.gzi`),
-      }
-    }
-    if (/\.(fa|fasta|fna|mfa)\.b?gz\.gzi$/i.test(fileName)) {
-      return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(fileName.replace(/\.gzi$/i, '')),
-        faiLocation: makeLocation(`${fileName.replace(/\.gzi$/i, '')}.fai`),
-        gziLocation: makeLocation(fileName),
       }
     }
 
@@ -789,7 +602,7 @@ export default class AddTrack extends JBrowseCommand {
     if (/\/trackData.jsonz?$/i.test(fileName)) {
       return {
         type: 'NCListAdapter',
-        rootUrlTemplate: fileName,
+        rootUrlTemplate: makeLocation(fileName),
       }
     }
 
@@ -807,65 +620,15 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
+    if (/\.paf/i.test(fileName)) {
+      return {
+        type: 'PafAdapter',
+        pafLocation: makeLocation(fileName),
+      }
+    }
+
     return {
       type: 'UNKNOWN',
-    }
-  }
-
-  guessSubadapter(fileName: string, protocol: string, mainAdapter: string) {
-    if (/\.bam$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName },
-          index: { location: { [protocol]: `${fileName}.bai` } },
-        },
-      }
-    }
-    if (/\.bai$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName.replace(/\.bai$/i, '') },
-          index: { location: { [protocol]: fileName } },
-        },
-      }
-    }
-    if (/\.bam.csi$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'BamAdapter',
-          bamLocation: { [protocol]: fileName.replace(/\.csi$/i, '') },
-          index: { location: { [protocol]: fileName }, indexType: 'CSI' },
-        },
-      }
-    }
-
-    if (/\.cram$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'CramAdapter',
-          cramLocation: { [protocol]: fileName },
-          craiLocation: { [protocol]: `${fileName}.crai` },
-        },
-      }
-    }
-    if (/\.crai$/i.test(fileName)) {
-      return {
-        type: mainAdapter,
-        subadapter: {
-          type: 'CramAdapter',
-          cramLocation: { [protocol]: fileName.replace(/\.crai$/i, '') },
-          craiLocation: { [protocol]: fileName },
-        },
-      }
-    }
-    return {
-      type: 'UNSUPPORTED',
     }
   }
 
@@ -873,13 +636,14 @@ export default class AddTrack extends JBrowseCommand {
     const known: { [key: string]: string | undefined } = {
       BamAdapter: 'AlignmentsTrack',
       CramAdapter: 'AlignmentsTrack',
-      BgzipFastaAdapter: 'SequenceTrack',
-      BigWigAdapter: 'WiggleTrack',
-      IndexedFastaAdapter: 'SequenceTrack',
-      TwoBitAdapter: 'SequenceTrack',
+      BgzipFastaAdapter: 'ReferenceSequenceTrack',
+      BigWigAdapter: 'QuantitativeTrack',
+      IndexedFastaAdapter: 'ReferenceSequenceTrack',
+      TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
+      PafAdapter: 'LinearSyntenyTrack',
     }
-    return known[adapterType] || 'BasicTrack'
+    return known[adapterType] || 'FeatureTrack'
   }
 }

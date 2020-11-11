@@ -330,11 +330,17 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
+function createSetLocation(slot) {
+  return location => {
+    slot.set({ ...slot.value, ...location })
+  }
+}
+
 const FileSelectorWrapper = observer(({ slot }) => {
   return (
     <FileSelector
       location={slot.value}
-      setLocation={slot.set}
+      setLocation={createSetLocation(slot)}
       name={slot.name}
       description={slot.description}
     />
@@ -394,16 +400,20 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
       <div className={classes.slotModeSwitch}>
-        <IconButton
-          className={classes.slotModeIcon}
-          onClick={() =>
-            slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
-          }
-          title={`convert to ${slot.isCallback ? 'regular value' : 'callback'}`}
-          color="secondary"
-        >
-          {!slot.isCallback ? <RadioButtonUncheckedIcon /> : <SvgCheckbox />}
-        </IconButton>
+        {slot.functionSignature.length ? (
+          <IconButton
+            className={classes.slotModeIcon}
+            onClick={() =>
+              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+            }
+            title={`convert to ${
+              slot.isCallback ? 'regular value' : 'callback'
+            }`}
+            color="secondary"
+          >
+            {!slot.isCallback ? <RadioButtonUncheckedIcon /> : <SvgCheckbox />}
+          </IconButton>
+        ) : null}
       </div>
     </Paper>
   )

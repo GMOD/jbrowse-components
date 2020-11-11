@@ -3,6 +3,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import BoxRendererType, {
   LayoutSession,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -15,9 +16,9 @@ import {
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { ThemeOptions } from '@material-ui/core'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
@@ -37,6 +38,7 @@ export interface PileupRenderProps {
     pos: number
     refName: string
   }
+  theme: ThemeOptions
 }
 
 interface LayoutRecord {
@@ -191,7 +193,9 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      theme: configTheme,
     } = props
+    const theme = createJBrowseTheme(configTheme)
     const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)
@@ -248,11 +252,11 @@ export default class PileupRenderer extends BoxRendererType {
 
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {
-          A: '#00bf00',
-          C: '#4747ff',
-          G: '#ffa500',
-          T: '#f00',
-          deletion: 'grey',
+          A: theme.palette.bases.A.main,
+          C: theme.palette.bases.C.main,
+          G: theme.palette.bases.G.main,
+          T: theme.palette.bases.T.main,
+          deletion: '#808080', // gray
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
@@ -269,17 +273,18 @@ export default class PileupRenderer extends BoxRendererType {
           )
 
           if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
-            ctx.fillStyle =
+            const baseColor =
               colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ] || '#888'
+            ctx.fillStyle = baseColor
             ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
             if (
               mismatchWidthPx >= charSize.width &&
               heightPx >= charSize.height - 5
             ) {
-              ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
+              ctx.fillStyle = theme.palette.getContrastText(baseColor)
               ctx.fillText(
                 mismatch.base,
                 mismatchLeftPx + (mismatchWidthPx - charSize.width) / 2 + 1,

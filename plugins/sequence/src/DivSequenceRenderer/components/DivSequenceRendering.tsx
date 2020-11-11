@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { useTheme } from '@material-ui/core/styles'
@@ -91,33 +90,15 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
           style.boxSizing = 'border-box'
           style.borderCollapse = 'collapse'
         }
-        switch (letter.toLocaleLowerCase()) {
-          case 'a': {
-            const baseColor = '#00bf00'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 'g': {
-            const baseColor = '#ffa500'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 'c': {
-            const baseColor = '#4747ff'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          case 't': {
-            const baseColor = '#f00'
-            style.backgroundColor = baseColor
-            style.color = contrastingTextColor(baseColor)
-            break
-          }
-          default:
-            break
+        type Base = keyof typeof theme.palette.bases
+        function isBase(l: string): l is Base {
+          return Object.keys(theme.palette.bases).includes(l as Base)
+        }
+        const upperLetter = letter.toUpperCase()
+        if (isBase(upperLetter)) {
+          const color = theme.palette.bases[upperLetter]
+          style.backgroundColor = color.main
+          style.color = color.contrastText
         }
         return (
           <div key={`${region.start}-${iter}`} style={style}>

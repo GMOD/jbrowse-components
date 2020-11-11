@@ -115,7 +115,7 @@ function makeTrackConfig(
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
       return {
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
@@ -159,11 +159,10 @@ function makeTrackConfig(
       )
     case 'bigBed':
       return {
-        type: 'BasicTrack',
+        type: 'FeatureTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
-        renderer: { type: 'SvgFeatureRenderer' },
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: bigDataLocation,
@@ -195,7 +194,7 @@ function makeTrackConfig(
       )
     case 'bigWig':
       return {
-        type: 'WiggleTrack',
+        type: 'QuantitativeTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,
@@ -234,7 +233,7 @@ function makeTrackConfig(
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
       return {
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
         description: track.get('longLabel'),
         category: categories,

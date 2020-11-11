@@ -11,14 +11,27 @@ Object {
   "adapter": Object {
     "type": "VcfTabixAdapter",
   },
-  "renderers": Object {
-    "PileupRenderer": Object {
-      "type": "PileupRenderer",
+  "displays": Array [
+    Object {
+      "displayId": "trackId0-ChordVariantDisplay",
+      "renderer": Object {
+        "type": "StructuralVariantChordRenderer",
+      },
+      "type": "ChordVariantDisplay",
     },
-    "SvgFeatureRenderer": Object {
-      "type": "SvgFeatureRenderer",
+    Object {
+      "displayId": "trackId0-LinearVariantDisplay",
+      "renderers": Object {
+        "PileupRenderer": Object {
+          "type": "PileupRenderer",
+        },
+        "SvgFeatureRenderer": Object {
+          "type": "SvgFeatureRenderer",
+        },
+      },
+      "type": "LinearVariantDisplay",
     },
-  },
+  ],
   "trackId": "trackId0",
   "type": "VariantTrack",
 }

@@ -11,17 +11,17 @@ import { BreakpointSplitRenderingProps } from '../BreakpointSplitRenderer'
  */
 function BreakpointSplitRendering(props: BreakpointSplitRenderingProps) {
   const {
-    trackModel = {},
+    displayModel = {},
     width,
     height,
     highResolutionScaling = 1,
     imageData,
   } = props
   let voffs = [0, 0]
-  if (trackModel && isStateTreeNode(trackModel)) {
+  if (displayModel && isStateTreeNode(displayModel)) {
     // @ts-ignore
-    const { viewOffsets } = trackModel
-    const { views } = getParent(trackModel, 2)
+    const { viewOffsets } = displayModel
+    const { views } = getParent(displayModel, 3)
     voffs = []
     for (let i = 0; i < views.length; i++) {
       voffs.push(views[i].offsetPx - viewOffsets[i])
@@ -83,7 +83,7 @@ function BreakpointSplitRendering(props: BreakpointSplitRenderingProps) {
 }
 
 BreakpointSplitRendering.propTypes = {
-  trackModel: PropTypes.observableObject,
+  displayModel: PropTypes.observableObject,
 }
 
 export default observer(BreakpointSplitRendering)

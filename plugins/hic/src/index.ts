@@ -1,17 +1,23 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import HicAdapterFactory from './HicAdapter'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
 } from './HicRenderer'
-import HicAdapterFactory from './HicAdapter'
-
 import {
-  configSchemaFactory as hicTrackConfigSchemaFactory,
-  modelFactory as hicTrackModelFactory,
-} from './HicTrack'
+  configSchemaFactory as linearHicdisplayConfigSchemaFactory,
+  modelFactory as linearHicdisplayModelFactory,
+} from './LinearHicDisplay'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -32,14 +38,34 @@ export default class HicPlugin extends Plugin {
           configSchema: hicRendererConfigSchema,
         }),
     )
-
     pluginManager.addTrackType(() => {
-      const configSchema = hicTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'HicTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
       return new TrackType({
         name: 'HicTrack',
-        compatibleView: 'LinearGenomeView',
         configSchema,
-        stateModel: hicTrackModelFactory(configSchema),
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'HicTrack',
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearHicdisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearHicDisplay',
+        configSchema,
+        stateModel: linearHicdisplayModelFactory(configSchema),
+        trackType: 'HicTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
       })
     })
   }

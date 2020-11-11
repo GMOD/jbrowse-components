@@ -2,7 +2,6 @@
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  */
 import { Region } from '@jbrowse/core/util/types'
-import { Region as MSTRegion } from '@jbrowse/core/util/types/mst'
 import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
@@ -10,8 +9,8 @@ import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
-import { getSnapshot, Instance } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+import { getSnapshot } from 'mobx-state-tree'
+import React from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
@@ -81,66 +80,46 @@ function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
-  defaultRegionName,
+  value,
   style,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
   onSelect: (region: Region | undefined) => void
   assemblyName?: string
-  defaultRegionName?: string
+  value?: string
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const [selectedRegionName, setSelectedRegionName] = useState<
-    string | undefined
-  >(defaultRegionName)
   const { assemblyManager } = getSession(model)
-
-  let regions: Instance<typeof MSTRegion>[] = []
-  if (assemblyName) {
-    const assembly = assemblyManager.get(assemblyName)
-    if (assembly && assembly.regions) {
-      regions = assembly.regions
-    }
-  }
-  const loading = regions.length === 0
-  useEffect(() => {
-    onSelect(undefined)
-    if (defaultRegionName !== undefined) {
-      setSelectedRegionName(defaultRegionName)
-    } else if (!loading) {
-      setSelectedRegionName(regions[0].refName)
-      onSelect(getSnapshot(regions[0]))
-    } else {
-      setSelectedRegionName(undefined)
-    }
-  }, [assemblyName, defaultRegionName, onSelect, loading, regions])
-
-  const regionNames = regions.map(region => region.refName)
+  const assembly = assemblyName && assemblyManager.get(assemblyName)
+  const regions: Region[] = (assembly && assembly.regions) || []
+  const loading = !regions.length
+  const current = value || (regions.length ? regions[0].refName : undefined)
 
   function onChange(_: unknown, newRegionName: string | null) {
     if (newRegionName) {
-      setSelectedRegionName(newRegionName)
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
+        // @ts-ignore
         onSelect(getSnapshot(newRegion))
       }
     }
   }
 
-  return !assemblyName || loading || !selectedRegionName ? null : (
+  return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       disableListWrap
+      disableClearable
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
         >
       }
-      disableClearable
-      options={regionNames}
-      value={selectedRegionName}
+      options={regions.map(region => region.refName)}
+      loading={loading}
+      value={current || ''}
       disabled={!assemblyName || loading}
       style={style}
       onChange={onChange}
