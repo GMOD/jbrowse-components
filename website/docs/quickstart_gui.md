@@ -105,7 +105,37 @@ assembly manager.
 
 ## Adding a track
 
-More information about adding a track graphically is forthcoming.
+To add a new track or connection, you can use the menu bar in the app to open
+the form for adding a track `File > Open Track`:
+
+![JBrowse 2 file menu with  menu item](./img/add_track_form.png)
+
+Alternatively, you can use the action button (circular "+") inside the track
+selector to access the "Add track" form.
+
+![JBrowse 2 action button](./img/add_track_tracklist.png)
+
+In the "Add track" form, you can provide a URL to a file to load. Opening files
+from your local machine is not supported currently in the JBrowse 2 web app
+(JBrowse desktop does allow this, though, and this functionality may be added in
+some form in the future)
+
+Paste a URL to a file and optionally provide an index file URL too. The
+following file formats are supported
+
+- `tabix`-indexed VCF
+- `tabix`-indexed BED
+- `tabix`-indexed GFF
+- indexed BAM
+- indexed CRAM
+- BigWig
+- BigBed
+- Hi-C (Juicebox)
+
+For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
+Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
+as e.g. filename+'.bai'. If it is different from this, make sure to specify the
+index file explicitly.
 
 ### Editing a track
 
