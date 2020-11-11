@@ -82,33 +82,85 @@ const AdapterSelector = observer(
   },
 )
 
-const AdapterInput = observer(() => {
-  const [textContent, setTextContent] = useState('test')
+const AdapterInput = observer(
+  ({
+    adapterSelection,
+    fastaLocation,
+    setFastaLocation,
+    faiLocation,
+    setFaiLocation,
+    gziLocation,
+    setGziLocation,
+    twoBitLocation,
+    setTwoBitLocation,
+  }: {
+    adapterSelection: string
+    fastaLocation: string
+    setFastaLocation: Function
+    faiLocation: string
+    setFaiLocation: Function
+    gziLocation: string
+    setGziLocation: Function
+    twoBitLocation: string
+    setTwoBitLocation: Function
+  }) => {
+    if (
+      adapterSelection === 'IndexedFastaAdapter' ||
+      adapterSelection === 'BgzipFastaAdapter'
+    ) {
+      return (
+        <>
+          <TextField
+            id="fasta-location"
+            label="fastaLocation"
+            variant="outlined"
+            value={fastaLocation}
+            onChange={event => setFastaLocation(event.target.value)}
+          />
+          <TextField
+            id="fai-location"
+            label="faiLocation"
+            variant="outlined"
+            value={faiLocation}
+            onChange={event => setFaiLocation(event.target.value)}
+          />
+          {adapterSelection === 'BgzipFastaAdapter' ? (
+            <TextField
+              id="gzi-location"
+              label="gziLocation"
+              variant="outlined"
+              value={gziLocation}
+              onChange={event => setGziLocation(event.target.value)}
+            />
+          ) : null}
+        </>
+      )
+    }
 
-  return (
-    <TextField
-      id="assembly-name"
-      label="Assembly Name"
-      variant="outlined"
-      value={textContent}
-      onChange={event => setTextContent(event.target.value)}
-    />
-  )
-})
+    if (adapterSelection === 'TwoBitAdapter') {
+      return (
+        <TextField
+          id="twobit-location"
+          label="twoBitLocation"
+          variant="outlined"
+          value={twoBitLocation}
+          onChange={event => setTwoBitLocation(event.target.value)}
+        />
+      )
+    }
+
+    return null
+  },
+)
 
 const AssemblyAddForm = observer(
   ({
     rootModel,
     setFormOpen,
-    setIsAssemblyBeingEdited,
-    setAssemblyBeingEdited,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
     setFormOpen: Function
-    setIsAssemblyBeingEdited(arg: boolean): void
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setAssemblyBeingEdited(arg: any): void
   }) => {
     const classes = useStyles()
 
@@ -120,16 +172,68 @@ const AssemblyAddForm = observer(
 
     const [assemblyName, setAssemblyName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
+    const [fastaLocation, setFastaLocation] = useState('/path/to/seq.fa.gz')
+    const [faiLocation, setFaiLocation] = useState('/path/to/seq.fa.gz.fai')
+    const [gziLocation, setGziLocation] = useState('/path/to/seq.fa.gz.gzi')
+    const [twoBitLocation, setTwoBitLocation] = useState('/path/to/my.2bit')
 
     function createAssembly() {
       if (assemblyName === '') {
         rootModel.session.notify("Can't create an assembly without a name")
       } else {
-        // alert(`Entered: ${assemblyName}`)
         setFormOpen(false)
-        setIsAssemblyBeingEdited(true)
-        setAssemblyBeingEdited(
-          rootModel.jbrowse.addAssemblyConf({ name: assemblyName }),
+        // setIsAssemblyBeingEdited(true)
+        let newAssembly
+        if (adapterSelection === 'IndexedFastaAdapter') {
+          newAssembly = {
+            name: assemblyName,
+            sequence: {
+              adapter: {
+                type: 'IndexedFastaAdapter',
+                fastaLocation: {
+                  uri: fastaLocation,
+                },
+                faiLocation: {
+                  uri: faiLocation,
+                },
+              },
+            },
+          }
+        } else if (adapterSelection === 'BgzipFastaAdapter') {
+          newAssembly = {
+            name: assemblyName,
+            sequence: {
+              adapter: {
+                type: 'BgzipFastaAdapter',
+                fastaLocation: {
+                  uri: fastaLocation,
+                },
+                faiLocation: {
+                  uri: faiLocation,
+                },
+                gziLocation: {
+                  uri: gziLocation,
+                },
+              },
+            },
+          }
+        } else if (adapterSelection === 'TwoBitAdapter') {
+          newAssembly = {
+            name: assemblyName,
+            sequence: {
+              adapter: {
+                type: 'TwoBitAdapter',
+                twoBitLocation: {
+                  uri: twoBitLocation,
+                },
+              },
+            },
+          }
+        }
+        rootModel.jbrowse.addAssemblyConf(newAssembly)
+        rootModel.session.notify(
+          `Successfully added ${assemblyName} assembly to JBrowse 2`,
+          'success',
         )
       }
     }
@@ -159,7 +263,17 @@ const AssemblyAddForm = observer(
               />
             </Grid>
             <Grid item>
-              <AdapterInput />
+              <AdapterInput
+                adapterSelection={adapterSelection}
+                fastaLocation={fastaLocation}
+                setFastaLocation={setFastaLocation}
+                faiLocation={faiLocation}
+                setFaiLocation={setFaiLocation}
+                gziLocation={gziLocation}
+                setGziLocation={setGziLocation}
+                twoBitLocation={twoBitLocation}
+                setTwoBitLocation={setTwoBitLocation}
+              />
             </Grid>
           </Grid>
         </Paper>
