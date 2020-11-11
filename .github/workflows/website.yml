@@ -21,21 +21,22 @@ jobs:
       - name: Install deps
         run: yarn
       - run: |
-          cd products/website/
+          cd website/
+          yarn
           yarn build
           cd docs/
-          cp ../../jbrowse-cli/README.md cli.md
-          make pdf
-          cp pdfcombined.md ../../../
-          cp titlemod.md ../../../
-          cp listings.tex ../../../
-          cd ..
+          make pdf # generate the pdfcombined.md, run pandoc in docker in the next step
+          cp pdfcombined.md ../../
+          cp titlemod.md ../../
+          cp listings.tex ../../
+          cd ../../
+          ln -s website/docs/img
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --listings -H listings.tex --toc -o products/website/jbrowse2.pdf titlemod.md pdfcombined.md
+          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
       - name: Upload
         run: |
-          cd products/website/
+          cd website/
           aws s3 sync build s3://jbrowse.org/jb2/
           aws s3 cp jbrowse2.pdf s3://jbrowse.org/jb2/
           aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"

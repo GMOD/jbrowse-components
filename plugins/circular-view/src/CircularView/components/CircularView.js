@@ -87,10 +87,11 @@ export default pluginManager => {
         </>
         <>
           {model.tracks.map(track => {
+            const display = track.displays[0]
             return (
-              <track.RenderingComponent
-                key={track.id}
-                track={track}
+              <display.RenderingComponent
+                key={display.id}
+                display={display}
                 view={model}
               />
             )

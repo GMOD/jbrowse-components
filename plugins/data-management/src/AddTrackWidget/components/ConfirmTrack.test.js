@@ -20,6 +20,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam' }}
+        indexTrackData={{ uri: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -43,6 +44,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam' }}
+        indexTrackData={{ uri: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -67,6 +69,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ localPath: 'test.bam' }}
+        indexTrackData={{ localPath: 'test.bai' }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -91,6 +94,7 @@ describe('<ConfirmTrack />', () => {
       <ConfirmTrack
         session={session}
         trackData={{ uri: 'test.bam', config: [] }}
+        indexTrackData={{ uri: 'test.bam.bai', config: [] }}
         trackName=""
         setTrackName={mockFunction}
         trackType="AlignmentsTrack"
@@ -159,58 +163,5 @@ describe('<ConfirmTrack />', () => {
   fileList.forEach(fileName => {
     const adapter = guessAdapter(fileName, 'uri')
     expect(adapter.type).not.toBeUndefined()
-  })
-
-  // tests cause Coverage track mounts differently
-  it('renders SNPCoverageTrack with a subadapter', () => {
-    const mockFunction = () => {}
-    const { container } = render(
-      <ConfirmTrack
-        session={session}
-        trackData={{ uri: 'test.bam' }}
-        trackName=""
-        setTrackName={mockFunction}
-        trackType="SNPCoverageTrack"
-        setTrackType={mockFunction}
-        trackAdapter={{
-          type: 'SNPCoverageAdapter',
-          subadapter: {
-            type: 'BamAdapter',
-            bamLocation: { uri: 'test.bam' },
-            index: { location: { uri: 'test.bam.bai' } },
-          },
-        }}
-        setTrackAdapter={mockFunction}
-        assembly=""
-        setAssembly={mockFunction}
-      />,
-    )
-    expect(container.firstChild).toMatchSnapshot()
-  })
-  it('SNPCoverageTrack mounts with uri', () => {
-    const mockFunction = jest.fn(() => {})
-    const { container } = render(
-      <ConfirmTrack
-        session={session}
-        trackData={{ uri: 'test.bam' }}
-        trackName=""
-        setTrackName={mockFunction}
-        trackType="SNPCoverageTrack"
-        setTrackType={mockFunction}
-        trackAdapter={{
-          type: 'SNPCoverageAdapter',
-          subadapter: {
-            type: 'BamAdapter',
-            bamLocation: { uri: 'test.bam' },
-            index: { location: { uri: 'test.bam.bai' } },
-          },
-        }}
-        setTrackAdapter={mockFunction}
-        assembly=""
-        setAssembly={mockFunction}
-      />,
-    )
-    expect(container.firstChild).toMatchSnapshot()
-    expect(mockFunction.mock.calls.length).toBe(2)
   })
 })

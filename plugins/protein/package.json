@@ -1,12 +1,12 @@
 {
   "name": "@jbrowse/plugin-protein",
-  "version": "0.0.1-beta.13",
+  "version": "1.0.0",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": {
@@ -35,7 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^1.0.0",
     "mobx-react": "^6.0.0",
     "prop-types": "^15.0.0",
     "react": "^16.8.0"

@@ -1,9 +1,4 @@
-import * as util from '@jbrowse/core/util'
-import F from './slices'
-
-const { calculateStaticSlices } = F({
-  jbrequire: () => util,
-})
+import { calculateStaticSlices } from './slices'
 
 test('one slice', () => {
   const view = {

@@ -83,10 +83,14 @@ export default class VCFFeature implements Feature {
       variant.REF,
       variant.ALT,
     )
-    const isTRA = variant.ALT.some((f: string | Breakend) => f === '<TRA>')
-    const isSymbolic = variant.ALT.some(
-      (f: string | Breakend) => typeof f === 'string' && f.indexOf('<') !== -1,
-    )
+    const isTRA =
+      variant.ALT && variant.ALT.some((f: string | Breakend) => f === '<TRA>')
+    const isSymbolic =
+      variant.ALT &&
+      variant.ALT.some(
+        (f: string | Breakend) =>
+          typeof f === 'string' && f.indexOf('<') !== -1,
+      )
     const featureData: FeatureData = {
       refName: variant.CHROM,
       start,

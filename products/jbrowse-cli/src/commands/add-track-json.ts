@@ -1,8 +1,11 @@
 import { flags } from '@oclif/command'
-import path from 'path'
+import { promises as fsPromises } from 'fs'
 import JBrowseCommand, { Config } from '../base'
 
 export default class AddTrackJson extends JBrowseCommand {
+  // @ts-ignore
+  target: string
+
   static description =
     'Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration'
 
@@ -27,20 +30,25 @@ export default class AddTrackJson extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
   }
 
   async run() {
     const { args, flags: runFlags } = this.parse(AddTrackJson)
+
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     const { track: inputtedTrack } = args as { track: string }
 
     this.debug(`Sequence location is: ${inputtedTrack}`)
-    const { update, target } = runFlags
-    await this.checkLocation(path.dirname(target))
-
-    const config: Config = await this.readJsonFile(target)
-    this.debug(`Found existing config file ${target}`)
+    const { update } = runFlags
+    const config: Config = await this.readJsonFile(this.target)
+    this.debug(`Found existing config file ${this.target}`)
 
     const track = await this.readInlineOrFileJson(inputtedTrack)
     if (!config.tracks) {
@@ -64,12 +72,12 @@ export default class AddTrackJson extends JBrowseCommand {
     } else {
       config.tracks.push(track)
     }
-    this.debug(`Writing configuration to file ${target}`)
-    await this.writeJsonFile(target, config)
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, config)
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} assembly "${track.name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${target}`,
+      } ${this.target}`,
     )
   }
 }

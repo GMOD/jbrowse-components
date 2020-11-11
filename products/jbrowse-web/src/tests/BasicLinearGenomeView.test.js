@@ -48,7 +48,7 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
-    const track = await findByTestId('track-volvox_alignments')
+    const track = await findByTestId('display-volvox_alignments_alignments')
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -107,10 +107,10 @@ describe('valid file tests', () => {
     jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, getAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findByText('ctgA')
+    await getAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
@@ -147,7 +147,7 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
-    await findByTestId('track-volvox_refseq')
+    await findByTestId('display-volvox_refseq-LinearReferenceSequenceDisplay')
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
   })
 
@@ -159,7 +159,7 @@ describe('valid file tests', () => {
     )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('track-volvox_alignments')
+    await findByTestId('display-volvox_alignments_alignments')
 
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
