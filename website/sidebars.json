@@ -6,7 +6,12 @@
     {
       "type": "category",
       "label": "Quickstart guides",
-      "items": ["quickstart_web", "quickstart_gui", "quickstart_desktop"]
+      "items": [
+        "quickstart_web",
+        "quickstart_cli",
+        "quickstart_gui",
+        "quickstart_desktop"
+      ]
     },
     "user_guide",
     "config_guide",
