@@ -148,7 +148,7 @@ See our CLI docs for the add-assembly for more details here --
 
 Note: assemblies can also be added graphically using the assembly manager when
 you are using the so-called admin-server. See the [quickstart
-guide](quickstart_admin#adding-an-assembly) for more details.
+guide](quickstart_gui#adding-an-assembly) for more details.
 
 ## Assembly config
 

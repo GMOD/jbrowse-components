@@ -78,7 +78,7 @@ specify the index file explicitly.
 
 Note: If you are an administrator, you can add tracks with the command line or
 with the admin server [add-track](cli#jbrowse-add-track) or [admin-server
-guide](quickstart_admin)
+guide](quickstart_gui)
 
 ### Sharing sessions
 

@@ -1,5 +1,5 @@
 ---
-id: quickstart_admin
+id: quickstart_gui
 title: Quick start guide for the admin-server
 toplevel: true
 ---
