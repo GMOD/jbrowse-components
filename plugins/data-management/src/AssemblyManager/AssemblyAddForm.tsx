@@ -21,29 +21,14 @@ const useStyles = makeStyles((theme: Theme) =>
     createButton: {
       margin: `5px 0px 5px 200px`,
     },
+    paperContent: {
+      flex: 'auto',
+      margin: `${theme.spacing(1)}px auto`,
+      padding: theme.spacing(1),
+      overflow: 'auto',
+    },
   }),
 )
-
-const useSlotEditorStyles = makeStyles(theme => ({
-  paper: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-    position: 'relative',
-    overflow: 'visible',
-  },
-  paperContent: {
-    flex: 'auto',
-    padding: theme.spacing(1),
-    overflow: 'auto',
-  },
-  slotModeSwitch: {
-    width: 24,
-    background: theme.palette.secondary.light,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}))
 
 const AdapterSelector = observer(
   ({
@@ -55,29 +40,23 @@ const AdapterSelector = observer(
     setAdapterSelection: Function
     adapterTypes: Array<string>
   }) => {
-    const classes = useSlotEditorStyles()
-
     return (
-      <Paper className={classes.paper}>
-        <div className={classes.paperContent}>
-          <TextField
-            value={adapterSelection}
-            label="Type"
-            select
-            helperText="Type of adapter to use"
-            fullWidth
-            onChange={event => {
-              setAdapterSelection(event.target.value)
-            }}
-          >
-            {adapterTypes.map(str => (
-              <MenuItem key={str} value={str}>
-                {str}
-              </MenuItem>
-            ))}
-          </TextField>
-        </div>
-      </Paper>
+      <TextField
+        value={adapterSelection}
+        label="Type"
+        select
+        helperText="Type of adapter to use"
+        fullWidth
+        onChange={event => {
+          setAdapterSelection(event.target.value)
+        }}
+      >
+        {adapterTypes.map(str => (
+          <MenuItem key={str} value={str}>
+            {str}
+          </MenuItem>
+        ))}
+      </TextField>
     )
   },
 )
@@ -109,31 +88,37 @@ const AdapterInput = observer(
       adapterSelection === 'BgzipFastaAdapter'
     ) {
       return (
-        <>
-          <TextField
-            id="fasta-location"
-            label="fastaLocation"
-            variant="outlined"
-            value={fastaLocation}
-            onChange={event => setFastaLocation(event.target.value)}
-          />
-          <TextField
-            id="fai-location"
-            label="faiLocation"
-            variant="outlined"
-            value={faiLocation}
-            onChange={event => setFaiLocation(event.target.value)}
-          />
-          {adapterSelection === 'BgzipFastaAdapter' ? (
+        <Grid container spacing={2}>
+          <Grid item>
             <TextField
-              id="gzi-location"
-              label="gziLocation"
+              id="fasta-location"
+              label="fastaLocation"
               variant="outlined"
-              value={gziLocation}
-              onChange={event => setGziLocation(event.target.value)}
+              value={fastaLocation}
+              onChange={event => setFastaLocation(event.target.value)}
             />
+          </Grid>
+          <Grid item>
+            <TextField
+              id="fai-location"
+              label="faiLocation"
+              variant="outlined"
+              value={faiLocation}
+              onChange={event => setFaiLocation(event.target.value)}
+            />
+          </Grid>
+          {adapterSelection === 'BgzipFastaAdapter' ? (
+            <Grid item>
+              <TextField
+                id="gzi-location"
+                label="gziLocation"
+                variant="outlined"
+                value={gziLocation}
+                onChange={event => setGziLocation(event.target.value)}
+              />
+            </Grid>
           ) : null}
-        </>
+        </Grid>
       )
     }
 
@@ -254,28 +239,26 @@ const AssemblyAddForm = observer(
           </Grid>
         </Paper>
         <Paper className={classes.paper}>
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <AdapterSelector
-                adapterSelection={adapterSelection}
-                setAdapterSelection={setAdapterSelection}
-                adapterTypes={adapterTypes}
-              />
-            </Grid>
-            <Grid item>
-              <AdapterInput
-                adapterSelection={adapterSelection}
-                fastaLocation={fastaLocation}
-                setFastaLocation={setFastaLocation}
-                faiLocation={faiLocation}
-                setFaiLocation={setFaiLocation}
-                gziLocation={gziLocation}
-                setGziLocation={setGziLocation}
-                twoBitLocation={twoBitLocation}
-                setTwoBitLocation={setTwoBitLocation}
-              />
-            </Grid>
-          </Grid>
+          <AdapterSelector
+            adapterSelection={adapterSelection}
+            setAdapterSelection={setAdapterSelection}
+            adapterTypes={adapterTypes}
+          />
+        </Paper>
+        <Paper className={classes.paper}>
+          <div className={classes.paperContent}>
+            <AdapterInput
+              adapterSelection={adapterSelection}
+              fastaLocation={fastaLocation}
+              setFastaLocation={setFastaLocation}
+              faiLocation={faiLocation}
+              setFaiLocation={setFaiLocation}
+              gziLocation={gziLocation}
+              setGziLocation={setGziLocation}
+              twoBitLocation={twoBitLocation}
+              setTwoBitLocation={setTwoBitLocation}
+            />
+          </div>
         </Paper>
         <Button
           className={classes.createButton}
