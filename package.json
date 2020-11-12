@@ -1,6 +1,7 @@
 {
   "name": "root",
   "private": true,
+  "repository": "https://github.com/GMOD/jbrowse-components",
   "workspaces": [
     "packages/*",
     "products/*",
@@ -111,6 +112,7 @@
     "jest-localstorage-mock": "^2.4.3",
     "jest-pnp-resolver": "^1.2.0",
     "lerna": "^3.4.1",
+    "lerna-changelog": "^1.0.1",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
