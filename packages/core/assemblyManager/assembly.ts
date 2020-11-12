@@ -4,7 +4,7 @@ import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
-import { makeAbortableReaction, getSession, when } from '../util'
+import { makeAbortableReaction, when } from '../util'
 import QuickLRU from '../util/QuickLRU'
 
 // Based on the UCSC Genome Browser chromosome color palette:
@@ -47,7 +47,6 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ) {
   const { sessionId } = options
-  const { pluginManager } = getSession(assembly)
   await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
     signal,
     name: 'when assembly ready',
