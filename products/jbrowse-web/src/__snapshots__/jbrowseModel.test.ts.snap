@@ -49,6 +49,9 @@ Object {
           "faiLocation": Object {
             "uri": "volvox.fa.fai",
           },
+          "fastaLocation": Object {
+            "uri": "volvox.fa",
+          },
           "type": "IndexedFastaAdapter",
         },
         "displays": Array [
