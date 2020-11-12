@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /*
-Note: this is primarily a copy of createBaseTrackModel, except with a subset
+Note: this is primarily a copy of createBaseTrackConfig, except with a subset
 of the config slots, to avoid including fields that don't make sense for the
 ReferenceSequenceTrack
 */
