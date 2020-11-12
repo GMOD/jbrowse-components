@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
@@ -13,7 +14,7 @@ import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
-    marginBottom: theme.spacing(4),
+    padding: theme.spacing(2),
   },
   importFormEntry: {
     minWidth: 180,
@@ -24,7 +25,23 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
-  const { assemblyNames } = getSession(model)
+  const { assemblyNames, assemblyManager } = getSession(model)
+  const error = !assemblyNames.length ? 'No configured assemblies' : ''
+  const assemblyName = assemblyNames[selectedAssemblyIdx]
+  const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
+  useEffect(() => {
+    let done = false
+    ;(async () => {
+      const assembly = await assemblyManager.waitForAssembly(assemblyName)
+
+      if (!done && assembly && assembly.regions) {
+        setSelectedRegion(getSnapshot(assembly.regions[0]))
+      }
+    })()
+    return () => {
+      done = true
+    }
+  }, [assemblyManager, assemblyName])
 
   function onAssemblyChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -35,12 +52,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   function onOpenClick() {
     if (selectedRegion) {
       model.setDisplayedRegions([selectedRegion])
-      model.setDisplayName(selectedRegion.assemblyName)
     }
   }
-  const error = !assemblyNames.length ? 'No configured assemblies' : ''
-  const displayName =
-    assemblyNames[selectedAssemblyIdx] && !error ? selectedAssemblyIdx : ''
+
   return (
     <Container className={classes.importFormContainer}>
       <Grid container spacing={1} justify="center" alignItems="center">
@@ -71,6 +85,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
               error ? undefined : assemblyNames[selectedAssemblyIdx]
             }
             onSelect={setSelectedRegion}
+            value={selectedRegion && selectedRegion.refName}
             TextFieldProps={{
               margin: 'normal',
               variant: 'outlined',

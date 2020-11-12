@@ -99,7 +99,9 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox-long-reads-sv-bam'),
     )
-    await findByTestId('track-volvox-long-reads-sv-bam')
+    await findByTestId(
+      'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -134,7 +136,7 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('track-volvox-long-reads-cram')
+    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -155,7 +157,10 @@ describe('alignments track', () => {
     const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')
-    expect(buf).toMatchImageSnapshot()
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
   }, 10000)
 
   it('test that bam with small max height displays message', async () => {

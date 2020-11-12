@@ -3,11 +3,11 @@ import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
-import type { BlockBasedTrackModel } from '@jbrowse/plugin-linear-genome-view'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 function PileupRendering(props: {
   blockKey: string
-  trackModel: BlockBasedTrackModel
+  displayModel: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
@@ -18,7 +18,7 @@ function PileupRendering(props: {
   const {
     onMouseMove,
     blockKey,
-    trackModel,
+    displayModel,
     width,
     height,
     regions,
@@ -30,7 +30,7 @@ function PileupRendering(props: {
     featureIdUnderMouse,
     contextMenuFeature,
     blockLayoutFeatures,
-  } = trackModel || {}
+  } = displayModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -145,7 +145,11 @@ function PileupRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
+    const feats = displayModel.getFeatureOverlapping(
+      blockKey,
+      clientBp,
+      offsetY,
+    )
     const featIdUnderMouse = feats.length ? feats[0].name : undefined
 
     if (onMouseMove) {

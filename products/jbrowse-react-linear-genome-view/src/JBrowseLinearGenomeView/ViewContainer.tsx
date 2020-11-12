@@ -1,4 +1,4 @@
-import { IBaseViewModel } from '@jbrowse/core/BaseViewModel'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import IconButton, {
   IconButtonProps as IconButtonPropsType,

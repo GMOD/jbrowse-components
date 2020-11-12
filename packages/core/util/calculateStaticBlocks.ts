@@ -94,6 +94,7 @@ export default function calculateStaticBlocks(
         reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
         parentRegion: region,
+        regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,

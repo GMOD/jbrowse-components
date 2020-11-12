@@ -54,7 +54,6 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-// functional component for OverviewRubberBand
 function OverviewRubberBand({
   model,
   overview,
@@ -101,7 +100,11 @@ function OverviewRubberBand({
         currentX === undefined
       ) {
         const clickedAt = overview.pxToBp(startX)
-        model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
+        model.centerAt(
+          Math.round(clickedAt.coord),
+          clickedAt.refName,
+          clickedAt.index,
+        )
       }
       setStartX(undefined)
       setCurrentX(undefined)
@@ -142,10 +145,11 @@ function OverviewRubberBand({
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (controlsRef.current)
+    if (controlsRef.current) {
       setGuideX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
+    }
   }
 
   function mouseOut() {
@@ -171,7 +175,6 @@ function OverviewRubberBand({
           </Tooltip>
         ) : null}
         <div
-          data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
           role="presentation"
           ref={controlsRef}

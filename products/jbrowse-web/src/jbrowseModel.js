@@ -28,11 +28,12 @@ export default function JBrowseWeb(
           type: 'number',
           defaultValue: 2,
         },
-        useUrlSession: {
-          type: 'boolean',
-          defaultValue: true,
+        shareURL: {
+          type: 'string',
+          defaultValue:
+            'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
-        useLocalStorage: {
+        disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
@@ -47,9 +48,8 @@ export default function JBrowseWeb(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       defaultSession: types.optional(types.frozen(Session), {
-        name: `New Session`,
+        name: `New session`,
       }),
-      savedSessions: types.array(types.frozen(Session)),
     })
     .actions(self => ({
       afterCreate() {
@@ -67,26 +67,6 @@ export default function JBrowseWeb(
           }
         })
       },
-      addSavedSession(sessionSnapshot) {
-        const length = self.savedSessions.push(sessionSnapshot)
-        return self.savedSessions[length - 1]
-      },
-      removeSavedSession(sessionSnapshot) {
-        self.savedSessions.remove(sessionSnapshot)
-      },
-      replaceSavedSession(oldName, snapshot) {
-        const savedSessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === oldName,
-        )
-        self.savedSessions[savedSessionIndex] = snapshot
-      },
-      updateSavedSession(sessionSnapshot) {
-        const sessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === sessionSnapshot.name,
-        )
-        if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
-        else self.savedSessions[sessionIndex] = sessionSnapshot
-      },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
         if (!name) {
@@ -99,6 +79,14 @@ export default function JBrowseWeb(
         const length = self.assemblies.push(assemblyConf)
         return self.assemblies[length - 1]
       },
+      removeAssemblyConf(assemblyName) {
+        const toRemove = self.assemblies.find(
+          assembly => assembly.name === assemblyName,
+        )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
+      },
       addTrackConf(trackConf) {
         const { type } = trackConf
         if (!type) throw new Error(`unknown track type ${type}`)
@@ -108,6 +96,17 @@ export default function JBrowseWeb(
         }
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
+      },
+      addDisplayConf(trackId, displayConf) {
+        const { type } = displayConf
+        if (!type) {
+          throw new Error(`unknown display type ${type}`)
+        }
+        const track = self.tracks.find(t => t.trackId === trackId)
+        if (!track) {
+          throw new Error(`could not find track with id ${trackId}`)
+        }
+        return track.addDisplayConf(displayConf)
       },
       addConnectionConf(connectionConf) {
         const { type } = connectionConf
@@ -134,9 +133,6 @@ export default function JBrowseWeb(
       },
     }))
     .views(self => ({
-      get savedSessionNames() {
-        return self.savedSessions.map(sessionSnap => sessionSnap.name)
-      },
       get assemblyNames() {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },

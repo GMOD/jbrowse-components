@@ -49,10 +49,10 @@ const tracks = volvoxConfig.tracks.filter(track =>
 )
 const defaultSession = {
   name: 'Storybook',
-  view: volvoxConfig.savedSessions[0].views[0],
+  view: volvoxConfig.defaultSession.views[0],
 }
 
-export const ReferenceSequence = () => {
+export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
     tracks,

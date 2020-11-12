@@ -17,7 +17,7 @@ export interface RenderArgs {
   bpPerPx: number
   regions?: any
   config: Record<string, any>
-  renderProps: { trackModel: any }
+  renderProps: { displayModel: any }
   width: number
   height: number
 }
@@ -27,7 +27,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
    *
-   * the base class replaces the `renderProps.trackModel` param
+   * the base class replaces the `renderProps.displayModel` param
    * (which on the client is a MST model) with a stub
    * that only contains the `selectedFeature`, since
    * this is the only part of the track model that most
@@ -42,7 +42,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       // @ts-ignore
       blockKey: args.blockKey,
 
-      trackModel: {},
+      displayModel: {},
     }
 
     return args
