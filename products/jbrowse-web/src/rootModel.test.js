@@ -70,6 +70,7 @@ describe('Root MST model', () => {
             aliases: ['assemblyA'],
             sequence: {
               trackId: 'sequenceConfigId',
+              type: 'ReferenceSequenceTrack',
               adapter: {
                 type: 'FromConfigAdapter',
                 features: [
@@ -91,7 +92,7 @@ describe('Root MST model', () => {
     expect(root.jbrowse.assemblies.length).toBe(1)
     expect(getSnapshot(root.jbrowse.assemblies[0])).toMatchSnapshot()
     const newTrackConf = root.jbrowse.addTrackConf({
-      type: 'BasicTrack',
+      type: 'FeatureTrack',
       trackId: 'trackId0',
     })
     expect(getSnapshot(newTrackConf)).toMatchSnapshot()

@@ -92,6 +92,7 @@ export default pluginManager => {
                 <FileSelector
                   location={model.fileSource}
                   setLocation={model.setFileSource}
+                  localFileAllowed
                 />
               </FormGroup>
             </FormControl>
@@ -206,10 +207,7 @@ export default pluginManager => {
       <>
         {model.error ? (
           <Container className={classes.errorContainer}>
-            <ErrorDisplay
-              errorMessage={String(model.error.message)}
-              stackTrace={model.error.stackTrace}
-            />
+            <ErrorDisplay errorMessage={`${model.error}`} />
           </Container>
         ) : null}
         <ImportForm model={model} />

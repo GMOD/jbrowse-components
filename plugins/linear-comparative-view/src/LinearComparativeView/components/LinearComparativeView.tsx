@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@material-ui/core/styles'
 import { LinearComparativeViewModel } from '../model'
@@ -44,14 +45,15 @@ const Overlays = observer(({ model }: Props) => {
   return (
     <>
       {model.tracks.map(track => {
-        const { ReactComponent } = track
-        return ReactComponent ? (
+        const [display] = track.displays
+        const { RenderingComponent } = display
+        return RenderingComponent ? (
           <div
             className={classes.overlay}
             key={getConf(track, 'trackId')}
-            style={{ height: track.height }}
+            style={{ height: display.height }}
           >
-            <ReactComponent model={track} />
+            <RenderingComponent model={display} />
           </div>
         ) : null
       })}
@@ -107,7 +109,9 @@ const OverlayComparativeView = observer(({ model }: Props) => {
 })
 
 const LinearComparativeView = observer(({ model }: Props) => {
-  const middle = model.tracks.some(t => getConf(t, 'middle'))
+  const middle = model.tracks.some(t =>
+    t.displays.some((d: AnyConfigurationModel) => getConf(d, 'middle')),
+  )
   return middle ? (
     <MiddleComparativeView model={model} />
   ) : (

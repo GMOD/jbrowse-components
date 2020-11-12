@@ -644,13 +644,14 @@ export default (pluginManager: PluginManager) => {
               </div>
               <div className={classes.overlay}>
                 {model.tracks.map(track => {
-                  const { ReactComponent } = track
+                  const [display] = track.displays
+                  const { RenderingComponent } = display
 
-                  return ReactComponent ? (
+                  return RenderingComponent ? (
                     // @ts-ignore
-                    <ReactComponent
+                    <RenderingComponent
                       key={getConf(track, 'trackId')}
-                      model={track}
+                      model={display}
                     />
                   ) : null
                 })}

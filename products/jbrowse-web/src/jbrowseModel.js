@@ -33,6 +33,10 @@ export default function JBrowseWeb(
           defaultValue:
             'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
+        disableAnalytics: {
+          type: 'boolean',
+          defaultValue: false,
+        },
         theme: { type: 'frozen', defaultValue: {} },
       }),
       plugins: types.frozen(),
@@ -75,6 +79,14 @@ export default function JBrowseWeb(
         const length = self.assemblies.push(assemblyConf)
         return self.assemblies[length - 1]
       },
+      removeAssemblyConf(assemblyName) {
+        const toRemove = self.assemblies.find(
+          assembly => assembly.name === assemblyName,
+        )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
+      },
       addTrackConf(trackConf) {
         const { type } = trackConf
         if (!type) throw new Error(`unknown track type ${type}`)
@@ -84,6 +96,17 @@ export default function JBrowseWeb(
         }
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
+      },
+      addDisplayConf(trackId, displayConf) {
+        const { type } = displayConf
+        if (!type) {
+          throw new Error(`unknown display type ${type}`)
+        }
+        const track = self.tracks.find(t => t.trackId === trackId)
+        if (!track) {
+          throw new Error(`could not find track with id ${trackId}`)
+        }
+        return track.addDisplayConf(displayConf)
       },
       addConnectionConf(connectionConf) {
         const { type } = connectionConf

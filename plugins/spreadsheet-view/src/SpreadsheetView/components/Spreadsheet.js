@@ -351,7 +351,7 @@ export default pluginManager => {
 
     return (
       <div className={classes.root} style={{ height }}>
-        {model && model.rowSet && model.rowSet.isLoaded ? (
+        {model && model.rowSet && model.rowSet.isLoaded && model.initialized ? (
           <DataTable model={model} />
         ) : (
           <div>Loading...</div>

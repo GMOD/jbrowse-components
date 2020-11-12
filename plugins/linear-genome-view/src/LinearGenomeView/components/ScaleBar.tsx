@@ -11,11 +11,11 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
 import { LinearGenomeViewStateModel } from '..'
-import Block from '../../BasicTrack/components/Block'
 import {
-  ElidedBlockMarker,
-  InterRegionPaddingBlockMarker,
-} from '../../BasicTrack/components/MarkerBlocks'
+  ContentBlock as ContentBlockComponent,
+  ElidedBlock as ElidedBlockComponent,
+  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
+} from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -112,7 +112,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
           )
 
           return (
-            <Block key={`${block.key}-${index}`} block={block}>
+            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
               {ticks.map(tick => {
                 if (tick.type === 'labeledMajor') {
                   const x =
@@ -136,15 +136,15 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                 }
                 return null
               })}
-            </Block>
+            </ContentBlockComponent>
           )
         }
         if (block instanceof ElidedBlock) {
-          return <ElidedBlockMarker key={block.key} width={block.widthPx} />
+          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
         }
         if (block instanceof InterRegionPaddingBlock) {
           return (
-            <InterRegionPaddingBlockMarker
+            <InterRegionPaddingBlockComponent
               key={block.key}
               width={block.widthPx}
               style={{ background: 'none' }}

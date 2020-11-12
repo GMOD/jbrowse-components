@@ -2,7 +2,7 @@ import {
   ConfigurationReference,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import connectionModelFactory from '@jbrowse/core/BaseConnectionModel'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
@@ -11,7 +11,7 @@ import { generateTracks } from './tracks'
 export default function (pluginManager) {
   return types.compose(
     'TheTrackHubRegistryConnection',
-    connectionModelFactory(pluginManager),
+    BaseConnectionModelFactory(pluginManager),
     types
       .model({
         type: types.literal('TheTrackHubRegistryConnection'),

@@ -1,6 +1,6 @@
 ---
 id: quickstart_web
-title: JBrowse 2 web quickstart
+title: Quick start guide using the CLI tools
 toplevel: true
 ---
 

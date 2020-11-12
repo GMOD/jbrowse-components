@@ -38,10 +38,10 @@ export default (pluginManager: PluginManager) => {
       columnNameLineNumber: 1,
 
       selectedAssemblyIdx: 0,
-      error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
       fileTypes,
+      error: undefined as Error | undefined,
     }))
     .views(self => ({
       get isReadyToOpen() {
@@ -117,10 +117,7 @@ export default (pluginManager: PluginManager) => {
       setError(error: Error) {
         console.error(error)
         self.loading = false
-        self.error = {
-          message: String(error),
-          stackTrace: String(error.stack || ''),
-        }
+        self.error = error
       },
 
       setLoaded() {

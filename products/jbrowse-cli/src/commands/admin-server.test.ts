@@ -84,13 +84,6 @@ async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
 
 describe('admin-server', () => {
   setupWithCreate
-    .do(async () => {
-      await fsPromises.unlink('manifest.json')
-    })
-    .command(['admin-server'])
-    .exit(10)
-    .it('fails if no manifest.json found in cwd')
-  setupWithCreate
     .command(['admin-server', '--port', '9091'])
     .finally(async ctx => {
       await killExpress(ctx, 9091)
@@ -132,7 +125,7 @@ describe('admin-server', () => {
     })
     .it('uses port 9090 if not specified', async ctx => {
       expect(ctx.stdoutWrite.mock.calls[0][0]).toMatch(
-        /Navigate to http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12} to configure your JBrowse installation graphically\./,
+        /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12}/,
       )
     })
   setupWithCreate

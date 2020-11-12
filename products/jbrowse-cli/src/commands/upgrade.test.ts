@@ -46,7 +46,7 @@ function mockTagSuccess(gitHubApi: Scope) {
 
 function mockReleases(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases?page=0')
+    .get('/repos/GMOD/jbrowse-components/releases?page=1')
     .reply(200, releaseArray)
 }
 
@@ -89,22 +89,6 @@ describe('upgrade', () => {
     .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it('fails if user selects a directory that does not exist')
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
-    })
-    .command(['upgrade'])
-    .exit(20)
-    .it("fails if it can't parse manifest.json")
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
-    })
-    .command(['upgrade'])
-    .exit(30)
-    .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockV2Zip)

@@ -22,10 +22,7 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
   ],
   "defaultSession": {
     /* optional default session */
-  },
-  "savedSessions": [
-    /* optional saved sessions */
-  ]
+  }
 }
 ```
 
@@ -79,190 +76,79 @@ Here is a complete config.json file containing only a hg19
 }
 ```
 
+## Configuring reference name aliasing
+
+Reference name aliasing is a process to make chromosomes that are named slighlty
+differently but which refer to the same thing render properly
+
+The refNameAliases in the above config provides this functionality
+
+```json
+"refNameAliases": {
+  "adapter": {
+    "type": "RefNameAliasAdapter",
+    "location": {
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+    }
+  }
+}
+```
+
+The hg19_aliases then is a tab delimited file that looks like this
+
+The first column should be the names that are in your FASTA sequence, and the
+rest of the columns are aliases
+
+```
+1	chr1
+2	chr2
+3	chr3
+4	chr4
+5	chr5
+6	chr6
+7	chr7
+8	chr8
+9	chr9
+10	chr10
+11	chr11
+12	chr12
+13	chr13
+14	chr14
+15	chr15
+16	chr16
+17	chr17
+18	chr18
+19	chr19
+20	chr20
+21	chr21
+22	chr22
+X	chrX
+Y	chrY
+M	chrM	MT
+```
+
 ## Adding an assembly with the CLI
 
-See https://github.com/GMOD/jbrowse-components/tree/master/products/jbrowse-cli#jbrowse-add-assembly-sequence
+Generally we add a new assembly with the CLI using something like
 
-## Track configurations
+```sh
+# use samtools to make a fasta index for your reference genome
+samtools faidx myfile.fa
 
-All tracks contain
+# install the jbrowse CLI
+npm install -g @jbrowse/cli
 
-- trackId - internal track ID, must be unique
-- name - displayed track name
-- assemblyNames - an array of assembly names a track is associated with, often
-  just a single assemblyName
-- category - optional array of categories to display in a hierarchical track selector
-
-Example config.json containing a track config
-
-```json
-{
-  "assemblies": [
-    {
-      "name": "hg19",
-      "aliases": ["GRCh37"],
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "hg19_config",
-        "adapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
-          }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "RefNameAliasAdapter",
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
-          }
-        }
-      }
-    }
-  ],
-  "tracks": [
-    {
-      "type": "BasicTrack",
-      "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq (GFF3Tabix)",
-      "assemblyNames": ["hg19"],
-      "category": ["Annotation test", "blah"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
-          }
-        }
-      },
-      "renderer": {
-        "type": "SvgFeatureRenderer"
-      }
-    }
-  ]
-}
+# add the assembly using the jbrowse CLI, this will automatically copy the
+myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
+jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-- minScore - the minimum score to plot in the coverage track. default: 0
-- maxScore - the maximum score to plot in the coverage track. default: auto calculated
-- scaleType - options: linear, log, to display the coverage data
-- adapter - this corresponds to a BamAdapter or CramAdapter or any other
-  adapter type that returns alignments-like features
+See our CLI docs for the add-assembly for more details here --
+[add-assembly](cli#jbrowse-add-assembly-sequence)
 
-Example AlignmentsTrack config
-
-```json
-{
-  "trackId": "my_alignments_track",
-  "name": "My Alignments",
-  "assemblyNames": ["hg19"],
-  "type": "AlignmentsTrack",
-  "adapter": {
-    "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-  }
-}
-```
-
-### PileupTrack configuration options
-
-Note: an AlignmentsTrack automatically sets up a PileupTrack as a subtrack, so
-it is not common to use PileupTrack individually, but it is allowed
-
-- adapter - either gets it's adapter from the parent alignmentstrack or can be
-  configured as any adapter that returns alignments-like features
-- defaultRendering - options: pileup, svg. default: pileup
-
-Example PileupTrack config
-
-```json
-{
-  "trackId": "my_pileup_track",
-  "name": "My Alignments",
-  "assemblyNames": ["hg19"],
-  "type": "PileupTrack",
-  "adapter": {
-    "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-  }
-}
-```
-
-### SNPCoverageTrack configuration options
-
-Note: an AlignmentsTrack automatically sets up a SNPCoverageTrack as a subtrack,
-so it is not common to configure SNPCoverageTrack individually, but it is allowed
-
-- autoscale: local. this is the only currently allowed option
-- minScore - the minimum score to plot in the coverage track. default: 0
-- maxScore - the maximum score to plot in the coverage track. default: auto calculated
-- scaleType - options: linear, log, to display the coverage data
-- inverted - boolean option to draw coverage draw upside down. default: false
-- adapter - either gets it's adapter from the parent alignmentstrack or can be
-  configured as any adapter that returns alignments-like features
-
-Example SNPCoverageTrack config
-
-```json
-{
-  "trackId": "my_snpcov_track",
-  "name": "My Alignments",
-  "assemblyNames": ["hg19"],
-  "type": "SNPCoverageTrack",
-  "adapter": {
-    "type": "BamAdapter",
-    "bamLocation": { "uri": "http://yourhost/file.bam" },
-    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-  }
-}
-```
-
-### BamAdapter configuration options
-
-- bamLocation - a 'file location' for the BAM
-- index: a subconfigurations chema containing
-  - indexType: options BAI or CSI. default BAI
-  - location: the location of the index
-
-Example BamAdapter config
-
-```json
-{
-  "type": "BamAdapter",
-  "bamLocation": { "uri": "http://yourhost/file.bam" },
-  "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
-}
-```
-
-### CramAdapter configuration options
-
-- cramLocation - a 'file location' for the CRAM
-- craiLocation - a 'file location' for the CRAI
-
-Example CramAdapter config
-
-```json
-{
-  "type": "CramAdapter",
-  "cramLocation": { "uri": "http://yourhost/file.cram" },
-  "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
-}
-```
+Note: assemblies can also be added graphically using the assembly manager when
+you are using the so-called admin-server. See the [quickstart
+guide](quickstart_admin#adding-an-assembly) for more details.
 
 ## Assembly config
 
@@ -318,18 +204,18 @@ The top level config is an array of assemblies
 
 Each assembly contains
 
-- name - a name to refer to the assembly by. each track that is related to this
-  assembly references this name
-- aliases - sometimes genome assemblies have aliases like hg19, GRCh37, b37p5,
-  etc. while there may be small differences between these assembly alias
+- `name` - a name to refer to the assembly by. each track that is related to
+  this assembly references this name
+- `aliases` - sometimes genome assemblies have aliases like hg19, GRCh37,
+  b37p5, etc. while there may be small differences between these different
   sequences, they often largely have the same coordinates, so you might want to
-  be able to associate tracks from these different assemblies together. this is
-  most commonly helpful when loading from a UCSC trackHub which specifies the
-  genome assembly names it uses, so you can connect to a UCSC trackHub if your
-  assembly name or aliases match.
-- sequence - this is a complete "track" definition for your genome assembly. we
-  specify that it is a track of type ReferenceSequenceTrack, give it a trackId,
-  and an adapter configuration. an adapter configuration can specify
+  be able to associate tracks from these different assemblies together. The
+  assembly aliases are most helpful when loading from a UCSC trackHub which
+  specifies the genome assembly names it uses, so you can connect to a UCSC
+  trackHub if your assembly name or aliases match.
+- `sequence` - this is a complete "track" definition for your genome assembly.
+  we specify that it is a track of type ReferenceSequenceTrack, give it a
+  trackId, and an adapter configuration. an adapter configuration can specify
   IndexedFastaAdapter (fasta.fa and fasta.fai), BgzipFastaAdapter (fasta.fa.gz,
   fasta.fa.gz.fai, fasta.gz.gzi), ChromSizesAdapter (which fetches no
   sequences, just chromosome names)
@@ -433,19 +319,295 @@ parsing time.
 }
 ```
 
-## Dotplot view config
+## Track configurations
 
-### Setup
+All tracks can contain
+
+- trackId - internal track ID, must be unique
+- name - displayed track name
+- assemblyNames - an array of assembly names a track is associated with, often
+  just a single assemblyName
+- category - (optional) array of categories to display in a hierarchical track
+  selector
+
+Example config.json containing a track config
+
+```json
+{
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "repeats_hg19",
+      "name": "Repeats",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
+        }
+      }
+    }
+  ]
+}
+```
+
+### AlignmentsTrack config
+
+Example AlignmentsTrack config
+
+```json
+{
+  "trackId": "my_alignments_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "type": "AlignmentsTrack",
+  "adapter": {
+    "type": "BamAdapter",
+    "bamLocation": { "uri": "http://yourhost/file.bam" },
+    "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+  }
+}
+```
+
+#### BamAdapter configuration options
+
+- bamLocation - a 'file location' for the BAM
+- index: a subconfigurations chema containing
+  - indexType: options BAI or CSI. default: BAI
+  - location: a 'file location' of the index
+
+Example BamAdapter config
+
+```json
+{
+  "type": "BamAdapter",
+  "bamLocation": { "uri": "http://yourhost/file.bam" },
+  "index": { "location": { "uri": "http://yourhost/file.bam.bai" } }
+}
+```
+
+#### CramAdapter configuration options
+
+- cramLocation - a 'file location' for the CRAM
+- craiLocation - a 'file location' for the CRAI
+
+Example CramAdapter config
+
+```json
+{
+  "type": "CramAdapter",
+  "cramLocation": { "uri": "http://yourhost/file.cram" },
+  "craiLocation": { "uri": "http://yourhost/file.cram.crai" }
+}
+```
+
+### HicTrack config
+
+Example Hi-C track config
+
+```json
+{
+  "type": "HicTrack",
+  "trackId": "hic",
+  "name": "Hic Track",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "HicAdapter",
+    "hicLocation": {
+      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+    }
+  }
+}
+```
+
+#### HicAdapter config
+
+We just simply supply a hicLocation currently for the HicAdapter
+
+```json
+{
+  "type": "HicAdapter",
+  "hicLocation": {
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+  }
+}
+```
+
+#### HicRenderer config
+
+- `baseColor` - the default baseColor of the Hi-C plot is red #f00, you can
+  change it to blue so then the shading will be done in blue with #00f
+- `color` - this is a color callback that adapts the current Hi-C contact
+  feature with the baseColor to generate a shaded block. The default color
+  callback function is `function(count, maxScore, baseColor) { return baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string() }` where it
+  receives the count for a particular block, the maxScore over the region, and
+  the baseColor from the baseColor config
+
+### VariantTrack config
+
+- defaultRendering - options: 'pileup' or 'svg'. default 'svg'
+- adapter - a variant type adapter config e.g. a VcfTabixAdapter
+
+Example config
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "my track",
+  "name": "My Variants",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
+    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+  }
+}
+```
+
+#### VcfTabixAdapter configuration options
+
+- vcfGzLocation - a 'file location' for the BigWig
+- index: a subconfigurations chema containing
+  - indexType: options TBI or CSI. default TBI
+  - location: the location of the index
+
+Example VcfTabixAdapter adapter config
+
+```json
+{
+  "type": "VcfTabixAdapter",
+  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
+  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+}
+```
+
+### WiggleTrack config
+
+Example WiggleTrack config
+
+```json
+{
+  "trackId": "my_wiggle_track",
+  "name": "My Wiggle Track",
+  "assemblyNames": ["hg19"],
+  "type": "WiggleTrack",
+  "adapter": {
+    "type": "BigWig",
+    "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+  }
+}
+```
+
+#### General WiggleTrack options
+
+- scaleType - options: linear, log, to display the coverage data. default: linear
+- adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
+
+#### Autoscale options for WiggleTrack
+
+Options for autoscale
+
+- local - min/max values of what is visible on the screen
+- global - min/max values in the entire dataset
+- localsd - mean value +- N stddevs of what is visible on screen
+- globalsd - mean value +/- N stddevs of everything in the dataset
+
+#### Score min/max for WiggleTrack
+
+These options overrides the autoscale options and provides a minimum or maximum
+value for the autoscale bar
+
+- minScore
+- maxScore
+
+#### WiggleTrack drawing options
+
+- inverted - draws upside down
+- defaultRendering - can be density, xyplot, or line
+- summaryScoreMode - options: min, max, whiskers
+
+#### WiggleTrack renderer options
+
+- filled - fills in the XYPlot histogram
+- bicolorPivot - options: numeric, mean, none. default: numeric
+- bicolorPivotValue - number at which the color switches from posColor to
+  negColor. default: 0
+- color - color or color callback for drawing the values. overrides
+  posColor/negColor. default: none
+- posColor - color to draw "positive" values. default: red
+- negColor - color to draw "negative" values. default: blue
+- clipColor - color to draw "clip" indicator. default: red
+
+#### BigWigAdapter options
+
+- bigWigLocation - a 'file location' for the bigwig
+
+Example BigWig adapter config
+
+```json
+{
+  "type": "BigWig",
+  "bigWigLocation": { "uri": "http://yourhost/file.bw" }
+}
+```
+
+### SyntenyTrack config
+
+Example SyntenyTrack config
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "dotplot_track",
+  "assemblyNames": ["YJM1447", "R64"],
+  "name": "dotplot",
+  "adapter": {
+    "type": "PAFAdapter",
+    "pafLocation": {
+      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+    },
+    "assemblyNames": ["YJM1447", "R64"]
+  }
+}
+```
+
+We can add a SyntenyTrack from PAF with the CLI e.g. with
+
+```sh
+jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
+    grape,peach --load copy --out /var/www/html/jbrowse2
+```
+
+## DotplotView config
+
+The configuration of a view is technically a configuration of the "state of the
+view" but it can be added to the `defaultSession`
 
 An example of a dotplot config can help explain. This is relatively advanced so
-let's step through it
-
-1. We setup two assemblies, one for grape, one for peach (only chrom.sizes
-   files used)
-2. Then we setup a "dotplot track" because multiple layers can be plotted on a
-   dotplot. We use a PAFAdapter
-3. Then we instantiate a savedSession containing the whole genome, by setting
-   displayedRegions to be empty
+let's look at an example
 
 ```json
 {
@@ -458,7 +620,7 @@ let's step through it
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/grape.chrom.sizes"
+            "uri": "grape.chrom.sizes"
           }
         }
       }
@@ -471,7 +633,7 @@ let's step through it
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/peach.chrom.sizes"
+            "uri": "peach.chrom.sizes"
           }
         }
       }
@@ -479,109 +641,338 @@ let's step through it
   ],
   "tracks": [
     {
-      "type": "DotplotTrack",
-      "trackId": "dotplot_track",
-      "name": "dotplot",
+      "trackId": "grape_peach_synteny_mcscan",
+      "type": "SyntenyTrack",
+      "assemblyNames": ["peach", "grape"],
+      "trackIds": [],
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanAnchorsLocation": {
+          "uri": "grape.peach.anchors"
+        },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            }
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            }
+          }
+        ],
+        "assemblyNames": ["peach", "grape"],
+        "type": "MCScanAnchorsAdapter"
+      },
+      "name": "Grape peach synteny (MCScan)",
+      "category": ["Annotation"]
+    },
+    {
+      "trackId": "grape_peach_paf",
+      "type": "SyntenyTrack",
+      "name": "Grape vs Peach (PAF)",
+      "assemblyNames": ["peach", "grape"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dotplot_track_small",
+      "name": "Grape vs peach small (PAF)",
       "assemblyNames": ["grape", "peach"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "test_data/peach_grape.paf"
+          "uri": "peach_grape_small.paf"
         },
         "assemblyNames": ["peach", "grape"]
-      },
-      "renderer": {
-        "type": "DotplotRenderer"
       }
     }
   ],
-  "savedSessions": [
-    {
-      "name": "Grape vs Peach",
-      "views": [
-        {
-          "id": "dotplotview",
-          "type": "DotplotView",
-          "assemblyNames": ["peach", "grape"],
-          "hview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "vview": {
-            "displayedRegions": [],
-            "bpPerPx": 100000,
-            "offsetPx": 0
-          },
-          "tracks": [
-            {
-              "type": "DotplotTrack",
-              "configuration": "dotplot_track"
-            }
-          ],
-          "height": 600,
-          "displayName": "Grape vs Peach dotplot",
-          "trackSelectorType": "hierarchical"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Notes
-
-The dotplot view is still very new, and parts of this config could change in
-the future
-
-## Hi-C config
-
-Technically there is no Hi-C track type but it can be implemented with a DynamicTrack
-
-```json
-{
-  "type": "DynamicTrack",
-  "trackId": "hic",
-  "name": "Hic Track",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "HicAdapter",
-    "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
-    }
-  },
-  "renderer": {
-    "type": "HicRenderer"
+  "defaultSession": {
+    "name": "Grape vs Peach (small)",
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "DotplotView",
+        "assemblyNames": ["peach", "grape"],
+        "hview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "vview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "tracks": [
+          {
+            "type": "SyntenyTrack",
+            "configuration": "dotplot_track_small",
+            "displays": [
+              {
+                "type": "DotplotDisplay",
+                "configuration": "dotplot_track_small-DotplotDisplay"
+              }
+            ]
+          }
+        ],
+        "displayName": "Grape vs Peach dotplot"
+      }
+    ]
   }
 }
 ```
 
-### HicAdapter configuration options
+Note that configuring the dotplot involves creating a "defaultSession"
 
-- hicLocation - a 'file location' for the a .hic file
+Users can also open synteny views using the File->Add->Dotplot view workflow,
+and create their own synteny view outside of the default configuration
 
-Example HicAdapter config
-
-```json
-{
-  "type": "HicAdapter",
-  "hicLocation": { "uri": "http://yourhost/file.hic" }
-}
-```
-
-## Configuring linear synteny views
+## LinearSyntenyView config
 
 Currently, configuring synteny is made by pre-configuring a session in the view
 and adding synteny tracks
 
-#### TODO: This section will be expanded
-
-## Configuring reference renaming
-
-Reference renaming is a process to make chromosomes that are named slighlty
-differently but which refer to the same thing render properly
-
-#### TODO: expand section
+```json
+{
+  "defaultSession": {
+    "name": "Grape vs Peach Demo",
+    "drawerWidth": 384,
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "id": "test1",
+        "headerHeight": 44,
+        "datasetName": "grape_vs_peach_dataset",
+        "tracks": [
+          {
+            "type": "SyntenyTrack",
+            "configuration": "grape_peach_synteny_mcscan",
+            "displays": [
+              {
+                "configuration": "grape_peach_synteny_mcscan-LinearSyntenyDisplay",
+                "height": 100,
+                "type": "LinearSyntenyDisplay"
+              }
+            ]
+          }
+        ],
+        "height": 400,
+        "displayName": "Grape vs Peach",
+        "trackSelectorType": "hierarchical",
+        "views": [
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_1",
+            "offsetPx": 28249,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "Pp01",
+                "assemblyName": "peach",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "FeatureTrack",
+                "configuration": "peach_genes",
+                "displays": [
+                  {
+                    "configuration": "peach_genes_linear",
+                    "height": 100,
+                    "type": "LinearBasicDisplay"
+                  }
+                ]
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          },
+          {
+            "type": "LinearGenomeView",
+            "id": "test1_2",
+            "offsetPx": 0,
+            "bpPerPx": 1000,
+            "displayedRegions": [
+              {
+                "refName": "chr1",
+                "assemblyName": "grape",
+                "start": 0,
+                "end": 100000000
+              }
+            ],
+            "tracks": [
+              {
+                "type": "FeatureTrack",
+                "configuration": "grape_genes",
+                "displays": [
+                  {
+                    "configuration": "grape_genes_linear",
+                    "height": 100,
+                    "type": "LinearBasicDisplay"
+                  }
+                ]
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "hideCloseButton": true,
+            "trackSelectorType": "hierarchical"
+          }
+        ]
+      }
+    ],
+    "widgets": {},
+    "activeWidgets": {},
+    "connections": {}
+  },
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "trackId": "grape_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grape.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "trackId": "peach_seq",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "peach.chrom.sizes"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "trackId": "grape_peach_synteny_mcscan",
+      "type": "SyntenyTrack",
+      "assemblyNames": ["peach", "grape"],
+      "trackIds": [],
+      "renderDelay": 100,
+      "adapter": {
+        "mcscanAnchorsLocation": {
+          "uri": "grape.peach.anchors"
+        },
+        "subadapters": [
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+            }
+          },
+          {
+            "type": "NCListAdapter",
+            "rootUrlTemplate": {
+              "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+            }
+          }
+        ],
+        "assemblyNames": ["peach", "grape"],
+        "type": "MCScanAnchorsAdapter"
+      },
+      "name": "Grape peach synteny (MCScan)",
+      "category": ["Annotation"]
+    },
+    {
+      "trackId": "peach_genes",
+      "type": "FeatureTrack",
+      "assemblyNames": ["peach"],
+      "name": "mcscan",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "peach_genes_linear",
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "trackId": "peach_genes2",
+      "type": "FeatureTrack",
+      "assemblyNames": ["peach"],
+      "name": "mcscan2",
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/peach_gene/{refseq}/trackData.json"
+        }
+      }
+    },
+    {
+      "trackId": "grape_genes",
+      "type": "FeatureTrack",
+      "name": "mcscan",
+      "assemblyNames": ["grape"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "grape_genes_linear",
+          "renderer": {
+            "type": "PileupRenderer"
+          }
+        }
+      ]
+    },
+    {
+      "trackId": "grape_genes2",
+      "type": "FeatureTrack",
+      "name": "mcscan2",
+      "category": ["Annotation"],
+      "assemblyNames": ["grape"],
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://jbrowse.org/genomes/synteny/grape_gene/{refseq}/trackData.json"
+        }
+      }
+    }
+  ],
+  "configuration": {}
+}
+```
 
 ## Configuring the theme
 
@@ -608,12 +999,12 @@ JBrowse uses 4 colors that can be changed. For example, this is the default
 theme:
 
 ![JBrowse using the default theme](./img/default_theme.png)
-
-And this is a customized theme:
+Example of the default theme
 
 ![JBrowse using a customized theme](./img/customized_theme.png)
+Example of a customized theme
 
-This is the configuration for the above theme, using:
+The customized theme screenshot uses the below configuration
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |
@@ -667,109 +1058,15 @@ options you could pass to Material-UI's
 [`createMuiTheme`](https://material-ui.com/customization/theming/#createmuitheme-options-args-theme)
 should work in the theme configuration.
 
-## Variant config
+## Disabling analytics
 
-- defaultRendering - options: 'pileup' or 'svg'. default 'svg'
-- adapter - a variant type adapter config e.g. a VcfTabixAdapter
-
-Example config
+This is done via adding a field in the global configuration in the config file.
+For example:
 
 ```json
 {
-  "type": "VariantTrack",
-  "trackId": "my track",
-  "name": "My Variants",
-  "assemblyNames": ["hg19"],
-  "adapter": {
-    "type": "VcfTabixAdapter",
-    "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-    "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
+  "configuration": {
+    "disableAnalytics": true
   }
-}
-```
-
-### VcfTabixAdapter configuration options
-
-- vcfGzLocation - a 'file location' for the BigWig
-- index: a subconfigurations chema containing
-  - indexType: options TBI or CSI. default TBI
-  - location: the location of the index
-
-Example VcfTabixAdapter adapter config
-
-```json
-{
-  "type": "VcfTabixAdapter",
-  "vcfGzLocation": { "uri": "http://yourhost/file.vcf.gz" },
-  "index": { "location": { "uri": "http://yourhost/file.vcf.gz.tbi" } }
-}
-```
-
-## Wiggle config
-
-### General
-
-- scaleType - options: linear, log, to display the coverage data. default: linear
-- adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
-
-### Autoscale
-
-Options for autoscale
-
-- local - min/max values of what is visible on the screen
-- global - min/max values in the entire dataset
-- localsd - mean value +- N stddevs of what is visible on screen
-- globalsd - mean value +/- N stddevs of everything in the dataset
-
-### Manually setting min or max values
-
-These options overrides the autoscale options and provides a minimum or maximum
-value for the autoscale bar
-
-- minScore
-- maxScore
-
-### Drawing options
-
-- inverted - draws upside down
-- defaultRendering - can be density, xyplot, or line
-- summaryScoreMode - options: min, max, whiskers
-
-### Renderer options
-
-- filled - fills in the XYPlot histogram
-- bicolorPivot - options: numeric, mean, none. default: numeric
-- bicolorPivotValue - number at which the color switches from posColor to
-  negColor. default: 0
-- color - color or color callback for drawing the values. overrides
-  posColor/negColor. default: none
-- posColor - color to draw "positive" values. default: red
-- negColor - color to draw "negative" values. default: blue
-- clipColor - color to draw "clip" indicator. default: red
-  Example WiggleTrack config
-
-```json
-{
-  "trackId": "my_wiggle_track",
-  "name": "My Wiggle Track",
-  "assemblyNames": ["hg19"],
-  "type": "WiggleTrack",
-  "adapter": {
-    "type": "BigWig",
-    "bigWigLocation": { "uri": "http://yourhost/file.bw" }
-  }
-}
-```
-
-### BigWig adapter configuration options
-
-- bigWigLocation - a 'file location' for the bigwig
-
-Example BigWig adapter config
-
-```json
-{
-  "type": "BigWig",
-  "bigWigLocation": { "uri": "http://yourhost/file.bw" }
 }
 ```

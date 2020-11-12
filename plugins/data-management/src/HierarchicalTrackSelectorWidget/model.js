@@ -77,10 +77,27 @@ export default pluginManager =>
         const trackConfigurations = session.tracks
         const viewType = self.view.type
 
-        const relevantTrackConfigurations = trackConfigurations.filter(conf => {
-          const assemblies = readConfObject(conf, 'assemblyNames')
-          return conf.viewType === viewType && assemblies.includes(assemblyName)
-        })
+        const relevantTrackConfigurations = trackConfigurations.filter(
+          trackConf => {
+            const trackConfAssemblies = readConfObject(
+              trackConf,
+              'assemblyNames',
+            )
+            if (!trackConfAssemblies.includes(assemblyName)) {
+              return false
+            }
+            const viewType = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = viewType.displayTypes.map(
+              displayType => displayType.name,
+            )
+            for (const display of trackConf.displays) {
+              if (compatibleDisplays.includes(display.type)) {
+                return true
+              }
+            }
+            return false
+          },
+        )
         return relevantTrackConfigurations
       },
 
@@ -95,7 +112,18 @@ export default pluginManager =>
         const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf => conf.viewType === self.view.type,
+          trackConf => {
+            const viewType = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = viewType.displayTypes.map(
+              displayType => displayType.name,
+            )
+            for (const display of trackConf.displays) {
+              if (compatibleDisplays.includes(display.type)) {
+                return true
+              }
+            }
+            return false
+          },
         )
         return relevantTrackConfigurations
       },

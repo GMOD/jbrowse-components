@@ -1,5 +1,5 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import BaseViewModel from '@jbrowse/core/BaseViewModel'
+import { getConf } from '@jbrowse/core/configuration'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -14,11 +14,11 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { transaction } from 'mobx'
+import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
   types,
@@ -26,6 +26,7 @@ import {
   Instance,
   getRoot,
   resolveIdentifier,
+  addDisposer,
 } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -34,6 +35,7 @@ import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -45,6 +47,24 @@ export interface BpOffset {
   end?: number
   coord?: number
   reversed?: boolean
+}
+
+function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+  if (!contentBlocks.length) {
+    return ''
+  }
+  const isSingleAssemblyName = contentBlocks.every(
+    block => block.assemblyName === contentBlocks[0].assemblyName,
+  )
+  const locs = contentBlocks.map(block =>
+    assembleLocString({
+      ...block,
+      start: Math.round(block.start),
+      end: Math.round(block.end),
+      assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+    }),
+  )
+  return locs.join(';')
 }
 
 export interface NavLocation {
@@ -94,6 +114,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       scaleFactor: 1,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trackRefs: {} as { [key: string]: any },
+      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseTotalBp: 0,
     }))
     .views(self => ({
       get width(): number {
@@ -124,7 +146,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
       get trackHeights() {
-        return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
+        return self.tracks
+          .map(t => t.displays[0].height)
+          .reduce((a, b) => a + b, 0)
       },
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
@@ -208,12 +232,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
       get assemblyNames() {
-        const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        return assemblyNames
+        return [
+          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
+        ]
       },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
@@ -426,24 +447,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
-        const name = readConfObject(configuration, 'name')
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType)
+        if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        )
+        if (!displayConf) {
+          throw new Error(
+            `could not find a compatible display for view type ${self.type}`,
+          )
+        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          name,
           type: configuration.type,
           configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },
 
       hideTrack(trackId: string) {
-        const IT = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(IT, getRoot(self), trackId)
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -499,11 +544,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
-        self.displayedRegions.forEach(r => {
-          const parent = self.parentRegion(r.assemblyName, r.refName)
-          r.parentStart = parent ? parent.start : -1
-          r.parentEnd = parent ? parent.end : -1
-        })
         self.zoomTo(self.bpPerPx)
       },
 
@@ -987,6 +1027,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
                 // @ts-ignore
+                session.visibleWidget.view &&
+                // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
             {
@@ -1081,27 +1123,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return calculateDynamicBlocks(self)
         },
         get visibleLocStrings() {
-          const { contentBlocks } = this.dynamicBlocks
-          if (!contentBlocks.length) {
-            return ''
-          }
-          const isSingleAssemblyName = contentBlocks.every(
-            block => block.assemblyName === contentBlocks[0].assemblyName,
-          )
-          const locs = contentBlocks.map(block =>
-            assembleLocString({
-              ...block,
-              start: Math.round(block.start),
-              end: Math.round(block.end),
-              assemblyName: isSingleAssemblyName
-                ? undefined
-                : block.assemblyName,
-            }),
-          )
-          return locs.join(';')
+          return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
+        },
+        get coarseVisibleLocStrings() {
+          return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
       }
     })
+    .actions(self => ({
+      setCoarseDynamicBlocks(blocks: BlockSet) {
+        self.coarseDynamicBlocks = blocks.contentBlocks
+        self.coarseTotalBp = blocks.totalBp
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                this.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+      },
+    }))
 
   return types.compose(BaseViewModel, model)
 }

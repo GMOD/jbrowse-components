@@ -119,8 +119,8 @@ function Home() {
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
-            JBrowse is released under the GNU LGPL or the Artistic License, see
-            the JBrowse LICENSE file.
+            JBrowse is released under the Apache-2.0 License, see the JBrowse
+            LICENSE file.
           </Typography>
         </div>
         <div className={classes.section}>

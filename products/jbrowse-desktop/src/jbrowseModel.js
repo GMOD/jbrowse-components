@@ -36,6 +36,10 @@ export default function JBrowseDesktop(
           type: 'boolean',
           defaultValue: false,
         },
+        disableAnalytics: {
+          type: 'boolean',
+          defaultValue: false,
+        },
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),
