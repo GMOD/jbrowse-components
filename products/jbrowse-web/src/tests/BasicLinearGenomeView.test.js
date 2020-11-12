@@ -182,7 +182,9 @@ describe('valid file tests', () => {
 
     // need this to complete before we can try to search
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('track-volvox_alignments')
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+    )
 
     const target = await findByTestId('search-input')
     const form = await findByTestId('search-form')
