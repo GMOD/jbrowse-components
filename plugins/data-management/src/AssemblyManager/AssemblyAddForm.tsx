@@ -228,6 +228,7 @@ const AssemblyAddForm = observer(
         <Paper className={classes.paper}>
           <TextField
             id="assembly-name"
+            inputProps={{ 'data-testid': 'assembly-name' }}
             label="Assembly Name"
             variant="outlined"
             value={assemblyName}
