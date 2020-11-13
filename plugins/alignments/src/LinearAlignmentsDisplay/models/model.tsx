@@ -1,3 +1,4 @@
+import React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -166,6 +167,19 @@ const stateModelFactory = (
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
+      },
+      async renderSvg() {
+        return (
+          <>
+            <g id="snpcov">{await self.SNPCoverageDisplay.renderSvg()}</g>
+            <g
+              id="pileup"
+              transform={`translate(0 ${self.SNPCoverageDisplay.height})`}
+            >
+              {await self.PileupDisplay.renderSvg()}
+            </g>
+          </>
+        )
       },
     }))
 }

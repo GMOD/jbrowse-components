@@ -10,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
+import { getConf } from '@jbrowse/core/configuration'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -93,8 +94,6 @@ export default observer((props: { model: LGV }) => {
   )
 })
 
-
-
 export async function renderToSvg(model: LGV) {
   let offset = 20
   const { width } = model
@@ -122,11 +121,12 @@ export async function renderToSvg(model: LGV) {
         await Promise.all(
           model.tracks.map(async track => {
             const current = offset
-            offset += track.height + 20
             const trackId = getConf(track, 'trackId')
+            const display = track.displays[0]
+            offset += display.height + 20
             return (
               <g key={trackId} transform={`translate(0 ${current})`}>
-                {await track.renderSvg()}
+                {await display.renderSvg()}
               </g>
             )
           }),

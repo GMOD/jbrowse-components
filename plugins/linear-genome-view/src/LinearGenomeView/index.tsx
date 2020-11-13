@@ -36,6 +36,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { saveAs } from 'file-saver'
 import { renderToSvg } from './components/LinearGenomeView'
 
 export { default as ReactComponent } from './components/LinearGenomeView'

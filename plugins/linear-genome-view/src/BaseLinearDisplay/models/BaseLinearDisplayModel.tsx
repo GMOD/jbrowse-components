@@ -304,11 +304,13 @@ export const BaseLinearDisplay = types
             key: block.key,
             region: block.toRegion(),
           })
+
+          const ret = renderBlockData(blockState, self)
           const {
             rpcManager,
             renderArgs = { renderProps: {} },
             rendererType,
-          } = renderBlockData(blockState, self)
+          } = ret
 
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,

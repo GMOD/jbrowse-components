@@ -182,8 +182,8 @@ export function renderBlockData(
   optDisplay?: any,
 ) {
   try {
-    const { assemblyManager, rpcManager } = getSession(self)
     let display = optDisplay || getParent(self)
+    const { assemblyManager, rpcManager } = getSession(display)
     while (!(display.configuration && getConf(display, 'displayId'))) {
       display = getParent(display)
     }
