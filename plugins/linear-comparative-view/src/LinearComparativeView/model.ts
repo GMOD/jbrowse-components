@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   types,
   getParent,
@@ -250,7 +250,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         menuItems.push({
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
-          icon: LineStyleIcon,
+          icon: TrackSelectorIcon,
           disabled:
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
