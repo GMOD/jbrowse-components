@@ -51,20 +51,24 @@ const useStyles = makeStyles(theme => ({
     border: 'none',
     margin: theme.spacing(0.5),
   },
+  buttonSpacer: {
+    marginRight: theme.spacing(2),
+  },
 }))
 
 const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   return (
-    <IconButton
+    <Button
       onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
       color="secondary"
     >
-      <TrackSelectorIcon />
-    </IconButton>
+      <TrackSelectorIcon className={classes.buttonSpacer} />
+      Open track selector
+    </Button>
   )
 })
 
