@@ -428,12 +428,11 @@ const Renderer = observer(
           // )
           // make some things available globally for testing e.g.
           // window.MODEL.views[0] in devtools
-          if (inDevelopment) {
-            // @ts-ignore
-            window.MODEL = rootModel.session
-            // @ts-ignore
-            window.ROOTMODEL = rootModel
-          }
+
+          // @ts-ignore
+          window.SESSION = rootModel.session
+          // @ts-ignore
+          window.ROOTMODEL = rootModel
 
           pluginManager.setRootModel(rootModel)
 
