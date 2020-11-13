@@ -426,16 +426,7 @@ const Renderer = observer(
           // rootModel.setHistory(
           //   UndoManager.create({}, { targetStore: rootModel.session }),
           // )
-          // make some things available globally for testing e.g.
-          // window.MODEL.views[0] in devtools
-
-          // @ts-ignore
-          window.JBrowseSession = rootModel.session
-          // @ts-ignore
-          window.JBrowseRootModel = rootModel
-
           pluginManager.setRootModel(rootModel)
-
           pluginManager.configure()
           setPluginManager(pluginManager)
 
