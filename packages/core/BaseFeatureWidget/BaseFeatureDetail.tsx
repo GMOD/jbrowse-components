@@ -61,7 +61,7 @@ const coreRenderedDetails = [
 ]
 
 interface BaseCardProps {
-  title: string
+  title?: string
 }
 
 export const BaseCard: FunctionComponent<BaseCardProps> = props => {

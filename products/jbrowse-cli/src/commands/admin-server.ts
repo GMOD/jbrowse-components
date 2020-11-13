@@ -77,7 +77,6 @@ export default class AdminServer extends JBrowseCommand {
         port = parseInt(runFlags.port, 10)
       }
     }
-    // @ts-ignore
     const app = express()
     app.use(express.static('.'))
     app.use(cors())
