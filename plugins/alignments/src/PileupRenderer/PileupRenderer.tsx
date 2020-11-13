@@ -184,7 +184,6 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-
   async makeImageDataSVG(props: PileupRenderProps) {
     const { features, layout, config, regions, bpPerPx } = props
     const [region] = regions
@@ -358,7 +357,6 @@ export default class PileupRenderer extends BoxRendererType {
       maxHeightReached: layout.maxHeightReached,
     }
   }
-
 
   async makeImageDataCanvas(props: PileupRenderProps) {
     const {

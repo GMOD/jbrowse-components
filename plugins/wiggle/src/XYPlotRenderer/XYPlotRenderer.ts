@@ -23,6 +23,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     }
 
     context.beginPath()
+    // @ts-ignore
     area(data)
     context.fill()
   }

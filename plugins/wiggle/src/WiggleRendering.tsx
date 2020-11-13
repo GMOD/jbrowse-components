@@ -73,13 +73,17 @@ function LineRendering(props: WiggleRenderingProps) {
   type D = [number, Feature]
   const line = d3
     .line()
+    // @ts-ignore
     .y((d: D) => scale(d[1].get('score')))
     .context(null)
 
   const area = d3
     .area()
+    // @ts-ignore
     .y0((d: D) => scale(d[1].get('minScore')))
+    // @ts-ignore
     .y1((d: D) => scale(d[1].get('maxScore')))
+    // @ts-ignore
     .defined((d: D) => d[1].get('summary'))
     .context(null)
   const data = []
@@ -92,7 +96,9 @@ function LineRendering(props: WiggleRenderingProps) {
 
   return (
     <>
+      {/* @ts-ignore*/}
       <path d={line(data)} fill="none" stroke="rgb(0,0,255)" />
+      {/* @ts-ignore*/}
       <path d={area(data)} fill="rgb(0,0,255,0.5)" stroke="none" />
     </>
   )

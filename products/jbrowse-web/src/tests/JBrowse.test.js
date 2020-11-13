@@ -15,13 +15,9 @@ import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
 
-
-
 // mock from https://stackoverflow.com/questions/44686077
 jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
 global.Blob = (content, options) => ({ content, options })
-
-
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -169,10 +165,6 @@ test('looks at about this track dialog', async () => {
   await findAllByText('SQ')
 })
 
-
-
-
-
 test('export svg', async () => {
   console.error = jest.fn()
   const pluginManager = getPluginManager()
@@ -193,7 +185,3 @@ test('export svg', async () => {
   })
   expect(FileSaver.saveAs).toMatchSnapshot()
 })
-
-
-
-

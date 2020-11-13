@@ -57,23 +57,23 @@ const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   return (
-<div>
-    <ToggleButton
-      onChange={model.activateTrackSelector}
-      className={classes.toggleButton}
-      title="select tracks"
-      value="track_select"
-      color="secondary"
-      selected={
-        isSessionModelWithWidgets(session) &&
-        session.visibleWidget &&
-        session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-        // @ts-ignore
-        session.visibleWidget.view.id === model.id
-      }
-    >
-      <TrackSelectorIcon />
-    </ToggleButton>
+    <div>
+      <ToggleButton
+        onChange={model.activateTrackSelector}
+        className={classes.toggleButton}
+        title="select tracks"
+        value="track_select"
+        color="secondary"
+        selected={
+          isSessionModelWithWidgets(session) &&
+          session.visibleWidget &&
+          session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+          // @ts-ignore
+          session.visibleWidget.view.id === model.id
+        }
+      >
+        <TrackSelectorIcon />
+      </ToggleButton>
       <Button
         onClick={() => {
           model.exportSvg()
