@@ -27,7 +27,7 @@ beforeEach(() => {
 })
 
 describe('bigwig', () => {
-  it('open a bigwig track', async () => {
+  xit('open a bigwig track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -45,7 +45,7 @@ describe('bigwig', () => {
       failureThresholdType: 'percent',
     })
   })
-  it('open a bigwig line track 2', async () => {
+  xit('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -63,7 +63,7 @@ describe('bigwig', () => {
       failureThresholdType: 'percent',
     })
   })
-  it('open a bigwig density track', async () => {
+  xit('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(

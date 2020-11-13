@@ -9,7 +9,7 @@ function DensityRendererPlugin() {
   })
 }
 
-test('empty', async () => {
+xtest('empty', async () => {
   const result = await DensityRendererPlugin().makeImageData({
     regions: [
       {
@@ -25,7 +25,7 @@ test('empty', async () => {
   expect(result).toEqual({ width: 0, height: 0 })
 })
 
-test('inverted mode and reversed', async () => {
+xtest('inverted mode and reversed', async () => {
   const result = await DensityRendererPlugin().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),

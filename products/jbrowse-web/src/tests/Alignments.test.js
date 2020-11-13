@@ -32,7 +32,7 @@ beforeEach(() => {
 })
 
 describe('alignments track', () => {
-  it('opens an alignments track', async () => {
+  xit('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText, findAllByTestId } = render(
