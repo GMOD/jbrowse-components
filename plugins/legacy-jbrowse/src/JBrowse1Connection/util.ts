@@ -203,7 +203,6 @@ export function evalHooks(conf: Config): Config {
 function evalHook(...args: string[]): Function {
   // can't bind arguments because the closure compiler
   // renames variables, and we need to assign in the eval
-  // @ts-ignore
   if (typeof args[0] !== 'string') return args[0]
   try {
     // eslint-disable-next-line no-eval

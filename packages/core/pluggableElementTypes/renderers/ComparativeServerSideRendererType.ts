@@ -61,9 +61,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @param args - the converted arguments to modify
    */
   deserializeArgsInWorker(args: Record<string, any>) {
-    // @ts-ignore
     if (this.configSchema) {
-      // @ts-ignore
       const config = this.configSchema.create(args.config || {})
       args.config = config
     }
@@ -115,7 +113,6 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     const results = await this.render(args)
     checkAbortSignal(args.signal)
-    // @ts-ignore
     results.html = renderToString(results.element)
     delete results.element
 
