@@ -1,7 +1,7 @@
 import BoxRendererType, {
   LayoutSession,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
-import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { FloatingLayout, PrecomputedFloatingLayout } from './Layout'
 
 class FloatingLayoutSession extends LayoutSession {

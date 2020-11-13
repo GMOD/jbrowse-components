@@ -1,4 +1,5 @@
-import { Menu } from '@gmod/jbrowse-core/ui'
+import { Menu } from '@jbrowse/core/ui'
+import { stringify } from '@jbrowse/core/util'
 import Popover from '@material-ui/core/Popover'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -14,11 +15,8 @@ import { LinearGenomeViewStateModel } from '..'
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const background = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      fade(theme.palette.tertiary.main, 0.7)
+    ? fade(theme.palette.tertiary.main, 0.7)
     : fade(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
@@ -35,11 +33,8 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      // @ts-ignore
       color: theme.palette.tertiary
-        ? // prettier-ignore
-          // @ts-ignore
-          theme.palette.tertiary.contrastText
+        ? theme.palette.tertiary.contrastText
         : theme.palette.primary.contrastText,
     },
     popover: {
@@ -67,7 +62,7 @@ const VerticalGuide = observer(
       <Tooltip
         open
         placement="top"
-        title={Math.ceil(model.pxToBp(coordX).offset).toLocaleString()}
+        title={stringify(model.pxToBp(coordX))}
         arrow
       >
         <div
@@ -127,7 +122,7 @@ function RubberBand({
       }
     }
     return () => {}
-  }, [startX, mouseDragging])
+  }, [startX, mouseDragging, anchorPosition])
 
   useEffect(() => {
     if (
@@ -218,19 +213,13 @@ function RubberBand({
     )
   }
 
-  let left = 0
-  let width = 0
+  /* Calculating Pixels for Mouse Dragging */
   const right = anchorPosition ? anchorPosition.left : currentX || 0
-  left = right < startX ? right : startX
-  width = Math.abs(right - startX)
+  const left = right < startX ? right : startX
+  const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
-  const leftBp = (
-    Math.round(leftBpOffset.start + leftBpOffset.offset) + 1
-  ).toLocaleString()
   const rightBpOffset = model.pxToBp(left + width)
-  const rightBp = (
-    Math.round(rightBpOffset.start + rightBpOffset.offset) + 1
-  ).toLocaleString()
+  const numOfBpSelected = Math.round(width * model.bpPerPx)
 
   return (
     <>
@@ -252,8 +241,9 @@ function RubberBand({
               horizontal: 'right',
             }}
             keepMounted
+            disableRestoreFocus
           >
-            <Typography>{leftBp}</Typography>
+            <Typography>{stringify(leftBpOffset)}</Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -271,8 +261,9 @@ function RubberBand({
               horizontal: 'left',
             }}
             keepMounted
+            disableRestoreFocus
           >
-            <Typography>{rightBp}</Typography>
+            <Typography>{stringify(rightBpOffset)}</Typography>
           </Popover>
         </>
       ) : null}
@@ -282,7 +273,7 @@ function RubberBand({
         style={{ left, width }}
       >
         <Typography variant="h6" className={classes.rubberBandText}>
-          {Math.round(width * model.bpPerPx).toLocaleString()} bp{' '}
+          {numOfBpSelected.toLocaleString('en-US')} bp
         </Typography>
       </div>
       <div

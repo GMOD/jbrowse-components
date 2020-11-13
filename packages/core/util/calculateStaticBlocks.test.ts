@@ -42,11 +42,11 @@ describe('block calculation', () => {
     expect(blocks).toMatchSnapshot()
   })
 
-  it('can calculate some blocks 3', () => {
+  it('can calculate some blocks (should be empty because offscreen to the right)', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: 1000,
+      offsetPx: 2000,
       displayedRegions: [
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
@@ -57,11 +57,11 @@ describe('block calculation', () => {
     expect(blockSet.getBlocks()).toEqual([])
   })
 
-  it('can calculate some blocks 4', () => {
+  it('can calculate some blocks (should be empty because offscreen to the left)', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: -1000,
+      offsetPx: -2000,
       displayedRegions: [
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 100 },
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
@@ -243,6 +243,7 @@ describe('reversed displayed regions', () => {
       true,
       true,
       1,
+      800,
     )
     expect(blocks).toMatchSnapshot()
   })

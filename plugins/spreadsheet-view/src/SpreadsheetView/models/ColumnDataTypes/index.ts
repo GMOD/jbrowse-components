@@ -1,19 +1,25 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import LocStringFactory from './LocString'
+import LocRefFactory from './LocRef'
+import LocStartFactory from './LocStart'
+import LocEndFactory from './LocEnd'
+import NumberFactory from './Number'
+import TextFactory from './Text'
 
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const { types } = jbrequire('mobx-state-tree')
 
-  const { NumberColumn: Number } = jbrequire(require('./Number'))
-  const { TextColumn: Text } = jbrequire(require('./Text'))
+  const { NumberColumn: Number } = jbrequire(NumberFactory)
+  const { TextColumn: Text } = jbrequire(TextFactory)
 
   const ColumnTypes = {
     Number,
     Text,
-    LocString: jbrequire(require('./LocString')),
-    LocRef: jbrequire(require('./LocRef')),
-    LocStart: jbrequire(require('./LocStart')),
-    LocEnd: jbrequire(require('./LocEnd')),
+    LocString: jbrequire(LocStringFactory),
+    LocRef: jbrequire(LocRefFactory),
+    LocStart: jbrequire(LocStartFactory),
+    LocEnd: jbrequire(LocEndFactory),
   }
 
   const allColumnTypes = Object.values(ColumnTypes)

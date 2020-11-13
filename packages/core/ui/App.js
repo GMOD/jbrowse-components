@@ -1,9 +1,10 @@
+/* eslint-disable react/prop-types */
+import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
-import { observer, PropTypes } from 'mobx-react'
-import React from 'react'
+import { observer } from 'mobx-react'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
@@ -55,10 +56,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App({ session }) {
+function App({ session, HeaderButtons }) {
   const classes = useStyles()
   const { pluginManager } = session
-
   const { visibleWidget, drawerWidth } = session
 
   function handleNameChange(newName) {
@@ -74,7 +74,6 @@ function App({ session }) {
       session.renameCurrentSession(newName)
     }
   }
-
   return (
     <div
       className={classes.root}
@@ -87,7 +86,7 @@ function App({ session }) {
       <div className={classes.menuBarAndComponents}>
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">
-            <Toolbar variant="dense">
+            <Toolbar>
               {session.menus.map(menu => (
                 <DropDownMenu
                   key={menu.label}
@@ -109,6 +108,7 @@ function App({ session }) {
                   }}
                 />
               </Tooltip>
+              {HeaderButtons}
               <div className={classes.grow} />
               <div style={{ width: 150, maxHeight: 48 }}>
                 <LogoFull variant="white" />
@@ -145,10 +145,6 @@ function App({ session }) {
       <Snackbar session={session} />
     </div>
   )
-}
-
-App.propTypes = {
-  session: PropTypes.observableObject.isRequired,
 }
 
 export default observer(App)

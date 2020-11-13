@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import IconButton from '@material-ui/core/IconButton'
 import Slider from '@material-ui/core/Slider'
@@ -22,6 +22,9 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
   const classes = useStyles()
   const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
+  useEffect(() => {
+    setValue(-Math.log2(bpPerPx) * 100)
+  }, [setValue, bpPerPx])
   return (
     <div className={classes.container}>
       <IconButton
@@ -32,7 +35,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomOut fontSize="small" />
+        <ZoomOut />
       </IconButton>
 
       <Slider
@@ -42,6 +45,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         max={-Math.log2(minBpPerPx) * 100}
         onChange={(_, val) => setValue(val as number)}
         onChangeCommitted={() => model.zoomTo(2 ** (-value / 100))}
+        disabled={scaleFactor !== 1}
       />
       <IconButton
         data-testid="zoom_in"
@@ -51,7 +55,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         color="secondary"
       >
-        <ZoomIn fontSize="small" />
+        <ZoomIn />
       </IconButton>
     </div>
   )

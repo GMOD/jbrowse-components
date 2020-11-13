@@ -1,37 +1,36 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
-import { bpSpanPx } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import React, { MouseEvent, useRef, useState, useEffect } from 'react'
-import runner from 'mobx-run-in-reactive-context'
-import type { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 function PileupRendering(props: {
   blockKey: string
-  trackModel: BlockBasedTrackModel
+  displayModel: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]
   bpPerPx: number
-  sortObject?: { by: string; position: number }
+  sortedBy?: { type: string; pos: number; refName: string }
   onMouseMove?: (event: React.MouseEvent, featureId: string | undefined) => void
 }) {
   const {
     onMouseMove,
     blockKey,
-    trackModel,
+    displayModel,
     width,
     height,
     regions,
     bpPerPx,
-    sortObject,
+    sortedBy,
   } = props
   const {
     selectedFeatureId,
     featureIdUnderMouse,
     contextMenuFeature,
     blockLayoutFeatures,
-  } = trackModel || {}
+  } = displayModel || {}
   const [region] = regions
   const highlightOverlayCanvas = useRef<HTMLCanvasElement>(null)
   const [mouseIsDown, setMouseIsDown] = useState(false)
@@ -146,7 +145,11 @@ function PileupRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
 
-    const feats = trackModel.getFeatureOverlapping(blockKey, clientBp, offsetY)
+    const feats = displayModel.getFeatureOverlapping(
+      blockKey,
+      clientBp,
+      offsetY,
+    )
     const featIdUnderMouse = feats.length ? feats[0].name : undefined
 
     if (onMouseMove) {
@@ -171,7 +174,7 @@ function PileupRendering(props: {
   return (
     <div
       className="PileupRendering"
-      data-testid={`pileup-${sortObject ? sortObject.by : 'normal'}`}
+      data-testid={`pileup-${sortedBy ? sortedBy.type : 'normal'}`}
       style={{ position: 'relative', width: canvasWidth, height }}
     >
       <PrerenderedCanvas
@@ -185,15 +188,15 @@ function PileupRendering(props: {
         style={{ position: 'absolute', left: 0, top: 0 }}
         className="highlightOverlayCanvas"
         ref={highlightOverlayCanvas}
-        onMouseDown={event => runner(() => onMouseDown(event))}
-        onMouseEnter={event => runner(() => onMouseEnter(event))}
-        onMouseOut={event => runner(() => onMouseOut(event))}
-        onMouseOver={event => runner(() => onMouseOver(event))}
-        onMouseUp={event => runner(() => onMouseUp(event))}
-        onMouseLeave={event => runner(() => onMouseLeave(event))}
-        onMouseMove={event => runner(() => mouseMove(event))}
-        onClick={event => runner(() => onClick(event))}
-        onContextMenu={event => runner(() => onContextMenu(event))}
+        onMouseDown={event => onMouseDown(event)}
+        onMouseEnter={event => onMouseEnter(event)}
+        onMouseOut={event => onMouseOut(event)}
+        onMouseOver={event => onMouseOver(event)}
+        onMouseUp={event => onMouseUp(event)}
+        onMouseLeave={event => onMouseLeave(event)}
+        onMouseMove={event => mouseMove(event)}
+        onClick={event => onClick(event)}
+        onContextMenu={event => onContextMenu(event)}
         onFocus={() => {}}
         onBlur={() => {}}
       />

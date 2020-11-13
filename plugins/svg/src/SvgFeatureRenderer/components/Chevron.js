@@ -1,6 +1,6 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
-import { emphasize } from '@gmod/jbrowse-core/util/color'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import { emphasize } from '@jbrowse/core/util/color'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -30,15 +30,6 @@ function Chevron(props) {
 
   const strand = feature.get('strand')
   const direction = strand * (reversed ? -1 : 1)
-
-  const shapeProps = {
-    'data-testid': feature.id(),
-    transform:
-      direction < 0
-        ? `rotate(180,${left + width / 2},${top + height / 2})`
-        : undefined,
-  }
-
   const color = isUTR(feature)
     ? readConfObject(config, 'color3', [feature])
     : readConfObject(config, 'color1', [feature])
@@ -56,10 +47,11 @@ function Chevron(props) {
   const leftWithinBlock = Math.max(left, 0)
   const diff = leftWithinBlock - left
   const widthWithinBlock = Math.max(1, Math.min(width - diff, screenWidth))
-  if (width - diff > screenWidth) {
-    return (
+
+  return (
+    <>
       <rect
-        {...shapeProps}
+        data-testid={feature.id()}
         stroke={selected ? color2 : undefined}
         fill={selected ? emphasizedColor : color}
         x={leftWithinBlock}
@@ -67,46 +59,29 @@ function Chevron(props) {
         width={widthWithinBlock}
         height={height}
       />
-    )
-  }
-
-  // To restore indents on back of Chevron: un-comment the last point in the
-  // first polygon and replace the second polygon with the commented-out polyline
-  return width > height / 2 ? (
-    <polygon
-      {...shapeProps}
-      stroke={selected ? color2 : undefined}
-      fill={selected ? emphasizedColor : color}
-      points={[
-        [leftWithinBlock, top],
-        [leftWithinBlock + widthWithinBlock - height / 2, top],
-        [leftWithinBlock + widthWithinBlock, top + height / 2],
-        [leftWithinBlock + widthWithinBlock - height / 2, top + height],
-        [leftWithinBlock, top + height],
-        // [left + height / 2, top + height / 2],
-      ]}
-    />
-  ) : (
-    <polygon
-      {...shapeProps}
-      fill={selected ? emphasizedColor : color}
-      points={[
-        [leftWithinBlock, top],
-        [leftWithinBlock + widthWithinBlock, top + height / 2],
-        [leftWithinBlock, top + height],
-      ]}
-      stroke={selected ? emphasizedColor : color}
-    />
-    // <polyline
-    //   {...shapeProps}
-    //   points={[
-    //     [left, top],
-    //     [left + width, top + height / 2],
-    //     [left, top + height],
-    //   ]}
-    //   stroke={selected ? emphasizedColor : color}
-    //   fill="none"
-    // />
+      {direction < 0 && diff === 0 ? (
+        <polygon
+          stroke={selected ? color2 : undefined}
+          fill={selected ? emphasizedColor : color}
+          points={[
+            [left, top],
+            [left - height / 2, top + height / 2],
+            [left, top + height],
+          ]}
+        />
+      ) : null}
+      {direction > 0 && leftWithinBlock + widthWithinBlock < screenWidth ? (
+        <polygon
+          stroke={selected ? color2 : undefined}
+          fill={selected ? emphasizedColor : color}
+          points={[
+            [leftWithinBlock + widthWithinBlock, top],
+            [leftWithinBlock + widthWithinBlock + height / 2, top + height / 2],
+            [leftWithinBlock + widthWithinBlock, top + height],
+          ]}
+        />
+      ) : null}
+    </>
   )
 }
 

@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import { ElementId } from '@gmod/jbrowse-core/util/types/mst'
+import { ElementId } from '@jbrowse/core/util/types/mst'
 
 export default pluginManager =>
   types

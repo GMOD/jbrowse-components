@@ -20,7 +20,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
   await fsPromises.stat(rootTemplate.replace('{refseq}', '21')) // will throw if doesnt exist
   const args = {
     refNames: [],
-    rootUrlTemplate: decodeURI(new URL(`file://${rootTemplate}`).href),
+    rootUrlTemplate: { uri: decodeURI(new URL(`file://${rootTemplate}`).href) },
   }
   const adapter = new Adapter(configSchema.create(args))
 

@@ -67,8 +67,8 @@ The following is a frame of a basic state model
 import {
   ConfigurationReference,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
+} from '@jbrowse/core/configuration'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 import { fetchData, transformData } from './myStuff'
@@ -76,7 +76,7 @@ import { fetchData, transformData } from './myStuff'
 function modelFactory(pluginManager) {
   return types.compose(
     'MyConnection',
-    connectionModelFactory(pluginManager),
+    BaseConnectionModelFactory(pluginManager),
     types.model().actions(self => ({
       // `connectionConf` contains the configuration defined for this connection
       connect(connectionConf) {

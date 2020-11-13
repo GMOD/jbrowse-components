@@ -1,4 +1,4 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { SnapshotIn } from 'mobx-state-tree'
 import ColumnDataTypes from './ColumnDataTypes'
 
@@ -24,7 +24,7 @@ export default (pluginManager: PluginManager) => {
           }
         s = s.toLowerCase()
         return function stringPredicate(
-          sheet: unknown,
+          _sheet: unknown,
           row: { cells: { text: string }[] },
         ) {
           const { cells } = row

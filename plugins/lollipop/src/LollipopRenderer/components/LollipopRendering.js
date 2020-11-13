@@ -1,6 +1,6 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
-import { bpToPx } from '@gmod/jbrowse-core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import { bpToPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -77,7 +77,7 @@ function LollipopRendering(props) {
     layout,
     config,
     features,
-    trackModel: { selectedFeatureId },
+    displayModel: { selectedFeatureId },
   } = props
 
   const [region] = regions
@@ -157,7 +157,7 @@ LollipopRendering.propTypes = {
   bpPerPx: ReactPropTypes.number.isRequired,
   features: ReactPropTypes.instanceOf(Map),
   config: CommonPropTypes.ConfigSchema.isRequired,
-  trackModel: ReactPropTypes.shape({
+  displayModel: ReactPropTypes.shape({
     /** id of the currently selected feature, if any */
     selectedFeatureId: ReactPropTypes.string,
   }),
@@ -172,7 +172,7 @@ LollipopRendering.propTypes = {
 }
 
 LollipopRendering.defaultProps = {
-  trackModel: {},
+  displayModel: {},
 
   features: new Map(),
 

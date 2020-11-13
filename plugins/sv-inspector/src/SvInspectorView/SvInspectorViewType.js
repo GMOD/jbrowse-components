@@ -1,10 +1,11 @@
-export default ({ jbrequire }) => {
-  const ViewType = jbrequire(
-    '@gmod/jbrowse-core/pluggableElementTypes/ViewType',
-  )
+import ReactComponentFactory from './components/SvInspectorView'
+import StateModelFactory from './models/SvInspectorView'
 
-  const ReactComponent = jbrequire(require('./components/SvInspectorView'))
-  const { stateModel } = jbrequire(require('./models/SvInspectorView'))
+export default ({ jbrequire }) => {
+  const ViewType = jbrequire('@jbrowse/core/pluggableElementTypes/ViewType')
+
+  const ReactComponent = jbrequire(ReactComponentFactory)
+  const { stateModel } = jbrequire(StateModelFactory)
 
   return new ViewType({ name: 'SvInspectorView', stateModel, ReactComponent })
 }

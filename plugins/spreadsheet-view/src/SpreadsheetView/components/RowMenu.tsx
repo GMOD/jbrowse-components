@@ -1,24 +1,20 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { Menu, MenuItem } from '@gmod/jbrowse-core/ui'
-import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { Menu, MenuItem } from '@jbrowse/core/ui'
+import { InstanceOfModelReturnedBy } from '@jbrowse/core/util'
 
 import SpreadsheetModelF from '../models/Spreadsheet'
 import ViewModelF from '../models/SpreadsheetView'
+
+export interface Props {
+  viewModel: InstanceOfModelReturnedBy<typeof ViewModelF>
+  spreadsheetModel: InstanceOfModelReturnedBy<typeof SpreadsheetModelF>
+}
 
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
   const { observer } = lib['mobx-react']
   const React = lib.react
 
-  interface RowMenuPosition {
-    anchorEl: Element
-    rowNumber: number
-  }
-
-  interface Props {
-    viewModel: InstanceOfModelReturnedBy<typeof ViewModelF>
-    spreadsheetModel: InstanceOfModelReturnedBy<typeof SpreadsheetModelF>
-  }
   const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
     const currentRowMenu = spreadsheetModel.rowMenuPosition
     const { setRowMenuPosition } = spreadsheetModel
@@ -32,7 +28,7 @@ export default (pluginManager: PluginManager) => {
 
     const row = spreadsheetModel.rowSet.rows[rowNumber - 1]
 
-    function handleMenuItemClick(event: React.MouseEvent, callback: Function) {
+    function handleMenuItemClick(_event: unknown, callback: Function) {
       callback(viewModel, spreadsheetModel, rowNumber, row)
       rowMenuClose()
     }

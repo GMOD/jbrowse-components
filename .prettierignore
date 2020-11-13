@@ -2,6 +2,13 @@
 **/coverage/
 **/umd
 **/dist/
+**/build/
+**/lib/
+**/tmp/
+**/.docusaurus/**
+**/titlemod.md
+**/combined.md
+**/cli.md
 
 # JSON files we don't want to format
 **/*nclist*/**/*.json

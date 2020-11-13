@@ -1,8 +1,8 @@
 import * as d3 from 'd3'
 import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { featureSpanPx } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getScale } from './util'
 import { WiggleBaseRendererProps } from './WiggleBaseRenderer'
 

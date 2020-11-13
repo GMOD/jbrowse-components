@@ -1,14 +1,11 @@
-import {
-  checkAbortSignal,
-  renameRegionsIfNeeded,
-} from '@gmod/jbrowse-core/util'
-import { getAdapter } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@gmod/jbrowse-core/rpc/remoteAbortSignals'
-import RpcMethodType from '@gmod/jbrowse-core/pluggableElementTypes/RpcMethodType'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { checkAbortSignal, renameRegionsIfNeeded } from '@jbrowse/core/util'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ComparativeServerSideRendererType, {
   RenderArgs,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 
 interface ComparativeRenderArgs {
   sessionId: string

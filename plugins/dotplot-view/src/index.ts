@@ -1,24 +1,24 @@
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
+import Plugin from '@jbrowse/core/Plugin'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   isAbstractMenuManager,
   getSession,
-} from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import TimelineIcon from '@material-ui/icons/Timeline'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import {
-  configSchemaFactory as dotplotTrackConfigSchemaFactory,
-  stateModelFactory as dotplotTrackStateModelFactory,
-} from './DotplotTrack'
+  configSchemaFactory as dotplotDisplayConfigSchemaFactory,
+  stateModelFactory as dotplotDisplayStateModelFactory,
+  ReactComponent as DotplotDisplayReactComponent,
+} from './DotplotDisplay'
 import DotplotRenderer, {
   configSchema as dotplotRendererConfigSchema,
   ReactComponent as DotplotRendererReactComponent,
@@ -29,17 +29,25 @@ import {
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
+import DotplotViewFactory from './DotplotView'
+
+const { parseCigar } = MismatchParser
 
 interface Track {
-  addAdditionalContextMenuItemCallback: Function
-  additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PileupTrack: any
+  displays: {
+    addAdditionalContextMenuItemCallback: Function
+    additionalContextMenuItemCallbacks: Function[]
+    id: string
+    type: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    PileupDisplay: any
+  }[]
 }
 interface View {
   tracks: Track[]
+  views?: View[]
   type: string
 }
 interface Session {
@@ -64,7 +72,7 @@ function getLength(cigar: string) {
   for (let i = 0; i < cigarOps.length; i += 2) {
     const len = +cigarOps[i]
     const op = cigarOps[i + 1]
-    if (op !== 'D') {
+    if (op !== 'D' && op !== 'N') {
       length += len
     }
   }
@@ -77,7 +85,7 @@ function getLengthSansClipping(cigar: string) {
   for (let i = 0; i < cigarOps.length; i += 2) {
     const len = +cigarOps[i]
     const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'D') {
+    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
       length += len
     }
   }
@@ -102,16 +110,17 @@ export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./DotplotView')),
-    )
-    pluginManager.addTrackType(() => {
-      const configSchema = dotplotTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'DotplotTrack',
-        compatibleView: 'DotplotView',
+    pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = dotplotDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'DotplotDisplay',
         configSchema,
-        stateModel: dotplotTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: dotplotDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'DotplotView',
+        ReactComponent: DotplotDisplayReactComponent,
       })
     })
 
@@ -148,14 +157,14 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, track: IAnyStateTreeNode) => {
+    const cb = (feature: Feature, display: IAnyStateTreeNode) => {
       return feature
         ? [
             {
               label: 'Dotplot of read vs ref',
               icon: AddIcon,
               onClick: () => {
-                const session = getSession(track)
+                const session = getSession(display)
                 const clipPos = feature.get('clipPos')
                 const cigar = feature.get('CIGAR')
                 const flags = feature.get('flags')
@@ -165,7 +174,11 @@ export default class DotplotPlugin extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(track, 'assemblyNames')[0]
+                const trackAssembly = getConf(
+                  // @ts-ignore
+                  display.parentTrack,
+                  'assemblyNames',
+                )[0]
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
@@ -253,7 +266,7 @@ export default class DotplotPlugin extends Plugin {
                   },
                   viewTrackConfigs: [
                     {
-                      type: 'DotplotTrack',
+                      type: 'SyntenyTrack',
                       assemblyNames,
                       adapter: {
                         type: 'FromConfigAdapter',
@@ -280,7 +293,13 @@ export default class DotplotPlugin extends Plugin {
                   tracks: [
                     {
                       configuration: trackId,
-                      type: 'DotplotTrack',
+                      type: 'SyntenyTrack',
+                      displays: [
+                        {
+                          type: 'DotplotDisplay',
+                          configuration: `${trackId}-DotplotDisplay`,
+                        },
+                      ],
                     },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
@@ -290,27 +309,38 @@ export default class DotplotPlugin extends Plugin {
           ]
         : []
     }
-
+    function addContextMenu(view: View) {
+      if (view.type === 'LinearGenomeView') {
+        view.tracks.forEach(track => {
+          if (track.type === 'AlignmentsTrack') {
+            track.displays.forEach(display => {
+              if (
+                display.type === 'LinearPileupDisplay' &&
+                !display.additionalContextMenuItemCallbacks.includes(cb)
+              ) {
+                display.addAdditionalContextMenuItemCallback(cb)
+              } else if (
+                display.type === 'LinearAlignmentsDisplay' &&
+                display.PileupDisplay &&
+                !display.PileupDisplay.additionalContextMenuItemCallbacks.includes(
+                  cb,
+                )
+              ) {
+                display.PileupDisplay.addAdditionalContextMenuItemCallback(cb)
+              }
+            })
+          }
+        })
+      }
+    }
     autorun(() => {
       const session = pluginManager.rootModel?.session as Session | undefined
       if (session) {
         session.views.forEach(view => {
-          if (view.type === 'LinearGenomeView') {
-            view.tracks.forEach(track => {
-              if (
-                track.type === 'PileupTrack' &&
-                !track.additionalContextMenuItemCallbacks.includes(cb)
-              ) {
-                track.addAdditionalContextMenuItemCallback(cb)
-              } else if (
-                track.type === 'AlignmentsTrack' &&
-                !track.PileupTrack.additionalContextMenuItemCallbacks.includes(
-                  cb,
-                )
-              ) {
-                track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
-              }
-            })
+          if (view.views) {
+            view.views.forEach(v => addContextMenu(v))
+          } else {
+            addContextMenu(view)
           }
         })
       }

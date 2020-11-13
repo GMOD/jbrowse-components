@@ -1,11 +1,11 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
   'NCListAdapter',
   {
     rootUrlTemplate: {
-      type: 'string',
-      defaultValue: '/path/to/my/{refseq}/trackData.json',
+      type: 'fileLocation',
+      defaultValue: { uri: '/path/to/my/{refseq}/trackData.json' },
     },
     refNames: {
       type: 'stringArray',

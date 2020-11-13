@@ -1,4 +1,4 @@
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { openLocation } from '@jbrowse/core/util/io'
 import objectHash from 'object-hash'
 import {
   generateUnknownTrackConf,
@@ -7,7 +7,7 @@ import {
   guessTrackType,
   UNKNOWN,
   UNSUPPORTED,
-} from '@gmod/jbrowse-core/util/tracks'
+} from '@jbrowse/core/util/tracks'
 import { JBLocation, Track, RefSeqs, RefSeq } from './types'
 
 interface Jb2Track {
@@ -17,7 +17,6 @@ interface Jb2Track {
   category?: string[]
   adapter?: Jb2Adapter
   type?: string
-  renderer?: Jb2Renderer
   defaultRendering?: string
 }
 
@@ -35,12 +34,8 @@ interface Jb2Adapter {
   bigBedLocation?: Jb2Location
   vcfGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
-  rootUrlTemplate?: string
+  rootUrlTemplate?: Jb2Location
   sequenceAdapter?: Jb2Adapter
-}
-
-interface Jb2Renderer {
-  type: string
 }
 
 interface Jb2Feature {
@@ -117,7 +112,7 @@ export function convertTrackConfig(
       else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
       return {
         ...jb2TrackConfig,
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         adapter,
       }
     }
@@ -134,16 +129,18 @@ export function convertTrackConfig(
       else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
       return {
         ...jb2TrackConfig,
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         adapter,
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/NCList') {
       return {
         ...jb2TrackConfig,
-        type: 'BasicTrack',
-        adapter: { type: 'NCListAdapter', rootUrlTemplate: urlTemplate },
-        renderer: { type: 'SvgFeatureRenderer' },
+        type: 'FeatureTrack',
+        adapter: {
+          type: 'NCListAdapter',
+          rootUrlTemplate: { uri: urlTemplate },
+        },
       }
     }
     if (
@@ -160,7 +157,7 @@ export function convertTrackConfig(
       }
       return {
         ...jb2TrackConfig,
-        type: 'WiggleTrack',
+        type: 'QuantitativeTrack',
         adapter: {
           type: 'BigWigAdapter',
           bigWigLocation: { uri: urlTemplate },
@@ -205,7 +202,7 @@ export function convertTrackConfig(
     if (storeClass === 'JBrowse/Store/SeqFeature/BigBed') {
       return {
         ...jb2TrackConfig,
-        type: 'BasicTrack',
+        type: 'FeatureTrack',
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: { uri: urlTemplate },
@@ -290,14 +287,14 @@ export function convertTrackConfig(
       else adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
       return {
         ...jb2TrackConfig,
-        type: 'SequenceTrack',
+        type: 'ReferenceSequenceTrack',
         adapter,
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/TwoBit') {
       return {
         ...jb2TrackConfig,
-        type: 'SequenceTrack',
+        type: 'ReferenceSequenceTrack',
         adapter: {
           type: 'TwoBitAdapter',
           twoBitLocation: { uri: urlTemplate },
@@ -329,15 +326,11 @@ export function convertTrackConfig(
 
   jb2TrackConfig.type = guessTrackType(jb2TrackConfig.adapter.type)
 
-  if (jb2TrackConfig.type === 'WiggleTrack') {
+  if (jb2TrackConfig.type === 'QuantitativeTrack') {
     if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('XYPlot')) {
       jb2TrackConfig.defaultRendering = 'xyplot'
     } else if (jb1TrackConfig.type && jb1TrackConfig.type.endsWith('Density')) {
       jb2TrackConfig.defaultRendering = 'density'
-    }
-  } else if (jb2TrackConfig.type === 'BasicTrack') {
-    jb2TrackConfig.renderer = {
-      type: 'SvgFeatureRenderer',
     }
   }
 
@@ -363,10 +356,7 @@ function generateFromConfigTrackConfig(
     type: 'FromConfigAdapter',
     features: jb2Features,
   }
-  jb2TrackConfig.type = 'BasicTrack'
-  jb2TrackConfig.renderer = {
-    type: 'SvgFeatureRenderer',
-  }
+  jb2TrackConfig.type = 'FeatureTrack'
   return jb2TrackConfig
 }
 

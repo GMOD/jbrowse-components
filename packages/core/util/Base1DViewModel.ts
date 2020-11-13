@@ -66,13 +66,32 @@ const Base1DView = types
     get minimumBlockWidth() {
       return 20
     },
-    bpToPx({ refName, coord }: { refName: string; coord: number }) {
+    /**
+     * calculates the Px at which coord is found.
+     *
+     * @param refName - string, refName of region
+     * @param coord - number, bp to be translated to Px
+     * @param regionNumber - number, index of displayedRegion in displayedRegions array
+     */
+    bpToPx({
+      refName,
+      coord,
+      regionNumber,
+    }: {
+      refName: string
+      coord: number
+      regionNumber?: number
+    }) {
       let offsetBp = 0
 
-      const index = self.displayedRegions.findIndex(r => {
+      const index = self.displayedRegions.findIndex((r, idx) => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += r.reversed ? r.end - coord : coord - r.start
-          return true
+          // using optional parameter ,regionNumber, as additional requirement to find
+          // a specific displayedRegion when many exist with the same refName
+          if (regionNumber ? regionNumber === idx : true) {
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
+            return true
+          }
         }
         offsetBp += r.end - r.start
         return false
@@ -91,20 +110,28 @@ const Base1DView = types
       const n = self.displayedRegions.length
       if (bp < 0) {
         const region = self.displayedRegions[0]
+        const offset = bp
         return {
           ...getSnapshot(region),
           oob: true,
-          offset: bp,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
+          offset,
           index: 0,
         }
       }
       if (bp >= this.totalBp) {
         const region = self.displayedRegions[n - 1]
         const len = region.end - region.start
+        const offset = bp - this.totalBp + len
         return {
           ...getSnapshot(region),
           oob: true,
-          offset: bp - this.totalBp + len,
+          offset,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
           index: n - 1,
         }
       }
@@ -112,16 +139,19 @@ const Base1DView = types
         const region = self.displayedRegions[index]
         const len = region.end - region.start
         if (len + bpSoFar > bp && bpSoFar <= bp) {
+          const offset = bp - bpSoFar
           return {
             ...getSnapshot(region),
             oob: false,
-            offset: bp - bpSoFar,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
             index,
           }
         }
         bpSoFar += len
       }
-
       throw new Error('pxToBp failed to map to a region')
     },
   }))

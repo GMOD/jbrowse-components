@@ -1,6 +1,6 @@
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
 import FromConfigAdapter from './FromConfigAdapter'
 
@@ -12,8 +12,16 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
    */
   getFeatures(region: NoAssemblyRegion) {
     const { start, end } = region
+    // TODO: restore commented version below once TSDX supports Rollup v2
+    // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
+    const superGetFeatures = super.getFeatures
     return ObservableCreate<Feature>(async observer => {
-      const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
+      const feats = await superGetFeatures
+        .call(this, region)
+        .pipe(toArray())
+        .toPromise()
+      // return ObservableCreate<Feature>(async observer => {
+      //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
       const feat = feats[0]
       observer.next(
         new SimpleFeature({

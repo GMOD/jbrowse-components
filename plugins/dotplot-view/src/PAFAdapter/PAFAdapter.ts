@@ -1,21 +1,21 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   FileLocation,
   NoAssemblyRegion,
   Region,
-} from '@gmod/jbrowse-core/util/types'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
+} from '@jbrowse/core/util/types'
+import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { GenericFilehandle } from 'generic-filehandle'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 
 interface PafRecord {
@@ -60,12 +60,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       if (line.length) {
         const [
           chr1,
+          // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           queryRefSeqLen,
           start1,
           end1,
           strand,
           chr2,
+          // @ts-ignore
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           targetRefSeqLen,
           start2,

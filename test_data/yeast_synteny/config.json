@@ -1,0 +1,92 @@
+{
+  "assemblies": [
+    {
+      "name": "YJM1447",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "YJM1447-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/GCA_000977955.2_Sc_YJM1447_v1_genomic.fna"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/GCA_000977955.2_Sc_YJM1447_v1_genomic.fna.fai"
+          }
+        }
+      }
+    },
+    {
+      "name": "R64",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "R64-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/GCA_000146045.2_R64_genomic.fna"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/GCA_000146045.2_R64_genomic.fna.fai"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dotplot_track",
+      "assemblyNames": ["YJM1447", "R64"],
+      "name": "dotplot",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
+        },
+        "assemblyNames": ["YJM1447", "R64"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "R64 vs YJM1447",
+    "width": 1850,
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "DotplotView",
+        "assemblyNames": ["R64", "YJM1447"],
+        "hview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "vview": {
+          "displayedRegions": [],
+          "bpPerPx": 100000,
+          "offsetPx": 0
+        },
+        "tracks": [
+          {
+            "type": "SyntenyTrack",
+            "configuration": "dotplot_track",
+            "displays": [
+              {
+                "type": "DotplotDisplay",
+                "configuration": "dotplot_track-DotplotDisplay"
+              }
+            ]
+          }
+        ],
+        "headerHeight": 44,
+        "width": 1850,
+        "height": 600,
+        "displayName": "R64 vs YJM1447 dotplot",
+        "trackSelectorType": "hierarchical"
+      }
+    ]
+  }
+}

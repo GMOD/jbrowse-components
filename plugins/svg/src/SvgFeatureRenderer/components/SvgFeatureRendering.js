@@ -1,7 +1,7 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { PropTypes as CommonPropTypes } from '@gmod/jbrowse-core/util/types/mst'
-import { bpToPx } from '@gmod/jbrowse-core/util'
-import SceneGraph from '@gmod/jbrowse-core/util/layouts/SceneGraph'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import { bpToPx } from '@jbrowse/core/util'
+import SceneGraph from '@jbrowse/core/util/layouts/SceneGraph'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React, { useEffect, useRef, useState, useCallback } from 'react'
@@ -159,8 +159,8 @@ function SvgFeatureRendering(props) {
     regions,
     bpPerPx,
     features,
-    trackModel,
     config,
+    displayModel,
     forceSvg,
   } = props
   const [region] = regions || []
@@ -258,7 +258,7 @@ function SvgFeatureRendering(props) {
       const px = region.reversed ? width - offsetX : offsetX
       const clientBp = region.start + bpPerPx * px
 
-      const feats = trackModel.getFeatureOverlapping(
+      const feats = displayModel.getFeatureOverlapping(
         blockKey,
         clientBp,
         offsetY,
@@ -278,7 +278,7 @@ function SvgFeatureRendering(props) {
       onMouseMove,
       region.reversed,
       region.start,
-      trackModel,
+      displayModel,
       width,
     ],
   )
@@ -368,7 +368,7 @@ SvgFeatureRendering.propTypes = {
     ReactPropTypes.arrayOf(ReactPropTypes.shape()),
   ]),
   config: CommonPropTypes.ConfigSchema.isRequired,
-  trackModel: ReactPropTypes.shape({
+  displayModel: ReactPropTypes.shape({
     configuration: ReactPropTypes.shape({}),
     getFeatureOverlapping: ReactPropTypes.func,
     selectedFeatureId: ReactPropTypes.string,
@@ -391,7 +391,7 @@ SvgFeatureRendering.propTypes = {
 }
 
 SvgFeatureRendering.defaultProps = {
-  trackModel: {},
+  displayModel: {},
   forceSvg: false,
 
   features: new Map(),

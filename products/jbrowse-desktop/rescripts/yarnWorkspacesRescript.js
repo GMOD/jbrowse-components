@@ -35,13 +35,11 @@ function pkgJsonUsesDist(location) {
 }
 
 module.exports = config => {
-  if (config.mode === 'production') {
-    Object.entries(packages).forEach(([package, info]) => {
-      if (pkgJsonUsesDist(info.location)) {
-        delete packages[package]
-      }
-    })
-  }
+  Object.entries(packages).forEach(([package, info]) => {
+    if (pkgJsonUsesDist(info.location)) {
+      delete packages[package]
+    }
+  })
   return {
     ...config,
     module: {

@@ -1,9 +1,9 @@
 import {
   ConfigurationReference,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
-import connectionModelFactory from '@gmod/jbrowse-core/BaseConnectionModel'
+} from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from 'mobx-state-tree'
 import configSchema from './configSchema'
 
@@ -13,7 +13,7 @@ import { convertTrackConfig } from './jb1ToJb2'
 export default function (pluginManager) {
   return types.compose(
     'JBrowse1Connection',
-    connectionModelFactory(pluginManager),
+    BaseConnectionModelFactory(pluginManager),
     types
       .model({
         configuration: ConfigurationReference(configSchema),

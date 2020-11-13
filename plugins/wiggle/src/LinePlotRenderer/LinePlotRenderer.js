@@ -1,4 +1,4 @@
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
+import { featureSpanPx } from '@jbrowse/core/util'
 import * as d3 from 'd3'
 import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'

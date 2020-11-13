@@ -3,21 +3,19 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import { stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
-import { Base1DViewModel } from '@gmod/jbrowse-core/util/Base1DViewModel'
+import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { LinearGenomeViewStateModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
-  // @ts-ignore
   const background = theme.palette.tertiary
-    ? // prettier-ignore
-      // @ts-ignore
-      fade(theme.palette.tertiary.main, 0.7)
+    ? fade(theme.palette.tertiary.main, 0.7)
     : fade(theme.palette.primary.main, 0.7)
   return {
     rubberBand: {
@@ -34,11 +32,8 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      // @ts-ignore
       color: theme.palette.tertiary
-        ? // prettier-ignore
-          // @ts-ignore
-          theme.palette.tertiary.contrastText
+        ? theme.palette.tertiary.contrastText
         : theme.palette.primary.contrastText,
     },
     popover: {
@@ -59,7 +54,6 @@ const useStyles = makeStyles(theme => {
   }
 })
 
-// functional component for OverviewRubberBand
 function OverviewRubberBand({
   model,
   overview,
@@ -106,7 +100,11 @@ function OverviewRubberBand({
         currentX === undefined
       ) {
         const clickedAt = overview.pxToBp(startX)
-        model.centerAt(Math.round(clickedAt.offset), clickedAt.refName)
+        model.centerAt(
+          Math.round(clickedAt.coord),
+          clickedAt.refName,
+          clickedAt.index,
+        )
       }
       setStartX(undefined)
       setCurrentX(undefined)
@@ -147,10 +145,11 @@ function OverviewRubberBand({
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (controlsRef.current)
+    if (controlsRef.current) {
       setGuideX(
         event.clientX - controlsRef.current.getBoundingClientRect().left,
       )
+    }
   }
 
   function mouseOut() {
@@ -164,10 +163,7 @@ function OverviewRubberBand({
           <Tooltip
             open={!mouseDragging}
             placement="top"
-            title={Math.max(
-              0,
-              Math.round(overview.pxToBp(guideX).offset),
-            ).toLocaleString()}
+            title={stringify(overview.pxToBp(guideX))}
             arrow
           >
             <div
@@ -179,7 +175,6 @@ function OverviewRubberBand({
           </Tooltip>
         ) : null}
         <div
-          data-testid="rubberBand_controls"
           className={classes.rubberBandControl}
           role="presentation"
           ref={controlsRef}
@@ -200,17 +195,14 @@ function OverviewRubberBand({
     width = currentX - startX
   }
   // calculate the start and end bp of drag
-  const leftBpOffset = overview.pxToBp(startX)
-  const rightBpOffset = overview.pxToBp(startX + width)
-  let leftCount = Math.max(0, Math.round(leftBpOffset.offset))
-  let rightCount = Math.max(0, Math.round(rightBpOffset.offset))
-  if (
-    (leftBpOffset.refName === rightBpOffset.refName &&
-      leftCount > rightCount) ||
-    model.idxInParentRegion(leftBpOffset.refName) >
-      model.idxInParentRegion(rightBpOffset.refName)
-  ) {
-    ;[leftCount, rightCount] = [rightCount, leftCount]
+  let leftBpOffset
+  let rightBpOffset
+  if (startX) {
+    leftBpOffset = overview.pxToBp(startX)
+    rightBpOffset = overview.pxToBp(startX + width)
+    if (currentX && currentX < startX) {
+      ;[leftBpOffset, rightBpOffset] = [rightBpOffset, leftBpOffset]
+    }
   }
 
   return (
@@ -233,8 +225,11 @@ function OverviewRubberBand({
               horizontal: 'right',
             }}
             keepMounted
+            disableRestoreFocus
           >
-            <Typography>{leftCount.toLocaleString()}</Typography>
+            <Typography>
+              {leftBpOffset ? stringify(leftBpOffset) : ''}
+            </Typography>
           </Popover>
           <Popover
             className={classes.popover}
@@ -252,8 +247,11 @@ function OverviewRubberBand({
               horizontal: 'left',
             }}
             keepMounted
+            disableRestoreFocus
           >
-            <Typography>{rightCount.toLocaleString()}</Typography>
+            <Typography>
+              {rightBpOffset ? stringify(rightBpOffset) : ''}
+            </Typography>
           </Popover>
         </>
       ) : null}

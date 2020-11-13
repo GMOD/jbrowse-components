@@ -1,7 +1,8 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
-import * as path from 'path'
 import fetch from 'node-fetch'
+import { promises as fsPromises } from 'fs'
+import path from 'path'
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
 
 interface Connection {
@@ -19,6 +20,9 @@ interface Config {
 }
 
 export default class AddConnection extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Add a connection to a JBrowse 2 configuration'
 
   static examples = [
@@ -64,7 +68,9 @@ export default class AddConnection extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     help: flags.help({ char: 'h' }),
     skipCheck: flags.boolean({
@@ -82,40 +88,28 @@ export default class AddConnection extends JBrowseCommand {
 
   async run() {
     const { args: runArgs, flags: runFlags } = this.parse(AddConnection)
+
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+
     const { connectionUrlOrPath: argsPath } = runArgs as {
       connectionUrlOrPath: string
     }
-    const { config, target } = runFlags
+    const { config } = runFlags
     let { type, name, connectionId, assemblyName } = runFlags
-
-    if (!(runFlags.skipCheck || runFlags.force)) {
-      await this.checkLocation(path.dirname(target))
-    }
-
     const url = await this.resolveURL(
       argsPath,
       !(runFlags.skipCheck || runFlags.force),
     )
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error('No existing config file found', { exit: 100 })
-    }
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
-    }
+    const configContents: Config = await this.readJsonFile(this.target)
+    this.debug(`Using config file ${this.target}`)
+
     if (!configContents.assemblies || !configContents.assemblies.length) {
       this.error(
         'No assemblies found. Please add one before adding connections',
-        {
-          exit: 120,
-        },
+        { exit: 120 },
       )
     } else if (configContents.assemblies.length > 1 && !assemblyName) {
       this.error(
@@ -123,7 +117,7 @@ export default class AddConnection extends JBrowseCommand {
       )
     }
 
-    if (assemblyName)
+    if (assemblyName) {
       configContents.assemblies.findIndex(
         assemblies => assemblies.name === assemblyName,
       ) === -1
@@ -134,7 +128,7 @@ export default class AddConnection extends JBrowseCommand {
             { exit: 130 },
           )
         : this.debug(`Assembly name(s) is :${assemblyName}`)
-    else {
+    } else {
       assemblyName = configContents.assemblies[0].name
       this.log(`Inferred default assembly name ${assemblyName}`)
     }
@@ -155,7 +149,7 @@ export default class AddConnection extends JBrowseCommand {
     let configObj = {}
     if (config) {
       try {
-        configObj = JSON.parse(config)
+        configObj = parseJSON(config)
       } catch (error) {
         this.error('Could not parse provided JSON object')
       }
@@ -178,11 +172,12 @@ export default class AddConnection extends JBrowseCommand {
         break
       }
       default: {
-        if (!config || !this.isValidJSON(config))
+        if (!config || !this.isValidJSON(config)) {
           this.error(
             'When type is not UCSCTrackHubConnection or JBrowse1Connection, config object must be provided.\nPlease enter a config object using --config',
             { exit: 140 },
           )
+        }
 
         break
       }
@@ -200,23 +195,21 @@ export default class AddConnection extends JBrowseCommand {
       if (runFlags.force || runFlags.overwrite) {
         this.debug(`Overwriting connection ${connectionId} in configuration`)
         configContents.connections[idx] = connectionConfig
-      } else
+      } else {
         this.error(
           `Cannot add connection with id ${connectionId}, a connection with that id already exists.\nUse --overwrite if you would like to replace the existing connection`,
           { exit: 150 },
         )
+      }
     } else configContents.connections.push(connectionConfig)
 
-    this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${idx !== -1 ? 'Overwrote' : 'Added'} connection "${name}" ${
         idx !== -1 ? 'in' : 'to'
-      } ${target}`,
+      } ${this.target}`,
     )
   }
 
@@ -254,9 +247,9 @@ export default class AddConnection extends JBrowseCommand {
     )
   }
 
-  isValidJSON(string: string) {
+  isValidJSON(str: string) {
     try {
-      JSON.parse(string)
+      JSON.parse(str)
       return true
     } catch (error) {
       return false

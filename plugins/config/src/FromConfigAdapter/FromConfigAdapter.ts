@@ -1,15 +1,15 @@
 import {
   BaseFeatureDataAdapter,
   RegionsAdapter,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
-} from '@gmod/jbrowse-core/util/simpleFeature'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { NoAssemblyRegion } from '@gmod/jbrowse-core/util/types'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { ConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+} from '@jbrowse/core/util/simpleFeature'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { ConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 
 /**
@@ -18,7 +18,8 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 
-export default class FromConfigAdapter extends BaseFeatureDataAdapter
+export default class FromConfigAdapter
+  extends BaseFeatureDataAdapter
   implements RegionsAdapter {
   private features: Map<string, Feature[]>
 

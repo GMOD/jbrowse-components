@@ -1,11 +1,8 @@
-import ConnectionType from '@gmod/jbrowse-core/pluggableElementTypes/ConnectionType'
-import WidgetType from '@gmod/jbrowse-core/pluggableElementTypes/WidgetType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import {
-  SessionWithWidgets,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
+import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import InputIcon from '@material-ui/icons/Input'
 import {
@@ -27,9 +24,14 @@ import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
+import AssemblyManager from './AssemblyManager'
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
+
+  exports = {
+    AssemblyManager,
+  }
 
   install(pluginManager: PluginManager) {
     pluginManager.addConnectionType(
@@ -77,27 +79,38 @@ export default class extends Plugin {
 
   configure(pluginManager: PluginManager) {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
-      if (pluginManager.rootModel.adminMode) {
-        pluginManager.rootModel.appendToMenu('File', {
-          label: 'Open new track',
-          icon: NoteAddIcon,
-          onClick: (session: SessionWithWidgets) => {
-            const widget = session.addWidget('AddTrackWidget', 'addTrackWidget')
-            session.showWidget(widget)
-          },
-        })
-        pluginManager.rootModel.appendToMenu('File', {
-          label: 'Open new connection',
-          icon: InputIcon,
-          onClick: (session: SessionWithWidgets) => {
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open track',
+        icon: NoteAddIcon,
+        onClick: (session: SessionWithWidgets) => {
+          if (session.views.length === 0) {
+            session.notify('Please open a view to add a track first')
+          } else if (session.views.length >= 1) {
             const widget = session.addWidget(
-              'AddConnectionWidget',
-              'addConnectionWidget',
+              'AddTrackWidget',
+              'addTrackWidget',
+              { view: session.views[0].id },
             )
             session.showWidget(widget)
-          },
-        })
-      }
+            if (session.views.length > 1) {
+              session.notify(
+                `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
+              )
+            }
+          }
+        },
+      })
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Open connection',
+        icon: InputIcon,
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget(
+            'AddConnectionWidget',
+            'addConnectionWidget',
+          )
+          session.showWidget(widget)
+        },
+      })
     }
   }
 }

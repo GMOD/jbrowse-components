@@ -84,6 +84,27 @@ export class CoreGetRefNameAliases extends RpcMethodType {
   }
 }
 
+export class CoreGetFileInfo extends RpcMethodType {
+  name = 'CoreGetInfo'
+
+  async execute(args: {
+    sessionId: string
+    signal: RemoteAbortSignal
+    adapterConfig: {}
+  }) {
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig } = deserializedArgs
+    const { dataAdapter } = getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    return !isRefNameAliasAdapter(dataAdapter)
+      ? dataAdapter.getHeader(deserializedArgs)
+      : null
+  }
+}
+
 /**
  * free up any resources (e.g. cached adapter objects)
  * that are only associated with the given track ID.
@@ -100,7 +121,7 @@ export class CoreFreeResources extends RpcMethodType {
 
     // pass the freeResources hint along to all the renderers as well
     this.pluginManager.getRendererTypes().forEach(renderer => {
-      const count = renderer.freeResources(specification)
+      const count = renderer.freeResources(/* specification */)
       if (count) deleteCount += count
     })
 

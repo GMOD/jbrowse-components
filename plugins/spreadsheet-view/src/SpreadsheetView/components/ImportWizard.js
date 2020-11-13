@@ -3,8 +3,8 @@ export default pluginManager => {
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState, useEffect } = React
-  const { FileSelector } = jbrequire('@gmod/jbrowse-core/ui')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { FileSelector } = jbrequire('@jbrowse/core/ui')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Card = jbrequire('@material-ui/core/Card')
   const CardContent = jbrequire('@material-ui/core/CardContent')
@@ -92,6 +92,7 @@ export default pluginManager => {
                 <FileSelector
                   location={model.fileSource}
                   setLocation={model.setFileSource}
+                  localFileAllowed
                 />
               </FormGroup>
             </FormControl>
@@ -206,10 +207,7 @@ export default pluginManager => {
       <>
         {model.error ? (
           <Container className={classes.errorContainer}>
-            <ErrorDisplay
-              errorMessage={String(model.error.message)}
-              stackTrace={model.error.stackTrace}
-            />
+            <ErrorDisplay errorMessage={`${model.error}`} />
           </Container>
         ) : null}
         <ImportForm model={model} />

@@ -42,7 +42,6 @@ const refNameColors = [
 
 async function loadRefNameMap(
   assembly: Assembly,
-  adapterId: string,
   adapterConf: unknown,
   options: BaseOptions,
   signal?: AbortSignal,
@@ -72,20 +71,9 @@ async function loadRefNameMap(
 
   refNames.forEach((refName: string) => {
     checkRefName(refName)
-    const aliases = refNameAliases.get(refName)
-    if (aliases) {
-      aliases.forEach(refNameAlias => {
-        refNameMap[refNameAlias] = refName
-      })
-    } else {
-      refNameAliases.forEach((configAliases, configRefName) => {
-        if (configAliases.includes(refName)) {
-          refNameMap[configRefName] = refName
-          configAliases.forEach(refNameAlias => {
-            if (refNameAlias !== refName) refNameMap[refNameAlias] = refName
-          })
-        }
-      })
+    const canon = assembly.getCanonicalRefName(refName)
+    if (canon) {
+      refNameMap[canon] = refName
     }
   })
 
@@ -116,7 +104,7 @@ function getAdapterId(adapterConf: unknown) {
   return jsonStableStringify(adapterConf)
 }
 
-type RefNameAliases = Record<string, string[]>
+type RefNameAliases = Record<string, string>
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -125,7 +113,6 @@ export interface BaseOptions {
 }
 interface CacheData {
   adapterConf: unknown
-  adapterId: string
   self: Assembly
   sessionId: string
   options: BaseOptions
@@ -138,10 +125,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       abortSignal?: AbortSignal,
       statusCallback?: Function,
     ) {
-      const { adapterConf, adapterId, self, options } = args
+      const { adapterConf, self, options } = args
       return loadRefNameMap(
         self,
-        adapterId,
         adapterConf,
         { ...options, statusCallback },
         abortSignal,
@@ -151,11 +137,14 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
 
   return types
     .model({
-      configuration: types.reference(assemblyConfigType),
+      configuration: types.safeReference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
-      refNameAliases: types.maybe(types.map(types.array(types.string))),
+      refNameAliases: types.maybe(types.map(types.string)),
     })
     .views(self => ({
+      get initialized() {
+        return Boolean(self.refNameAliases)
+      },
       get name(): string {
         return readConfObject(self.configuration, 'name')
       },
@@ -166,14 +155,10 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return self.regions && self.regions.map(region => region.refName)
       },
       get allRefNames() {
-        if (!(this.refNames && self.refNameAliases)) {
+        if (!self.refNameAliases) {
           return undefined
         }
-        let aliases: string[] = []
-        self.refNameAliases.forEach(aliasList => {
-          aliases = aliases.concat(aliasList)
-        })
-        return [...this.refNames, ...aliases]
+        return Array.from(self.refNameAliases.keys())
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -191,22 +176,12 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
     .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!self.refNames || !self.refNameAliases) {
+        if (!self.refNameAliases) {
           throw new Error(
-            'assembly not loaded, getCanonicalRefName should not be used until the assembly is loaded',
+            'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        if (self.refNames.includes(refName)) {
-          return refName
-        }
-        for (const [rName, aliases] of self.refNameAliases) {
-          if (aliases.includes(refName)) {
-            return rName
-          }
-        }
-        throw new Error(
-          `unknown reference sequence name ${refName}, this reference does not appear in the assembly`,
-        )
+        return self.refNameAliases.get(refName)
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -216,15 +191,15 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         return self.refNameColors[idx % self.refNameColors.length]
       },
       isValidRefName(refName: string) {
-        if (!self.allRefNames)
+        if (!self.refNameAliases)
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
-        return self.allRefNames.includes(refName)
+        return !!this.getCanonicalRefName(refName)
       },
     }))
     .actions(self => ({
-      setLoading(abortController: AbortController) {},
+      setLoading() {},
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
@@ -236,7 +211,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        getParent(self, 3).setError(String(error))
+        if (!getParent(self, 3).isAssemblyEditing) {
+          getParent(self, 3).setError(error)
+        }
       },
       setRegions(regions: Region[]) {
         self.regions = cast(regions)
@@ -248,6 +225,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
         makeAbortableReaction(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
+          // @ts-ignore
           loadAssemblyData,
           loadAssemblyReaction,
           { name: `${self.name} assembly loading`, fireImmediately: true },
@@ -268,7 +246,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           adapterId,
           {
             adapterConf,
-            adapterId,
             self: self as Assembly,
             options: rest,
           } as CacheData,
@@ -301,29 +278,32 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
     }))
 }
 function loadAssemblyData(self: Assembly) {
-  const sequenceAdapterConfig = readConfObject(self.configuration, [
-    'sequence',
-    'adapter',
-  ])
-  const adapterConfigId = getAdapterId(sequenceAdapterConfig)
-  const { rpcManager } = getParent(self, 2)
-  const refNameAliasesAdapterConfig =
-    self.configuration.refNameAliases &&
-    readConfObject(self.configuration, ['refNameAliases', 'adapter'])
-  return {
-    sequenceAdapterConfig,
-    adapterConfigId,
-    rpcManager,
-    assemblyName: self.name,
-    refNameAliasesAdapterConfig,
+  if (self.configuration) {
+    const sequenceAdapterConfig = readConfObject(self.configuration, [
+      'sequence',
+      'adapter',
+    ])
+    const adapterConfigId = getAdapterId(sequenceAdapterConfig)
+    const { rpcManager } = getParent(self, 2)
+    const refNameAliasesAdapterConfig =
+      self.configuration.refNameAliases &&
+      readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+    return {
+      sequenceAdapterConfig,
+      adapterConfigId,
+      rpcManager,
+      assemblyName: self.name,
+      refNameAliasesAdapterConfig,
+    }
   }
+  return undefined
 }
 async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
   signal: AbortSignal,
 ) {
   if (!props) {
-    throw new Error('cannot render with no props')
+    return
   }
 
   const {
@@ -362,13 +342,19 @@ async function loadAssemblyReaction(
       aliases: string[]
     }[]
 
-    refNameAliasesList.forEach(refNameAlias => {
-      refNameAlias.aliases.forEach(alias => {
+    refNameAliasesList.forEach(({ refName, aliases }) => {
+      aliases.forEach(alias => {
         checkRefName(alias)
+        refNameAliases[alias] = refName
       })
-      refNameAliases[refNameAlias.refName] = refNameAlias.aliases
     })
   }
+
+  // add identity to the refNameAliases list
+  adapterRegionsWithAssembly.forEach(region => {
+    refNameAliases[region.refName] = region.refName
+  })
+  // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>

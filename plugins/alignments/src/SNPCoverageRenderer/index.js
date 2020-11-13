@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 import React, { useRef } from 'react'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
-import { featureSpanPx } from '@gmod/jbrowse-core/util'
-import { getScale } from '@gmod/jbrowse-plugin-wiggle/src/util'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { featureSpanPx } from '@jbrowse/core/util'
+import { getScale } from '@jbrowse/plugin-wiggle/src/util'
 import * as d3 from 'd3'
 import ConfigSchema from './configSchema'
 

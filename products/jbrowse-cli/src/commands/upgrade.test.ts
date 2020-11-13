@@ -3,7 +3,7 @@
  */
 
 import fs from 'fs'
-import * as path from 'path'
+import path from 'path'
 import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: '@gmod/jbrowse-web@v0.0.2',
+    tag_name: '@jbrowse/web@v0.0.2',
     prerelease: false,
     assets: [
       {
@@ -20,7 +20,7 @@ const releaseArray = [
     ],
   },
   {
-    tag_name: '@gmod/jbrowse-web@v0.0.1',
+    tag_name: '@jbrowse/web@v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -30,9 +30,23 @@ const releaseArray = [
   },
 ]
 
+function mockTagFail(gitHubApi: Scope) {
+  return gitHubApi
+    .get(
+      '/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v999.999.999',
+    )
+    .reply(404, {})
+}
+
+function mockTagSuccess(gitHubApi: Scope) {
+  return gitHubApi
+    .get('/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v0.0.1')
+    .reply(200, releaseArray[1])
+}
+
 function mockReleases(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases')
+    .get('/repos/GMOD/jbrowse-components/releases?page=1')
     .reply(200, releaseArray)
 }
 
@@ -75,22 +89,6 @@ describe('upgrade', () => {
     .command(['upgrade', 'jbrowse'])
     .exit(10)
     .it('fails if user selects a directory that does not exist')
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
-    })
-    .command(['upgrade'])
-    .exit(20)
-    .it("fails if it can't parse manifest.json")
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
-    })
-    .command(['upgrade'])
-    .exit(30)
-    .it('fails if "name" in manifest.json is not "JBrowse"')
   setup
     .nock('https://api.github.com', mockReleases)
     .nock('https://example.com', mockV2Zip)
@@ -104,9 +102,9 @@ describe('upgrade', () => {
       expect(await fsPromises.stat('manifest.json')).not.toEqual(ctx.prevStat)
     })
   setup
-    .nock('https://api.github.com', mockReleases)
+    .nock('https://api.github.com', mockTagSuccess)
     .nock('https://example.com', mockV1Zip)
-    .command(['upgrade', '--tag', '@gmod/jbrowse-web@v0.0.1'])
+    .command(['upgrade', '--tag', '@jbrowse/web@v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
@@ -117,9 +115,9 @@ describe('upgrade', () => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
   setup
-    .nock('https://api.github.com', mockReleases)
-    .command(['upgrade', '--tag', '@gmod/jbrowse-web@v999.999.999'])
-    .exit(110)
+    .nock('https://api.github.com', mockTagFail)
+    .command(['upgrade', '--tag', '@jbrowse/web@v999.999.999'])
+    .catch(/Could not find version/)
     .it('fails to upgrade if version does not exist')
   setup
     .nock('https://example.com', mockWrongSite)

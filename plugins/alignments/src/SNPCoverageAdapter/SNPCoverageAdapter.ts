@@ -1,42 +1,38 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util/types'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-} from '@gmod/jbrowse-plugin-wiggle'
+import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
 import { Instance, getSnapshot } from 'mobx-state-tree'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
 import MyConfigSchemaF from './configSchema'
 
+interface Mismatch {
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
+}
+
+export interface StatsRegion {
+  refName: string
+  start: number
+  end: number
+  bpPerPx?: number
+}
+
 export default (pluginManager: PluginManager) => {
   const MyConfigSchema = MyConfigSchemaF(pluginManager)
-
-  interface Mismatch {
-    start: number
-    length: number
-    type: string
-    base: string
-    altbase?: string
-    seq?: string
-    cliplen?: number
-  }
-
-  interface StatsRegion {
-    refName: string
-    start: number
-    end: number
-    bpPerPx?: number
-  }
 
   function generateInfoList(table: NestedFrequencyTable) {
     const infoList = []
@@ -144,18 +140,20 @@ export default (pluginManager: PluginManager) => {
           opts.bpPerPx || 1,
         )
         coverageBins.forEach((bin, index) => {
-          observer.next(
-            new SimpleFeature({
-              id: `pos_${region.start}${index}`,
-              data: {
-                score: bin.total(),
-                snpinfo: generateInfoList(bin), // info needed to draw snps
-                start: region.start + index,
-                end: region.start + index + 1,
-                refName: region.refName,
-              },
-            }),
-          )
+          if (bin.total()) {
+            observer.next(
+              new SimpleFeature({
+                id: `pos_${region.start}${index}`,
+                data: {
+                  score: bin.total(),
+                  snpinfo: generateInfoList(bin), // info needed to draw snps
+                  start: region.start + index,
+                  end: region.start + index + 1,
+                  refName: region.refName,
+                },
+              }),
+            )
+          }
         })
 
         observer.complete()

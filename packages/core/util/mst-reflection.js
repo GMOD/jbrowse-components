@@ -38,7 +38,11 @@ export function getSubType(type) {
  */
 export function getUnionSubTypes(unionType) {
   if (!isUnionType(unionType)) throw new TypeError('not an MST union type')
-  const t = unionType._types || unionType.types
+  const t =
+    unionType._types ||
+    unionType.types ||
+    getSubType(unionType)._types ||
+    getSubType(unionType).types
   if (!t) {
     // debugger
     throw new Error('failed to extract subtypes from mst union')

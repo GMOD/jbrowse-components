@@ -1,5 +1,5 @@
 import objectHash from 'object-hash'
-import { generateUnsupportedTrackConf } from '@gmod/jbrowse-core/util/tracks'
+import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
 
 export function generateTracks(trackDb, assemblyName, sequenceAdapter) {
   // eslint-disable-next-line no-underscore-dangle
@@ -61,7 +61,7 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
           ? { localPath: track.bigDataIndex }
           : { localPath: `${track.bigDataUrl}.bai` }
       return {
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         name: track.shortLabel,
         description: track.longLabel,
         category: categories,
@@ -105,11 +105,10 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
       )
     case 'bigbed':
       return {
-        type: 'BasicTrack',
+        type: 'FeatureTrack',
         name: track.shortLabel,
         description: track.longLabel,
         category: categories,
-        renderer: { type: 'SvgFeatureRenderer' },
         adapter: {
           type: 'BigBedAdapter',
           bigBedLocation: bigDataLocation,
@@ -141,7 +140,7 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
       )
     case 'bigwig':
       return {
-        type: 'WiggleTrack',
+        type: 'QuantitativeTrack',
         name: track.shortLabel,
         description: track.longLabel,
         category: categories,
@@ -176,7 +175,7 @@ function makeTrackConfig(track, trackDbUrl, sequenceAdapter) {
           ? { localPath: track.bigDataIndex }
           : { localPath: `${track.bigDataUrl}.bai` }
       return {
-        type: 'PileupTrack',
+        type: 'AlignmentsTrack',
         name: track.shortLabel,
         description: track.longLabel,
         category: categories,

@@ -1,4 +1,3 @@
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 // material ui things
@@ -11,7 +10,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { getConf } from '@gmod/jbrowse-core/configuration'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -37,7 +35,6 @@ export default observer((props: { model: LGV }) => {
   const { model } = props
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
-  const session = getSession(model)
 
   // the AboutDialog is shown at this level because if it is
   // rendered as a child of the TracksContainer, then clicking on
@@ -60,7 +57,7 @@ export default observer((props: { model: LGV }) => {
           style={{
             position: 'absolute',
             right: 0,
-            zIndex: 100000,
+            zIndex: 1001,
           }}
         >
           <MiniControls model={model} />
@@ -71,35 +68,32 @@ export default observer((props: { model: LGV }) => {
           <Typography color="error">{error.message}</Typography>
         </Paper>
       ) : (
-        <TracksContainer model={model}>
-          {!tracks.length ? (
-            <Paper variant="outlined" className={classes.errorMessage}>
-              <Typography>No tracks active.</Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={model.activateTrackSelector}
-                disabled={
-                  isSessionModelWithWidgets(session) &&
-                  session.visibleWidget &&
-                  session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                  // @ts-ignore
-                  session.visibleWidget.view.id === model.id
-                }
-              >
-                Select Tracks
-              </Button>
-            </Paper>
-          ) : (
-            tracks.map(track => (
-              <TrackContainer key={track.id} model={model} track={track} />
-            ))
-          )}
-        </TracksContainer>
+        <>
+          <TracksContainer model={model}>
+            {!tracks.length ? (
+              <Paper variant="outlined" className={classes.errorMessage}>
+                <Typography>No tracks active.</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={model.activateTrackSelector}
+                >
+                  Select Tracks
+                </Button>
+              </Paper>
+            ) : (
+              tracks.map(track => (
+                <TrackContainer key={track.id} model={model} track={track} />
+              ))
+            )}
+          </TracksContainer>
+        </>
       )}
     </div>
   )
 })
+
+
 
 export async function renderToSvg(model: LGV) {
   let offset = 20

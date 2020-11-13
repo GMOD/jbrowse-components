@@ -65,13 +65,13 @@ export default class ElectronRemoteFile implements GenericFilehandle {
       return
     }
 
-    const fetch = opts.fetch || window.fetch
+    const fetcharg = opts.fetch || window.fetch
     if (!fetch) {
       throw new TypeError(
         `no fetch function supplied, and none found in global environment`,
       )
     }
-    this.fetch = fetch
+    this.fetch = fetcharg
 
     if (opts.overrides) {
       this.baseOverrides = opts.overrides
@@ -115,8 +115,10 @@ export default class ElectronRemoteFile implements GenericFilehandle {
       throw new Error(
         'a fetch function must be available unless using a file:// url',
       )
-    if (!this.url) throw new Error('no URL specified')
-    const fetch = this.nodeFetchFallback ? this.nodeFetch : this.fetch
+    if (!this.url) {
+      throw new Error('no URL specified')
+    }
+    const myfetch = this.nodeFetchFallback ? this.nodeFetch : this.fetch
     const { headers = {}, signal, overrides = {} } = opts
     const requestOptions = {
       headers,
@@ -129,7 +131,7 @@ export default class ElectronRemoteFile implements GenericFilehandle {
     }
     let response
     try {
-      response = await fetch(this.url, requestOptions)
+      response = await myfetch(this.url, requestOptions)
     } catch (error) {
       if (!isAbortException(error)) {
         if (this.nodeFetchFallback) {

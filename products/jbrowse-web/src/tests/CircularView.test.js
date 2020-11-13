@@ -1,16 +1,17 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import configSnapshot from '../../test_data/volvox/config.json'
 import JBrowse from '../JBrowse'
-import { setup, getPluginManager, readBuffer } from './util'
+import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -22,7 +23,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('circular views', () => {
@@ -31,19 +36,18 @@ describe('circular views', () => {
     const configSnapshotWithCircular = JSON.parse(
       JSON.stringify(configSnapshot),
     )
-    configSnapshotWithCircular.savedSessions[0] = {
+    configSnapshotWithCircular.defaultSession = {
       name: 'Integration Test Circular',
-      views: [
-        {
-          id: 'integration_test_circular',
-          type: 'CircularView',
-        },
-      ],
+      views: [{ id: 'integration_test_circular', type: 'CircularView' }],
     }
     const pluginManager = getPluginManager(configSnapshotWithCircular)
-    const { findByTestId, findAllByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const {
+      findByTestId,
+      findAllByTestId,
+      findByText,
+      getByTestId,
+      queryByTestId,
+    } = render(<JBrowse pluginManager={pluginManager} />)
     // wait for the UI to be loaded
     await findByText('Help')
 
@@ -56,11 +60,32 @@ describe('circular views', () => {
 
     // wait for the track selector to open and then click the
     // checkbox for the chord test track to toggle it on
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_chord_test'))
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
 
     // expect the chord track to render eventually
-    await expect(
-      findByTestId('rpc-rendered-circular-chord-track'),
-    ).resolves.toBeTruthy()
-  })
+    await wait(() => {
+      expect(getByTestId('structuralVariantChordRenderer')).toBeInTheDocument()
+    })
+    // make sure a chord is rendered
+    await wait(() => {
+      expect(getByTestId('chord-test-vcf-66132')).toBeInTheDocument()
+    })
+
+    // toggle track off
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
+
+    // expect the track to disappear
+    await wait(() => {
+      expect(
+        queryByTestId('structuralVariantChordRenderer'),
+      ).not.toBeInTheDocument()
+    })
+
+    // open up VCF with renamed refNames
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test_renamed'))
+    // make sure a chord is rendered
+    await wait(() => {
+      expect(getByTestId('chord-test-vcf-62852')).toBeInTheDocument()
+    })
+  }, 10000)
 })

@@ -9,34 +9,28 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "test_data/hg19.chrom.sizes"
+            "uri": "../hg19.chrom.sizes"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       }
     }
   ],
   "tracks": [
     {
-      "type": "StructuralVariantChordTrack",
-      "trackId": "sv_chord_track",
+      "type": "VariantTrack",
+      "trackId": "sv_track",
       "name": "human chord test",
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
+          "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
+            "uri": "hs37d5.HG002-SequelII-CCS.sv.vcf.gz.tbi"
           }
         }
-      },
-      "renderer": {
-        "type": "StructuralVariantChordRenderer"
       }
     },
     {
@@ -48,20 +42,12 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
-          "uri": "test_data/breakpoint/pacbio_chr3_chr6.vcf.gz"
+          "uri": "pacbio_chr3_chr6.vcf.gz"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/pacbio_chr3_chr6.vcf.gz.tbi"
+            "uri": "pacbio_chr3_chr6.vcf.gz.tbi"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -74,131 +60,145 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "test_data/breakpoint/pacbio_chr3_chr6.bam"
+          "uri": "pacbio_chr3_chr6.bam"
         },
         "index": {
           "location": {
-            "uri": "test_data/breakpoint/pacbio_chr3_chr6.bam.bai"
+            "uri": "pacbio_chr3_chr6.bam.bai"
           }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
         }
       }
     }
   ],
   "defaultSession": {
-    "name": "New Session"
-  },
-  "savedSessions": [
-    {
-      "name": "Human Example (hg19)",
-      "drawerWidth": 384,
-      "views": [
-        {
-          "id": "MiDMyyWpp",
-          "type": "BreakpointSplitView",
-          "headerHeight": 44,
-          "height": 400,
-          "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
-          "trackSelectorType": "hierarchical",
-          "views": [
-            {
-              "id": "AcZl9Uifbv",
-              "type": "LinearGenomeView",
-              "offsetPx": 18669656.00687344,
-              "bpPerPx": 10,
-              "displayedRegions": [
-                {
-                  "refName": "3",
-                  "start": 0,
-                  "end": 186700647,
-                  "assemblyName": "hg19"
-                },
-                {
-                  "refName": "3",
-                  "start": 186700647,
-                  "end": 198022430,
-                  "assemblyName": "hg19"
-                }
-              ],
-              "tracks": [
-                {
-                  "type": "AlignmentsTrack",
-                  "height": 100,
-                  "configuration": "pacbio_hg002_breakpoints",
-                  "selectedRendering": ""
-                },
-                {
-                  "type": "VariantTrack",
-                  "height": 100,
-                  "configuration": "pacbio_vcf",
-                  "selectedRendering": ""
-                }
-              ],
-              "hideControls": false,
-              "hideHeader": true,
-              "trackSelectorType": "hierarchical"
-            },
-            {
-              "id": "0Q9aAu1h7g",
-              "type": "LinearGenomeView",
-              "offsetPx": 5675435.581319785,
-              "bpPerPx": 10,
-              "displayedRegions": [
-                {
-                  "refName": "6",
-                  "start": 0,
-                  "end": 56758391,
-                  "assemblyName": "hg19"
-                },
-                {
-                  "refName": "6",
-                  "start": 56758391,
-                  "end": 171115067,
-                  "assemblyName": "hg19"
-                }
-              ],
-              "tracks": [
-                {
-                  "type": "AlignmentsTrack",
-                  "height": 100,
-                  "configuration": "pacbio_hg002_breakpoints",
-                  "selectedRendering": ""
-                },
-                {
-                  "type": "VariantTrack",
-                  "height": 100,
-                  "configuration": "pacbio_vcf",
-                  "selectedRendering": ""
-                }
-              ],
-              "hideControls": false,
-              "hideHeader": true,
-              "trackSelectorType": "hierarchical"
-            }
-          ]
-        }
-      ],
-      "widgets": {
-        "hierarchicalTrackSelector": {
-          "id": "hierarchicalTrackSelector",
-          "type": "HierarchicalTrackSelectorWidget",
-          "collapsed": {},
-          "filterText": ""
-        },
-        "sessionManager": {
-          "id": "sessionManager",
-          "type": "SessionManager"
-        }
+    "name": "Human Example (hg19)",
+    "drawerWidth": 384,
+    "views": [
+      {
+        "id": "MiDMyyWpp",
+        "type": "BreakpointSplitView",
+        "headerHeight": 44,
+        "height": 400,
+        "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
+        "trackSelectorType": "hierarchical",
+        "views": [
+          {
+            "id": "AcZl9Uifbv",
+            "type": "LinearGenomeView",
+            "offsetPx": 18669656.00687344,
+            "bpPerPx": 10,
+            "displayedRegions": [
+              {
+                "refName": "3",
+                "start": 0,
+                "end": 186700647,
+                "assemblyName": "hg19"
+              },
+              {
+                "refName": "3",
+                "start": 186700647,
+                "end": 198022430,
+                "assemblyName": "hg19"
+              }
+            ],
+            "tracks": [
+              {
+                "type": "AlignmentsTrack",
+                "configuration": "pacbio_hg002_breakpoints",
+                "displays": [
+                  {
+                    "type": "LinearAlignmentsDisplay",
+                    "configuration": "pacbio_hg002_breakpoints-LinearAlignmentsDisplay"
+                  }
+                ]
+              },
+              {
+                "type": "VariantTrack",
+                "configuration": "pacbio_vcf",
+                "displays": [
+                  {
+                    "type": "LinearVariantDisplay",
+                    "configuration": "pacbio_vcf-LinearVariantDisplay"
+                  }
+                ]
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "trackSelectorType": "hierarchical"
+          },
+          {
+            "id": "0Q9aAu1h7g",
+            "type": "LinearGenomeView",
+            "offsetPx": 5675435.581319785,
+            "bpPerPx": 10,
+            "displayedRegions": [
+              {
+                "refName": "6",
+                "start": 0,
+                "end": 56758391,
+                "assemblyName": "hg19"
+              },
+              {
+                "refName": "6",
+                "start": 56758391,
+                "end": 171115067,
+                "assemblyName": "hg19"
+              }
+            ],
+            "tracks": [
+              {
+                "type": "AlignmentsTrack",
+                "configuration": "pacbio_hg002_breakpoints",
+                "displays": [
+                  {
+                    "type": "LinearAlignmentsDisplay",
+                    "configuration": "pacbio_hg002_breakpoints-LinearAlignmentsDisplay"
+                  }
+                ]
+              },
+              {
+                "type": "VariantTrack",
+                "configuration": "pacbio_vcf",
+                "displays": [
+                  {
+                    "type": "LinearVariantDisplay",
+                    "configuration": "pacbio_vcf-LinearVariantDisplay"
+                  }
+                ]
+              }
+            ],
+            "hideControls": false,
+            "hideHeader": true,
+            "trackSelectorType": "hierarchical"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "collapsed": {},
+        "filterText": ""
       },
-      "activeWidgets": {},
-      "connections": {}
+      "sessionManager": {
+        "id": "sessionManager",
+        "type": "SessionManager"
+      }
+    },
+    "activeWidgets": {},
+    "connections": {}
+  },
+  "connections": [
+    {
+      "type": "JBrowse1Connection",
+      "connectionId": "COSMIC_connection_grch37",
+      "name": "COSMIC (GRCh37)",
+      "assemblyName": "hg19",
+      "dataDirLocation": {
+        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic"
+      }
     }
   ]
 }

@@ -2,9 +2,9 @@
 import {
   Feature,
   SimpleFeatureSerialized,
-} from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/util/simpleFeature'
 
-import { ClassReturnedBy } from '@gmod/jbrowse-core/util'
+import { ClassReturnedBy } from '@jbrowse/core/util'
 import CramAdapterF from './CramAdapter'
 
 type CramAdapter = ClassReturnedBy<typeof CramAdapterF>
@@ -59,10 +59,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.mappingQuality
   }
 
-  _get_mapping_quality() {
-    return this.record.mappingQuality
-  }
-
   _get_flags() {
     return this.record.flags
   }
@@ -85,64 +81,12 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this._store.refIdToName(this.record.sequenceId)
   }
 
-  _get_refname() {
+  _get_refName() {
     return this._get_seq_id()
-  }
-
-  _get_qc_failed() {
-    return this.record.isFailedQc()
-  }
-
-  _get_secondary_alignment() {
-    return this.record.isSecondary()
-  }
-
-  _get_duplicate() {
-    return this.record.isDuplicate()
-  }
-
-  _get_supplementary_alignment() {
-    return this.record.isSupplementary()
-  }
-
-  _get_pair_orientation() {
-    return this.record.getPairOrientation()
-  }
-
-  _get_multi_segment_template() {
-    return this.record.isPaired()
-  }
-
-  _get_multi_segment_all_correctly_aligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_all_aligned() {
-    return this.record.isProperlyPaired()
-  }
-
-  _get_multi_segment_next_segment_unmapped() {
-    return this.record.isMateUnmapped()
-  }
-
-  _get_multi_segment_first() {
-    return this.record.isRead1()
-  }
-
-  _get_multi_segment_last() {
-    return this.record.isRead2()
-  }
-
-  _get_multi_segment_next_segment_reversed() {
-    return this.record.isMateReverseComplemented()
   }
 
   _get_is_paired() {
     return !!this.record.mate
-  }
-
-  _get_unmapped() {
-    return this.record.isSegmentUnmapped()
   }
 
   _get_template_length() {
@@ -288,16 +232,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.uniqueId + 1
   }
 
-  _get(field: string) {
-    const methodName = `_get_${field}`
-
-    // @ts-ignore
-    if (this[methodName]) return this[methodName]()
-    return undefined
-  }
-
   get(field: string) {
-    const methodName = `_get_${field.toLowerCase()}`
+    const methodName = `_get_${field}`
     // @ts-ignore
     if (this[methodName]) return this[methodName]()
     return undefined
@@ -336,16 +272,14 @@ export default class CramSlightlyLazyFeature implements Feature {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      tags[t] = this._get(t)
+      tags[t] = this.get(t)
     })
 
     return {
       ...tags,
-      refName: this.get('refName'),
       name: this.get('name'),
       type: this.get('type'),
       uniqueId: this.id(),
-      clipPos: this._get_clipPos(),
     }
   }
 
@@ -385,7 +319,7 @@ export default class CramSlightlyLazyFeature implements Feature {
             start: refPos,
             type: 'insertion',
             base: `${data.length}`,
-            length: data.length,
+            length: 0,
           })
         } else if (code === 'N') {
           // reference skip

@@ -58,9 +58,9 @@ class DummyHandle {
   destroy(): void {}
 
   async call(
-    functionName: string,
-    filteredArgs?: {},
-    options = {},
+    _functionName: string,
+    _filteredArgs?: {},
+    _options = {},
   ): Promise<unknown> {
     return undefined
   }
@@ -74,7 +74,7 @@ class DummyHandle {
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   makeWorker: () => DummyHandle
 
-  constructor(args: {}) {
+  constructor(_args: {}) {
     super()
     this.makeWorker = (): DummyHandle => new DummyHandle()
   }
@@ -84,7 +84,6 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     sessionId: string,
     functionName: string,
     args: {},
-    options = {},
   ): Promise<unknown> {
     if (!sessionId) {
       throw new TypeError('sessionId is required')

@@ -1,6 +1,6 @@
 import csv from 'csvtojson'
 
-import { parseLocString } from '@gmod/jbrowse-core/util'
+import { parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
   return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
@@ -83,9 +83,10 @@ function dataToSpreadsheetSnapshot(
   const rowSet: RowSet = {
     isLoaded: true,
     rows: rows.map((row, rowNumber) => {
+      const id = rowNumber + (options.hasColumnNameLine ? 0 : 1)
       if (row.length > maxCols) maxCols = row.length
       return {
-        id: String(rowNumber + 1),
+        id: String(id),
         cells: row.map((text, columnNumber) => {
           return { columnNumber, text }
         }),

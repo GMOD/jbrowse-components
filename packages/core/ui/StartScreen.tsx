@@ -345,7 +345,7 @@ export default function StartScreen({
           }}
         >
           <ListItemIcon>
-            <WarningIcon fontSize="small" />
+            <WarningIcon />
           </ListItemIcon>
           <Typography variant="inherit">Factory Reset</Typography>
         </MenuItem>

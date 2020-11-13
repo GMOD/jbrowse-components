@@ -56,7 +56,7 @@ describe('add-connection', () => {
   setup
     .nock('https://example.com', site => site.head('/hub.txt').reply(200))
     .command(['add-connection', 'https://example.com/hub.txt'])
-    .exit(100)
+    .catch(/no such file or directory/)
     .it('fails if no config file')
   setup
     .command(['add-connection', '.'])
@@ -88,28 +88,6 @@ describe('add-connection', () => {
     ])
     .exit(130)
     .it('fails if not a matching assembly name')
-  setup
-    .do(async () => {
-      await fsPromises.unlink('manifest.json')
-    })
-    .command(['add-connection', 'https://example.com'])
-    .exit(10)
-    .it('fails if no manifest.json found in cwd')
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', 'This Is Invalid JSON')
-    })
-    .command(['add-connection', 'https://example.com'])
-    .exit(20)
-    .it("fails if it can't parse manifest.json")
-
-  setup
-    .do(async () => {
-      await fsPromises.writeFile('manifest.json', '{"name":"NotJBrowse"}')
-    })
-    .command(['add-connection', 'https://example.com'])
-    .exit(30)
-    .it('fails if "name" in manifest.json is not "JBrowse"')
 
   setupWithDateMock
     .nock('https://mysite.com', site => site.head('/data/hub.txt').reply(200))

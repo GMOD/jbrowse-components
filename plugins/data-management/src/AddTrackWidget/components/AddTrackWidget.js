@@ -1,5 +1,5 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { getSession } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
 import StepContent from '@material-ui/core/StepContent'
@@ -37,11 +37,17 @@ function AddTrackWidget({ model }) {
   const [activeStep, setActiveStep] = useState(0)
   const [trackSource, setTrackSource] = useState('fromFile')
   const [trackData, setTrackData] = useState({ uri: '' })
+  const [indexTrackData, setIndexTrackData] = useState({ uri: '' })
   const [trackName, setTrackName] = useState('')
   const [trackType, setTrackType] = useState('')
   const [trackAdapter, setTrackAdapter] = useState({})
-  const [assembly, setAssembly] = useState('')
+  const [assembly, setAssembly] = useState(
+    model.view.displayedRegions[0].assemblyName || '',
+  )
   const classes = useStyles()
+  const fileName = trackData.uri
+    ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
+    : null
 
   const session = getSession(model)
 
@@ -54,12 +60,16 @@ function AddTrackWidget({ model }) {
             setTrackSource={setTrackSource}
             trackData={trackData}
             setTrackData={setTrackData}
+            indexTrackData={indexTrackData}
+            setIndexTrackData={setIndexTrackData}
           />
         )
       case 1:
         return (
           <ConfirmTrack
+            fileName={fileName}
             session={session}
+            indexTrackData={indexTrackData}
             trackData={trackData}
             trackName={trackName}
             setTrackName={setTrackName}
@@ -85,15 +95,20 @@ function AddTrackWidget({ model }) {
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
-    const trackConf = session.addTrackConf({
+
+    const assemblyInstance = session.assemblyManager.get(assembly)
+    session.addTrackConf({
       trackId,
       type: trackType,
-      name: trackName,
-      assemblyNames: [readConfObject(assembly, 'name')],
-      adapter: trackAdapter,
+      name: trackName || fileName,
+      assemblyNames: [assembly],
+      adapter: {
+        ...trackAdapter,
+        sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
+      },
     })
     if (model.view) {
-      model.view.showTrack(trackConf)
+      model.view.showTrack(trackId)
     } else {
       session.notify(
         'Open a new view, or use the track selector in an existing view, to view this track',
@@ -117,7 +132,12 @@ function AddTrackWidget({ model }) {
           trackData.config
         )
       case 1:
-        return !(trackName && trackType && trackAdapter.type && assembly)
+        return !(
+          (trackName || fileName) &&
+          trackType &&
+          trackAdapter.type &&
+          assembly
+        )
       default:
         return true
     }

@@ -2,11 +2,11 @@ export default pluginManager => {
   const { jbrequire } = pluginManager
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { makeContrasting } = jbrequire('@gmod/jbrowse-core/util/color')
+  const { getSession } = jbrequire('@jbrowse/core/util')
+  const { makeContrasting } = jbrequire('@jbrowse/core/util/color')
   const { makeStyles, useTheme } = jbrequire('@material-ui/core/styles')
   const { polarToCartesian, radToDeg, assembleLocString } = jbrequire(
-    '@gmod/jbrowse-core/util',
+    '@jbrowse/core/util',
   )
 
   const useStyles = makeStyles({

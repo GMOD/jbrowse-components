@@ -1,10 +1,10 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Region } from '@jbrowse/core/util/types'
+import { useTheme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React from 'react'
-import './DivSequenceRendering.scss'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
 
 // given the displayed region and a Map of id => feature, assemble the region's
 // sequence from the sequences returned by each feature.
@@ -50,6 +50,7 @@ interface MyProps {
 }
 
 function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
+  const theme = useTheme()
   const [region] = regions
   let s = ''
   for (const seq of features.values()) {
@@ -71,16 +72,40 @@ function SequenceDivs({ features, regions, bpPerPx }: MyProps) {
 
   return (
     <div style={{ display: 'flex' }}>
-      {letters.map((letter, iter) => (
-        <div
-          key={`${region.start}-${iter}`}
-          className={`base base-${letter.toLowerCase()} ${
-            bpPerPx < 0.1 ? 'border' : ''
-          }`}
-        >
-          {bpPerPx < 0.1 ? letter : ''}
-        </div>
-      ))}
+      {letters.map((letter, iter) => {
+        const style: React.CSSProperties = {
+          textAlign: 'center',
+          display: 'inline-block',
+          height: '100%',
+          overflow: 'hidden',
+          minHeight: 16,
+          flex: 1,
+          backgroundColor: theme.palette.action.disabled,
+          color: theme.palette.text.primary,
+        }
+        const showLetter = bpPerPx < 0.1
+        if (showLetter) {
+          style.border = `1px solid ${theme.palette.divider}`
+          style.borderRadius = theme.shape.borderRadius
+          style.boxSizing = 'border-box'
+          style.borderCollapse = 'collapse'
+        }
+        type Base = keyof typeof theme.palette.bases
+        function isBase(l: string): l is Base {
+          return Object.keys(theme.palette.bases).includes(l as Base)
+        }
+        const upperLetter = letter.toUpperCase()
+        if (isBase(upperLetter)) {
+          const color = theme.palette.bases[upperLetter]
+          style.backgroundColor = color.main
+          style.color = color.contrastText
+        }
+        return (
+          <div key={`${region.start}-${iter}`} style={style}>
+            {showLetter ? letter : ''}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -94,7 +119,7 @@ function DivSequenceRendering(props: MyProps) {
   const height = readConfObject(config, 'height')
   return (
     <div
-      className="DivSequenceRendering"
+      // className="DivSequenceRendering"
       style={{ height: `${height}px`, fontSize: `${height * 0.8}px` }}
     >
       <SequenceDivs {...props} />

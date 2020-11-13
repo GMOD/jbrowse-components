@@ -1,11 +1,11 @@
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
+
 export default ({ jbrequire }) => {
   const { types } = jbrequire('mobx-state-tree')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
 
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const TextField = jbrequire('@material-ui/core/TextField')
@@ -95,7 +95,6 @@ export default ({ jbrequire }) => {
             filterModel.setFirstNumber(parseFloat(evt.target.value))
           }}
           className={classes.textFilterControl}
-          margin="dense"
         />
         {filterModel.operation !== 'between' &&
         filterModel.operation !== 'not between' ? null : (
@@ -111,7 +110,6 @@ export default ({ jbrequire }) => {
                 filterModel.setSecondNumber(parseFloat(evt.target.value))
               }
               className={classes.textFilterControl}
-              margin="dense"
             />
           </>
         )}

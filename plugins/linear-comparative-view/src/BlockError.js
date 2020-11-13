@@ -22,7 +22,6 @@ function BlockError({ error, reload }) {
         <Button
           onClick={reload}
           // variant="outlined"
-          size="small"
           startIcon={<RefreshIcon />}
         >
           Reload
