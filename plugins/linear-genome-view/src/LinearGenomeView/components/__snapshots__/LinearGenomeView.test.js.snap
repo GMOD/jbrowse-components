@@ -80,32 +80,48 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       <div
         class="makeStyles-headerBar"
       >
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-          color="secondary"
-          tabindex="0"
-          title="select tracks"
-          type="button"
-          value="track_select"
-        >
-          <span
-            class="MuiToggleButton-label"
+        <div>
+          <button
+            class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+            color="secondary"
+            tabindex="0"
+            title="select tracks"
+            type="button"
+            value="track_select"
           >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root"
-              focusable="false"
-              viewBox="0 0 24 24"
+            <span
+              class="MuiToggleButton-label"
             >
-              <path
-                d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
-              />
-            </svg>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              Export SVG
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
         <div
           class="makeStyles-spacer"
         />
@@ -401,7 +417,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -880,32 +896,48 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <div
         class="makeStyles-headerBar"
       >
-        <button
-          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-          color="secondary"
-          tabindex="0"
-          title="select tracks"
-          type="button"
-          value="track_select"
-        >
-          <span
-            class="MuiToggleButton-label"
+        <div>
+          <button
+            class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+            color="secondary"
+            tabindex="0"
+            title="select tracks"
+            type="button"
+            value="track_select"
           >
-            <svg
-              aria-hidden="true"
-              class="MuiSvgIcon-root"
-              focusable="false"
-              viewBox="0 0 24 24"
+            <span
+              class="MuiToggleButton-label"
             >
-              <path
-                d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
-              />
-            </svg>
-          </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
-        </button>
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                />
+              </svg>
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+            tabindex="0"
+            type="button"
+          >
+            <span
+              class="MuiButton-label"
+            >
+              Export SVG
+            </span>
+            <span
+              class="MuiTouchRipple-root"
+            />
+          </button>
+        </div>
         <div
           class="makeStyles-spacer"
         />
@@ -1203,7 +1235,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1240,7 +1272,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1280,7 +1312,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 279px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 299px;"
           />
           <div
@@ -1320,7 +1352,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 479px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 499px;"
           />
           <div
@@ -1360,7 +1392,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 679px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 699px;"
           />
           <div
@@ -1400,7 +1432,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 879px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 899px;"
           />
           <div
