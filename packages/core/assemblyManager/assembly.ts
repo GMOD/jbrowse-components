@@ -303,7 +303,7 @@ function loadAssemblyData(self: Assembly) {
 }
 async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
-  signal: AbortSignal,
+  _signal: AbortSignal,
 ) {
   if (!props) {
     return
@@ -321,7 +321,7 @@ async function loadAssemblyReaction(
     sequenceAdapterConfig.type,
   )
   const adapter = new dataAdapterType.AdapterClass(sequenceAdapterConfig)
-  const adapterRegions = await adapter.getRegions()
+  const adapterRegions = (await adapter.getRegions()) as Region[]
 
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
     const { refName } = adapterRegion
@@ -336,7 +336,10 @@ async function loadAssemblyReaction(
     const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
       refNameAliasesAdapterConfig,
     )
-    const refNameAliasesList = await refNameAliasAdapter.getRefNameAliases()
+    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases()) as {
+      refName: string
+      aliases: string[]
+    }[]
 
     refNameAliasesList.forEach(({ refName, aliases }) => {
       aliases.forEach(alias => {
