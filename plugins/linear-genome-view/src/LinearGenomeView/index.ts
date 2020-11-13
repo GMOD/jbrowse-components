@@ -1036,7 +1036,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuItems(): MenuItem[] {
-          const session = getSession(self)
           const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',

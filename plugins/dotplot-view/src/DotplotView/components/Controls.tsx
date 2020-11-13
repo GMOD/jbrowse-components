@@ -11,7 +11,6 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import IconButton from '@material-ui/core/IconButton'
 
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
 export default () => {
@@ -35,7 +34,6 @@ export default () => {
 
   const Controls = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const session = getSession(model)
     return (
       <div className={classes.controls}>
         <IconButton

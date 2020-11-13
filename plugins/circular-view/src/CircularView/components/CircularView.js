@@ -23,7 +23,6 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -103,7 +102,6 @@ export default pluginManager => {
 
   const Controls = observer(({ model, showingFigure }) => {
     const classes = useStyles()
-    const session = getSession(model)
     return (
       <div className={classes.controls}>
         <IconButton
