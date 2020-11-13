@@ -55,10 +55,9 @@ const useStyles = makeStyles(theme => ({
 
 const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const session = getSession(model)
   return (
     <IconButton
-      onChange={model.activateTrackSelector}
+      onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
