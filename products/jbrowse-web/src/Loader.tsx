@@ -492,7 +492,13 @@ function addRelativeUris(config: Config, configUri: URL) {
 }
 
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+  return (
+    <FatalErrorDialog
+      buttonText="Reset Session"
+      onFactoryReset={factoryReset}
+      {...props}
+    />
+  )
 }
 export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
