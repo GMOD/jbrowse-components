@@ -430,9 +430,9 @@ const Renderer = observer(
           // window.MODEL.views[0] in devtools
 
           // @ts-ignore
-          window.SESSION = rootModel.session
+          window.JBrowseSession = rootModel.session
           // @ts-ignore
-          window.ROOTMODEL = rootModel
+          window.JBrowseRootModel = rootModel
 
           pluginManager.setRootModel(rootModel)
 
