@@ -98,22 +98,21 @@ export default function (pluginManager) {
               session.breakConnection(self.configuration)
             })
         },
-        get canConfigure() {
-          const session = getSession(self)
-          return (
-            isSessionModelWithConfigEditing(session) &&
-            session.adminMode(
-              // @ts-ignore
-              session.adminMode ||
-                // @ts-ignore
-                session.sessionConnections.find(connection => {
-                  return (
-                    connection.connectionId === self.configuration.connectionId
-                  )
-                }),
-            )
-          )
-        },
+        // TODOCONNECTION fix
+        // get canConfigure() {
+        //   const session = getSession(self)
+        //   return (
+        //     isSessionModelWithConfigEditing(session) &&
+        //     // @ts-ignore
+        //     (session.adminMode ||
+        //       // @ts-ignore
+        //       session.sessionConnections.find(connection => {
+        //         return (
+        //           connection.connectionId === self.configuration.connectionId
+        //         )
+        //       }))
+        //   )
+        // },
       })),
   )
 }
