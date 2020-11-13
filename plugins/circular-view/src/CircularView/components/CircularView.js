@@ -163,20 +163,14 @@ export default pluginManager => {
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
-          <ToggleButton
+          <IconButton
             onClick={model.activateTrackSelector}
             title="Open track selector"
-            selected={
-              session.visibleWidget &&
-              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleWidget.view.id === model.id
-            }
-            value="track_select"
             data-testid="circular_track_select"
             color="secondary"
           >
             <TrackSelectorIcon />
-          </ToggleButton>
+          </IconButton>
         )}
       </div>
     )
