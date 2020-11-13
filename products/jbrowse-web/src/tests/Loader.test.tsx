@@ -16,7 +16,11 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
-const getFile = (url: string) => new LocalFile(require.resolve(`../../${url}`))
+const getFile = (url: string) => {
+  url = url.replace(/http:\/\/localhost\//, '')
+  return new LocalFile(require.resolve(`../../${url}`))
+}
+
 const readBuffer = async (url: string, args: RequestInit) => {
   if (url.match(/testid/)) {
     return {
@@ -30,6 +34,15 @@ const readBuffer = async (url: string, args: RequestInit) => {
     return {
       ok: false,
       statusText: 'failed to find session',
+    }
+  }
+  // this is the analytics
+  if (url.match(/jb2=true/)) {
+    return {
+      ok: true,
+      async json() {
+        return {}
+      },
     }
   }
   try {
