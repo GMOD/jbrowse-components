@@ -165,7 +165,7 @@ export default pluginManager => {
         {model.hideTrackSelectorButton ? null : (
           <ToggleButton
             onClick={model.activateTrackSelector}
-            title="select tracks"
+            title="Open track selector"
             selected={
               session.visibleWidget &&
               session.visibleWidget.id === 'hierarchicalTrackSelector' &&

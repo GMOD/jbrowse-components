@@ -99,7 +99,7 @@ export default () => {
 
         <ToggleButton
           onClick={model.activateTrackSelector}
-          title="select tracks"
+          title="Open track selector"
           selected={
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&

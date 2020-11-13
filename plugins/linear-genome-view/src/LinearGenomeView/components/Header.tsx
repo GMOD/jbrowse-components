@@ -60,7 +60,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
     <ToggleButton
       onChange={model.activateTrackSelector}
       className={classes.toggleButton}
-      title="select tracks"
+      title="Open track selector"
       value="track_select"
       color="secondary"
       selected={
