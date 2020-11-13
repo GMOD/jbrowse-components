@@ -1,14 +1,7 @@
-<<<<<<< HEAD:plugins/linear-genome-view/src/BaseLinearDisplay/blockBasedTrackModel.tsx
-import React from 'react'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { autorun } from 'mobx'
-=======
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
->>>>>>> origin/master:plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
 import {
   getContainingView,
   getSession,
@@ -22,20 +15,14 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-<<<<<<< HEAD:plugins/linear-genome-view/src/BaseLinearDisplay/blockBasedTrackModel.tsx
-import BlockState, { renderBlockData } from './util/serverSideRenderedBlock'
-import baseTrack from './baseTrackModel'
-import BlockBasedTrack, { Tooltip } from './components/BlockBasedTrack'
-import { LinearGenomeViewModel } from '../LinearGenomeView'
-=======
 import { autorun } from 'mobx'
 import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
 import RBush from 'rbush'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
-import BlockState from './serverSideRenderedBlock'
+import BlockState, { renderBlockData } from './serverSideRenderedBlock'
+
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
->>>>>>> origin/master:plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
 
 export interface Layout {
   minX: number
@@ -64,30 +51,6 @@ export const BaseLinearDisplay = types
       blockState: types.map(BlockState),
     }),
   )
-<<<<<<< HEAD:plugins/linear-genome-view/src/BaseLinearDisplay/blockBasedTrackModel.tsx
-  .views(self => ({
-    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-      return 'staticBlocks'
-    },
-    get blockDefinitions() {
-      const { blockType } = this
-      const view = getContainingView(self) as LinearGenomeViewModel
-      return view[blockType]
-    },
-  }))
-  .views(self => {
-    let stale = false // used to make rtree refresh, the mobx reactivity fails for some reason
-    let rbush: { [key: string]: typeof RBush | undefined } = {}
-
-    return {
-      /**
-       * how many milliseconds to wait for the display to
-       * "settle" before re-rendering a block
-       */
-      get renderDelay() {
-        return 50
-      },
-=======
   .volatile(() => ({
     message: '',
     featureIdUnderMouse: undefined as undefined | string,
@@ -98,14 +61,24 @@ export const BaseLinearDisplay = types
     userBpPerPxLimit: undefined as undefined | number,
   }))
   .views(self => ({
+    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
+      return 'staticBlocks'
+    },
+    get blockDefinitions() {
+      const { blockType } = this
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (!view.initialized) {
+        throw new Error('view not initialized yet')
+      }
+      return view[blockType]
+    },
+  }))
+  .views(self => ({
     /**
      * set limit to config amount, or user amount if they force load,
      */
     get maxViewBpPerPx() {
       return self.userBpPerPxLimit || getConf(self, 'maxDisplayedBpPerPx')
-    },
-    get blockType(): 'staticBlocks' | 'dynamicBlocks' {
-      return 'staticBlocks'
     },
 
     /**
@@ -115,19 +88,9 @@ export const BaseLinearDisplay = types
     get renderDelay() {
       return 50
     },
->>>>>>> origin/master:plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
 
     get TooltipComponent(): React.FC<any> {
       return (Tooltip as unknown) as React.FC
-    },
-
-    get blockDefinitions() {
-      const { blockType } = this
-      const view = getContainingView(self) as LinearGenomeViewModel
-      if (!view.initialized) {
-        throw new Error('view not initialized yet')
-      }
-      return view[blockType]
     },
 
     /**
@@ -239,25 +202,6 @@ export const BaseLinearDisplay = types
         const rtree = this.rtree[blockKey]
         return rtree && rtree.collides(rect) ? rtree.search(rect) : []
       },
-<<<<<<< HEAD:plugins/linear-genome-view/src/BaseLinearDisplay/blockBasedTrackModel.tsx
-
-      /**
-       * returns a string feature ID if the globally-selected object
-       * is probably a feature
-       */
-      get selectedFeatureId() {
-        if (isAlive(self)) {
-          const session = getSession(self)
-          const { selection } = session
-          // does it quack like a feature?
-          if (isFeature(selection)) {
-            return selection.id()
-          }
-        }
-        return undefined
-      },
-=======
->>>>>>> origin/master:plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
     }
   })
   .actions(self => ({
@@ -347,7 +291,9 @@ export const BaseLinearDisplay = types
     addAdditionalContextMenuItemCallback(callback: Function) {
       self.additionalContextMenuItemCallbacks.push(callback)
     },
-<<<<<<< HEAD:plugins/linear-genome-view/src/BaseLinearDisplay/blockBasedTrackModel.tsx
+    setContextMenuFeature(feature?: Feature) {
+      self.contextMenuFeature = feature
+    },
     async renderSvg() {
       const view = getContainingView(self) as LinearGenomeViewModel
       const viewOffset = view.offsetPx
@@ -388,13 +334,6 @@ export const BaseLinearDisplay = types
           })}
         </>
       )
-    },
-  }))
-  .actions(self => ({
-=======
->>>>>>> origin/master:plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
-    setContextMenuFeature(feature?: Feature) {
-      self.contextMenuFeature = feature
     },
   }))
   .views(self => ({

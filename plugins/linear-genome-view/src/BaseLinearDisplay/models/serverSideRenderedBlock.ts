@@ -177,10 +177,13 @@ export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content
 // not using a flow for this, because the flow doesn't
 // work with autorun
-function renderBlockData(self: Instance<BlockStateModel>, optDisplay?: any) {
+export function renderBlockData(
+  self: Instance<BlockStateModel>,
+  optDisplay?: any,
+) {
   try {
     const { assemblyManager, rpcManager } = getSession(self)
-    let display = optDisplay, getParent(self)
+    let display = optDisplay || getParent(self)
     while (!(display.configuration && getConf(display, 'displayId'))) {
       display = getParent(display)
     }
