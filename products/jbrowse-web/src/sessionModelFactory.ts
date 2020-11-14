@@ -325,7 +325,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
-          if(widget.isAssociatedWith?(view.id)) {
+          if (widget.isAssociatedWith?.(view.id)) {
             this.hideWidget(widget)
           }
         }
