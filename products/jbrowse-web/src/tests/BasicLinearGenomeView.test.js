@@ -104,7 +104,6 @@ describe('valid file tests', () => {
   })
 
   it('click and zoom in and back out', async () => {
-    jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByText } = render(
@@ -114,14 +113,12 @@ describe('valid file tests', () => {
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
-      jest.runAllTimers()
       const after = state.session.views[0].bpPerPx
       expect(after).toBe(before / 2)
     })
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
     await wait(() => {
-      jest.runAllTimers()
       const after = state.session.views[0].bpPerPx
       expect(after).toBe(before)
     })

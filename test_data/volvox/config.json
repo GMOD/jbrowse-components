@@ -10,12 +10,9 @@
           "date": "2020-08-20"
         },
         "adapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "volvox.fa"
-          },
-          "faiLocation": {
-            "uri": "volvox.fa.fai"
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
           }
         }
       },
