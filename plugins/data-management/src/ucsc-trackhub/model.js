@@ -28,9 +28,7 @@ export default function (pluginManager) {
           const session = getSession(self)
           return (
             isSessionModelWithConfigEditing(session) &&
-            // @ts-ignore
             (session.adminMode ||
-              // @ts-ignore
               session.sessionConnections.find(connection => {
                 return (
                   connection.connectionId === self.configuration.connectionId

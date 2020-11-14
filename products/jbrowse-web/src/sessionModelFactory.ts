@@ -195,7 +195,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         if (!assemblyConnections)
           throw new Error(`assembly ${assemblyName} not found`)
         const length = assemblyConnections.push(connectionData)
-        console.log('here', JSON.stringify(assemblyConnections))
         return assemblyConnections[length - 1]
       },
 
