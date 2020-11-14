@@ -573,7 +573,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const canEdit =
           session.adminMode ||
           session.sessionTracks.find((track: AnyConfigurationModel) => {
-            // @ts-ignore
             return track.trackId === config.trackId
           })
 

@@ -648,7 +648,6 @@ export default (pluginManager: PluginManager) => {
                   const { RenderingComponent } = display
 
                   return RenderingComponent ? (
-                    // @ts-ignore
                     <RenderingComponent
                       key={getConf(track, 'trackId')}
                       model={display}
