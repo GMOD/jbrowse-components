@@ -102,10 +102,7 @@ export default () => {
           title="Open track selector"
           selected={
             isSessionModelWithWidgets(session) &&
-            session.visibleWidget &&
-            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            // @ts-ignore
-            session.visibleWidget.view.id === model.id
+            session.visibleWidget?.isAssociatedWith?.(model.id)
           }
           value="track_select"
           data-testid="circular_track_select"

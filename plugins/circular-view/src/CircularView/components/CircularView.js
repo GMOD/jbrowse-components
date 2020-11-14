@@ -166,11 +166,7 @@ export default pluginManager => {
           <ToggleButton
             onClick={model.activateTrackSelector}
             title="Open track selector"
-            selected={
-              session.visibleWidget &&
-              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleWidget.view.id === model.id
-            }
+            selected={session.visibleWidget?.isAssociatedWith?.(model.id)}
             value="track_select"
             data-testid="circular_track_select"
             color="secondary"

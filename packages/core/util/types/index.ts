@@ -79,7 +79,7 @@ export function isSessionModelWithConfigEditing(
 
 /** abstract interface for a session that manages widgets */
 export interface SessionWithWidgets extends AbstractSessionModel {
-  visibleWidget?: { id: string }
+  visibleWidget?: { id: string; isAssociatedWith?: Function }
   widgets?: unknown[]
   addWidget(
     typeName: string,

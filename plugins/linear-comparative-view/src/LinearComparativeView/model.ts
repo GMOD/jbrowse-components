@@ -249,12 +249,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
           icon: TrackSelectorIcon,
-          disabled:
-            isSessionModelWithWidgets(session) &&
-            session.visibleWidget &&
-            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            // @ts-ignore
-            session.visibleWidget.view.id === self.id,
+          // @ts-ignore
+          disabled: session.visibleWidget?.isAssociatedWith?.(self.id),
         })
         return menuItems
       },

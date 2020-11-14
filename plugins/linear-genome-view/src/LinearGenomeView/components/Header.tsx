@@ -65,10 +65,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
       color="secondary"
       selected={
         isSessionModelWithWidgets(session) &&
-        session.visibleWidget &&
-        session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-        // @ts-ignore
-        session.visibleWidget.view.id === model.id
+        session.visibleWidget?.isAssociatedWith?.(model.id)
       }
     >
       <TrackSelectorIcon />

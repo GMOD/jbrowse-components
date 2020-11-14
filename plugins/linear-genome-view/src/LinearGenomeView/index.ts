@@ -1044,12 +1044,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               icon: TrackSelectorIcon,
               disabled:
                 isSessionModelWithWidgets(session) &&
-                session.visibleWidget &&
-                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view &&
-                // @ts-ignore
-                session.visibleWidget.view.id === self.id,
+                session.visibleWidget?.isAssociatedWith?.(self.id),
             },
             {
               label: 'Horizontally flip',

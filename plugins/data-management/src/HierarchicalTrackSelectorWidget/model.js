@@ -51,6 +51,9 @@ export default pluginManager =>
       },
     }))
     .views(self => ({
+      isAssociatedWith(obj) {
+        return self.view && obj.id === self.view.id
+      },
       trackConfigurations(assemblyName, trackConfigurations) {
         if (!self.view) {
           return []
