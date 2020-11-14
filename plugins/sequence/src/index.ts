@@ -1,9 +1,5 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
+import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -33,6 +29,7 @@ import {
   AdapterClass as TwoBitAdapterClass,
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
+import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'
@@ -75,14 +72,8 @@ export default class SequencePlugin extends Plugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'ReferenceSequenceTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
+      const configSchema = createReferenceSeqTrackConfig(pluginManager)
+
       return new TrackType({
         name: 'ReferenceSequenceTrack',
         configSchema,

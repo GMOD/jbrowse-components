@@ -11,7 +11,7 @@ export function getTrackAssemblyNames(
 ) {
   const trackConf = track.configuration
   const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
-  if (trackAssemblyNames[0] === 'assemblyName') {
+  if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parent = getParent<any>(track.configuration)
