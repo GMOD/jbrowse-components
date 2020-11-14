@@ -129,8 +129,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        const { assemblyNames } = this
+        const { assemblyManager } = getSession(self)
+        const assembliesInitialized = assemblyNames.every(
+          asm => assemblyManager.get(asm)?.initialized,
+        )
         return (
-          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+          self.volatileWidth !== undefined &&
+          self.displayedRegions.length > 0 &&
+          assembliesInitialized
         )
       },
       get scaleBarHeight() {
@@ -658,14 +665,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
-        const { start, end, assemblyName } = firstLocation
+        const {
+          start,
+          end,
+          assemblyName = self.assemblyNames[0],
+        } = firstLocation
+
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
         const session = getSession(self)
-        const assembly = session.assemblyManager.get(
-          assemblyName || self.assemblyNames[0],
-        )
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {

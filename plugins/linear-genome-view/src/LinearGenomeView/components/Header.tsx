@@ -79,9 +79,16 @@ const Controls = observer(({ model }: { model: LGV }) => {
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
-  const classes = useStyles()
   const theme = useTheme()
-  const { coarseVisibleLocStrings: visibleLocStrings } = model
+  const {
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
+  } = model
+
+  // use regular visibleLocStrings if coarseVisibleLocStrings is undefined
+  const visibleLocStrings =
+    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+
   const session = getSession(model)
 
   function navTo(locString: string) {
@@ -95,10 +102,15 @@ const Search = observer(({ model }: { model: LGV }) => {
 
   return (
     <form
+      data-testid="search-form"
       onSubmit={event => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
+
+        // need to manually call the action of blur here for
+        // react-testing-library
+        setValue(undefined)
       }}
     >
       <TextField
@@ -106,10 +118,13 @@ const Search = observer(({ model }: { model: LGV }) => {
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
         onChange={event => setValue(event.target.value)}
-        className={classes.input}
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
+        inputProps={{
+          'data-testid': 'search-input',
+        }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
         InputProps={{
           startAdornment: <SearchIcon />,
           style: {
