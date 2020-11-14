@@ -23,6 +23,22 @@ export default function (pluginManager) {
         configuration: ConfigurationReference(configSchema),
         type: types.literal('UCSCTrackHubConnection'),
       })
+      .views(self => ({
+        get canConfigure() {
+          const session = getSession(self)
+          return (
+            isSessionModelWithConfigEditing(session) &&
+            // @ts-ignore
+            (session.adminMode ||
+              // @ts-ignore
+              session.sessionConnections.find(connection => {
+                return (
+                  connection.connectionId === self.configuration.connectionId
+                )
+              }))
+          )
+        },
+      }))
       .actions(self => ({
         connect() {
           const connectionName = readConfObject(self.configuration, 'name')
@@ -98,21 +114,6 @@ export default function (pluginManager) {
               session.breakConnection(self.configuration)
             })
         },
-        // TODOCONNECTION fix
-        // get canConfigure() {
-        //   const session = getSession(self)
-        //   return (
-        //     isSessionModelWithConfigEditing(session) &&
-        //     // @ts-ignore
-        //     (session.adminMode ||
-        //       // @ts-ignore
-        //       session.sessionConnections.find(connection => {
-        //         return (
-        //           connection.connectionId === self.configuration.connectionId
-        //         )
-        //       }))
-        //   )
-        // },
       })),
   )
 }
