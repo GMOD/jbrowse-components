@@ -15,19 +15,21 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, getParent, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
+import FilterListIcon from '@material-ui/icons/ClearAll';
 
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
+import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
 
 // using a map because it preserves order
@@ -65,6 +67,12 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+          }),
+        ),
+        filterBy: types.maybe(
+          types.model({
+            inclusive: types.boolean,
+            flag: types.number,
           }),
         ),
       }),
@@ -118,7 +126,8 @@ const stateModelFactory = (
                   self.setReady(true)
                 }
               } catch (error) {
-                self.setError(error.message)
+                console.error(error)
+                self.setError(error)
               }
             },
             { delay: 1000 },
@@ -191,6 +200,9 @@ const stateModelFactory = (
       },
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorBy = cast(colorScheme)
+      },
+      setFilterBy(filter: { flag: number; inclusive: boolean }) {
+        self.filterBy = filter
       },
     }))
     .actions(self => {
@@ -267,6 +279,7 @@ const stateModelFactory = (
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
+            filterBy: self.filterBy,
             showSoftClip: self.showSoftClipping,
             viewAsPairs: self.viewAsPairs,
             linkSuppReads: self.linkSuppReads,
@@ -322,7 +335,8 @@ const stateModelFactory = (
                 .concat([
                   {
                     label: 'Sort by tag',
-                    onClick: () => self.setDialogComponent(SortByTagDlg),
+                    onClick: () =>
+                      getParent(self, 3).setDialogComponent(SortByTagDlg),
                   },
                   {
                     label: 'Clear sort',
@@ -367,7 +381,7 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag',
                   onClick: () => {
-                    self.setDialogComponent(ColorByTagDlg)
+                    getParent(self, 3).setDialogComponent(ColorByTagDlg)
                   },
                 },
                 {
@@ -377,6 +391,13 @@ const stateModelFactory = (
                   },
                 },
               ],
+            },
+            {
+              label: 'Filter by',
+              icon: FilterListIcon,
+              onClick: () => {
+                getParent(self, 3).setDialogComponent(FilterByTagDlg)
+              },
             },
           ]
         },

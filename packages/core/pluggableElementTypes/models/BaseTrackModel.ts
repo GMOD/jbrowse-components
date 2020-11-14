@@ -35,10 +35,14 @@ export function createBaseTrackModel(
     })
     .volatile(() => ({
       showAbout: false,
+      DialogComponent: undefined as React.FC | undefined,
     }))
     .actions(self => ({
       setShowAbout(show: boolean) {
         self.showAbout = show
+      },
+      setDialogComponent(dlg: any) {
+        self.DialogComponent = dlg
       },
     }))
     .views(self => ({

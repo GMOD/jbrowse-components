@@ -36,8 +36,13 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   // the AboutDialog is shown at this level because if it is
   // rendered as a child of the TracksContainer, then clicking on
   // the dialog scrolls the LGV
-  const aboutTrack = model.tracks.find(t => t.showAbout)
-  const dialogTrack = model.tracks.find(t => t.DialogComponent)
+  const aboutTrack = model.tracks.find(track => track.showAbout)
+  const dialogTrack = model.tracks.find(track => track.DialogComponent)
+  // const ret = track.displays.find(display => display.DialogComponent)
+  // console.log('ret', ret)
+  // return ret
+  // })
+  // console.log(dialogTrack)
 
   return !initialized ? (
     <ImportForm model={model} />
