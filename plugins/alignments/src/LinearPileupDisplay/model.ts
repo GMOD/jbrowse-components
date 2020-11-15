@@ -22,7 +22,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll';
+import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
@@ -202,6 +202,7 @@ const stateModelFactory = (
         self.colorBy = cast(colorScheme)
       },
       setFilterBy(filter: { flag: number; inclusive: boolean }) {
+        console.log({filter})
         self.filterBy = filter
       },
     }))
@@ -280,6 +281,14 @@ const stateModelFactory = (
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
             filterBy: self.filterBy,
+            filters: [
+              `function(feature) {
+                const flags = feature.get('flags')
+                return ${
+                  self.filterBy ? `!(flags&${self.filterBy?.flag})` : 'true'
+                }
+              }`,
+            ],
             showSoftClip: self.showSoftClipping,
             viewAsPairs: self.viewAsPairs,
             linkSuppReads: self.linkSuppReads,
@@ -325,24 +334,25 @@ const stateModelFactory = (
               label: 'Sort by',
               icon: SortIcon,
               disabled: self.showSoftClipping,
-              subMenu: ['Start location', 'Read strand', 'Base pair']
-                .map(option => {
-                  return {
-                    label: option,
-                    onClick: () => self.setSortedBy(option),
-                  }
-                })
-                .concat([
-                  {
-                    label: 'Sort by tag',
-                    onClick: () =>
-                      getParent(self, 3).setDialogComponent(SortByTagDlg),
+              subMenu: [
+                ...['Start location', 'Read strand', 'Base pair'].map(
+                  option => {
+                    return {
+                      label: option,
+                      onClick: () => self.setSortedBy(option),
+                    }
                   },
-                  {
-                    label: 'Clear sort',
-                    onClick: () => self.clearSelected(),
-                  },
-                ]),
+                ),
+                {
+                  label: 'Sort by tag',
+                  onClick: () =>
+                    getParent(self, 3).setDialogComponent(SortByTagDlg),
+                },
+                {
+                  label: 'Clear sort',
+                  onClick: () => self.clearSelected(),
+                },
+              ],
             },
             {
               label: 'Color scheme',

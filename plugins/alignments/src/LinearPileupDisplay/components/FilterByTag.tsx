@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
@@ -28,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 
 const mapping = {
   missingMate: 'Missing mate',
-  improperlyPaired: 'Improperly paired',
+  improperlyPaired: 'Properly paired',
   secondary: 'Secondary alignments',
   supplementary: 'Supplementary (aka split or chimeric) alignments',
   pcrDup: 'PCR duplicate',
@@ -41,34 +42,36 @@ const flagMap = {
   secondary: 256,
   supplementary: 2048,
   pcrDup: 1024,
-  failQc: 512,
+  failedQc: 512,
 } as { [key: string]: number }
 
 function getFlag(state: Record<string, boolean>) {
   return Object.entries(state).reduce((accum, [key, val]) => {
-    return accum | (flagMap[key] & +val)
+    return val ? accum | flagMap[key] : accum
   }, 0)
 }
 
-export default function FilterByDlg(props: {
-  model: AnyConfigurationModel
-  handleClose: () => void
-}) {
-  const [state, setState] = useState({
-    missingMate: true,
-    improperlyPaired: true,
-    secondary: true,
-    supplementary: true,
-    pcrDup: true,
-    failedQc: true,
-  })
+function parseFlag(flag: number) {
+  return Object.entries(flagMap).reduce((accum, [key, val]) => {
+    if (flag & val) {
+      accum[key] = true
+    } else {
+      accum[key] = false
+    }
+    return accum
+  }, {} as { [key: string]: boolean })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default observer((props: { model: any; handleClose: () => void }) => {
+  const { model, handleClose } = props
+  const classes = useStyles()
+  const display = model.displays[0]
+  const filter = (display.PileupDisplay || display).filterBy
+
+  const [state, setState] = useState(parseFlag(filter?.flag || 0))
   const [flag, setFlag] = useState<number>()
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setState({ ...state, [event.target.name]: event.target.checked })
-  }
-  const classes = useStyles()
-  const { model, handleClose } = props
   return (
     <Dialog
       open
@@ -95,7 +98,12 @@ export default function FilterByDlg(props: {
                 control={
                   <Checkbox
                     checked={value}
-                    onChange={handleChange}
+                    onChange={event => {
+                      setState({
+                        ...state,
+                        [event.target.name]: event.target.checked,
+                      })
+                    }}
                     name={key}
                   />
                 }
@@ -106,16 +114,18 @@ export default function FilterByDlg(props: {
 
           <div>
             <TextField
-              label="Custom flag input e.g. 255"
+              label="Enter flag value (reference https://broadinstitute.github.io/picard/explain-flags.html)"
               type="number"
               onChange={event => setFlag(+event.target.value)}
             />
           </div>
           <Button
             onClick={() => {
-              model.setFilterBy({
-                type: 'tag',
-                flag: flag === undefined ? getFlag(state) : flag,
+              const val = flag === undefined ? getFlag(state) : flag
+              console.log({ val })
+              ;(display.PileupDisplay || display).setFilterBy({
+                inclusive: false,
+                flag: val,
               })
               handleClose()
             }}
@@ -126,4 +136,4 @@ export default function FilterByDlg(props: {
       </DialogContent>
     </Dialog>
   )
-}
+})
