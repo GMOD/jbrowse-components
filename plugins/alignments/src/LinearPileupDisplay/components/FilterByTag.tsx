@@ -29,6 +29,56 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const flagNames = [
+  'read paired',
+  'read mapped in proper pair',
+  'read unmapped',
+  'mate unmapped',
+  'read reverse strand',
+  'mate reverse strand',
+  'first in pair',
+  'second in pair',
+  'not primary alignment',
+  'read fails platform/vendor quality checks',
+  'read is PCR or optical duplicate',
+  'supplementary alignment',
+]
+
+function Bitmask(props: any) {
+  const { flag, setFlag } = props
+  return (
+    <>
+      <TextField
+        type="number"
+        value={flag}
+        onChange={event => setFlag(+event.target.value)}
+      />
+      {flagNames.map((name, index) => {
+        // eslint-disable-next-line no-bitwise
+        const val = flag & (1 << index)
+        const key = `${name}_${val}`
+        return (
+          <div key={key}>
+            <input
+              type="checkbox"
+              checked={Boolean(val)}
+              id={key}
+              onChange={event => {
+                if (event.target.checked) {
+                  setFlag(flag | (1 << index))
+                } else {
+                  setFlag(flag & ~(1 << index))
+                }
+              }}
+            />
+            <label htmlFor={key}>{name}</label>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default observer((props: { model: any; handleClose: () => void }) => {
   const { model, handleClose } = props
@@ -36,12 +86,8 @@ export default observer((props: { model: any; handleClose: () => void }) => {
   const display = model.displays[0]
   const effectiveDisplay = display.PileupDisplay || display
   const filter = effectiveDisplay.filterBy
-  const [flag, setFlag] = useState<number>(filter?.flag || 1536)
-  const [mode, setMode] = useState('all')
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setMode((event.target as HTMLInputElement).value)
-  }
+  const [flagInclude, setFlagInclude] = useState(filter?.flagInclude)
+  const [flagExclude, setFlagExclude] = useState(filter?.flagExclude)
 
   return (
     <Dialog
@@ -70,36 +116,22 @@ export default observer((props: { model: any; handleClose: () => void }) => {
         </Typography>
         <div className={classes.root}>
           <form>
-            <div>
-              <TextField
-                label="Flag bitmask"
-                type="number"
-                value={flag}
-                onChange={event => setFlag(+event.target.value)}
-              />
+            <div style={{ display: 'flex' }}>
+              <div>
+                <Typography>Read must have ALL these flags</Typography>
+                <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
+              </div>
+              <div>
+                <Typography>Read must have NONE of these flags</Typography>
+                <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
+              </div>
             </div>
-
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Filter mode</FormLabel>
-              <RadioGroup name="mode" value={mode} onChange={handleChange}>
-                <FormControlLabel
-                  value="all"
-                  control={<Radio />}
-                  label="only include reads that have ALL of the flag bits set"
-                />
-                <FormControlLabel
-                  value="none"
-                  control={<Radio />}
-                  label="only include reads that have NONE of the flag bits set"
-                />
-              </RadioGroup>
-            </FormControl>
             <Button
               variant="contained"
               onClick={() => {
                 effectiveDisplay.setFilterBy({
-                  mode,
-                  flag,
+                  flagInclude,
+                  flagExclude,
                 })
                 handleClose()
               }}

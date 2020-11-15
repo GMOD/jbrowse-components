@@ -69,11 +69,12 @@ const stateModelFactory = (
             tag: types.maybe(types.string),
           }),
         ),
-        filterBy: types.maybe(
+        filterBy: types.optional(
           types.model({
-            mode: types.string,
-            flag: types.number,
+            flagInclude: types.optional(types.number, 0),
+            flagExclude: types.optional(types.number, 1536),
           }),
+          {},
         ),
       }),
     )
@@ -139,7 +140,7 @@ const stateModelFactory = (
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
-            'alignmentFeature',
+            'alignmentFeatuflagExcludere',
             { featureData: feature.toJSON() },
           )
           session.showWidget(featureWidget)
@@ -201,7 +202,7 @@ const stateModelFactory = (
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorBy = cast(colorScheme)
       },
-      setFilterBy(filter: { flag: number; inclusive: boolean }) {
+      setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
         self.filterBy = filter
       },
     }))
@@ -270,7 +271,7 @@ const stateModelFactory = (
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          const mode = self.filterBy?.mode === 'all' ? '' : '!'
+          const { flagInclude, flagExclude } = self.filterBy
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -280,17 +281,14 @@ const stateModelFactory = (
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
-            filterBy: self.filterBy,
-            filters: [
-              `function(feature) {
+            filters: self.filterBy
+              ? [
+                  `function(feature) {
                 const flags = feature.get('flags')
-                return ${
-                  self.filterBy
-                    ? `${mode}(flags&${self.filterBy.flag})`
-                    : 'true'
-                }
+                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude})
               }`,
-            ],
+                ]
+              : undefined,
             showSoftClip: self.showSoftClipping,
             viewAsPairs: self.viewAsPairs,
             linkSuppReads: self.linkSuppReads,
