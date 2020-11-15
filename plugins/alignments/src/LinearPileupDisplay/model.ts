@@ -71,7 +71,7 @@ const stateModelFactory = (
         ),
         filterBy: types.maybe(
           types.model({
-            inclusive: types.boolean,
+            mode: types.string,
             flag: types.number,
           }),
         ),
@@ -202,7 +202,6 @@ const stateModelFactory = (
         self.colorBy = cast(colorScheme)
       },
       setFilterBy(filter: { flag: number; inclusive: boolean }) {
-        console.log({filter})
         self.filterBy = filter
       },
     }))
@@ -271,6 +270,7 @@ const stateModelFactory = (
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
+          const mode = self.filterBy?.mode === 'all' ? '' : '!'
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -285,7 +285,9 @@ const stateModelFactory = (
               `function(feature) {
                 const flags = feature.get('flags')
                 return ${
-                  self.filterBy ? `!(flags&${self.filterBy?.flag})` : 'true'
+                  self.filterBy
+                    ? `${mode}(flags&${self.filterBy.flag})`
+                    : 'true'
                 }
               }`,
             ],

@@ -13,8 +13,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 
 const useStyles = makeStyles(theme => ({
   root: {
-    margin: 0,
-    padding: theme.spacing(2),
+    width: 600,
   },
   closeButton: {
     position: 'absolute',
@@ -50,7 +49,7 @@ export default function ColorByTagDlg(props: {
       </DialogTitle>
       <DialogContent>
         <Typography>Set the tag to color by</Typography>
-        <div>
+        <div className={classes.root}>
           <form>
             <TextField
               id="standard-select-currency"
