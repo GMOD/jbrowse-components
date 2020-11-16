@@ -70,7 +70,7 @@ In order to do this, use the navigation bar to open up the Assembly Manager
 This opens up a table which can be used to create, edit, and delete assemblies
 in your application
 
-![Assembly manger](./img/assembly_manager.png)
+![Assembly manager](./img/assembly_manager.png)
 
 Let's add the hg38 human reference genome to our JBrowse 2 application.
 
