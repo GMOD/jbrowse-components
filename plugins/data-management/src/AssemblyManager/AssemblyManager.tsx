@@ -94,8 +94,6 @@ const AssemblyManager = observer(
               <AssemblyAddForm
                 rootModel={rootModel}
                 setFormOpen={setFormOpen}
-                setIsAssemblyBeingEdited={setIsAssemblyBeingEdited}
-                setAssemblyBeingEdited={setAssemblyBeingEdited}
               />
             ) : null}
           </div>

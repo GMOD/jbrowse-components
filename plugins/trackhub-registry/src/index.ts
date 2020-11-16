@@ -13,7 +13,6 @@ export default class TrackHubRegistryPlugin extends Plugin {
         new ConnectionType({
           name: 'TheTrackHubRegistryConnection',
           configSchema,
-          // @ts-ignore
           configEditorComponent: TrackHubRegistrySelect,
           stateModel: modelFactory(pluginManager),
           displayName: 'The Track Hub Registry',

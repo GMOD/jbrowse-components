@@ -214,4 +214,4 @@ production
 
 This is an initial look into jbrowse 2 plugin development. I strongly encourage
 reading the developer guide in the main documentation for more info, and let us
-know if you have any feeback or questions. Thanks!
+know if you have any feedback or questions. Thanks!
