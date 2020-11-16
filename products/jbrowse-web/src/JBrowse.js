@@ -63,7 +63,7 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { AssemblyManager } = pluginManager.getPlugin(
+  const { AssemblyManager, SetDefaultSession } = pluginManager.getPlugin(
     'DataManagementPlugin',
   ).exports
   return (
@@ -74,13 +74,21 @@ const JBrowse = observer(({ pluginManager }) => {
         HeaderButtons={<ShareButton session={session} />}
       />
       {adminKey ? (
-        <AssemblyManager
-          rootModel={rootModel}
-          open={rootModel.isAssemblyEditing}
-          onClose={() => {
-            rootModel.setAssemblyEditing(false)
-          }}
-        />
+        <>
+          <AssemblyManager
+            rootModel={rootModel}
+            open={rootModel.isAssemblyEditing}
+            onClose={() => {
+              rootModel.setAssemblyEditing(false)
+            }}
+          />
+          <SetDefaultSession
+            open={rootModel.isDefaultSessionEditing}
+            onClose={() => {
+              rootModel.setDefaultSessionEditing(false)
+            }}
+          />
+        </>
       ) : null}
     </ThemeProvider>
   )

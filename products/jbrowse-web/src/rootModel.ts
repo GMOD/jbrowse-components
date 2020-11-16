@@ -55,6 +55,7 @@ export default function RootModel(
       assemblyManager: assemblyManagerType,
       version: types.maybe(types.string),
       isAssemblyEditing: false,
+      isDefaultSessionEditing: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
@@ -150,6 +151,9 @@ export default function RootModel(
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
+      },
+      setDefaultSessionEditing(flag: boolean) {
+        self.isDefaultSessionEditing = flag
       },
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
@@ -258,12 +262,21 @@ export default function RootModel(
                 label: 'Admin',
                 menuItems: [
                   {
-                    label: 'Open Assembly Manager',
+                    label: 'Open assembly manager',
                     icon: SettingsIcon,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     onClick: (session: any) => {
                       const rootModel = getParent(session)
                       rootModel.setAssemblyEditing(true)
+                    },
+                  },
+                  {
+                    label: 'Set default session',
+                    icon: SettingsIcon,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onClick: (session: any) => {
+                      const rootModel = getParent(session)
+                      rootModel.setDefaultSessionEditing(true)
                     },
                   },
                 ],
