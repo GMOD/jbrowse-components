@@ -7,7 +7,7 @@ import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import IconButton from '@material-ui/core/IconButton'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
@@ -99,7 +99,7 @@ export default () => {
 
         <ToggleButton
           onClick={model.activateTrackSelector}
-          title="select tracks"
+          title="Open track selector"
           selected={
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&

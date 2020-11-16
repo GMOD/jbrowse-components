@@ -10,7 +10,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -60,7 +60,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
     <ToggleButton
       onChange={model.activateTrackSelector}
       className={classes.toggleButton}
-      title="select tracks"
+      title="Open track selector"
       value="track_select"
       color="secondary"
       selected={
