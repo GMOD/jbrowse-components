@@ -180,7 +180,7 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <FormGroup row>
+      <FormGroup row style={{ flexWrap: 'nowrap' }}>
         <PanControls model={model} />
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
