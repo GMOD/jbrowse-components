@@ -111,6 +111,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         />
         <div
           class="MuiFormGroup-root MuiFormGroup-row"
+          style="flex-wrap: nowrap;"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
@@ -914,6 +915,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         />
         <div
           class="MuiFormGroup-root MuiFormGroup-row"
+          style="flex-wrap: nowrap;"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
