@@ -41,16 +41,6 @@ jobs:
           cd website/
           yarn
           yarn build
-          cd docs/
-          make pdf # generate the pdfcombined.md, run pandoc in docker in the next step
-          cp pdfcombined.md ../../
-          cp titlemod.md ../../
-          cp listings.tex ../../
-          cd ../../
-          ln -s website/docs/img
-      - uses: docker://pandoc/latex:2.9
-        with:
-          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
