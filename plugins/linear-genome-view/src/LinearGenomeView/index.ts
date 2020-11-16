@@ -30,7 +30,7 @@ import {
 } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
@@ -1029,7 +1029,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
-              icon: LineStyleIcon,
+              icon: TrackSelectorIcon,
               disabled:
                 isSessionModelWithWidgets(session) &&
                 session.visibleWidget &&

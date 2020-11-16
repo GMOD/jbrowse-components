@@ -1,0 +1,48 @@
+name: Push
+
+on: push
+
+jobs:
+  test:
+    name: Test and typecheck on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Test codebase
+        run: yarn test-ci
+      - name: Upload coverage
+        run: bash <(curl -s https://codecov.io/bash)
+      - name: Typecheck codebase
+        run: yarn typecheck
+
+  build:
+    name: Build on node 10.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build codebase
+        run: yarn build
+      - name: Test build
+        run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Copy branch build to S3
+        run: |
+          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
+          aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)

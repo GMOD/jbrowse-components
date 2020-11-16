@@ -7,7 +7,7 @@
   "dir": "src",
   "scripts": {
     "start": "rescripts --max-http-header-size=100000 start",
-    "build": "rescripts build",
+    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' rescripts build",
     "test": "rescripts test",
     "eject": "rescripts eject",
     "checktypes": "tsc --noEmit",
