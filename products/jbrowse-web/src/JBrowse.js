@@ -87,6 +87,7 @@ const JBrowse = observer(({ pluginManager }) => {
             }}
           />
           <SetDefaultSession
+            rootModel={rootModel}
             open={rootModel.isDefaultSessionEditing}
             onClose={() => {
               rootModel.setDefaultSessionEditing(false)
