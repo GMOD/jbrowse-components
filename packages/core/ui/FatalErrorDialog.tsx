@@ -9,21 +9,22 @@ import FactoryResetDialog from './FactoryResetDialog'
 
 const ResetComponent = ({
   onFactoryReset,
-  buttonText,
+  resetButtonText,
 }: {
   onFactoryReset: Function
-  buttonText: string
+  resetButtonText: string
 }) => {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <>
       <Button
+        data-testid="fatal-error"
         color="primary"
         variant="contained"
         onClick={() => setDialogOpen(true)}
       >
-        {buttonText}
+        {resetButtonText}
       </Button>
       <FactoryResetDialog
         onClose={() => setDialogOpen(false)}
@@ -35,19 +36,19 @@ const ResetComponent = ({
 }
 ResetComponent.propTypes = {
   onFactoryReset: PropTypes.func.isRequired,
-  buttonText: PropTypes.string.isRequired,
+  resetButtonText: PropTypes.string.isRequired,
 }
 
 const FatalErrorDialog = ({
   componentStack,
   error,
   onFactoryReset,
-  buttonText,
+  resetButtonText,
 }: {
   componentStack: string
   error: Error
   onFactoryReset: Function
-  buttonText: string
+  resetButtonText: string
 }) => {
   return (
     <Dialog open>
@@ -67,8 +68,9 @@ const FatalErrorDialog = ({
           Refresh
         </Button>
         <ResetComponent
+          data-testid="fatal-error"
           onFactoryReset={onFactoryReset}
-          buttonText={buttonText}
+          resetButtonText={resetButtonText}
         />
       </DialogActions>
     </Dialog>
@@ -79,13 +81,13 @@ FatalErrorDialog.propTypes = {
   componentStack: PropTypes.string,
   error: PropTypes.shape({}),
   onFactoryReset: PropTypes.func.isRequired,
-  buttonText: PropTypes.string,
+  resetButtonText: PropTypes.string,
 }
 
 FatalErrorDialog.defaultProps = {
   error: { message: 'No error message provided' },
   componentStack: '',
-  buttonText: 'Factory Reset',
+  resetButtonText: 'Factory Reset',
 }
 
 export default FatalErrorDialog
