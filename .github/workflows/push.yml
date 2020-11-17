@@ -36,6 +36,11 @@ jobs:
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Build website
+        run: |
+          cd website/
+          yarn
+          yarn build
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
