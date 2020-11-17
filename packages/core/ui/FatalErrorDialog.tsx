@@ -68,7 +68,6 @@ const FatalErrorDialog = ({
           Refresh
         </Button>
         <ResetComponent
-          data-testid="fatal-error"
           onFactoryReset={onFactoryReset}
           resetButtonText={resetButtonText}
         />
