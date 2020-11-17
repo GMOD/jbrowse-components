@@ -62,7 +62,6 @@ async function loadRefNameMap(
     },
     { timeout: 1000000 },
   )
-
   const refNameMap: Record<string, string> = {}
   const { refNameAliases } = assembly
   if (!refNameAliases) {
@@ -159,6 +158,9 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           return undefined
         }
         return Array.from(self.refNameAliases.keys())
+      },
+      get pluginManager() {
+        return getParent(self, 2).pluginManager
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -292,6 +294,7 @@ function loadAssemblyData(self: Assembly) {
       sequenceAdapterConfig,
       adapterConfigId,
       rpcManager,
+      assembly: self,
       assemblyName: self.name,
       refNameAliasesAdapterConfig,
     }
@@ -300,7 +303,7 @@ function loadAssemblyData(self: Assembly) {
 }
 async function loadAssemblyReaction(
   props: ReturnType<typeof loadAssemblyData> | undefined,
-  signal: AbortSignal,
+  _signal: AbortSignal,
 ) {
   if (!props) {
     return
@@ -308,18 +311,18 @@ async function loadAssemblyReaction(
 
   const {
     sequenceAdapterConfig,
-    rpcManager,
     assemblyName,
+    assembly,
     refNameAliasesAdapterConfig,
   } = props
 
-  const sessionId = `assembly-${assemblyName}`
-  const adapterRegions = (await rpcManager.call(
-    sessionId,
-    'CoreGetRegions',
-    { sessionId, adapterConfig: sequenceAdapterConfig, signal },
-    { timeout: 1000000 },
-  )) as Region[]
+  const { pluginManager } = assembly
+  const dataAdapterType = pluginManager.getAdapterType(
+    sequenceAdapterConfig.type,
+  )
+  const adapter = new dataAdapterType.AdapterClass(sequenceAdapterConfig)
+  const adapterRegions = (await adapter.getRegions()) as Region[]
+
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
     const { refName } = adapterRegion
     checkRefName(refName)
@@ -327,17 +330,13 @@ async function loadAssemblyReaction(
   })
   const refNameAliases: RefNameAliases = {}
   if (refNameAliasesAdapterConfig) {
-    const refNameAliasesAborter = new AbortController()
-    const refNameAliasesList = (await rpcManager.call(
-      sessionId,
-      'CoreGetRefNameAliases',
-      {
-        sessionId,
-        adapterConfig: refNameAliasesAdapterConfig,
-        signal: refNameAliasesAborter.signal,
-      },
-      { timeout: 1000000 },
-    )) as {
+    const refAliasAdapterType = pluginManager.getAdapterType(
+      refNameAliasesAdapterConfig.type,
+    )
+    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+      refNameAliasesAdapterConfig,
+    )
+    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases()) as {
       refName: string
       aliases: string[]
     }[]

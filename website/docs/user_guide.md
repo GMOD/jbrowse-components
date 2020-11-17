@@ -46,13 +46,13 @@ the form for adding a track:
 File->Open Track
 
 ![](img/add_track_form.png)
-The "Add track form"
+The 'Add track form'
 
 Note: There is also a circular "+" button inside the track selector menu that
 can also be used to access the "Add track" form.
 
 ![](img/add_track_tracklist.png)
-The "Add track button" in the tracklist
+The 'Add track button' in the tracklist
 
 In the "Add track" form, you can provide a URL to a file to load. Opening files
 from your local machine is not supported currently in the jbrowse-web app
@@ -78,7 +78,7 @@ specify the index file explicitly.
 
 Note: If you are an administrator, you can add tracks with the command line or
 with the admin server [add-track](cli#jbrowse-add-track) or [admin-server
-guide](quickstart_admin)
+guide](quickstart_gui)
 
 ### Sharing sessions
 
@@ -114,7 +114,7 @@ Currently, in order to edit a track config, you have to make a copy of the track
 
 ![](img/copy_track.png)
 Figure showing how to copy a track, note that settings button is disabled
-because we don't "own this track" as a non-priviledged user
+because we don't 'own this track' as a non-privileged user
 
 After you have copied the track, you can edit the track settings
 
@@ -179,7 +179,7 @@ the reference genome, or blue if they aligned to the reverse strand.
 
 ### Coverage visualization
 
-The coverage visualization shows the depth-of-coverage of the reads at eacposition on the genome, and also draws using colored boxes any occurence of
+The coverage visualization shows the depth-of-coverage of the reads at each position on the genome, and also draws using colored boxes any occurrence of
 mismatches between the read and the reference genome, so if 50% of the reads
 had a T instead of the reference A, half the height of the coverage histogram
 would contain a 'red' box
@@ -203,7 +203,7 @@ If a read contains bases that do not map the the genome properly, they can
 either be removed from the alignment (hard clipping) or can be included, and
 not shown by default (soft clipping)
 
-JBrowse 2 also contains an option to "show the soft clipping" that has occured.
+JBrowse 2 also contains an option to "show the soft clipping" that has occurred.
 This can be valuable to show the signal around a region that contains
 structural variation or difficult mappability
 
@@ -245,7 +245,7 @@ http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJzNVU1vm
 ![](./img/alignments_center_line.png)
 Illustrates before and after turning on the center line. The center line is an
 indicator that shows what base pair underlies the center of the view. Note that
-this is used in the "Sort by" option discussed below; the sort is performed
+this is used in the 'Sort by' option discussed below; the sort is performed
 using properties of the feature or even exact base pair underlying the center
 line
 
@@ -265,7 +265,7 @@ http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJzNVcFO2
 
 ![](./img/alignments_sort_by_base.png)
 Illustrating the pileup re-ordering that happens when turning on the
-"Sort by"->"Base pair". The sorting is done by specifically what letter of each
+'Sort by'->'Base pair'. The sorting is done by specifically what letter of each
 read underlies the current center line position (the center line is 1bp wide,
 so sorted by that exact letter)
 
@@ -351,7 +351,7 @@ genome by
 Example of a dotplot of a long read vs the reference genome
 
 ![](./img/linear_longread.png)
-Example of a "synteny" view of a long read vs the reference genome
+Example of a 'synteny' view of a long read vs the reference genome
 
 ## Hi-C tracks
 

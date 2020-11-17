@@ -44,13 +44,13 @@ describe('AssemblyManager GUI', () => {
   })
 
   it('calls addAssemblyConf from the Add Assembly form', () => {
-    const { getByText, getByRole } = render(
+    const { getByText, getByTestId } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
     )
     fireEvent.click(getByText('Add New Assembly'))
 
     // enter a new assembly and submit
-    fireEvent.change(getByRole('textbox'), {
+    fireEvent.change(getByTestId('assembly-name'), {
       target: {
         value: 'ce11',
       },

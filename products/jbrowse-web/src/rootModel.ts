@@ -59,6 +59,7 @@ export default function RootModel(
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
+      pluginManager,
       error: undefined as undefined | Error,
     }))
     .views(self => ({

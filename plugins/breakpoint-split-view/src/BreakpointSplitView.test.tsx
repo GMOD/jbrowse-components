@@ -91,7 +91,6 @@ test('BreakpointSplitView with soft clipping', () => {
     })
 
   const model = name.setView(
-    // @ts-ignore
     BreakpointSplitView.stateModel.create({
       type: 'BreakpointSplitView',
       views: [
@@ -203,7 +202,6 @@ test('BreakpointSplitView with hard clipping', () => {
     })
 
   const model = name.setView(
-    // @ts-ignore
     BreakpointSplitView.stateModel.create({
       type: 'BreakpointSplitView',
       views: [

@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   types,
   getParent,
@@ -160,13 +160,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
-            // @ts-ignore
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
               { view: self },
             )
-            // @ts-ignore
             session.showWidget(selector)
             return selector
           }
@@ -250,7 +248,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         menuItems.push({
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
-          icon: LineStyleIcon,
+          icon: TrackSelectorIcon,
           disabled:
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&
