@@ -9,7 +9,7 @@ test('open fatal error dialog in web', async () => {
   console.error = jest.fn()
   const { findByTestId, getByText } = render(
     <FatalErrorDialog
-      buttonText="Reset Session"
+      resetButtonText="Reset Session"
       onFactoryReset={() => (
         <div>Placeholder for actual factory reset func</div>
       )}
