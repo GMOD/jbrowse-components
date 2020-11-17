@@ -52,7 +52,7 @@ Reference
 https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
 
 ![](./img/installation_mac_protect2.png)
-The "open app from unauthorized developer" after right-clicking and selecting "open"
+The 'open app from unauthorized developer' after right-clicking and selecting 'open'
 
 #### Installing on Windows
 
