@@ -187,7 +187,7 @@ function Translation(props: {
   // which increases consistency across blocks
   const tilt = 3 - (region.start % 3)
 
-  // the effectivFrame incorporates tilt and the frame to say what the
+  // the effectiveFrame incorporates tilt and the frame to say what the
   // effective frame that is plotted. The +3 is for when frame is -2 and this
   // can otherwise result in effectiveFrame -1
   const effectiveFrame = (frame + tilt + 3) % 3
@@ -317,7 +317,7 @@ function Sequence(props: MyProps) {
               <text
                 x={leftPx + index * w + w / 2 - 4}
                 y={75}
-                color={color ? contrastingTextColor(color.main) : undefined}
+                fill={color ? contrastingTextColor(color.main) : undefined}
               >
                 {letter}
               </text>
@@ -344,7 +344,7 @@ function Sequence(props: MyProps) {
                 <text
                   x={leftPx + index * w + w / 2 - 4}
                   y={95}
-                  color={color ? contrastingTextColor(color.main) : undefined}
+                  fill={color ? contrastingTextColor(color.main) : undefined}
                 >
                   {letter}
                 </text>
