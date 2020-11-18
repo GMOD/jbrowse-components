@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 interface AlnCardProps {
-  title: string
+  title?: string
 }
 
 interface AlnProps extends AlnCardProps {
@@ -61,7 +61,7 @@ AlignmentFlags.propTypes = {
   feature: PropTypes.objectOf(PropTypes.any).isRequired,
 }
 
-interface AlnInputProps extends AlnCardProps {
+interface AlnInputProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 

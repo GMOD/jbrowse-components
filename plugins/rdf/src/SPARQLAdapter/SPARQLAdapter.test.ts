@@ -20,7 +20,6 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     return Promise.resolve(new Response(JSON.stringify(response)))
   }
 
-  // @ts-ignore
   const spy = jest.spyOn(global, 'fetch')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spy.mockImplementation(mockFetch as any)

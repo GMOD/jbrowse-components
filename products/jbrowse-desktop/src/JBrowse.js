@@ -90,12 +90,24 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
+  const { AssemblyManager } = pluginManager.getPlugin(
+    'DataManagementPlugin',
+  ).exports
 
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
       {rootModel.session ? (
-        <App session={rootModel.session} />
+        <>
+          <App session={rootModel.session} />
+          <AssemblyManager
+            rootModel={rootModel}
+            open={rootModel.isAssemblyEditing}
+            onClose={() => {
+              rootModel.setAssemblyEditing(false)
+            }}
+          />
+        </>
       ) : (
         <StartScreen
           root={rootModel}

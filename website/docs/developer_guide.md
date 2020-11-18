@@ -775,7 +775,7 @@ ConfigSlot types, and other nodes are ConfigurationSchema types.
          Slot  Slot
 ```
 
-Configurations are all descendents of a single root configuration, which is
+Configurations are all descendants of a single root configuration, which is
 `root.configuration`.
 
 Configuration types should always be created by the `ConfigurationSchema`

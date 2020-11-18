@@ -196,13 +196,9 @@ export default abstract class JBrowseCommand extends Command {
 
   async getLatest() {
     for await (const versions of this.fetchVersions()) {
-      const jb2webreleases = versions.filter(release =>
-        release.tag_name.startsWith('@jbrowse/web'),
-      )
-
       // if a release was just uploaded, or an erroneous build was made
       // then it might have no build asset
-      const nonprereleases = jb2webreleases
+      const nonprereleases = versions
         .filter(release => release.prerelease === false)
         .filter(release => release.assets && release.assets.length > 0)
 
@@ -216,7 +212,7 @@ export default abstract class JBrowseCommand extends Command {
   }
 
   async *fetchVersions() {
-    let page = 0
+    let page = 1
     let result
 
     do {
@@ -226,11 +222,14 @@ export default abstract class JBrowseCommand extends Command {
       )
       if (response.ok) {
         // eslint-disable-next-line no-await-in-loop
-        result = await response.json()
-        yield result as GithubRelease[]
+        result = (await response.json()) as GithubRelease[]
+
+        yield result.filter(release =>
+          release.tag_name.startsWith('@jbrowse/web'),
+        )
         page++
       } else {
-        throw new Error(`${result.statusText}`)
+        throw new Error(`${response.statusText}`)
       }
     } while (result && result.length > 0)
   }

@@ -110,7 +110,18 @@ export default pluginManager =>
         const trackConfigurations = connection.tracks
 
         const relevantTrackConfigurations = trackConfigurations.filter(
-          conf => conf.viewType === self.view.type,
+          trackConf => {
+            const viewType = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = viewType.displayTypes.map(
+              displayType => displayType.name,
+            )
+            for (const display of trackConf.displays) {
+              if (compatibleDisplays.includes(display.type)) {
+                return true
+              }
+            }
+            return false
+          },
         )
         return relevantTrackConfigurations
       },

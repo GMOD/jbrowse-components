@@ -26,13 +26,8 @@ module.exports = api => {
       '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-proposal-export-default-from',
-      [
-        '@babel/transform-runtime',
-        {
-          regenerator: false,
-          useESModules: false,
-        },
-      ],
+      ['@babel/transform-runtime', { regenerator: false, useESModules: false }],
+      'inline-import-data-uri',
     ],
   }
 }

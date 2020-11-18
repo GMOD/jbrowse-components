@@ -41,6 +41,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       get rpcManager() {
         return getParent(self).rpcManager
       },
+      get pluginManager() {
+        return getParent(self).pluginManager
+      },
       get allPossibleRefNames() {
         let refNames: string[] = []
         for (const assembly of self.assemblies) {
