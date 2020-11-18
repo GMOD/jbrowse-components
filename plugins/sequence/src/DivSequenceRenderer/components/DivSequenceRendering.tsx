@@ -177,7 +177,7 @@ function Translation(props: {
   frame: number
   bpPerPx: number
   region: Region
-  reverse: boolean
+  reverse?: boolean
 }) {
   const { codonTable, seq, frame, bpPerPx, region, reverse } = props
   const scale = bpPerPx
@@ -185,35 +185,43 @@ function Translation(props: {
   const eframe = (frame + tilt) % 3
   const seqSliced = seq.slice(eframe)
 
-  let translated = ''
+  const translated: { letter: string; codon: string }[] = []
   for (let i = 0; i < seqSliced.length; i += 3) {
-    const nextCodon = seqSliced.slice(i, i + 3)
-    const aminoAcid = codonTable[reverse ? revcom(nextCodon) : nextCodon] || ''
-    translated += aminoAcid
+    const codon = seqSliced.slice(i, i + 3)
+    const normalizedCodon = reverse ? revcom(codon) : codon
+    const aminoAcid = codonTable[normalizedCodon] || ''
+    translated.push({ letter: aminoAcid, codon: normalizedCodon.toUpperCase() })
   }
 
   const w = (1 / scale) * 3
-  const letters = translated.split('')
   const drop = region.start === 0 ? 0 : w
   const render = 1 / bpPerPx >= 12
 
+  const map = ['#d8d8d8', '#adadad', '#8f8f8f'].reverse()
   return (
     <>
-      {letters.map((letter, index) => {
+      {translated.map((element, index) => {
         const x = w * index + eframe / scale - drop
         const y = reverse ? 100 - frame * 20 : 40 - frame * 20
+        const { letter, codon } = element
         return (
-          <React.Fragment key={`${index}letter`}>
+          <React.Fragment key={`${index}-${letter}`}>
             <rect
               x={x}
               y={y}
               width={w}
               height={20}
-              stroke="black"
-              fill="grey"
+              stroke="#555"
+              fill={
+                defaultStarts.includes(codon)
+                  ? '#0f0'
+                  : defaultStops.includes(codon)
+                  ? '#f00'
+                  : map[Math.abs(frame)]
+              }
             />
             {render ? (
-              <text x={x + w / 2 - 5} y={y + 15}>
+              <text x={x + w / 2 - 4} y={y + 15}>
                 {letter}
               </text>
             ) : null}
@@ -224,7 +232,7 @@ function Translation(props: {
   )
 }
 
-function SequenceDivs(props: MyProps) {
+function Sequence(props: MyProps) {
   const { features, regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
@@ -235,7 +243,6 @@ function SequenceDivs(props: MyProps) {
   const [feature] = [...features.values()]
   const fseq: string = feature.get('seq')
   const seq = region.reversed ? rev(fseq) : fseq
-  const letters = seq.split('')
 
   const [leftPx, rightPx] = bpSpanPx(
     feature.get('start'),
@@ -274,7 +281,7 @@ function SequenceDivs(props: MyProps) {
         />
       ))}
 
-      {letters.map((letter, index) => {
+      {seq.split('').map((letter, index) => {
         let fill
         switch (letter.toLowerCase()) {
           case 'a':
@@ -298,10 +305,10 @@ function SequenceDivs(props: MyProps) {
               width={w}
               height={height}
               fill={fill}
-              stroke={render ? 'black' : 'none'}
+              stroke={render ? '#555' : 'none'}
             />
             {render ? (
-              <text x={leftPx + index * w + w / 2 - 5} y={75}>
+              <text x={leftPx + index * w + w / 2 - 4} y={75}>
                 {letter}
               </text>
             ) : null}
@@ -334,10 +341,10 @@ function SequenceDivs(props: MyProps) {
                 width={w}
                 height={height}
                 fill={fill}
-                stroke={render ? 'black' : 'none'}
+                stroke={render ? '#555' : 'none'}
               />
               {render ? (
-                <text x={leftPx + index * w + w / 2 - 5} y={95}>
+                <text x={leftPx + index * w + w / 2 - 4} y={95}>
                   {letter}
                 </text>
               ) : null}
@@ -348,21 +355,4 @@ function SequenceDivs(props: MyProps) {
   )
 }
 
-SequenceDivs.defaultProps = {
-  features: new Map(),
-}
-
-function DivSequenceRendering(props: MyProps) {
-  const { config } = props
-  const height = readConfObject(config, 'height')
-  return (
-    <div
-      // className="DivSequenceRendering"
-      style={{ height: `${height}px`, fontSize: `${height * 0.8}px` }}
-    >
-      <SequenceDivs {...props} />
-    </div>
-  )
-}
-
-export default observer(DivSequenceRendering)
+export default observer(Sequence)
