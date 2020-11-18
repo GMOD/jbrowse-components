@@ -96,6 +96,8 @@ function makeTrackConfig(
     }
   else bigDataLocation = { localPath: track.get('bigDataUrl') }
   let bigDataIndexLocation
+
+  // bigGenePred falls into the default case, make a case for bigGenePred and return the correct config
   switch (baseTrackType) {
     case 'bam':
       if (trackDbFileLocation.uri)
@@ -158,6 +160,17 @@ function makeTrackConfig(
         categories,
       )
     case 'bigBed':
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+      }
+    case 'bigGenePred':
       return {
         type: 'FeatureTrack',
         name: track.get('shortLabel'),
@@ -262,6 +275,12 @@ function makeTrackConfig(
         baseTrackType,
         categories,
       )
+    case 'bigNarrowPeak':
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
     case 'peptideMapping':
       return generateUnsupportedTrackConf(
         track.get('shortLabel'),
@@ -310,6 +329,24 @@ function makeTrackConfig(
         baseTrackType,
         categories,
       )
+    case 'hic':
+      return {
+        type: 'HicTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'HicAdapter',
+          hicLocation: bigDataLocation,
+        },
+      }
+    case 'halSnake':
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
+
     default:
       throw new Error(`Unsupported track type: ${baseTrackType}`)
   }
