@@ -177,13 +177,13 @@ function Translation(props: {
   frame: number
   bpPerPx: number
   region: Region
+  reverse: boolean
 }) {
-  const { codonTable, seq, frame, bpPerPx, region } = props
+  const { codonTable, seq, frame, bpPerPx, region, reverse } = props
   const scale = bpPerPx
-  const reverse = region.reversed
+  const reversed = reverse ^ region.reversed
   const tilt = 3 - (region.start % 3)
   const eframe = (frame + tilt) % 3
-
   const seqSliced = seq.slice(eframe)
 
   let translated = ''
@@ -193,30 +193,18 @@ function Translation(props: {
     translated += aminoAcid
   }
 
-  console.log(
-    {
-      translated,
-      frame,
-      start: region.start,
-    },
-    // region.start,
-    // seq.length,
-    // region.end - region.start,
-    // seq.length / 3,
-    // (region.end - region.start) / 3,
-  )
-
-  translated = reverse ? translated.split('').reverse().join('') : translated
+  translated = reversed ? translated.split('').reverse().join('') : translated
   const w = (1 / scale) * 3
   const letters = translated.split('')
   const drop = region.start === 0 ? 0 : w
+  const render = 1 / bpPerPx >= 12
   console.log({ start: region.start, eframe, drop })
 
   return (
     <>
       {letters.map((letter, index) => {
         const x = w * index + eframe / scale - drop
-        const y = 40 - frame * 20
+        const y = reverse ? 80 - frame * 20 : 40 - frame * 20
         return (
           <React.Fragment key={`${index}letter`}>
             <rect
@@ -227,9 +215,11 @@ function Translation(props: {
               stroke="black"
               fill="grey"
             />
-            <text x={x + w / 2 - 5} y={y + 15}>
-              {letter}
-            </text>
+            {render ? (
+              <text x={x + w / 2 - 5} y={y + 15}>
+                {letter}
+              </text>
+            ) : null}
           </React.Fragment>
         )
       })}
@@ -241,7 +231,7 @@ function SequenceDivs(props: MyProps) {
   const { features, regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 100
+  const totalHeight = 200
   const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
 
@@ -273,6 +263,17 @@ function SequenceDivs(props: MyProps) {
           frame={index}
           bpPerPx={bpPerPx}
           region={region}
+        />
+      ))}
+      {[0, -1, -2].map(index => (
+        <Translation
+          key={`translation-${index}`}
+          seq={seq}
+          codonTable={codonTable}
+          frame={index}
+          bpPerPx={bpPerPx}
+          region={region}
+          reverse
         />
       ))}
 
