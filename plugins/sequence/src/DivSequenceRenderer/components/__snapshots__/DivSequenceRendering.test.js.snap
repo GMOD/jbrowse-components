@@ -1,100 +1,710 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<DivSequenceRendering /> renders with no features 1`] = `
-<div
-  style="height: 16px; font-size: 12.8px;"
->
-  <div
-    style="display: flex;"
-  />
-</div>
-`;
+exports[`<DivSequenceRendering /> renders with no features 1`] = `<div />`;
 
 exports[`<DivSequenceRendering /> renders with one feature with a correct seq, zoomed in, should render nicely 1`] = `
-<div
-  style="height: 16px; font-size: 12.8px;"
->
-  <div
-    style="display: flex;"
+<div>
+  <svg
+    height="200"
+    style="width: 20000px; height: 200px;"
+    width="20000"
   >
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(76, 175, 80); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="40"
+    />
+    <text
+      x="26"
+      y="55"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="60"
+      y="40"
+    />
+    <text
+      x="86"
+      y="55"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="120"
+      y="40"
+    />
+    <text
+      x="146"
+      y="55"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="20"
+    />
+    <text
+      x="46"
+      y="35"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="80"
+      y="20"
+    />
+    <text
+      x="106"
+      y="35"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="140"
+      y="20"
+    />
+    <text
+      x="166"
+      y="35"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="0"
+    />
+    <text
+      x="66"
+      y="15"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="100"
+      y="0"
+    />
+    <text
+      x="126"
+      y="15"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="160"
+      y="0"
+    />
+    <text
+      x="186"
+      y="15"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="100"
+    />
+    <text
+      x="26"
+      y="115"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="60"
+      y="100"
+    />
+    <text
+      x="86"
+      y="115"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="120"
+      y="100"
+    />
+    <text
+      x="146"
+      y="115"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="120"
+    />
+    <text
+      x="66"
+      y="135"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="100"
+      y="120"
+    />
+    <text
+      x="126"
+      y="135"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="160"
+      y="120"
+    />
+    <text
+      x="186"
+      y="135"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="140"
+    />
+    <text
+      x="46"
+      y="155"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="80"
+      y="140"
+    />
+    <text
+      x="106"
+      y="155"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="140"
+      y="140"
+    />
+    <text
+      x="166"
+      y="155"
+    />
+    <rect
+      fill="#4caf50"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="20"
+      y="60"
+    />
+    <text
+      x="26"
+      y="75"
     >
       A
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="40"
+      y="60"
+    />
+    <text
+      x="46"
+      y="75"
     >
       B
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(33, 150, 243); color: rgb(255, 255, 255); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      fill="#2196f3"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="60"
+      y="60"
+    />
+    <text
+      x="66"
+      y="75"
     >
       C
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="80"
+      y="60"
+    />
+    <text
+      x="86"
+      y="75"
     >
       D
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="100"
+      y="60"
+    />
+    <text
+      x="106"
+      y="75"
     >
       E
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="120"
+      y="60"
+    />
+    <text
+      x="126"
+      y="75"
     >
       F
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(255, 193, 7); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      fill="#ffc107"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="140"
+      y="60"
+    />
+    <text
+      x="146"
+      y="75"
     >
       G
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="160"
+      y="60"
+    />
+    <text
+      x="166"
+      y="75"
     >
       H
-    </div>
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87); border-radius: 4px; box-sizing: border-box; border-collapse: collapse;"
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="180"
+      y="60"
+    />
+    <text
+      x="186"
+      y="75"
     >
       I
-    </div>
-  </div>
+    </text>
+    <rect
+      fill="#f44336"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="20"
+      y="80"
+    />
+    <text
+      x="26"
+      y="95"
+    >
+      T
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="40"
+      y="80"
+    />
+    <text
+      x="46"
+      y="95"
+    >
+      B
+    </text>
+    <rect
+      fill="#ffc107"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="60"
+      y="80"
+    />
+    <text
+      x="66"
+      y="95"
+    >
+      G
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="80"
+      y="80"
+    />
+    <text
+      x="86"
+      y="95"
+    >
+      D
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="100"
+      y="80"
+    />
+    <text
+      x="106"
+      y="95"
+    >
+      E
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="120"
+      y="80"
+    />
+    <text
+      x="126"
+      y="95"
+    >
+      F
+    </text>
+    <rect
+      fill="#2196f3"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="140"
+      y="80"
+    />
+    <text
+      x="146"
+      y="95"
+    >
+      C
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="160"
+      y="80"
+    />
+    <text
+      x="166"
+      y="95"
+    >
+      H
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="180"
+      y="80"
+    />
+    <text
+      x="186"
+      y="95"
+    >
+      I
+    </text>
+  </svg>
 </div>
 `;
 
 exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq, zoomed in, should throw 1`] = `
-<h1
-  class="error"
->
-  Error: feature one did not contain a valid \`seq\` attribute seq length 2 did not match 3
-</h1>
+<div>
+  <svg
+    height="200"
+    style="width: 20000px; height: 200px;"
+    width="20000"
+  >
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="40"
+    />
+    <text
+      x="26"
+      y="55"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="20"
+    />
+    <text
+      x="46"
+      y="35"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="0"
+    />
+    <text
+      x="66"
+      y="15"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="100"
+    />
+    <text
+      x="26"
+      y="115"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="120"
+    />
+    <text
+      x="66"
+      y="135"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="140"
+    />
+    <text
+      x="46"
+      y="155"
+    />
+    <rect
+      fill="#4caf50"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="20"
+      y="60"
+    />
+    <text
+      x="26"
+      y="75"
+    >
+      A
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="40"
+      y="60"
+    />
+    <text
+      x="46"
+      y="75"
+    >
+      B
+    </text>
+    <rect
+      fill="#2196f3"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="60"
+      y="60"
+    />
+    <text
+      x="66"
+      y="75"
+    >
+      C
+    </text>
+    <rect
+      fill="#f44336"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="20"
+      y="80"
+    />
+    <text
+      x="26"
+      y="95"
+    >
+      T
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="40"
+      y="80"
+    />
+    <text
+      x="46"
+      y="95"
+    >
+      B
+    </text>
+    <rect
+      fill="#ffc107"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="60"
+      y="80"
+    />
+    <text
+      x="66"
+      y="95"
+    >
+      G
+    </text>
+  </svg>
+</div>
 `;
 
-exports[`<DivSequenceRendering /> renders with one feature with no seq, zoomed in, should throw 1`] = `
-<h1
-  class="error"
->
-  Error: feature one did not contain a valid \`seq\` attribute seq did not exist
-</h1>
-`;
+exports[`<DivSequenceRendering /> renders with one feature with no seq, zoomed in, should throw 1`] = `<div />`;
 
 exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
-<div
-  style="height: 16px; font-size: 12.8px;"
->
-  <div
-    style="display: flex;"
+<div>
+  <svg
+    height="200"
+    style="width: 333.3333333333333px; height: 200px;"
+    width="333.3333333333333"
   >
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgb(76, 175, 80); color: rgba(0, 0, 0, 0.87);"
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="1"
+      x="0"
+      y="40"
     />
-    <div
-      style="text-align: center; display: inline-block; height: 100%; overflow: hidden; min-height: 16px; flex: 1; background-color: rgba(0, 0, 0, 0.26); color: rgba(0, 0, 0, 0.87);"
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="1"
+      x="0.3333333333333333"
+      y="20"
     />
-  </div>
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="1"
+      x="0"
+      y="100"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="1"
+      x="0.3333333333333333"
+      y="140"
+    />
+    <rect
+      fill="#4caf50"
+      height="20"
+      stroke="none"
+      width="0.8"
+      x="0.3"
+      y="60"
+    />
+    <rect
+      height="20"
+      stroke="none"
+      width="0.8"
+      x="1.1"
+      y="60"
+    />
+    <rect
+      fill="#f44336"
+      height="20"
+      stroke="none"
+      width="0.8"
+      x="0.3"
+      y="80"
+    />
+    <rect
+      height="20"
+      stroke="none"
+      width="0.8"
+      x="1.1"
+      y="80"
+    />
+  </svg>
 </div>
 `;

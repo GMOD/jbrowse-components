@@ -243,7 +243,7 @@ function Translation(props: {
 }
 
 function Sequence(props: MyProps) {
-  const { features, regions, bpPerPx, theme: configTheme } = props
+  const { features = new Map(), regions, bpPerPx, theme: configTheme } = props
   const theme = createJBrowseTheme(configTheme)
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
@@ -252,7 +252,13 @@ function Sequence(props: MyProps) {
   const height = 20
 
   const [feature] = [...features.values()]
+  if (!feature) {
+    return null
+  }
   const fseq: string = feature.get('seq')
+  if (!fseq) {
+    return null
+  }
   const seq = region.reversed ? rev(fseq) : fseq
 
   const [leftPx, rightPx] = bpSpanPx(
@@ -262,7 +268,8 @@ function Sequence(props: MyProps) {
     bpPerPx,
   )
 
-  const w = Math.max((rightPx - leftPx) / seq.length, 0.8)
+  const len = feature.get('end') - feature.get('start')
+  const w = Math.max((rightPx - leftPx) / len, 0.8)
   const render = 1 / bpPerPx >= 12
   return (
     <svg
@@ -302,7 +309,7 @@ function Sequence(props: MyProps) {
               y={60}
               width={w}
               height={height}
-              fill={theme.palette.bases[letter.toUpperCase()].main}
+              fill={(theme.palette.bases[letter.toUpperCase()] || {}).main}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
@@ -323,7 +330,7 @@ function Sequence(props: MyProps) {
                 y={80}
                 width={w}
                 height={height}
-                fill={theme.palette.bases[letter.toUpperCase()].main}
+                fill={(theme.palette.bases[letter.toUpperCase()] || {}).main}
                 stroke={render ? '#555' : 'none'}
               />
               {render ? (
