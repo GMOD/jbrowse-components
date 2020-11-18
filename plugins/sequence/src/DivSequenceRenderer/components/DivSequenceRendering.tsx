@@ -218,9 +218,11 @@ function Translation(props: {
             <rect
               x={x}
               y={y}
-              width={w}
+              width={
+                render ? w : w + 0.7 /* small fudge factor when zoomed out*/
+              }
               height={20}
-              stroke="#555"
+              stroke={render ? '#555' : 'none'}
               fill={
                 defaultStarts.includes(codon)
                   ? theme.palette.startCodon
