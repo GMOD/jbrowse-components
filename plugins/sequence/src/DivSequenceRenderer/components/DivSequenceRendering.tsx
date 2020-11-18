@@ -9,46 +9,6 @@ import { observer } from 'mobx-react'
 import React, { useRef, useEffect } from 'react'
 import { bpSpanPx } from '@jbrowse/core/util'
 
-// given the displayed region and a Map of id => feature, assemble the region's
-// sequence from the sequences returned by each feature.
-export function featuresToSequence(
-  region: Region,
-  features: Map<string, Feature>,
-) {
-  // insert the `replacement` string into `str` at the given
-  // `offset`, putting in `length` characters.
-  function replaceAt(str: string, offset: number, replacement: string) {
-    let rOffset = 0
-    if (offset < 0) {
-      rOffset = -offset
-      offset = 0
-    }
-
-    const length = Math.min(str.length - offset, replacement.length - rOffset)
-
-    return (
-      str.substr(0, offset) +
-      replacement.substr(rOffset, length) +
-      str.substr(offset + length)
-    )
-  }
-
-  // pad with spaces at the beginning of the string if necessary
-  const len = region.end - region.start
-  let sequence = ''
-  while (sequence.length < len) {
-    sequence += ' '
-  }
-
-  for (const f of features.values()) {
-    const seq = f.get('residues') || f.get('seq')
-    if (seq) {
-      sequence = replaceAt(sequence, f.get('start') - region.start, seq)
-    }
-  }
-  return sequence
-}
-
 interface MyProps {
   features: Map<string, Feature>
   regions: Region[]
@@ -176,6 +136,10 @@ const defaultCodonTable = {
   GGT: 'G',
 }
 
+function rev(seq: string) {
+  return seq.split('').reverse().join('')
+}
+
 function generateCodonTable(table: any) {
   /**
    *  take CodonTable above and generate larger codon table that includes
@@ -212,15 +176,14 @@ function renderTranslation(
   codonTable: any,
   seq: string,
   offset: number,
-  blockStart: number,
-  blockEnd: number,
-  blockLength: number,
   scale: number,
   reverse: boolean,
 ) {
   // const seq = reverse ? revcom(seq) : seq
 
-  const seqSliced = seq // seq.slice(0, seq.length + extraBases)
+  const extraBases = (seq.length - offset) % 3
+  const seqSliced = seq.slice(offset, seq.length - extraBases)
+  // seq.slice(0, seq.length + extraBases)
 
   // console.log({ sequence })
   // console.log({ extraBases })
@@ -269,25 +232,9 @@ function SequenceDivs(props: MyProps) {
 
   const ref = useRef<HTMLCanvasElement>(null)
 
-  let s = ''
-  for (const seq of features.values()) {
-    const seqString = seq.get('seq')
-    if (!seqString || seqString.length !== seq.get('end') - seq.get('start')) {
-      throw new Error(
-        `feature ${seq.id()} did not contain a valid \`seq\` attribute ${
-          seqString
-            ? `seq length ${seq.get('end') - seq.get('start')} did not match ${
-                seqString.length
-              }`
-            : 'seq did not exist'
-        }`,
-      )
-    }
-    if (seqString) {
-      s += seq.get('seq')
-    }
-  }
-  const seq = region.reversed ? s.split('').reverse().join('') : s
+  const [feature] = [...features.values()]
+  const seq = region.reversed ? rev(feature.get('seq')) : feature.get('seq')
+  console.log(seq.length, region.end - region.start)
 
   useEffect(() => {
     if (!ref.current) {
@@ -299,8 +246,8 @@ function SequenceDivs(props: MyProps) {
     }
 
     const [leftPx, rightPx] = bpSpanPx(
-      region.start,
-      region.end,
+      feature.get('start'),
+      feature.get('end'),
       region,
       bpPerPx,
     )
@@ -338,33 +285,30 @@ function SequenceDivs(props: MyProps) {
       }
     }
 
-    const blockStart = region.start
-    const blockEnd = region.end
-    const blockSeq = seq.substring(2, seq.length - 2)
-    const blockLength = seq.length
-
-    const extStart = blockStart - 2
-    const extEnd = blockStart + 2
-    const leftover = (seq.length - 2) % 3
-    const extStartSeq = seq.substring(0, seq.length - 2)
-    const extEndSeq = seq.substring(2)
-
-    const frameDiv = []
     for (let i = 0; i < 3; i++) {
-      const transStart = blockStart + i
-      const frame = ((transStart % 3) + 3) % 3
-      const translatedDiv = renderTranslation(
-        ctx,
-        codonTable,
-        seq.slice(i),
-        i,
-        blockStart,
-        blockEnd,
-        blockLength,
-        bpPerPx,
-        false,
-      )
-      frameDiv[frame] = translatedDiv
+      for (let j = i; j < seq.length; j += 3) {
+        const nextCodon = seq.slice(j, j + 3)
+        const aminoAcid = codonTable[nextCodon] || ''
+        const nw = w * 3
+
+        ctx.fillStyle = 'grey'
+        ctx.fillRect(leftPx + j * nw, 40 - 20 * i, nw, 20)
+        ctx.fillStyle = 'black'
+        ctx.fillText(
+          aminoAcid,
+          leftPx + j * nw + (nw - charSize.width) / 2,
+          40 - 20 * i + 15,
+        )
+      }
+      // const translatedDiv = renderTranslation(
+      //   ctx,
+      //   codonTable,
+      //   seq.slice(i),
+      //   i,
+      //   bpPerPx,
+      //   false,
+      // )
+      // frameDiv[frame] = translatedDiv
     }
   }, [])
   return (
