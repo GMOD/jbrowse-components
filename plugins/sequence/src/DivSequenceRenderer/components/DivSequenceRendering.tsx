@@ -1,6 +1,5 @@
 /* eslint curly:error */
-/* eslint-disable no-nested-ternary */
-import { readConfObject } from '@jbrowse/core/configuration'
+/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -302,6 +301,8 @@ function Sequence(props: MyProps) {
       ))}
 
       {seq.split('').map((letter, index) => {
+        // @ts-ignore
+        const color = theme.palette.bases[letter.toUpperCase()]
         return (
           <React.Fragment key={index}>
             <rect
@@ -309,11 +310,15 @@ function Sequence(props: MyProps) {
               y={60}
               width={w}
               height={height}
-              fill={(theme.palette.bases[letter.toUpperCase()] || {}).main}
+              fill={color ? color.main : undefined}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
-              <text x={leftPx + index * w + w / 2 - 4} y={75}>
+              <text
+                x={leftPx + index * w + w / 2 - 4}
+                y={75}
+                color={color ? contrastingTextColor(color.main) : undefined}
+              >
                 {letter}
               </text>
             ) : null}
@@ -323,6 +328,8 @@ function Sequence(props: MyProps) {
       {complement(seq)
         .split('')
         .map((letter, index) => {
+          // @ts-ignore
+          const color = theme.palette.bases[letter.toUpperCase()]
           return (
             <React.Fragment key={index}>
               <rect
@@ -330,11 +337,15 @@ function Sequence(props: MyProps) {
                 y={80}
                 width={w}
                 height={height}
-                fill={(theme.palette.bases[letter.toUpperCase()] || {}).main}
+                fill={color ? color.main : undefined}
                 stroke={render ? '#555' : 'none'}
               />
               {render ? (
-                <text x={leftPx + index * w + w / 2 - 4} y={95}>
+                <text
+                  x={leftPx + index * w + w / 2 - 4}
+                  y={95}
+                  color={color ? contrastingTextColor(color.main) : undefined}
+                >
                   {letter}
                 </text>
               ) : null}
