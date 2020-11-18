@@ -181,7 +181,6 @@ function Translation(props: {
 }) {
   const { codonTable, seq, frame, bpPerPx, region, reverse } = props
   const scale = bpPerPx
-  const reversed = reverse ^ region.reversed
   const tilt = 3 - (region.start % 3)
   const eframe = (frame + tilt) % 3
   const seqSliced = seq.slice(eframe)
@@ -189,22 +188,20 @@ function Translation(props: {
   let translated = ''
   for (let i = 0; i < seqSliced.length; i += 3) {
     const nextCodon = seqSliced.slice(i, i + 3)
-    const aminoAcid = codonTable[nextCodon] || ''
+    const aminoAcid = codonTable[reverse ? revcom(nextCodon) : nextCodon] || ''
     translated += aminoAcid
   }
 
-  translated = reversed ? translated.split('').reverse().join('') : translated
   const w = (1 / scale) * 3
   const letters = translated.split('')
   const drop = region.start === 0 ? 0 : w
   const render = 1 / bpPerPx >= 12
-  console.log({ start: region.start, eframe, drop })
 
   return (
     <>
       {letters.map((letter, index) => {
         const x = w * index + eframe / scale - drop
-        const y = reverse ? 80 - frame * 20 : 40 - frame * 20
+        const y = reverse ? 100 - frame * 20 : 40 - frame * 20
         return (
           <React.Fragment key={`${index}letter`}>
             <rect
@@ -311,40 +308,42 @@ function SequenceDivs(props: MyProps) {
           </React.Fragment>
         )
       })}
-      {letters.map((letter, index) => {
-        let fill
-        switch (letter.toLowerCase()) {
-          case 'a':
-            fill = '#00bf00'
-            break
-          case 'g':
-            fill = '#ffa500'
-            break
-          case 'c':
-            fill = '#4747ff'
-            break
-          case 't':
-            fill = '#f00'
-            break
-        }
-        return (
-          <React.Fragment key={index}>
-            <rect
-              x={leftPx + index * w}
-              y={60}
-              width={w}
-              height={height}
-              fill={fill}
-              stroke={render ? 'black' : 'none'}
-            />
-            {render ? (
-              <text x={leftPx + index * w + w / 2 - 5} y={75}>
-                {letter}
-              </text>
-            ) : null}
-          </React.Fragment>
-        )
-      })}
+      {complement(seq)
+        .split('')
+        .map((letter, index) => {
+          let fill
+          switch (letter.toLowerCase()) {
+            case 'a':
+              fill = '#00bf00'
+              break
+            case 'g':
+              fill = '#ffa500'
+              break
+            case 'c':
+              fill = '#4747ff'
+              break
+            case 't':
+              fill = '#f00'
+              break
+          }
+          return (
+            <React.Fragment key={index}>
+              <rect
+                x={leftPx + index * w}
+                y={80}
+                width={w}
+                height={height}
+                fill={fill}
+                stroke={render ? 'black' : 'none'}
+              />
+              {render ? (
+                <text x={leftPx + index * w + w / 2 - 5} y={95}>
+                  {letter}
+                </text>
+              ) : null}
+            </React.Fragment>
+          )
+        })}
     </svg>
   )
 }
