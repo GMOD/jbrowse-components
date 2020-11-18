@@ -56,6 +56,19 @@ const SetDefaultSession = observer(
     const { session } = rootModel
     const [selectedDefault, setSelectedDefault] = useState(currentDefault)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function handleCheckbox(sessionSnapshot: any, idx: number) {
+      if (selectedDefault === sessionSnapshot.name) {
+        setSelectedDefault('New session')
+        rootModel.jbrowse.setDefaultSessionConf({
+          name: `New session`,
+        })
+      } else {
+        setSelectedDefault(sessionSnapshot.name)
+        rootModel.jbrowse.setDefaultSessionConf(session.savedSessions[idx])
+      }
+    }
+
     return (
       <Dialog open={open}>
         <DialogTitle className={classes.titleBox}>
@@ -78,19 +91,9 @@ const SetDefaultSession = observer(
                         <ListItemIcon>
                           <Checkbox
                             checked={sessionSnapshot.name === selectedDefault}
-                            onChange={() => {
-                              if (selectedDefault === sessionSnapshot.name) {
-                                setSelectedDefault('New session')
-                                rootModel.jbrowse.setDefaultSessionConf({
-                                  name: `New session`,
-                                })
-                              } else {
-                                setSelectedDefault(sessionSnapshot.name)
-                                rootModel.jbrowse.setDefaultSessionConf(
-                                  session.savedSessions[idx],
-                                )
-                              }
-                            }}
+                            onChange={() =>
+                              handleCheckbox(sessionSnapshot, idx)
+                            }
                           />
                         </ListItemIcon>
                         <ListItemText
