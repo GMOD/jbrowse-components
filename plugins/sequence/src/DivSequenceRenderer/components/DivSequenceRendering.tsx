@@ -6,7 +6,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { useTheme } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { useRef, useEffect } from 'react'
+import React from 'react'
 import { bpSpanPx } from '@jbrowse/core/util'
 
 interface MyProps {
@@ -136,7 +136,7 @@ const defaultCodonTable = {
   GGT: 'G',
 }
 
-function rev(seq: string) {
+function rev(seq: string): string {
   return seq.split('').reverse().join('')
 }
 
@@ -171,22 +171,20 @@ function generateCodonTable(table: any) {
   return tempCodonTable
 }
 
-function renderTranslation(
-  ctx: CanvasRenderingContext2D,
-  codonTable: any,
-  seq: string,
-  offset: number,
-  scale: number,
-  reverse: boolean,
-) {
-  // const seq = reverse ? revcom(seq) : seq
+function Translation(props: {
+  codonTable: any
+  seq: string
+  frame: number
+  bpPerPx: number
+  region: Region
+}) {
+  const { codonTable, seq, frame, bpPerPx, region } = props
+  const scale = bpPerPx
+  const reverse = region.reversed
+  const tilt = 3 - (region.start % 3)
+  const eframe = (frame + tilt) % 3
 
-  const extraBases = (seq.length - offset) % 3
-  const seqSliced = seq.slice(offset, seq.length - extraBases)
-  // seq.slice(0, seq.length + extraBases)
-
-  // console.log({ sequence })
-  // console.log({ extraBases })
+  const seqSliced = seq.slice(eframe)
 
   let translated = ''
   for (let i = 0; i < seqSliced.length; i += 3) {
@@ -195,129 +193,158 @@ function renderTranslation(
     translated += aminoAcid
   }
 
+  console.log(
+    {
+      translated,
+      frame,
+      start: region.start,
+    },
+    // region.start,
+    // seq.length,
+    // region.end - region.start,
+    // seq.length / 3,
+    // (region.end - region.start) / 3,
+  )
+
   translated = reverse ? translated.split('').reverse().join('') : translated
-  ctx.fillStyle = 'grey'
-  for (let i = 0; i < translated.length; i++) {
-    ctx.fillRect(
-      (1 / scale) * 3 * i + offset / scale,
-      offset * 20,
-      (1 / scale) * 3,
-      20,
-    )
-    ctx.strokeRect(
-      (1 / scale) * 3 * i + offset / scale,
-      offset * 20,
-      (1 / scale) * 3,
-      20,
-    )
-  }
-  ctx.fillStyle = 'black'
-  for (let i = 0; i < translated.length; i++) {
-    // const aminoAcidSpan = document.createElement('td')
-    ctx.fillText(
-      translated[i],
-      i * (1 / scale) * 3 + (offset + 1) / scale,
-      offset * 20 + 15,
-    )
-  }
+  const w = (1 / scale) * 3
+  const letters = translated.split('')
+  const drop = region.start === 0 ? 0 : w
+  console.log({ start: region.start, eframe, drop })
+
+  return (
+    <>
+      {letters.map((letter, index) => {
+        const x = w * index + eframe / scale - drop
+        const y = 40 - frame * 20
+        return (
+          <React.Fragment key={`${index}letter`}>
+            <rect
+              x={x}
+              y={y}
+              width={w}
+              height={20}
+              stroke="black"
+              fill="grey"
+            />
+            <text x={x + w / 2 - 5} y={y + 15}>
+              {letter}
+            </text>
+          </React.Fragment>
+        )
+      })}
+    </>
+  )
 }
 
 function SequenceDivs(props: MyProps) {
-  const { features, highResolutionScaling, regions, bpPerPx } = props
+  const { features, regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const totalHeight = 100
   const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
 
-  const ref = useRef<HTMLCanvasElement>(null)
-
   const [feature] = [...features.values()]
-  const seq = region.reversed ? rev(feature.get('seq')) : feature.get('seq')
-  console.log(seq.length, region.end - region.start)
+  const fseq: string = feature.get('seq')
+  const seq = region.reversed ? rev(fseq) : fseq
+  const letters = seq.split('')
 
-  useEffect(() => {
-    if (!ref.current) {
-      return
-    }
-    const ctx = ref.current.getContext('2d')
-    if (!ctx) {
-      return
-    }
+  const [leftPx, rightPx] = bpSpanPx(
+    feature.get('start'),
+    feature.get('end'),
+    region,
+    bpPerPx,
+  )
 
-    const [leftPx, rightPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
-      region,
-      bpPerPx,
-    )
-    ctx.font = '16px Courier New,monospace'
-    const charSize = ctx.measureText('A')
-    const w = Math.max((rightPx - leftPx) / seq.length, 0.8)
-    ctx.strokeStyle = 'black'
-    for (let i = 0; i < seq.length; i++) {
-      const letter = seq[i]
-
-      switch (letter.toLowerCase()) {
-        case 'a':
-          ctx.fillStyle = '#00bf00'
-          break
-        case 'g':
-          ctx.fillStyle = '#ffa500'
-          break
-        case 'c':
-          ctx.fillStyle = '#4747ff'
-          break
-        case 't':
-          ctx.fillStyle = '#f00'
-          break
-      }
-      ctx.fillRect(leftPx + i * w, 60, w, height)
-      if (1 / bpPerPx >= charSize.width) {
-        ctx.strokeRect(leftPx + i * w, 60, w, height)
-      }
-    }
-    if (1 / bpPerPx >= charSize.width) {
-      ctx.fillStyle = 'black'
-      for (let i = 0; i < seq.length; i++) {
-        const letter = seq[i]
-        ctx.fillText(letter, leftPx + i * w + (w - charSize.width) / 2, 60 + 15)
-      }
-    }
-
-    for (let i = 0; i < 3; i++) {
-      for (let j = i; j < seq.length; j += 3) {
-        const nextCodon = seq.slice(j, j + 3)
-        const aminoAcid = codonTable[nextCodon] || ''
-        const nw = w * 3
-
-        ctx.fillStyle = 'grey'
-        ctx.fillRect(leftPx + j * nw, 40 - 20 * i, nw, 20)
-        ctx.fillStyle = 'black'
-        ctx.fillText(
-          aminoAcid,
-          leftPx + j * nw + (nw - charSize.width) / 2,
-          40 - 20 * i + 15,
-        )
-      }
-      // const translatedDiv = renderTranslation(
-      //   ctx,
-      //   codonTable,
-      //   seq.slice(i),
-      //   i,
-      //   bpPerPx,
-      //   false,
-      // )
-      // frameDiv[frame] = translatedDiv
-    }
-  }, [])
+  const w = Math.max((rightPx - leftPx) / seq.length, 0.8)
+  const render = 1 / bpPerPx >= 12
   return (
-    <canvas
-      ref={ref}
+    <svg
       width={width}
       height={totalHeight}
       style={{ width, height: totalHeight }}
-    />
+    >
+      {[0, 1, 2].map(index => (
+        <Translation
+          key={`translation-${index}`}
+          seq={seq}
+          codonTable={codonTable}
+          frame={index}
+          bpPerPx={bpPerPx}
+          region={region}
+        />
+      ))}
+
+      {letters.map((letter, index) => {
+        let fill
+        switch (letter.toLowerCase()) {
+          case 'a':
+            fill = '#00bf00'
+            break
+          case 'g':
+            fill = '#ffa500'
+            break
+          case 'c':
+            fill = '#4747ff'
+            break
+          case 't':
+            fill = '#f00'
+            break
+        }
+        return (
+          <React.Fragment key={index}>
+            <rect
+              x={leftPx + index * w}
+              y={60}
+              width={w}
+              height={height}
+              fill={fill}
+              stroke={render ? 'black' : 'none'}
+            />
+            {render ? (
+              <text x={leftPx + index * w + w / 2 - 5} y={75}>
+                {letter}
+              </text>
+            ) : null}
+          </React.Fragment>
+        )
+      })}
+      {letters.map((letter, index) => {
+        let fill
+        switch (letter.toLowerCase()) {
+          case 'a':
+            fill = '#00bf00'
+            break
+          case 'g':
+            fill = '#ffa500'
+            break
+          case 'c':
+            fill = '#4747ff'
+            break
+          case 't':
+            fill = '#f00'
+            break
+        }
+        return (
+          <React.Fragment key={index}>
+            <rect
+              x={leftPx + index * w}
+              y={60}
+              width={w}
+              height={height}
+              fill={fill}
+              stroke={render ? 'black' : 'none'}
+            />
+            {render ? (
+              <text x={leftPx + index * w + w / 2 - 5} y={75}>
+                {letter}
+              </text>
+            ) : null}
+          </React.Fragment>
+        )
+      })}
+    </svg>
   )
 }
 
