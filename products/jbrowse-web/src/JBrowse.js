@@ -53,9 +53,9 @@ const JBrowse = observer(({ pluginManager }) => {
         if (!response.ok) {
           const message = await response.text()
           session.notify(
-            `Admin server error: ${response.status} (${response.statusText}) ${
-              message || ''
-            }`,
+            `Admin server error: ${response.status} (${
+              response.statusText
+            }) ${message || ''}`,
           )
         }
       }
@@ -92,6 +92,7 @@ const JBrowse = observer(({ pluginManager }) => {
             onClose={() => {
               rootModel.setDefaultSessionEditing(false)
             }}
+            currentDefault={rootModel.jbrowse.defaultSession.name}
           />
         </>
       ) : null}
