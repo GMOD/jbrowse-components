@@ -8,7 +8,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import {
@@ -22,7 +22,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 
@@ -528,6 +527,7 @@ export default class PileupRenderer extends BoxRendererType {
     mismatches: Mismatch[],
     props: PileupRenderProps,
     colorForBase: { [key: string]: string },
+    theme: any,
   ) {
     const { config, bpPerPx, regions, showSoftClip } = props
     const [region] = regions
@@ -552,14 +552,15 @@ export default class PileupRenderer extends BoxRendererType {
       )
 
       if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
-        ctx.fillStyle =
+        const baseColor =
           colorForBase[
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
+        ctx.fillStyle = baseColor
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
-          ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
+          ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
             mismatch.base,
             mismatchLeftPx + (mismatchWidthPx - charWidth) / 2 + 1,
@@ -680,7 +681,7 @@ export default class PileupRenderer extends BoxRendererType {
       const mismatches: Mismatch[] = feature.get('mismatches')
 
       if (mismatches) {
-        this.drawMismatches(ctx, feat, mismatches, props, colorForBase)
+        this.drawMismatches(ctx, feat, mismatches, props, colorForBase, theme)
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
           const seq = feature.get('seq')

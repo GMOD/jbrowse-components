@@ -66,7 +66,8 @@ export default function ColorByTagDlg(props: {
             </TextField>
             <Button
               onClick={() => {
-                ;(model.PileupTrack || model).setSortedBy('tag', tag)
+                const display = model.displays[0]
+                ;(display.PileupDisplay || display).setSortedBy('tag', tag)
                 handleClose()
               }}
             >
