@@ -1,5 +1,4 @@
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
-import { isSessionModelWithConfigEditing } from '@jbrowse/core/util/types'
 import {
   ConfigurationReference,
   readConfObject,
@@ -23,20 +22,6 @@ export default function (pluginManager) {
         configuration: ConfigurationReference(configSchema),
         type: types.literal('UCSCTrackHubConnection'),
       })
-      .views(self => ({
-        get canConfigure() {
-          const session = getSession(self)
-          return (
-            isSessionModelWithConfigEditing(session) &&
-            (session.adminMode ||
-              session.sessionConnections.find(connection => {
-                return (
-                  connection.connectionId === self.configuration.connectionId
-                )
-              }))
-          )
-        },
-      }))
       .actions(self => ({
         connect() {
           const connectionName = readConfObject(self.configuration, 'name')
