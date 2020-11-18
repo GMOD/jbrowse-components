@@ -54,6 +54,10 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const unsupported =
     trackName &&
     (trackName.endsWith('(Unsupported)') || trackName.endsWith('(Unknown)'))
+  const menuItems = session.getTrackActionMenuItems
+    ? session.getTrackActionMenuItems(trackConf)
+    : []
+
   return (
     <Fade in>
       <div className={classes.track}>
@@ -76,16 +80,18 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
             disabled={disabled || unsupported}
           />
         </Tooltip>
-        <IconButton
-          className={classes.configureButton}
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
-          color="secondary"
-          data-testid={`htsTrackEntryMenu-${trackId}`}
-        >
-          <HorizontalDots />
-        </IconButton>
+        {menuItems.length ? (
+          <IconButton
+            className={classes.configureButton}
+            onClick={event => {
+              setAnchorEl(event.currentTarget)
+            }}
+            color="secondary"
+            data-testid={`htsTrackEntryMenu-${trackId}`}
+          >
+            <HorizontalDots />
+          </IconButton>
+        ) : null}
         <Menu
           anchorEl={anchorEl}
           onMenuItemClick={(_, callback) => {
@@ -96,10 +102,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={
-            session.getTrackActionMenuItems &&
-            session.getTrackActionMenuItems(trackConf)
-          }
+          menuItems={menuItems}
         />
       </div>
     </Fade>

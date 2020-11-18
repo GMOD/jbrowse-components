@@ -1,6 +1,6 @@
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
@@ -44,19 +44,19 @@ function Category({
   if (filteredCount === 0 && count !== 0) return null
 
   return (
-    <ExpansionPanel
+    <Accordion
       style={{ marginTop: '4px' }}
       expanded={!model.collapsed.get(pathName)}
       onChange={() => model.toggleCategory(pathName)}
     >
-      <ExpansionPanelSummary
+      <AccordionSummary
         expandIcon={<ExpandIcon className={classes.expandIcon} />}
       >
         <Typography variant="body2">{`${name}${
           filteredCount ? ` (${filteredCount})` : ''
         }`}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.expansionPanelDetails}>
+      </AccordionSummary>
+      <AccordionDetails className={classes.expansionPanelDetails}>
         <Contents
           model={model}
           path={path}
@@ -65,8 +65,8 @@ function Category({
           connection={connection}
           assemblyName={assemblyName}
         />
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+      </AccordionDetails>
+    </Accordion>
   )
 }
 

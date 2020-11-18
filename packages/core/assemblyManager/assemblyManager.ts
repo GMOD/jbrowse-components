@@ -41,6 +41,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       get rpcManager() {
         return getParent(self).rpcManager
       },
+      get pluginManager() {
+        return getParent(self).pluginManager
+      },
       get allPossibleRefNames() {
         let refNames: string[] = []
         for (const assembly of self.assemblies) {
@@ -120,6 +123,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .actions(self => ({
+      removeAssembly(asm: Instance<typeof Assembly>) {
+        self.assemblies.remove(asm)
+      },
       afterAttach() {
         addDisposer(
           self,
@@ -130,6 +136,11 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],
             ) => {
+              self.assemblies.forEach(asm => {
+                if (!asm.configuration) {
+                  this.removeAssembly(asm)
+                }
+              })
               assemblyConfigs.forEach(assemblyConfig => {
                 const existingAssemblyIdx = self.assemblies.findIndex(
                   assembly =>

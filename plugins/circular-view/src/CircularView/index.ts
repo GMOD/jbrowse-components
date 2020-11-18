@@ -10,3 +10,5 @@ export default ({ lib, load }: PluginManager) => {
 
   return new ViewType({ name: 'CircularView', stateModel, ReactComponent })
 }
+
+export type { CircularViewModel } from './models/CircularView'

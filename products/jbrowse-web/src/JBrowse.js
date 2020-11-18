@@ -22,23 +22,28 @@ function deleteBaseUris(config) {
 
 const JBrowse = observer(({ pluginManager }) => {
   const [adminKey] = useQueryParam('adminKey', StringParam)
+  const [adminServer] = useQueryParam('adminServer', StringParam)
   const [, setSessionId] = useQueryParam('session', StringParam)
   const { rootModel } = pluginManager
   const { error, jbrowse, session } = rootModel || {}
   const { id: currentSessionId } = session
 
   useEffect(() => {
-    setSessionId(currentSessionId)
-  }, [currentSessionId, setSessionId])
+    setSessionId(`local-${currentSessionId}`)
+    // @ts-ignore
+    window.JBrowseRootModel = rootModel
+    // @ts-ignore
+    window.JBrowseSession = session
+  }, [currentSessionId, rootModel, session, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
       if (adminKey) {
         const config = JSON.parse(JSON.stringify(snapshot))
-        deleteBaseUris(snapshot)
+        deleteBaseUris(config)
         const payload = { adminKey, config }
 
-        const response = await fetch('/updateConfig', {
+        const response = await fetch(adminServer || `/updateConfig`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -55,13 +60,16 @@ const JBrowse = observer(({ pluginManager }) => {
         }
       }
     })
-  }, [jbrowse, session, adminKey])
+  }, [jbrowse, session, adminKey, adminServer])
 
   if (error) {
-    throw new Error(error)
+    throw error
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
+  const { AssemblyManager } = pluginManager.getPlugin(
+    'DataManagementPlugin',
+  ).exports
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
@@ -69,6 +77,15 @@ const JBrowse = observer(({ pluginManager }) => {
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
+      {adminKey ? (
+        <AssemblyManager
+          rootModel={rootModel}
+          open={rootModel.isAssemblyEditing}
+          onClose={() => {
+            rootModel.setAssemblyEditing(false)
+          }}
+        />
+      ) : null}
     </ThemeProvider>
   )
 })

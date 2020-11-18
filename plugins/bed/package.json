@@ -1,12 +1,12 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "0.0.1-beta.13",
+  "version": "1.0.0",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
     "jbrowse2"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": {
@@ -40,7 +40,7 @@
     "@gmod/tabix": "^1.4.6"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^1.0.0",
     "mobx-state-tree": "3.14.1",
     "rxjs": "^6.0.0"
   },

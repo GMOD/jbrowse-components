@@ -1,12 +1,18 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import {
   AdapterClass as BgzipFastaAdapterClass,
   configSchema as bgzipFastaAdapterConfigSchema,
 } from './BgzipFastaAdapter'
+import {
+  AdapterClass as ChromSizesAdapterClass,
+  configSchema as chromSizesAdapterConfigSchema,
+} from './ChromSizesAdapter'
 import {
   configSchema as divSequenceRendererConfigSchema,
   ReactComponent as DivSequenceRendererReactComponent,
@@ -16,21 +22,14 @@ import {
   configSchema as indexedFastaAdapterConfigSchema,
 } from './IndexedFastaAdapter'
 import {
-  AdapterClass as ChromSizesAdapterClass,
-  configSchema as chromSizesAdapterConfigSchema,
-} from './ChromSizesAdapter'
-import {
-  configSchemaFactory as referenceSequenceTrackConfigSchemaFactory,
-  modelFactory as referenceSequenceTrackModelFactory,
-} from './ReferenceSequenceTrack'
-import {
-  configSchemaFactory as sequenceTrackConfigSchemaFactory,
-  modelFactory as sequenceTrackModelFactory,
-} from './SequenceTrack'
+  configSchema as linearReferenceSequenceDisplayConfigSchema,
+  modelFactory as linearReferenceSequenceDisplayModelFactory,
+} from './LinearReferenceSequenceDisplay'
 import {
   AdapterClass as TwoBitAdapterClass,
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
+import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'
@@ -73,32 +72,31 @@ export default class SequencePlugin extends Plugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = sequenceTrackConfigSchemaFactory(
-        pluginManager,
-        'SequenceTrack',
-      )
+      const configSchema = createReferenceSeqTrackConfig(pluginManager)
+
       return new TrackType({
-        name: 'SequenceTrack',
-        compatibleView: 'LinearGenomeView',
+        name: 'ReferenceSequenceTrack',
         configSchema,
-        stateModel: sequenceTrackModelFactory(configSchema, 'SequenceTrack'),
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'ReferenceSequenceTrack',
+          configSchema,
+        ),
       })
     })
 
-    pluginManager.addTrackType(() => {
-      const configSchema = referenceSequenceTrackConfigSchemaFactory(
-        pluginManager,
-        'ReferenceSequenceTrack',
+    pluginManager.addDisplayType(() => {
+      const stateModel = linearReferenceSequenceDisplayModelFactory(
+        linearReferenceSequenceDisplayConfigSchema,
       )
-      return new TrackType({
-        name: 'ReferenceSequenceTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: referenceSequenceTrackModelFactory(
-          configSchema,
-          'ReferenceSequenceTrack',
-        ),
-      })
+      return {
+        name: 'LinearReferenceSequenceDisplay',
+        configSchema: linearReferenceSequenceDisplayConfigSchema,
+        stateModel,
+        trackType: 'ReferenceSequenceTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      }
     })
 
     pluginManager.addRendererType(

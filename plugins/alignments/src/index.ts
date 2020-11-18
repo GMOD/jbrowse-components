@@ -1,39 +1,47 @@
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  configSchemaFactory as alignmentsTrackConfigSchemaFactory,
-  modelFactory as alignmentsTrackModelFactory,
-} from './AlignmentsTrack'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModel as alignmentsFeatureDetailStateModel,
 } from './AlignmentsFeatureDetail'
+import BamAdapterF from './BamAdapter'
+import * as MismatchParser from './BamAdapter/MismatchParser'
+import CramAdapterF from './CramAdapter'
+import HtsgetBamAdapterF from './HtsgetBamAdapter'
 import {
-  configSchemaFactory as pileupTrackConfigSchemaFactory,
-  modelFactory as pileupTrackModelFactory,
-} from './PileupTrack'
+  configSchemaFactory as linearAligmentsDisplayConfigSchemaFactory,
+  modelFactory as linearAlignmentsDisplayModelFactory,
+  ReactComponent as LinearAlignmentsDisplayReactComponent,
+} from './LinearAlignmentsDisplay'
 import {
-  configSchemaFactory as snpCoverageTrackConfigSchemaFactory,
-  modelFactory as snpCoverageTrackModelFactory,
-} from './SNPCoverageTrack'
+  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
+  modelFactory as linearPileupDisplayModelFactory,
+} from './LinearPileupDisplay'
+import {
+  configSchemaFactory as linearSNPCoverageDisplayConfigSchemaFactory,
+  modelFactory as linearSNPCoverageDisplayModelFactory,
+} from './LinearSNPCoverageDisplay'
 import PileupRenderer, {
   configSchema as pileupRendererConfigSchema,
   ReactComponent as PileupRendererReactComponent,
 } from './PileupRenderer'
+import SNPCoverageAdapterF from './SNPCoverageAdapter'
 import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
-
-import * as MismatchParser from './BamAdapter/MismatchParser'
-import BamAdapterF from './BamAdapter'
-import HtsgetBamAdapterF from './HtsgetBamAdapter'
-import CramAdapterF from './CramAdapter'
-import SNPCoverageAdapterF from './SNPCoverageAdapter'
 
 export { MismatchParser }
 
@@ -42,12 +50,70 @@ export default class AlignmentsPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
-      const configSchema = pileupTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'PileupTrack',
-        compatibleView: 'LinearGenomeView',
+      const configSchema = ConfigurationSchema(
+        'AlignmentsTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
+      const track = new TrackType({
+        name: 'AlignmentsTrack',
         configSchema,
-        stateModel: pileupTrackModelFactory(pluginManager, configSchema),
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'AlignmentsTrack',
+          configSchema,
+        ),
+      })
+      const linearAlignmentsDisplay = pluginManager.getDisplayType(
+        'LinearAlignmentsDisplay',
+      )
+      // Add LinearAlignmentsDisplay here so that it has priority over the other
+      // linear displays (defaults to order the displays are added, but we have
+      // to add the Pileup and SNPCoverage displays first).
+      track.addDisplayType(linearAlignmentsDisplay)
+      return track
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearPileupDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearPileupDisplay',
+        configSchema,
+        stateModel: linearPileupDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+        trackType: 'AlignmentsTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearSNPCoverageDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearSNPCoverageDisplay',
+        configSchema,
+        stateModel: linearSNPCoverageDisplayModelFactory(configSchema),
+        trackType: 'AlignmentsTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: LinearWiggleDisplayReactComponent,
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearAligmentsDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearAlignmentsDisplay',
+        configSchema,
+        stateModel: linearAlignmentsDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+        trackType: 'AlignmentsTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: LinearAlignmentsDisplayReactComponent,
       })
     })
     pluginManager.addWidgetType(
@@ -60,24 +126,6 @@ export default class AlignmentsPlugin extends Plugin {
           ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )
-    pluginManager.addTrackType(() => {
-      const configSchema = snpCoverageTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'SNPCoverageTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: snpCoverageTrackModelFactory(configSchema),
-      })
-    })
-    pluginManager.addTrackType(() => {
-      const configSchema = alignmentsTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'AlignmentsTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: alignmentsTrackModelFactory(pluginManager, configSchema),
-      })
-    })
     pluginManager.addAdapterType(
       () =>
         new AdapterType({

@@ -10,6 +10,7 @@ import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
 import RendererType from './pluggableElementTypes/renderers/RendererType'
 import AdapterType from './pluggableElementTypes/AdapterType'
 import TrackType from './pluggableElementTypes/TrackType'
+import DisplayType from './pluggableElementTypes/DisplayType'
 import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
@@ -67,6 +68,7 @@ class PhasedScheduler<PhaseName extends string> {
 type PluggableElementTypeGroup =
   | 'renderer'
   | 'adapter'
+  | 'display'
   | 'track'
   | 'connection'
   | 'view'
@@ -121,6 +123,7 @@ export default class PluginManager {
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
     'adapter',
+    'display',
     'track',
     'connection',
     'view',
@@ -133,6 +136,8 @@ export default class PluginManager {
   adapterTypes = new TypeRecord('AdapterType', AdapterType)
 
   trackTypes = new TypeRecord('TrackType', TrackType)
+
+  displayTypes = new TypeRecord('DisplayType', DisplayType)
 
   connectionTypes = new TypeRecord('ConnectionType', ConnectionType)
 
@@ -212,14 +217,17 @@ export default class PluginManager {
         return this.widgetTypes
       case 'renderer':
         return this.rendererTypes
+      case 'display':
+        return this.displayTypes
       case 'track':
         return this.trackTypes
       case 'view':
         return this.viewTypes
       case 'rpc method':
         return this.rpcMethods
+      default:
+        throw new Error(`invalid element type '${groupName}'`)
     }
-    throw new Error(`invalid element type '${groupName}'`)
   }
 
   addElementType(
@@ -360,6 +368,10 @@ export default class PluginManager {
     return this.trackTypes.get(typeName)
   }
 
+  getDisplayType(typeName: string): DisplayType {
+    return this.displayTypes.get(typeName)
+  }
+
   getViewType(typeName: string): ViewType {
     return this.viewTypes.get(typeName)
   }
@@ -391,13 +403,51 @@ export default class PluginManager {
   addTrackType(
     creationCallback: (pluginManager: PluginManager) => TrackType,
   ): this {
-    return this.addElementType('track', creationCallback)
+    // Goes through the already-created displays and registers the ones that
+    // specify this track type
+    const callback = () => {
+      const track = creationCallback(this)
+      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
+        display => {
+          if (
+            display.trackType === track.name &&
+            // track may have already added the displayType in its creationCallback
+            !track.displayTypes.includes(display)
+          ) {
+            track.addDisplayType(display)
+          }
+        },
+      )
+      return track
+    }
+    return this.addElementType('track', callback)
+  }
+
+  addDisplayType(
+    creationCallback: (pluginManager: PluginManager) => DisplayType,
+  ): this {
+    return this.addElementType('display', creationCallback)
   }
 
   addViewType(
     creationCallback: (pluginManager: PluginManager) => ViewType,
   ): this {
-    return this.addElementType('view', creationCallback)
+    const callback = () => {
+      const newView = creationCallback(this)
+      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
+        display => {
+          if (
+            display.viewType === newView.name &&
+            // view may have already added the displayType in its creationCallback
+            !newView.displayTypes.includes(display)
+          ) {
+            newView.addDisplayType(display)
+          }
+        },
+      )
+      return newView
+    }
+    return this.addElementType('view', callback)
   }
 
   addWidgetType(

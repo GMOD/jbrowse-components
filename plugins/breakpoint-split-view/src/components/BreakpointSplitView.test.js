@@ -10,6 +10,7 @@ const assemblyConf = {
   name: 'volMyt1',
   sequence: {
     trackId: 'sequenceConfigId',
+    type: 'ReferenceSequenceTrack',
     adapter: {
       type: 'FromConfigAdapter',
       features: [

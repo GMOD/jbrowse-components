@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
-import LogoFull from './LogoFull'
+import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 
@@ -74,7 +74,6 @@ function App({ session, HeaderButtons }) {
       session.renameCurrentSession(newName)
     }
   }
-
   return (
     <div
       className={classes.root}

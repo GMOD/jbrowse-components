@@ -1,0 +1,51 @@
+{
+  "sidebar": [
+    "introduction",
+    "combined",
+    "combined_pdf",
+    {
+      "type": "category",
+      "label": "Quickstart guides",
+      "items": [
+        "quickstart_web",
+        "quickstart_cli",
+        "quickstart_gui",
+        "quickstart_desktop"
+      ]
+    },
+    "user_guide",
+    "config_guide",
+    "cli",
+    "developer_guide",
+    "faq",
+    {
+      "type": "category",
+      "label": "JBrowse educational courses",
+      "items": [
+        {
+          "type": "category",
+          "label": "Archive",
+          "items": [
+            "bcc2020_plugin_development",
+            {
+              "type": "category",
+              "label": "BCC2020 - Embedding JBrowse 2 in your website",
+              "items": [
+                "bcc2020_embedding_jbrowse_01_getting_started",
+                "bcc2020_embedding_jbrowse_02_introduction",
+                "bcc2020_embedding_jbrowse_03_simple_site",
+                "bcc2020_embedding_jbrowse_04_assemblies",
+                "bcc2020_embedding_jbrowse_05_tracks",
+                "bcc2020_embedding_jbrowse_06_other_options",
+                "bcc2020_embedding_jbrowse_07_creating_the_view",
+                "bcc2020_embedding_jbrowse_08_default_session",
+                "bcc2020_embedding_jbrowse_09_reacting",
+                "bcc2020_embedding_jbrowse_10_conclusion"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 {
   "name": "@jbrowse/cli",
-  "version": "0.0.1-beta.24",
+  "version": "1.0.0",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
     "jbrowse2",
     "oclif"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
   "repository": "https://github.com/GMOD/jbrowse-components.git",
@@ -37,6 +37,9 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
+    "boxen": "^4.2.0",
+    "chalk": "^4.1.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",

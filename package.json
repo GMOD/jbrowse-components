@@ -10,7 +10,7 @@
     "build": "yarn useDist && node scripts/build.js && yarn useSrc",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
-    "lerna-publish": "lerna publish --no-push && git push origin tag \"@jbrowse/web*\" && git push --follow-tags",
+    "lerna-publish": "lerna publish --no-push",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
@@ -33,8 +33,6 @@
     "@babel/preset-env": "^7.3.4",
     "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
-    "@jbrowse/core": "^0.0.1-beta.1",
-    "@jbrowse/plugin-linear-genome-view": "^0.0.1-beta.1",
     "@material-ui/core": "^4.9.13",
     "@oclif/dev-cli": "^1",
     "@oclif/test": "^1.2.7",
@@ -44,6 +42,8 @@
     "@types/base64-js": "^1.2.5",
     "@types/clone": "^0.1.30",
     "@types/color": "^3.0.1",
+    "@types/cors": "^2.8.8",
+    "@types/crypto-js": "^4.0.1",
     "@types/d3-scale": "^2.2.0",
     "@types/deep-equal": "^1.0.1",
     "@types/dompurify": "^2.0.2",
@@ -65,7 +65,7 @@
     "@types/range-parser": "^1.2.3",
     "@types/rbush": "^3.0.0",
     "@types/react": "^16.9.34",
-    "@types/react-color": "^3.0.1",
+    "@types/react-color": "^3.0.4",
     "@types/react-dom": "^16.9.1",
     "@types/react-measure": "^2.0.6",
     "@types/react-window": "^1.8.1",
@@ -75,6 +75,7 @@
     "@types/string-template": "^1.0.2",
     "@types/unzipper": "^0.10.3",
     "babel-loader": "^8.1.0",
+    "babel-plugin-inline-import-data-uri": "^1.0.1",
     "babel-preset-mobx": "^2.0.0",
     "babel-preset-react-app": "9.1.2",
     "babel-preset-typescript": "^7.0.0-alpha.19",
@@ -132,5 +133,9 @@
     "whatwg-fetch": "^3.0.0",
     "worker-loader": "^2.0.0"
   },
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "dependencies": {
+    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.0.0"
+  }
 }

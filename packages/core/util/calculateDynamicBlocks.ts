@@ -105,6 +105,7 @@ export default function calculateDynamicBlocks(
         reversed,
         offsetPx: blockOffsetPx,
         parentRegion: region,
+        regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
         isRightEndOfDisplayedRegion,

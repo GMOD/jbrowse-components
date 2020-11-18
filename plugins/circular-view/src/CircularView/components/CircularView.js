@@ -4,7 +4,7 @@ import RotateLeft from '@material-ui/icons/RotateLeft'
 import RotateRight from '@material-ui/icons/RotateRight'
 import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
-import LineStyle from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import RulerFactory from './Ruler'
 
 const dragHandleHeight = 3
@@ -87,10 +87,11 @@ export default pluginManager => {
         </>
         <>
           {model.tracks.map(track => {
+            const display = track.displays[0]
             return (
-              <track.RenderingComponent
-                key={track.id}
-                track={track}
+              <display.RenderingComponent
+                key={display.id}
+                display={display}
                 view={model}
               />
             )
@@ -164,7 +165,7 @@ export default pluginManager => {
         {model.hideTrackSelectorButton ? null : (
           <ToggleButton
             onClick={model.activateTrackSelector}
-            title="select tracks"
+            title="Open track selector"
             selected={
               session.visibleWidget &&
               session.visibleWidget.id === 'hierarchicalTrackSelector' &&
@@ -174,7 +175,7 @@ export default pluginManager => {
             data-testid="circular_track_select"
             color="secondary"
           >
-            <LineStyle />
+            <TrackSelectorIcon />
           </ToggleButton>
         )}
       </div>
