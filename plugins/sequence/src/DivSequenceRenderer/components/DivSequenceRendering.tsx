@@ -1,10 +1,11 @@
-/* eslint curly:error*/
+/* eslint curly:error */
+/* eslint-disable no-nested-ternary */
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
-import { useTheme } from '@material-ui/core/styles'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import React from 'react'
 import { bpSpanPx } from '@jbrowse/core/util'
@@ -15,6 +16,7 @@ interface MyProps {
   bpPerPx: number
   config: AnyConfigurationModel
   highResolutionScaling: number
+  theme: any
 }
 
 function revcom(seqString: string) {
@@ -140,15 +142,14 @@ function rev(seq: string): string {
   return seq.split('').reverse().join('')
 }
 
+/**
+ *  take CodonTable above and generate larger codon table that includes
+ *  all permutations of upper and lower case nucleotides
+ */
 function generateCodonTable(table: any) {
-  /**
-   *  take CodonTable above and generate larger codon table that includes
-   *  all permutations of upper and lower case nucleotides
-   */
   const tempCodonTable: { [key: string]: string } = {}
   Object.keys(table).forEach(codon => {
     const aa = table[codon]
-    // console.log("Codon: ", codon, ", aa: ", aa);
     const nucs: string[][] = []
     for (let i = 0; i < 3; i++) {
       const nuc = codon.charAt(i)
@@ -178,12 +179,21 @@ function Translation(props: {
   bpPerPx: number
   region: Region
   reverse?: boolean
+  theme?: any
 }) {
-  const { codonTable, seq, frame, bpPerPx, region, reverse } = props
+  const { codonTable, seq, frame, bpPerPx, region, reverse, theme } = props
   const scale = bpPerPx
+
+  // the tilt variable normalizes the frame to where we are starting from,
+  // which increases consistency across blocks
   const tilt = 3 - (region.start % 3)
-  const eframe = (frame + tilt) % 3
-  const seqSliced = seq.slice(eframe)
+
+  // the effectivFrame incorporates tilt and the frame to say what the
+  // effective frame that is plotted. The +3 is for when frame is -2 and this
+  // can otherwise result in effectiveFrame -1
+  const effectiveFrame = (frame + tilt + 3) % 3
+
+  const seqSliced = seq.slice(effectiveFrame)
 
   const translated: { letter: string; codon: string }[] = []
   for (let i = 0; i < seqSliced.length; i += 3) {
@@ -201,7 +211,7 @@ function Translation(props: {
   return (
     <>
       {translated.map((element, index) => {
-        const x = w * index + eframe / scale - drop
+        const x = w * index + effectiveFrame / scale - drop
         const y = reverse ? 100 - frame * 20 : 40 - frame * 20
         const { letter, codon } = element
         return (
@@ -214,9 +224,9 @@ function Translation(props: {
               stroke="#555"
               fill={
                 defaultStarts.includes(codon)
-                  ? '#0f0'
+                  ? theme.palette.startCodon
                   : defaultStops.includes(codon)
-                  ? '#f00'
+                  ? theme.palette.stopCodon
                   : map[Math.abs(frame)]
               }
             />
@@ -233,7 +243,8 @@ function Translation(props: {
 }
 
 function Sequence(props: MyProps) {
-  const { features, regions, bpPerPx } = props
+  const { features, regions, bpPerPx, theme: configTheme } = props
+  const theme = createJBrowseTheme(configTheme)
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const totalHeight = 200
@@ -267,6 +278,7 @@ function Sequence(props: MyProps) {
           frame={index}
           bpPerPx={bpPerPx}
           region={region}
+          theme={theme}
         />
       ))}
       {[0, -1, -2].map(index => (
@@ -277,26 +289,12 @@ function Sequence(props: MyProps) {
           frame={index}
           bpPerPx={bpPerPx}
           region={region}
+          theme={theme}
           reverse
         />
       ))}
 
       {seq.split('').map((letter, index) => {
-        let fill
-        switch (letter.toLowerCase()) {
-          case 'a':
-            fill = '#00bf00'
-            break
-          case 'g':
-            fill = '#ffa500'
-            break
-          case 'c':
-            fill = '#4747ff'
-            break
-          case 't':
-            fill = '#f00'
-            break
-        }
         return (
           <React.Fragment key={index}>
             <rect
@@ -304,7 +302,7 @@ function Sequence(props: MyProps) {
               y={60}
               width={w}
               height={height}
-              fill={fill}
+              fill={theme.palette.bases[letter.toUpperCase()].main}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
@@ -318,21 +316,6 @@ function Sequence(props: MyProps) {
       {complement(seq)
         .split('')
         .map((letter, index) => {
-          let fill
-          switch (letter.toLowerCase()) {
-            case 'a':
-              fill = '#00bf00'
-              break
-            case 'g':
-              fill = '#ffa500'
-              break
-            case 'c':
-              fill = '#4747ff'
-              break
-            case 't':
-              fill = '#f00'
-              break
-          }
           return (
             <React.Fragment key={index}>
               <rect
@@ -340,7 +323,7 @@ function Sequence(props: MyProps) {
                 y={80}
                 width={w}
                 height={height}
-                fill={fill}
+                fill={theme.palette.bases[letter.toUpperCase()].main}
                 stroke={render ? '#555' : 'none'}
               />
               {render ? (
