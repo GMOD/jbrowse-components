@@ -28,7 +28,7 @@ export default ({
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           Are you sure you want to reset? This will restore the default
-          configuration and remove all sessions.
+          configuration.
         </DialogContentText>
       </DialogContent>
       <DialogActions>
