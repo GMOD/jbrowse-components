@@ -313,24 +313,6 @@ const stateModelFactory = (
               },
             },
             {
-              label: 'View as pairs',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.viewAsPairs,
-              onClick: () => {
-                self.toggleViewAsPairs()
-              },
-            },
-            {
-              label: 'Link supplementary reads',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.linkSuppReads,
-              onClick: () => {
-                self.toggleLinkSuppReads()
-              },
-            },
-            {
               label: 'Sort by',
               icon: SortIcon,
               disabled: self.showSoftClipping,

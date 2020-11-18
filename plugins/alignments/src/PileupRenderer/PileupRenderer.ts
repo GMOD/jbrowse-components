@@ -362,134 +362,17 @@ export default class PileupRenderer extends BoxRendererType {
     const { config, showSoftClip, viewAsPairs, linkSuppReads } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
-    const maxInsertSize = readConfObject(config, 'maxInsertSize')
     const { start, end } = region
     const len = end - start
     const bpExpansion = Math.max(
-      ...[
-        len,
-        showSoftClip ? Math.round(maxClippingSize) : 0,
-        viewAsPairs ? Math.round(maxInsertSize) : 0,
-        linkSuppReads ? Math.round(maxInsertSize) : 0,
-      ],
+      len,
+      showSoftClip ? Math.round(maxClippingSize) : 0,
     )
 
     return {
       ...region,
       start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),
-    }
-  }
-
-  *linkSuppReads(_: Region, records: Feature[]) {
-    const pairCache: { [key: string]: Feature[] } = {}
-
-    for (let i = 0; i < records.length; i++) {
-      const rec = records[i]
-      const name = rec.get('name')
-      if (!pairCache[name]) {
-        pairCache[name] = []
-      }
-      pairCache[name].push(rec)
-    }
-
-    for (const [name, subfeatures] of Object.entries(pairCache)) {
-      let start = Infinity
-      let end = -Infinity
-      let refName
-      for (let i = 0; i < subfeatures.length; i++) {
-        const feat = subfeatures[i]
-        refName = feat.get('refName')
-        if (feat.get('start') < start) {
-          start = feat.get('start')
-        }
-        if (feat.get('end') > end) {
-          end = feat.get('end')
-        }
-      }
-      yield subfeatures.length > 1
-        ? new SimpleFeature({
-            id: name,
-            data: { start, end, refName, subfeatures },
-          })
-        : subfeatures[0]
-    }
-  }
-
-  *pairFeatures(query: Region, records: Feature[]) {
-    const pairCache: { [key: string]: { [key: string]: Feature } } = {}
-    const features: { [key: string]: PairedRead } = {}
-    for (let i = 0; i < records.length; i++) {
-      let feat
-      const rec = records[i]
-      if (canBePaired(rec)) {
-        const name = rec.get('name')
-        feat = pairCache[name]
-        const flags = rec.get('flags')
-        if (feat) {
-          if (flags & Flags.FIRST_IN_PAIR) {
-            feat.read1 = rec
-          } else if (flags & Flags.SECOND_IN_PAIR) {
-            feat.read2 = rec
-          }
-          if (feat.read1 && feat.read2) {
-            delete pairCache[name]
-            features[name] = new PairedRead(feat.read1, feat.read2)
-          }
-        } else {
-          const f: { [key: string]: Feature } = {}
-          if (flags & Flags.FIRST_IN_PAIR) {
-            f.read1 = rec
-          } else if (flags & Flags.SECOND_IN_PAIR) {
-            f.read2 = rec
-          }
-          pairCache[name] = f
-        }
-      } else if (
-        doesIntersect2(rec.get('start'), rec.get('end'), query.start, query.end)
-      ) {
-        yield rec
-      }
-    }
-
-    // dump paired features
-    for (const feat of Object.values(features)) {
-      if (
-        doesIntersect2(
-          feat.get('start'),
-          feat.get('end'),
-          query.start,
-          query.end,
-        )
-      ) {
-        yield feat
-      }
-    }
-    // dump unpaired features from the paircache
-    for (const feat of Object.values(pairCache)) {
-      if (feat.read1) {
-        if (
-          doesIntersect2(
-            feat.read1.get('start'),
-            feat.read1.get('end'),
-            query.start,
-            query.end,
-          )
-        ) {
-          yield feat.read1
-        }
-      } else if (feat.read2) {
-        if (
-          doesIntersect2(
-            feat.read2.get('start'),
-            feat.read2.get('end'),
-            query.start,
-            query.end,
-          )
-        ) {
-          yield feat.read2
-        }
-      }
     }
   }
 
@@ -725,32 +608,6 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async getFeatures(renderArgs: RenderArgsAugmented) {
-    const { regions, viewAsPairs, linkSuppReads } = renderArgs
-    const features = await super.getFeatures(renderArgs)
-    const [region] = regions
-
-    if (linkSuppReads) {
-      const featureList = [...features.values()]
-      const suppFeats = [...this.linkSuppReads(region, featureList)]
-      return new Map(
-        suppFeats.map(feat => {
-          return [feat.id(), feat]
-        }),
-      )
-    }
-    if (viewAsPairs) {
-      const featureList = [...features.values()]
-      const pairedFeatures = [...this.pairFeatures(region, featureList)]
-      return new Map(
-        pairedFeatures.map(feat => {
-          return [feat.id(), feat]
-        }),
-      )
-    }
-    return features
-  }
-
   async makeImageData(props: PileupRenderProps) {
     const {
       features,
@@ -817,114 +674,61 @@ export default class PileupRenderer extends BoxRendererType {
       }
 
       const { feature, topPx, heightPx } = feat
-      if (feature.get('paired_feature')) {
-        const { read1, read2 } = (feature as unknown) as PairedRead
-        const [leftPx, rightPx] = bpSpanPx(
-          feature.get('start'),
-          feature.get('end'),
-          region,
-          bpPerPx,
-        )
-        ctx.strokeStyle = 'black'
-        ctx.beginPath()
-        ctx.moveTo(leftPx, topPx + heightPx / 2)
-        ctx.lineTo(rightPx, topPx + heightPx / 2)
-        ctx.stroke()
-        this.drawRect(ctx, { feature: read1, topPx, heightPx }, props)
-        this.drawRect(ctx, { feature: read2, topPx, heightPx }, props)
-        this.drawMismatches(
-          ctx,
-          { feature: read1, heightPx, topPx },
-          read1.get('mismatches'),
-          props,
-          colorForBase,
-        )
-        this.drawMismatches(
-          ctx,
-          { feature: read2, heightPx, topPx },
-          read2.get('mismatches'),
-          props,
-          colorForBase,
-        )
-      } else if (feature.get('subfeatures')) {
-        const [leftPx, rightPx] = bpSpanPx(
-          feature.get('start'),
-          feature.get('end'),
-          region,
-          bpPerPx,
-        )
-        ctx.strokeStyle = 'black'
-        ctx.beginPath()
-        ctx.moveTo(leftPx, topPx + heightPx / 2)
-        ctx.lineTo(rightPx, topPx + heightPx / 2)
-        ctx.stroke()
-        const subfeatures = feature.get('subfeatures') as Feature[]
-        subfeatures.forEach(subfeat => {
-          this.drawRect(ctx, { feature: subfeat, topPx, heightPx }, props)
-          this.drawMismatches(
-            ctx,
-            { feature: subfeat, heightPx, topPx },
-            subfeat.get('mismatches'),
-            props,
-            colorForBase,
-          )
-        })
-      } else {
-        ctx.fillStyle = readConfObject(config, 'color', [feature])
-        this.drawRect(ctx, { feature, topPx, heightPx }, props)
-        const mismatches: Mismatch[] = feature.get('mismatches')
 
-        if (mismatches) {
-          this.drawMismatches(ctx, feat, mismatches, props, colorForBase)
-          // Display all bases softclipped off in lightened colors
-          if (showSoftClip) {
-            const seq = feature.get('seq')
-            if (!seq) {
-              return
-            }
-            for (let j = 0; j < mismatches.length; j += 1) {
-              const mismatch = mismatches[j]
-              if (mismatch.type === 'softclip') {
-                const softClipLength = mismatch.cliplen || 0
-                const softClipStart =
-                  mismatch.start === 0
-                    ? feature.get('start') - softClipLength
-                    : feature.get('start') + mismatch.start
-                for (let k = 0; k < softClipLength; k += 1) {
-                  const base = seq.charAt(k + mismatch.start)
-                  // If softclip length+start is longer than sequence, no need to
-                  // continue showing base
-                  if (!base) {
-                    return
-                  }
+      ctx.fillStyle = readConfObject(config, 'color', [feature])
+      this.drawRect(ctx, { feature, topPx, heightPx }, props)
+      const mismatches: Mismatch[] = feature.get('mismatches')
 
-                  const [softClipLeftPx, softClipRightPx] = bpSpanPx(
-                    softClipStart + k,
-                    softClipStart + k + 1,
-                    region,
-                    bpPerPx,
+      if (mismatches) {
+        this.drawMismatches(ctx, feat, mismatches, props, colorForBase)
+        // Display all bases softclipped off in lightened colors
+        if (showSoftClip) {
+          const seq = feature.get('seq')
+          if (!seq) {
+            return
+          }
+          for (let j = 0; j < mismatches.length; j += 1) {
+            const mismatch = mismatches[j]
+            if (mismatch.type === 'softclip') {
+              const softClipLength = mismatch.cliplen || 0
+              const softClipStart =
+                mismatch.start === 0
+                  ? feature.get('start') - softClipLength
+                  : feature.get('start') + mismatch.start
+              for (let k = 0; k < softClipLength; k += 1) {
+                const base = seq.charAt(k + mismatch.start)
+                // If softclip length+start is longer than sequence, no need to
+                // continue showing base
+                if (!base) {
+                  return
+                }
+
+                const [softClipLeftPx, softClipRightPx] = bpSpanPx(
+                  softClipStart + k,
+                  softClipStart + k + 1,
+                  region,
+                  bpPerPx,
+                )
+                const softClipWidthPx = Math.max(
+                  minFeatWidth,
+                  Math.abs(softClipLeftPx - softClipRightPx),
+                )
+
+                // Black accounts for IUPAC ambiguity code bases such as N that
+                // show in soft clipping
+                ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
+                ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
+
+                if (
+                  softClipWidthPx >= charWidth &&
+                  heightPx >= charHeight - 5
+                ) {
+                  ctx.fillStyle = 'black'
+                  ctx.fillText(
+                    base,
+                    softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
+                    topPx + heightPx,
                   )
-                  const softClipWidthPx = Math.max(
-                    minFeatWidth,
-                    Math.abs(softClipLeftPx - softClipRightPx),
-                  )
-
-                  // Black accounts for IUPAC ambiguity code bases such as N that
-                  // show in soft clipping
-                  ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
-                  ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
-
-                  if (
-                    softClipWidthPx >= charWidth &&
-                    heightPx >= charHeight - 5
-                  ) {
-                    ctx.fillStyle = 'black'
-                    ctx.fillText(
-                      base,
-                      softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
-                      topPx + heightPx,
-                    )
-                  }
                 }
               }
             }

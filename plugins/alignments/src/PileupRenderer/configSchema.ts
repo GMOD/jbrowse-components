@@ -46,12 +46,6 @@ export default ConfigurationSchema(
       description: 'the max clip size to be used in a pileup rendering',
       defaultValue: 0,
     },
-    maxInsertSize: {
-      type: 'number',
-      defaultValue: 0,
-      description:
-        'size to expand for insert size for paired or linked supplementary alignments',
-    },
     height: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',

@@ -67,7 +67,8 @@ export default function ColorByTagDlg(props: {
             </TextField>
             <Button
               onClick={() => {
-                ;(model.PileupTrack || model).setColorScheme({
+                const display = model.displays[0]
+                ;(display.PileupDisplay || display).setColorScheme({
                   type: 'tag',
                   tag,
                 })
