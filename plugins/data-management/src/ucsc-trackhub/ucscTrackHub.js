@@ -97,7 +97,6 @@ function makeTrackConfig(
   else bigDataLocation = { localPath: track.get('bigDataUrl') }
   let bigDataIndexLocation
 
-  // bigGenePred falls into the default case, make a case for bigGenePred and return the correct config
   switch (baseTrackType) {
     case 'bam':
       if (trackDbFileLocation.uri)
@@ -348,6 +347,10 @@ function makeTrackConfig(
       )
 
     default:
-      throw new Error(`Unsupported track type: ${baseTrackType}`)
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
   }
 }
