@@ -656,32 +656,32 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="1"
+      stroke="none"
+      width="1.7"
       x="0"
       y="40"
     />
     <rect
       fill="#adadad"
       height="20"
-      stroke="#555"
-      width="1"
+      stroke="none"
+      width="1.7"
       x="0.3333333333333333"
       y="20"
     />
     <rect
       fill="#8f8f8f"
       height="20"
-      stroke="#555"
-      width="1"
+      stroke="none"
+      width="1.7"
       x="0"
       y="100"
     />
     <rect
       fill="#d8d8d8"
       height="20"
-      stroke="#555"
-      width="1"
+      stroke="none"
+      width="1.7"
       x="0.3333333333333333"
       y="140"
     />
