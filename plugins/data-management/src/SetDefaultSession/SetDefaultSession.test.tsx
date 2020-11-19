@@ -88,46 +88,39 @@ describe('SetDefaultSession GUI', () => {
   })
 
   it('sets to the default session when checked', () => {
-    const MockSavedSessions = {
+    const MockSession = {
       ...mockRootModel,
       session: {
-        savedSessions: [
-          {
-            name: `Moo session`,
-          },
-        ],
+        name: `Moo session`,
+        savedSessions: [],
       },
     }
     const { getByRole } = render(
       <SetDefaultSession
-        rootModel={MockSavedSessions}
+        rootModel={MockSession}
         open
         onClose={() => {}}
         currentDefault="New session"
       />,
     )
     fireEvent.click(getByRole('checkbox'))
-    expect(
-      MockSavedSessions.jbrowse.setDefaultSessionConf,
-    ).toHaveBeenCalledWith({
+    expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({
       name: `Moo session`,
+      savedSessions: [],
     })
   })
 
   it('unsets to the default session when unchecked', () => {
-    const MockSavedSessions = {
+    const MockSession = {
       ...mockRootModel,
       session: {
-        savedSessions: [
-          {
-            name: `Moo session`,
-          },
-        ],
+        name: `Moo session`,
+        savedSessions: [],
       },
     }
     const { getByRole } = render(
       <SetDefaultSession
-        rootModel={MockSavedSessions}
+        rootModel={MockSession}
         open
         onClose={() => {}}
         currentDefault="New session"
@@ -136,9 +129,7 @@ describe('SetDefaultSession GUI', () => {
     fireEvent.click(getByRole('checkbox'))
     // Fire a second time to uncheck
     fireEvent.click(getByRole('checkbox'))
-    expect(
-      MockSavedSessions.jbrowse.setDefaultSessionConf,
-    ).toHaveBeenCalledWith({
+    expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({
       name: `New session`,
     })
   })
