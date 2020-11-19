@@ -278,17 +278,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       deleteConnection(configuration: AnyConfigurationModel) {
+        let deletedConn
         if (self.adminMode) {
-          return getParent(self).jbrowse.deleteConnectionConf(configuration)
+          deletedConn = getParent(self).jbrowse.deleteConnectionConf(
+            configuration,
+          )
         }
-        const { connectionId } = configuration
-        const idx = self.sessionConnections.findIndex(
-          c => c.connectionId === connectionId,
-        )
-        if (idx === -1) {
-          return undefined
+        if (!deletedConn) {
+          const { connectionId } = configuration
+          const idx = self.sessionConnections.findIndex(
+            c => c.connectionId === connectionId,
+          )
+          if (idx === -1) {
+            return undefined
+          }
+          return self.sessionConnections.splice(idx, 1)
         }
-        return self.sessionConnections.splice(idx, 1)
+        return deletedConn
       },
 
       updateDrawerWidth(drawerWidth: number) {
