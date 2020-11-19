@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { unzip } from '@gmod/bgzf-filehandle'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
@@ -30,17 +31,16 @@ export default (pluginManager: PluginManager) => {
 
   return types
     .model('SpreadsheetImportWizard', {
-      fileSource: types.frozen(),
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
       loading: false,
-
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
-
       selectedAssemblyIdx: 0,
     })
     .volatile(() => ({
       fileTypes,
+      requiresUnzip: false,
+      fileSource: undefined as any,
       error: undefined as Error | undefined,
     }))
     .views(self => ({
@@ -86,6 +86,9 @@ export default (pluginManager: PluginManager) => {
             (self.fileSource.blob && self.fileSource.blob.name)
 
           if (name) {
+            if (name.endsWith('.gz')) {
+              self.requiresUnzip = true
+            }
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {
               if (match[1] === 'tsv' && name.includes('star-fusion')) {
@@ -132,7 +135,7 @@ export default (pluginManager: PluginManager) => {
 
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
-      import() {
+      async import() {
         try {
           if (!self.fileSource) return
           const typeParser =
@@ -142,24 +145,22 @@ export default (pluginManager: PluginManager) => {
           if (self.loading)
             throw new Error('cannot import, load already in progress')
           self.loading = true
+
           const filehandle = openLocation(self.fileSource)
-          filehandle
-            .stat()
-            .then(stat => {
-              if (stat.size > IMPORT_SIZE_LIMIT)
-                throw new Error(
-                  `File is too big. Tabular files are limited to at most ${(
-                    IMPORT_SIZE_LIMIT / 1000
-                  ).toLocaleString()}kb.`,
-                )
-            })
-            .then(() => filehandle.readFile())
-            .then(buffer => typeParser(buffer as Buffer, self))
-            .then(spreadsheet => {
-              this.setLoaded()
-              getParent(self).displaySpreadsheet(spreadsheet)
-            })
-            .catch(this.setError)
+          const stat = await filehandle.stat()
+          if (stat.size > IMPORT_SIZE_LIMIT)
+            throw new Error(
+              `File is too big. Tabular files are limited to at most ${(
+                IMPORT_SIZE_LIMIT / 1000
+              ).toLocaleString()}kb.`,
+            )
+          let buffer = await filehandle.readFile()
+          if (self.requiresUnzip) {
+            buffer = await unzip(buffer)
+          }
+          const spreadsheet = await typeParser(buffer as Buffer, self)
+          this.setLoaded()
+          getParent(self).displaySpreadsheet(spreadsheet)
         } catch (error) {
           this.setError(error)
         }
