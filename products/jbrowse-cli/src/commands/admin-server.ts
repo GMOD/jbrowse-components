@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import fs, { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import crypto from 'crypto'
 import boxen from 'boxen'
 import chalk from 'chalk'
@@ -7,6 +7,8 @@ import os from 'os'
 import express from 'express'
 import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
+
+const fsPromises = fs.promises
 
 function isValidPort(port: number) {
   return port > 0 && port < 65535

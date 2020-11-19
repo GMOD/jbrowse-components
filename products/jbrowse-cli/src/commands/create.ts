@@ -1,9 +1,11 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import fetch from 'node-fetch'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
+
+const fsPromises = fs.promises
 
 export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'

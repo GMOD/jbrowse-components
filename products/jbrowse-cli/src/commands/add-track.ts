@@ -1,9 +1,11 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import fs, { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
+
+const fsPromises = fs.promises
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
