@@ -57,8 +57,6 @@ interface LayoutRecord {
 
 interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
-  viewAsPairs?: boolean
-  linkSuppReads?: boolean
 }
 
 interface PileupLayoutSessionProps {
@@ -76,33 +74,6 @@ interface CachedPileupLayout {
   filters: SerializableFilterChain
   sortedBy: unknown
   showSoftClip: boolean
-  viewAsPairs: boolean
-  linkSuppReads: boolean
-}
-
-enum Flags {
-  PAIRED = 1,
-  PROPER_PAIR = 2,
-  READ_UNMAPPED = 4,
-  MATE_UNMAPPED = 8,
-  READ_REVERSE = 16,
-  MATE_REVERSE = 32,
-  FIRST_IN_PAIR = 64,
-  SECOND_IN_PAIR = 128,
-  SECONDARY = 256,
-  FAIL_QC = 512,
-  PCR_DUP = 1024,
-  SUPPLEMENTARY = 2048,
-}
-function canBePaired(alignment: Feature) {
-  const flags = alignment.get('flags')
-  return (
-    flags & Flags.PAIRED &&
-    !(flags & Flags.READ_UNMAPPED) &&
-    alignment.get('seq_id') === alignment.get('next_seq_id') &&
-    (flags & Flags.FIRST_IN_PAIR || flags & Flags.SECOND_IN_PAIR) &&
-    !(flags & Flags.SECONDARY || flags & Flags.SUPPLEMENTARY)
-  )
 }
 
 // orientation definitions from igv.js, see also https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
@@ -169,94 +140,12 @@ const alignmentColoring: { [key: string]: string } = {
   color_shortinsert: 'pink',
 }
 
-class PairedRead implements Feature {
-  public read1: Feature
-
-  public read2: Feature
-
-  constructor(read1: Feature, read2: Feature) {
-    this.read1 = read1
-    this.read2 = read2
-  }
-
-  id() {
-    return `${this.read1.id()}-${this.read2.id()}`
-  }
-
-  get(field: string) {
-    return this._get(field.toLowerCase())
-  }
-
-  _get(field: string) {
-    if (field === 'start') {
-      return Math.min(this.read1.get('start'), this.read2.get('start'))
-    }
-    if (field === 'end') {
-      return Math.max(this.read1.get('end'), this.read2.get('end'))
-    }
-    if (field === 'name') {
-      return this.read1.get('name')
-    }
-    if (field === 'pair_orientation') {
-      return this.read1.get('pair_orientation')
-    }
-    if (field === 'template_length') {
-      return this.read1.get('template_length')
-    }
-    if (field === 'is_paired') {
-      return true // simply comes from paired end reads
-    }
-    if (field === 'paired_feature') {
-      return true // it is a combination of two reads
-    }
-    if (field === 'refname') {
-      return this.read1.get('refName')
-    }
-    return undefined
-  }
-
-  pairedFeature() {
-    return true
-  }
-
-  children() {
-    return undefined
-  }
-
-  parent() {
-    return undefined
-  }
-
-  set() {}
-
-  tags() {
-    return []
-  }
-
-  toJSON() {
-    return {
-      uniqueId: this.id(),
-      start: this._get('start'),
-      end: this._get('end'),
-      refName: this._get('refName'),
-      is_paired: this._get('is_paired'),
-      paired_feature: this._get('paired_feature'),
-      read1: this.read1.toJSON(),
-      read2: this.read2.toJSON(),
-    }
-  }
-}
-
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
 class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
 
   showSoftClip = false
-
-  viewAsPairs = false
-
-  linkSuppReads = false
 
   constructor(args: PileupLayoutSessionProps) {
     super(args)
@@ -267,8 +156,6 @@ class PileupLayoutSession extends LayoutSession {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
       this.showSoftClip === cachedLayout.showSoftClip &&
-      this.viewAsPairs === cachedLayout.viewAsPairs &&
-      this.linkSuppReads === cachedLayout.linkSuppReads &&
       deepEqual(this.sortedBy, cachedLayout.sortedBy)
     )
   }
@@ -283,8 +170,6 @@ class PileupLayoutSession extends LayoutSession {
         filters: this.filters,
         sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
-        viewAsPairs: this.viewAsPairs,
-        linkSuppReads: this.linkSuppReads,
       }
     }
     return this.cachedLayout.layout
@@ -358,7 +243,7 @@ export default class PileupRenderer extends BoxRendererType {
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
-    const { config, showSoftClip, viewAsPairs, linkSuppReads } = renderArgs
+    const { config, showSoftClip } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const { start, end } = region
