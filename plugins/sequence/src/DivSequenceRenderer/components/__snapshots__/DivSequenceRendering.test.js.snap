@@ -2,6 +2,479 @@
 
 exports[`<DivSequenceRendering /> renders with no features 1`] = `<div />`;
 
+exports[`<DivSequenceRendering /> renders with one feature reversed with a correct seq, zoomed in, should render nicely 1`] = `
+<div>
+  <svg
+    height="200"
+    style="width: 20000px; height: 200px;"
+    width="20000"
+  >
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19940"
+      y="100"
+    />
+    <text
+      x="19966"
+      y="115"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19880"
+      y="100"
+    />
+    <text
+      x="19906"
+      y="115"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19820"
+      y="100"
+    />
+    <text
+      x="19846"
+      y="115"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19920"
+      y="120"
+    />
+    <text
+      x="19946"
+      y="135"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19860"
+      y="120"
+    />
+    <text
+      x="19886"
+      y="135"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19800"
+      y="120"
+    />
+    <text
+      x="19826"
+      y="135"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19900"
+      y="140"
+    />
+    <text
+      x="19926"
+      y="155"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19840"
+      y="140"
+    />
+    <text
+      x="19866"
+      y="155"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19780"
+      y="140"
+    />
+    <text
+      x="19806"
+      y="155"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19940"
+      y="40"
+    />
+    <text
+      x="19966"
+      y="55"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19880"
+      y="40"
+    />
+    <text
+      x="19906"
+      y="55"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19820"
+      y="40"
+    />
+    <text
+      x="19846"
+      y="55"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19900"
+      y="20"
+    />
+    <text
+      x="19926"
+      y="35"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19840"
+      y="20"
+    />
+    <text
+      x="19866"
+      y="35"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19780"
+      y="20"
+    />
+    <text
+      x="19806"
+      y="35"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19920"
+      y="0"
+    />
+    <text
+      x="19946"
+      y="15"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19860"
+      y="0"
+    />
+    <text
+      x="19886"
+      y="15"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19800"
+      y="0"
+    />
+    <text
+      x="19826"
+      y="15"
+    />
+    <rect
+      fill="#f44336"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19960"
+      y="60"
+    />
+    <text
+      fill="white"
+      x="19966"
+      y="75"
+    >
+      T
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19940"
+      y="60"
+    />
+    <text
+      x="19946"
+      y="75"
+    >
+      B
+    </text>
+    <rect
+      fill="#ffc107"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19920"
+      y="60"
+    />
+    <text
+      fill="black"
+      x="19926"
+      y="75"
+    >
+      G
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19900"
+      y="60"
+    />
+    <text
+      x="19906"
+      y="75"
+    >
+      D
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19880"
+      y="60"
+    />
+    <text
+      x="19886"
+      y="75"
+    >
+      E
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19860"
+      y="60"
+    />
+    <text
+      x="19866"
+      y="75"
+    >
+      F
+    </text>
+    <rect
+      fill="#2196f3"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19840"
+      y="60"
+    />
+    <text
+      fill="white"
+      x="19846"
+      y="75"
+    >
+      C
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19820"
+      y="60"
+    />
+    <text
+      x="19826"
+      y="75"
+    >
+      H
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19800"
+      y="60"
+    />
+    <text
+      x="19806"
+      y="75"
+    >
+      I
+    </text>
+    <rect
+      fill="#4caf50"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19960"
+      y="80"
+    />
+    <text
+      fill="white"
+      x="19966"
+      y="95"
+    >
+      A
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19940"
+      y="80"
+    />
+    <text
+      x="19946"
+      y="95"
+    >
+      B
+    </text>
+    <rect
+      fill="#2196f3"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19920"
+      y="80"
+    />
+    <text
+      fill="white"
+      x="19926"
+      y="95"
+    >
+      C
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19900"
+      y="80"
+    />
+    <text
+      x="19906"
+      y="95"
+    >
+      D
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19880"
+      y="80"
+    />
+    <text
+      x="19886"
+      y="95"
+    >
+      E
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19860"
+      y="80"
+    />
+    <text
+      x="19866"
+      y="95"
+    >
+      F
+    </text>
+    <rect
+      fill="#ffc107"
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19840"
+      y="80"
+    />
+    <text
+      fill="black"
+      x="19846"
+      y="95"
+    >
+      G
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19820"
+      y="80"
+    />
+    <text
+      x="19826"
+      y="95"
+    >
+      H
+    </text>
+    <rect
+      height="20"
+      stroke="#555"
+      width="20"
+      x="19800"
+      y="80"
+    />
+    <text
+      x="19806"
+      y="95"
+    >
+      I
+    </text>
+  </svg>
+</div>
+`;
+
 exports[`<DivSequenceRendering /> renders with one feature with a correct seq, zoomed in, should render nicely 1`] = `
 <div>
   <svg
@@ -15,11 +488,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="0"
-      y="40"
+      y="100"
     />
     <text
       x="26"
-      y="55"
+      y="115"
     />
     <rect
       fill="#8f8f8f"
@@ -27,11 +500,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="60"
-      y="40"
+      y="100"
     />
     <text
       x="86"
-      y="55"
+      y="115"
     />
     <rect
       fill="#8f8f8f"
@@ -39,11 +512,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="120"
-      y="40"
+      y="100"
     />
     <text
       x="146"
-      y="55"
+      y="115"
     />
     <rect
       fill="#adadad"
@@ -51,11 +524,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="20"
-      y="20"
+      y="80"
     />
     <text
       x="46"
-      y="35"
+      y="95"
     />
     <rect
       fill="#adadad"
@@ -63,11 +536,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="80"
-      y="20"
+      y="80"
     />
     <text
       x="106"
-      y="35"
+      y="95"
     />
     <rect
       fill="#adadad"
@@ -75,11 +548,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="140"
-      y="20"
+      y="80"
     />
     <text
       x="166"
-      y="35"
+      y="95"
     />
     <rect
       fill="#d8d8d8"
@@ -87,11 +560,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="40"
-      y="0"
+      y="60"
     />
     <text
       x="66"
-      y="15"
+      y="75"
     />
     <rect
       fill="#d8d8d8"
@@ -99,11 +572,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="100"
-      y="0"
+      y="60"
     />
     <text
       x="126"
-      y="15"
+      y="75"
     />
     <rect
       fill="#d8d8d8"
@@ -111,11 +584,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="160"
-      y="0"
+      y="60"
     />
     <text
       x="186"
-      y="15"
+      y="75"
     />
     <rect
       fill="#8f8f8f"
@@ -488,11 +961,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       stroke="#555"
       width="60"
       x="0"
-      y="40"
+      y="100"
     />
     <text
       x="26"
-      y="55"
+      y="115"
     />
     <rect
       fill="#adadad"
@@ -500,11 +973,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       stroke="#555"
       width="60"
       x="20"
-      y="20"
+      y="80"
     />
     <text
       x="46"
-      y="35"
+      y="95"
     />
     <rect
       fill="#d8d8d8"
@@ -512,11 +985,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       stroke="#555"
       width="60"
       x="40"
-      y="0"
+      y="60"
     />
     <text
       x="66"
-      y="15"
+      y="75"
     />
     <rect
       fill="#8f8f8f"
@@ -659,7 +1132,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       stroke="none"
       width="1.7"
       x="0"
-      y="40"
+      y="100"
     />
     <rect
       fill="#adadad"
@@ -667,7 +1140,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       stroke="none"
       width="1.7"
       x="0.3333333333333333"
-      y="20"
+      y="80"
     />
     <rect
       fill="#8f8f8f"

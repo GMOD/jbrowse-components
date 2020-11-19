@@ -318,9 +318,9 @@ function Sequence(props: MyProps) {
     regions,
     bpPerPx,
     theme: configTheme,
-    showForward,
-    showReverse,
-    showTranslation,
+    showForward = true,
+    showReverse = true,
+    showTranslation = true,
   } = props
   const theme = createJBrowseTheme(configTheme)
   const [region] = regions

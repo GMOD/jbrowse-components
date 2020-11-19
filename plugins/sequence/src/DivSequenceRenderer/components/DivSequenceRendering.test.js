@@ -183,4 +183,31 @@ describe('<DivSequenceRendering />', () => {
 
     expect(container).toMatchSnapshot()
   })
+
+  it('renders with one feature reversed with a correct seq, zoomed in, should render nicely', () => {
+    const { container } = render(
+      <Rendering
+        width={500}
+        height={500}
+        regions={[{ refName: 'zonk', start: 0, end: 1000, reversed: true }]}
+        features={
+          new Map([
+            [
+              'one',
+              new SimpleFeature({
+                uniqueId: 'one',
+                start: 1,
+                end: 10,
+                seq: 'ABCDEFGHI',
+              }),
+            ],
+          ])
+        }
+        config={DivRenderingConfigSchema.create({})}
+        bpPerPx={0.05}
+      />,
+    )
+
+    expect(container).toMatchSnapshot()
+  })
 })
