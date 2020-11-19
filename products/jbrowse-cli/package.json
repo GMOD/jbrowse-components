@@ -24,7 +24,7 @@
     "/oclif.manifest.json"
   ],
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=10.4.0"
   },
   "scripts": {
     "build": "cp ../../yarn.lock . && oclif-dev pack && rm yarn.lock",
