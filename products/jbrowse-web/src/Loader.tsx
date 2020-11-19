@@ -426,15 +426,7 @@ const Renderer = observer(
           // rootModel.setHistory(
           //   UndoManager.create({}, { targetStore: rootModel.session }),
           // )
-
-          // make some things available globally for testing e.g.
-          // window.MODEL.views[0] in devtools
-          // @ts-ignore
-          window.MODEL = rootModel.session
-          // @ts-ignore
-          window.ROOTMODEL = rootModel
           pluginManager.setRootModel(rootModel)
-
           pluginManager.configure()
           setPluginManager(pluginManager)
 
@@ -492,7 +484,13 @@ function addRelativeUris(config: Config, configUri: URL) {
 }
 
 const PlatformSpecificFatalErrorDialog = (props: unknown) => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+  return (
+    <FatalErrorDialog
+      resetButtonText="Reset Session"
+      onFactoryReset={factoryReset}
+      {...props}
+    />
+  )
 }
 export default ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (

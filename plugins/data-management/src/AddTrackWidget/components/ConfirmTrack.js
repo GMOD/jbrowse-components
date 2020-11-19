@@ -20,6 +20,23 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+/**
+ * check if a string looks like an abolute URL, e.g. a
+ * full URL e.g. "https://mysite.org/myfile.txt",
+ * implicit protocol URL e.g. "//mysite.org/myfile.txt", or
+ * implicit domain name URL e.g. "/myfile.txt"
+ * @param {String} url URL
+ */
+function isAbsoluteUrl(url) {
+  try {
+    // eslint-disable-next-line no-new
+    new URL(url)
+    return true
+  } catch (error) {
+    return url.startsWith('/')
+  }
+}
+
 function ConfirmTrack({
   trackData,
   trackName,
@@ -53,8 +70,8 @@ function ConfirmTrack({
       // check for whether the user entered an absolute URL
       else if (
         !(
-          (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
-          trackData.uri.startsWith('http')
+          (indexTrackData.uri && isAbsoluteUrl(indexTrackData.uri)) ||
+          isAbsoluteUrl(trackData.uri)
         )
       ) {
         setError(

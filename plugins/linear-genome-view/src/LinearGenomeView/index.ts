@@ -30,7 +30,7 @@ import {
 } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
@@ -129,8 +129,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        const { assemblyNames } = this
+        const { assemblyManager } = getSession(self)
+        const assembliesInitialized = assemblyNames.every(
+          asm => assemblyManager.get(asm)?.initialized,
+        )
         return (
-          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+          self.volatileWidth !== undefined &&
+          self.displayedRegions.length > 0 &&
+          assembliesInitialized
         )
       },
       get scaleBarHeight() {
@@ -658,14 +665,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
-        const { start, end, assemblyName } = firstLocation
+        const {
+          start,
+          end,
+          assemblyName = self.assemblyNames[0],
+        } = firstLocation
+
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
         const session = getSession(self)
-        const assembly = session.assemblyManager.get(
-          assemblyName || self.assemblyNames[0],
-        )
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
@@ -1018,7 +1029,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
-              icon: LineStyleIcon,
+              icon: TrackSelectorIcon,
               disabled:
                 isSessionModelWithWidgets(session) &&
                 session.visibleWidget &&
