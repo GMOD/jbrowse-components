@@ -15,6 +15,9 @@ interface MyProps {
   config: AnyConfigurationModel
   highResolutionScaling: number
   theme: any
+  showForward: boolean
+  showReverse: boolean
+  showTranslation: boolean
 }
 
 function revcom(seqString: string) {
@@ -310,7 +313,15 @@ function DNA(props: {
 }
 
 function Sequence(props: MyProps) {
-  const { features = new Map(), regions, bpPerPx, theme: configTheme } = props
+  const {
+    features = new Map(),
+    regions,
+    bpPerPx,
+    theme: configTheme,
+    showForward,
+    showReverse,
+    showTranslation,
+  } = props
   const theme = createJBrowseTheme(configTheme)
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
@@ -333,49 +344,61 @@ function Sequence(props: MyProps) {
       height={totalHeight}
       style={{ width, height: totalHeight }}
     >
-      {[0, 1, 2].map(index => (
-        <Translation
-          key={`translation-${index}`}
-          seq={seq}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
+      {showTranslation ? (
+        <>
+          {(region.reversed ? showReverse : showForward)
+            ? [0, 1, 2].map(index => (
+                <Translation
+                  key={`translation-${index}`}
+                  seq={seq}
+                  codonTable={codonTable}
+                  frame={index}
+                  bpPerPx={bpPerPx}
+                  region={region}
+                  theme={theme}
+                />
+              ))
+            : null}
+          {(region.reversed ? showForward : showReverse)
+            ? [0, -1, -2].map(index => (
+                <Translation
+                  key={`rev-translation-${index}`}
+                  seq={seq}
+                  codonTable={codonTable}
+                  frame={index}
+                  bpPerPx={bpPerPx}
+                  region={region}
+                  theme={theme}
+                  reverse
+                />
+              ))
+            : null}
+        </>
+      ) : null}
+
+      {showForward ? (
+        <DNA
+          height={height}
+          y={60}
+          feature={feature}
           region={region}
+          seq={region.reversed ? complement(seq) : seq}
+          bpPerPx={bpPerPx}
           theme={theme}
         />
-      ))}
-      {[0, -1, -2].map(index => (
-        <Translation
-          key={`rev-translation-${index}`}
-          seq={seq}
-          codonTable={codonTable}
-          frame={index}
-          bpPerPx={bpPerPx}
+      ) : null}
+
+      {showReverse ? (
+        <DNA
+          height={height}
+          y={80}
+          feature={feature}
           region={region}
+          seq={region.reversed ? seq : complement(seq)}
+          bpPerPx={bpPerPx}
           theme={theme}
-          reverse
         />
-      ))}
-
-      <DNA
-        height={height}
-        y={60}
-        feature={feature}
-        region={region}
-        seq={region.reversed ? complement(seq) : seq}
-        bpPerPx={bpPerPx}
-        theme={theme}
-      />
-
-      <DNA
-        height={height}
-        y={80}
-        feature={feature}
-        region={region}
-        seq={region.reversed ? seq : complement(seq)}
-        bpPerPx={bpPerPx}
-        theme={theme}
-      />
+      ) : null}
     </svg>
   )
 }
