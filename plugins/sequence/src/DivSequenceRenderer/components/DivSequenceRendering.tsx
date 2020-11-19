@@ -1,5 +1,4 @@
-/* eslint curly:error */
-/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any,no-bitwise */
+/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -139,10 +138,6 @@ const defaultCodonTable = {
   GGT: 'G',
 }
 
-function rev(seq: string): string {
-  return seq.split('').reverse().join('')
-}
-
 /**
  *  take CodonTable above and generate larger codon table that includes
  *  all permutations of upper and lower case nucleotides
@@ -182,7 +177,15 @@ function Translation(props: {
   reverse?: boolean
   theme?: any
 }) {
-  const { codonTable, seq, frame, bpPerPx, region, reverse, theme } = props
+  const {
+    codonTable,
+    seq,
+    frame,
+    bpPerPx,
+    region,
+    reverse = false,
+    theme,
+  } = props
   const scale = bpPerPx
 
   // the tilt variable normalizes the frame to where we are starting from,
@@ -217,7 +220,7 @@ function Translation(props: {
           ? width - (w * (index + 1) + effectiveFrame / scale - drop)
           : w * index + effectiveFrame / scale - drop
         const yoff = region.reversed ? -frame : frame
-        const y = reverse ^ region.reversed ? 100 - yoff * 20 : 40 - yoff * 20
+        const y = reverse !== region.reversed ? 100 - yoff * 20 : 40 - yoff * 20
         const { letter, codon } = element
         return (
           <React.Fragment key={`${index}-${letter}`}>
@@ -324,9 +327,6 @@ function Sequence(props: MyProps) {
     return null
   }
 
-  const reverse = region.reversed
-  // const seq = reverse ? rev(fseq) : fseq
-
   return (
     <svg
       width={width}
@@ -346,7 +346,7 @@ function Sequence(props: MyProps) {
       ))}
       {[0, -1, -2].map(index => (
         <Translation
-          key={`translation-${index}`}
+          key={`rev-translation-${index}`}
           seq={seq}
           codonTable={codonTable}
           frame={index}
@@ -362,7 +362,7 @@ function Sequence(props: MyProps) {
         y={60}
         feature={feature}
         region={region}
-        seq={reverse ? complement(seq) : seq}
+        seq={region.reversed ? complement(seq) : seq}
         bpPerPx={bpPerPx}
         theme={theme}
       />
@@ -372,7 +372,7 @@ function Sequence(props: MyProps) {
         y={80}
         feature={feature}
         region={region}
-        seq={reverse ? seq : complement(seq)}
+        seq={region.reversed ? seq : complement(seq)}
         bpPerPx={bpPerPx}
         theme={theme}
       />
