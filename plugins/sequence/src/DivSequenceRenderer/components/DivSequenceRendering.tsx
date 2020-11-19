@@ -1,5 +1,5 @@
 /* eslint curly:error */
-/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any */
+/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any,no-bitwise */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -21,6 +21,8 @@ interface MyProps {
 function revcom(seqString: string) {
   return complement(seqString).split('').reverse().join('')
 }
+
+const CHAR_WIDTH = 8
 
 const complement = (() => {
   const complementRegex = /[ACGT]/gi
@@ -205,13 +207,17 @@ function Translation(props: {
   const w = (1 / scale) * 3
   const drop = region.start === 0 ? 0 : w
   const render = 1 / bpPerPx >= 12
+  const width = (region.end - region.start) / bpPerPx
 
   const map = ['#d8d8d8', '#adadad', '#8f8f8f'].reverse()
   return (
     <>
       {translated.map((element, index) => {
-        const x = w * index + effectiveFrame / scale - drop
-        const y = reverse ? 100 - frame * 20 : 40 - frame * 20
+        const x = region.reversed
+          ? width - (w * (index + 1) + effectiveFrame / scale - drop)
+          : w * index + effectiveFrame / scale - drop
+        const yoff = region.reversed ? -frame : frame
+        const y = reverse ^ region.reversed ? 100 - yoff * 20 : 40 - yoff * 20
         const { letter, codon } = element
         return (
           <React.Fragment key={`${index}-${letter}`}>
@@ -232,7 +238,64 @@ function Translation(props: {
               }
             />
             {render ? (
-              <text x={x + w / 2 - 4} y={y + 15}>
+              <text x={x + w / 2 - CHAR_WIDTH / 2} y={y + 15}>
+                {letter}
+              </text>
+            ) : null}
+          </React.Fragment>
+        )
+      })}
+    </>
+  )
+}
+
+function DNA(props: {
+  seq: string
+  theme: any
+  bpPerPx: number
+  height: number
+  region: Region
+  feature: Feature
+  y: number
+}) {
+  const { bpPerPx, region, feature, theme, height, seq, y } = props
+  const render = 1 / bpPerPx >= 12
+
+  const [leftPx, rightPx] = bpSpanPx(
+    feature.get('start'),
+    feature.get('end'),
+    region,
+    bpPerPx,
+  )
+  const reverse = region.reversed
+  const len = feature.get('end') - feature.get('start')
+  const w = Math.max((rightPx - leftPx) / len, 0.8)
+
+  return (
+    <>
+      {seq.split('').map((letter, index) => {
+        // @ts-ignore
+        const color = theme.palette.bases[letter.toUpperCase()]
+        return (
+          <React.Fragment key={index}>
+            <rect
+              x={reverse ? rightPx - (index + 1) * w : leftPx + index * w}
+              y={y}
+              width={w}
+              height={height}
+              fill={color ? color.main : undefined}
+              stroke={render ? '#555' : 'none'}
+            />
+            {render ? (
+              <text
+                x={
+                  (reverse ? rightPx - (index + 1) * w : leftPx + index * w) +
+                  w / 2 -
+                  CHAR_WIDTH / 2
+                }
+                y={y + 15}
+                fill={color ? contrastingTextColor(color.main) : undefined}
+              >
                 {letter}
               </text>
             ) : null}
@@ -256,22 +319,14 @@ function Sequence(props: MyProps) {
   if (!feature) {
     return null
   }
-  const fseq: string = feature.get('seq')
-  if (!fseq) {
+  const seq: string = feature.get('seq')
+  if (!seq) {
     return null
   }
-  const seq = region.reversed ? rev(fseq) : fseq
 
-  const [leftPx, rightPx] = bpSpanPx(
-    feature.get('start'),
-    feature.get('end'),
-    region,
-    bpPerPx,
-  )
+  const reverse = region.reversed
+  // const seq = reverse ? rev(fseq) : fseq
 
-  const len = feature.get('end') - feature.get('start')
-  const w = Math.max((rightPx - leftPx) / len, 0.8)
-  const render = 1 / bpPerPx >= 12
   return (
     <svg
       width={width}
@@ -302,58 +357,25 @@ function Sequence(props: MyProps) {
         />
       ))}
 
-      {seq.split('').map((letter, index) => {
-        // @ts-ignore
-        const color = theme.palette.bases[letter.toUpperCase()]
-        return (
-          <React.Fragment key={index}>
-            <rect
-              x={leftPx + index * w}
-              y={60}
-              width={w}
-              height={height}
-              fill={color ? color.main : undefined}
-              stroke={render ? '#555' : 'none'}
-            />
-            {render ? (
-              <text
-                x={leftPx + index * w + w / 2 - 4}
-                y={75}
-                fill={color ? contrastingTextColor(color.main) : undefined}
-              >
-                {letter}
-              </text>
-            ) : null}
-          </React.Fragment>
-        )
-      })}
-      {complement(seq)
-        .split('')
-        .map((letter, index) => {
-          // @ts-ignore
-          const color = theme.palette.bases[letter.toUpperCase()]
-          return (
-            <React.Fragment key={index}>
-              <rect
-                x={leftPx + index * w}
-                y={80}
-                width={w}
-                height={height}
-                fill={color ? color.main : undefined}
-                stroke={render ? '#555' : 'none'}
-              />
-              {render ? (
-                <text
-                  x={leftPx + index * w + w / 2 - 4}
-                  y={95}
-                  fill={color ? contrastingTextColor(color.main) : undefined}
-                >
-                  {letter}
-                </text>
-              ) : null}
-            </React.Fragment>
-          )
-        })}
+      <DNA
+        height={height}
+        y={60}
+        feature={feature}
+        region={region}
+        seq={reverse ? complement(seq) : seq}
+        bpPerPx={bpPerPx}
+        theme={theme}
+      />
+
+      <DNA
+        height={height}
+        y={80}
+        feature={feature}
+        region={region}
+        seq={reverse ? seq : complement(seq)}
+        bpPerPx={bpPerPx}
+        theme={theme}
+      />
     </svg>
   )
 }
