@@ -36,7 +36,10 @@ export default function RootModel(pluginManager: PluginManager) {
     { dispatcher },
     ...assemblyConfigSchemas,
   )
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfigSchemasType,
+    pluginManager,
+  )
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(
