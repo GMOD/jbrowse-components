@@ -76,6 +76,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
   )
 })
 
+// search component
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -182,6 +183,7 @@ export default observer(({ model }: { model: LGV }) => {
       <div className={classes.spacer} />
       <FormGroup row style={{ flexWrap: 'nowrap' }}>
         <PanControls model={model} />
+        {/* the dropdown */}
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}
@@ -200,6 +202,7 @@ export default observer(({ model }: { model: LGV }) => {
             },
           }}
         />
+        {/* search bar */}
         <Search model={model} />
       </FormGroup>
       <RegionWidth model={model} />
