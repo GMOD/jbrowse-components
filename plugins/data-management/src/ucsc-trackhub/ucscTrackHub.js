@@ -1,7 +1,10 @@
 import objectHash from 'object-hash'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
-import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
+import {
+  generateUnsupportedTrackConf,
+  generateUnknownTrackConf,
+} from '@jbrowse/core/util/tracks'
 import ucscAssemblies from './ucscAssemblies'
 
 export { ucscAssemblies }
@@ -275,11 +278,16 @@ function makeTrackConfig(
         categories,
       )
     case 'bigNarrowPeak':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+      }
     case 'peptideMapping':
       return generateUnsupportedTrackConf(
         track.get('shortLabel'),
@@ -347,7 +355,7 @@ function makeTrackConfig(
       )
 
     default:
-      return generateUnsupportedTrackConf(
+      return generateUnknownTrackConf(
         track.get('shortLabel'),
         baseTrackType,
         categories,
