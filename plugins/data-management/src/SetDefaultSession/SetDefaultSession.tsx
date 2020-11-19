@@ -59,7 +59,7 @@ const CurrentSession = observer(
             <ListItemIcon>
               <Checkbox
                 checked={session.name === selectedDefault}
-                onChange={() => handleCheckbox(session, false)}
+                onChange={() => handleCheckbox(session)}
               />
             </ListItemIcon>
             <ListItemText primary={session.name} />
@@ -88,7 +88,7 @@ const SetDefaultSession = observer(
     const [selectedDefault, setSelectedDefault] = useState(currentDefault)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function handleCheckbox(sessionSnapshot: any, idx: number | boolean) {
+    function handleCheckbox(sessionSnapshot: any) {
       if (selectedDefault === sessionSnapshot.name) {
         setSelectedDefault('New session')
         rootModel.jbrowse.setDefaultSessionConf({
@@ -96,11 +96,7 @@ const SetDefaultSession = observer(
         })
       } else {
         setSelectedDefault(sessionSnapshot.name)
-        if (typeof idx === 'number') {
-          rootModel.jbrowse.setDefaultSessionConf(session.savedSessions[idx])
-        } else {
-          rootModel.jbrowse.setDefaultSessionConf(sessionSnapshot)
-        }
+        rootModel.jbrowse.setDefaultSessionConf(sessionSnapshot)
       }
     }
 
@@ -121,7 +117,7 @@ const SetDefaultSession = observer(
               {session.savedSessions.length ? (
                 session.savedSessions.map(
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (sessionSnapshot: any, idx: number) => {
+                  (sessionSnapshot: any) => {
                     const { views = [] } = sessionSnapshot
                     const totalTracks = views
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,22 +129,16 @@ const SetDefaultSession = observer(
                           <ListItemIcon>
                             <Checkbox
                               checked={sessionSnapshot.name === selectedDefault}
-                              onChange={() =>
-                                handleCheckbox(sessionSnapshot, idx)
-                              }
+                              onChange={() => handleCheckbox(sessionSnapshot)}
                             />
                           </ListItemIcon>
                           <ListItemText
                             primary={sessionSnapshot.name}
-                            secondary={
-                              session.name === sessionSnapshot.name
-                                ? 'Currently open'
-                                : `${views.length} ${pluralize(
-                                    'view',
-                                    views.length,
-                                  )}; ${totalTracks}
-                             open ${pluralize('track', totalTracks)}`
-                            }
+                            secondary={`${views.length} ${pluralize(
+                              'view',
+                              views.length,
+                            )}; ${totalTracks}
+                             open ${pluralize('track', totalTracks)}`}
                           />
                         </ListItem>
                       )
