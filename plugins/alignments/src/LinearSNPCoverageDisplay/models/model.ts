@@ -41,33 +41,42 @@ const stateModelFactory = (configSchema: any) =>
         return Tooltip
       },
 
+      get filters() {
+        console.log('f1')
+        const { flagInclude, flagExclude } = self.filterBy
+        return self.filterBy
+          ? [
+              `function(feature) {
+                const flags = feature.get('flags')
+                return (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude}))
+              }`,
+            ]
+          : undefined
+      },
+
+      get scaleOpts() {
+        return {
+          domain: self.domain,
+          stats: self.stats,
+          autoscaleType: getConf(self, 'autoscale'),
+          scaleType: getConf(self, 'scaleType'),
+          inverted: getConf(self, 'inverted'),
+        }
+      },
+
       get renderProps() {
         const config = self.rendererType.configSchema.create(
           getConf(self, ['renderers', self.rendererTypeName]) || {},
         )
-        const { flagInclude, flagExclude } = self.filterBy
+        console.log('r2')
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           notReady: !self.ready,
           height: self.height,
           displayModel: self,
-          scaleOpts: {
-            domain: self.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          },
-
-          filters: self.filterBy
-            ? [
-                `function(feature) {
-                const flags = feature.get('flags')
-                return (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude}))
-              }`,
-              ]
-            : undefined,
+          scaleOpts: self.scaleOpts,
+          filters: self.filters,
           config,
         }
       },

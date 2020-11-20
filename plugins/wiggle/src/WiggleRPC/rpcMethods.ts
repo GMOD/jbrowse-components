@@ -5,6 +5,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   FeatureStats,
   blankStats,
@@ -14,6 +15,17 @@ import {
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
+
+  deserializeArguments(args) {
+    return {
+      ...args,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async execute(args: {
     adapterConfig: {}
@@ -40,6 +52,18 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
+
+  deserializeArguments(args) {
+    console.log(args)
+    return {
+      ...args,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },

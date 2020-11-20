@@ -245,6 +245,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const stats = await getStats({
             signal: aborter.signal,
             headers: { cache: 'no-store,no-cache' },
+            filters: self.filters,
           })
           if (isAlive(self)) {
             self.updateStats(stats)
@@ -267,7 +268,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                     return
                   }
 
-                  const stats = await getStats({ signal: aborter.signal })
+                  const stats = await getStats({
+                    signal: aborter.signal,
+                    filters: self.filters,
+                  })
 
                   if (isAlive(self)) {
                     self.updateStats(stats)
