@@ -19,7 +19,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showForward: types.optional(types.boolean, true),
         showReverse: types.optional(types.boolean, true),
         showTranslation: types.optional(types.boolean, true),
-        height: 180
+        height: 180,
       }),
     )
     .views(self => ({
