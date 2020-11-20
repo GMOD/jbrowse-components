@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
-import Checkbox from '@material-ui/core/Checkbox'
+import Radio from '@material-ui/core/Radio'
 import pluralize from 'pluralize'
 
 const useStyles = makeStyles(theme => ({
@@ -43,12 +43,12 @@ const CurrentSession = observer(
   ({
     session,
     selectedDefault,
-    handleCheckbox,
+    handleRadio,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     session: any
     selectedDefault: string
-    handleCheckbox: Function
+    handleRadio: Function
   }) => {
     const classes = useStyles()
 
@@ -57,9 +57,9 @@ const CurrentSession = observer(
         <List subheader={<ListSubheader>Currently open session</ListSubheader>}>
           <ListItem>
             <ListItemIcon>
-              <Checkbox
+              <Radio
                 checked={session.name === selectedDefault}
-                onChange={() => handleCheckbox(session)}
+                onChange={() => handleRadio(session)}
               />
             </ListItemIcon>
             <ListItemText primary={session.name} />
@@ -88,16 +88,13 @@ const SetDefaultSession = observer(
     const [selectedDefault, setSelectedDefault] = useState(currentDefault)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function handleCheckbox(sessionSnapshot: any) {
-      if (selectedDefault === sessionSnapshot.name) {
-        setSelectedDefault('New session')
-        rootModel.jbrowse.setDefaultSessionConf({
-          name: `New session`,
-        })
-      } else {
-        setSelectedDefault(sessionSnapshot.name)
-        rootModel.jbrowse.setDefaultSessionConf(sessionSnapshot)
-      }
+    function handleRadio(sessionSnapshot: any) {
+      setSelectedDefault(sessionSnapshot.name)
+      rootModel.jbrowse.setDefaultSessionConf(sessionSnapshot)
+      session.notify(
+        `Set default session to ${sessionSnapshot.name}`,
+        'success',
+      )
     }
 
     return (
@@ -109,7 +106,7 @@ const SetDefaultSession = observer(
           <CurrentSession
             session={session}
             selectedDefault={selectedDefault}
-            handleCheckbox={handleCheckbox}
+            handleRadio={handleRadio}
           />
 
           <Paper className={classes.root}>
@@ -127,9 +124,9 @@ const SetDefaultSession = observer(
                       return (
                         <ListItem key={sessionSnapshot.name}>
                           <ListItemIcon>
-                            <Checkbox
+                            <Radio
                               checked={sessionSnapshot.name === selectedDefault}
-                              onChange={() => handleCheckbox(sessionSnapshot)}
+                              onChange={() => handleRadio(sessionSnapshot)}
                             />
                           </ListItemIcon>
                           <ListItemText
@@ -163,6 +160,19 @@ const SetDefaultSession = observer(
             }}
           >
             Return
+          </Button>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => {
+              setSelectedDefault('New session')
+              rootModel.jbrowse.setDefaultSessionConf({
+                name: `New session`,
+              })
+              session.notify('Reset default session', 'success')
+            }}
+          >
+            Reset
           </Button>
         </DialogActions>
       </Dialog>
