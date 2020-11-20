@@ -52,8 +52,6 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
-        viewAsPairs: false,
-        linkSuppReads: false,
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -163,14 +161,6 @@ const stateModelFactory = (
 
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
-      },
-
-      toggleViewAsPairs() {
-        self.viewAsPairs = !self.viewAsPairs
-      },
-
-      toggleLinkSuppReads() {
-        self.linkSuppReads = !self.linkSuppReads
       },
 
       setConfig(configuration: AnyConfigurationModel) {
@@ -290,8 +280,6 @@ const stateModelFactory = (
                 ]
               : undefined,
             showSoftClip: self.showSoftClipping,
-            viewAsPairs: self.viewAsPairs,
-            linkSuppReads: self.linkSuppReads,
             config,
           }
         },

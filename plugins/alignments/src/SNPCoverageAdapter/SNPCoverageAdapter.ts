@@ -5,7 +5,7 @@ import {
 import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { toArray } from 'rxjs/operators'
+import { toArray, filter } from 'rxjs/operators'
 import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
 import { Instance, getSnapshot } from 'mobx-state-tree'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -131,6 +131,11 @@ export default (pluginManager: PluginManager) => {
       return ObservableCreate<Feature>(async observer => {
         const features = await this.subadapter
           .getFeatures(region, opts)
+          .pipe(
+            filter(feature => {
+              return opts.filters ? opts.filters.passes(feature, opts) : true
+            }),
+          )
           .pipe(toArray())
           .toPromise()
 

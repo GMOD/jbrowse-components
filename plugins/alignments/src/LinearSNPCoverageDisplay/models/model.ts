@@ -1,4 +1,8 @@
 import { types } from 'mobx-state-tree'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+
+import { getContainingView } from '@jbrowse/core/util'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
@@ -13,11 +17,23 @@ const stateModelFactory = (configSchema: any) =>
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(configSchema),
-      types.model({ type: types.literal('LinearSNPCoverageDisplay') }),
+      types.model({
+        type: types.literal('LinearSNPCoverageDisplay'),
+        filterBy: types.optional(
+          types.model({
+            flagInclude: types.optional(types.number, 0),
+            flagExclude: types.optional(types.number, 1536),
+          }),
+          {},
+        ),
+      }),
     )
     .actions(self => ({
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
+      },
+      setFilterBy(filter: any) {
+        self.filterBy = filter
       },
     }))
     .views(self => ({
@@ -25,6 +41,36 @@ const stateModelFactory = (configSchema: any) =>
         return Tooltip
       },
 
+      get renderProps() {
+        const config = self.rendererType.configSchema.create(
+          getConf(self, ['renderers', self.rendererTypeName]) || {},
+        )
+        const { flagInclude, flagExclude } = self.filterBy
+        return {
+          ...self.composedRenderProps,
+          ...getParentRenderProps(self),
+          notReady: !self.ready,
+          height: self.height,
+          displayModel: self,
+          scaleOpts: {
+            domain: self.domain,
+            stats: self.stats,
+            autoscaleType: getConf(self, 'autoscale'),
+            scaleType: getConf(self, 'scaleType'),
+            inverted: getConf(self, 'inverted'),
+          },
+
+          filters: self.filterBy
+            ? [
+                `function(feature) {
+                const flags = feature.get('flags')
+                return flags !== undefined ? (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude})):true
+              }`,
+              ]
+            : undefined,
+          config,
+        }
+      },
       get adapterConfig() {
         const subadapter = getConf(self.parentTrack, 'adapter')
         return {
