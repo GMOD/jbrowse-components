@@ -10,88 +10,18 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
     width="20000"
   >
     <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19940"
-      y="100"
-    />
-    <text
-      x="19966"
-      y="115"
-    />
-    <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19880"
-      y="100"
-    />
-    <text
-      x="19906"
-      y="115"
-    />
-    <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19820"
-      y="100"
-    />
-    <text
-      x="19846"
-      y="115"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19920"
-      y="120"
-    />
-    <text
-      x="19946"
-      y="135"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19860"
-      y="120"
-    />
-    <text
-      x="19886"
-      y="135"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19800"
-      y="120"
-    />
-    <text
-      x="19826"
-      y="135"
-    />
-    <rect
       fill="#d8d8d8"
       height="20"
       stroke="#555"
       width="60"
       x="19900"
-      y="140"
+      y="0"
     />
     <text
-      x="19926"
-      y="155"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19930"
+      y="10"
     />
     <rect
       fill="#d8d8d8"
@@ -99,11 +29,13 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       stroke="#555"
       width="60"
       x="19840"
-      y="140"
+      y="0"
     />
     <text
-      x="19866"
-      y="155"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19870"
+      y="10"
     />
     <rect
       fill="#d8d8d8"
@@ -111,11 +43,55 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       stroke="#555"
       width="60"
       x="19780"
-      y="140"
+      y="0"
     />
     <text
-      x="19806"
-      y="155"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19810"
+      y="10"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19920"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19950"
+      y="30"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19860"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19890"
+      y="30"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19800"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19830"
+      y="30"
     />
     <rect
       fill="#8f8f8f"
@@ -126,8 +102,10 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="40"
     />
     <text
-      x="19966"
-      y="55"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19970"
+      y="50"
     />
     <rect
       fill="#8f8f8f"
@@ -138,8 +116,10 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="40"
     />
     <text
-      x="19906"
-      y="55"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19910"
+      y="50"
     />
     <rect
       fill="#8f8f8f"
@@ -150,80 +130,10 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="40"
     />
     <text
-      x="19846"
-      y="55"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19900"
-      y="20"
-    />
-    <text
-      x="19926"
-      y="35"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19840"
-      y="20"
-    />
-    <text
-      x="19866"
-      y="35"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19780"
-      y="20"
-    />
-    <text
-      x="19806"
-      y="35"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19920"
-      y="0"
-    />
-    <text
-      x="19946"
-      y="15"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19860"
-      y="0"
-    />
-    <text
-      x="19886"
-      y="15"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="19800"
-      y="0"
-    />
-    <text
-      x="19826"
-      y="15"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19850"
+      y="50"
     />
     <rect
       fill="#f44336"
@@ -234,9 +144,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="19966"
-      y="75"
+      text-anchor="middle"
+      x="19970"
+      y="70"
     >
       T
     </text>
@@ -249,9 +161,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19946"
-      y="75"
+      text-anchor="middle"
+      x="19950"
+      y="70"
     >
       B
     </text>
@@ -264,9 +178,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19926"
-      y="75"
+      text-anchor="middle"
+      x="19930"
+      y="70"
     >
       G
     </text>
@@ -279,9 +195,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19906"
-      y="75"
+      text-anchor="middle"
+      x="19910"
+      y="70"
     >
       D
     </text>
@@ -294,9 +212,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19886"
-      y="75"
+      text-anchor="middle"
+      x="19890"
+      y="70"
     >
       E
     </text>
@@ -309,9 +229,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19866"
-      y="75"
+      text-anchor="middle"
+      x="19870"
+      y="70"
     >
       F
     </text>
@@ -324,9 +246,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="19846"
-      y="75"
+      text-anchor="middle"
+      x="19850"
+      y="70"
     >
       C
     </text>
@@ -339,9 +263,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19826"
-      y="75"
+      text-anchor="middle"
+      x="19830"
+      y="70"
     >
       H
     </text>
@@ -354,9 +280,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19806"
-      y="75"
+      text-anchor="middle"
+      x="19810"
+      y="70"
     >
       I
     </text>
@@ -369,9 +297,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="19966"
-      y="95"
+      text-anchor="middle"
+      x="19970"
+      y="90"
     >
       A
     </text>
@@ -384,9 +314,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19946"
-      y="95"
+      text-anchor="middle"
+      x="19950"
+      y="90"
     >
       B
     </text>
@@ -399,9 +331,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="19926"
-      y="95"
+      text-anchor="middle"
+      x="19930"
+      y="90"
     >
       C
     </text>
@@ -414,9 +348,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19906"
-      y="95"
+      text-anchor="middle"
+      x="19910"
+      y="90"
     >
       D
     </text>
@@ -429,9 +365,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19886"
-      y="95"
+      text-anchor="middle"
+      x="19890"
+      y="90"
     >
       E
     </text>
@@ -444,9 +382,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19866"
-      y="95"
+      text-anchor="middle"
+      x="19870"
+      y="90"
     >
       F
     </text>
@@ -459,9 +399,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19846"
-      y="95"
+      text-anchor="middle"
+      x="19850"
+      y="90"
     >
       G
     </text>
@@ -474,9 +416,11 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19826"
-      y="95"
+      text-anchor="middle"
+      x="19830"
+      y="90"
     >
       H
     </text>
@@ -489,12 +433,140 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="19806"
-      y="95"
+      text-anchor="middle"
+      x="19810"
+      y="90"
     >
       I
     </text>
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19940"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19970"
+      y="110"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19880"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19910"
+      y="110"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19820"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19850"
+      y="110"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19900"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19930"
+      y="130"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19840"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19870"
+      y="130"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19780"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19810"
+      y="130"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19920"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19950"
+      y="150"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19860"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19890"
+      y="150"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="19800"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="19830"
+      y="150"
+    />
   </svg>
 </div>
 `;
@@ -507,88 +579,18 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
     width="20000"
   >
     <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="0"
-      y="100"
-    />
-    <text
-      x="26"
-      y="115"
-    />
-    <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="60"
-      y="100"
-    />
-    <text
-      x="86"
-      y="115"
-    />
-    <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="120"
-      y="100"
-    />
-    <text
-      x="146"
-      y="115"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="20"
-      y="80"
-    />
-    <text
-      x="46"
-      y="95"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="80"
-      y="80"
-    />
-    <text
-      x="106"
-      y="95"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="140"
-      y="80"
-    />
-    <text
-      x="166"
-      y="95"
-    />
-    <rect
       fill="#d8d8d8"
       height="20"
       stroke="#555"
       width="60"
       x="40"
-      y="60"
+      y="0"
     />
     <text
-      x="66"
-      y="75"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="70"
+      y="10"
     />
     <rect
       fill="#d8d8d8"
@@ -596,11 +598,13 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="100"
-      y="60"
+      y="0"
     />
     <text
-      x="126"
-      y="75"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="130"
+      y="10"
     />
     <rect
       fill="#d8d8d8"
@@ -608,11 +612,55 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="160"
-      y="60"
+      y="0"
     />
     <text
-      x="186"
-      y="75"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="190"
+      y="10"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="50"
+      y="30"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="80"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="110"
+      y="30"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="140"
+      y="20"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="170"
+      y="30"
     />
     <rect
       fill="#8f8f8f"
@@ -620,11 +668,13 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="0"
-      y="100"
+      y="40"
     />
     <text
-      x="26"
-      y="115"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="30"
+      y="50"
     />
     <rect
       fill="#8f8f8f"
@@ -632,11 +682,13 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="60"
-      y="100"
+      y="40"
     />
     <text
-      x="86"
-      y="115"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="90"
+      y="50"
     />
     <rect
       fill="#8f8f8f"
@@ -644,83 +696,13 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       stroke="#555"
       width="60"
       x="120"
-      y="100"
+      y="40"
     />
     <text
-      x="146"
-      y="115"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="40"
-      y="120"
-    />
-    <text
-      x="66"
-      y="135"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="100"
-      y="120"
-    />
-    <text
-      x="126"
-      y="135"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="160"
-      y="120"
-    />
-    <text
-      x="186"
-      y="135"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="20"
-      y="140"
-    />
-    <text
-      x="46"
-      y="155"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="80"
-      y="140"
-    />
-    <text
-      x="106"
-      y="155"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="140"
-      y="140"
-    />
-    <text
-      x="166"
-      y="155"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="150"
+      y="50"
     />
     <rect
       fill="#4caf50"
@@ -731,9 +713,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="26"
-      y="75"
+      text-anchor="middle"
+      x="30"
+      y="70"
     >
       A
     </text>
@@ -746,9 +730,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="46"
-      y="75"
+      text-anchor="middle"
+      x="50"
+      y="70"
     >
       B
     </text>
@@ -761,9 +747,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="66"
-      y="75"
+      text-anchor="middle"
+      x="70"
+      y="70"
     >
       C
     </text>
@@ -776,9 +764,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="86"
-      y="75"
+      text-anchor="middle"
+      x="90"
+      y="70"
     >
       D
     </text>
@@ -791,9 +781,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="106"
-      y="75"
+      text-anchor="middle"
+      x="110"
+      y="70"
     >
       E
     </text>
@@ -806,9 +798,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="126"
-      y="75"
+      text-anchor="middle"
+      x="130"
+      y="70"
     >
       F
     </text>
@@ -821,9 +815,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="146"
-      y="75"
+      text-anchor="middle"
+      x="150"
+      y="70"
     >
       G
     </text>
@@ -836,9 +832,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="166"
-      y="75"
+      text-anchor="middle"
+      x="170"
+      y="70"
     >
       H
     </text>
@@ -851,9 +849,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="186"
-      y="75"
+      text-anchor="middle"
+      x="190"
+      y="70"
     >
       I
     </text>
@@ -866,9 +866,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="26"
-      y="95"
+      text-anchor="middle"
+      x="30"
+      y="90"
     >
       T
     </text>
@@ -881,9 +883,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="46"
-      y="95"
+      text-anchor="middle"
+      x="50"
+      y="90"
     >
       B
     </text>
@@ -896,9 +900,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="66"
-      y="95"
+      text-anchor="middle"
+      x="70"
+      y="90"
     >
       G
     </text>
@@ -911,9 +917,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="86"
-      y="95"
+      text-anchor="middle"
+      x="90"
+      y="90"
     >
       D
     </text>
@@ -926,9 +934,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="106"
-      y="95"
+      text-anchor="middle"
+      x="110"
+      y="90"
     >
       E
     </text>
@@ -941,9 +951,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="126"
-      y="95"
+      text-anchor="middle"
+      x="130"
+      y="90"
     >
       F
     </text>
@@ -956,9 +968,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="146"
-      y="95"
+      text-anchor="middle"
+      x="150"
+      y="90"
     >
       C
     </text>
@@ -971,9 +985,11 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="166"
-      y="95"
+      text-anchor="middle"
+      x="170"
+      y="90"
     >
       H
     </text>
@@ -986,12 +1002,140 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="186"
-      y="95"
+      text-anchor="middle"
+      x="190"
+      y="90"
     >
       I
     </text>
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="30"
+      y="110"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="60"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="90"
+      y="110"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="120"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="150"
+      y="110"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="70"
+      y="130"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="100"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="130"
+      y="130"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="160"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="190"
+      y="130"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="50"
+      y="150"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="80"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="110"
+      y="150"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="140"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="170"
+      y="150"
+    />
   </svg>
 </div>
 `;
@@ -1004,16 +1148,18 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
     width="20000"
   >
     <rect
-      fill="#8f8f8f"
+      fill="#d8d8d8"
       height="20"
       stroke="#555"
       width="60"
-      x="0"
-      y="100"
+      x="40"
+      y="0"
     />
     <text
-      x="26"
-      y="115"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="70"
+      y="10"
     />
     <rect
       fill="#adadad"
@@ -1021,23 +1167,13 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       stroke="#555"
       width="60"
       x="20"
-      y="80"
+      y="20"
     />
     <text
-      x="46"
-      y="95"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="40"
-      y="60"
-    />
-    <text
-      x="66"
-      y="75"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="50"
+      y="30"
     />
     <rect
       fill="#8f8f8f"
@@ -1045,35 +1181,13 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       stroke="#555"
       width="60"
       x="0"
-      y="100"
+      y="40"
     />
     <text
-      x="26"
-      y="115"
-    />
-    <rect
-      fill="#adadad"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="40"
-      y="120"
-    />
-    <text
-      x="66"
-      y="135"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="#555"
-      width="60"
-      x="20"
-      y="140"
-    />
-    <text
-      x="46"
-      y="155"
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="30"
+      y="50"
     />
     <rect
       fill="#4caf50"
@@ -1084,9 +1198,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="26"
-      y="75"
+      text-anchor="middle"
+      x="30"
+      y="70"
     >
       A
     </text>
@@ -1099,9 +1215,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="46"
-      y="75"
+      text-anchor="middle"
+      x="50"
+      y="70"
     >
       B
     </text>
@@ -1114,9 +1232,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="60"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="66"
-      y="75"
+      text-anchor="middle"
+      x="70"
+      y="70"
     >
       C
     </text>
@@ -1129,9 +1249,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="white"
-      x="26"
-      y="95"
+      text-anchor="middle"
+      x="30"
+      y="90"
     >
       T
     </text>
@@ -1144,9 +1266,11 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="46"
-      y="95"
+      text-anchor="middle"
+      x="50"
+      y="90"
     >
       B
     </text>
@@ -1159,12 +1283,56 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="80"
     />
     <text
+      dominant-baseline="middle"
       fill="black"
-      x="66"
-      y="95"
+      text-anchor="middle"
+      x="70"
+      y="90"
     >
       G
     </text>
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="0"
+      y="100"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="30"
+      y="110"
+    />
+    <rect
+      fill="#adadad"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="40"
+      y="120"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="70"
+      y="130"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="#555"
+      width="60"
+      x="20"
+      y="140"
+    />
+    <text
+      dominant-baseline="middle"
+      text-anchor="middle"
+      x="50"
+      y="150"
+    />
   </svg>
 </div>
 `;
@@ -1179,20 +1347,12 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
     width="333.3333333333333"
   >
     <rect
-      fill="#8f8f8f"
-      height="20"
-      stroke="none"
-      width="1.7"
-      x="0"
-      y="100"
-    />
-    <rect
       fill="#adadad"
       height="20"
       stroke="none"
       width="1.7"
       x="0.3333333333333333"
-      y="80"
+      y="20"
     />
     <rect
       fill="#8f8f8f"
@@ -1200,15 +1360,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       stroke="none"
       width="1.7"
       x="0"
-      y="100"
-    />
-    <rect
-      fill="#d8d8d8"
-      height="20"
-      stroke="none"
-      width="1.7"
-      x="0.3333333333333333"
-      y="140"
+      y="40"
     />
     <rect
       fill="#4caf50"
@@ -1241,6 +1393,22 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       width="0.8"
       x="1.1"
       y="80"
+    />
+    <rect
+      fill="#8f8f8f"
+      height="20"
+      stroke="none"
+      width="1.7"
+      x="0"
+      y="100"
+    />
+    <rect
+      fill="#d8d8d8"
+      height="20"
+      stroke="none"
+      width="1.7"
+      x="0.3333333333333333"
+      y="140"
     />
   </svg>
 </div>
