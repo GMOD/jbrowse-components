@@ -16,6 +16,7 @@ import { LinearGenomeViewModel } from '..'
 
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
+  // console.log('renderRow', props)
   return React.cloneElement(data[index], {
     style: {
       ...style,
@@ -27,6 +28,8 @@ const OuterElementContext = React.createContext({})
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
   const outerProps = React.useContext(OuterElementContext)
+  // console.log('outerElementType props: ', props)
+  // console.log('outerElementType ref: ', ref)
   return <div ref={ref} {...props} {...outerProps} />
 })
 
@@ -39,6 +42,8 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     const itemCount = itemData.length
     const itemSize = 36
 
+    // console.log('listboxcomponent props: ', props)
+    // console.log('listboxcomponent ref: ', ref)
     const getChildSize = (child: React.ReactNode) => {
       if (React.isValidElement(child) && child.type === ListSubheader) {
         return 48
@@ -98,6 +103,18 @@ function RefNameAutocomplete({
   const current = value || (regions.length ? regions[0].refName : undefined)
 
   function onChange(_: unknown, newRegionName: string | null) {
+    // need to make modifications here to adapt the onChange to
+    // need to acccount for when no opions then it turns into the search bar
+    /*   
+      function navTo(locString: string) {
+        try {
+          model.navToLocString(locString)
+        } catch (e) {
+          console.warn(e)
+          session.notify(`${e}`, 'warning')
+        }
+      } 
+    */
     if (newRegionName) {
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
