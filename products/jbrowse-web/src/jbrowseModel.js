@@ -126,6 +126,9 @@ export default function JBrowseWeb(
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
+        if (idx === -1) {
+          return undefined
+        }
         return self.connections.splice(idx, 1)
       },
 
