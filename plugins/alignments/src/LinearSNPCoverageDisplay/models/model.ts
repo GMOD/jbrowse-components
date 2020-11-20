@@ -64,7 +64,7 @@ const stateModelFactory = (configSchema: any) =>
             ? [
                 `function(feature) {
                 const flags = feature.get('flags')
-                return flags !== undefined ? (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude})):true
+                return (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude}))
               }`,
               ]
             : undefined,
