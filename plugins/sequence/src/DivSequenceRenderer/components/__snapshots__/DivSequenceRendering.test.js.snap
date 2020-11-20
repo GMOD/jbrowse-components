@@ -241,6 +241,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       T
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -248,6 +249,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19946"
       y="75"
     >
@@ -269,6 +271,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       G
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -276,12 +279,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19906"
       y="75"
     >
       D
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -289,12 +294,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19886"
       y="75"
     >
       E
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -302,6 +309,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19866"
       y="75"
     >
@@ -323,6 +331,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       C
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -330,12 +339,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19826"
       y="75"
     >
       H
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -343,6 +354,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="60"
     />
     <text
+      fill="black"
       x="19806"
       y="75"
     >
@@ -364,6 +376,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       A
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -371,6 +384,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19946"
       y="95"
     >
@@ -392,6 +406,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       C
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -399,12 +414,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19906"
       y="95"
     >
       D
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -412,12 +429,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19886"
       y="95"
     >
       E
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -425,6 +444,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19866"
       y="95"
     >
@@ -446,6 +466,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       G
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -453,12 +474,14 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19826"
       y="95"
     >
       H
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -466,6 +489,7 @@ exports[`<DivSequenceRendering /> renders with one feature reversed with a corre
       y="80"
     />
     <text
+      fill="black"
       x="19806"
       y="95"
     >
@@ -714,6 +738,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       A
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -721,6 +746,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="46"
       y="75"
     >
@@ -742,6 +768,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       C
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -749,12 +776,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="86"
       y="75"
     >
       D
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -762,12 +791,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="106"
       y="75"
     >
       E
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -775,6 +806,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="126"
       y="75"
     >
@@ -796,6 +828,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       G
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -803,12 +836,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="166"
       y="75"
     >
       H
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -816,6 +851,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="60"
     />
     <text
+      fill="black"
       x="186"
       y="75"
     >
@@ -837,6 +873,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       T
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -844,6 +881,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="46"
       y="95"
     >
@@ -865,6 +903,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       G
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -872,12 +911,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="86"
       y="95"
     >
       D
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -885,12 +926,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="106"
       y="95"
     >
       E
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -898,6 +941,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="126"
       y="95"
     >
@@ -919,6 +963,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       C
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -926,12 +971,14 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="166"
       y="95"
     >
       H
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -939,6 +986,7 @@ exports[`<DivSequenceRendering /> renders with one feature with a correct seq, z
       y="80"
     />
     <text
+      fill="black"
       x="186"
       y="95"
     >
@@ -1043,6 +1091,7 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       A
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -1050,6 +1099,7 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="60"
     />
     <text
+      fill="black"
       x="46"
       y="75"
     >
@@ -1086,6 +1136,7 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       T
     </text>
     <rect
+      fill="#aaa"
       height="20"
       stroke="#555"
       width="20"
@@ -1093,6 +1144,7 @@ exports[`<DivSequenceRendering /> renders with one feature with an incorrect seq
       y="80"
     />
     <text
+      fill="black"
       x="46"
       y="95"
     >
@@ -1167,6 +1219,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       y="60"
     />
     <rect
+      fill="#aaa"
       height="20"
       stroke="none"
       width="0.8"
@@ -1182,6 +1235,7 @@ exports[`<DivSequenceRendering /> renders with one, zoomed way out 1`] = `
       y="80"
     />
     <rect
+      fill="#aaa"
       height="20"
       stroke="none"
       width="0.8"
