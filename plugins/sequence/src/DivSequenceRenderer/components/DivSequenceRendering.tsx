@@ -24,8 +24,6 @@ function revcom(seqString: string) {
   return complement(seqString).split('').reverse().join('')
 }
 
-const CHAR_WIDTH = 8
-
 const complement = (() => {
   const complementRegex = /[ACGT]/gi
 
@@ -178,6 +176,7 @@ function Translation(props: {
   bpPerPx: number
   region: Region
   reverse?: boolean
+  height: number
   theme?: any
 }) {
   const {
@@ -186,6 +185,7 @@ function Translation(props: {
     frame,
     bpPerPx,
     region,
+    height,
     reverse = false,
     theme,
   } = props
@@ -233,7 +233,7 @@ function Translation(props: {
               width={
                 render ? w : w + 0.7 /* small fudge factor when zoomed out*/
               }
-              height={20}
+              height={height}
               stroke={render ? '#555' : 'none'}
               fill={
                 defaultStarts.includes(codon)
@@ -244,7 +244,12 @@ function Translation(props: {
               }
             />
             {render ? (
-              <text x={x + w / 2 - CHAR_WIDTH / 2} y={y + 15}>
+              <text
+                x={x + w / 2}
+                y={y + height / 2}
+                dominantBaseline="middle"
+                textAnchor="middle"
+              >
                 {letter}
               </text>
             ) : null}
@@ -282,10 +287,11 @@ function DNA(props: {
       {seq.split('').map((letter, index) => {
         // @ts-ignore
         const color = theme.palette.bases[letter.toUpperCase()]
+        const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
           <React.Fragment key={index}>
             <rect
-              x={reverse ? rightPx - (index + 1) * w : leftPx + index * w}
+              x={x}
               y={y}
               width={w}
               height={height}
@@ -294,12 +300,10 @@ function DNA(props: {
             />
             {render ? (
               <text
-                x={
-                  (reverse ? rightPx - (index + 1) * w : leftPx + index * w) +
-                  w / 2 -
-                  CHAR_WIDTH / 2
-                }
-                y={y + 15}
+                x={x + w / 2}
+                y={y + height / 2}
+                dominantBaseline="middle"
+                textAnchor="middle"
                 fill={color ? contrastingTextColor(color.main) : 'black'}
               >
                 {letter}
@@ -356,6 +360,7 @@ function Sequence(props: MyProps) {
                   bpPerPx={bpPerPx}
                   region={region}
                   theme={theme}
+                  height={height}
                 />
               ))
             : null}
@@ -369,6 +374,7 @@ function Sequence(props: MyProps) {
                   bpPerPx={bpPerPx}
                   region={region}
                   theme={theme}
+                  height={height}
                   reverse
                 />
               ))
