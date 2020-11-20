@@ -365,7 +365,7 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Stranded-seq',
+                  label: 'Color paired end RNA-seq',
                   onClick: () => {
                     self.setColorScheme({ type: 'reverseTemplate' })
                   },
