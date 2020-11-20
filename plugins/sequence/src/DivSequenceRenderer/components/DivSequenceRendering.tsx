@@ -289,7 +289,7 @@ function DNA(props: {
               y={y}
               width={w}
               height={height}
-              fill={color ? color.main : undefined}
+              fill={color ? color.main : '#aaa'}
               stroke={render ? '#555' : 'none'}
             />
             {render ? (
@@ -300,7 +300,7 @@ function DNA(props: {
                   CHAR_WIDTH / 2
                 }
                 y={y + 15}
-                fill={color ? contrastingTextColor(color.main) : undefined}
+                fill={color ? contrastingTextColor(color.main) : 'black'}
               >
                 {letter}
               </text>
