@@ -2,7 +2,17 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { guessTrackType } from '@jbrowse/core/util/tracks'
+import { guessTrackType, UNSUPPORTED } from '@jbrowse/core/util/tracks'
+
+function isAbsoluteUrl(url: string) {
+  try {
+    // eslint-disable-next-line no-new
+    new URL(url)
+    return true
+  } catch (error) {
+    return url.startsWith('/')
+  }
+}
 
 export default function f(pluginManager: PluginManager) {
   return types
@@ -56,6 +66,34 @@ export default function f(pluginManager: PluginManager) {
           self.altTrackName ||
           (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null)
         )
+      },
+
+      get isFtp() {
+        return (
+          (self.indexTrackData.uri &&
+            self.indexTrackData.uri.startsWith('ftp://')) ||
+          self.trackData.uri.startsWith('ftp://')
+        )
+      },
+
+      get isRelativeUrl() {
+        return !(
+          (self.indexTrackData.uri && isAbsoluteUrl(self.indexTrackData.uri)) ||
+          isAbsoluteUrl(self.trackData.uri)
+        )
+      },
+
+      get wrongProtocol() {
+        return (
+          window.location.protocol === 'https:' &&
+          ((self.indexTrackData.uri &&
+            self.indexTrackData.uri.startsWith('http://')) ||
+            self.trackData.uri.startsWith('http://'))
+        )
+      },
+
+      get unsupported() {
+        return trackAdapter.type === UNSUPPORTED
       },
 
       get assembly() {

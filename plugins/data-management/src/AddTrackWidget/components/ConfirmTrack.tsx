@@ -1,13 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { guessAdapter, UNKNOWN, UNSUPPORTED } from '@jbrowse/core/util/tracks'
+import { guessAdapter, UNKNOWN } from '@jbrowse/core/util/tracks'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  const [error, setError] = useState<string>()
+  let error = ''
   const {
     trackName,
     trackData,
@@ -28,55 +28,33 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     indexTrackData,
     assembly,
   } = model
+
   useEffect(() => {
     if (trackData?.uri) {
       const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
       model.setTrackAdapter(adapter)
-
-      // check for whether the user entered an absolute URL
-      if (
-        !(
-          (indexTrackData.uri && indexTrackData.uri.startsWith('http')) ||
-          trackData.uri.startsWith('http')
-        )
-      ) {
-        setError(
-          `Warning: one or more of your files do not provide the protocol e.g.
-          https://, please provide an absolute URL unless you are sure a
-          relative URL is intended.`,
-        )
-      }
-
-      // check for accessing an http url when we are running on https, which is
-      // disallowed
-      else if (
-        window.location.protocol === 'https:' &&
-        ((indexTrackData.uri && indexTrackData.uri.startsWith('http://')) ||
-          trackData.uri.startsWith('http://'))
-      ) {
-        setError(
-          `Warning: You entered a http:// resources but we cannot access HTTP
-          resources from JBrowse when it is running on https. Please use an
-          https URL for your track, or access the JBrowse app from the http
-          protocol`,
-        )
-      }
-
-      // check for ftp url inputs
-      else if (
-        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
-        trackData.uri.startsWith('ftp://')
-      ) {
-        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
-      }
     }
+
     if (trackData.localPath) {
       const adapter = guessAdapter(trackData.localPath, 'localPath')
       model.setTrackAdapter(adapter)
     }
   }, [model, trackData, indexTrackData])
 
-  if (trackAdapter.type === UNSUPPORTED) {
+  if (model.isFtp) {
+    error = `Warning: JBrowse cannot access files using the ftp protocol`
+  } else if (model.isRelativeUrl) {
+    error = `Warning: one or more of your files do not provide the protocol e.g.
+          https://, please provide an absolute URL unless you are sure a
+          relative URL is intended.`
+  } else if (model.wrongProtocol) {
+    error = `Warning: You entered a http:// resources but we cannot access HTTP
+          resources from JBrowse when it is running on https. Please use an
+          https URL for your track, or access the JBrowse app from the http
+          protocol`
+  }
+
+  if (model.unsupported) {
     return (
       <Typography className={classes.spacing}>
         This version of JBrowse cannot display data of this type. It is
