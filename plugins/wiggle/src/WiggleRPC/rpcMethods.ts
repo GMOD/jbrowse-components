@@ -16,9 +16,10 @@ import {
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
 
-  deserializeArguments(args) {
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
     return {
-      ...args,
+      ...l,
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
@@ -53,10 +54,10 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
 
-  deserializeArguments(args) {
-    console.log(args)
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
     return {
-      ...args,
+      ...l,
       filters: args.filters
         ? new SerializableFilterChain({
             filters: args.filters,
