@@ -134,7 +134,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // if the assemblyManager is tracking a given assembly name, wait for
         // it to be loaded
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
-          const assembly = assemblyManager.get(assemblyName)
+          const assembly = assemblyManager.assemblyList.includes(assemblyName)
           return assembly ? assembly.initialized : true
         })
 

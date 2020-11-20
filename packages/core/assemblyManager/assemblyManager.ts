@@ -31,6 +31,11 @@ export default function assemblyManagerFactory(
           assembly => assembly.name === (canonicalName || assemblyName),
         )
       },
+
+      get assemblyList() {
+        return getParent(self).jbrowse.assemblies.slice()
+      },
+
       get aliasMap() {
         const aliases: Map<string, string> = new Map()
         self.assemblies.forEach(assembly => {
@@ -135,7 +140,7 @@ export default function assemblyManagerFactory(
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => getParent(self).jbrowse.assemblies.slice(),
+            () => self.assemblyList,
             (
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],
