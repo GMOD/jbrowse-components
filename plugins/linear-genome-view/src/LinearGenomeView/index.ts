@@ -132,10 +132,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
 
         // if the assemblyManager is tracking a given assembly name, wait for
-        // it to be loaded
+        // it to be loaded. this is done by looking in the assemblyManager's
+        // assembly list, and then waiting on it's initialized state which is
+        // updated later
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
-          const assembly = assemblyManager.assemblyList.includes(assemblyName)
-          return assembly ? assembly.initialized : true
+          if (
+            assemblyManager.assemblyList
+              .map(asm => asm.name)
+              .includes(assemblyName)
+          ) {
+            return (assemblyManager.get(assemblyName) || {}).initialized
+          }
+          return true
         })
 
         return (
