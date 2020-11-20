@@ -1,8 +1,5 @@
 import { types } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-
-import { getContainingView } from '@jbrowse/core/util'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
@@ -32,7 +29,7 @@ const stateModelFactory = (configSchema: any) =>
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
-      setFilterBy(filter: any) {
+      setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
         self.filterBy = filter
       },
     }))
@@ -42,7 +39,6 @@ const stateModelFactory = (configSchema: any) =>
       },
 
       get filters() {
-        console.log('f1')
         const { flagInclude, flagExclude } = self.filterBy
         return self.filterBy
           ? [
@@ -68,7 +64,6 @@ const stateModelFactory = (configSchema: any) =>
         const config = self.rendererType.configSchema.create(
           getConf(self, ['renderers', self.rendererTypeName]) || {},
         )
-        console.log('r2')
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),

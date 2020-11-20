@@ -133,6 +133,7 @@ export default (pluginManager: PluginManager) => {
           .getFeatures(region, opts)
           .pipe(
             filter(feature => {
+              // @ts-ignore
               return opts.filters ? opts.filters.passes(feature, opts) : true
             }),
           )

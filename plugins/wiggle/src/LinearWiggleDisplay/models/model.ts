@@ -88,6 +88,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           return rendererType
         },
 
+        // subclasses can define these, as snpcoverage track does
+        get filters() {
+          return undefined
+        },
+
         get domain() {
           const maxScore = getConf(self, 'maxScore')
           const minScore = getConf(self, 'minScore')
@@ -117,6 +122,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           )
         },
 
+        get scaleOpts() {
+          return {
+            domain: this.domain,
+            stats: self.stats,
+            autoscaleType: getConf(self, 'autoscale'),
+            scaleType: getConf(self, 'scaleType'),
+            inverted: getConf(self, 'inverted'),
+          }
+        },
+
         get renderProps() {
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', this.rendererTypeName]) || {},
@@ -127,15 +142,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             ...getParentRenderProps(self),
             notReady: !self.ready,
             displayModel: self,
-            config,
-            scaleOpts: {
-              domain: this.domain,
-              stats: self.stats,
-              autoscaleType: getConf(self, 'autoscale'),
-              scaleType: getConf(self, 'scaleType'),
-              inverted: getConf(self, 'inverted'),
-            },
+            scaleOpts: this.scaleOpts,
             height: self.height,
+            config,
           }
         },
       }
@@ -146,6 +155,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       async function getStats(opts: {
         headers?: Record<string, string>
         signal?: AbortSignal
+        filters?: string[]
       }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')

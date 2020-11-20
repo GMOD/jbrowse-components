@@ -16,6 +16,7 @@ import {
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any) {
     const l = await super.deserializeArguments(args)
     return {
@@ -54,6 +55,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any) {
     const l = await super.deserializeArguments(args)
     return {
