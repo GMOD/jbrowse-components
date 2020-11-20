@@ -93,6 +93,7 @@ describe('SetDefaultSession GUI', () => {
       session: {
         name: `Moo session`,
         savedSessions: [],
+        notify: jest.fn(),
       },
     }
     const { getByRole } = render(
@@ -103,22 +104,20 @@ describe('SetDefaultSession GUI', () => {
         currentDefault="New session"
       />,
     )
-    fireEvent.click(getByRole('checkbox'))
-    expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({
-      name: `Moo session`,
-      savedSessions: [],
-    })
+    fireEvent.click(getByRole('radio'))
+    expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalled()
   })
 
-  it('unsets to the default session when unchecked', () => {
+  it('unsets to the default session with reset button', () => {
     const MockSession = {
       ...mockRootModel,
       session: {
         name: `Moo session`,
         savedSessions: [],
+        notify: jest.fn(),
       },
     }
-    const { getByRole } = render(
+    const { getByText } = render(
       <SetDefaultSession
         rootModel={MockSession}
         open
@@ -126,9 +125,7 @@ describe('SetDefaultSession GUI', () => {
         currentDefault="New session"
       />,
     )
-    fireEvent.click(getByRole('checkbox'))
-    // Fire a second time to uncheck
-    fireEvent.click(getByRole('checkbox'))
+    fireEvent.click(getByText('Reset'))
     expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({
       name: `New session`,
     })
