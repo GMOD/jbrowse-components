@@ -138,7 +138,7 @@ const stateModelFactory = (
         if (isSessionModelWithWidgets(session)) {
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
-            'alignmentFeatuflagExcludere',
+            'alignmentFeature',
             { featureData: feature.toJSON() },
           )
           session.showWidget(featureWidget)
