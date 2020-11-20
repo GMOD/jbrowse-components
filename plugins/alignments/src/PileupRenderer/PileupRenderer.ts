@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle,no-bitwise */
+/* eslint-disable no-bitwise */
 import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import BoxRendererType, {
@@ -412,6 +412,7 @@ export default class PileupRenderer extends BoxRendererType {
     mismatches: Mismatch[],
     props: PileupRenderProps,
     colorForBase: { [key: string]: string },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
     const { config, bpPerPx, regions, showSoftClip } = props

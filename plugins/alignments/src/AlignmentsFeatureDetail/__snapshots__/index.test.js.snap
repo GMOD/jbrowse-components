@@ -315,22 +315,6 @@ exports[`open up a widget 1`] = `
                   <div
                     class="makeStyles-fieldName"
                   >
-                    template_length
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      0
-                    </div>
-                  </div>
-                </div>
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
                     seq_length
                   </div>
                   <div

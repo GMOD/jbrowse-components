@@ -39,7 +39,7 @@ const flagNames = [
   'supplementary alignment',
 ]
 
-function Bitmask(props: any) {
+function Bitmask(props: { flag: number; setFlag: Function }) {
   const { flag, setFlag } = props
   return (
     <>
@@ -49,7 +49,6 @@ function Bitmask(props: any) {
         onChange={event => setFlag(+event.target.value)}
       />
       {flagNames.map((name, index) => {
-        // eslint-disable-next-line no-bitwise
         const val = flag & (1 << index)
         const key = `${name}_${val}`
         return (
