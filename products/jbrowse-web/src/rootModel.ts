@@ -42,7 +42,10 @@ export default function RootModel(
     { dispatcher },
     ...assemblyConfigSchemas,
   )
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfigSchemasType,
+    pluginManager,
+  )
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(
@@ -58,6 +61,7 @@ export default function RootModel(
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
+      pluginManager,
       error: undefined as undefined | Error,
     }))
     .views(self => ({

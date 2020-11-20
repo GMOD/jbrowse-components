@@ -33,22 +33,23 @@ let caption = ''
       }
       continue
     }
-    if (line.startsWith('![')) {
+    if (line.startsWith('![]')) {
       const res = line.match(/\(([^)]+)\)/)
       if (res) {
         figure = res[1].replace('/jb2', '..')
         continue
       }
     }
-    if (figure && line.trim() !== '') {
-      caption += `${line} `
-      continue
-    }
-    if (figure && caption) {
-      console.log(`![${caption}](${figure})\n\n`)
-      figure = ''
-      caption = ''
-      continue
+    if (figure) {
+      if (line.trim() !== '') {
+        caption += `${line} `
+        continue
+      } else {
+        console.log(`![${caption}](${figure})\n\n`)
+        figure = ''
+        caption = ''
+        continue
+      }
     }
     if (readingHeader === false) {
       console.log(line)

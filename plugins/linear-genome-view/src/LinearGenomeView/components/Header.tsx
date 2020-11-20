@@ -10,7 +10,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -61,7 +61,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
       <ToggleButton
         onChange={model.activateTrackSelector}
         className={classes.toggleButton}
-        title="select tracks"
+      title="Open track selector"
         value="track_select"
         color="secondary"
         selected={
@@ -90,9 +90,16 @@ const Controls = observer(({ model }: { model: LGV }) => {
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
-  const classes = useStyles()
   const theme = useTheme()
-  const { coarseVisibleLocStrings: visibleLocStrings } = model
+  const {
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
+  } = model
+
+  // use regular visibleLocStrings if coarseVisibleLocStrings is undefined
+  const visibleLocStrings =
+    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+
   const session = getSession(model)
 
   function navTo(locString: string) {
@@ -106,10 +113,15 @@ const Search = observer(({ model }: { model: LGV }) => {
 
   return (
     <form
+      data-testid="search-form"
       onSubmit={event => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
+
+        // need to manually call the action of blur here for
+        // react-testing-library
+        setValue(undefined)
       }}
     >
       <TextField
@@ -117,10 +129,13 @@ const Search = observer(({ model }: { model: LGV }) => {
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
         onChange={event => setValue(event.target.value)}
-        className={classes.input}
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
+        inputProps={{
+          'data-testid': 'search-input',
+        }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
         InputProps={{
           startAdornment: <SearchIcon />,
           style: {
@@ -176,7 +191,7 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <FormGroup row>
+      <FormGroup row style={{ flexWrap: 'nowrap' }}>
         <PanControls model={model} />
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}

@@ -70,14 +70,14 @@ In order to do this, use the navigation bar to open up the Assembly Manager
 This opens up a table which can be used to create, edit, and delete assemblies
 in your application
 
-![](./img/assembly_manager.png)
+![Assembly manager](./img/assembly_manager.png)
 
 Let's add the hg38 human reference genome to our JBrowse 2 application.
 
 Press the "Add New Assembly" button, and enter `hg38` as the assembly name in
 the text field
 
-![](./img/add_hg38_assembly.png)
+![Assembly manager page for adding an assembly](./img/add_hg38_assembly.png)
 
 Click on "Create New Assembly". Great, we've added an assembly! Now, in the
 configuration editor, add an alias, and configure the adapter to point the hg38
@@ -87,12 +87,12 @@ genome hosted by JBrowse:
 - fasta index: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai`
 - gzi: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi`
 
-![](./img/configure_hg38_assembly.png) Figure showing the settings
+![Figure showing the settings](./img/configure_hg38_assembly.png)
 
 After clicking the back arrow to return to the table of assemblies, we see that
 we have successfully added the hg38 assembly.
 
-![](./img/hg38_assembly_table.png) Figure showing the assembly manager
+![Figure showing the assembly manager](./img/hg38_assembly_table.png)
 
 The assembly can be edited or deleted, but for now we will return to the
 application.
@@ -145,7 +145,7 @@ First we will open a Linear Genome View using the navigation bar
 The configuration settings are accessible by clicking on the ellipses by each
 track.
 
-![](./img/admin_settings_access.png) Figure showing the configuration editor
+![Figure showing the configuration editor](./img/admin_settings_access.png)
 
 Open the configuration editor for the track by clicking on the "Settings" button
 shown above. You can use the configuration editor to live-edit any configurable

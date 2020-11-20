@@ -15,8 +15,8 @@
     "make": "cd docs; make md; cd -"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.66",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.66",
+    "@docusaurus/core": "^2.0.0-alpha.68",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.68",
     "@material-ui/core": "^4.9.13",
     "clsx": "^1.1.1",
     "react": "^16.8.4",

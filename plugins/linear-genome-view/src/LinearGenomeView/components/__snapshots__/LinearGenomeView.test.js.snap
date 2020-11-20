@@ -80,6 +80,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       <div
         class="makeStyles-headerBar"
       >
+<<<<<<< HEAD
         <div>
           <button
             class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
@@ -88,10 +89,23 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             title="select tracks"
             type="button"
             value="track_select"
+=======
+        <button
+          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+          color="secondary"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <span
+            class="MuiToggleButton-label"
+>>>>>>> origin/master
           >
             <span
               class="MuiToggleButton-label"
             >
+<<<<<<< HEAD
               <svg
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
@@ -122,11 +136,23 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
         </div>
+=======
+              <path
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+>>>>>>> origin/master
         <div
           class="makeStyles-spacer"
         />
         <div
           class="MuiFormGroup-root MuiFormGroup-row"
+          style="flex-wrap: nowrap;"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
@@ -244,9 +270,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
-          <form>
+          <form
+            data-testid="search-form"
+          >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
@@ -266,6 +294,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
+                  data-testid="search-input"
                   type="text"
                   value="ctgA:1..100"
                 />
@@ -896,6 +925,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <div
         class="makeStyles-headerBar"
       >
+<<<<<<< HEAD
         <div>
           <button
             class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
@@ -904,10 +934,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             title="select tracks"
             type="button"
             value="track_select"
+=======
+        <button
+          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
+          color="secondary"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <span
+            class="MuiToggleButton-label"
+>>>>>>> origin/master
           >
             <span
               class="MuiToggleButton-label"
             >
+<<<<<<< HEAD
               <svg
                 aria-hidden="true"
                 class="MuiSvgIcon-root"
@@ -938,11 +981,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
         </div>
+=======
+              <path
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
+>>>>>>> origin/master
         <div
           class="makeStyles-spacer"
         />
         <div
           class="MuiFormGroup-root MuiFormGroup-row"
+          style="flex-wrap: nowrap;"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
@@ -1060,9 +1115,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
-          <form>
+          <form
+            data-testid="search-form"
+          >
             <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
+              class="MuiFormControl-root MuiTextField-root"
               style="margin: 7px 7px 7px 21px;"
             >
               <div
@@ -1082,6 +1139,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
+                  data-testid="search-input"
                   type="text"
                   value="ctgA:1..100;ctgB:1,001..1,698"
                 />

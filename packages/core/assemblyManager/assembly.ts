@@ -2,6 +2,11 @@ import jsonStableStringify from 'json-stable-stringify'
 import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
+import {
+  BaseRefNameAliasAdapter,
+  RegionsAdapter,
+} from '../data_adapters/BaseAdapter'
+import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, when } from '../util'
@@ -62,7 +67,6 @@ async function loadRefNameMap(
     },
     { timeout: 1000000 },
   )
-
   const refNameMap: Record<string, string> = {}
   const { refNameAliases } = assembly
   if (!refNameAliases) {
@@ -117,7 +121,10 @@ interface CacheData {
   sessionId: string
   options: BaseOptions
 }
-export default function assemblyFactory(assemblyConfigType: IAnyType) {
+export default function assemblyFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
   const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
@@ -226,7 +233,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           // @ts-ignore
-          loadAssemblyData,
+          makeLoadAssemblyData(pluginManager),
           loadAssemblyReaction,
           { name: `${self.name} assembly loading`, fireImmediately: true },
           this.setLoading,
@@ -277,29 +284,28 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
     }))
 }
-function loadAssemblyData(self: Assembly) {
-  if (self.configuration) {
-    const sequenceAdapterConfig = readConfObject(self.configuration, [
-      'sequence',
-      'adapter',
-    ])
-    const adapterConfigId = getAdapterId(sequenceAdapterConfig)
-    const { rpcManager } = getParent(self, 2)
-    const refNameAliasesAdapterConfig =
-      self.configuration.refNameAliases &&
-      readConfObject(self.configuration, ['refNameAliases', 'adapter'])
-    return {
-      sequenceAdapterConfig,
-      adapterConfigId,
-      rpcManager,
-      assemblyName: self.name,
-      refNameAliasesAdapterConfig,
+function makeLoadAssemblyData(pluginManager: PluginManager) {
+  return (self: Assembly) => {
+    if (self.configuration) {
+      const sequenceAdapterConfig = readConfObject(self.configuration, [
+        'sequence',
+        'adapter',
+      ])
+      const refNameAliasesAdapterConfig =
+        self.configuration.refNameAliases &&
+        readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+      return {
+        sequenceAdapterConfig,
+        assemblyName: self.name,
+        refNameAliasesAdapterConfig,
+        pluginManager,
+      }
     }
+    return undefined
   }
-  return undefined
 }
 async function loadAssemblyReaction(
-  props: ReturnType<typeof loadAssemblyData> | undefined,
+  props: ReturnType<ReturnType<typeof makeLoadAssemblyData>> | undefined,
   signal: AbortSignal,
 ) {
   if (!props) {
@@ -308,18 +314,19 @@ async function loadAssemblyReaction(
 
   const {
     sequenceAdapterConfig,
-    rpcManager,
     assemblyName,
     refNameAliasesAdapterConfig,
+    pluginManager,
   } = props
 
-  const sessionId = `assembly-${assemblyName}`
-  const adapterRegions = (await rpcManager.call(
-    sessionId,
-    'CoreGetRegions',
-    { sessionId, adapterConfig: sequenceAdapterConfig, signal },
-    { timeout: 1000000 },
-  )) as Region[]
+  const dataAdapterType = pluginManager.getAdapterType(
+    sequenceAdapterConfig.type,
+  )
+  const adapter = new dataAdapterType.AdapterClass(
+    sequenceAdapterConfig,
+  ) as RegionsAdapter
+  const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
+
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
     const { refName } = adapterRegion
     checkRefName(refName)
@@ -327,17 +334,15 @@ async function loadAssemblyReaction(
   })
   const refNameAliases: RefNameAliases = {}
   if (refNameAliasesAdapterConfig) {
-    const refNameAliasesAborter = new AbortController()
-    const refNameAliasesList = (await rpcManager.call(
-      sessionId,
-      'CoreGetRefNameAliases',
-      {
-        sessionId,
-        adapterConfig: refNameAliasesAdapterConfig,
-        signal: refNameAliasesAborter.signal,
-      },
-      { timeout: 1000000 },
-    )) as {
+    const refAliasAdapterType = pluginManager.getAdapterType(
+      refNameAliasesAdapterConfig.type,
+    )
+    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+      refNameAliasesAdapterConfig,
+    ) as BaseRefNameAliasAdapter
+    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
+      signal,
+    })) as {
       refName: string
       aliases: string[]
     }[]

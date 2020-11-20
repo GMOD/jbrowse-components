@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
 import { observer } from 'mobx-react'
@@ -29,6 +30,9 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'center',
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
+  },
+  spacer: {
+    marginRight: theme.spacing(2),
   },
 }))
 
@@ -79,7 +83,8 @@ export default observer((props: { model: LGV }) => {
                   color="primary"
                   onClick={model.activateTrackSelector}
                 >
-                  Select Tracks
+                  <TrackSelectorIcon className={classes.spacer} />
+                  Open track selector
                 </Button>
               </Paper>
             ) : (

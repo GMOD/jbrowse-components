@@ -76,7 +76,14 @@ export default function JBrowseWeb(
         if (assembly) {
           return assembly
         }
-        const length = self.assemblies.push(assemblyConf)
+        const length = self.assemblies.push({
+          ...assemblyConf,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-${Date.now()}`,
+            ...(assemblyConf.sequence || {}),
+          },
+        })
         return self.assemblies[length - 1]
       },
       removeAssemblyConf(assemblyName) {
@@ -119,6 +126,9 @@ export default function JBrowseWeb(
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
+        if (idx === -1) {
+          return undefined
+        }
         return self.connections.splice(idx, 1)
       },
 
