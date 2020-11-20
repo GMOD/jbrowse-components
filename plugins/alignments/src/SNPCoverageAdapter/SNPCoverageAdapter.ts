@@ -70,11 +70,12 @@ export default (pluginManager: PluginManager) => {
 
     public constructor(
       config: Instance<typeof MyConfigSchema>,
-      getSubAdapter: getSubAdapterType,
+      getSubAdapter?: getSubAdapterType,
     ) {
       super(config)
 
-      const { dataAdapter } = getSubAdapter(getSnapshot(config.subadapter))
+      const dataAdapter = getSubAdapter?.(getSnapshot(config.subadapter))
+        .dataAdapter
 
       if (dataAdapter instanceof BaseFeatureDataAdapter) {
         this.subadapter = dataAdapter

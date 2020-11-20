@@ -1,4 +1,5 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { Region } from '@jbrowse/core/util/types'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
@@ -30,6 +31,17 @@ import {
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
+
+/* adjust in both directions */
+class DivSequenceRenderer extends ServerSideRendererType {
+  getExpandedRegion(region: Region) {
+    return {
+      ...region,
+      start: Math.max(region.start - 3, 0),
+      end: region.end + 3,
+    }
+  }
+}
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'
@@ -101,7 +113,7 @@ export default class SequencePlugin extends Plugin {
 
     pluginManager.addRendererType(
       () =>
-        new ServerSideRendererType({
+        new DivSequenceRenderer({
           name: 'DivSequenceRenderer',
           ReactComponent: DivSequenceRendererReactComponent,
           configSchema: divSequenceRendererConfigSchema,

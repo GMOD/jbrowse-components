@@ -22,7 +22,10 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
     { dispatcher },
     ...assemblyConfigSchemas,
   )
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfigSchemasType,
+    pluginManager,
+  )
   const rootModel = types
     .model('ReactLinearGenomeView', {
       config: createConfigModel(pluginManager, assemblyConfigSchemasType),

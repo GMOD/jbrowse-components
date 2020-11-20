@@ -2,6 +2,11 @@ import jsonStableStringify from 'json-stable-stringify'
 import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import { readConfObject } from '../configuration'
+import {
+  BaseRefNameAliasAdapter,
+  RegionsAdapter,
+} from '../data_adapters/BaseAdapter'
+import PluginManager from '../PluginManager'
 import { Region } from '../util/types'
 import { Region as MSTRegion } from '../util/types/mst'
 import { makeAbortableReaction, when } from '../util'
@@ -116,7 +121,10 @@ interface CacheData {
   sessionId: string
   options: BaseOptions
 }
-export default function assemblyFactory(assemblyConfigType: IAnyType) {
+export default function assemblyFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
   const adapterLoads = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
@@ -158,9 +166,6 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           return undefined
         }
         return Array.from(self.refNameAliases.keys())
-      },
-      get pluginManager() {
-        return getParent(self, 2).pluginManager
       },
       get rpcManager() {
         return getParent(self, 2).rpcManager
@@ -228,7 +233,7 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           // @ts-ignore
-          loadAssemblyData,
+          makeLoadAssemblyData(pluginManager),
           loadAssemblyReaction,
           { name: `${self.name} assembly loading`, fireImmediately: true },
           this.setLoading,
@@ -279,31 +284,29 @@ export default function assemblyFactory(assemblyConfigType: IAnyType) {
       },
     }))
 }
-function loadAssemblyData(self: Assembly) {
-  if (self.configuration) {
-    const sequenceAdapterConfig = readConfObject(self.configuration, [
-      'sequence',
-      'adapter',
-    ])
-    const adapterConfigId = getAdapterId(sequenceAdapterConfig)
-    const { rpcManager } = getParent(self, 2)
-    const refNameAliasesAdapterConfig =
-      self.configuration.refNameAliases &&
-      readConfObject(self.configuration, ['refNameAliases', 'adapter'])
-    return {
-      sequenceAdapterConfig,
-      adapterConfigId,
-      rpcManager,
-      assembly: self,
-      assemblyName: self.name,
-      refNameAliasesAdapterConfig,
+function makeLoadAssemblyData(pluginManager: PluginManager) {
+  return (self: Assembly) => {
+    if (self.configuration) {
+      const sequenceAdapterConfig = readConfObject(self.configuration, [
+        'sequence',
+        'adapter',
+      ])
+      const refNameAliasesAdapterConfig =
+        self.configuration.refNameAliases &&
+        readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+      return {
+        sequenceAdapterConfig,
+        assemblyName: self.name,
+        refNameAliasesAdapterConfig,
+        pluginManager,
+      }
     }
+    return undefined
   }
-  return undefined
 }
 async function loadAssemblyReaction(
-  props: ReturnType<typeof loadAssemblyData> | undefined,
-  _signal: AbortSignal,
+  props: ReturnType<ReturnType<typeof makeLoadAssemblyData>> | undefined,
+  signal: AbortSignal,
 ) {
   if (!props) {
     return
@@ -312,16 +315,17 @@ async function loadAssemblyReaction(
   const {
     sequenceAdapterConfig,
     assemblyName,
-    assembly,
     refNameAliasesAdapterConfig,
+    pluginManager,
   } = props
 
-  const { pluginManager } = assembly
   const dataAdapterType = pluginManager.getAdapterType(
     sequenceAdapterConfig.type,
   )
-  const adapter = new dataAdapterType.AdapterClass(sequenceAdapterConfig)
-  const adapterRegions = (await adapter.getRegions()) as Region[]
+  const adapter = new dataAdapterType.AdapterClass(
+    sequenceAdapterConfig,
+  ) as RegionsAdapter
+  const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
     const { refName } = adapterRegion
@@ -335,8 +339,10 @@ async function loadAssemblyReaction(
     )
     const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
       refNameAliasesAdapterConfig,
-    )
-    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases()) as {
+    ) as BaseRefNameAliasAdapter
+    const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
+      signal,
+    })) as {
       refName: string
       aliases: string[]
     }[]

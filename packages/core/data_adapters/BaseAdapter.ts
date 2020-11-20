@@ -21,7 +21,7 @@ export interface BaseOptions {
 export interface AdapterConstructor {
   new (
     config: AnyConfigurationModel,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ): AnyDataAdapter
 }
 

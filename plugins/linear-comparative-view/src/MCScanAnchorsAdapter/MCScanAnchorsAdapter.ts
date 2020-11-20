@@ -48,7 +48,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
     const subadapters = readConfObject(config, 'subadapters')
@@ -57,9 +57,13 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       readConfObject(config, 'mcscanAnchorsLocation') as FileLocation,
     )
 
-    this.subadapters = subadapters.map(
-      (subadapter: any) => getSubAdapter(subadapter).dataAdapter,
-    )
+    this.subadapters = subadapters.map((subadapter: any) => {
+      const dataAdapter = getSubAdapter?.(subadapter).dataAdapter
+      if (dataAdapter instanceof BaseFeatureDataAdapter) {
+        return dataAdapter
+      }
+      throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
+    })
 
     this.assemblyNames = assemblyNames
   }
