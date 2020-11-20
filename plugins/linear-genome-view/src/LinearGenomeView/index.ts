@@ -138,7 +138,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
           if (
             assemblyManager.assemblyList
-              .map(asm => asm.name)
+              .map((asm: { name: string }) => asm.name)
               .includes(assemblyName)
           ) {
             return (assemblyManager.get(assemblyName) || {}).initialized
