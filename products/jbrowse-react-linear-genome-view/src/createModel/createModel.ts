@@ -41,8 +41,8 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
           this.setSession(snapshot)
         }
       },
-      setError(errorMessage: string) {
-        self.error = errorMessage
+      setError(errorMessage: string | Error) {
+        self.error = String(errorMessage)
       },
     }))
     .views(self => ({
