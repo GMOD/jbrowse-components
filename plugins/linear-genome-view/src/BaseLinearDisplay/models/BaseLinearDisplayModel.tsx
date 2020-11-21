@@ -297,12 +297,12 @@ export const BaseLinearDisplay = types
     async renderSvg() {
       const view = getContainingView(self) as LinearGenomeViewModel
       const viewOffset = view.offsetPx
-      const { dynamicBlocks } = view
+      const { roundedDynamicBlocks: dynamicBlocks } = view
       const renderings = await Promise.all(
-        dynamicBlocks.contentBlocks.map(block => {
+        dynamicBlocks.map(block => {
           const blockState = BlockState.create({
             key: block.key,
-            region: block.toRegion(),
+            region: block,
           })
 
           const ret = renderBlockData(blockState, self)
@@ -324,7 +324,7 @@ export const BaseLinearDisplay = types
       return (
         <>
           {renderings.map((rendering, index) => {
-            const { offsetPx, key } = dynamicBlocks.contentBlocks[index]
+            const { offsetPx, key } = dynamicBlocks[index]
             return (
               <g
                 key={key}

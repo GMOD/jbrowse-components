@@ -1144,6 +1144,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
         },
+
+        get roundedDynamicBlocks() {
+          return this.dynamicBlocks.contentBlocks.map(block => {
+            return {
+              ...block,
+              start: Math.floor(block.start),
+              end: Math.ceil(block.end),
+            }
+          })
+        },
         get visibleLocStrings() {
           return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
         },
