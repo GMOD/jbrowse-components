@@ -125,7 +125,7 @@ describe('SetDefaultSession GUI', () => {
         currentDefault="New session"
       />,
     )
-    fireEvent.click(getByText('Reset'))
+    fireEvent.click(getByText('Clear default session'))
     expect(MockSession.jbrowse.setDefaultSessionConf).toHaveBeenCalledWith({
       name: `New session`,
     })
