@@ -15,6 +15,7 @@ import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Radio from '@material-ui/core/Radio'
 import pluralize from 'pluralize'
+import { Grid } from '@material-ui/core'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -31,11 +32,9 @@ const useStyles = makeStyles(theme => ({
   dialogContent: {
     width: 600,
   },
-  backButton: {
-    color: '#fff',
-    position: 'absolute',
-    left: theme.spacing(4),
-    top: theme.spacing(4),
+  resetButton: {
+    justifyContent: 'center',
+    marginBottom: '6px',
   },
 }))
 
@@ -103,12 +102,29 @@ const SetDefaultSession = observer(
           Set Default Session
         </DialogTitle>
         <DialogContent>
+          <Grid className={classes.resetButton} container>
+            <Grid item>
+              <Button
+                color="secondary"
+                variant="contained"
+                onClick={() => {
+                  setSelectedDefault('New session')
+                  rootModel.jbrowse.setDefaultSessionConf({
+                    name: `New session`,
+                  })
+                  session.notify('Reset default session', 'success')
+                }}
+              >
+                Clear default session
+              </Button>
+            </Grid>
+          </Grid>
+
           <CurrentSession
             session={session}
             selectedDefault={selectedDefault}
             handleRadio={handleRadio}
           />
-
           <Paper className={classes.root}>
             <List subheader={<ListSubheader>Saved sessions</ListSubheader>}>
               {session.savedSessions.length ? (
@@ -160,19 +176,6 @@ const SetDefaultSession = observer(
             }}
           >
             Return
-          </Button>
-          <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => {
-              setSelectedDefault('New session')
-              rootModel.jbrowse.setDefaultSessionConf({
-                name: `New session`,
-              })
-              session.notify('Reset default session', 'success')
-            }}
-          >
-            Reset
           </Button>
         </DialogActions>
       </Dialog>
