@@ -9,6 +9,7 @@ export default pluginManager => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const IconButton = jbrequire('@material-ui/core/IconButton')
+  const { TablePagination } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
   const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
@@ -20,7 +21,7 @@ export default pluginManager => {
 
   const headerHeight = 52
   const colFilterHeight = 46
-  const statusBarHeight = 20
+  const statusBarHeight = 40
 
   const useStyles = makeStyles(theme => {
     return {
@@ -35,8 +36,6 @@ export default pluginManager => {
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
         height: headerHeight,
-        // background: '#eee',
-        // borderBottom: '1px solid #a2a2a2',
         paddingLeft: theme.spacing(1),
       },
       contentArea: { overflow: 'auto' },
@@ -45,8 +44,6 @@ export default pluginManager => {
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
         height: headerHeight,
-        // background: '#eee',
-        // borderBottom: '1px solid #a2a2a2',
         paddingLeft: theme.spacing(1),
       },
       viewControls: {
@@ -132,6 +129,17 @@ export default pluginManager => {
     const { spreadsheet, filterControls } = model
 
     const colFilterCount = filterControls.columnFilters.length
+    const [page, setPage] = React.useState(0)
+    const [rowsPerPage, setRowsPerPage] = React.useState(100)
+
+    const handleChangePage = (event, newPage) => {
+      setPage(newPage)
+    }
+
+    const handleChangeRowsPerPage = event => {
+      setRowsPerPage(+event.target.value)
+      setPage(0)
+    }
 
     return (
       <div
@@ -180,6 +188,8 @@ export default pluginManager => {
             }}
           >
             <Spreadsheet
+              page={page}
+              rowsPerPage={rowsPerPage}
               model={spreadsheet}
               height={
                 model.height -
@@ -195,7 +205,15 @@ export default pluginManager => {
           className={classes.statusBar}
           style={{ display: model.mode === 'display' ? undefined : 'none' }}
         >
-          <RowCountMessage spreadsheet={spreadsheet} />
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100, 1000]}
+            count={spreadsheet.rowSet.count}
+            component="div"
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChangePage={handleChangePage}
+            onChangeRowsPerPage={handleChangeRowsPerPage}
+          />
         </div>
         {model.hideVerticalResizeHandle ? null : (
           <ResizeHandle
