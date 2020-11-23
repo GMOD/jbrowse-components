@@ -24,13 +24,13 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
+  const [done, setDone] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
   useEffect(() => {
-    let done = false
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
@@ -39,9 +39,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       }
     })()
     return () => {
-      done = true
+      setDone(true)
     }
-  }, [assemblyManager, assemblyName])
+  }, [assemblyManager, assemblyName, done])
 
   function onAssemblyChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -79,21 +79,23 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          <RefNameAutocomplete
-            model={model}
-            assemblyName={
-              error ? undefined : assemblyNames[selectedAssemblyIdx]
-            }
-            onSelect={setSelectedRegion}
-            value={selectedRegion && selectedRegion.refName}
-            TextFieldProps={{
-              margin: 'normal',
-              variant: 'outlined',
-              label: 'Sequence',
-              className: classes.importFormEntry,
-              helperText: 'Select sequence to view',
-            }}
-          />
+          {done && (
+            <RefNameAutocomplete
+              model={model}
+              assemblyName={
+                error ? undefined : assemblyNames[selectedAssemblyIdx]
+              }
+              onSelect={setSelectedRegion}
+              value={selectedRegion && selectedRegion.refName}
+              TextFieldProps={{
+                margin: 'normal',
+                variant: 'outlined',
+                label: 'Sequence',
+                className: classes.importFormEntry,
+                helperText: 'Select sequence to view',
+              }}
+            />
+          )}
         </Grid>
         <Grid item>
           <Button
