@@ -86,11 +86,13 @@ const Search = observer(({ model }: { model: LGV }) => {
     visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
 
-  // use regular visibleLocStrings if coarseVisibleLocStrings is undefined
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
 
   const session = getSession(model)
+
+  console.log('model in search', model)
+  console.log('visibleLocString', visibleLocStrings)
 
   function navTo(locString: string) {
     try {
@@ -108,8 +110,6 @@ const Search = observer(({ model }: { model: LGV }) => {
         event.preventDefault()
         inputRef && inputRef.current && inputRef.current.blur()
         value && navTo(value)
-
-        // need to manually call the action of blur here for
         // react-testing-library
         setValue(undefined)
       }}
@@ -118,7 +118,9 @@ const Search = observer(({ model }: { model: LGV }) => {
         inputRef={inputRef}
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
-        onChange={event => setValue(event.target.value)}
+        onChange={event => {
+          setValue(event.target.value)
+        }}
         variant="outlined"
         value={value === undefined ? visibleLocStrings : value}
         style={{ margin: SPACING, marginLeft: SPACING * 3 }}
