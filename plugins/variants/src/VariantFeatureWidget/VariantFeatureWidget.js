@@ -82,7 +82,7 @@ function VariantSamples(props) {
                     </TableCell>
                     {infoFields.map(f => (
                       <TableCell className={classes.valueCell} key={f}>
-                        {String(value[f])}
+                        {value === null ? '.' : String(value[f])}
                       </TableCell>
                     ))}
                   </TableRow>

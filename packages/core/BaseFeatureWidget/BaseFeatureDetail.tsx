@@ -107,7 +107,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
         const strValue = String(value)
-        return value ? (
+        return value !== null && value !== undefined ? (
           <div className={classes.field} key={key}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>
@@ -156,7 +156,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
 
   const SimpleValue = ({ name, value }: { name: string; value: any }) => {
     const description = descriptions && descriptions[name]
-    return (
+    return value ? (
       <div style={{ display: 'flex' }}>
         {description ? (
           <Tooltip title={description} placement="left">
@@ -167,7 +167,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
         )}
         <div className={classes.fieldValue}>{formatter(value)}</div>
       </div>
-    )
+    ) : null
   }
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => {
     const description = descriptions && descriptions[name]
