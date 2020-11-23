@@ -103,17 +103,21 @@ function RefNameAutocomplete({
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   // possible regions to choose from
   const regions: Region[] = (assembly && assembly.regions) || []
-  // const {
-  //   coarseVisibleLocStrings,
-  //   visibleLocStrings: nonCoarseVisibleLocStrings,
-  // } = model
-  // const visibleLocStrings =
-  //   coarseVisibleLocStrings || nonCoarseVisibleLocStrings
-  // state of the component
-  const loading = !regions.length
-  const current = value || (regions.length ? regions[0].refName : undefined)
-  console.log(model)
+  // console.log('assembly', assembly)
+  // console.log('model', model)
+  // console.log('regions', regions)
+  const {
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
+  } = model
+  const visibleLocStrings =
+    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   // console.log('visibleLocString', visibleLocStrings)
+  // state of the component
+  console.log('value', value)
+  const loading = !regions.length
+  const current =
+    visibleLocStrings || (regions.length ? regions[0].refName : undefined)
 
   function navTo(locString: string) {
     try {
@@ -169,7 +173,6 @@ function RefNameAutocomplete({
             helperText={helperText}
             InputProps={TextFieldInputProps}
             onChange={event => {
-              console.log(event.target.value)
               setSearchValue(event.target.value)
             }}
             onKeyPress={event => {

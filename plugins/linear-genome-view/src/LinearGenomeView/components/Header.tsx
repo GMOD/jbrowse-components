@@ -119,6 +119,7 @@ const Search = observer(({ model }: { model: LGV }) => {
         onFocus={() => setValue(visibleLocStrings)}
         onBlur={() => setValue(undefined)}
         onChange={event => {
+          // console.log(event.target.value)
           setValue(event.target.value)
         }}
         variant="outlined"
@@ -194,7 +195,7 @@ export default observer(({ model }: { model: LGV }) => {
           TextFieldProps={{
             variant: 'outlined',
             className: classes.headerRefName,
-            style: { margin: SPACING },
+            style: { margin: SPACING, minWidth: '150px' },
             InputProps: {
               style: {
                 padding: 0,
@@ -205,7 +206,7 @@ export default observer(({ model }: { model: LGV }) => {
           }}
         />
         {/* search bar */}
-        <Search model={model} />
+        {/* <Search model={model} /> */}
       </FormGroup>
       <RegionWidth model={model} />
       <ZoomControls model={model} />
