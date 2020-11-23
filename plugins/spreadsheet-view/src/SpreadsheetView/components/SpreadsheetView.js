@@ -9,7 +9,7 @@ export default pluginManager => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const IconButton = jbrequire('@material-ui/core/IconButton')
-  const { TablePagination } = jbrequire('@material-ui/core')
+  const { FormGroup, TablePagination } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
   const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
@@ -23,49 +23,55 @@ export default pluginManager => {
   const colFilterHeight = 46
   const statusBarHeight = 40
 
-  const useStyles = makeStyles(theme => {
-    return {
-      root: {
-        position: 'relative',
-        marginBottom: theme.spacing(1),
-        background: 'white',
-        overflow: 'hidden',
-      },
-      header: {
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        height: headerHeight,
-        paddingLeft: theme.spacing(1),
-      },
-      contentArea: { overflow: 'auto' },
-      columnFilter: {
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        height: headerHeight,
-        paddingLeft: theme.spacing(1),
-      },
-      viewControls: {
-        margin: 0,
-      },
-      rowCount: {
-        marginLeft: theme.spacing(1),
-      },
-      statusBar: {
-        position: 'absolute',
-        left: 0,
-        bottom: 0,
-        height: statusBarHeight,
-        width: '100%',
-        background: '#fafafa',
-        boxSizing: 'border-box',
-        borderTop: '1px outset #b1b1b1',
-        paddingLeft: theme.spacing(1),
-      },
-      textFilterControlAdornment: { marginRight: '-18px' },
-    }
-  })
+  const useStyles = makeStyles(theme => ({
+    root: {
+      position: 'relative',
+      marginBottom: theme.spacing(1),
+      background: 'white',
+      overflow: 'hidden',
+    },
+    header: {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      boxSizing: 'border-box',
+      height: headerHeight,
+      paddingLeft: theme.spacing(1),
+    },
+    contentArea: { overflow: 'auto' },
+    columnFilter: {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      boxSizing: 'border-box',
+      height: headerHeight,
+      paddingLeft: theme.spacing(1),
+    },
+    viewControls: {
+      margin: 0,
+    },
+    rowCount: {
+      marginLeft: theme.spacing(1),
+    },
+    statusBar: {
+      position: 'absolute',
+      background: '#fee',
+      left: 0,
+      bottom: 0,
+      height: statusBarHeight,
+      width: '100%',
+      boxSizing: 'border-box',
+      borderTop: '1px outset #b1b1b1',
+      paddingLeft: theme.spacing(1),
+    },
+    verticallyCenter: {
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column',
+    },
+    spacer: {
+      flexGrow: 1,
+    },
+    textFilterControlAdornment: { marginRight: '-18px' },
+  }))
 
   const ViewControls = observer(({ model }) => {
     const classes = useStyles()
@@ -205,15 +211,23 @@ export default pluginManager => {
           className={classes.statusBar}
           style={{ display: model.mode === 'display' ? undefined : 'none' }}
         >
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100, 1000]}
-            count={spreadsheet.rowSet.count}
-            component="div"
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-          />
+          {spreadsheet ? (
+            <FormGroup row>
+              <div className={classes.verticallyCenter}>
+                <RowCountMessage spreadsheet={spreadsheet} />
+              </div>
+              <div className={classes.spacer} />
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100, 1000]}
+                count={spreadsheet.rowSet.count}
+                component="div"
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+              />
+            </FormGroup>
+          ) : null}
         </div>
         {model.hideVerticalResizeHandle ? null : (
           <ResizeHandle
