@@ -96,25 +96,35 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const [searchValue, setSearchValue] = React.useState<string | undefined>()
+  const session = getSession(model)
+  // assembly information
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
+  // possible regions to choose from
   const regions: Region[] = (assembly && assembly.regions) || []
+  // const {
+  //   coarseVisibleLocStrings,
+  //   visibleLocStrings: nonCoarseVisibleLocStrings,
+  // } = model
+  // const visibleLocStrings =
+  //   coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+  // state of the component
   const loading = !regions.length
   const current = value || (regions.length ? regions[0].refName : undefined)
+  console.log(model)
+  // console.log('visibleLocString', visibleLocStrings)
+
+  function navTo(locString: string) {
+    try {
+      model.navToLocString(locString)
+    } catch (e) {
+      console.warn(e)
+      session.notify(`${e}`, 'warning')
+    }
+  }
 
   function onChange(_: unknown, newRegionName: string | null) {
-    // need to make modifications here to adapt the onChange to
-    // need to acccount for when no opions then it turns into the search bar
-    /*   
-      function navTo(locString: string) {
-        try {
-          model.navToLocString(locString)
-        } catch (e) {
-          console.warn(e)
-          session.notify(`${e}`, 'warning')
-        }
-      } 
-    */
     if (newRegionName) {
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
@@ -158,6 +168,15 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
+            onChange={event => {
+              console.log(event.target.value)
+              setSearchValue(event.target.value)
+            }}
+            onKeyPress={event => {
+              if (event.key === 'Enter') {
+                navTo(searchValue || '')
+              }
+            }}
           />
         )
       }}
