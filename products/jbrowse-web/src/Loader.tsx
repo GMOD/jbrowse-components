@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
+import { autorun } from 'mobx'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import ErrorBoundary from 'react-error-boundary'
@@ -12,7 +13,7 @@ import {
   QueryParamProvider,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { types, Instance, SnapshotOut } from 'mobx-state-tree'
+import { addDisposer, types, Instance, SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
@@ -20,11 +21,11 @@ import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
 import shortid from 'shortid'
-import {
-  writeAWSAnalytics,
-  writeGAAnalytics,
-} from '@jbrowse/core/util/analytics'
-import { readConfObject } from '@jbrowse/core/configuration'
+// import {
+//   writeAWSAnalytics,
+//   writeGAAnalytics,
+// } from '@jbrowse/core/util/analytics'
+// import { readConfObject } from '@jbrowse/core/configuration'
 import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
@@ -103,6 +104,7 @@ const SessionLoader = types
     sessionQuery: types.maybe(types.string),
     password: types.maybe(types.string),
     adminKey: types.maybe(types.string),
+    pluginManager: types.frozen(),
   })
   .volatile(() => ({
     blankSession: false as any,
@@ -131,6 +133,10 @@ const SessionLoader = types
       return self.sessionQuery?.startsWith('local-')
     },
 
+    get progSession() {
+      return self.sessionQuery?.startsWith('prog-')
+    },
+
     get ready() {
       return this.sessionLoaded && !self.configError
     },
@@ -150,6 +156,9 @@ const SessionLoader = types
     },
   }))
   .actions(self => ({
+    setPluginManager(pm: any) {
+      self.pluginManager = pm
+    },
     setSessionQuery(session?: any) {
       self.sessionQuery = session
     },
@@ -269,7 +278,13 @@ const SessionLoader = types
       self.setSessionSnapshot({ ...session, id: shortid() })
     },
     async afterCreate() {
-      const { localSession, encodedSession, sharedSession, configPath } = self
+      const {
+        localSession,
+        encodedSession,
+        sharedSession,
+        progSession,
+        configPath,
+      } = self
 
       // rename autosave to previousAutosave
       const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
@@ -292,6 +307,8 @@ const SessionLoader = types
           await this.decodeEncodedUrlSession()
         } else if (localSession) {
           await this.fetchSessionStorageSession()
+        } else if (progSession) {
+          self.setSessionSnapshot({ views: [{ type: 'LinearGenomeView' }] })
         } else if (self.sessionQuery) {
           // if there was a sessionQuery and we don't recognize it
           throw new Error('unrecognized session format')
@@ -314,6 +331,64 @@ const SessionLoader = types
       } catch (e) {
         self.setSessionError(e)
       }
+      addDisposer(
+        self,
+        autorun(() => {
+          const pluginManager = new PluginManager(
+            self.plugins.map(P => new P()),
+          )
+
+          pluginManager.createPluggableElements()
+
+          const JBrowseRootModel = JBrowseRootModelFactory(
+            pluginManager,
+            !!self.adminKey,
+          )
+
+          if (self.configSnapshot) {
+            const rootModel = JBrowseRootModel.create({
+              jbrowse: self.configSnapshot,
+              assemblyManager: {},
+              version: packagedef.version,
+              configPath,
+            })
+
+            // in order: saves the previous autosave for recovery, tries to load
+            // the local session if session in query, or loads the default
+            // session
+            if (self.sessionError) {
+              rootModel.setDefaultSession()
+              // make typescript happy by checking for session after
+              // setDefaultSession, even though we know this exists now
+              if (rootModel.session) {
+                rootModel.session.notify(
+                  `Error loading session: ${self.sessionError.message}. If you
+                received this URL from another user, request that they send you
+                a session generated with the "Share" button instead of copying
+                and pasting their URL`,
+                )
+              }
+            } else if (self.sessionSnapshot) {
+              rootModel.setSession(self.sessionSnapshot)
+            } else {
+              const defaultJBrowseSession = rootModel.jbrowse.defaultSession
+              if (defaultJBrowseSession?.views) {
+                if (defaultJBrowseSession.views.length > 0) {
+                  rootModel.setDefaultSession()
+                }
+              }
+            }
+
+            // TODO use UndoManager
+            // rootModel.setHistory(
+            //   UndoManager.create({}, { targetStore: rootModel.session }),
+            // )
+            pluginManager.setRootModel(rootModel)
+            pluginManager.configure()
+            self.setPluginManager(pluginManager)
+          }
+        }),
+      )
     },
   }))
 
@@ -347,102 +422,13 @@ export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
 const Renderer = observer(
   ({
     loader,
-    initialTimestamp,
-    initialSessionQuery,
   }: {
     loader: Instance<typeof SessionLoader>
     initialTimestamp: number
     initialSessionQuery: string | null | undefined
   }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
-    const { sessionError, configError, ready } = loader
-    const [pm, setPluginManager] = useState<PluginManager>()
-    // only create the pluginManager/rootModel "on mount"
-    useEffect(() => {
-      const {
-        plugins,
-        adminKey,
-        configSnapshot,
-        sessionSnapshot,
-        configPath,
-      } = loader
-
-      if (ready) {
-        // it is ready when a session has loaded and when there is no config error
-        // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
-        const pluginManager = new PluginManager(plugins.map(P => new P()))
-
-        pluginManager.createPluggableElements()
-
-        const JBrowseRootModel = JBrowseRootModelFactory(
-          pluginManager,
-          !!adminKey,
-        )
-
-        if (loader.configSnapshot) {
-          const rootModel = JBrowseRootModel.create({
-            jbrowse: configSnapshot,
-            assemblyManager: {},
-            version: packagedef.version,
-            configPath,
-          })
-
-          // in order: saves the previous autosave for recovery, tries to load
-          // the local session if session in query, or loads the default
-          // session
-          if (sessionError) {
-            rootModel.setDefaultSession()
-            // make typescript happy by checking for session after
-            // setDefaultSession, even though we know this exists now
-            if (rootModel.session) {
-              rootModel.session.notify(
-                `Error loading session: ${sessionError.message}. If you
-                received this URL from another user, request that they send you
-                a session generated with the "Share" button instead of copying
-                and pasting their URL`,
-              )
-            }
-          } else if (sessionSnapshot) {
-            rootModel.setSession(loader.sessionSnapshot)
-          } else {
-            const defaultJBrowseSession = rootModel.jbrowse.defaultSession
-            if (defaultJBrowseSession?.views) {
-              if (defaultJBrowseSession.views.length > 0) {
-                rootModel.setDefaultSession()
-              }
-            }
-          }
-
-          // send analytics
-          if (
-            rootModel &&
-            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
-          ) {
-            writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
-            writeGAAnalytics(rootModel, initialTimestamp)
-          }
-
-          // TODO use UndoManager
-          // rootModel.setHistory(
-          //   UndoManager.create({}, { targetStore: rootModel.session }),
-          // )
-          pluginManager.setRootModel(rootModel)
-          pluginManager.configure()
-          setPluginManager(pluginManager)
-
-          // automatically clear password field once loaded
-          setPassword(undefined)
-        }
-      }
-    }, [
-      loader,
-      ready,
-      sessionError,
-      setPassword,
-      initialTimestamp,
-      initialSessionQuery,
-    ])
-
+    const { configError, pluginManager } = loader
     if (configError) {
       return (
         <div>
@@ -461,11 +447,17 @@ const Renderer = observer(
       )
     }
 
-    if (pm) {
-      if (!pm.rootModel?.session) {
-        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+    if (pluginManager) {
+      setPassword(undefined)
+      if (!pluginManager.rootModel?.session) {
+        return (
+          <StartScreen
+            root={pluginManager.rootModel}
+            onFactoryReset={factoryReset}
+          />
+        )
       }
-      return <JBrowse pluginManager={pm} />
+      return <JBrowse pluginManager={pluginManager} />
     }
     return <Loading />
   },
