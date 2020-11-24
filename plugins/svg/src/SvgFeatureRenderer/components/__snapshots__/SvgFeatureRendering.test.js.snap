@@ -1,0 +1,358 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`no features 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="20px"
+    style="display: block;"
+    width="100px"
+  />
+</div>
+`;
+
+exports[`one feature (compact mode) 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="4px"
+    style="display: block;"
+    width="333.3333333333333px"
+  >
+    <g>
+      <polyline
+        data-testid="one"
+        points="1991.7,1.6666666666666667,3248.0333333333333,1.6666666666666667,3247.2,0.8333333333333334,3247.2,2.5,3248.0333333333333,1.6666666666666667"
+        stroke="black"
+      />
+      <rect
+        data-testid="one-0"
+        fill="#357089"
+        height="2.166666666666667"
+        width="44.666666666666664"
+        x="1991.7"
+        y="0.5833333333333334"
+      />
+      <rect
+        data-testid="one-2"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="12.666666666666666"
+        x="2036.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-3"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="22.666666666666668"
+        x="2205.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-4"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="94"
+        x="2252.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-5"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="59"
+        x="2380.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-6"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="92"
+        x="2470.366666666667"
+        y="0"
+      />
+      <rect
+        data-testid="one-7"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="34"
+        x="2582.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-8"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="48.333333333333336"
+        x="2651.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-9"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="51.333333333333336"
+        x="2722.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-10"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="65"
+        x="2806.366666666667"
+        y="0"
+      />
+      <rect
+        data-testid="one-11"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="34.333333333333336"
+        x="2902.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-12"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="104"
+        x="2975.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-13"
+        fill="goldenrod"
+        height="3.3333333333333335"
+        width="26.666666666666668"
+        x="3138.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-15"
+        fill="#357089"
+        height="2.166666666666667"
+        width="83"
+        x="3165.0333333333333"
+        y="0.5833333333333334"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`one feature 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="10px"
+    style="display: block;"
+    width="333.3333333333333px"
+  >
+    <g>
+      <rect
+        data-testid="box-one"
+        fill="goldenrod"
+        height="10"
+        width="1"
+        x="0.3"
+        y="0"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`processed transcript (reducedRepresentation mode) 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="10px"
+    style="display: block;"
+    width="333.3333333333333px"
+  >
+    <g>
+      <rect
+        data-testid="one"
+        fill="goldenrod"
+        height="10"
+        width="1"
+        x="0.3"
+        y="0"
+      />
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`processed transcript 1`] = `
+<div
+  style="position: relative;"
+>
+  <svg
+    class="SvgFeatureRendering"
+    height="25px"
+    style="display: block;"
+    width="333.3333333333333px"
+  >
+    <g>
+      <polyline
+        data-testid="one"
+        points="1991.7,5,3248.0333333333333,5,3245.5333333333333,2.5,3245.5333333333333,7.5,3248.0333333333333,5"
+        stroke="black"
+      />
+      <rect
+        data-testid="one-0"
+        fill="#357089"
+        height="6.5"
+        width="44.666666666666664"
+        x="1991.7"
+        y="1.75"
+      />
+      <rect
+        data-testid="one-2"
+        fill="goldenrod"
+        height="10"
+        width="12.666666666666666"
+        x="2036.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-3"
+        fill="goldenrod"
+        height="10"
+        width="22.666666666666668"
+        x="2205.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-4"
+        fill="goldenrod"
+        height="10"
+        width="94"
+        x="2252.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-5"
+        fill="goldenrod"
+        height="10"
+        width="59"
+        x="2380.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-6"
+        fill="goldenrod"
+        height="10"
+        width="92"
+        x="2470.366666666667"
+        y="0"
+      />
+      <rect
+        data-testid="one-7"
+        fill="goldenrod"
+        height="10"
+        width="34"
+        x="2582.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-8"
+        fill="goldenrod"
+        height="10"
+        width="48.333333333333336"
+        x="2651.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-9"
+        fill="goldenrod"
+        height="10"
+        width="51.333333333333336"
+        x="2722.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-10"
+        fill="goldenrod"
+        height="10"
+        width="65"
+        x="2806.366666666667"
+        y="0"
+      />
+      <rect
+        data-testid="one-11"
+        fill="goldenrod"
+        height="10"
+        width="34.333333333333336"
+        x="2902.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-12"
+        fill="goldenrod"
+        height="10"
+        width="104"
+        x="2975.7"
+        y="0"
+      />
+      <rect
+        data-testid="one-13"
+        fill="goldenrod"
+        height="10"
+        width="26.666666666666668"
+        x="3138.0333333333333"
+        y="0"
+      />
+      <rect
+        data-testid="one-15"
+        fill="#357089"
+        height="6.5"
+        width="83"
+        x="3165.0333333333333"
+        y="1.75"
+      />
+      <text
+        dominant-baseline="hanging"
+        style="font-size: 13px; fill: black; cursor: default;"
+        x="1991.7"
+        y="12"
+      >
+        au9.g1002.t1
+      </text>
+    </g>
+  </svg>
+</div>
+`;
+
+exports[`svg selected 1`] = `
+<svg>
+  <rect
+    data-testid="one"
+    fill="#000"
+    fill-opacity="0.2"
+    height="14"
+    width="7.3"
+    x="-2"
+    y="-2"
+  />
+  <rect
+    fill="none"
+    height="14"
+    stroke="#00b8ff"
+    width="7.3"
+    x="-2"
+    y="-2"
+  />
+</svg>
+`;

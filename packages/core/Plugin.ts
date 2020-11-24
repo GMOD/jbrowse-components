@@ -6,9 +6,9 @@ import PluginManager from './PluginManager'
 export default abstract class Plugin {
   abstract name: string
 
-  install(pluginManager: PluginManager): void {}
+  install(_pluginManager: PluginManager): void {}
 
-  configure(pluginManager: PluginManager): void {}
+  configure(_pluginManager: PluginManager): void {}
 }
 
 export type PluginConstructor = new (...args: unknown[]) => Plugin

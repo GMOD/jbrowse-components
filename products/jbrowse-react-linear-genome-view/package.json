@@ -1,0 +1,62 @@
+{
+  "name": "@jbrowse/react-linear-genome-view",
+  "version": "0.0.1-beta.0",
+  "description": "JBrowse 2 linear genome view React component",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "MIT",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/jbrowse-react-linear-genome-view"
+  },
+  "author": "JBrowse Team",
+  "main": "dist/index.js",
+  "module": "dist/jbrowse-react-linear-genome-view.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "cd ../..; jest plugins/linear-genome-view --passWithNoTests",
+    "prepublishOnly": "yarn test",
+    "prepare": "tsdx build",
+    "storybook": "start-storybook -s ./public -p 6006",
+    "build-storybook": "build-storybook"
+  },
+  "dependencies": {
+    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/plugin-alignments": "^1.0.0",
+    "@jbrowse/plugin-bed": "^1.0.0",
+    "@jbrowse/plugin-config": "^1.0.0",
+    "@jbrowse/plugin-data-management": "^1.0.0",
+    "@jbrowse/plugin-gff3": "^1.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/plugin-sequence": "^1.0.0",
+    "@jbrowse/plugin-svg": "^1.0.0",
+    "@jbrowse/plugin-variants": "^1.0.0",
+    "@jbrowse/plugin-wiggle": "^1.0.0",
+    "@material-ui/core": "^4.9.5",
+    "@material-ui/icons": "^4.0.0",
+    "@material-ui/lab": "^4.0.0-alpha.45",
+    "mobx": "^5.10.1",
+    "mobx-react": "^6.0.3",
+    "mobx-state-tree": "3.14.1",
+    "prop-types": "^15.0.0",
+    "react-use-dimensions": "^1.2.1",
+    "rxjs": "^6.0.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

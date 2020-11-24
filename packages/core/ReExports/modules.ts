@@ -52,9 +52,11 @@ import * as BaseFeatureDetail from '../BaseFeatureWidget/BaseFeatureDetail'
 import Base1DView from '../util/Base1DViewModel'
 import ViewType from '../pluggableElementTypes/ViewType'
 import AdapterType from '../pluggableElementTypes/AdapterType'
+import DisplayType from '../pluggableElementTypes/DisplayType'
 import TrackType from '../pluggableElementTypes/TrackType'
 import WidgetType from '../pluggableElementTypes/WidgetType'
 
+import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
 import ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
 import BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
@@ -69,7 +71,6 @@ import * as coreIo from '../util/io'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as MUIColors from './material-ui-colors'
 import * as mstTypes from '../util/types/mst'
-import BaseViewModel from '../BaseViewModel'
 
 import ReExportsList from './list'
 
@@ -122,28 +123,29 @@ const libs = {
   '@material-ui/lab/ToggleButton': ToggleButton,
   '@material-ui/lab/ToggleButtonGroup': ToggleButtonGroup,
 
-  '@gmod/jbrowse-core/Plugin': Plugin,
-  '@gmod/jbrowse-core/pluggableElementTypes/ViewType': ViewType,
-  '@gmod/jbrowse-core/pluggableElementTypes/AdapterType': AdapterType,
-  '@gmod/jbrowse-core/pluggableElementTypes/TrackType': TrackType,
-  '@gmod/jbrowse-core/pluggableElementTypes/WidgetType': WidgetType,
+  '@jbrowse/core/Plugin': Plugin,
+  '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
+  '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
+  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
+  '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
+  '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
 
-  '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
-  '@gmod/jbrowse-core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
-  '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
-  '@gmod/jbrowse-core/configuration': Configuration,
-  '@gmod/jbrowse-core/util/types/mst': mstTypes,
-  '@gmod/jbrowse-core/ui': coreUi,
-  '@gmod/jbrowse-core/util': coreUtil,
-  '@gmod/jbrowse-core/util/color': coreColor,
-  '@gmod/jbrowse-core/util/tracks': trackUtils,
-  '@gmod/jbrowse-core/util/Base1DViewModel': Base1DView,
-  '@gmod/jbrowse-core/util/io': coreIo,
-  '@gmod/jbrowse-core/util/mst-reflection': coreMstReflection,
-  '@gmod/jbrowse-core/BaseViewModel': BaseViewModel,
-  '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
+  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
+  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType': ServerSideRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType': CircularChordRendererType,
+  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType': BoxRendererType,
+  '@jbrowse/core/configuration': Configuration,
+  '@jbrowse/core/util/types/mst': mstTypes,
+  '@jbrowse/core/ui': coreUi,
+  '@jbrowse/core/util': coreUtil,
+  '@jbrowse/core/util/color': coreColor,
+  '@jbrowse/core/util/tracks': trackUtils,
+  '@jbrowse/core/util/Base1DViewModel': Base1DView,
+  '@jbrowse/core/util/io': coreIo,
+  '@jbrowse/core/util/mst-reflection': coreMstReflection,
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
 
-  '@gmod/jbrowse-core/data_adapters/BaseAdapter': BaseAdapterExports,
+  '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
 // make sure that all the items in the ReExports/list array (used by build systems and such)

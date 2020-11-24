@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<HelpWidget /> renders 1`] = `
+<div
+  class="makeStyles-root"
+>
+  <h4
+    class="MuiTypography-root MuiTypography-h4 MuiTypography-colorPrimary MuiTypography-alignCenter"
+  >
+    JBrowse 2
+  </h4>
+  <h6
+    class="MuiTypography-root makeStyles-subtitle MuiTypography-h6 MuiTypography-alignCenter"
+  />
+  <p>
+    Here are some resources to get help. Please report the version number above when asking questions. Thanks!
+  </p>
+  <ul>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://github.com/GMOD/jbrowse-components/discussions"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Question & answer forum
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Report a bug
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://jbrowse.org/jb2/docs/user_guide"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        User guide
+      </a>
+    </li>
+    <li>
+      <a
+        class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+        href="https://jbrowse.org/jb2/docs/"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        Documentation
+      </a>
+    </li>
+  </ul>
+</div>
+`;

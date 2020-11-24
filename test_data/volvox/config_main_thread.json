@@ -14,11 +14,8 @@
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {
-            "uri": "test_data/volvox/volvox.2bit"
+            "uri": "volvox.2bit"
           }
-        },
-        "rendering": {
-          "type": "DivSequenceRenderer"
         }
       },
       "refNameAliases": {

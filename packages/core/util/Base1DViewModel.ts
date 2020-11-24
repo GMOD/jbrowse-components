@@ -66,13 +66,32 @@ const Base1DView = types
     get minimumBlockWidth() {
       return 20
     },
-    bpToPx({ refName, coord }: { refName: string; coord: number }) {
+    /**
+     * calculates the Px at which coord is found.
+     *
+     * @param refName - string, refName of region
+     * @param coord - number, bp to be translated to Px
+     * @param regionNumber - number, index of displayedRegion in displayedRegions array
+     */
+    bpToPx({
+      refName,
+      coord,
+      regionNumber,
+    }: {
+      refName: string
+      coord: number
+      regionNumber?: number
+    }) {
       let offsetBp = 0
 
-      const index = self.displayedRegions.findIndex(r => {
+      const index = self.displayedRegions.findIndex((r, idx) => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          offsetBp += r.reversed ? r.end - coord : coord - r.start
-          return true
+          // using optional parameter ,regionNumber, as additional requirement to find
+          // a specific displayedRegion when many exist with the same refName
+          if (regionNumber ? regionNumber === idx : true) {
+            offsetBp += r.reversed ? r.end - coord : coord - r.start
+            return true
+          }
         }
         offsetBp += r.end - r.start
         return false
@@ -81,33 +100,59 @@ const Base1DView = types
       if (foundRegion) {
         return Math.round(offsetBp / self.bpPerPx)
       }
+
       return undefined
     },
 
     pxToBp(px: number) {
-      const bp = (self.offsetPx + px) * self.bpPerPx
       let bpSoFar = 0
-      let r = getSnapshot(self.displayedRegions[0])
+      const bp = (self.offsetPx + px) * self.bpPerPx
+      const n = self.displayedRegions.length
       if (bp < 0) {
+        const region = self.displayedRegions[0]
+        const offset = bp
         return {
-          ...r,
-          offset: bp,
+          ...getSnapshot(region),
+          oob: true,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
+          offset,
           index: 0,
         }
       }
-      for (let index = 0; index < self.displayedRegions.length; index += 1) {
-        r = self.displayedRegions[index]
-        if (r.end - r.start + bpSoFar > bp && bpSoFar <= bp) {
-          return { ...r, offset: bp - bpSoFar, index }
+      if (bp >= this.totalBp) {
+        const region = self.displayedRegions[n - 1]
+        const len = region.end - region.start
+        const offset = bp - this.totalBp + len
+        return {
+          ...getSnapshot(region),
+          oob: true,
+          offset,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
+          index: n - 1,
         }
-        bpSoFar += r.end - r.start
       }
-
-      return {
-        ...r,
-        offset: bp - bpSoFar,
-        index: self.displayedRegions.length - 1,
+      for (let index = 0; index < self.displayedRegions.length; index += 1) {
+        const region = self.displayedRegions[index]
+        const len = region.end - region.start
+        if (len + bpSoFar > bp && bpSoFar <= bp) {
+          const offset = bp - bpSoFar
+          return {
+            ...getSnapshot(region),
+            oob: false,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
+            index,
+          }
+        }
+        bpSoFar += len
       }
+      throw new Error('pxToBp failed to map to a region')
     },
   }))
   .views(self => ({
@@ -144,11 +189,12 @@ const Base1DView = types
     moveTo(start: BpOffset, end: BpOffset) {
       // find locations in the modellist
       let bpSoFar = 0
+
       if (start.index === end.index) {
         bpSoFar += end.offset - start.offset
       } else {
         const s = self.displayedRegions[start.index]
-        bpSoFar += (s.reversed ? s.start : s.end) - start.offset
+        bpSoFar += s.end - s.start - start.offset
         if (end.index - start.index >= 2) {
           for (let i = start.index + 1; i < end.index; i += 1) {
             bpSoFar +=
@@ -157,6 +203,12 @@ const Base1DView = types
         }
         bpSoFar += end.offset
       }
+      this.zoomTo(
+        bpSoFar /
+          (self.width -
+            self.interRegionPaddingWidth * (end.index - start.index)),
+      )
+
       let bpToStart = 0
       for (let i = 0; i < self.displayedRegions.length; i += 1) {
         const region = self.displayedRegions[i]
@@ -167,21 +219,19 @@ const Base1DView = types
           bpToStart += region.end - region.start
         }
       }
-      self.bpPerPx = bpSoFar / self.width
-      if (self.width > bpSoFar / self.bpPerPx) {
-        self.offsetPx = Math.round(
-          bpToStart / self.bpPerPx - (self.width - bpSoFar / self.bpPerPx) / 2,
-        )
-      } else {
-        self.offsetPx = Math.round(bpToStart / self.bpPerPx)
-      }
+      self.offsetPx =
+        Math.round(bpToStart / self.bpPerPx) +
+        self.interRegionPaddingWidth * start.index
     },
+
     zoomOut() {
       this.zoomTo(self.bpPerPx * 2)
     },
+
     zoomIn() {
       this.zoomTo(self.bpPerPx / 2)
     },
+
     zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
       if (bpPerPx === self.bpPerPx) return
@@ -195,6 +245,7 @@ const Base1DView = types
         self.maxOffset,
       )
     },
+
     scroll(distance: number) {
       const oldOffsetPx = self.offsetPx
       // the scroll is clamped to keep the linear genome on the main screen

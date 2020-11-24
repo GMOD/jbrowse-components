@@ -1,0 +1,114 @@
+{
+  "head": {
+    "link": [],
+    "vars": ["refName"]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_004353.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_004354.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_024511.2"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_024512.1"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NT_033777.3"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NT_033778.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NT_033779.5"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NT_037436.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_001665.2"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005100.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005101.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005102.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005103.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005104.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005105.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_005106.4"
+        }
+      },
+      {
+        "refName": {
+          "type": "literal",
+          "value": "NC_039323.1"
+        }
+      }
+    ]
+  }
+}

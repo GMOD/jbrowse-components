@@ -1,34 +1,35 @@
 {
-  "name": "@gmod/jbrowse-core",
-  "version": "0.0.1-beta.19",
+  "name": "@jbrowse/core",
+  "version": "1.0.0",
   "description": "JBrowse 2 core libraries used by plugins",
-  "license": "MIT",
-  "repository": "GMOD/jbrowse-components",
-  "main": "index.js",
-  "author": {
-    "name": "Robert Buels",
-    "email": "rbuels@gmail.com",
-    "url": "https://github.com/rbuels"
-  },
-  "engines": {
-    "node": ">=8"
-  },
-  "scripts": {
-    "test": "jest",
-    "coverage": "npm test -- --coverage",
-    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean",
-    "prepare": "npm run build",
-    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json CHANGELOG.md LICENSE dist/ && tsc",
-    "version": "standard-changelog && git add CHANGELOG.md",
-    "postpublish": "git push origin master --follow-tags"
-  },
   "keywords": [
+    "jbrowse",
+    "jbrowse2",
     "bionode",
     "biojs",
     "genomics"
   ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/core"
+  },
+  "author": "JBrowse Team",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/core",
+    "coverage": "yarn test --coverage",
+    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
+    "clean": "rimraf dist",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build",
+    "build": "NODE_ENV=production babel . --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md CHANGELOG.md ../../LICENSE dist/ && tsc",
+    "version": "standard-changelog && git add CHANGELOG.md",
+    "postpublish": "git push origin master --follow-tags"
+  },
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
     "@material-ui/icons": "^4.0.0",
@@ -36,6 +37,7 @@
     "base64-js": "^1.3.0",
     "canvas": "^2.5.0",
     "clsx": "^1.0.4",
+    "copy-to-clipboard": "^3.3.1",
     "deep-equal": "^1.1.0",
     "deepmerge": "^4.2.2",
     "dompurify": "^2.0.11",

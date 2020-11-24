@@ -1,7 +1,7 @@
 module.exports = api => {
   api.cache(false)
   return {
-    babelrcRoots: ['.', './packages/*'],
+    babelrcRoots: ['.', './packages/*', './products/*', './plugins/*'],
     comments: true,
     presets: [
       '@babel/preset-typescript',
@@ -16,7 +16,12 @@ module.exports = api => {
         },
       ],
     ],
-    ignore: ['./node_modules', './packages/*/node_modules'],
+    ignore: [
+      './node_modules',
+      './packages/*/node_modules',
+      './products/*/node_modules',
+      './plugins/*/node_modules',
+    ],
     plugins: [
       '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-proposal-class-properties',
@@ -28,23 +33,6 @@ module.exports = api => {
           useESModules: false,
         },
       ],
-    ],
-    overrides: [
-      {
-        test: /generator-jbrowse/,
-        presets: [
-          '@babel/preset-typescript',
-          'react-app',
-          [
-            '@babel/preset-env',
-            {
-              targets: {
-                node: 'current',
-              },
-            },
-          ],
-        ],
-      },
     ],
   }
 }

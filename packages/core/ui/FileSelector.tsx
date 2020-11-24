@@ -37,18 +37,22 @@ const FileLocationEditor = observer(
     setLocation: Function
     name?: string
     description?: string
+    localFileAllowed?: boolean
   }) => {
-    const { location, name, description } = props
-    const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
+    const { location, name, description, localFileAllowed = isElectron } = props
+    const fileOrUrl =
+      (location && isUriLocation(location)) || !localFileAllowed
+        ? 'url'
+        : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     const handleFileOrUrlChange = (
-      event: React.MouseEvent<HTMLElement>,
+      _event: unknown,
       newValue: string | null,
     ) => {
       if (newValue === 'url') {
         setFileOrUrlState('url')
-      } else {
+      } else if (localFileAllowed) {
         setFileOrUrlState('file')
       }
     }
@@ -62,17 +66,14 @@ const FileLocationEditor = observer(
             <ToggleButtonGroup
               value={fileOrUrlState}
               exclusive
-              size="small"
               onChange={handleFileOrUrlChange}
               aria-label="file or url picker"
             >
-              <ToggleButton
-                value="file"
-                aria-label="local file"
-                disabled={!isElectron}
-              >
-                File
-              </ToggleButton>
+              {localFileAllowed ? (
+                <ToggleButton value="file" aria-label="local file">
+                  File
+                </ToggleButton>
+              ) : null}
               <ToggleButton value="url" aria-label="url">
                 Url
               </ToggleButton>
@@ -104,7 +105,6 @@ const UrlChooser = (props: {
   }
   return (
     <TextField
-      margin="dense"
       fullWidth
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={handleChange}
@@ -134,7 +134,7 @@ const LocalFileChooser = observer(
 
     return (
       <div style={{ position: 'relative' }}>
-        <Button size="small" variant="outlined" component="label">
+        <Button variant="outlined" component="label">
           Choose File
           <input
             type="file"

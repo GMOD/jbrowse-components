@@ -1,0 +1,189 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Root MST model adds menus 1`] = `
+Array [
+  Object {
+    "label": "File",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AddIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "New session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
+        "onClick": [Function],
+      },
+    ],
+  },
+]
+`;
+
+exports[`Root MST model adds menus 2`] = `
+Array [
+  Object {
+    "label": "File",
+    "menuItems": Array [
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AddIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "New session",
+        "onClick": [Function],
+      },
+      Object {
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "displayName": "AppsIcon",
+          "muiName": "SvgIcon",
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Return to splash screen",
+        "onClick": [Function],
+      },
+    ],
+  },
+  Object {
+    "label": "Second Menu",
+    "menuItems": Array [
+      Object {
+        "label": "First Menu Item",
+        "onClick": [Function],
+      },
+      Object {
+        "label": "Second Menu Item",
+        "onClick": [Function],
+      },
+      Object {
+        "label": "First Sub Menu",
+        "subMenu": Array [
+          Object {
+            "label": "First Sub Menu Item",
+            "onClick": [Function],
+          },
+          Object {
+            "label": "Second Sub Menu Item",
+            "onClick": [Function],
+          },
+        ],
+      },
+    ],
+  },
+  Object {
+    "label": "Third Menu",
+    "menuItems": Array [],
+  },
+]
+`;
+
+exports[`Root MST model adds track and connection configs to an assembly 1`] = `
+Object {
+  "aliases": Array [
+    "assemblyA",
+  ],
+  "name": "assembly1",
+  "sequence": Object {
+    "adapter": Object {
+      "features": Array [
+        Object {
+          "end": 10,
+          "refName": "ctgA",
+          "seq": "cattgttgcg",
+          "start": 0,
+          "uniqueId": "firstId",
+        },
+      ],
+      "type": "FromConfigAdapter",
+    },
+    "displays": Array [
+      Object {
+        "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
+        "renderer": Object {
+          "type": "DivSequenceRenderer",
+        },
+        "type": "LinearReferenceSequenceDisplay",
+      },
+    ],
+    "trackId": "sequenceConfigId",
+    "type": "ReferenceSequenceTrack",
+  },
+}
+`;
+
+exports[`Root MST model adds track and connection configs to an assembly 2`] = `
+Object {
+  "adapter": Object {
+    "type": "BamAdapter",
+  },
+  "displays": Array [
+    Object {
+      "displayId": "trackId0-LinearBasicDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearBasicDisplay",
+    },
+    Object {
+      "displayId": "trackId0-LinearFilteringDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearFilteringDisplay",
+    },
+    Object {
+      "displayId": "trackId0-LinearLollipopDisplay",
+      "renderer": Object {
+        "type": "SvgFeatureRenderer",
+      },
+      "type": "LinearLollipopDisplay",
+    },
+  ],
+  "trackId": "trackId0",
+  "type": "FeatureTrack",
+}
+`;
+
+exports[`Root MST model adds track and connection configs to an assembly 3`] = `
+Object {
+  "connectionId": "connectionId0",
+  "type": "JBrowse1Connection",
+}
+`;
+
+exports[`Root MST model creates with defaults 1`] = `
+Object {
+  "rpc": Object {
+    "defaultDriver": "MainThreadRpcDriver",
+  },
+}
+`;

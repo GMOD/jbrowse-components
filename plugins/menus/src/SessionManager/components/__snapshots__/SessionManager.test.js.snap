@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<SessionManager /> renders 1`] = `
+<div
+  class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+>
+  <ul
+    class="MuiList-root MuiList-padding MuiList-subheader"
+  >
+    <li
+      class="MuiListSubheader-root MuiListSubheader-sticky MuiListSubheader-gutters"
+    >
+      Saved sessions
+    </li>
+    <p
+      class="MuiTypography-root makeStyles-message MuiTypography-body1"
+    >
+      No saved sessions found
+    </p>
+  </ul>
+</div>
+`;

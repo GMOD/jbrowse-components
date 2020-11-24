@@ -3,6 +3,7 @@ import {
   parseLocString,
   ParsedLocString,
   compareLocStrings,
+  stringify,
 } from './index'
 
 describe('parseLocString', () => {
@@ -113,5 +114,27 @@ describe('compareLocStrings', () => {
         ),
       ).toEqual(output)
     })
+  })
+})
+
+describe('test stringify', () => {
+  const testStringify = {
+    refName: 'ctgA',
+    start: 5000,
+    end: 20000,
+    reversed: false,
+    assemblyName: 'volvox',
+    oob: false,
+    offset: 0,
+    coord: 5001,
+    index: 0,
+  }
+  test('stringify refName: bp', () => {
+    expect(
+      stringify({
+        coord: testStringify.offset,
+        refName: testStringify.refName,
+      }),
+    ).toBe('ctgA:0')
   })
 })
