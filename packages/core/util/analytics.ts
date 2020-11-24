@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getSnapshot } from 'mobx-state-tree'
+import { readConfObject } from '../configuration'
 
 interface AnalyticsObj {
   [key: string]: any
@@ -17,6 +18,10 @@ export async function writeAWSAnalytics(
   const url =
     'https://mdvkjocq3e.execute-api.us-east-1.amazonaws.com/default/jbrowse-analytics'
 
+  const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
+    (track: any) => (readConfObject(track, 'assemblyNames') || []).length > 1,
+  ).length
+
   // stats to be recorded in db
   const stats: AnalyticsObj = {
     ver: rootModel.version,
@@ -27,9 +32,7 @@ export async function writeAWSAnalytics(
       ? getSnapshot(rootModel.jbrowse.plugins)
       : '',
     'open-views': rootModel?.session?.views.length || undefined,
-    'synteny-tracks-count': rootModel.jbrowse.tracks.filter(
-      (track: Track) => Object.keys(track.assemblyNames).length > 1,
-    ).length,
+    'synteny-tracks-count': multiAssemblyTracks,
     'saved-sessions-count': Object.keys(localStorage).filter(name =>
       name.includes('localSaved-'),
     ).length,
