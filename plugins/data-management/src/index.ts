@@ -25,12 +25,14 @@ import {
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
 import AssemblyManager from './AssemblyManager'
+import SetDefaultSession from './SetDefaultSession'
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
 
   exports = {
     AssemblyManager,
+    SetDefaultSession,
   }
 
   install(pluginManager: PluginManager) {
