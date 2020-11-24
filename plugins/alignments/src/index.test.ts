@@ -1,5 +1,5 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import SVG from '@gmod/jbrowse-plugin-svg'
+import PluginManager from '@jbrowse/core/PluginManager'
+import SVG from '@jbrowse/plugin-svg'
 import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 

@@ -1,5 +1,5 @@
 import { types, Instance } from 'mobx-state-tree'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 import baseModel from '../LinearComparativeView/model'
 

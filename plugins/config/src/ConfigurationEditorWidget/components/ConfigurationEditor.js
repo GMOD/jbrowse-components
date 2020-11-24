@@ -3,9 +3,9 @@ import {
   getTypeNamesFromExplicitlyTypedUnion,
   isConfigurationSchemaType,
   isConfigurationSlotType,
-} from '@gmod/jbrowse-core/configuration'
+} from '@jbrowse/core/configuration'
 
-import { iterMap } from '@gmod/jbrowse-core/util'
+import { iterMap } from '@jbrowse/core/util'
 import FormGroup from '@material-ui/core/FormGroup'
 import FormLabel from '@material-ui/core/FormLabel'
 import { makeStyles } from '@material-ui/core/styles'

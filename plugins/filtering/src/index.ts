@@ -1,22 +1,27 @@
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
-  configSchemaFactory as filteringTrackConfigSchemaFactory,
-  modelFactory as filteringTrackModelFactory,
-} from './FilteringTrack'
+  configSchemaFactory as linearFilteringDisplayConfigSchemaFactory,
+  modelFactory as linearFilteringDisplayModelFactory,
+  ReactComponent as LinearFilteringDisplayReactComponent,
+} from './LinearFilteringDisplay'
 
 export default class extends Plugin {
   name = 'FilteringTrackPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addTrackType(() => {
-      const configSchema = filteringTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        name: 'FilteringTrack',
-        compatibleView: 'LinearGenomeView',
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearFilteringDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearFilteringDisplay',
         configSchema,
-        stateModel: filteringTrackModelFactory(configSchema),
+        stateModel: linearFilteringDisplayModelFactory(configSchema),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: LinearFilteringDisplayReactComponent,
       })
     })
   }

@@ -1,20 +1,21 @@
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import Color from 'color'
 import ServerSideRendererType, {
   RenderArgsDeserialized,
   RenderArgs,
   ResultsDeserialized,
   ResultsSerialized,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { Region } from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 interface HicFeature {
   bin1: number
@@ -67,6 +68,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const w = res / (bpPerPx * Math.sqrt(2))
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
+    const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
       let maxScore = 0
@@ -81,7 +83,11 @@ export default class HicRenderer extends ServerSideRendererType {
       ctx.rotate(-Math.PI / 4)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
-        ctx.fillStyle = `rgba(255,0,0,${counts / (maxScore / 20)}`
+        ctx.fillStyle = readConfObject(config, 'color', [
+          counts,
+          maxScore,
+          baseColor,
+        ])
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }
     }
@@ -139,11 +145,7 @@ export default class HicRenderer extends ServerSideRendererType {
     return features as any
   }
 
-  serializeResultsInWorker(
-    result: { html: string },
-    features: Map<string, Feature>,
-    args: RenderArgsDeserialized,
-  ): ResultsSerialized {
+  serializeResultsInWorker(result: { html: string }): ResultsSerialized {
     const serialized = ({ ...result } as unknown) as ResultsSerialized
     return serialized
   }

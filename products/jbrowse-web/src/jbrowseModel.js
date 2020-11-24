@@ -1,14 +1,15 @@
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+} from '@jbrowse/core/configuration'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
   getSnapshot,
   resolveIdentifier,
   types,
 } from 'mobx-state-tree'
+import { toJS } from 'mobx'
 
 // poke some things for testing (this stuff will eventually be removed)
 window.getSnapshot = getSnapshot
@@ -19,7 +20,7 @@ export default function JBrowseWeb(
   Session,
   assemblyConfigSchemasType,
 ) {
-  return types
+  const JBrowseModel = types
     .model('JBrowseWeb', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
@@ -28,14 +29,16 @@ export default function JBrowseWeb(
           type: 'number',
           defaultValue: 2,
         },
-        useUrlSession: {
-          type: 'boolean',
-          defaultValue: true,
+        shareURL: {
+          type: 'string',
+          defaultValue:
+            'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
-        useLocalStorage: {
+        disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
+        theme: { type: 'frozen', defaultValue: {} },
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),
@@ -46,9 +49,8 @@ export default function JBrowseWeb(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       defaultSession: types.optional(types.frozen(Session), {
-        name: `New Session`,
+        name: `New session`,
       }),
-      savedSessions: types.array(types.frozen(Session)),
     })
     .actions(self => ({
       afterCreate() {
@@ -66,26 +68,6 @@ export default function JBrowseWeb(
           }
         })
       },
-      addSavedSession(sessionSnapshot) {
-        const length = self.savedSessions.push(sessionSnapshot)
-        return self.savedSessions[length - 1]
-      },
-      removeSavedSession(sessionSnapshot) {
-        self.savedSessions.remove(sessionSnapshot)
-      },
-      replaceSavedSession(oldName, snapshot) {
-        const savedSessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === oldName,
-        )
-        self.savedSessions[savedSessionIndex] = snapshot
-      },
-      updateSavedSession(sessionSnapshot) {
-        const sessionIndex = self.savedSessions.findIndex(
-          savedSession => savedSession.name === sessionSnapshot.name,
-        )
-        if (sessionIndex === -1) self.savedSessions.push(sessionSnapshot)
-        else self.savedSessions[sessionIndex] = sessionSnapshot
-      },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
         if (!name) {
@@ -95,8 +77,23 @@ export default function JBrowseWeb(
         if (assembly) {
           return assembly
         }
-        const length = self.assemblies.push(assemblyConf)
+        const length = self.assemblies.push({
+          ...assemblyConf,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-${Date.now()}`,
+            ...(assemblyConf.sequence || {}),
+          },
+        })
         return self.assemblies[length - 1]
+      },
+      removeAssemblyConf(assemblyName) {
+        const toRemove = self.assemblies.find(
+          assembly => assembly.name === assemblyName,
+        )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
@@ -108,17 +105,58 @@ export default function JBrowseWeb(
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
+      addDisplayConf(trackId, displayConf) {
+        const { type } = displayConf
+        if (!type) {
+          throw new Error(`unknown display type ${type}`)
+        }
+        const track = self.tracks.find(t => t.trackId === trackId)
+        if (!track) {
+          throw new Error(`could not find track with id ${trackId}`)
+        }
+        return track.addDisplayConf(displayConf)
+      },
       addConnectionConf(connectionConf) {
         const { type } = connectionConf
         if (!type) throw new Error(`unknown connection type ${type}`)
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
+
+      deleteConnectionConf(configuration) {
+        const idx = self.connections.findIndex(
+          conn => conn.id === configuration.id,
+        )
+        if (idx === -1) {
+          return undefined
+        }
+        return self.connections.splice(idx, 1)
+      },
+
+      deleteTrackConf(trackConf) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
+
+        return self.tracks.splice(idx, 1)
+      },
+      setDefaultSessionConf(sessionConf) {
+        let newDefault
+        if (getParent(self).session.name === sessionConf.name) {
+          newDefault = getSnapshot(sessionConf)
+        } else {
+          newDefault = toJS(sessionConf)
+        }
+        const { name } = newDefault
+        if (!name) {
+          throw new Error(`unable to set default session to ${name}`)
+        }
+        self.defaultSession = newDefault
+      },
     }))
     .views(self => ({
-      get savedSessionNames() {
-        return self.savedSessions.map(sessionSnap => sessionSnap.name)
-      },
       get assemblyNames() {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
@@ -126,4 +164,17 @@ export default function JBrowseWeb(
         return getParent(self).rpcManager
       },
     }))
+
+  return types.snapshotProcessor(JBrowseModel, {
+    postProcessor(snapshot) {
+      function removeAttr(obj, attr) {
+        for (const prop in obj) {
+          if (prop === attr) delete obj[prop]
+          else if (typeof obj[prop] === 'object') removeAttr(obj[prop])
+        }
+      }
+      removeAttr(snapshot, 'baseUri')
+      return snapshot
+    },
+  })
 }

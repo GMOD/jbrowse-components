@@ -1,19 +1,28 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import crypto from 'crypto'
-import * as path from 'path'
-import * as express from 'express'
+import boxen from 'boxen'
+import chalk from 'chalk'
+import os from 'os'
+import express from 'express'
+import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
+
+const fsPromises = fs.promises
 
 function isValidPort(port: number) {
   return port > 0 && port < 65535
 }
 
+// generate a string of random alphanumeric characters to serve as admin key
 function generateKey() {
   return crypto.randomBytes(5).toString('hex')
 }
 
 export default class AdminServer extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Start up a small admin server for JBrowse configuration'
 
   static examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
@@ -26,7 +35,9 @@ export default class AdminServer extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     skipCheck: flags.boolean({
       description: "Don't check whether or not you are in a JBrowse directory",
@@ -37,9 +48,9 @@ export default class AdminServer extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(AdminServer)
 
-    if (!runFlags.skipCheck) {
-      await this.checkLocation(path.dirname(runFlags.target))
-    }
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
 
     // check if the config file exists, if none exists write default
     const defaultConfig: Config = {
@@ -52,14 +63,11 @@ export default class AdminServer extends JBrowseCommand {
       tracks: [],
     }
 
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(runFlags.target)
-      this.debug(`Found existing config file ${runFlags.target}`)
-    } catch (error) {
-      this.debug('No existing config file found, creating default empty config')
-      configContentsJson = JSON.stringify(defaultConfig, null, 4)
-      await this.writeJsonConfig(configContentsJson)
+    if (fs.existsSync(this.target)) {
+      this.debug(`Found existing config file ${this.target}`)
+    } else {
+      this.debug(`Creating config file ${this.target}`)
+      await this.writeJsonFile('./config.json', defaultConfig)
     }
 
     // start server with admin key in URL query string
@@ -71,9 +79,9 @@ export default class AdminServer extends JBrowseCommand {
         port = parseInt(runFlags.port, 10)
       }
     }
-    // @ts-ignore
-    const app = express.default ? express.default() : express()
+    const app = express()
     app.use(express.static('.'))
+    app.use(cors())
 
     // POST route to save config
     app.use(express.json())
@@ -85,10 +93,7 @@ export default class AdminServer extends JBrowseCommand {
         if (req.body.adminKey === adminKey) {
           this.debug('Admin key matches')
           try {
-            await fsPromises.writeFile(
-              runFlags.target,
-              JSON.stringify(req.body.config, null, 4),
-            )
+            await this.writeJsonFile(this.target, req.body.config)
             res.send('Config written to disk')
           } catch {
             res.status(500).send('Could not write config file')
@@ -115,8 +120,48 @@ export default class AdminServer extends JBrowseCommand {
 
     const adminKey = generateKey()
     const server = app.listen(port)
+    // Server message adapted from `serve`
+    // https://github.com/vercel/serve/blob/f65ac293c20058f809769a4dbf4951acc21df6df/bin/serve.js
+    const details = server.address()
+    let localAddress = ''
+    let networkAddress = ''
+
+    if (typeof details === 'string') {
+      localAddress = details
+    } else if (details && typeof details === 'object') {
+      const address = details.address === '::' ? 'localhost' : details.address
+      const ip = getNetworkAddress()
+
+      localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
+      networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+    }
+    let message = chalk.green(
+      'Now serving JBrowse\nNavigate to the below URL to configure',
+    )
+    if (localAddress) {
+      const prefix = networkAddress ? '- ' : ''
+      const space = networkAddress ? '            ' : '  '
+
+      message += `\n\n${chalk.bold(`${prefix}Local:`)}${space}${localAddress}`
+    }
+    if (networkAddress) {
+      message += `\n${chalk.bold('- On Your Network:')}  ${networkAddress}`
+    }
+    this.log(boxen(message, { padding: 1, borderColor: 'blue', margin: 1 }))
     this.log(
-      `Navigate to http://localhost:${port}?adminKey=${adminKey} to configure your JBrowse installation graphically.`,
+      `If you are running yarn start you can launch http://localhost:3000?adminKey=${adminKey}&adminServer=http://localhost:${port}/updateConfig`,
     )
   }
+}
+
+function getNetworkAddress() {
+  for (const network of Object.values(os.networkInterfaces())) {
+    for (const networkInterface of network || []) {
+      const { address, family, internal } = networkInterface
+      if (family === 'IPv4' && !internal) {
+        return address
+      }
+    }
+  }
+  throw new Error('Could not determine IP address')
 }

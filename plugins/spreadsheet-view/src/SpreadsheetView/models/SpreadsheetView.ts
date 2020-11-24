@@ -1,8 +1,8 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+import { readConfObject } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { MenuItem } from '@jbrowse/core/ui'
 import { SnapshotIn, Instance } from 'mobx-state-tree'
-import { InstanceOfModelReturnedBy } from '@gmod/jbrowse-core/util'
+import { getSession, InstanceOfModelReturnedBy } from '@jbrowse/core/util'
 import DoneIcon from '@material-ui/icons/Done'
 import Spreadsheet from './Spreadsheet'
 import ImportWizard from './ImportWizard'
@@ -24,7 +24,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     label: 'Toggle select',
     icon: DoneIcon,
     onClick(
-      view: unknown,
+      _view: unknown,
       spreadsheet: Instance<ReturnType<typeof Spreadsheet>>,
     ) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
@@ -38,8 +38,8 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
 export default (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { mobx } = lib
-  const { types, getParent, getRoot, getEnv } = lib['mobx-state-tree']
-  const BaseViewModel = lib['@gmod/jbrowse-core/BaseViewModel']
+  const { types, getParent, getEnv } = lib['mobx-state-tree']
+  const { BaseViewModel } = lib['@jbrowse/core/pluggableElementTypes/models']
 
   const SpreadsheetModel = load(Spreadsheet)
   const ImportWizardModel = load(ImportWizard)
@@ -103,7 +103,7 @@ export default (pluginManager: PluginManager) => {
       get assembly() {
         if (self.spreadsheet && self.spreadsheet.assemblyName) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const assemblies = getRoot(self).jbrowse.assemblies as any[]
+          const assemblies = getSession(self).assemblies as any[]
           const assembly = (assemblies || []).find(
             asm =>
               readConfObject(asm, 'name') === self.spreadsheet?.assemblyName,

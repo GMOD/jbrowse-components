@@ -1,12 +1,12 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { PrerenderedCanvas } from '@gmod/jbrowse-core/ui'
+import { Region } from '@jbrowse/core/util/types'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import React from 'react'
-import { BlockBasedTrackModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 function HicRendering(props: {
   blockKey: string
-  trackModel: BlockBasedTrackModel
+  displayModel: BaseLinearDisplayModel
   width: number
   height: number
   regions: Region[]

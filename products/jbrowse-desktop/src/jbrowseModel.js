@@ -1,8 +1,8 @@
 import {
   ConfigurationSchema,
   readConfObject,
-} from '@gmod/jbrowse-core/configuration'
-import RpcManager from '@gmod/jbrowse-core/rpc/RpcManager'
+} from '@jbrowse/core/configuration'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
   getSnapshot,
@@ -33,6 +33,10 @@ export default function JBrowseDesktop(
           defaultValue: true,
         },
         useLocalStorage: {
+          type: 'boolean',
+          defaultValue: false,
+        },
+        disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
@@ -85,8 +89,23 @@ export default function JBrowseDesktop(
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
-        const length = self.assemblies.push(assemblyConf)
+        const length = self.assemblies.push({
+          ...assemblyConf,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-${Date.now()}`,
+            ...(assemblyConf.sequence || {}),
+          },
+        })
         return self.assemblies[length - 1]
+      },
+      removeAssemblyConf(assemblyName) {
+        const toRemove = self.assemblies.find(
+          assembly => assembly.name === assemblyName,
+        )
+        if (toRemove) {
+          self.assemblies.remove(toRemove)
+        }
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
@@ -99,6 +118,23 @@ export default function JBrowseDesktop(
         if (!type) throw new Error(`unknown connection type ${type}`)
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
+      },
+
+      deleteConnectionConf(configuration) {
+        const idx = self.connections.findIndex(
+          conn => conn.id === configuration.id,
+        )
+        return self.connections.splice(idx, 1)
+      },
+
+      deleteTrackConf(trackConf) {
+        const { trackId } = trackConf
+        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+        if (idx === -1) {
+          return undefined
+        }
+
+        return self.tracks.splice(idx, 1)
       },
     }))
     .views(self => ({

@@ -3,9 +3,9 @@ import breakpointSplitViewFromTableRowFactory from './breakpointSplitViewFromTab
 
 function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const { jbrequire } = pluginManager
-  const { getConf } = jbrequire('@gmod/jbrowse-core/configuration')
-  const { getContainingView, getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { resolveIdentifier } = jbrequire('mobx-state-tree')
+  // const { getConf } = jbrequire('@jbrowse/core/configuration')
+  const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
+  // const { resolveIdentifier } = jbrequire('mobx-state-tree')
 
   const session = getSession(chordTrack)
   session.setSelection(feature)
@@ -13,23 +13,26 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
   const viewType = pluginManager.getViewType('BreakpointSplitView')
   const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
 
-  // open any evidence tracks defined in configRelationships for this track
-  const tracks = getConf(chordTrack, 'configRelationships')
-    .map(entry => {
-      const type = pluginManager.pluggableConfigSchemaType('track')
-      const trackConfig = resolveIdentifier(type, session, entry.target)
-      return trackConfig
-        ? {
-            type: trackConfig.type,
-            height: 100,
-            configuration: trackConfig.trackId,
-            selectedRendering: '',
-          }
-        : null
-    })
-    .filter(f => !!f)
-  viewSnapshot.views[0].tracks = tracks
-  viewSnapshot.views[1].tracks = tracks
+  // disabling this for now since there isn't a way to set configRelationships
+  // on the generated chord display from the SV inspector
+
+  // // open any evidence tracks defined in configRelationships for this track
+  // const tracks = getConf(chordTrack, 'configRelationships')
+  //   .map(entry => {
+  //     const type = pluginManager.pluggableConfigSchemaType('track')
+  //     const trackConfig = resolveIdentifier(type, session, entry.target)
+  //     return trackConfig
+  //       ? {
+  //           type: trackConfig.type,
+  //           height: 100,
+  //           configuration: trackConfig.trackId,
+  //           selectedRendering: '',
+  //         }
+  //       : null
+  //   })
+  //   .filter(f => !!f)
+  // viewSnapshot.views[0].tracks = tracks
+  // viewSnapshot.views[1].tracks = tracks
 
   // try to center the offsetPx
   viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
@@ -45,9 +48,11 @@ export default pluginManager => {
   const { types, getParent, addDisposer, getSnapshot } = jbrequire(
     'mobx-state-tree',
   )
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
-  const { getSession } = jbrequire('@gmod/jbrowse-core/util')
-  const { readConfObject } = jbrequire('@gmod/jbrowse-core/configuration')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
+  const { getSession } = jbrequire('@jbrowse/core/util')
+  const { readConfObject } = jbrequire('@jbrowse/core/configuration')
 
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
   const CircularViewType = pluginManager.getViewType('CircularView')
@@ -149,13 +154,19 @@ export default pluginManager => {
 
       get featuresCircularTrackConfiguration() {
         const configuration = {
-          type: 'StructuralVariantChordTrack',
-          trackId: `sv-inspector-sv-chord-track-${self.id}`,
+          type: 'VariantTrack',
+          trackId: `sv-inspector-variant-track-${self.id}`,
           name: 'features from tabular data',
-          renderer: { type: 'StructuralVariantChordRenderer' },
           adapter: self.featuresAdapterConfigSnapshot,
           assemblyNames: [self.assemblyName],
-          onChordClick: defaultOnChordClick.toString(),
+          displays: [
+            {
+              type: 'ChordVariantDisplay',
+              displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
+              onChordClick: defaultOnChordClick.toString(),
+              renderer: { type: 'StructuralVariantChordRenderer' },
+            },
+          ],
         }
         return configuration
       },
@@ -243,7 +254,7 @@ export default pluginManager => {
                             JSON.parse(JSON.stringify(displayedRegions)),
                           )
                         })
-                        .catch(e => console.error(e))
+                        .catch(e => circularView.setError(e))
                     }
                   } else {
                     circularView.setDisplayedRegions(assemblyRegions)
@@ -272,13 +283,13 @@ export default pluginManager => {
               // hide any visible tracks
               if (self.circularView.tracks.length) {
                 self.circularView.tracks.forEach(track => {
-                  self.circularView.hideTrack(track.configuration)
+                  self.circularView.hideTrack(track.configuration.trackId)
                 })
               }
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
-                self.circularView.showTrack(generatedTrackConf, {
+                self.circularView.addTrackConf(generatedTrackConf, {
                   assemblyName,
                 })
               }

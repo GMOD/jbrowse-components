@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
 import Typography from '@material-ui/core/Typography'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import Divider from '@material-ui/core/Divider'
@@ -62,7 +62,7 @@ const coreRenderedDetails = [
 ]
 
 interface BaseCardProps {
-  title: string
+  title?: string
   expanded?: boolean
 }
 
@@ -70,16 +70,16 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title, expanded = true } = props
   return (
-    <ExpansionPanel style={{ marginTop: '4px' }} defaultExpanded={expanded}>
-      <ExpansionPanelSummary
+    <Accordion style={{ marginTop: '4px' }} defaultExpanded={expanded}>
+      <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
         <Typography variant="button"> {title}</Typography>
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.expansionPanelDetails}>
+      </AccordionSummary>
+      <AccordionDetails className={classes.expansionPanelDetails}>
         {children}
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+      </AccordionDetails>
+    </Accordion>
   )
 }
 
@@ -110,7 +110,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
         const strValue = String(value)
-        return value ? (
+        return value !== null && value !== undefined ? (
           <div className={classes.field} key={key}>
             <div className={classes.fieldName}>{key}</div>
             <div className={classes.fieldValue}>
@@ -156,7 +156,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
 
   const SimpleValue = ({ name, value }: { name: string; value: any }) => {
     const description = descriptions && descriptions[name]
-    return (
+    return value ? (
       <div style={{ display: 'flex' }}>
         {description ? (
           <Tooltip title={description} placement="left">
@@ -167,7 +167,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
         )}
         <div className={classes.fieldValue}>{formatter(value)}</div>
       </div>
-    )
+    ) : null
   }
   const ArrayValue = ({ name, value }: { name: string; value: any[] }) => {
     const description = descriptions && descriptions[name]

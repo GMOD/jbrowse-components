@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ConfigSchema from '../configSchema'
 
 export { default as ReactComponent } from '../WiggleRendering'

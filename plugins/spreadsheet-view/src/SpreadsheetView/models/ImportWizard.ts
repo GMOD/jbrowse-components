@@ -1,5 +1,6 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getSession } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { unzip } from '@gmod/bgzf-filehandle'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
@@ -10,8 +11,8 @@ const IMPORT_SIZE_LIMIT = 300000
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
   const { types, getParent, getRoot } = lib['mobx-state-tree']
-  const { openLocation } = lib['@gmod/jbrowse-core/util/io']
-  const { readConfObject } = lib['@gmod/jbrowse-core/configuration']
+  const { openLocation } = lib['@jbrowse/core/util/io']
+  const { readConfObject } = lib['@jbrowse/core/configuration']
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
@@ -30,18 +31,17 @@ export default (pluginManager: PluginManager) => {
 
   return types
     .model('SpreadsheetImportWizard', {
-      fileSource: types.frozen(),
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
       loading: false,
-
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
-
       selectedAssemblyIdx: 0,
-      error: types.maybe(types.model({ message: '', stackTrace: '' })),
     })
     .volatile(() => ({
       fileTypes,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fileSource: undefined as any,
+      error: undefined as Error | undefined,
     }))
     .views(self => ({
       get isReadyToOpen() {
@@ -66,6 +66,19 @@ export default (pluginManager: PluginManager) => {
         }
         return undefined
       },
+
+      get fileName() {
+        return (
+          self.fileSource.uri ||
+          self.fileSource.localPath ||
+          (self.fileSource.blob && self.fileSource.blob.name)
+        )
+      },
+
+      get requiresUnzip() {
+        return this.fileName.endsWith('gz')
+      },
+
       isValidRefName(refName: string, assemblyName?: string) {
         return getSession(self).assemblyManager.isValidRefName(
           refName,
@@ -80,10 +93,7 @@ export default (pluginManager: PluginManager) => {
 
         if (self.fileSource) {
           // try to autodetect the file type, ignore errors
-          const name =
-            self.fileSource.uri ||
-            self.fileSource.localPath ||
-            (self.fileSource.blob && self.fileSource.blob.name)
+          const name = self.fileName
 
           if (name) {
             const match = fileTypesRegexp.exec(name)
@@ -117,10 +127,7 @@ export default (pluginManager: PluginManager) => {
       setError(error: Error) {
         console.error(error)
         self.loading = false
-        self.error = {
-          message: String(error),
-          stackTrace: String(error.stack || ''),
-        }
+        self.error = error
       },
 
       setLoaded() {
@@ -145,6 +152,7 @@ export default (pluginManager: PluginManager) => {
           if (self.loading)
             throw new Error('cannot import, load already in progress')
           self.loading = true
+
           const filehandle = openLocation(self.fileSource)
           filehandle
             .stat()
@@ -157,6 +165,9 @@ export default (pluginManager: PluginManager) => {
                 )
             })
             .then(() => filehandle.readFile())
+            .then(buffer => {
+              return self.requiresUnzip ? unzip(buffer) : buffer
+            })
             .then(buffer => typeParser(buffer as Buffer, self))
             .then(spreadsheet => {
               this.setLoaded()

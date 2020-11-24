@@ -28,6 +28,7 @@ export * from './aborting'
 export * from './when'
 
 if (!Object.fromEntries) {
+  // @ts-ignore
   fromEntries.shim()
 }
 
@@ -773,3 +774,6 @@ export function minmax(a: number, b: number) {
 export function stringify(offset: { coord: number; refName: string }) {
   return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
 }
+
+export const isElectron =
+  typeof window !== 'undefined' && Boolean(window.electron)

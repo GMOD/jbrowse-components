@@ -1,6 +1,7 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import { Menu } from '@gmod/jbrowse-core/ui'
-import { getSession, getContainingView } from '@gmod/jbrowse-core/util'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { Menu } from '@jbrowse/core/ui'
+import { getSession, getContainingView } from '@jbrowse/core/util'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import IconButton from '@material-ui/core/IconButton'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -14,7 +15,6 @@ import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
-import { BaseTrackStateModel } from '../../BasicTrack/baseTrackModel'
 import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -50,19 +50,14 @@ const useStyles = makeStyles(theme => ({
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const TrackLabel = React.forwardRef(
-  (
-    props: {
-      track: Instance<BaseTrackStateModel>
-      className?: string
-    },
-    ref,
-  ) => {
+  (props: { track: BaseTrackModel; className?: string }, ref) => {
     const classes = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
-    const view = (getContainingView(track) as unknown) as LGV
+    const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
+    const trackId = getConf(track, 'trackId')
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
       setAnchorEl(event.currentTarget)
@@ -111,17 +106,17 @@ const TrackLabel = React.forwardRef(
             className={classes.dragHandle}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            data-testid={`dragHandle-${view.id}-${getConf(track, 'trackId')}`}
+            data-testid={`dragHandle-${view.id}-${trackId}`}
           >
-            <DragIcon fontSize="small" className={classes.dragHandleIcon} />
+            <DragIcon className={classes.dragHandleIcon} />
           </span>
           <IconButton
-            onClick={() => view.hideTrack(trackConf)}
+            onClick={() => view.hideTrack(trackId)}
             className={classes.iconButton}
             title="close this track"
             color="secondary"
           >
-            <CloseIcon fontSize="small" />
+            <CloseIcon />
           </IconButton>
           <Typography
             variant="body1"
@@ -139,7 +134,7 @@ const TrackLabel = React.forwardRef(
             data-testid="track_menu_icon"
             disabled={!track.trackMenuItems.length}
           >
-            <MoreVertIcon fontSize="small" />
+            <MoreVertIcon />
           </IconButton>
         </Paper>
         <Menu
@@ -148,12 +143,11 @@ const TrackLabel = React.forwardRef(
           open={Boolean(anchorEl)}
           onClose={handleClose}
           menuItems={[
-            // @ts-ignore
-            ...(session.getTrackActionMenuItems &&
-              // @ts-ignore
-              session.getTrackActionMenuItems(trackConf)),
+            ...(session.getTrackActionMenuItems
+              ? session.getTrackActionMenuItems(trackConf)
+              : []),
             ...track.trackMenuItems,
-          ]}
+          ].sort((a, b) => (b.priority || 0) - (a.priority || 0))}
         />
       </>
     )

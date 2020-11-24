@@ -1,7 +1,10 @@
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
-import * as path from 'path'
+import fs from 'fs'
+
+import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
+
+const fsPromises = fs.promises
 
 interface DefaultSession {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,6 +26,9 @@ interface Config {
 }
 
 export default class SetDefaultSession extends JBrowseCommand {
+  // @ts-ignore
+  private target: string
+
   static description = 'Set a default session with views and tracks'
 
   static examples = [
@@ -64,7 +70,9 @@ export default class SetDefaultSession extends JBrowseCommand {
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to',
-      default: './config.json',
+    }),
+    out: flags.string({
+      description: 'synonym for target',
     }),
     help: flags.help({
       char: 'h',
@@ -73,39 +81,11 @@ export default class SetDefaultSession extends JBrowseCommand {
 
   async run() {
     const { flags: runFlags } = this.parse(SetDefaultSession)
-    const {
-      session,
-      name,
-      tracks,
-      currentSession,
-      view,
-      viewId,
-      target,
-    } = runFlags
-
-    await this.checkLocation(path.dirname(target))
-
-    let configContentsJson
-    try {
-      configContentsJson = await this.readJsonConfig(target)
-      this.debug(`Found existing config file ${target}`)
-    } catch (error) {
-      this.error(
-        'No existing config file found, run add-assembly first to bootstrap config',
-        {
-          exit: 100,
-        },
-      )
-    }
-
-    let configContents: Config
-    try {
-      configContents = { ...JSON.parse(configContentsJson) }
-    } catch (error) {
-      this.error('Could not parse existing config file', { exit: 110 })
-    }
-
-    if (!configContents.defaultSession) configContents.defaultSession = {}
+    const { session, name, tracks, currentSession, view, viewId } = runFlags
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await fsPromises.lstat(output)).isDirectory()
+    this.target = isDir ? `${output}/config.json` : output
+    const configContents: Config = await this.readJsonFile(this.target)
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
@@ -118,7 +98,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     const foundTracks: Track[] = []
-    const existingDefaultSession = configContents.defaultSession.length > 0
+    const existingDefaultSession = configContents.defaultSession?.length > 0
 
     // must provide default session, or view, or tracks + view
     if (!session && !view && !tracks) {
@@ -171,18 +151,15 @@ export default class SetDefaultSession extends JBrowseCommand {
         ],
       }
     }
-    this.debug(`Writing configuration to file ${target}`)
-    await fsPromises.writeFile(
-      target,
-      JSON.stringify(configContents, undefined, 2),
-    )
+    this.debug(`Writing configuration to file ${this.target}`)
+    await this.writeJsonFile(this.target, configContents)
 
     this.log(
       `${
         existingDefaultSession ? 'Overwrote' : 'Added'
-      } defaultSession "${name}" ${
-        existingDefaultSession ? 'in' : 'to'
-      } ${target}`,
+      } defaultSession "${name}" ${existingDefaultSession ? 'in' : 'to'} ${
+        this.target
+      }`,
     )
   }
 
@@ -197,7 +174,7 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     try {
-      const { defaultSession } = JSON.parse(defaultSessionJson)
+      const { defaultSession } = parseJSON(defaultSessionJson)
       return defaultSession
     } catch (error) {
       return this.error('Could not parse the given default session file', {

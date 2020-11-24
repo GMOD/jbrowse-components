@@ -1,17 +1,15 @@
-import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import ViewComfyIcon from '@material-ui/icons/ViewComfy'
+import SpreadsheetViewTypeFactory from './SpreadsheetView/SpreadsheetViewType'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./SpreadsheetView/SpreadsheetViewType')),
+      pluginManager.jbrequire(SpreadsheetViewTypeFactory),
     )
   }
 

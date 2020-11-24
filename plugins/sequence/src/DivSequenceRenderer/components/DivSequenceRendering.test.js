@@ -1,29 +1,20 @@
 import React from 'react'
 import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import Rendering, { featuresToSequence } from './DivSequenceRendering'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { ThemeProvider } from '@material-ui/core'
+import DivSequenceRendering from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
 
-test('features to sequence function', () => {
-  expect(
-    featuresToSequence(
-      { start: 20, end: 30 },
-      new Map([
-        [
-          'one',
-          new SimpleFeature({
-            uniqueId: 'foo',
-            start: 10,
-            end: 25,
-            seq: '123456789012345',
-          }),
-        ],
-      ]),
-    ),
-  ).toEqual('12345     ')
-})
+function Rendering(props) {
+  return (
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DivSequenceRendering {...props} />
+    </ThemeProvider>
+  )
+}
 
 class ErrorCatcher extends React.Component {
   constructor(props) {
@@ -86,7 +77,7 @@ describe('<DivSequenceRendering />', () => {
       />,
     )
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with one, zoomed way out', () => {
@@ -113,7 +104,7 @@ describe('<DivSequenceRendering />', () => {
       />,
     )
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with one feature with no seq, zoomed in, should throw', () => {
@@ -134,7 +125,7 @@ describe('<DivSequenceRendering />', () => {
       </ErrorCatcher>,
     )
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with one feature with an incorrect seq, zoomed in, should throw', () => {
@@ -163,7 +154,7 @@ describe('<DivSequenceRendering />', () => {
       </ErrorCatcher>,
     )
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
   })
 
   it('renders with one feature with a correct seq, zoomed in, should render nicely', () => {
@@ -190,6 +181,33 @@ describe('<DivSequenceRendering />', () => {
       />,
     )
 
-    expect(container.firstChild).toMatchSnapshot()
+    expect(container).toMatchSnapshot()
+  })
+
+  it('renders with one feature reversed with a correct seq, zoomed in, should render nicely', () => {
+    const { container } = render(
+      <Rendering
+        width={500}
+        height={500}
+        regions={[{ refName: 'zonk', start: 0, end: 1000, reversed: true }]}
+        features={
+          new Map([
+            [
+              'one',
+              new SimpleFeature({
+                uniqueId: 'one',
+                start: 1,
+                end: 10,
+                seq: 'ABCDEFGHI',
+              }),
+            ],
+          ])
+        }
+        config={DivRenderingConfigSchema.create({})}
+        bpPerPx={0.05}
+      />,
+    )
+
+    expect(container).toMatchSnapshot()
   })
 })

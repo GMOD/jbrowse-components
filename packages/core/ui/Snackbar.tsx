@@ -53,10 +53,7 @@ function MessageSnackbar({
     }
   }, [latestMessage, snackbarMessage])
 
-  const handleClose = (
-    event: React.SyntheticEvent | MouseEvent,
-    reason?: string,
-  ) => {
+  const handleClose = (_event: unknown, reason?: string) => {
     if (reason === 'clickaway') {
       return
     }
@@ -67,7 +64,7 @@ function MessageSnackbar({
   const [message, level] = snackbarMessage || []
   return (
     <Snackbar
-      open={open}
+      open={open && !!message}
       onClose={handleClose}
       action={
         <IconButton aria-label="close" color="inherit" onClick={handleClose}>

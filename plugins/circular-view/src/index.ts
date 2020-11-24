@@ -1,13 +1,8 @@
-import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-} from '@gmod/jbrowse-core/util'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import Plugin from '@jbrowse/core/Plugin'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
 import CircularViewFactory from './CircularView'
-import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
-import StructuralVariantChordTrackFactory from './StructuralVariantChordTrack'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
@@ -15,14 +10,6 @@ export default class CircularViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(CircularViewFactory),
-    )
-
-    pluginManager.addTrackType(() =>
-      pluginManager.jbrequire(StructuralVariantChordTrackFactory),
-    )
-
-    pluginManager.addRendererType(() =>
-      pluginManager.jbrequire(StructuralVariantChordRendererFactory),
     )
   }
 
@@ -39,4 +26,8 @@ export default class CircularViewPlugin extends Plugin {
   }
 }
 
-export { default as ChordTrack } from './ChordTrack'
+export {
+  BaseChordDisplayModel,
+  baseChordDisplayConfig,
+  BaseChordDisplayComponentFactory,
+} from './BaseChordDisplay'

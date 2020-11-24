@@ -1,6 +1,6 @@
-import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
-import PrecomputedLayout from '@gmod/jbrowse-core/util/layouts/PrecomputedLayout'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import React from 'react'
 import { render } from '@testing-library/react'
 import SvgRendererConfigSchema from '../configSchema'
@@ -395,7 +395,7 @@ test('svg selected', () => {
         height={500}
         blockKey="block1"
         region={{ refName: 'zonk', start: 0, end: 1000 }}
-        trackModel={{
+        displayModel={{
           blockLayoutFeatures,
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',

@@ -1,42 +1,38 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util/types'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-} from '@gmod/jbrowse-plugin-wiggle'
+import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
 import { Instance, getSnapshot } from 'mobx-state-tree'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
 import MyConfigSchemaF from './configSchema'
 
+interface Mismatch {
+  start: number
+  length: number
+  type: string
+  base: string
+  altbase?: string
+  seq?: string
+  cliplen?: number
+}
+
+export interface StatsRegion {
+  refName: string
+  start: number
+  end: number
+  bpPerPx?: number
+}
+
 export default (pluginManager: PluginManager) => {
   const MyConfigSchema = MyConfigSchemaF(pluginManager)
-
-  interface Mismatch {
-    start: number
-    length: number
-    type: string
-    base: string
-    altbase?: string
-    seq?: string
-    cliplen?: number
-  }
-
-  interface StatsRegion {
-    refName: string
-    start: number
-    end: number
-    bpPerPx?: number
-  }
 
   function generateInfoList(table: NestedFrequencyTable) {
     const infoList = []
@@ -74,11 +70,12 @@ export default (pluginManager: PluginManager) => {
 
     public constructor(
       config: Instance<typeof MyConfigSchema>,
-      getSubAdapter: getSubAdapterType,
+      getSubAdapter?: getSubAdapterType,
     ) {
       super(config)
 
-      const { dataAdapter } = getSubAdapter(getSnapshot(config.subadapter))
+      const dataAdapter = getSubAdapter?.(getSnapshot(config.subadapter))
+        .dataAdapter
 
       if (dataAdapter instanceof BaseFeatureDataAdapter) {
         this.subadapter = dataAdapter

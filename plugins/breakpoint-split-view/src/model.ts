@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MenuItem } from '@gmod/jbrowse-core/ui'
-import CompositeMap from '@gmod/jbrowse-core/util/compositeMap'
-import { LinearGenomeViewStateModel } from '@gmod/jbrowse-plugin-linear-genome-view'
+import { MenuItem } from '@jbrowse/core/ui'
+import CompositeMap from '@jbrowse/core/util/compositeMap'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import intersection from 'array-intersection'
 import isObject from 'is-object'
 
@@ -27,7 +27,9 @@ export default function stateModelFactory(pluginManager: any) {
     addDisposer,
     getPath,
   } = jbrequire('mobx-state-tree')
-  const BaseViewModel = jbrequire('@gmod/jbrowse-core/BaseViewModel')
+  const { BaseViewModel } = jbrequire(
+    '@jbrowse/core/pluggableElementTypes/models',
+  )
 
   const minHeight = 40
   const defaultHeight = 400
@@ -108,7 +110,7 @@ export default function stateModelFactory(pluginManager: any) {
       getTrackFeatures(trackConfigId: string) {
         const tracks = this.getMatchedTracks(trackConfigId)
         return new CompositeMap<string, Feature>(
-          (tracks || []).map(t => t.features),
+          (tracks || []).map(t => t.displays[0].features),
         )
       },
 
@@ -213,7 +215,7 @@ export default function stateModelFactory(pluginManager: any) {
           c.map((feature: Feature) => {
             let layout: LayoutRecord | undefined
             const level = tracks.findIndex(track => {
-              layout = track.layoutFeatures.get(feature.id())
+              layout = track.displays[0].layoutFeatures.get(feature.id())
               return layout
             })
             return {
@@ -241,7 +243,17 @@ export default function stateModelFactory(pluginManager: any) {
               args: any[]
             }) => {
               if (self.linkViews) {
-                if (['horizontalScroll', 'zoomTo'].includes(name)) {
+                const actions = [
+                  'horizontalScroll',
+                  'zoomTo',
+                  'setScaleFactor',
+                  'showTrack',
+                  'toggleTrack',
+                  'hideTrack',
+                  'setTrackLabels',
+                  'toggleCenterLine',
+                ]
+                if (actions.includes(name) && path) {
                   this.onSubviewAction(name, path, args)
                 }
               }

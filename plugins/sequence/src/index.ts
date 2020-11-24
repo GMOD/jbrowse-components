@@ -1,12 +1,19 @@
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import ServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import { Region } from '@jbrowse/core/util/types'
+import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import {
   AdapterClass as BgzipFastaAdapterClass,
   configSchema as bgzipFastaAdapterConfigSchema,
 } from './BgzipFastaAdapter'
+import {
+  AdapterClass as ChromSizesAdapterClass,
+  configSchema as chromSizesAdapterConfigSchema,
+} from './ChromSizesAdapter'
 import {
   configSchema as divSequenceRendererConfigSchema,
   ReactComponent as DivSequenceRendererReactComponent,
@@ -16,21 +23,25 @@ import {
   configSchema as indexedFastaAdapterConfigSchema,
 } from './IndexedFastaAdapter'
 import {
-  AdapterClass as ChromSizesAdapterClass,
-  configSchema as chromSizesAdapterConfigSchema,
-} from './ChromSizesAdapter'
-import {
-  configSchemaFactory as referenceSequenceTrackConfigSchemaFactory,
-  modelFactory as referenceSequenceTrackModelFactory,
-} from './ReferenceSequenceTrack'
-import {
-  configSchemaFactory as sequenceTrackConfigSchemaFactory,
-  modelFactory as sequenceTrackModelFactory,
-} from './SequenceTrack'
+  configSchema as linearReferenceSequenceDisplayConfigSchema,
+  modelFactory as linearReferenceSequenceDisplayModelFactory,
+} from './LinearReferenceSequenceDisplay'
 import {
   AdapterClass as TwoBitAdapterClass,
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
+import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
+
+/* adjust in both directions */
+class DivSequenceRenderer extends ServerSideRendererType {
+  getExpandedRegion(region: Region) {
+    return {
+      ...region,
+      start: Math.max(region.start - 3, 0),
+      end: region.end + 3,
+    }
+  }
+}
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'
@@ -73,37 +84,36 @@ export default class SequencePlugin extends Plugin {
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = sequenceTrackConfigSchemaFactory(
-        pluginManager,
-        'SequenceTrack',
-      )
-      return new TrackType({
-        name: 'SequenceTrack',
-        compatibleView: 'LinearGenomeView',
-        configSchema,
-        stateModel: sequenceTrackModelFactory(configSchema, 'SequenceTrack'),
-      })
-    })
+      const configSchema = createReferenceSeqTrackConfig(pluginManager)
 
-    pluginManager.addTrackType(() => {
-      const configSchema = referenceSequenceTrackConfigSchemaFactory(
-        pluginManager,
-        'ReferenceSequenceTrack',
-      )
       return new TrackType({
         name: 'ReferenceSequenceTrack',
-        compatibleView: 'LinearGenomeView',
         configSchema,
-        stateModel: referenceSequenceTrackModelFactory(
-          configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
           'ReferenceSequenceTrack',
+          configSchema,
         ),
       })
     })
 
+    pluginManager.addDisplayType(() => {
+      const stateModel = linearReferenceSequenceDisplayModelFactory(
+        linearReferenceSequenceDisplayConfigSchema,
+      )
+      return {
+        name: 'LinearReferenceSequenceDisplay',
+        configSchema: linearReferenceSequenceDisplayConfigSchema,
+        stateModel,
+        trackType: 'ReferenceSequenceTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      }
+    })
+
     pluginManager.addRendererType(
       () =>
-        new ServerSideRendererType({
+        new DivSequenceRenderer({
           name: 'DivSequenceRenderer',
           ReactComponent: DivSequenceRendererReactComponent,
           configSchema: divSequenceRendererConfigSchema,

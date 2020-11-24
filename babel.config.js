@@ -34,22 +34,5 @@ module.exports = api => {
         },
       ],
     ],
-    overrides: [
-      {
-        test: /generator-jbrowse/,
-        presets: [
-          '@babel/preset-typescript',
-          'react-app',
-          [
-            '@babel/preset-env',
-            {
-              targets: {
-                node: 'current',
-              },
-            },
-          ],
-        ],
-      },
-    ],
   }
 }

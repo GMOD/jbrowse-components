@@ -1,16 +1,16 @@
 import NCListStore from '@gmod/nclist'
-import { openUrl } from '@gmod/jbrowse-core/util/io'
-import { Region } from '@gmod/jbrowse-core/util/types'
+import { openUrl } from '@jbrowse/core/util/io'
+import { Region } from '@jbrowse/core/util/types'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import { checkAbortSignal } from '@gmod/jbrowse-core/util'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { checkAbortSignal } from '@jbrowse/core/util'
 
 import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
 import MyConfigSchema from './configSchema'
 
@@ -28,8 +28,13 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
     this.nclist = new NCListStore({
       baseUrl: '',
-      urlTemplate: rootUrlTemplate,
-      readFile: (url: string) => openUrl(url).readFile(),
+      urlTemplate: rootUrlTemplate.uri,
+      readFile: (url: string) =>
+        openUrl(
+          rootUrlTemplate.baseUri
+            ? new URL(url, rootUrlTemplate.baseUri).toString()
+            : url,
+        ).readFile(),
     })
   }
 

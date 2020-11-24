@@ -2,18 +2,18 @@
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
-} from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import { getSubAdapterType } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { Instance } from 'mobx-state-tree'
-import { Region, FileLocation } from '@gmod/jbrowse-core/util/types'
+import { Region, FileLocation } from '@jbrowse/core/util/types'
 import { GenericFilehandle } from 'generic-filehandle'
 import { tap } from 'rxjs/operators'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
-import { ObservableCreate } from '@gmod/jbrowse-core/util/rxjs'
-import SimpleFeature, { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { openLocation } from '@jbrowse/core/util/io'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import QuickLRU from '@gmod/jbrowse-core/util/QuickLRU'
+import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import MyConfigSchema from './configSchema'
 
 type RowToGeneNames = {
@@ -29,9 +29,7 @@ interface GeneNameToRows {
 export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   private cache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 1 }),
-    fill: (data: BaseOptions, signal?: AbortSignal) => {
-      return this.setup({ ...data, signal })
-    },
+    fill: () => this.setup(),
   })
 
   private initialized = false
@@ -50,7 +48,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: Instance<typeof MyConfigSchema>,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
     const subadapters = readConfObject(config, 'subadapters')
@@ -59,14 +57,18 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       readConfObject(config, 'mcscanAnchorsLocation') as FileLocation,
     )
 
-    this.subadapters = subadapters.map(
-      (subadapter: any) => getSubAdapter(subadapter).dataAdapter,
-    )
+    this.subadapters = subadapters.map((subadapter: any) => {
+      const dataAdapter = getSubAdapter?.(subadapter).dataAdapter
+      if (dataAdapter instanceof BaseFeatureDataAdapter) {
+        return dataAdapter
+      }
+      throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
+    })
 
     this.assemblyNames = assemblyNames
   }
 
-  async setup(opts?: BaseOptions) {
+  async setup() {
     if (!this.initialized) {
       const text = (await this.mcscanAnchorsLocation.readFile('utf8')) as string
       text.split('\n').forEach((line: string, index: number) => {
@@ -94,7 +96,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     return true
   }
 
-  async getRefNames(opts?: BaseOptions) {
+  async getRefNames() {
     // we cannot determine this accurately
     return []
   }

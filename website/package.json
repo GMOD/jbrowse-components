@@ -1,0 +1,38 @@
+{
+  "name": "@jbrowse/website",
+  "version": "0.0.1-beta.17",
+  "license": "Apache-2.0",
+  "homepage": ".",
+  "scripts": {
+    "prestart": "npm run make",
+    "start": "docusaurus start",
+    "prebuild": "npm run make",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
+    "make": "cd docs; make md; cd -"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^2.0.0-alpha.68",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.68",
+    "@material-ui/core": "^4.9.13",
+    "clsx": "^1.1.1",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "private": true
+}

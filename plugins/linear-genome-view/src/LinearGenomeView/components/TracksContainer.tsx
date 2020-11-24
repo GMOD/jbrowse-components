@@ -137,6 +137,12 @@ function TracksContainer({
           delta.current = 0
         }, 300)
       } else {
+        // this is needed to stop the event from triggering "back button
+        // action" on MacOSX etc.  but is a heuristic to avoid preventing the
+        // inner-track scroll behavior
+        if (Math.abs(event.pixelX) > Math.abs(2 * event.pixelY)) {
+          origEvent.preventDefault()
+        }
         delta.current += event.pixelX
         if (!scheduled.current) {
           // use rAF to make it so multiple event handlers aren't fired per-frame

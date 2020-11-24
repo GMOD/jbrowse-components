@@ -1,6 +1,6 @@
-import { stringToFunction } from '@gmod/jbrowse-core/util/functionStrings'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import { getSession } from '@gmod/jbrowse-core/util'
+import { stringToFunction } from '@jbrowse/core/util/functionStrings'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { getSession } from '@jbrowse/core/util'
 import { SnapshotIn, Instance, addDisposer } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import ColumnDataTypes from './ColumnDataTypes'
@@ -70,6 +70,15 @@ export default (pluginManager: PluginManager) => {
       isLoaded: false,
     }))
     .views(self => ({
+      get initialized() {
+        const session = getSession(self)
+        const name = self.assemblyName
+        if (name) {
+          const asm = session.assemblyManager.get(name)
+          return asm && asm.initialized
+        }
+        return true
+      },
       get hideRowSelection() {
         // just delegates to parent
         return getParent(self).hideRowSelection
@@ -124,7 +133,7 @@ export default (pluginManager: PluginManager) => {
       },
 
       setLoaded(flag: boolean) {
-        self.isLoaded = true
+        self.isLoaded = flag
       },
 
       setRowMenuPosition(newPosition: RowMenuPosition) {

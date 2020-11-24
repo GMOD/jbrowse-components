@@ -1,19 +1,20 @@
 import React from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
-import { BaseFeatureDataAdapter } from '@gmod/jbrowse-core/data_adapters/BaseAdapter'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import ComparativeServerSideRendererType from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
 import MyConfig from './configSchema'
 
 type Dim = Instance<typeof Dotplot1DView>
+
+const { parseCigar } = MismatchParser
 
 export interface DotplotRenderProps {
   dataAdapter: BaseFeatureDataAdapter
@@ -148,7 +149,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     })
 
     const element = React.createElement(
-      // @ts-ignore
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,

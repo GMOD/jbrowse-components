@@ -1,23 +1,24 @@
 import deepEqual from 'deep-equal'
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import BoxRendererType, {
   LayoutSession,
-} from '@gmod/jbrowse-core/pluggableElementTypes/renderers/BoxRendererType'
-import GranularRectLayout from '@gmod/jbrowse-core/util/layouts/GranularRectLayout'
-import MultiLayout from '@gmod/jbrowse-core/util/layouts/MultiLayout'
-import SerializableFilterChain from '@gmod/jbrowse-core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-import { bpSpanPx, iterMap } from '@gmod/jbrowse-core/util'
-import { Region } from '@gmod/jbrowse-core/util/types'
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
+import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
-} from '@gmod/jbrowse-core/util/offscreenCanvasPonyfill'
+} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
-import { BaseLayout } from '@gmod/jbrowse-core/util/layouts/BaseLayout'
-
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { RenderArgsDeserialized } from '@gmod/jbrowse-core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import { ThemeOptions } from '@material-ui/core'
 import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
@@ -31,11 +32,13 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
-  sortObject: {
-    position: number
-    by: string
-  }
   showSoftClip: boolean
+  sortedBy: {
+    type: string
+    pos: number
+    refName: string
+  }
+  theme: ThemeOptions
 }
 
 interface LayoutRecord {
@@ -54,7 +57,7 @@ interface PileupLayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortedBy: unknown
   showSoftClip: unknown
 }
 
@@ -63,14 +66,14 @@ interface CachedPileupLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
-  sortObject: unknown
+  sortedBy: unknown
   showSoftClip: unknown
 }
 
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
 class PileupLayoutSession extends LayoutSession {
-  sortObject: unknown
+  sortedBy: unknown
 
   showSoftClip: unknown
 
@@ -82,7 +85,7 @@ class PileupLayoutSession extends LayoutSession {
   cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
-      deepEqual(this.sortObject, cachedLayout.sortObject) &&
+      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
       deepEqual(this.showSoftClip, cachedLayout.showSoftClip)
     )
   }
@@ -95,7 +98,7 @@ class PileupLayoutSession extends LayoutSession {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
-        sortObject: this.sortObject,
+        sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
       }
     }
@@ -187,10 +190,12 @@ export default class PileupRenderer extends BoxRendererType {
       config,
       regions,
       bpPerPx,
-      sortObject,
+      sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      theme: configTheme,
     } = props
+    const theme = createJBrowseTheme(configTheme)
     const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)
@@ -203,8 +208,8 @@ export default class PileupRenderer extends BoxRendererType {
     const w = Math.max(minFeatWidth, pxPerBp)
 
     const sortedFeatures =
-      sortObject && sortObject.by && region.start === sortObject.position
-        ? sortFeature(features, sortObject)
+      sortedBy && sortedBy.type && region.start === sortedBy.pos
+        ? sortFeature(features, sortedBy)
         : null
 
     const featureMap = sortedFeatures || features
@@ -247,11 +252,11 @@ export default class PileupRenderer extends BoxRendererType {
 
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {
-          A: '#00bf00',
-          C: '#4747ff',
-          G: '#ffa500',
-          T: '#f00',
-          deletion: 'grey',
+          A: theme.palette.bases.A.main,
+          C: theme.palette.bases.C.main,
+          G: theme.palette.bases.G.main,
+          T: theme.palette.bases.T.main,
+          deletion: '#808080', // gray
         }
         for (let i = 0; i < mismatches.length; i += 1) {
           const mismatch = mismatches[i]
@@ -268,17 +273,18 @@ export default class PileupRenderer extends BoxRendererType {
           )
 
           if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
-            ctx.fillStyle =
+            const baseColor =
               colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ] || '#888'
+            ctx.fillStyle = baseColor
             ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
             if (
               mismatchWidthPx >= charSize.width &&
               heightPx >= charSize.height - 5
             ) {
-              ctx.fillStyle = mismatch.type === 'deletion' ? 'white' : 'black'
+              ctx.fillStyle = theme.palette.getContrastText(baseColor)
               ctx.fillText(
                 mismatch.base,
                 mismatchLeftPx + (mismatchWidthPx - charSize.width) / 2 + 1,

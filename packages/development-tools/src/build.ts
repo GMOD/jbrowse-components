@@ -1,9 +1,8 @@
 import path from 'path'
 import { pascalCase } from 'change-case'
-import webpack from 'webpack'
 import CopyPlugin from 'copy-webpack-plugin'
 
-import ReExportsList from '@gmod/jbrowse-core/ReExports/list'
+import ReExportsList from '@jbrowse/core/ReExports/list'
 
 export interface PackageJson {
   name: string
@@ -66,11 +65,6 @@ const getStyleLoaders = (cssOptions: any, preProcessor?: string) => {
 }
 
 export function baseJBrowsePluginWebpackConfig(
-  myWebpack: {
-    optimize: {
-      LimitChunkCountPlugin: typeof webpack.optimize.LimitChunkCountPlugin
-    }
-  },
   buildDir: string,
   packageJson: PackageJson,
 ) {
@@ -78,7 +72,7 @@ export function baseJBrowsePluginWebpackConfig(
 
   const pluginName =
     pluginConfiguration?.name ||
-    pascalCase(packageJson.name.replace('@gmod/jbrowse-plugin-', ''))
+    pascalCase(packageJson.name.replace('@jbrowse/plugin-', ''))
 
   const distDir = path.resolve(buildDir, 'dist')
 
@@ -86,7 +80,6 @@ export function baseJBrowsePluginWebpackConfig(
     mode: process.env.NODE_ENV || 'production',
     entry: './src/index.ts',
     devtool: process.env.NODE_ENV === 'development' ? 'source-map' : false,
-    // @ts-ignore
     output: {
       path: distDir,
       filename: `plugin.js`,

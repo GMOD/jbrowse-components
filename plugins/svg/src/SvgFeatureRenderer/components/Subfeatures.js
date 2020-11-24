@@ -1,4 +1,4 @@
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'

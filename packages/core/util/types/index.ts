@@ -52,10 +52,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
   selection?: unknown
-  duplicateCurrentSession(): void
+  duplicateCurrentSession?(): void
   notify(message: string, level?: NotificationLevel): void
   assemblyManager: AssemblyManager
   version: string
+  getTrackActionMenuItems?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -126,8 +127,8 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 export interface TrackViewModel extends AbstractViewModel {
-  showTrack(configuration: AnyConfigurationModel): void
-  hideTrack(configuration: AnyConfigurationModel): void
+  showTrack(trackId: string): void
+  hideTrack(trackId: string): void
 }
 export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
   return (
@@ -142,7 +143,7 @@ export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
 export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
-  setDefaultSession(): void
+  setDefaultSession?(): void
   adminMode?: boolean
 }
 
@@ -182,7 +183,7 @@ export interface Region extends SnapshotIn<typeof MUIRegion> {}
 export interface LocalPathLocation
   extends SnapshotOut<typeof MULocalPathLocation> {}
 
-export interface UriLocation extends SnapshotOut<typeof MUUriLocation> {}
+export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export interface BlobLocation {
   blob: Blob

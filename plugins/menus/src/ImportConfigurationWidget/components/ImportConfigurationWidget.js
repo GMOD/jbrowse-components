@@ -1,9 +1,9 @@
-import { getSession } from '@gmod/jbrowse-core/util'
-import { openLocation } from '@gmod/jbrowse-core/util/io'
+import { getSession } from '@jbrowse/core/util'
+import { openLocation } from '@jbrowse/core/util/io'
 import Button from '@material-ui/core/Button'
-import ExpansionPanel from '@material-ui/core/ExpansionPanel'
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails'
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
 import IconButton from '@material-ui/core/IconButton'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -234,8 +234,8 @@ function ImportConfiguration(props) {
             <ErrorIcon color="error" fontSize="large" />
           </div>
           <div>
-            <ExpansionPanel style={{ marginTop: 4 }}>
-              <ExpansionPanelSummary
+            <Accordion style={{ marginTop: 4 }}>
+              <AccordionSummary
                 expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
               >
                 <Typography color="error" align="center">
@@ -243,15 +243,15 @@ function ImportConfiguration(props) {
                     ? 'Import error: File does not appear to be a valid configuration'
                     : 'Import error: One of the files is likely an invalid configuration. Try importing them one at a time.'}
                 </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>
+              </AccordionSummary>
+              <AccordionDetails>
                 <div style={{ overflowX: 'auto' }}>
                   <Typography color="error" align="center">
                     {errorMessage}
                   </Typography>
                 </div>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
+              </AccordionDetails>
+            </Accordion>
           </div>
         </>
       ) : null}

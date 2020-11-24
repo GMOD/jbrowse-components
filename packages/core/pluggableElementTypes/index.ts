@@ -3,6 +3,7 @@ import ConnectionType from './ConnectionType'
 import RendererType from './renderers/RendererType'
 import WidgetType from './WidgetType'
 import TrackType from './TrackType'
+import DisplayType from './DisplayType'
 import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
 
@@ -12,6 +13,7 @@ export type PluggableElementType =
   | RendererType
   | WidgetType
   | TrackType
+  | DisplayType
   | ViewType
   | RpcMethodType
 
@@ -21,5 +23,6 @@ export type PluggableElementMember =
   | keyof RendererType
   | keyof WidgetType
   | keyof TrackType
+  | keyof DisplayType
   | keyof ViewType
   | keyof RpcMethodType

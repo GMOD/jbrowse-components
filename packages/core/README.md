@@ -1,6 +1,6 @@
 # jbrowse-core
 
-[![NPM version](https://img.shields.io/npm/v/@gmod/jbrowse-core.svg?style=flat-square)](https://npmjs.org/package/@gmod/jbrowse-core)
+[![NPM version](https://img.shields.io/npm/v/@jbrowse/core.svg?style=flat-square)](https://npmjs.org/package/@jbrowse/core)
 [![Build Status](https://img.shields.io/travis/GMOD/jbrowse-components/master.svg?style=flat-square)](https://travis-ci.org/GMOD/jbrowse-components) [![Coverage Status](https://img.shields.io/codecov/c/github/GMOD/jbrowse-components/master.svg?style=flat-square)](https://codecov.io/gh/GMOD/jbrowse-components/branch/master)
 
 Core JBrowse libraries used by most JBrowse plugins.
@@ -15,4 +15,4 @@ This package was written with funding from the [NHGRI](http://genome.gov) as par
 
 ## License
 
-MIT © [Robert Buels](https://github.com/rbuels)
+Apache-2.0 © Evolutionary Software Foundation

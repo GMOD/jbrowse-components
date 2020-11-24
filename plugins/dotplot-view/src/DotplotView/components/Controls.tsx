@@ -7,12 +7,12 @@ import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import IconButton from '@material-ui/core/IconButton'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import { observer } from 'mobx-react'
-import { isSessionModelWithWidgets, getSession } from '@gmod/jbrowse-core/util'
+import { isSessionModelWithWidgets, getSession } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
 export default () => {
@@ -47,7 +47,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowLeft fontSize="small" />
+          <ArrowLeft />
         </IconButton>
 
         <IconButton
@@ -58,7 +58,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowRight fontSize="small" />
+          <ArrowRight />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -68,7 +68,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowDown fontSize="small" />
+          <ArrowDown />
         </IconButton>
         <IconButton
           onClick={() => {
@@ -78,7 +78,7 @@ export default () => {
           title="left"
           color="secondary"
         >
-          <ArrowUp fontSize="small" />
+          <ArrowUp />
         </IconButton>
         <IconButton
           onClick={model.zoomOutButton}
@@ -99,7 +99,7 @@ export default () => {
 
         <ToggleButton
           onClick={model.activateTrackSelector}
-          title="select tracks"
+          title="Open track selector"
           selected={
             isSessionModelWithWidgets(session) &&
             session.visibleWidget &&

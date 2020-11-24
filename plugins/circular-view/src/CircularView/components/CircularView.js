@@ -4,7 +4,7 @@ import RotateLeft from '@material-ui/icons/RotateLeft'
 import RotateRight from '@material-ui/icons/RotateRight'
 import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
-import LineStyle from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import RulerFactory from './Ruler'
 
 const dragHandleHeight = 3
@@ -27,8 +27,8 @@ export default pluginManager => {
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
-  const { ResizeHandle } = jbrequire('@gmod/jbrowse-core/ui')
-  const { assembleLocString, getSession } = jbrequire('@gmod/jbrowse-core/util')
+  const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
+  const { assembleLocString, getSession } = jbrequire('@jbrowse/core/util')
   const Ruler = jbrequire(RulerFactory)
 
   const useStyles = makeStyles(theme => {
@@ -87,10 +87,11 @@ export default pluginManager => {
         </>
         <>
           {model.tracks.map(track => {
+            const display = track.displays[0]
             return (
-              <track.RenderingComponent
-                key={track.id}
-                track={track}
+              <display.RenderingComponent
+                key={display.id}
+                display={display}
                 view={model}
               />
             )
@@ -114,7 +115,7 @@ export default pluginManager => {
           }
           color="secondary"
         >
-          <ZoomOut fontSize="small" />
+          <ZoomOut />
         </IconButton>
 
         <IconButton
@@ -124,7 +125,7 @@ export default pluginManager => {
           disabled={!showingFigure || model.atMinBpPerPx}
           color="secondary"
         >
-          <ZoomIn fontSize="small" />
+          <ZoomIn />
         </IconButton>
 
         <IconButton
@@ -134,7 +135,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <RotateLeft fontSize="small" />
+          <RotateLeft />
         </IconButton>
 
         <IconButton
@@ -144,7 +145,7 @@ export default pluginManager => {
           disabled={!showingFigure}
           color="secondary"
         >
-          <RotateRight fontSize="small" />
+          <RotateRight />
         </IconButton>
 
         <IconButton
@@ -158,17 +159,13 @@ export default pluginManager => {
           disabled={model.tooSmallToLock}
           color="secondary"
         >
-          {model.lockedFitToWindow ? (
-            <LockOutline fontSize="small" />
-          ) : (
-            <LockOpen fontSize="small" />
-          )}
+          {model.lockedFitToWindow ? <LockOutline /> : <LockOpen />}
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
           <ToggleButton
             onClick={model.activateTrackSelector}
-            title="select tracks"
+            title="Open track selector"
             selected={
               session.visibleWidget &&
               session.visibleWidget.id === 'hierarchicalTrackSelector' &&
@@ -178,7 +175,7 @@ export default pluginManager => {
             data-testid="circular_track_select"
             color="secondary"
           >
-            <LineStyle fontSize="small" />
+            <TrackSelectorIcon />
           </ToggleButton>
         )}
       </div>

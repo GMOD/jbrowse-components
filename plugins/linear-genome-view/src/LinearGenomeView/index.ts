@@ -1,11 +1,8 @@
-import { getConf, readConfObject } from '@gmod/jbrowse-core/configuration'
-import BaseViewModel from '@gmod/jbrowse-core/BaseViewModel'
-import { Region } from '@gmod/jbrowse-core/util/types'
-import {
-  ElementId,
-  Region as MUIRegion,
-} from '@gmod/jbrowse-core/util/types/mst'
-import { MenuItem } from '@gmod/jbrowse-core/ui'
+import { getConf } from '@jbrowse/core/configuration'
+import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { Region } from '@jbrowse/core/util/types'
+import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   clamp,
@@ -16,21 +13,29 @@ import {
   parseLocString,
   springAnimate,
   isSessionModelWithWidgets,
-} from '@gmod/jbrowse-core/util'
-import { BlockSet } from '@gmod/jbrowse-core/util/blockTypes'
-import calculateDynamicBlocks from '@gmod/jbrowse-core/util/calculateDynamicBlocks'
-import calculateStaticBlocks from '@gmod/jbrowse-core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@gmod/jbrowse-core/util/tracks'
-import { doesIntersect2 } from '@gmod/jbrowse-core/util/range'
-import { transaction } from 'mobx'
-import { getSnapshot, types, cast, Instance } from 'mobx-state-tree'
+} from '@jbrowse/core/util'
+import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { transaction, autorun } from 'mobx'
+import {
+  getSnapshot,
+  types,
+  cast,
+  Instance,
+  getRoot,
+  resolveIdentifier,
+  addDisposer,
+} from 'mobx-state-tree'
 
-import { AnyConfigurationModel } from '@gmod/jbrowse-core/configuration/configurationSchema'
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -40,6 +45,26 @@ export interface BpOffset {
   offset: number
   start?: number
   end?: number
+  coord?: number
+  reversed?: boolean
+}
+
+function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
+  if (!contentBlocks.length) {
+    return ''
+  }
+  const isSingleAssemblyName = contentBlocks.every(
+    block => block.assemblyName === contentBlocks[0].assemblyName,
+  )
+  const locs = contentBlocks.map(block =>
+    assembleLocString({
+      ...block,
+      start: Math.round(block.start),
+      end: Math.round(block.end),
+      assemblyName: isSingleAssemblyName ? undefined : block.assemblyName,
+    }),
+  )
+  return locs.join(';')
 }
 
 export interface NavLocation {
@@ -74,7 +99,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.enumeration(['hierarchical']),
         'hierarchical',
       ),
-      showTrackLabels: true,
+      trackLabels: 'overlapping' as 'overlapping' | 'hidden' | 'offset',
       showCenterLine: false,
     })
     .volatile(() => ({
@@ -87,6 +112,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      trackRefs: {} as { [key: string]: any },
+      coarseDynamicBlocks: [] as BaseBlock[],
+      coarseTotalBp: 0,
     }))
     .views(self => ({
       get width(): number {
@@ -100,8 +129,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        const { assemblyManager } = getSession(self)
+
+        // if the assemblyManager is tracking a given assembly name, wait for
+        // it to be loaded. this is done by looking in the assemblyManager's
+        // assembly list, and then waiting on it's initialized state which is
+        // updated later
+        const assembliesInitialized = this.assemblyNames.every(assemblyName => {
+          if (
+            assemblyManager.assemblyList
+              .map((asm: { name: string }) => asm.name)
+              .includes(assemblyName)
+          ) {
+            return (assemblyManager.get(assemblyName) || {}).initialized
+          }
+          return true
+        })
+
         return (
-          self.volatileWidth !== undefined && self.displayedRegions.length > 0
+          self.volatileWidth !== undefined &&
+          self.displayedRegions.length > 0 &&
+          assembliesInitialized
         )
       },
       get scaleBarHeight() {
@@ -117,7 +165,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
       get trackHeights() {
-        return self.tracks.map(t => t.height).reduce((a, b) => a + b, 0)
+        return self.tracks
+          .map(t => t.displays[0].height)
+          .reduce((a, b) => a + b, 0)
       },
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
@@ -201,27 +251,41 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
       get assemblyNames() {
-        const assemblyNames: string[] = []
-        self.displayedRegions.forEach(displayedRegion => {
-          if (!assemblyNames.includes(displayedRegion.assemblyName))
-            assemblyNames.push(displayedRegion.assemblyName)
-        })
-        return assemblyNames
+        return [
+          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
+        ]
       },
-
-      idxInParentRegion(refName: string | undefined) {
-        return this.displayedParentRegions.findIndex(
-          (region: Region) => region.refName === refName,
+      parentRegion(assemblyName: string, refName: string) {
+        return this.displayedParentRegions.find(
+          parentRegion =>
+            parentRegion.assemblyName === assemblyName &&
+            parentRegion.refName === refName,
         )
       },
-
-      bpToPx({ refName, coord }: { refName: string; coord: number }) {
+      /**
+       * @param refName - refName of the displayedRegion
+       * @param coord - coordinate at the displayed Region
+       * @param regionNumber - optional param used as identifier when
+       * there are multiple displayedRegions with the same refName
+       * @returns offsetPx of the displayed region that it lands in
+       */
+      bpToPx({
+        refName,
+        coord,
+        regionNumber,
+      }: {
+        refName: string
+        coord: number
+        regionNumber?: number
+      }) {
         let offsetBp = 0
 
-        const index = self.displayedRegions.findIndex(r => {
+        const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
-            offsetBp += r.reversed ? r.end - coord : coord - r.start
-            return true
+            if (regionNumber ? regionNumber === idx : true) {
+              offsetBp += r.reversed ? r.end - coord : coord - r.start
+              return true
+            }
           }
           offsetBp += r.end - r.start
           return false
@@ -233,6 +297,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             offsetPx: Math.round(offsetBp / self.bpPerPx),
           }
         }
+
         return undefined
       },
       /**
@@ -294,23 +359,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      getTrackPos(trackId: string) {
-        const idx = self.tracks.findIndex(
-          t => t.configuration.trackId === trackId,
-        )
-        let accum = 0
-        for (let i = 0; i < idx; i += 1) {
-          accum += self.tracks[i].height + RESIZE_HANDLE_HEIGHT
-        }
-        return accum
-      },
-
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {
           // go to lowest level menu
           if ('subMenu' in action) {
-            // @ts-ignore
             this.rewriteOnClicks(trackType, action.subMenu)
           }
           if ('onClick' in action) {
@@ -318,7 +371,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             action.onClick = (...args: unknown[]) => {
               self.tracks.forEach(track => {
                 if (track.type === trackType) {
-                  // @ts-ignore
                   holdOnClick.apply(track, [track, ...args])
                 }
               })
@@ -333,7 +385,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const trackInMap = allActions.get(track.type)
           if (!trackInMap) {
             const viewMenuActions = clone(track.viewMenuActions)
-            // @ts-ignore
             this.rewriteOnClicks(track.type, viewMenuActions)
             allActions.set(track.type, viewMenuActions)
           }
@@ -411,22 +462,49 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
-      showTrack(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
-        const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-        if (!trackType) throw new Error(`unknown track type ${type}`)
+      showTrack(trackId: string, initialSnapshot = {}) {
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
+        const trackType = pluginManager.getTrackType(configuration.type)
+        if (!trackType) {
+          throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(
+          displayType => displayType.name,
+        )
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        )
+        if (!displayConf) {
+          throw new Error(
+            `could not find a compatible display for view type ${self.type}`,
+          )
+        }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          name,
-          type,
+          type: configuration.type,
           configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },
 
-      hideTrack(configuration: AnyConfigurationModel) {
+      hideTrack(trackId: string) {
+        const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        )
+        const configuration = resolveIdentifier(
+          trackConfigSchema,
+          getRoot(self),
+          trackId,
+        )
         // if we have any tracks with that configuration, turn them off
         const shownTracks = self.tracks.filter(
           t => t.configuration === configuration,
@@ -463,15 +541,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      toggleTrack(configuration: AnyConfigurationModel) {
+      toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(configuration)
+        const hiddenCount = self.hideTrack(trackId)
         // if none had that configuration, turn one on
-        if (!hiddenCount) self.showTrack(configuration)
+        if (!hiddenCount) {
+          self.showTrack(trackId)
+        }
       },
 
-      toggleTrackLabels() {
-        self.showTrackLabels = !self.showTrackLabels
+      setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
+        self.trackLabels = setting
       },
 
       toggleCenterLine() {
@@ -597,14 +677,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
-        const { start, end, assemblyName } = firstLocation
+        const {
+          start,
+          end,
+          assemblyName = self.assemblyNames[0],
+        } = firstLocation
+
         if (start !== undefined && end !== undefined && start > end) {
           throw new Error(`start "${start + 1}" is greater than end "${end}"`)
         }
         const session = getSession(self)
-        const assembly = session.assemblyManager.get(
-          assemblyName || self.assemblyNames[0],
-        )
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
@@ -772,69 +856,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
       zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
         if (leftPx === undefined || rightPx === undefined) return
 
-        const singleRefSeq = leftPx.refName === rightPx.refName
+        const singleRefSeq =
+          leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
+        // zooming into one displayed Region
         if (
           (singleRefSeq && rightPx.offset < leftPx.offset) ||
-          self.idxInParentRegion(leftPx.refName) >
-            self.idxInParentRegion(rightPx.refName)
+          leftPx.index > rightPx.index
         ) {
           ;[leftPx, rightPx] = [rightPx, leftPx]
         }
-
-        const selectionStart = Math.round(leftPx.offset)
-        const selectionEnd = Math.round(rightPx.offset)
-        const startIdx = self.idxInParentRegion(leftPx.refName)
-        const endIdx = self.idxInParentRegion(rightPx.refName)
-
-        const refSeqSelections: Region[] = []
-
-        if (singleRefSeq)
-          refSeqSelections.push({
-            ...self.displayedParentRegions[startIdx],
-            start: selectionStart,
-            end: selectionEnd,
-          })
-        else {
-          // when selecting over multiple ref seq, convert into correct selections
-          // ie select from ctgA: 30k - ctgB: 1k -> select from ctgA: 30k - 50k, ctgB: 0 - 1k
-          for (let i = startIdx; i <= endIdx; i++) {
-            const ref = self.displayedParentRegions[i]
-            // modify start of first refSeq
-            if (!refSeqSelections.length && ref.refName === leftPx.refName)
-              refSeqSelections.push({
-                ...ref,
-                start: selectionStart,
-              })
-            // modify end of last refSeq
-            else if (ref.refName === rightPx.refName)
-              refSeqSelections.push({
-                ...ref,
-                end: selectionEnd,
-              })
-            else refSeqSelections.push(ref) // if any inbetween first and last push entire refseq
-          }
+        const startOffset = {
+          start: leftPx.start,
+          end: leftPx.end,
+          index: leftPx.index,
+          offset: leftPx.offset,
         }
-        let startOffset: BpOffset | undefined
-        let endOffset: BpOffset | undefined
-        self.displayedRegions.forEach((region, index) => {
-          refSeqSelections.forEach(seq => {
-            if (
-              region.refName === seq.refName &&
-              doesIntersect2(region.start, region.end, seq.start, seq.end)
-            ) {
-              if (!startOffset) {
-                const offset = region.reversed
-                  ? Math.max(region.end - seq.end, 0)
-                  : Math.max(seq.start - region.start, 0)
-                startOffset = { index, offset }
-              }
-              const offset = region.reversed
-                ? Math.min(region.end - seq.start, region.end - region.start)
-                : Math.min(seq.end - region.start, region.end - region.start)
-              endOffset = { index, offset }
-            }
-          })
-        })
+        const endOffset = {
+          start: rightPx.start,
+          end: rightPx.end,
+          index: rightPx.index,
+          offset: rightPx.offset,
+        }
         if (startOffset && endOffset) {
           this.moveTo(startOffset, endOffset)
         } else {
@@ -910,16 +952,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp -
-       * @param refName -
+       * @param bp-basepair at which you want to center the view
+       * @param refName-refName of the displayedRegion you are centering at
+       * @param regionIndex-index of the displayedRegion
        */
-      centerAt(bp: number, refName: string) {
-        const centerPx = self.bpToPx({ refName, coord: bp })
+      centerAt(bp: number, refName: string, regionIndex: number) {
+        const centerPx = self.bpToPx({
+          refName,
+          coord: bp,
+          regionNumber: regionIndex,
+        })
         if (centerPx) {
-          const centerPxOffset = centerPx.offsetPx
-          self.scrollTo(Math.round(centerPxOffset - self.width / 2))
+          self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
         }
-        /* TODO: Handle displayed regions */
       },
 
       center() {
@@ -996,11 +1041,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
-              icon: LineStyleIcon,
+              icon: TrackSelectorIcon,
               disabled:
                 isSessionModelWithWidgets(session) &&
                 session.visibleWidget &&
                 session.visibleWidget.id === 'hierarchicalTrackSelector' &&
+                // @ts-ignore
+                session.visibleWidget.view &&
                 // @ts-ignore
                 session.visibleWidget.view.id === self.id,
             },
@@ -1014,6 +1061,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               icon: VisibilityIcon,
               onClick: self.showAllRegions,
             },
+            {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: self.showCenterLine,
+              onClick: self.toggleCenterLine,
+            },
+            { type: 'divider' },
             {
               label: 'Show header',
               icon: VisibilityIcon,
@@ -1030,18 +1085,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
               disabled: self.hideHeader,
             },
             {
-              label: 'Show track labels',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showTrackLabels,
-              onClick: self.toggleTrackLabels,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              checked: self.showCenterLine,
-              onClick: self.toggleCenterLine,
+              label: 'Track labels',
+              icon: LabelIcon,
+              subMenu: [
+                {
+                  label: 'Overlapping',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'overlapping',
+                  onClick: () => self.setTrackLabels('overlapping'),
+                },
+                {
+                  label: 'Offset',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'offset',
+                  onClick: () => self.setTrackLabels('offset'),
+                },
+                {
+                  label: 'Hidden',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  checked: self.trackLabels === 'hidden',
+                  onClick: () => self.setTrackLabels('hidden'),
+                },
+              ],
             },
           ]
 
@@ -1062,7 +1130,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
 
         get staticBlocks() {
-          const ret = calculateStaticBlocks(self, true, true, 1)
+          const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)
           if (stringifiedCurrentlyCalculatedStaticBlocks !== sret) {
             currentlyCalculatedStaticBlocks = ret
@@ -1075,27 +1143,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return calculateDynamicBlocks(self)
         },
         get visibleLocStrings() {
-          const { contentBlocks } = this.dynamicBlocks
-          if (!contentBlocks.length) {
-            return ''
-          }
-          const isSingleAssemblyName = contentBlocks.every(
-            block => block.assemblyName === contentBlocks[0].assemblyName,
-          )
-          const locs = contentBlocks.map(block =>
-            assembleLocString({
-              ...block,
-              start: Math.round(block.start),
-              end: Math.round(block.end),
-              assemblyName: isSingleAssemblyName
-                ? undefined
-                : block.assemblyName,
-            }),
-          )
-          return locs.join(';')
+          return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
+        },
+        get coarseVisibleLocStrings() {
+          return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
       }
     })
+    .actions(self => ({
+      setCoarseDynamicBlocks(blocks: BlockSet) {
+        self.coarseDynamicBlocks = blocks.contentBlocks
+        self.coarseTotalBp = blocks.totalBp
+      },
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(
+            () => {
+              if (self.initialized) {
+                this.setCoarseDynamicBlocks(self.dynamicBlocks)
+              }
+            },
+            { delay: 150 },
+          ),
+        )
+      },
+    }))
 
   return types.compose(BaseViewModel, model)
 }

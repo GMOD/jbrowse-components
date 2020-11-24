@@ -8,11 +8,12 @@ import {
   waitForElement,
 } from '@testing-library/react'
 import React from 'react'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
-import { setup, readBuffer, getPluginManager } from './util'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
 setup()
@@ -22,13 +23,13 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 describe('valid file tests', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-    fetch.mockResponse(readBuffer)
-  })
   it('access about menu', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
@@ -47,7 +48,7 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
-    const track = await findByTestId('track-volvox_alignments')
+    const track = await findByTestId('display-volvox_alignments_alignments')
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -103,27 +104,26 @@ describe('valid file tests', () => {
   })
 
   it('click and zoom in and back out', async () => {
-    jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
+    const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findByText('ctgA')
+    await findAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await wait(() => {
-      jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before / 2)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before / 2)
     })
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
     await wait(() => {
-      jest.runAllTimers()
-      expect(state.session.views[0].bpPerPx).toBe(before)
+      const after = state.session.views[0].bpPerPx
+      expect(after).toBe(before)
     })
     expect(state.session.views[0].bpPerPx).toBe(before)
-  }, 10000)
+  }, 30000)
 
   it('opens track selector', async () => {
     const pluginManager = getPluginManager()
@@ -144,7 +144,7 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
-    await findByTestId('track-volvox_refseq')
+    await findByTestId('display-volvox_refseq-LinearReferenceSequenceDisplay')
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
   })
 
@@ -156,7 +156,7 @@ describe('valid file tests', () => {
     )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('track-volvox_alignments')
+    await findByTestId('display-volvox_alignments_alignments')
 
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
@@ -168,5 +168,30 @@ describe('valid file tests', () => {
     const { centerLineInfo } = state.session.views[0]
     expect(centerLineInfo.refName).toBe('ctgA')
     expect(centerLineInfo.offset).toEqual(120)
+  })
+
+  it('test navigation with the search input box', async () => {
+    const pluginManager = getPluginManager()
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    fireEvent.click(await findByText('Help'))
+
+    // need this to complete before we can try to search
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+    )
+
+    const target = await findByTestId('search-input')
+    const form = await findByTestId('search-form')
+    fireEvent.change(target, { target: { value: 'contigA:1-200' } })
+    form.submit()
+    // can't just hit enter it seems
+    // fireEvent.keyDown(target, { key: 'Enter', code: 'Enter' })
+    await wait(() => {
+      expect(target.value).toBe('ctgA:1..200')
+    })
+    expect(target.value).toBe('ctgA:1..200')
   })
 })

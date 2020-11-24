@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 import { isStateTreeNode, getType } from 'mobx-state-tree'
-import { ConfigurationSchema } from '@gmod/jbrowse-core/configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export { default as ReactComponent } from './components/ConfigurationEditor'
 export { default as stateModelFactory } from './model'

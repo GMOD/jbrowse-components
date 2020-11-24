@@ -12,12 +12,14 @@ import { when } from '../util'
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
-// must import BaseOptions for inferred type declaration to be outputted properly
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import assemblyFactory, { BaseOptions } from './assembly'
+import assemblyFactory from './assembly'
+import PluginManager from '../PluginManager'
 
-export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
-  const Assembly = assemblyFactory(assemblyConfigType)
+export default function assemblyManagerFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
+  const Assembly = assemblyFactory(assemblyConfigType, pluginManager)
   return types
     .model({
       assemblies: types.array(Assembly),
@@ -29,6 +31,11 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           assembly => assembly.name === (canonicalName || assemblyName),
         )
       },
+
+      get assemblyList() {
+        return getParent(self).jbrowse.assemblies.slice()
+      },
+
       get aliasMap() {
         const aliases: Map<string, string> = new Map()
         self.assemblies.forEach(assembly => {
@@ -42,6 +49,9 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
       get rpcManager() {
         return getParent(self).rpcManager
+      },
+      get pluginManager() {
+        return getParent(self).pluginManager
       },
       get allPossibleRefNames() {
         let refNames: string[] = []
@@ -122,16 +132,24 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
       },
     }))
     .actions(self => ({
+      removeAssembly(asm: Instance<typeof Assembly>) {
+        self.assemblies.remove(asm)
+      },
       afterAttach() {
         addDisposer(
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => getParent(self).jbrowse.assemblies.slice(),
+            () => self.assemblyList,
             (
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],
             ) => {
+              self.assemblies.forEach(asm => {
+                if (!asm.configuration) {
+                  this.removeAssembly(asm)
+                }
+              })
               assemblyConfigs.forEach(assemblyConfig => {
                 const existingAssemblyIdx = self.assemblies.findIndex(
                   assembly =>

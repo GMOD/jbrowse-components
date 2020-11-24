@@ -1,11 +1,24 @@
 {
-  "name": "@gmod/jbrowse-plugin-circular-view",
-  "version": "0.0.1-beta.14",
+  "name": "@jbrowse/plugin-circular-view",
+  "version": "1.0.0",
   "description": "JBrowse 2 circular view",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/circular-view"
+  },
+  "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/jbrowse-plugin-circular-view.esm.js",
+  "distModule": "dist/plugin-circular-view.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -21,15 +34,15 @@
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
   },
-  "author": "Robert Buels",
-  "license": "MIT",
   "dependencies": {
     "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
-    "@gmod/jbrowse-core": "^0.0.1-beta.1",
+    "@jbrowse/core": "^1.0.0",
     "@material-ui/core": "^4.9.13",
+    "mobx-state-tree": "3.14.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
-  }
+  },
+  "private": true
 }

@@ -1,6 +1,7 @@
 import SvgIcon, { SvgIconProps } from '@material-ui/core/SvgIcon'
 import React from 'react'
 
+// Icons below come from https://material.io/resources/icons/?icon=line_style&style=baseline
 export function ContentCopy(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
@@ -21,6 +22,15 @@ export function ContentPaste(props: SvgIconProps) {
   return (
     <SvgIcon {...props}>
       <path d="M19,20H5V4H7V7H17V4H19M12,2A1,1 0 0,1 13,3A1,1 0 0,1 12,4A1,1 0 0,1 11,3A1,1 0 0,1 12,2M19,2H14.82C14.4,0.84 13.3,0 12,0C10.7,0 9.6,0.84 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" />
+    </SvgIcon>
+  )
+}
+
+//  format-list-checkbox from https://materialdesignicons.com/
+export function TrackSelector(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" />
     </SvgIcon>
   )
 }

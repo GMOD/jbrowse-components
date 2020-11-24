@@ -5,13 +5,14 @@ import { cleanup, fireEvent, render, wait } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
+import { LocalFile } from 'generic-filehandle'
 
 // locals
-import { clearCache } from '@gmod/jbrowse-core/util/io/rangeFetcher'
-import { clearAdapterCache } from '@gmod/jbrowse-core/data_adapters/dataAdapterCache'
+import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
-import { setup, getPluginManager, readBuffer } from './util'
+import { setup, getPluginManager, generateReadBuffer } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -23,7 +24,11 @@ beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
-  fetch.mockResponse(readBuffer)
+  fetch.mockResponse(
+    generateReadBuffer(url => {
+      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
+    }),
+  )
 })
 
 describe('<JBrowse />', () => {
@@ -51,26 +56,30 @@ test('lollipop track test', async () => {
   state.session.views[0].setNewView(1, 150)
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
-  await findByTestId('track-lollipop_track')
+  await findByTestId('display-lollipop_track_linear')
   await expect(findByTestId('three')).resolves.toBeTruthy()
 })
 
 test('variant track test - opens feature detail view', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
+  const { findByTestId, findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-  state.session.views[0].tracks[0].setFeatureIdUnderMouse('test-vcf-604452')
-  fireEvent.click(await findByTestId('test-vcf-604452'))
+  state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
+    'test-vcf-604452',
+  )
+  const feats1 = await findAllByTestId('test-vcf-604452')
+  fireEvent.click(feats1[0])
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
   fireEvent.click(await findByTestId('drawer-close'))
-  fireEvent.contextMenu(await findByTestId('test-vcf-604452'))
+  const feats2 = await findAllByTestId('test-vcf-604452')
+  fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
 }, 10000)
@@ -96,9 +105,12 @@ describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, findByDisplayValue } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const {
+      findByTestId,
+      findAllByTestId,
+      findByText,
+      findByDisplayValue,
+    } = render(<JBrowse pluginManager={pluginManager} />)
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
@@ -108,10 +120,8 @@ describe('test configuration editor', () => {
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
     await wait(async () => {
-      expect(await findByTestId('box-test-vcf-604452')).toHaveAttribute(
-        'fill',
-        'green',
-      )
+      const feats = await findAllByTestId('box-test-vcf-604452')
+      expect(feats[0]).toHaveAttribute('fill', 'green')
     })
   }, 10000)
 })
@@ -130,8 +140,22 @@ test('404 sequence file', async () => {
     </ErrorBoundary>,
   )
   expect(
-    await findByText('HTTP 404 fetching test_data/grape.chrom.sizes.nonexist', {
+    await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
       exact: false,
     }),
   ).toBeTruthy()
+})
+
+test('looks at about this track dialog', async () => {
+  const pluginManager = getPluginManager()
+  const { findByTestId, findAllByText, findByText } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+
+  // load track
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('About this track'))
+  await findAllByText('SQ')
 })

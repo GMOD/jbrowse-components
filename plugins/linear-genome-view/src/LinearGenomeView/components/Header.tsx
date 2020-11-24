@@ -1,15 +1,16 @@
-import { Region } from '@gmod/jbrowse-core/util/types'
-import { getSession, isSessionModelWithWidgets } from '@gmod/jbrowse-core/util'
+import { Region } from '@jbrowse/core/util/types'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import FormGroup from '@material-ui/core/FormGroup'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -20,6 +21,9 @@ import ZoomControls from './ZoomControls'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
+const WIDGET_HEIGHT = 32
+const SPACING = 7
+
 const useStyles = makeStyles(theme => ({
   headerBar: {
     height: HEADER_BAR_HEIGHT,
@@ -28,21 +32,19 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     flexGrow: 1,
   },
-  input: {
-    width: 300,
-    padding: theme.spacing(0, 1),
-  },
+  input: {},
   headerRefName: {
     minWidth: 100,
-    margin: theme.spacing(2, 0, 1),
   },
   panButton: {
-    margin: theme.spacing(2),
     background: fade(theme.palette.background.paper, 0.8),
+    height: WIDGET_HEIGHT,
+    margin: SPACING,
   },
   bp: {
     display: 'flex',
     alignItems: 'center',
+    marginLeft: 5,
   },
   toggleButton: {
     height: 44,
@@ -58,7 +60,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
     <ToggleButton
       onChange={model.activateTrackSelector}
       className={classes.toggleButton}
-      title="select tracks"
+      title="Open track selector"
       value="track_select"
       color="secondary"
       selected={
@@ -69,7 +71,7 @@ const Controls = observer(({ model }: { model: LGV }) => {
         session.visibleWidget.view.id === model.id
       }
     >
-      <TrackSelectorIcon fontSize="small" />
+      <TrackSelectorIcon />
     </ToggleButton>
   )
 })
@@ -77,13 +79,16 @@ const Controls = observer(({ model }: { model: LGV }) => {
 const Search = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState<string | undefined>()
   const inputRef = useRef<HTMLInputElement>(null)
-  const classes = useStyles()
   const theme = useTheme()
   const {
-    dynamicBlocks: { contentBlocks },
-    displayedRegions,
-    visibleLocStrings,
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
+
+  // use regular visibleLocStrings if coarseVisibleLocStrings is undefined
+  const visibleLocStrings =
+    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+
   const session = getSession(model)
 
   function navTo(locString: string) {
@@ -95,83 +100,40 @@ const Search = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  const setDisplayedRegion = useCallback(
-    (region: Region | undefined) => {
-      if (region) {
-        model.setDisplayedRegions([region])
-        model.showAllRegions()
-      }
-    },
-    [model],
-  )
-
-  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   return (
-    <>
-      <RefNameAutocomplete
-        model={model}
-        onSelect={setDisplayedRegion}
-        assemblyName={assemblyName}
-        defaultRegionName={displayedRegions.length > 1 ? '' : refName}
-        TextFieldProps={{
-          variant: 'outlined',
-          margin: 'dense',
-          size: 'small',
-          className: classes.headerRefName,
-          InputProps: {
-            style: {
-              paddingTop: 2,
-              paddingBottom: 2,
-              background: fade(theme.palette.background.paper, 0.8),
-            },
+    <form
+      data-testid="search-form"
+      onSubmit={event => {
+        event.preventDefault()
+        inputRef && inputRef.current && inputRef.current.blur()
+        value && navTo(value)
+
+        // need to manually call the action of blur here for
+        // react-testing-library
+        setValue(undefined)
+      }}
+    >
+      <TextField
+        inputRef={inputRef}
+        onFocus={() => setValue(visibleLocStrings)}
+        onBlur={() => setValue(undefined)}
+        onChange={event => setValue(event.target.value)}
+        variant="outlined"
+        value={value === undefined ? visibleLocStrings : value}
+        style={{ margin: SPACING, marginLeft: SPACING * 3 }}
+        inputProps={{
+          'data-testid': 'search-input',
+        }}
+        // eslint-disable-next-line react/jsx-no-duplicate-props
+        InputProps={{
+          startAdornment: <SearchIcon />,
+          style: {
+            background: fade(theme.palette.background.paper, 0.8),
+            height: WIDGET_HEIGHT,
           },
         }}
       />
-      <form
-        onSubmit={event => {
-          event.preventDefault()
-          inputRef && inputRef.current && inputRef.current.blur()
-          value && navTo(value)
-        }}
-      >
-        <TextField
-          inputRef={inputRef}
-          onFocus={() => setValue(visibleLocStrings)}
-          onBlur={() => setValue(undefined)}
-          onChange={event => setValue(event.target.value)}
-          className={classes.input}
-          variant="outlined"
-          margin="dense"
-          size="small"
-          value={value === undefined ? visibleLocStrings : value}
-          InputProps={{
-            startAdornment: <SearchIcon fontSize="small" />,
-            style: {
-              background: fade(theme.palette.background.paper, 0.8),
-              height: 32,
-            },
-          }}
-          // eslint-disable-next-line react/jsx-no-duplicate-props
-          inputProps={{ style: { padding: theme.spacing() } }}
-        />
-      </form>
-      <div className={classes.bp}>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          className={classes.bp}
-        >
-          {`${Math.round(
-            contentBlocks
-              .map(block => block.end - block.start)
-              .reduce(
-                (previousValue, currentValue) => previousValue + currentValue,
-                0,
-              ),
-          ).toLocaleString('en-US')} bp`}
-        </Typography>
-      </div>
-    </>
+    </form>
   )
 })
 
@@ -180,7 +142,6 @@ function PanControls({ model }: { model: LGV }) {
   return (
     <>
       <Button
-        size="small"
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
@@ -188,7 +149,6 @@ function PanControls({ model }: { model: LGV }) {
         <ArrowBackIcon />
       </Button>
       <Button
-        size="small"
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
@@ -201,13 +161,48 @@ function PanControls({ model }: { model: LGV }) {
 
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+  const theme = useTheme()
+  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
+
+  const setDisplayedRegion = useCallback(
+    (region: Region | undefined) => {
+      if (region) {
+        model.setDisplayedRegions([region])
+        model.showAllRegions()
+      }
+    },
+    [model],
+  )
+
+  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
 
   const controls = (
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <PanControls model={model} />
-      <Search model={model} />
+      <FormGroup row style={{ flexWrap: 'nowrap' }}>
+        <PanControls model={model} />
+        <RefNameAutocomplete
+          onSelect={setDisplayedRegion}
+          assemblyName={assemblyName}
+          value={displayedRegions.length > 1 ? '' : refName}
+          model={model}
+          TextFieldProps={{
+            variant: 'outlined',
+            className: classes.headerRefName,
+            style: { margin: SPACING },
+            InputProps: {
+              style: {
+                padding: 0,
+                height: WIDGET_HEIGHT,
+                background: fade(theme.palette.background.paper, 0.8),
+              },
+            },
+          }}
+        />
+        <Search model={model} />
+      </FormGroup>
+      <RegionWidth model={model} />
       <ZoomControls model={model} />
       <div className={classes.spacer} />
     </div>
@@ -218,4 +213,14 @@ export default observer(({ model }: { model: LGV }) => {
   }
 
   return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
+})
+
+const RegionWidth = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const { coarseTotalBp } = model
+  return (
+    <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
+    </Typography>
+  )
 })

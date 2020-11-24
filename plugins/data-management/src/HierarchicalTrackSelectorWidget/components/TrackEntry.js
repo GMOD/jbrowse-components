@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
-import { getSession } from '@gmod/jbrowse-core/util'
-import { Menu } from '@gmod/jbrowse-core/ui'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession } from '@jbrowse/core/util'
+import { Menu } from '@jbrowse/core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
 import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
@@ -54,6 +54,10 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
   const unsupported =
     trackName &&
     (trackName.endsWith('(Unsupported)') || trackName.endsWith('(Unknown)'))
+  const menuItems = session.getTrackActionMenuItems
+    ? session.getTrackActionMenuItems(trackConf)
+    : []
+
   return (
     <Fade in>
       <div className={classes.track}>
@@ -72,20 +76,22 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
               assemblyName ? `Reference Sequence (${assemblyName})` : trackName
             }
             checked={model.view.tracks.some(t => t.configuration === trackConf)}
-            onChange={() => model.view.toggleTrack(trackConf)}
+            onChange={() => model.view.toggleTrack(trackConf.trackId)}
             disabled={disabled || unsupported}
           />
         </Tooltip>
-        <IconButton
-          className={classes.configureButton}
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
-          color="secondary"
-          data-testid={`htsTrackEntryMenu-${trackId}`}
-        >
-          <HorizontalDots fontSize="small" />
-        </IconButton>
+        {menuItems.length ? (
+          <IconButton
+            className={classes.configureButton}
+            onClick={event => {
+              setAnchorEl(event.currentTarget)
+            }}
+            color="secondary"
+            data-testid={`htsTrackEntryMenu-${trackId}`}
+          >
+            <HorizontalDots />
+          </IconButton>
+        ) : null}
         <Menu
           anchorEl={anchorEl}
           onMenuItemClick={(_, callback) => {
@@ -96,10 +102,7 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
           onClose={() => {
             setAnchorEl(null)
           }}
-          menuItems={
-            session.getTrackActionMenuItems &&
-            session.getTrackActionMenuItems(trackConf)
-          }
+          menuItems={menuItems}
         />
       </div>
     </Fade>

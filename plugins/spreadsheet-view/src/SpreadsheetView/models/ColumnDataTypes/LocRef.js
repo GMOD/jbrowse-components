@@ -1,10 +1,11 @@
+import MakeSpreadsheetColumnTypeFactory from './MakeSpreadsheetColumnType'
+import TextFactory from './Text'
+
 export default ({ jbrequire }) => {
   const { types } = jbrequire('mobx-state-tree')
-  const MakeSpreadsheetColumnType = jbrequire(
-    require('./MakeSpreadsheetColumnType'),
-  )
+  const MakeSpreadsheetColumnType = jbrequire(MakeSpreadsheetColumnTypeFactory)
 
-  const { FilterModelType: NumberFilterModel } = jbrequire(require('./Text'))
+  const { FilterModelType: NumberFilterModel } = jbrequire(TextFactory)
 
   const FilterModelType = types.compose(
     NumberFilterModel,

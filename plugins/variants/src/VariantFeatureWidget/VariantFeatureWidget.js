@@ -12,7 +12,7 @@ import React from 'react'
 import {
   BaseFeatureDetails,
   BaseCard,
-} from '@gmod/jbrowse-core/BaseFeatureWidget/BaseFeatureDetail'
+} from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 const useStyles = makeStyles(theme => ({
   table: {
@@ -82,7 +82,7 @@ function VariantSamples(props) {
                     </TableCell>
                     {infoFields.map(f => (
                       <TableCell className={classes.valueCell} key={f}>
-                        {String(value[f])}
+                        {value === null ? '.' : String(value[f])}
                       </TableCell>
                     ))}
                   </TableRow>

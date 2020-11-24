@@ -5,7 +5,7 @@ import {
   waitForElement,
 } from '@testing-library/react'
 import React from 'react'
-import { createTestSession } from '@gmod/jbrowse-web/src/rootModel'
+import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddConnectionWidget from './AddConnectionWidget'
 
 window.fetch = jest.fn(() => new Promise(resolve => resolve()))
@@ -99,7 +99,7 @@ type bigWig
       },
     )
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
-    expect(session.connections.length).toBe(1)
+    expect(session.sessionConnections.length).toBe(1)
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -137,6 +137,6 @@ type bigWig
       },
     )
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
-    expect(session.connections.length).toBe(1)
+    expect(session.sessionConnections.length).toBe(1)
   })
 })

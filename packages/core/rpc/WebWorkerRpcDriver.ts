@@ -1,7 +1,6 @@
 import Rpc from '@librpc/web'
 import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
-import PluginManager from '../PluginManager'
 import { PluginDefinition } from '../PluginLoader'
 
 interface WebpackWorker {
@@ -48,7 +47,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     this.workerBootConfiguration = workerBootConfiguration
   }
 
-  makeWorker(pluginManager: PluginManager) {
+  makeWorker() {
     // note that we are making a Rpc.Client connection with a worker pool of one for each worker,
     // because we want to do our own state-group-aware load balancing rather than using librpc's
     // builtin round-robin

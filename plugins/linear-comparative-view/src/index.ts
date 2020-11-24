@@ -1,44 +1,57 @@
-import PluginManager from '@gmod/jbrowse-core/PluginManager'
-import TrackType from '@gmod/jbrowse-core/pluggableElementTypes/TrackType'
-import AdapterType from '@gmod/jbrowse-core/pluggableElementTypes/AdapterType'
-import Plugin from '@gmod/jbrowse-core/Plugin'
+import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import Plugin from '@jbrowse/core/Plugin'
+import PluginManager from '@jbrowse/core/PluginManager'
+import {
+  AbstractSessionModel,
+  getSession,
+  isAbstractMenuManager,
+} from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+import AddIcon from '@material-ui/icons/Add'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import AddIcon from '@material-ui/icons/Add'
 import {
-  AbstractSessionModel,
-  isAbstractMenuManager,
-  getSession,
-} from '@gmod/jbrowse-core/util'
-import { getConf } from '@gmod/jbrowse-core/configuration'
-import { Feature } from '@gmod/jbrowse-core/util/simpleFeature'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parseCigar } from '@gmod/jbrowse-plugin-alignments/src/BamAdapter/MismatchParser'
+  configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
+  ReactComponent as LinearComparativeDisplayReactComponent,
+  stateModelFactory as linearComparativeDisplayStateModelFactory,
+} from './LinearComparativeDisplay'
+import LinearComparativeViewFactory from './LinearComparativeView'
 import {
-  configSchemaFactory as comparativeTrackConfigSchemaFactory,
-  stateModelFactory as comparativeTrackStateModelFactory,
-} from './LinearComparativeTrack'
-import {
-  configSchemaFactory as syntenyTrackConfigSchemaFactory,
-  stateModelFactory as syntenyTrackStateModelFactory,
-} from './LinearSyntenyTrack'
-import {
-  configSchema as MCScanAnchorsConfigSchema,
-  AdapterClass as MCScanAnchorsAdapter,
-} from './MCScanAnchorsAdapter'
+  configSchemaFactory as linearSyntenyDisplayConfigSchemaFactory,
+  stateModelFactory as linearSyntenyDisplayStateModelFactory,
+} from './LinearSyntenyDisplay'
 import LinearSyntenyRenderer, {
   configSchema as linearSyntenyRendererConfigSchema,
   ReactComponent as LinearSyntenyRendererReactComponent,
 } from './LinearSyntenyRenderer'
+import LinearSyntenyViewFactory from './LinearSyntenyView'
+import {
+  AdapterClass as MCScanAnchorsAdapter,
+  configSchema as MCScanAnchorsConfigSchema,
+} from './MCScanAnchorsAdapter'
+
+const { parseCigar } = MismatchParser
 
 interface Track {
-  addAdditionalContextMenuItemCallback: Function
-  additionalContextMenuItemCallbacks: Function[]
   id: string
   type: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  PileupTrack: any
+  displays: {
+    addAdditionalContextMenuItemCallback: Function
+    additionalContextMenuItemCallbacks: Function[]
+    id: string
+    type: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    PileupDisplay: any
+  }[]
 }
 interface View {
   tracks: Track[]
@@ -114,31 +127,52 @@ export default class extends Plugin {
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearComparativeView')),
+      pluginManager.jbrequire(LinearComparativeViewFactory),
     )
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(require('./LinearSyntenyView')),
+      pluginManager.jbrequire(LinearSyntenyViewFactory),
     )
 
     pluginManager.addTrackType(() => {
-      const configSchema = comparativeTrackConfigSchemaFactory(pluginManager)
+      const configSchema = ConfigurationSchema(
+        'SyntenyTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
       return new TrackType({
-        compatibleView: 'LinearComparativeView',
-        name: 'LinearComparativeTrack',
+        name: 'SyntenyTrack',
         configSchema,
-        stateModel: comparativeTrackStateModelFactory(
+        stateModel: createBaseTrackModel(
           pluginManager,
+          'SyntenyTrack',
           configSchema,
         ),
       })
     })
-    pluginManager.addTrackType(() => {
-      const configSchema = syntenyTrackConfigSchemaFactory(pluginManager)
-      return new TrackType({
-        compatibleView: 'LinearSyntenyView',
-        name: 'LinearSyntenyTrack',
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearComparativeDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearComparativeDisplay',
         configSchema,
-        stateModel: syntenyTrackStateModelFactory(pluginManager, configSchema),
+        stateModel: linearComparativeDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'LinearComparativeView',
+        ReactComponent: LinearComparativeDisplayReactComponent,
+      })
+    })
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearSyntenyDisplayConfigSchemaFactory(
+        pluginManager,
+      )
+      return new DisplayType({
+        name: 'LinearSyntenyDisplay',
+        configSchema,
+        stateModel: linearSyntenyDisplayStateModelFactory(configSchema),
+        trackType: 'SyntenyTrack',
+        viewType: 'LinearSyntenyView',
+        ReactComponent: LinearComparativeDisplayReactComponent,
       })
     })
     pluginManager.addAdapterType(
@@ -187,7 +221,11 @@ export default class extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(track, 'assemblyNames')[0]
+                const trackAssembly = getConf(
+                  // @ts-ignore
+                  track.parentTrack,
+                  'assemblyNames',
+                )[0]
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
@@ -294,7 +332,7 @@ export default class extends Plugin {
                   ],
                   viewTrackConfigs: [
                     {
-                      type: 'LinearSyntenyTrack',
+                      type: 'SyntenyTrack',
                       assemblyNames,
                       adapter: {
                         type: 'FromConfigAdapter',
@@ -310,7 +348,13 @@ export default class extends Plugin {
                   tracks: [
                     {
                       configuration: trackId,
-                      type: 'LinearSyntenyTrack',
+                      type: 'SyntenyTrack',
+                      displays: [
+                        {
+                          type: 'LinearSyntenyDisplay',
+                          configuration: `${trackId}-LinearSyntenyDisplay`,
+                        },
+                      ],
                     },
                   ],
                   displayName: `${readName} vs ${trackAssembly}`,
@@ -323,17 +367,23 @@ export default class extends Plugin {
     function addContextMenu(view: View) {
       if (view.type === 'LinearGenomeView') {
         view.tracks.forEach(track => {
-          if (
-            track.type === 'PileupTrack' &&
-            !track.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.addAdditionalContextMenuItemCallback(cb)
-          } else if (
-            track.type === 'AlignmentsTrack' &&
-            track.PileupTrack &&
-            !track.PileupTrack.additionalContextMenuItemCallbacks.includes(cb)
-          ) {
-            track.PileupTrack.addAdditionalContextMenuItemCallback(cb)
+          if (track.type === 'AlignmentsTrack') {
+            track.displays.forEach(display => {
+              if (
+                display.type === 'LinearPileupDisplay' &&
+                !display.additionalContextMenuItemCallbacks.includes(cb)
+              ) {
+                display.addAdditionalContextMenuItemCallback(cb)
+              } else if (
+                display.type === 'LinearAlignmentsDisplay' &&
+                display.PileupDisplay &&
+                !display.PileupDisplay.additionalContextMenuItemCallbacks.includes(
+                  cb,
+                )
+              ) {
+                display.PileupDisplay.addAdditionalContextMenuItemCallback(cb)
+              }
+            })
           }
         })
       }
