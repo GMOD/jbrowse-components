@@ -168,6 +168,11 @@ export default class AddTrack extends JBrowseCommand {
       !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
     )
 
+    if (adapter.type === 'PAFAdapter') {
+      // @ts-ignore
+      adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
+    }
+
     if (isUrl(location) && load) {
       this.error(
         'The --load flag is used for local files only, but a URL was provided',
@@ -624,7 +629,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.paf/i.test(fileName)) {
       return {
-        type: 'PafAdapter',
+        type: 'PAFAdapter',
         pafLocation: makeLocation(fileName),
       }
     }
@@ -644,7 +649,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
-      PafAdapter: 'LinearSyntenyTrack',
+      PAFAdapter: 'SyntenyTrack',
     }
     return known[adapterType] || 'FeatureTrack'
   }
