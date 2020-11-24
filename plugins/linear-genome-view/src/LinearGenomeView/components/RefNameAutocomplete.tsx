@@ -141,6 +141,7 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
+      freeSolo
       disableListWrap
       disableClearable
       ListboxComponent={
@@ -180,6 +181,7 @@ function RefNameAutocomplete({
                 navTo(searchValue || '')
               }
             }}
+            placeholder="refName:start...end"
           />
         )
       }}
