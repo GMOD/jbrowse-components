@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/bgzf-filehandle": "^1.3.4",
     "@gmod/vcf": "^4.0.0",
     "@jbrowse/plugin-variants": "^1.0.0",
     "@material-ui/icons": "^4.9.1",

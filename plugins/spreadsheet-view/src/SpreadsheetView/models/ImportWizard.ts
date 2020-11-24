@@ -40,6 +40,7 @@ export default (pluginManager: PluginManager) => {
     .volatile(() => ({
       fileTypes,
       requiresUnzip: false,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
       error: undefined as Error | undefined,
     }))
