@@ -3957,7 +3957,7 @@
   resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.3.tgz#d4eea0b613b13a197d0465c6e5f22d2cb9f83f05"
   integrity sha512-tV4U9pdyEz5nozGW8FosDgAXVbUfteszNJeeZtDUpQzO7/2OnQHCnAjskGoUnaZ1zRaMNEz7I9dwySeEtTjlcQ==
 
-"@gmod/bgzf-filehandle@^1.2.4", "@gmod/bgzf-filehandle@^1.3.3":
+"@gmod/bgzf-filehandle@^1.2.4", "@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.3.4":
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.3.4.tgz#89a1e79ee3cdf29e765b7e808412d7266f1d67d7"
   integrity sha512-wv008EwB2cx0ZEel+HB9iohpNFZfMbssukg8W3u5xweogaG22qnLjf57fbluAg3z8+lt0q3Hv4BCQNAMfCTNLg==
