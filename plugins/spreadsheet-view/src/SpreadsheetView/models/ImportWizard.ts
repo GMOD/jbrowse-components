@@ -39,7 +39,6 @@ export default (pluginManager: PluginManager) => {
     })
     .volatile(() => ({
       fileTypes,
-      requiresUnzip: false,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
       error: undefined as Error | undefined,
@@ -67,6 +66,19 @@ export default (pluginManager: PluginManager) => {
         }
         return undefined
       },
+
+      get fileName() {
+        return (
+          self.fileSource.uri ||
+          self.fileSource.localPath ||
+          (self.fileSource.blob && self.fileSource.blob.name)
+        )
+      },
+
+      get requiresUnzip() {
+        return this.fileName.endsWith('gz')
+      },
+
       isValidRefName(refName: string, assemblyName?: string) {
         return getSession(self).assemblyManager.isValidRefName(
           refName,
@@ -81,15 +93,9 @@ export default (pluginManager: PluginManager) => {
 
         if (self.fileSource) {
           // try to autodetect the file type, ignore errors
-          const name =
-            self.fileSource.uri ||
-            self.fileSource.localPath ||
-            (self.fileSource.blob && self.fileSource.blob.name)
+          const name = self.fileName
 
           if (name) {
-            if (name.endsWith('.gz')) {
-              self.requiresUnzip = true
-            }
             const match = fileTypesRegexp.exec(name)
             if (match && match[1]) {
               if (match[1] === 'tsv' && name.includes('star-fusion')) {
