@@ -1113,6 +1113,19 @@
           "uri": "volvox-sorted.bam.coverage.bw"
         }
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny",
+      "name": "volvox_fake_synteny",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny.paf"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
     }
   ],
   "defaultSession": {
