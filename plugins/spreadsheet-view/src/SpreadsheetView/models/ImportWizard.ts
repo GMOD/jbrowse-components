@@ -142,7 +142,7 @@ export default (pluginManager: PluginManager) => {
 
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
-      async import() {
+      import() {
         try {
           if (!self.fileSource) return
           const typeParser =
@@ -154,20 +154,26 @@ export default (pluginManager: PluginManager) => {
           self.loading = true
 
           const filehandle = openLocation(self.fileSource)
-          const stat = await filehandle.stat()
-          if (stat.size > IMPORT_SIZE_LIMIT)
-            throw new Error(
-              `File is too big. Tabular files are limited to at most ${(
-                IMPORT_SIZE_LIMIT / 1000
-              ).toLocaleString()}kb.`,
-            )
-          let buffer = await filehandle.readFile()
-          if (self.requiresUnzip) {
-            buffer = await unzip(buffer)
-          }
-          const spreadsheet = await typeParser(buffer as Buffer, self)
-          this.setLoaded()
-          getParent(self).displaySpreadsheet(spreadsheet)
+          filehandle
+            .stat()
+            .then(stat => {
+              if (stat.size > IMPORT_SIZE_LIMIT)
+                throw new Error(
+                  `File is too big. Tabular files are limited to at most ${(
+                    IMPORT_SIZE_LIMIT / 1000
+                  ).toLocaleString()}kb.`,
+                )
+            })
+            .then(() => filehandle.readFile())
+            .then(buffer => {
+              return self.requiresUnzip ? unzip(buffer) : buffer
+            })
+            .then(buffer => typeParser(buffer as Buffer, self))
+            .then(spreadsheet => {
+              this.setLoaded()
+              getParent(self).displaySpreadsheet(spreadsheet)
+            })
+            .catch(this.setError)
         } catch (error) {
           this.setError(error)
         }
