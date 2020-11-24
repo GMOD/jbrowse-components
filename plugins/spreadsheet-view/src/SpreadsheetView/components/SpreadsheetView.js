@@ -53,7 +53,7 @@ export default pluginManager => {
     },
     statusBar: {
       position: 'absolute',
-      background: '#fee',
+      background: theme.palette.background.light,
       left: 0,
       bottom: 0,
       height: statusBarHeight,
@@ -226,6 +226,7 @@ export default pluginManager => {
                 onChangePage={handleChangePage}
                 onChangeRowsPerPage={handleChangeRowsPerPage}
               />
+              <div className={classes.spacer} />
             </FormGroup>
           ) : null}
         </div>
