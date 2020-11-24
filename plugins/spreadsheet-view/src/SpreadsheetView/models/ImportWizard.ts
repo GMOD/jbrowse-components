@@ -6,7 +6,8 @@ import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
 import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
-const IMPORT_SIZE_LIMIT = 300000
+// 30MB
+const IMPORT_SIZE_LIMIT = 30_000_000
 
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
