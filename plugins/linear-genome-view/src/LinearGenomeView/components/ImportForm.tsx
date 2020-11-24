@@ -24,13 +24,13 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [done, setDone] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
   useEffect(() => {
+    let done = false
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
@@ -39,9 +39,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       }
     })()
     return () => {
-      setDone(true)
+      done = true
     }
-  }, [assemblyManager, assemblyName, done])
+  }, [assemblyManager, assemblyName])
 
   function onAssemblyChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -79,7 +79,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {done && (
+          {model.initialized ? (
             <RefNameAutocomplete
               model={model}
               assemblyName={
@@ -95,7 +95,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 helperText: 'Select sequence to view',
               }}
             />
-          )}
+          ) : null}
         </Grid>
         <Grid item>
           <Button
