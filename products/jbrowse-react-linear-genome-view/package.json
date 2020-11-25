@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-linear-genome-view",
-  "version": "0.0.1-beta.0",
+  "version": "1.0.0",
   "description": "JBrowse 2 linear genome view React component",
   "keywords": [
     "jbrowse",
