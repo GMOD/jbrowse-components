@@ -1,5 +1,6 @@
 /**
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
+ * Asynchronous Requests for autocomplete: https://material-ui.com/components/autocomplete/
  */
 import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
@@ -16,7 +17,6 @@ import { LinearGenomeViewModel } from '..'
 
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
-  // console.log('renderRow', props)
   return React.cloneElement(data[index], {
     style: {
       ...style,
@@ -28,8 +28,6 @@ const OuterElementContext = React.createContext({})
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
   const outerProps = React.useContext(OuterElementContext)
-  // console.log('outerElementType props: ', props)
-  // console.log('outerElementType ref: ', ref)
   return <div ref={ref} {...props} {...outerProps} />
 })
 
@@ -42,8 +40,6 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     const itemCount = itemData.length
     const itemSize = 36
 
-    // console.log('listboxcomponent props: ', props)
-    // console.log('listboxcomponent ref: ', ref)
     const getChildSize = (child: React.ReactNode) => {
       if (React.isValidElement(child) && child.type === ListSubheader) {
         return 48
@@ -97,27 +93,46 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
   const [searchValue, setSearchValue] = React.useState<string | undefined>()
-  const session = getSession(model)
-  const { assemblyManager } = getSession(model)
-  const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = (assembly && assembly.regions) || []
+  const [options, setOptions] = React.useState<Array<string>>([])
+
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
+  const session = getSession(model)
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyName && assemblyManager.get(assemblyName)
+  const regions: Region[] = (assembly && assembly.regions) || []
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+  console.log(visibleLocStrings)
   // state of the component
   const loading = !regions.length
-  const current =
-    visibleLocStrings || (regions.length ? regions[0].refName : undefined)
-  const refNames = regions.map(option => option.refName)
+  const current = value || (regions.length ? regions[0].refName : undefined)
 
   useEffect(() => {
-    console.log('just mounted')
-    // would want to fetch information regarding identifiers here
-    // name indexing
-  })
+    console.log('mounted')
+    let active = true
+    if (!loading && active) {
+      setOptions(regions.map(option => option.refName))
+      return undefined
+    }
+    // TODO: name indexing, gene search, identifier implementation
+    return () => {
+      active = false
+    }
+  }, [loading, regions])
+
+  function onChange(event: any, newRegionName: string | null) {
+    console.log(event)
+    if (newRegionName) {
+      const newRegion = regions.find(region => region.refName === newRegionName)
+      if (newRegion) {
+        // @ts-ignore
+        onSelect(getSnapshot(newRegion))
+      }
+    }
+  }
 
   function navTo(locString: string) {
     try {
@@ -125,16 +140,6 @@ function RefNameAutocomplete({
     } catch (e) {
       console.warn(e)
       session.notify(`${e}`, 'warning')
-    }
-  }
-
-  function onChange(_: unknown, newRegionName: string | null) {
-    if (newRegionName) {
-      const newRegion = regions.find(region => region.refName === newRegionName)
-      if (newRegion) {
-        // @ts-ignore
-        onSelect(getSnapshot(newRegion))
-      }
     }
   }
 
@@ -149,10 +154,11 @@ function RefNameAutocomplete({
           React.HTMLAttributes<HTMLElement>
         >
       }
-      options={refNames} // for now only refNames but will need identifiers
+      options={options} // for now only refNames but will need identifiers
       // groupBy={option => option.group}
       loading={loading}
       value={current || ''}
+      // defaultValue={current}
       disabled={!assemblyName || loading}
       noOptionsText={`Navigating to... ${searchValue}`}
       style={style}
@@ -175,14 +181,14 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
-            onChange={event => {
-              setSearchValue(event.target.value)
-            }}
-            onKeyPress={event => {
-              if (event.key === 'Enter') {
-                navTo(searchValue || '')
-              }
-            }}
+            // onChange={event => {
+            //   setSearchValue(event.target.value)
+            // }}
+            // onKeyPress={event => {
+            //   if (event.key === 'Enter') {
+            //     navTo(searchValue || '')
+            //   }
+            // }}
           />
         )
       }}
