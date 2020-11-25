@@ -117,7 +117,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         trackId: `fileName-${Date.now()}`,
         name: fileName,
         assemblyNames: selected.map(selection => assemblyNames[selection]),
-        type: 'LinearSyntenyTrack',
+        type: 'SyntenyTrack',
         adapter: {
           type: 'PAFAdapter',
           pafLocation: trackData,
@@ -127,7 +127,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           type: 'LinearSyntenyRenderer',
         },
       })
-      model.toggleTrack(configuration)
+      model.toggleTrack(configuration.trackId)
     }
   }
 
