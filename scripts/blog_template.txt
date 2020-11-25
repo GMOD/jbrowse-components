@@ -10,8 +10,8 @@ ${NOTES}
 
 - [${JBROWSE_WEB_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG})
 
-To install JBrowse 2, you can download the link above, or you can use the
-JBrowse CLI to automatically download the latest version. See the
+To install JBrowse 2 for the web, you can download the link above, or you can
+use the JBrowse CLI to automatically download the latest version. See the
 [JBrowse web quick start](https://jbrowse.org/jb2/docs/quickstart_web) for more
 details.
 
