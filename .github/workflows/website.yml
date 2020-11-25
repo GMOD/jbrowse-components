@@ -1,14 +1,10 @@
 # Upload website
-on:
-  push:
-    branches:
-      - master
+on: push
 name: Upload website
 jobs:
   build:
     name: upload_web
     runs-on: ubuntu-latest
-    if: "contains(github.event.head_commit.message, 'update docs')"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -18,11 +14,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
-      - name: Install deps
-        run: yarn
-      - run: |
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: website
+      - name: Build website
+        run: |
           cd website/
-          yarn
           yarn build
           cd docs/
           make pdf # generate the pdfcombined.md, run pandoc in docker in the next step
@@ -31,12 +29,14 @@ jobs:
           cp listings.tex ../../
           cd ../../
           ln -s website/docs/img
+          cat <<EOF > entrypoint.sh
+          #!/bin/sh -l
+          /opt/texlive/texdir/bin/x86_64-linuxmusl/tlmgr install pmboxdraw
+          echo "installed"
+          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
+          EOF
+          chmod +x entrypoint.sh
+          cat entrypoint.sh
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
-      - name: Upload
-        run: |
-          cd website/
-          aws s3 sync build s3://jbrowse.org/jb2/
-          aws s3 cp jbrowse2.pdf s3://jbrowse.org/jb2/
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/jb2/*"
+          entrypoint: /github/workspace/entrypoint.sh
