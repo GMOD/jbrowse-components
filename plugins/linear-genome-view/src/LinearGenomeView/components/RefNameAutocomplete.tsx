@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
@@ -98,26 +98,26 @@ function RefNameAutocomplete({
 }) {
   const [searchValue, setSearchValue] = React.useState<string | undefined>()
   const session = getSession(model)
-  // assembly information
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  // possible regions to choose from
   const regions: Region[] = (assembly && assembly.regions) || []
-  // console.log('assembly', assembly)
-  // console.log('model', model)
-  // console.log('regions', regions)
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
-  // console.log('visibleLocString', visibleLocStrings)
   // state of the component
-  console.log('value', value)
   const loading = !regions.length
   const current =
     visibleLocStrings || (regions.length ? regions[0].refName : undefined)
+  const refNames = regions.map(option => option.refName)
+
+  useEffect(() => {
+    console.log('just mounted')
+    // would want to fetch information regarding identifiers here
+    // name indexing
+  })
 
   function navTo(locString: string) {
     try {
@@ -141,7 +141,7 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
-      freeSolo
+      // freeSolo
       disableListWrap
       disableClearable
       ListboxComponent={
@@ -149,10 +149,12 @@ function RefNameAutocomplete({
           React.HTMLAttributes<HTMLElement>
         >
       }
-      options={regions.map(region => region.refName)}
+      options={refNames} // for now only refNames but will need identifiers
+      // groupBy={option => option.group}
       loading={loading}
       value={current || ''}
       disabled={!assemblyName || loading}
+      noOptionsText={`Navigating to... ${searchValue}`}
       style={style}
       onChange={onChange}
       renderInput={params => {
@@ -181,11 +183,10 @@ function RefNameAutocomplete({
                 navTo(searchValue || '')
               }
             }}
-            placeholder="refName:start...end"
           />
         )
       }}
-      renderOption={regionName => <Typography noWrap>{regionName}</Typography>}
+      renderOption={regionName => <Typography noWrap>{regionName}</Typography>} // will need to change regionName -> refName || identifier
     />
   )
 }
