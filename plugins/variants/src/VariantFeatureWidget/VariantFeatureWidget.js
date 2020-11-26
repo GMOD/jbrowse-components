@@ -1,106 +1,150 @@
+/* eslint-disable react/prop-types */
+import React, { useState } from 'react'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
 import Table from '@material-ui/core/Table'
 import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
+import TableContainer from '@material-ui/core/TableContainer'
+import TableSortLabel from '@material-ui/core/TableSortLabel'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React from 'react'
+import TablePagination from '@material-ui/core/TablePagination'
+import TextField from '@material-ui/core/TextField'
+import { observer } from 'mobx-react'
 import {
   BaseFeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-const useStyles = makeStyles(theme => ({
-  table: {
-    padding: 0,
-  },
-  valueCell: {
-    wordWrap: 'break-word',
-    padding: theme.spacing(1),
-  },
-  fieldName: {
-    display: 'inline-block',
-    minWidth: '90px',
-    fontSize: '0.9em',
-    borderBottom: '1px solid #0003',
-    backgroundColor: '#ddd',
-    marginRight: theme.spacing(1),
-    padding: theme.spacing(0.5),
-  },
-  fieldValue: {
-    display: 'inline-block',
-    fontSize: '0.8em',
-  },
-  header: {
-    padding: theme.spacing(0.5),
-    backgroundColor: '#ddd',
-  },
-  title: {
-    fontSize: '1em',
-  },
-
-  valbox: {
-    border: '1px solid #bbb',
-  },
-}))
-
 function VariantSamples(props) {
-  const classes = useStyles()
+  const [rowsPerPage, setRowsPerPage] = useState(50)
+  const [sampleFilter, setSampleFilter] = useState('')
+  const [filter, setFilter] = useState({})
+  const [order, setOrder] = useState('asc')
+  const [orderBy, setOrderBy] = useState('')
+  const [page, setPage] = useState(0)
   const { feature } = props
+
   if (!feature.samples) {
     return null
   }
-  const ret = Object.keys(feature.samples)
-  if (!ret.length) {
-    return null
+
+  const preFilteredRows = Object.entries(feature.samples)
+  const infoFields = Object.keys(preFilteredRows[0][1])
+  let error
+  let rows = []
+  const filters = Object.keys(filter)
+
+  // catch some error thrown from regex
+  try {
+    rows = preFilteredRows
+      .filter(row => row[0].match(sampleFilter))
+      .filter(row =>
+        filters.length
+          ? filters.some(key => String(row[1][key]).match(filter[key] || ''))
+          : true,
+      )
+      .sort(
+        (a, b) =>
+          (order === 'desc' ? -1 : 1) *
+          (orderBy === 'Sample'
+            ? a[0].localeCompare(b[0])
+            : String(a[1][orderBy]).localeCompare(String(b[1][orderBy]))),
+      )
+  } catch (e) {
+    error = e
   }
-  const infoFields = Object.keys(feature.samples[ret[0]])
 
   return (
     <BaseCard {...props} title="Samples">
-      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
-        <Table className={classes.table}>
+      {error ? String(error) : null}
+      <TableContainer>
+        <TextField
+          placeholder="Filter sample (regex)"
+          value={sampleFilter}
+          onChange={event => setSampleFilter(event.target.value)}
+        />
+        {infoFields.map(field => {
+          return (
+            <TextField
+              key={`filter-${field}`}
+              placeholder={`Filter ${field} (regex)`}
+              value={filter[field] || ''}
+              onChange={event =>
+                setFilter({ ...filter, [field]: event.target.value })
+              }
+            />
+          )
+        })}
+        {rows.length > rowsPerPage ? (
+          <TablePagination
+            rowsPerPageOptions={[10, 50, 100, 1000]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChangePage={(event, newPage) => {
+              setPage(newPage)
+            }}
+            onChangeRowsPerPage={event => {
+              setRowsPerPage(parseInt(event.target.value, 10))
+              setPage(0)
+            }}
+          />
+        ) : null}
+        <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Sample</TableCell>
-              {infoFields.map(f => (
-                <TableCell key={f}>{f}</TableCell>
+              {['Sample', ...infoFields].map(f => (
+                <TableCell
+                  key={f}
+                  sortDirection={orderBy === f ? order : false}
+                >
+                  <TableSortLabel
+                    active={orderBy === f}
+                    direction={orderBy === f ? order : 'asc'}
+                    onClick={() => {
+                      const isAsc = orderBy === f && order === 'asc'
+                      setOrder(isAsc ? 'desc' : 'asc')
+                      setOrderBy(f)
+                    }}
+                  >
+                    {f}
+                  </TableSortLabel>
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {Object.entries(feature.samples).map(
-              ([key, value]) =>
-                value && (
-                  <TableRow key={key}>
-                    <TableCell component="th" scope="row">
-                      {key}
-                    </TableCell>
-                    {infoFields.map(f => (
-                      <TableCell className={classes.valueCell} key={f}>
-                        {value === null ? '.' : String(value[f])}
+            {rows
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map(([key, value]) => {
+                return (
+                  value && (
+                    <TableRow key={key}>
+                      <TableCell component="th" scope="row">
+                        {key}
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ),
-            )}
+                      {infoFields.map(f => {
+                        return (
+                          <TableCell key={f}>
+                            {value[f] === null ? '.' : String(value[f])}
+                          </TableCell>
+                        )
+                      })}
+                    </TableRow>
+                  )
+                )
+              })}
           </TableBody>
         </Table>
-      </div>
+      </TableContainer>
     </BaseCard>
   )
 }
 
-VariantSamples.propTypes = {
-  feature: PropTypes.shape().isRequired,
-}
-
 function VariantFeatureDetails(props) {
-  const classes = useStyles()
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   const { samples, ...rest } = feat
@@ -120,7 +164,7 @@ function VariantFeatureDetails(props) {
   }
 
   return (
-    <Paper className={classes.root} data-testid="variant-side-drawer">
+    <Paper data-testid="variant-side-drawer">
       <BaseFeatureDetails
         feature={rest}
         descriptions={descriptions}
@@ -130,10 +174,6 @@ function VariantFeatureDetails(props) {
       <VariantSamples feature={feat} {...props} />
     </Paper>
   )
-}
-
-VariantFeatureDetails.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(VariantFeatureDetails)
