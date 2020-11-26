@@ -277,13 +277,8 @@ const getSubfeaturesToRender = (
 export const BaseSubFeatures = (props: BaseProps) => {
   const { feature, descriptions } = props
   const [subfeaturesLoaded, setSubfeaturesLoaded] = useState(false)
-  let subfeaturesToRender = getSubfeaturesToRender(feature.subfeatures, [])
-  // If not loaded, display only transcript and mRNA
-  if (!subfeaturesLoaded) {
-    subfeaturesToRender = subfeaturesToRender.filter(subfeature =>
-      ['transcript', 'mRNA'].includes(subfeature.title),
-    )
-  }
+  const subfeaturesToRender = getSubfeaturesToRender(feature.subfeatures, [])
+
   // Reset subfeaturesLoaded on props change
   useEffect(() => {
     setSubfeaturesLoaded(false)
@@ -294,30 +289,31 @@ export const BaseSubFeatures = (props: BaseProps) => {
       {subfeaturesToRender.length > 0 && (
         <>
           <Divider />
-          <BaseCard title="SubFeatures" expanded={false}>
-            {subfeaturesToRender.map((subfeature, idx) => {
-              return (
-                <BaseAttributes
-                  {...props}
-                  key={idx}
-                  expanded={false}
-                  title={subfeature.title}
-                  feature={subfeature.attributes}
-                  descriptions={descriptions}
-                />
-              )
-            })}
-            {subfeaturesLoaded ? null : (
-              <Button
-                variant="contained"
-                color="secondary"
-                style={{ margin: '5px' }}
-                onClick={() => setSubfeaturesLoaded(true)}
-              >
-                Load Additional Subfeatures
-              </Button>
-            )}
-          </BaseCard>
+          {subfeaturesLoaded ? (
+            <BaseCard title="SubFeatures">
+              {subfeaturesToRender.map((subfeature, idx) => {
+                return (
+                  <BaseAttributes
+                    {...props}
+                    key={idx}
+                    title={subfeature.title}
+                    feature={subfeature.attributes}
+                    descriptions={descriptions}
+                    expanded={false}
+                  />
+                )
+              })}
+            </BaseCard>
+          ) : (
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{ margin: '5px' }}
+              onClick={() => setSubfeaturesLoaded(true)}
+            >
+              Load Subfeatures
+            </Button>
+          )}
         </>
       )}
     </>
