@@ -26,6 +26,7 @@ export const useStyles = makeStyles(theme => ({
   },
   field: {
     display: 'flex',
+    flexWrap: 'wrap',
   },
   fieldName: {
     wordBreak: 'break-all',
@@ -46,7 +47,6 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-word',
     maxHeight: 300,
     padding: theme.spacing(0.5),
-    backgroundColor: theme.palette.grey[100],
     border: `1px solid ${theme.palette.grey[300]}`,
     boxSizing: 'border-box',
     overflow: 'auto',
@@ -120,7 +120,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
   )
 }
 
-const omit = [
+const globalOmit = [
   'name',
   'start',
   'end',
@@ -141,69 +141,95 @@ interface AttributeProps {
   descriptions?: Record<string, React.ReactNode>
 }
 
-export const Attributes: FunctionComponent<AttributeProps> = props => {
+const FieldName = ({
+  description,
+  name,
+}: {
+  description?: React.ReactNode
+  name: string
+}) => {
   const classes = useStyles()
-  const {
-    attributes,
-    omit: propOmit = [],
-    formatter = (value: unknown) => (
-      <SanitizedHTML
-        html={isObject(value) ? JSON.stringify(value) : String(value)}
-      />
-    ),
-    descriptions,
-  } = props
+  return (
+    <>
+      {description ? (
+        <Tooltip title={description} placement="left">
+          <div className={classes.fieldName}>{name}</div>
+        </Tooltip>
+      ) : (
+        <div className={classes.fieldName}>{name}</div>
+      )}
+    </>
+  )
+}
 
-  const SimpleValue = ({ name, value }: { name: string; value: any }) => {
-    const description = descriptions && descriptions[name]
-    return value ? (
-      <div style={{ display: 'flex' }}>
-        {description ? (
-          <Tooltip title={description} placement="left">
-            <div className={classes.fieldName}>{name}</div>
-          </Tooltip>
-        ) : (
-          <div className={classes.fieldName}>{name}</div>
-        )}
-        <div className={classes.fieldValue}>{formatter(value)}</div>
-      </div>
-    ) : null
-  }
-  const ArrayValue = ({ name, value }: { name: string; value: any[] }) => {
-    const description = descriptions && descriptions[name]
-    return (
-      <div style={{ display: 'flex' }}>
-        {description ? (
-          <Tooltip title={description} placement="left">
-            <div className={classes.fieldName}>{name}</div>
-          </Tooltip>
-        ) : (
-          <div className={classes.fieldName}>{name}</div>
-        )}
-        {value.map((val, i) => (
+const BasicValue = ({ value }: { value: string }) => {
+  return (
+    <SanitizedHTML
+      html={isObject(value) ? JSON.stringify(value) : String(value)}
+    />
+  )
+}
+const SimpleValue = ({
+  name,
+  value,
+  description,
+}: {
+  description?: React.ReactNode
+  name: string
+  value: any
+}) => {
+  const classes = useStyles()
+  return value ? (
+    <div className={classes.field}>
+      <FieldName description={description} name={name} />
+      <BasicValue value={value} />
+    </div>
+  ) : null
+}
+
+const ArrayValue = ({
+  name,
+  value,
+  description,
+}: {
+  description?: React.ReactNode
+  name: string
+  value: any[]
+}) => {
+  const classes = useStyles()
+  return (
+    <div className={classes.field}>
+      <FieldName description={description} name={name} />
+      {value.length === 1 ? (
+        <BasicValue value={value[0]} />
+      ) : (
+        value.map((val, i) => (
           <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            <SanitizedHTML
-              html={isObject(val) ? JSON.stringify(val) : String(val)}
-            />
+            <BasicValue value={val} />
           </div>
-        ))}
-      </div>
-    )
-  }
+        ))
+      )}
+    </div>
+  )
+}
+
+export const Attributes: FunctionComponent<AttributeProps> = props => {
+  const { attributes, omit = [], descriptions = {} } = props
+  const omits = [...omit, ...globalOmit]
 
   return (
     <>
       {Object.entries(attributes)
-        .filter(
-          ([k, v]) =>
-            v !== undefined && !omit.includes(k) && !propOmit.includes(k),
-        )
+        .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
           if (Array.isArray(value)) {
-            return value.length === 1 ? (
-              <SimpleValue key={key} name={key} value={value[0]} />
-            ) : (
-              <ArrayValue key={key} name={key} value={value} />
+            return (
+              <ArrayValue
+                key={key}
+                name={key}
+                value={value}
+                description={descriptions[name]}
+              />
             )
           }
           if (isObject(value)) {
@@ -216,7 +242,14 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             )
           }
 
-          return <SimpleValue key={key} name={key} value={value} />
+          return (
+            <SimpleValue
+              key={key}
+              name={key}
+              value={value}
+              description={descriptions[name]}
+            />
+          )
         })}
     </>
   )
