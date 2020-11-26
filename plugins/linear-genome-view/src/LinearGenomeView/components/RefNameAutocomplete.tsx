@@ -124,7 +124,7 @@ function RefNameAutocomplete({
   }, [loading, regions])
 
   function onChange(event: any, newRegionName: string | null) {
-    console.log(event)
+    // console.log(event)
     if (newRegionName) {
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
@@ -181,9 +181,9 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
-            // onChange={event => {
-            //   setSearchValue(event.target.value)
-            // }}
+            onChange={event => {
+              setSearchValue(event.target.value)
+            }}
             // onKeyPress={event => {
             //   if (event.key === 'Enter') {
             //     navTo(searchValue || '')
