@@ -157,7 +157,7 @@ function ConfirmTrack({
         </Typography>
         <TextField
           className={classes.spacing}
-          value={trackAdapter}
+          value=""
           label="adapterType"
           helperText="An adapter type"
           select
