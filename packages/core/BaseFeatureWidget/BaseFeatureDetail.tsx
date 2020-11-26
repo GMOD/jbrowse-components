@@ -63,14 +63,14 @@ const coreRenderedDetails = [
 
 interface BaseCardProps {
   title?: string
-  expanded?: boolean
+  notExpanded?: boolean
 }
 
 export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
-  const { children, title, expanded = true } = props
+  const { children, title, notExpanded } = props
   return (
-    <Accordion style={{ marginTop: '4px' }} defaultExpanded={expanded}>
+    <Accordion style={{ marginTop: '4px' }} defaultExpanded={!notExpanded}>
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
@@ -299,7 +299,7 @@ export const BaseSubFeatures = (props: BaseProps) => {
                     title={subfeature.title}
                     feature={subfeature.attributes}
                     descriptions={descriptions}
-                    expanded={false}
+                    notExpanded
                   />
                 )
               })}
