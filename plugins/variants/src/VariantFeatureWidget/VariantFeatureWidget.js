@@ -26,11 +26,10 @@ function VariantSamples(props) {
   const [page, setPage] = useState(0)
   const { feature } = props
 
-  if (!feature.samples) {
+  const preFilteredRows = Object.entries(feature.samples || {})
+  if (!preFilteredRows.length) {
     return null
   }
-
-  const preFilteredRows = Object.entries(feature.samples)
   const infoFields = Object.keys(preFilteredRows[0][1])
   let error
   let rows = []
