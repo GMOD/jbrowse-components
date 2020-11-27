@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
+/* eslint-disable @typescript-eslint/camelcase */
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
@@ -27,10 +27,13 @@ const configSchema = ConfigurationSchema(
 class AdapterClass extends BaseFeatureDataAdapter {
   private featureCache = new AbortablePromiseCache({
     cache: new QuickLRU({ maxSize: 100 }),
-    fill: async args => this.readChunk(args),
+    fill: async args => {
+      // @ts-ignore
+      return this.readChunk(args)
+    },
   })
 
-  public async getRefNames(opts: BaseOptions = {}) {
+  public async getRefNames(_: BaseOptions = {}) {
     return []
   }
 
@@ -49,6 +52,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
         })
       }
       await Promise.all(
+        // @ts-ignore
         chunks.map(chunk => {
           return this.featureCache
             .get(
@@ -57,10 +61,12 @@ class AdapterClass extends BaseFeatureDataAdapter {
               opts.signal,
             )
             .then(features => {
-              console.log({ features })
+              // @ts-ignore
               features.forEach(feature => {
-                if (feature.get('start') > query.end) {
-                } else if (feature.get('end') >= query.start) {
+                if (
+                  !(feature.get('start') > query.end) &&
+                  feature.get('end') >= query.start
+                ) {
                   observer.next(feature)
                 }
               })
@@ -72,7 +78,11 @@ class AdapterClass extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  private async readChunk(query) {
+  private async readChunk(query: {
+    start: number
+    end: number
+    refName: string
+  }) {
     const { start, end, refName } = query
     const ref = refName.startsWith('chr') ? refName : `chr${refName}`
     const url = `https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&fields=all&size=1000&email=colin.diesh@gmail.com`
@@ -83,6 +93,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
       throw new Error(response.statusText)
     }
     const featureData = await response.json()
+    // @ts-ignore
     return featureData.hits.map(feature => {
       const {
         genomic_pos,
@@ -104,6 +115,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
 
       let transcriptData = [exons, exons_hg19][hg19]
       if (transcriptData) {
+        // @ts-ignore
         transcriptData = transcriptData.filter(transcript => {
           return transcript.chr === refName.replace('chr', '')
         })
@@ -121,6 +133,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
               name: feature.symbol,
               description: feature.name,
               type: 'gene',
+              // @ts-ignore
               subfeatures: transcriptData.map(transcript => {
                 return {
                   start: transcript.txstart,
@@ -128,9 +141,10 @@ class AdapterClass extends BaseFeatureDataAdapter {
                   name: transcript.transcript,
                   strand: transcript.strand,
                   type: 'mRNA',
-                  subfeatures: transcript.position.map(([start, end]) => ({
-                    start,
-                    end,
+                  // @ts-ignore
+                  subfeatures: transcript.position.map(pos => ({
+                    start: pos[0],
+                    end: pos[1],
                     strand: transcript.strand,
                     type: 'exon',
                   })),

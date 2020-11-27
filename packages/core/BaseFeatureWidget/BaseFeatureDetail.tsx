@@ -228,7 +228,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 key={key}
                 name={key}
                 value={value}
-                description={descriptions[name]}
+                description={descriptions[key]}
               />
             )
           }
@@ -247,7 +247,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
               key={key}
               name={key}
               value={value}
-              description={descriptions[name]}
+              description={descriptions[key]}
             />
           )
         })}
