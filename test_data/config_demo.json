@@ -24,7 +24,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "hg19_aliases.txt"
           }
         }
       }
@@ -52,7 +52,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+            "uri": "hg38_aliases.txt"
           }
         }
       }
@@ -167,6 +167,16 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
         }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "MyGeneV3Adapter"
       }
     },
     {
