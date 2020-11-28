@@ -25,7 +25,6 @@ import MyGene from '@jbrowse/plugin-mygene'
 
 export default [
   SVG,
-  MyGene,
   LinearGenomeView,
   Alignments,
   Bed,
@@ -48,4 +47,5 @@ export default [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
+  MyGene,
 ]
