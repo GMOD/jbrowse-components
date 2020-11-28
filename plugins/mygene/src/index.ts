@@ -215,6 +215,22 @@ class AdapterClass extends BaseFeatureDataAdapter {
 
       let transcriptData = [exons, exons_hg19][hg19]
 
+      if (!transcriptData) {
+        return new SimpleFeature({
+          id: _id,
+          data: {
+            ...rest,
+            refName: genomicPos.chr,
+            start: genomicPos.start,
+            end: genomicPos.end,
+            strand: genomicPos.strand,
+            name: feature.symbol,
+            description: feature.name,
+            type: 'gene',
+          },
+        })
+      }
+
       // this is a weird hack because mygene.info returns features on other
       // chromosomes that are close homologues, and the homologues aren't even
       // clear on whether they are located on the chromosome you are querying
