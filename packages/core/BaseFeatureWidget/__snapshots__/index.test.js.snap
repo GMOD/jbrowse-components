@@ -175,8 +175,12 @@ exports[`open up a widget 1`] = `
                 >
                   score
                 </div>
-                <div>
-                  37
+                <div
+                  class="makeStyles-fieldValue"
+                >
+                  <div>
+                    37
+                  </div>
                 </div>
               </div>
             </div>

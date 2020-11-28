@@ -34,7 +34,7 @@ export const useStyles = makeStyles(theme => ({
     minWidth: '90px',
     maxWidth: '150px',
     borderBottom: '1px solid #0003',
-    backgroundColor: theme.palette.grey[200],
+    backgroundColor: theme.palette.grey[300],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -107,14 +107,8 @@ export const BaseCoreDetails = (props: BaseProps) => {
     <BaseCard {...props} title="Primary data">
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
-        const strValue = String(value)
         return value !== null && value !== undefined ? (
-          <div className={classes.field} key={key}>
-            <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>
-              <SanitizedHTML html={strValue} />
-            </div>
-          </div>
+          <SimpleValue key={key} name={key} value={value} />
         ) : null
       })}
     </BaseCard>
@@ -168,10 +162,13 @@ const FieldName = ({
 }
 
 const BasicValue = ({ value }: { value: string }) => {
+  const classes = useStyles()
   return (
-    <SanitizedHTML
-      html={isObject(value) ? JSON.stringify(value) : String(value)}
-    />
+    <div className={classes.fieldValue}>
+      <SanitizedHTML
+        html={isObject(value) ? JSON.stringify(value) : String(value)}
+      />
+    </div>
   )
 }
 const SimpleValue = ({

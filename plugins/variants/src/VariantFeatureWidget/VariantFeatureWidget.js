@@ -2,15 +2,10 @@
 import React, { useState } from 'react'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableContainer from '@material-ui/core/TableContainer'
-import TableSortLabel from '@material-ui/core/TableSortLabel'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
-import TablePagination from '@material-ui/core/TablePagination'
+
+import { DataGrid } from '@material-ui/data-grid'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import {
   BaseFeatureDetails,
@@ -18,19 +13,18 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 function VariantSamples(props) {
-  const [rowsPerPage, setRowsPerPage] = useState(50)
-  const [sampleFilter, setSampleFilter] = useState('')
   const [filter, setFilter] = useState({})
-  const [order, setOrder] = useState('asc')
-  const [orderBy, setOrderBy] = useState('')
-  const [page, setPage] = useState(0)
   const { feature } = props
 
   const preFilteredRows = Object.entries(feature.samples || {})
   if (!preFilteredRows.length) {
     return null
   }
-  const infoFields = Object.keys(preFilteredRows[0][1])
+  const infoFields = ['sample', ...Object.keys(preFilteredRows[0][1])].map(
+    field => ({
+      field,
+    }),
+  )
   let error
   let rows = []
   const filters = Object.keys(filter)
@@ -38,18 +32,13 @@ function VariantSamples(props) {
   // catch some error thrown from regex
   try {
     rows = preFilteredRows
-      .filter(row => row[0].match(sampleFilter))
+      .map(row => {
+        return { sample: row[0], ...row[1], id: row[0] }
+      })
       .filter(row =>
         filters.length
-          ? filters.some(key => String(row[1][key]).match(filter[key] || ''))
+          ? filters.some(key => String(row[key]).match(filter[key] || ''))
           : true,
-      )
-      .sort(
-        (a, b) =>
-          (order === 'desc' ? -1 : 1) *
-          (orderBy === 'Sample'
-            ? a[0].localeCompare(b[0])
-            : String(a[1][orderBy]).localeCompare(String(b[1][orderBy]))),
       )
   } catch (e) {
     error = e
@@ -57,88 +46,29 @@ function VariantSamples(props) {
 
   return (
     <BaseCard {...props} title="Samples">
-      {error ? String(error) : null}
-      <TableContainer>
-        <TextField
-          placeholder="Filter sample (regex)"
-          value={sampleFilter}
-          onChange={event => setSampleFilter(event.target.value)}
-        />
-        {infoFields.map(field => {
-          return (
-            <TextField
-              key={`filter-${field}`}
-              placeholder={`Filter ${field} (regex)`}
-              value={filter[field] || ''}
-              onChange={event =>
-                setFilter({ ...filter, [field]: event.target.value })
-              }
-            />
-          )
-        })}
-        {rows.length > rowsPerPage ? (
-          <TablePagination
-            rowsPerPageOptions={[10, 50, 100, 1000]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={(event, newPage) => {
-              setPage(newPage)
-            }}
-            onChangeRowsPerPage={event => {
-              setRowsPerPage(parseInt(event.target.value, 10))
-              setPage(0)
-            }}
+      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+
+      {infoFields.map(({ field }) => {
+        return (
+          <TextField
+            key={`filter-${field}`}
+            placeholder={`Filter ${field} (regex)`}
+            value={filter[field] || ''}
+            onChange={event =>
+              setFilter({ ...filter, [field]: event.target.value })
+            }
           />
-        ) : null}
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              {['Sample', ...infoFields].map(f => (
-                <TableCell
-                  key={f}
-                  sortDirection={orderBy === f ? order : false}
-                >
-                  <TableSortLabel
-                    active={orderBy === f}
-                    direction={orderBy === f ? order : 'asc'}
-                    onClick={() => {
-                      const isAsc = orderBy === f && order === 'asc'
-                      setOrder(isAsc ? 'desc' : 'asc')
-                      setOrderBy(f)
-                    }}
-                  >
-                    {f}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map(([key, value]) => {
-                return (
-                  value && (
-                    <TableRow key={key}>
-                      <TableCell component="th" scope="row">
-                        {key}
-                      </TableCell>
-                      {infoFields.map(f => {
-                        return (
-                          <TableCell key={f}>
-                            {value[f] === null ? '.' : String(value[f])}
-                          </TableCell>
-                        )
-                      })}
-                    </TableRow>
-                  )
-                )
-              })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+        )
+      })}
+      <div style={{ height: 600, width: '100%' }}>
+        <DataGrid
+          autoHeight
+          rows={rows}
+          columns={infoFields}
+          rowHeight={20}
+          headerHeight={25}
+        />
+      </div>
     </BaseCard>
   )
 }

@@ -196,8 +196,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     REF
                   </div>
-                  <div>
-                    A
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      A
+                    </div>
                   </div>
                 </div>
                 <div
@@ -209,8 +213,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     ALT
                   </div>
-                  <div>
-                    &lt;TRA&gt;
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      &lt;TRA&gt;
+                    </div>
                   </div>
                 </div>
                 <div
@@ -222,8 +230,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     QUAL
                   </div>
-                  <div>
-                    10.4
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      10.4
+                    </div>
                   </div>
                 </div>
                 <div
@@ -234,8 +246,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     INFO.MQ
                   </div>
-                  <div>
-                    5
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      5
+                    </div>
                   </div>
                 </div>
               </div>

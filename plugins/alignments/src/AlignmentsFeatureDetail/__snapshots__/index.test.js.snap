@@ -211,8 +211,12 @@ exports[`open up a widget 1`] = `
                   >
                     seq
                   </div>
-                  <div>
-                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
+                    </div>
                   </div>
                 </div>
                 <div
@@ -223,8 +227,12 @@ exports[`open up a widget 1`] = `
                   >
                     score
                   </div>
-                  <div>
-                    37
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      37
+                    </div>
                   </div>
                 </div>
                 <div
@@ -235,8 +243,12 @@ exports[`open up a widget 1`] = `
                   >
                     qual
                   </div>
-                  <div>
-                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                    </div>
                   </div>
                 </div>
                 <div
@@ -247,8 +259,12 @@ exports[`open up a widget 1`] = `
                   >
                     MQ
                   </div>
-                  <div>
-                    37
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      37
+                    </div>
                   </div>
                 </div>
                 <div
@@ -259,8 +275,12 @@ exports[`open up a widget 1`] = `
                   >
                     CIGAR
                   </div>
-                  <div>
-                    100M
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      100M
+                    </div>
                   </div>
                 </div>
                 <div
@@ -271,8 +291,12 @@ exports[`open up a widget 1`] = `
                   >
                     seq_length
                   </div>
-                  <div>
-                    100
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      100
+                    </div>
                   </div>
                 </div>
               </div>
