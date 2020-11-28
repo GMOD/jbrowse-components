@@ -255,7 +255,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 return (
                   <div
                     key={key}
-                    style={{ height: value.length * 20 + 100, width: '100%' }}
+                    style={{ height: value.length * 20 + 80, width: '100%' }}
                   >
                     <FieldName prefix={prefix} name={key} />
                     <DataGrid
