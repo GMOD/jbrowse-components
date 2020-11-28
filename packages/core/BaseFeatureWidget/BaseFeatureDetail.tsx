@@ -88,7 +88,6 @@ interface BaseProps extends BaseCardProps {
 }
 
 export const BaseCoreDetails = (props: BaseProps) => {
-  const classes = useStyles()
   const { feature } = props
   const { refName, start, end, strand } = feature
   const strandMap: Record<number, string> = {
@@ -242,34 +241,44 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
         .map(([key, value]) => {
           if (Array.isArray(value) && value.length) {
             if (value.length > 2 && value.every(val => isObject(val))) {
-              let keys = Object.keys(value[0]).sort()
+              const keys = Object.keys(value[0]).sort()
               const unionKeys = new Set(keys)
               value.forEach(val =>
                 Object.keys(val).forEach(k => unionKeys.add(k)),
               )
               if (unionKeys.size < keys.length + 5) {
-                keys = [...unionKeys]
+                const rowsPerPage = 50
                 return (
                   <div
                     key={key}
-                    style={{ height: value.length * 20 + 80, width: '100%' }}
+                    style={{
+                      height:
+                        Math.min(rowsPerPage, value.length) * 20 +
+                        100 +
+                        (value.length > rowsPerPage ? 50 : 0),
+                      width: '100%',
+                    }}
                   >
                     <FieldName prefix={prefix} name={key} />
                     <DataGrid
                       rowHeight={20}
                       headerHeight={25}
-                      hideFooter
                       autoHeight
+                      hideFooter={value.length < rowsPerPage}
+                      pageSize={rowsPerPage}
                       rows={Object.entries(value).map(([k, val]) => ({
                         id: k,
                         ...val,
                       }))}
-                      columns={keys.map(val => ({
+                      columns={[...unionKeys].map(val => ({
                         field: val,
                         width: Math.max(
                           ...value.map(row => {
                             const result = String(row[val])
-                            return Math.max(measureText(result, 14) + 50, 80)
+                            return Math.min(
+                              Math.max(measureText(result, 14) + 50, 80),
+                              1000,
+                            )
                           }),
                         ),
                       }))}
