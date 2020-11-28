@@ -140,24 +140,28 @@ interface AttributeProps {
   omit?: string[]
   formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
+  prefix?: string
 }
 
 const FieldName = ({
   description,
   name,
+  prefix,
 }: {
   description?: React.ReactNode
   name: string
+  prefix?: string
 }) => {
   const classes = useStyles()
+  const val = (prefix ? `${prefix}.` : '') + name
   return (
     <>
       {description ? (
         <Tooltip title={description} placement="left">
-          <div className={classes.fieldName}>{name}</div>
+          <div className={classes.fieldName}>{val}</div>
         </Tooltip>
       ) : (
-        <div className={classes.fieldName}>{name}</div>
+        <div className={classes.fieldName}>{val}</div>
       )}
     </>
   )
@@ -174,15 +178,17 @@ const SimpleValue = ({
   name,
   value,
   description,
+  prefix,
 }: {
   description?: React.ReactNode
   name: string
   value: any
+  prefix?: string
 }) => {
   const classes = useStyles()
   return value ? (
     <div className={classes.field}>
-      <FieldName description={description} name={name} />
+      <FieldName prefix={prefix} description={description} name={name} />
       <BasicValue value={value} />
     </div>
   ) : null
@@ -192,15 +198,17 @@ const ArrayValue = ({
   name,
   value,
   description,
+  prefix,
 }: {
   description?: React.ReactNode
   name: string
   value: any[]
+  prefix?: string
 }) => {
   const classes = useStyles()
   return (
     <div className={classes.field}>
-      <FieldName description={description} name={name} />
+      <FieldName prefix={prefix} description={description} name={name} />
       {value.length === 1 ? (
         <BasicValue value={value[0]} />
       ) : (
@@ -227,7 +235,7 @@ function measureText(str: string, fontSize = 10) {
   )
 }
 export const Attributes: FunctionComponent<AttributeProps> = props => {
-  const { attributes, omit = [], descriptions = {} } = props
+  const { attributes, omit = [], descriptions = {}, prefix = '' } = props
   const omits = [...omit, ...globalOmit]
 
   return (
@@ -236,44 +244,42 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
           if (Array.isArray(value) && value.length) {
-            const keys = Object.keys(value[0]).sort()
-            if (
-              value.length > 2 &&
-              value.every(
-                val =>
-                  isObject(val) &&
-                  Object.keys(val)
-                    .sort()
-                    .every((key, index) => key === keys[index]),
+            if (value.length > 2 && value.every(val => isObject(val))) {
+              let keys = Object.keys(value[0]).sort()
+              const unionKeys = new Set(keys)
+              value.forEach(val =>
+                Object.keys(val).forEach(k => unionKeys.add(k)),
               )
-            ) {
-              return (
-                <div
-                  key={key}
-                  style={{ height: value.length * 20 + 100, width: '100%' }}
-                >
-                  <FieldName name={key} />
-                  <DataGrid
-                    rowHeight={20}
-                    headerHeight={25}
-                    hideFooter
-                    autoHeight
-                    rows={Object.entries(value).map(([key, val]) => ({
-                      id: key,
-                      ...val,
-                    }))}
-                    columns={keys.map(val => ({
-                      field: val,
-                      width: Math.max(
-                        ...value.map(row => {
-                          const result = String(row[val])
-                          return Math.max(measureText(result, 14) + 50, 80)
-                        }),
-                      ),
-                    }))}
-                  />
-                </div>
-              )
+              if (unionKeys.size < keys.length + 5) {
+                keys = [...unionKeys]
+                return (
+                  <div
+                    key={key}
+                    style={{ height: value.length * 20 + 100, width: '100%' }}
+                  >
+                    <FieldName prefix={prefix} name={key} />
+                    <DataGrid
+                      rowHeight={20}
+                      headerHeight={25}
+                      hideFooter
+                      autoHeight
+                      rows={Object.entries(value).map(([k, val]) => ({
+                        id: k,
+                        ...val,
+                      }))}
+                      columns={keys.map(val => ({
+                        field: val,
+                        width: Math.max(
+                          ...value.map(row => {
+                            const result = String(row[val])
+                            return Math.max(measureText(result, 14) + 50, 80)
+                          }),
+                        ),
+                      }))}
+                    />
+                  </div>
+                )
+              }
             }
             return (
               <ArrayValue
@@ -281,6 +287,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 name={key}
                 value={value}
                 description={descriptions[key]}
+                prefix={prefix}
               />
             )
           }
@@ -290,6 +297,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
+                prefix={key}
               />
             )
           }
@@ -300,6 +308,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
               name={key}
               value={value}
               description={descriptions[key]}
+              prefix={prefix}
             />
           )
         })}
