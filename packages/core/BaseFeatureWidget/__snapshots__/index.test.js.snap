@@ -168,19 +168,15 @@ exports[`open up a widget 1`] = `
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
               <div
-                style="display: flex;"
+                class="makeStyles-field"
               >
                 <div
                   class="makeStyles-fieldName"
                 >
                   score
                 </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  <div>
-                    37
-                  </div>
+                <div>
+                  37
                 </div>
               </div>
             </div>

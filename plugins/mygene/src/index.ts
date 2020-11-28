@@ -23,6 +23,7 @@ const configSchema = ConfigurationSchema(
     baseUrl: {
       type: 'string',
       defaultValue:
+        // eslint-disable-next-line no-template-curly-in-string
         'https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com&species=human',
     },
   },
@@ -195,6 +196,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
   private interpolate(str: string, params: Record<string, string | number>) {
     const names = Object.keys(params)
     const vals = Object.values(params)
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval,no-new-func
     return new Function(...names, `return \`${str}\`;`)(...vals)
   }
 

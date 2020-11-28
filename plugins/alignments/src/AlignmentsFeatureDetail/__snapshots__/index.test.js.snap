@@ -204,109 +204,75 @@ exports[`open up a widget 1`] = `
                 class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     seq
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
-                    </div>
+                  <div>
+                    TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     score
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      37
-                    </div>
+                  <div>
+                    37
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     qual
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <button
-                      type="button"
-                    >
-                      Copy
-                    </button>
-                    <button
-                      type="button"
-                    >
-                      Show more
-                    </button>
-                    <div>
-                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
-                    </div>
+                  <div>
+                    17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     MQ
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      37
-                    </div>
+                  <div>
+                    37
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     CIGAR
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      100M
-                    </div>
+                  <div>
+                    100M
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
                     seq_length
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      100
-                    </div>
+                  <div>
+                    100
                   </div>
                 </div>
               </div>

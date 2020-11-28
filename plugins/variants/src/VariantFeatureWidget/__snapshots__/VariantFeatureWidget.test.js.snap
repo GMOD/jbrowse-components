@@ -188,7 +188,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -196,16 +196,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     REF
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      A
-                    </div>
+                  <div>
+                    A
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -213,16 +209,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     ALT
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      &lt;TRA&gt;
-                    </div>
+                  <div>
+                    &lt;TRA&gt;
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -230,28 +222,20 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   >
                     QUAL
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      10.4
-                    </div>
+                  <div>
+                    10.4
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
-                    MQ
+                    INFO.MQ
                   </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      5
-                    </div>
+                  <div>
+                    5
                   </div>
                 </div>
               </div>
