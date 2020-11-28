@@ -11,14 +11,19 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  ConfigurationSchema,
+} from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const configSchema = ConfigurationSchema(
   'MyGeneV3Adapter',
   {
     baseUrl: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.gff.gz' },
+      type: 'string',
+      defaultValue:
+        'https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com&species=human',
     },
   },
   { explicitlyTyped: true },
@@ -135,11 +140,19 @@ class AdapterClass extends BaseFeatureDataAdapter {
     },
   })
 
+  private config: AnyConfigurationModel
+
+  constructor(config: AnyConfigurationModel) {
+    super(config)
+    this.config = config
+  }
+
   public async getRefNames(_: BaseOptions = {}) {
     return []
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
+    const baseUrl = readConfObject(this.config, 'baseUrl')
     return ObservableCreate<Feature>(async observer => {
       const chunkSize = 100000
       const s = query.start - (query.start % chunkSize)
@@ -151,6 +164,7 @@ class AdapterClass extends BaseFeatureDataAdapter {
           start,
           end: start + chunkSize,
           assemblyName: query.assemblyName,
+          baseUrl,
         })
       }
       await Promise.all(
@@ -178,16 +192,23 @@ class AdapterClass extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  private async readChunk(query: {
+  private interpolate(str: string, params: Record<string, string | number>) {
+    const names = Object.keys(params)
+    const vals = Object.values(params)
+    return new Function(...names, `return \`${str}\`;`)(...vals)
+  }
+
+  private async readChunk(chunk: {
     start: number
     end: number
     refName: string
+    baseUrl: string
   }) {
-    const { start, end, refName } = query
+    const { start, end, refName, baseUrl } = chunk
     const ref = refName.startsWith('chr') ? refName : `chr${refName}`
-    const url = `https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com`
+    const url = this.interpolate(baseUrl, { ref, start, end })
 
-    const hg19 = 1 /// might be config+(this.config.hg19 || 0)
+    const hg19 = Number(baseUrl.includes('hg19'))
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error(response.statusText)

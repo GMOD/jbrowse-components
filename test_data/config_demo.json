@@ -171,11 +171,23 @@
     },
     {
       "type": "FeatureTrack",
-      "trackId": "mygene",
+      "trackId": "mygene_hg38",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com&species=human",
+        "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg19",
       "name": "MyGene v3",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com&species=human",
         "type": "MyGeneV3Adapter"
       }
     },
