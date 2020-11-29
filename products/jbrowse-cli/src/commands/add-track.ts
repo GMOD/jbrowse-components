@@ -409,14 +409,14 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
         index: index || `${fileName}.fai`,
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.fai`,
