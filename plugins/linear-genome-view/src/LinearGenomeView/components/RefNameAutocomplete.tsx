@@ -92,27 +92,29 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const [searchValue, setSearchValue] = React.useState<string | undefined>()
+  const [searchValue, setSearchValue] = React.useState<string>('')
   const [options, setOptions] = React.useState<Array<string>>([])
 
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
+
   const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
-  console.log(visibleLocStrings)
   // state of the component
+  console.log('value', value)
   const loading = !regions.length
-  const current = value || (regions.length ? regions[0].refName : undefined)
+  const current = visibleLocStrings || ''
 
   useEffect(() => {
     console.log('mounted')
     let active = true
+    console.log('loading...', loading)
     if (!loading && active) {
       setOptions(regions.map(option => option.refName))
       return undefined
@@ -124,12 +126,14 @@ function RefNameAutocomplete({
   }, [loading, regions])
 
   function onChange(event: any, newRegionName: string | null) {
-    // console.log(event)
+    console.log('newRegionName', newRegionName)
+    console.log('searchValue', searchValue)
     if (newRegionName) {
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
+        setSearchValue(newRegionName)
       }
     }
   }
@@ -146,9 +150,10 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
-      // freeSolo
+      freeSolo
       disableListWrap
       disableClearable
+      selectOnFocus
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
@@ -157,12 +162,12 @@ function RefNameAutocomplete({
       options={options} // for now only refNames but will need identifiers
       // groupBy={option => option.group}
       loading={loading}
-      value={current || ''}
+      value={current || searchValue}
       // defaultValue={current}
       disabled={!assemblyName || loading}
-      noOptionsText={`Navigating to... ${searchValue}`}
+      // noOptionsText={`Navigating to... ${searchValue}`}
       style={style}
-      onChange={onChange}
+      onChange={(e, newRegion) => onChange(e, newRegion)}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
@@ -183,6 +188,7 @@ function RefNameAutocomplete({
             InputProps={TextFieldInputProps}
             onChange={event => {
               setSearchValue(event.target.value)
+              console.log(searchValue)
             }}
             // onKeyPress={event => {
             //   if (event.key === 'Enter') {
