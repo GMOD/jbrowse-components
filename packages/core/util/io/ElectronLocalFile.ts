@@ -63,11 +63,11 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   async readFile(options: FilehandleOptions): Promise<Buffer | string> {
     if (!this.filename) throw new Error('no file path specified')
-    return this.ipcRenderer.invoke(
-      'readFile',
-      this.filename,
-      options,
-    ) as Promise<Buffer | string>
+
+    const { statusCallback, ...rest } = options
+
+    const result = await this.ipcRenderer.invoke('readFile', this.filename)
+    return result !== 'utf8' ? Buffer.from(result) : result
   }
 
   // todo memoize
