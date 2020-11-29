@@ -15,6 +15,8 @@ import React, { useEffect } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
+// const filter = createFilterOptions()
+
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
   return React.cloneElement(data[index], {
@@ -93,7 +95,9 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
   const [searchValue, setSearchValue] = React.useState<string>('')
-  const [options, setOptions] = React.useState<Array<string>>([])
+  const [possibleOptions, setPossibleOptions] = React.useState<Array<string>>(
+    [],
+  )
 
   const {
     coarseVisibleLocStrings,
@@ -107,16 +111,14 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   // state of the component
-  console.log('value', value)
+  // console.log('value', value) // the value is the region displayed
   const loading = !regions.length
   const current = visibleLocStrings || ''
 
   useEffect(() => {
-    console.log('mounted')
     let active = true
-    console.log('loading...', loading)
     if (!loading && active) {
-      setOptions(regions.map(option => option.refName))
+      setPossibleOptions(regions.map(option => option.refName))
       return undefined
     }
     // TODO: name indexing, gene search, identifier implementation
@@ -126,14 +128,13 @@ function RefNameAutocomplete({
   }, [loading, regions])
 
   function onChange(event: any, newRegionName: string | null) {
-    console.log('newRegionName', newRegionName)
-    console.log('searchValue', searchValue)
     if (newRegionName) {
       const newRegion = regions.find(region => region.refName === newRegionName)
       if (newRegion) {
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
-        setSearchValue(newRegionName)
+      } else {
+        navTo(newRegionName)
       }
     }
   }
@@ -159,13 +160,23 @@ function RefNameAutocomplete({
           React.HTMLAttributes<HTMLElement>
         >
       }
-      options={options} // for now only refNames but will need identifiers
-      // groupBy={option => option.group}
+      filterOptions={options => {
+        // console.log(options)
+        // console.log(params)
+        // create using createFilters from autocomplete
+        const filtered = options.filter(option => option !== searchValue)
+        // Use locstring option to navigate
+        if (!(searchValue in filtered)) {
+          if (searchValue !== '') {
+            filtered.push(searchValue)
+          }
+        }
+        return options
+      }}
+      options={possibleOptions}
       loading={loading}
-      value={current || searchValue}
-      // defaultValue={current}
+      value={current || ''}
       disabled={!assemblyName || loading}
-      // noOptionsText={`Navigating to... ${searchValue}`}
       style={style}
       onChange={(e, newRegion) => onChange(e, newRegion)}
       renderInput={params => {
@@ -186,19 +197,14 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
+            placeholder="Navigate to" // eventually search for genes or features..
             onChange={event => {
               setSearchValue(event.target.value)
-              console.log(searchValue)
             }}
-            // onKeyPress={event => {
-            //   if (event.key === 'Enter') {
-            //     navTo(searchValue || '')
-            //   }
-            // }}
           />
         )
       }}
-      renderOption={regionName => <Typography noWrap>{regionName}</Typography>} // will need to change regionName -> refName || identifier
+      renderOption={option => <Typography noWrap>{option}</Typography>}
     />
   )
 }
