@@ -62,18 +62,12 @@ interface WorkerConfiguration {
 // waits for a message from the main thread containing our configuration,
 // which must be sent on boot
 function receiveConfiguration(): Promise<WorkerConfiguration> {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     if (!ipcRenderer) {
       reject(new Error('ipcRenderer not ready'))
       return
     }
     ipcRenderer.answerRenderer('ready_for_configuration', () => true)
-    if (!mainWindow) {
-      const mainWindowId = await ipcRenderer.invoke('getMainWindowId')
-      // @ts-ignore
-      mainWindow = electron.remote.BrowserWindow.fromId(mainWindowId)
-    }
-
     // listen for the configuration
     ipcRenderer.answerRenderer(
       'configure',
