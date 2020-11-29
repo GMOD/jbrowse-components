@@ -135,6 +135,7 @@ export default () => {
               name="URL"
               description=""
               location={trackData}
+              // @ts-ignore
               setLocation={setTrackData}
             />
           </Grid>

@@ -118,7 +118,7 @@ const AssemblyManager = observer(
                   setFormOpen(true)
                 }}
               >
-                Add New Assembly
+                Add new assembly
               </Button>
             </>
           ) : null}

@@ -39,15 +39,15 @@ describe('AssemblyManager GUI', () => {
     const { getByText } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
     )
-    fireEvent.click(getByText('Add New Assembly'))
-    expect(getByText('Create New Assembly')).toBeTruthy()
+    fireEvent.click(getByText('Add new assembly'))
+    expect(getByText('Create new assembly')).toBeTruthy()
   })
 
   it('calls addAssemblyConf from the Add Assembly form', () => {
     const { getByText, getByTestId } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
     )
-    fireEvent.click(getByText('Add New Assembly'))
+    fireEvent.click(getByText('Add new assembly'))
 
     // enter a new assembly and submit
     fireEvent.change(getByTestId('assembly-name'), {
@@ -55,7 +55,7 @@ describe('AssemblyManager GUI', () => {
         value: 'ce11',
       },
     })
-    fireEvent.click(getByText('Create New Assembly'))
+    fireEvent.click(getByText('Create new assembly'))
 
     expect(mockRootModel.jbrowse.addAssemblyConf).toHaveBeenCalledTimes(1)
   })
@@ -64,8 +64,8 @@ describe('AssemblyManager GUI', () => {
     const { getByText } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={() => {}} />,
     )
-    fireEvent.click(getByText('Add New Assembly'))
-    fireEvent.click(getByText('Create New Assembly'))
+    fireEvent.click(getByText('Add new assembly'))
+    fireEvent.click(getByText('Create new assembly'))
     expect(mockRootModel.session.notify).toHaveBeenCalledWith(
       "Can't create an assembly without a name",
     )

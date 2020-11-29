@@ -159,6 +159,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             name="URL"
             description=""
             location={trackData}
+            // @ts-ignore
             setLocation={setTrackData}
           />
         </Grid>
