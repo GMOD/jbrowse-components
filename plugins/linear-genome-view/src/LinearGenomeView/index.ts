@@ -1036,20 +1036,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuItems(): MenuItem[] {
-          const session = getSession(self)
           const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: TrackSelectorIcon,
-              disabled:
-                isSessionModelWithWidgets(session) &&
-                session.visibleWidget &&
-                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view &&
-                // @ts-ignore
-                session.visibleWidget.view.id === self.id,
             },
             {
               label: 'Horizontally flip',
