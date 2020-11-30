@@ -17,6 +17,14 @@ const useStyles = makeStyles(theme => ({
     html: {
       'font-family': 'Roboto',
     },
+    '::-webkit-scrollbar': {
+      '-webkit-appearance': 'none',
+      width: '12px',
+    },
+    '::-webkit-scrollbar-thumb': {
+      'background-color': 'rgba(0,0,0,.5)',
+      '-webkit-box-shadow': '0 0 1px rgba(255,255,255,.5)',
+    },
   },
   root: {
     display: 'grid',
