@@ -24,7 +24,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "https://jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
@@ -52,7 +52,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+            "uri": "https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
           }
         }
       }
