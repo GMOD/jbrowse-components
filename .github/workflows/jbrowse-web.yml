@@ -32,7 +32,8 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          draft: false
+          # This allows us to manually edit the release body text before publishing
+          draft: true
           prerelease: false
       - name: Upload jbrowse-web build
         id: upload-release-asset

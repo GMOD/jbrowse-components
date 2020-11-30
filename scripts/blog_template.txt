@@ -1,5 +1,5 @@
 ---
-title: ${VERSION} Release
+title: ${RELEASE_TAG} Release
 date: ${DATE}
 tags: ['release','jbrowse 2']
 ---
@@ -8,7 +8,7 @@ ${NOTES}
 
 ## Downloads
 
-- [${JBROWSE_WEB_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG})
+- [${RELEASE_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${RELEASE_TAG})
 
 To install JBrowse 2 for the web, you can download the link above, or you can
 use the JBrowse CLI to automatically download the latest version. See the
