@@ -184,7 +184,7 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <FormGroup row style={{ flexWrap: 'nowrap' }}>
+      <FormGroup row style={{ flexWrap: 'nowrap', marginRight: 7 }}>
         <PanControls model={model} />
         {/* the dropdown */}
         <RefNameAutocomplete
