@@ -44,5 +44,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  }
 }
