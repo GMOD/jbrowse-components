@@ -181,7 +181,7 @@ function RefNameAutocomplete({
       style={style}
       onChange={(e, newRegion) => onChange(e, newRegion)}
       onInputChange={(e, inputValue) => setSearchValue(inputValue)}
-      onOpen={e => console.log('I am open')}
+      // onOpen={e => console.log('I am open')}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
