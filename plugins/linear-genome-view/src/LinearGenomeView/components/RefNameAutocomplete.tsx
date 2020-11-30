@@ -9,6 +9,7 @@ import ListSubheader from '@material-ui/core/ListSubheader'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete from '@material-ui/lab/Autocomplete'
+// import SearchIcon from '@material-ui/icons/Search'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import React, { useEffect } from 'react'
@@ -111,9 +112,8 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   // state of the component
-  // console.log('value', value) // the value is the region displayed
-  const loading = !regions.length
   const current = visibleLocStrings || ''
+  const loading = !regions.length
 
   useEffect(() => {
     let active = true
@@ -134,6 +134,7 @@ function RefNameAutocomplete({
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
       } else {
+        // console.log(newRegionName.slice(16))
         navTo(newRegionName)
       }
     }
@@ -152,7 +153,7 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       freeSolo
-      disableListWrap
+      // disableListWrap
       disableClearable
       selectOnFocus
       ListboxComponent={
@@ -160,7 +161,7 @@ function RefNameAutocomplete({
           React.HTMLAttributes<HTMLElement>
         >
       }
-      filterOptions={options => {
+      filterOptions={(options, params) => {
         // console.log(options)
         // console.log(params)
         // create using createFilters from autocomplete
@@ -171,14 +172,16 @@ function RefNameAutocomplete({
             filtered.push(searchValue)
           }
         }
-        return options
+        return filtered
       }}
       options={possibleOptions}
       loading={loading}
-      value={current || ''}
+      value={current}
       disabled={!assemblyName || loading}
       style={style}
       onChange={(e, newRegion) => onChange(e, newRegion)}
+      onInputChange={(e, inputValue) => setSearchValue(inputValue)}
+      onOpen={e => console.log('I am open')}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
@@ -197,10 +200,7 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
-            placeholder="Navigate to" // eventually search for genes or features..
-            onChange={event => {
-              setSearchValue(event.target.value)
-            }}
+            placeholder="Navigate to..."
           />
         )
       }}
