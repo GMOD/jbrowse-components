@@ -10,6 +10,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 export default [
+  SVG,
   Alignments,
   BED,
   Config,
@@ -17,7 +18,6 @@ export default [
   GFF3,
   LinearGenomeView,
   Sequence,
-  SVG,
   Variants,
   Wiggle,
 ]
