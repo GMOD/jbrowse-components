@@ -71,12 +71,14 @@ export default function createViewState(opts: ViewStateOptions) {
             stateTree.session.view.setDisplayedRegions([getSnapshot(region)])
           }
         }
-        if (typeof location === 'string') {
-          stateTree.session.view.navToLocString(location)
-        } else {
-          stateTree.session.view.navTo(location)
+        if (stateTree.session.view.initialized) {
+          if (typeof location === 'string') {
+            stateTree.session.view.navToLocString(location)
+          } else {
+            stateTree.session.view.navTo(location)
+          }
+          reaction.dispose()
         }
-        reaction.dispose()
       }
     })
   }
