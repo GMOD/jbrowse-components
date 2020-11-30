@@ -17,11 +17,19 @@ const useStyles = makeStyles(theme => ({
     html: {
       'font-family': 'Roboto',
     },
-    '::-webkit-scrollbar': {
+    /* Based on: https://www.digitalocean.com/community/tutorials/css-scrollbars */
+    /* The emerging W3C standard
+       that is currently Firefox-only */
+    '*': {
+      'scrollbar-width': 'thin',
+      'scrollbar-color': 'rgba(0,0,0,.5) rgba(128,128,128)',
+    },
+    /* Works on Chrome/Edge/Safari */
+    '*::-webkit-scrollbar': {
       '-webkit-appearance': 'none',
       width: '12px',
     },
-    '::-webkit-scrollbar-thumb': {
+    '*::-webkit-scrollbar-thumb': {
       'background-color': 'rgba(0,0,0,.5)',
       '-webkit-box-shadow': '0 0 1px rgba(255,255,255,.5)',
     },
