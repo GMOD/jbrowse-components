@@ -4,14 +4,12 @@ import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
-import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback } from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import SearchIcon from '@material-ui/icons/Search'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
@@ -73,71 +71,6 @@ const Controls = observer(({ model }: { model: LGV }) => {
     >
       <TrackSelectorIcon />
     </ToggleButton>
-  )
-})
-
-// search component
-const Search = observer(({ model }: { model: LGV }) => {
-  const [value, setValue] = useState<string | undefined>()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const theme = useTheme()
-  const {
-    coarseVisibleLocStrings,
-    visibleLocStrings: nonCoarseVisibleLocStrings,
-  } = model
-
-  const visibleLocStrings =
-    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
-
-  const session = getSession(model)
-
-  console.log('model in search', model)
-  console.log('visibleLocString', visibleLocStrings)
-
-  function navTo(locString: string) {
-    try {
-      model.navToLocString(locString)
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
-    }
-  }
-
-  return (
-    <form
-      data-testid="search-form"
-      onSubmit={event => {
-        event.preventDefault()
-        inputRef && inputRef.current && inputRef.current.blur()
-        value && navTo(value)
-        // react-testing-library
-        setValue(undefined)
-      }}
-    >
-      <TextField
-        inputRef={inputRef}
-        onFocus={() => setValue(visibleLocStrings)}
-        onBlur={() => setValue(undefined)}
-        onChange={event => {
-          // console.log(event.target.value)
-          setValue(event.target.value)
-        }}
-        variant="outlined"
-        value={value === undefined ? visibleLocStrings : value}
-        style={{ margin: SPACING, marginLeft: SPACING * 3 }}
-        inputProps={{
-          'data-testid': 'search-input',
-        }}
-        // eslint-disable-next-line react/jsx-no-duplicate-props
-        InputProps={{
-          startAdornment: <SearchIcon />,
-          style: {
-            background: fade(theme.palette.background.paper, 0.8),
-            height: WIDGET_HEIGHT,
-          },
-        }}
-      />
-    </form>
   )
 })
 
@@ -205,8 +138,6 @@ export default observer(({ model }: { model: LGV }) => {
             },
           }}
         />
-        {/* search bar */}
-        {/* <Search model={model} /> */}
       </FormGroup>
       <RegionWidth model={model} />
       <ZoomControls model={model} />
