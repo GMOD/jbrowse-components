@@ -98,12 +98,11 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
   const [possibleOptions, setPossibleOptions] = React.useState<Array<any>>([])
-
+  const [searchValue, setSearchValue] = React.useState<string | null>()
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
   } = model
-
   const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
@@ -111,12 +110,15 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   const current = visibleLocStrings || ''
-  const loading = !regions.length
+  const loaded = regions.length !== 0
+  console.log('loading', loaded)
+  console.log('current', current)
+  console.log('searchValue', searchValue)
 
   useEffect(() => {
     let active = true
     // TODO: name indexing, gene search, identifier implementation
-    if (!loading && active) {
+    if (loaded && active) {
       const options = regions.map(option => {
         return { type: 'reference sequence', value: option.refName }
       })
@@ -127,25 +129,25 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [loading, regions])
+  }, [loaded, regions])
 
   function onChange(_: unknown, newRegionName: any | null) {
     if (newRegionName) {
       if (typeof newRegionName === 'string') {
-        // console.log('I am a string', newRegionName)
+        console.log('I am a string', newRegionName)
         const newRegion: Region | undefined = regions.find(
           region => region.refName === newRegionName,
         )
         if (newRegion) {
           // @ts-ignore
           onSelect(getSnapshot(newRegion))
-          // console.log('region', newRegion)
+          console.log('region', newRegion)
         } else {
           navTo(newRegionName)
-          // console.log('locstring', newRegionName)
+          console.log('locstring', newRegionName)
         }
       } else {
-        // console.log('I am not a string', newRegionName)
+        console.log('I am not a string', newRegionName)
         const newRegion: Region | undefined = regions.find(
           region =>
             region.refName === newRegionName.value ||
@@ -153,11 +155,11 @@ function RefNameAutocomplete({
         )
         if (newRegion) {
           // @ts-ignore
-          // console.log('region', newRegion)
+          console.log('region', newRegion)
           onSelect(getSnapshot(newRegion))
         } else {
           navTo(newRegionName.inputValue || newRegionName.value)
-          // console.log('locstring', newRegionName)
+          console.log('locstring', newRegionName)
         }
       }
     }
@@ -175,31 +177,30 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
-      selectOnFocus
       freeSolo
-      // disableListWrap
+      selectOnFocus
       disableClearable
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
         >
       }
-      // groupBy={option => String(option.type)}
+      groupBy={option => String(option.type)}
       filterOptions={(options, params) => {
         const filtered = filter(options, params)
         if (params.inputValue !== '') {
           filtered.push({
             inputValue: params.inputValue,
-            value: `Navigating to... ${params.inputValue}`,
+            value: `Navigate to..."${params.inputValue}"`,
             type: 'Search',
           })
         }
         return filtered
       }}
-      options={possibleOptions}
-      loading={loading}
-      value={current}
-      disabled={!assemblyName || loading}
+      options={possibleOptions} // sort tthem
+      loading={loaded}
+      value={current === undefined ? visibleLocStrings : current}
+      disabled={!assemblyName || !loaded}
       style={style}
       onChange={(e, newRegion) => onChange(e, newRegion)}
       renderInput={params => {
@@ -209,7 +210,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {loading ? <CircularProgress color="inherit" size={20} /> : null}
+              {!loaded ? <CircularProgress color="inherit" size={20} /> : null}
               {params.InputProps.endAdornment}
             </>
           ),
@@ -220,7 +221,14 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
-            placeholder="Enter locstring"
+            onChange={e => setSearchValue(e.target.value)}
+            onBlur={() => setSearchValue(undefined)}
+            onFocus={() => setSearchValue(visibleLocStrings)}
+            onKeyPress={e => {
+              if (e.key === 'Enter') {
+                setSearchValue(searchValue)
+              }
+            }}
           />
         )
       }}

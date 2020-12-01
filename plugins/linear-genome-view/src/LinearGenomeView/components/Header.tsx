@@ -119,7 +119,6 @@ export default observer(({ model }: { model: LGV }) => {
       <div className={classes.spacer} />
       <FormGroup row style={{ flexWrap: 'nowrap', marginRight: 7 }}>
         <PanControls model={model} />
-        {/* the dropdown */}
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}
