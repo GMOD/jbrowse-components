@@ -8,7 +8,9 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import Autocomplete from '@material-ui/lab/Autocomplete'
+import Autocomplete, {
+  createFilterOptions,
+} from '@material-ui/lab/Autocomplete'
 // import SearchIcon from '@material-ui/icons/Search'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -16,7 +18,7 @@ import React, { useEffect } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
-// const filter = createFilterOptions()
+const filter = createFilterOptions()
 
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
@@ -95,10 +97,7 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const [searchValue, setSearchValue] = React.useState<string>('')
-  const [possibleOptions, setPossibleOptions] = React.useState<Array<string>>(
-    [],
-  )
+  const [possibleOptions, setPossibleOptions] = React.useState<Array<any>>([])
 
   const {
     coarseVisibleLocStrings,
@@ -111,31 +110,55 @@ function RefNameAutocomplete({
   const regions: Region[] = (assembly && assembly.regions) || []
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
-  // state of the component
   const current = visibleLocStrings || ''
   const loading = !regions.length
 
   useEffect(() => {
     let active = true
+    // TODO: name indexing, gene search, identifier implementation
     if (!loading && active) {
-      setPossibleOptions(regions.map(option => option.refName))
+      const options = regions.map(option => {
+        return { type: 'reference sequence', value: option.refName }
+      })
+
+      setPossibleOptions(options)
       return undefined
     }
-    // TODO: name indexing, gene search, identifier implementation
     return () => {
       active = false
     }
   }, [loading, regions])
 
-  function onChange(event: any, newRegionName: string | null) {
+  function onChange(_: unknown, newRegionName: any | null) {
     if (newRegionName) {
-      const newRegion = regions.find(region => region.refName === newRegionName)
-      if (newRegion) {
-        // @ts-ignore
-        onSelect(getSnapshot(newRegion))
+      if (typeof newRegionName === 'string') {
+        // console.log('I am a string', newRegionName)
+        const newRegion: Region | undefined = regions.find(
+          region => region.refName === newRegionName,
+        )
+        if (newRegion) {
+          // @ts-ignore
+          onSelect(getSnapshot(newRegion))
+          // console.log('region', newRegion)
+        } else {
+          navTo(newRegionName)
+          // console.log('locstring', newRegionName)
+        }
       } else {
-        // console.log(newRegionName.slice(16))
-        navTo(newRegionName)
+        // console.log('I am not a string', newRegionName)
+        const newRegion: Region | undefined = regions.find(
+          region =>
+            region.refName === newRegionName.value ||
+            region.refName === newRegionName.inputValue,
+        )
+        if (newRegion) {
+          // @ts-ignore
+          // console.log('region', newRegion)
+          onSelect(getSnapshot(newRegion))
+        } else {
+          navTo(newRegionName.inputValue || newRegionName.value)
+          // console.log('locstring', newRegionName)
+        }
       }
     }
   }
@@ -152,25 +175,24 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
+      selectOnFocus
       freeSolo
       // disableListWrap
       disableClearable
-      selectOnFocus
       ListboxComponent={
         ListboxComponent as React.ComponentType<
           React.HTMLAttributes<HTMLElement>
         >
       }
+      // groupBy={option => String(option.type)}
       filterOptions={(options, params) => {
-        // console.log(options)
-        // console.log(params)
-        // create using createFilters from autocomplete
-        const filtered = options.filter(option => option !== searchValue)
-        // Use locstring option to navigate
-        if (!(searchValue in filtered)) {
-          if (searchValue !== '') {
-            filtered.push(searchValue)
-          }
+        const filtered = filter(options, params)
+        if (params.inputValue !== '') {
+          filtered.push({
+            inputValue: params.inputValue,
+            value: `Navigating to... ${params.inputValue}`,
+            type: 'Search',
+          })
         }
         return filtered
       }}
@@ -180,8 +202,6 @@ function RefNameAutocomplete({
       disabled={!assemblyName || loading}
       style={style}
       onChange={(e, newRegion) => onChange(e, newRegion)}
-      onInputChange={(e, inputValue) => setSearchValue(inputValue)}
-      // onOpen={e => console.log('I am open')}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
@@ -200,11 +220,20 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             InputProps={TextFieldInputProps}
-            placeholder="Navigate to..."
+            placeholder="Enter locstring"
           />
         )
       }}
-      renderOption={option => <Typography noWrap>{option}</Typography>}
+      renderOption={option => <Typography noWrap>{option.value}</Typography>}
+      getOptionLabel={option => {
+        if (typeof option === 'string') {
+          return option
+        }
+        if (option.inputValue) {
+          return option.inputValue
+        }
+        return option.value
+      }}
     />
   )
 }
