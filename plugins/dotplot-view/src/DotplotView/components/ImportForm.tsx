@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { FileSelector } from '@jbrowse/core/ui'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
@@ -67,7 +68,7 @@ export default () => {
     const [numRows] = useState(2)
     const [selected, setSelected] = useState([0, 0])
     const [error, setError] = useState('')
-    const [trackData, setTrackData] = useState({ uri: '' })
+    const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
     const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
     if (!assemblyNames.length) {
       setError('No configured assemblies')
@@ -83,7 +84,7 @@ export default () => {
         assemblyNames[selected[1]],
       ])
 
-      if (trackData.uri) {
+      if ('uri' in trackData) {
         const fileName = trackData.uri
           ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
           : null
@@ -135,8 +136,7 @@ export default () => {
               name="URL"
               description=""
               location={trackData}
-              // @ts-ignore
-              setLocation={setTrackData}
+              setLocation={loc => setTrackData(loc)}
             />
           </Grid>
           <Grid item>
