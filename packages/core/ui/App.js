@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     /* The emerging W3C standard
        that is currently Firefox-only */
     '*': {
-      'scrollbar-width': 'thin',
+      'scrollbar-width': 'auto',
       'scrollbar-color': 'rgba(0,0,0,.5) rgba(128,128,128)',
     },
     /* Works on Chrome/Edge/Safari */
