@@ -322,7 +322,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is v1.0.0.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -331,7 +331,7 @@ EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
   $ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip
-  $ jbrowse create /path/to/new/installation --tag @jbrowse/web@0.0.1
+  $ jbrowse create /path/to/new/installation --tag v1.0.0
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
 
@@ -404,7 +404,7 @@ OPTIONS
   -h, --help          show CLI help
   -l, --listVersions  Lists out all versions of JBrowse 2
 
-  -t, --tag=tag       Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.
+  -t, --tag=tag       Version of JBrowse 2 to install. Format is v1.0.0.
                       Defaults to latest
 
   -u, --url=url       A direct URL to a JBrowse 2 release
@@ -412,7 +412,7 @@ OPTIONS
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
   $ jbrowse upgrade /path/to/jbrowse2/installation
-  $ jbrowse upgrade /path/to/jbrowse2/installation --tag @jbrowse/web@0.0.1
+  $ jbrowse upgrade /path/to/jbrowse2/installation --tag v1.0.0
   $ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```

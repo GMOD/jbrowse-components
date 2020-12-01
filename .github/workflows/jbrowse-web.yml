@@ -32,7 +32,8 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          draft: false
+          # This allows us to manually edit the release body text before publishing
+          draft: true
           prerelease: false
       - name: Upload jbrowse-web build
         id: upload-release-asset
@@ -41,6 +42,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip
-          asset_name: jbrowse-web-${RELEASE_VERSION}.zip
+          asset_path: ./products/jbrowse-web/build/jbrowse-web-${{env.RELEASE_VERSION}}.zip
+          asset_name: jbrowse-web-${{env.RELEASE_VERSION}}.zip
           asset_content_type: application/zip

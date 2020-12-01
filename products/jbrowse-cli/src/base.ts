@@ -208,7 +208,7 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
 
-    throw new Error('no tags found')
+    throw new Error('no version tags found')
   }
 
   async *fetchVersions() {
