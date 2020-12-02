@@ -18,7 +18,8 @@ import React, { useEffect } from 'react'
 import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
-const filter = createFilterOptions()
+// filter for options that were fetched
+const filter = createFilterOptions({ trim: true, limit: 30 })
 
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
@@ -118,7 +119,6 @@ function RefNameAutocomplete({
       const options = regions.map(option => {
         return { type: 'reference sequence', value: option.refName }
       })
-
       setPossibleOptions(options)
       return undefined
     }
@@ -127,41 +127,24 @@ function RefNameAutocomplete({
     }
   }, [loaded, regions])
 
-  // useEffect(() => {
-  //   console.log('the searchValue has changed', searchValue)
-  //   console.log('model', model)
-  //   console.log('visiblelocstrings', visibleLocStrings)
-  // }, [model, searchValue, visibleLocStrings])
-
   function onChange(_: unknown, newRegionName: any | null) {
     if (newRegionName) {
-      if (typeof newRegionName === 'string') {
-        // console.log('I am a string', newRegionName)
-        const newRegion: Region | undefined = regions.find(
-          region => region.refName === newRegionName,
-        )
-        if (newRegion) {
-          // @ts-ignore
-          onSelect(getSnapshot(newRegion))
-          // console.log('region', newRegion)
-        } else {
-          navTo(newRegionName)
-          // console.log('locstring', newRegionName)
-        }
+      const newRegion: Region | undefined = regions.find(
+        region =>
+          region.refName === newRegionName.value ||
+          region.refName === newRegionName.inputValue ||
+          region.refName === newRegionName,
+      )
+      if (newRegion) {
+        // @ts-ignore
+        onSelect(getSnapshot(newRegion))
       } else {
-        // console.log('I am not a string', newRegionName)
-        const newRegion: Region | undefined = regions.find(
-          region =>
-            region.refName === newRegionName.value ||
-            region.refName === newRegionName.inputValue,
-        )
-        if (newRegion) {
-          // @ts-ignore
-          // console.log('region', newRegion)
-          onSelect(getSnapshot(newRegion))
-        } else {
-          navTo(newRegionName.inputValue || newRegionName.value)
-          // console.log('locstring', newRegionName)
+        switch (typeof newRegionName) {
+          case 'string':
+            navTo(newRegionName)
+            break
+          default:
+            navTo(newRegionName.inputValue || newRegionName.value)
         }
       }
     }
@@ -205,6 +188,7 @@ function RefNameAutocomplete({
         }
         return filtered
       }}
+      // onInputChange={(e, inputValue) => setSearchValue(inputValue)} use this to fetch for newOptions
       onChange={(e, newRegion) => onChange(e, newRegion)}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
