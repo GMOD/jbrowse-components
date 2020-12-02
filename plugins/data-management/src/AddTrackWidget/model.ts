@@ -93,7 +93,7 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get unsupported() {
-        return trackAdapter.type === UNSUPPORTED
+        return self.trackAdapter.type === UNSUPPORTED
       },
 
       get assembly() {
