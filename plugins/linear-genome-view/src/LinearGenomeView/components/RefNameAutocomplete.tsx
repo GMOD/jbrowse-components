@@ -33,6 +33,7 @@ function renderRow(props: ListChildComponentProps) {
 const OuterElementContext = React.createContext({})
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
+  // console.log(props)
   const outerProps = React.useContext(OuterElementContext)
   return <div ref={ref} {...props} {...outerProps} />
 })
@@ -40,13 +41,16 @@ const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
 // Adapter for react-window
 const ListboxComponent = React.forwardRef<HTMLDivElement>(
   function ListboxComponent(props, ref) {
+    // console.log(ref)
     // eslint-disable-next-line react/prop-types
     const { children, ...other } = props
+    // console.log(props)
     const itemData = React.Children.toArray(children)
     const itemCount = itemData.length
     const itemSize = 36
 
     const getChildSize = (child: React.ReactNode) => {
+      // console.log(itemSize)
       if (React.isValidElement(child) && child.type === ListSubheader) {
         return 48
       }
@@ -55,9 +59,11 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     }
 
     const getHeight = () => {
+      // console.log(itemCount)
       if (itemCount > 8) {
         return 8 * itemSize
       }
+      // console.log(itemData.map(getChildSize).reduce((a, b) => a + b, 0))
       return itemData.map(getChildSize).reduce((a, b) => a + b, 0)
     }
 
@@ -87,7 +93,6 @@ function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
-  value,
   style,
   TextFieldProps = {},
 }: {
@@ -99,7 +104,6 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
   const [possibleOptions, setPossibleOptions] = React.useState<Array<any>>([])
-  // const [searchValue, setSearchValue] = React.useState<any | null>()
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
@@ -114,7 +118,16 @@ function RefNameAutocomplete({
 
   useEffect(() => {
     let active = true
-    // TODO: name indexing, gene search, identifier implementation
+    /*
+    TODO: name indexing, gene search, identifier implementation
+    Will need to: 
+    1) dd method ex: handleFetchOptions for API request when the searchValue changes
+    2) dynamically change the array of possibleOptions according to searchValue
+      const [searchValue, setSearchValue] = React.useState<any | null>()
+    3) Change filterOptions in the autocomplete method to filter accordingly
+    4) Modify onInputChange to set the searched Value in the state
+    onInputChange={(e, inputValue) => setSearchValue(inputValue)} use this to fetch for newOptions
+    */
     if (loaded && active) {
       const options = regions.map(option => {
         return { type: 'reference sequence', value: option.refName }
@@ -131,8 +144,8 @@ function RefNameAutocomplete({
     if (newRegionName) {
       const newRegion: Region | undefined = regions.find(
         region =>
-          region.refName === newRegionName.value ||
           region.refName === newRegionName.inputValue ||
+          region.refName === newRegionName.value ||
           region.refName === newRegionName,
       )
       if (newRegion) {
@@ -164,6 +177,7 @@ function RefNameAutocomplete({
       id={`refNameAutocomplete-${model.id}`}
       freeSolo
       selectOnFocus
+      disableListWrap
       disableClearable
       style={style}
       loading={loaded}
@@ -182,13 +196,11 @@ function RefNameAutocomplete({
         if (params.inputValue !== '') {
           filtered.push({
             inputValue: params.inputValue,
-            value: `Navigate to..."${params.inputValue}"`,
             type: 'Search',
           })
         }
         return filtered
       }}
-      // onInputChange={(e, inputValue) => setSearchValue(inputValue)} use this to fetch for newOptions
       onChange={(e, newRegion) => onChange(e, newRegion)}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps

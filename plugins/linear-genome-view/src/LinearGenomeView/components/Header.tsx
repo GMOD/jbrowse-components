@@ -122,12 +122,12 @@ export default observer(({ model }: { model: LGV }) => {
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
           assemblyName={assemblyName}
-          value={displayedRegions.length > 1 ? '' : refName}
+          // value={displayedRegions.length > 1 ? '' : refName}
           model={model}
           TextFieldProps={{
             variant: 'outlined',
             className: classes.headerRefName,
-            style: { margin: SPACING, minWidth: '150px' },
+            style: { margin: SPACING, minWidth: '175px' },
             InputProps: {
               style: {
                 padding: 0,
