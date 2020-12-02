@@ -45,6 +45,7 @@
     "deep-equal": "^2.0.3",
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1",
+    "react-color": "^2.19.3",
     "react-d3-axis": "^0.1.2"
   },
   "peerDependencies": {

@@ -34,6 +34,13 @@ export interface PileupRenderProps {
   colorBy: {
     type: string
     tag?: string
+    color?: string
+    values?: [
+      {
+        value: number
+        color: string
+      },
+    ]
   }
   height: number
   width: number
@@ -142,6 +149,7 @@ const alignmentColoring: { [key: string]: string } = {
 
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
+
 class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
 
@@ -349,7 +357,22 @@ export default class PileupRenderer extends BoxRendererType {
           alignmentColoring[this.colorByReverseTemplate(feature, config)]
         break
       case 'tag': {
+        // right now is hardcoded
+        // track should have information of what tags are on screen using the feature map
+        // ask colin about colorscheme later
+        // value of tag determines color
+        // add custom menu option to drop down
+        // on normal select and matches a tag we have a built in preset color for, it looks like [option chosen] [submit] (in dropdown have some sort of indicator that it has preset colors)
+        // the ones that have preset colors will be hardcoded (like below)
+        // on normal select and does not match a tag with a preset color, it looks like [option chosen] [set default color] [add value button] [submit]
+        // on custom select it looks like
+        // [custom] [enter custom name here] [set default color] [add value button] [submit]
+        // if add value button pressed it looks like
+        // [custom] [custom name] [default color] [submit]
+        // [value] [color for value] [add value button]
+        // add ellipses to end of Color by tag... menu option name to indicate something will open
         const tag = colorBy.tag as string
+        const defaultColor = colorBy.color as string | undefined
         const isCram = feature.get('tags')
         if (tag === 'HP') {
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
@@ -362,9 +385,21 @@ export default class PileupRenderer extends BoxRendererType {
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
           ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
         }
+        // tag is not predetermined, has a color that comes with it
+        else {
+          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+          const { values } = colorBy
+
+          const foundColor = values.find(setVal => setVal.value === val)
+          ctx.fillStyle = foundColor
+            ? foundColor.color || defaultColor
+            : 'color_nostrand'
+        }
         break
       }
+      // doesnt exist yet
       case 'insertSizeAndPairOrientation':
+        // first color by pair, then in the pairs color by insert size
         break
       case 'normal':
       default:

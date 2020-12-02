@@ -65,6 +65,15 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            color: types.maybe(types.string),
+            values: types.maybe(
+              types.array(
+                types.model({
+                  value: types.union(types.number, types.string),
+                  color: types.string,
+                }),
+              ),
+            ),
           }),
         ),
         filterBy: types.optional(
@@ -189,8 +198,19 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setColorScheme(colorScheme: { type: string; tag?: string }) {
+      setColorScheme(colorScheme: {
+        type: string
+        tag?: string
+        color?: string
+        values?: [
+          {
+            value: number
+            color: string
+          },
+        ]
+      }) {
         self.colorBy = cast(colorScheme)
+        self.ready = false
       },
       setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
         self.filterBy = filter
@@ -359,7 +379,7 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Color by tag',
+                  label: 'Color by tag...',
                   onClick: () => {
                     getParent(self, 3).setDialogComponent(ColorByTagDlg)
                   },
