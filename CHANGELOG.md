@@ -1,3 +1,67 @@
+## v1.0.2 (2020-12-02)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                         |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                      |
+| @jbrowse/development-tools              | https://www.npmjs.com/package/@jbrowse/development-tools         |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments         |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                  |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view      |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config             |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management    |
+| @jbrowse/plugin-dotplot-view            |                                                                  |
+| @jbrowse/plugin-filtering               |                                                                  |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3               |
+| @jbrowse/plugin-hic                     |                                                                  |
+| @jbrowse/plugin-legacy-jbrowse          |                                                                  |
+| @jbrowse/plugin-linear-comparative-view |                                                                  |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view |
+| @jbrowse/plugin-lollipop                |                                                                  |
+| @jbrowse/plugin-menus                   |                                                                  |
+| @jbrowse/plugin-protein                 |                                                                  |
+| @jbrowse/plugin-rdf                     |                                                                  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence           |
+| @jbrowse/plugin-spreadsheet-view        |                                                                  |
+| @jbrowse/plugin-sv-inspector            |                                                                  |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                |
+| @jbrowse/plugin-trackhub-registry       |                                                                  |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle             |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                       |
+| @jbrowse/desktop                        |                                                                  |
+| @jbrowse/protein-widget                 |                                                                  |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view  |
+| @jbrowse/web                            |                                                                  |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#1513](https://github.com/GMOD/jbrowse-components/pull/1513) Add a custom scrollbar that overrides the auto-hiding behavior of scrollbars on OSX ([@elliothershberg](https://github.com/elliothershberg))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#1514](https://github.com/GMOD/jbrowse-components/pull/1514) react-linear-genome-view bug fixes ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#1517](https://github.com/GMOD/jbrowse-components/pull/1517) Fix the use of filtering display on desktop ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1512](https://github.com/GMOD/jbrowse-components/pull/1512) Fix setting maxDisplayedBpPerPx for pileup display, helps prevent too large an area from being rendered ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1442](https://github.com/GMOD/jbrowse-components/pull/1442) Change track selector togglebutton to normal button ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1506](https://github.com/GMOD/jbrowse-components/pull/1506) Fix horizontally flipped translation frames position ([@cmdcolin](https://github.com/cmdcolin))
+  - [#1501](https://github.com/GMOD/jbrowse-components/pull/1501) Fix CLI to allow jbrowse create to download newer monorepo tag format ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#1505](https://github.com/GMOD/jbrowse-components/pull/1505) Fix loading of local files in jbrowse-desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Elliot Hershberg ([@elliothershberg](https://github.com/elliothershberg))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## v1.0.1 (2020-11-25)
 
 <details><summary>Packages in this release</summary>
