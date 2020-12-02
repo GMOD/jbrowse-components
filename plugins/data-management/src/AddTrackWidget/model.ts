@@ -57,6 +57,16 @@ export default function f(pluginManager: PluginManager) {
       setTrackType(str: string) {
         self.altTrackType = str
       },
+
+      clearData() {
+        self.trackSource = ''
+        self.trackAdapter = {}
+        self.indexTrackData = { uri: '' }
+        self.trackData = { uri: '' }
+        self.altTrackName = ''
+        self.altTrackType = ''
+        self.altAssemblyName = ''
+      },
     }))
     .views(self => ({
       get trackName() {

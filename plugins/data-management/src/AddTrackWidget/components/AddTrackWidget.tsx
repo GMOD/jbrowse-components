@@ -81,6 +81,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         'info',
       )
     }
+    model.clearData()
     // @ts-ignore
     session.hideWidget(model)
   }
