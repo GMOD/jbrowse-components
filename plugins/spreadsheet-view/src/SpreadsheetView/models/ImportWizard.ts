@@ -33,7 +33,6 @@ export default (pluginManager: PluginManager) => {
   return types
     .model('SpreadsheetImportWizard', {
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
-      loading: false,
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
       selectedAssemblyIdx: 0,
@@ -43,6 +42,7 @@ export default (pluginManager: PluginManager) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileSource: undefined as any,
       error: undefined as Error | undefined,
+      loading: false,
     }))
     .views(self => ({
       get isReadyToOpen() {
