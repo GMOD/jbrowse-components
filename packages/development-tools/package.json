@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",
@@ -31,7 +31,7 @@
     "postpublish": "git push origin master --follow-tags"
   },
   "dependencies": {
-    "@jbrowse/core": "^1.0.1",
+    "@jbrowse/core": "^1.0.2",
     "@types/copy-webpack-plugin": "^6.0.0",
     "@types/webpack": "^4.41.18",
     "change-case": "^4.1.1",

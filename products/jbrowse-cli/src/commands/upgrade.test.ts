@@ -11,7 +11,7 @@ const fsPromises = fs.promises
 
 const releaseArray = [
   {
-    tag_name: '@jbrowse/web@v0.0.2',
+    tag_name: 'v0.0.2',
     prerelease: false,
     assets: [
       {
@@ -20,7 +20,7 @@ const releaseArray = [
     ],
   },
   {
-    tag_name: '@jbrowse/web@v0.0.1',
+    tag_name: 'v0.0.1',
     prerelease: false,
     assets: [
       {
@@ -32,15 +32,13 @@ const releaseArray = [
 
 function mockTagFail(gitHubApi: Scope) {
   return gitHubApi
-    .get(
-      '/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v999.999.999',
-    )
+    .get('/repos/GMOD/jbrowse-components/releases/tags/v999.999.999')
     .reply(404, {})
 }
 
 function mockTagSuccess(gitHubApi: Scope) {
   return gitHubApi
-    .get('/repos/GMOD/jbrowse-components/releases/tags/@jbrowse/web@v0.0.1')
+    .get('/repos/GMOD/jbrowse-components/releases/tags/v0.0.1')
     .reply(200, releaseArray[1])
 }
 
@@ -104,7 +102,7 @@ describe('upgrade', () => {
   setup
     .nock('https://api.github.com', mockTagSuccess)
     .nock('https://example.com', mockV1Zip)
-    .command(['upgrade', '--tag', '@jbrowse/web@v0.0.1'])
+    .command(['upgrade', '--tag', 'v0.0.1'])
     .it('upgrades a directory with a specific version', async ctx => {
       expect(await fsPromises.readdir(ctx.dir)).toContain('manifest.json')
     })
@@ -116,7 +114,7 @@ describe('upgrade', () => {
     })
   setup
     .nock('https://api.github.com', mockTagFail)
-    .command(['upgrade', '--tag', '@jbrowse/web@v999.999.999'])
+    .command(['upgrade', '--tag', 'v999.999.999'])
     .catch(/Could not find version/)
     .it('fails to upgrade if version does not exist')
   setup

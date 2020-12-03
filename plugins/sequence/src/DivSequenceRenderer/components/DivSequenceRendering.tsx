@@ -366,6 +366,7 @@ function Sequence(props: MyProps) {
               region={region}
               theme={theme}
               height={height}
+              reverse={region.reversed}
             />
           ))
         : null}
@@ -408,7 +409,7 @@ function Sequence(props: MyProps) {
               region={region}
               theme={theme}
               height={height}
-              reverse
+              reverse={!region.reversed}
             />
           ))
         : null}

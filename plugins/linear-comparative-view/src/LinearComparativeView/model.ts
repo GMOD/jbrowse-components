@@ -235,7 +235,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get menuItems(): MenuItem[] {
-        const session = getSession(self)
         const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
           if (view.menuItems) {
@@ -249,12 +248,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
           icon: TrackSelectorIcon,
-          disabled:
-            isSessionModelWithWidgets(session) &&
-            session.visibleWidget &&
-            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            // @ts-ignore
-            session.visibleWidget.view.id === self.id,
         })
         return menuItems
       },

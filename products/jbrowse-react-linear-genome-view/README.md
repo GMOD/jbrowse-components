@@ -22,13 +22,12 @@ const theme = createJBrowseTheme()
 
 function View() {
   const state = createViewState({
-    assembly,
-    tracks,
-    defaultSession,
-    location: 'ctgA:1105..1221',
-    onChange: patch => {
-      console.log('patch', patch)
+    assembly: {
+      /* assembly */
     },
+    tracks: [
+      /* tracks */
+    ],
   })
   return (
     <ThemeProvider theme={theme}>
@@ -37,6 +36,8 @@ function View() {
   )
 }
 ```
+
+For a full working example, see [this example](docs/example.md).
 
 ## Install
 

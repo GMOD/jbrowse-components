@@ -1,12 +1,11 @@
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import ToggleButton from '@material-ui/lab/ToggleButton'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React, { useCallback, useRef, useState } from 'react'
@@ -51,28 +50,23 @@ const useStyles = makeStyles(theme => ({
     border: 'none',
     margin: theme.spacing(0.5),
   },
+  buttonSpacer: {
+    marginRight: theme.spacing(2),
+  },
 }))
 
 const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const session = getSession(model)
   return (
-    <ToggleButton
-      onChange={model.activateTrackSelector}
+    <Button
+      onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
       color="secondary"
-      selected={
-        isSessionModelWithWidgets(session) &&
-        session.visibleWidget &&
-        session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-        // @ts-ignore
-        session.visibleWidget.view.id === model.id
-      }
     >
-      <TrackSelectorIcon />
-    </ToggleButton>
+      <TrackSelectorIcon className={classes.buttonSpacer} />
+    </Button>
   )
 })
 

@@ -160,19 +160,18 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               class="makeStyles-headerBar"
             >
               <button
-                class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-                color="secondary"
+                class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
                 tabindex="0"
                 title="Open track selector"
                 type="button"
                 value="track_select"
               >
                 <span
-                  class="MuiToggleButton-label"
+                  class="MuiButton-label"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root"
+                    class="MuiSvgIcon-root makeStyles-buttonSpacer"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
