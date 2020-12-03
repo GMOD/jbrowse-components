@@ -15,6 +15,7 @@ import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
+import { timeout } from 'rxjs/operators'
 
 setup()
 afterEach(cleanup)
@@ -172,9 +173,12 @@ describe('valid file tests', () => {
 
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
-    const { findByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const {
+      findByText,
+      queryAllByText,
+      findByTestId,
+      findByPlaceholderText,
+    } = render(<JBrowse pluginManager={pluginManager} />)
     fireEvent.click(await findByText('Help'))
 
     // need this to complete before we can try to search
@@ -182,16 +186,27 @@ describe('valid file tests', () => {
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
     )
-
-    const target = await findByTestId('search-input')
-    const form = await findByTestId('search-form')
-    fireEvent.change(target, { target: { value: 'contigA:1-200' } })
-    form.submit()
-    // can't just hit enter it seems
-    // fireEvent.keyDown(target, { key: 'Enter', code: 'Enter' })
-    await wait(() => {
-      expect(target.value).toBe('ctgA:1..200')
+    const inputBox = await findByTestId('autocomplete')
+    inputBox.focus()
+    // console.log(inputBox)
+    fireEvent.change(await findByPlaceholderText('Search for location'), {
+      target: { value: 'ctgA:1-500' },
     })
-    expect(target.value).toBe('ctgA:1..200')
+    // fireEvent.change(inputBox.value)
+    // fireEvent.mouseDown(inputBox)
+    // const refNameAutocomplete = await findByTestId('autocomplete')
+    const refNameAutocomplete = await findByPlaceholderText(
+      'Search for location',
+    )
+    // console.log(refNameAutocomplete)
+    fireEvent.keyDown(refNameAutocomplete, { key: 'Enter', code: 'Enter' })
+    const after = await findByPlaceholderText('Search for location')
+    // console.log(after)
+    fireEvent.keyDown(await findByPlaceholderText('Search for location'))
+    await timeout(100)
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgA:'),
+    )
+    // expect(refNameAutocomplete.value).toBe('')
   })
 })
