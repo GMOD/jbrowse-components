@@ -173,12 +173,10 @@ describe('valid file tests', () => {
 
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
-    const {
-      findByText,
-      queryAllByText,
-      findByTestId,
-      findByPlaceholderText,
-    } = render(<JBrowse pluginManager={pluginManager} />)
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId, findByPlaceholderText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
     fireEvent.click(await findByText('Help'))
 
     // need this to complete before we can try to search
@@ -188,25 +186,14 @@ describe('valid file tests', () => {
     )
     const inputBox = await findByTestId('autocomplete')
     inputBox.focus()
-    // console.log(inputBox)
     fireEvent.change(await findByPlaceholderText('Search for location'), {
-      target: { value: 'ctgA:1-500' },
+      target: { value: 'ctgA:1..500' },
     })
-    // fireEvent.change(inputBox.value)
-    // fireEvent.mouseDown(inputBox)
-    // const refNameAutocomplete = await findByTestId('autocomplete')
-    const refNameAutocomplete = await findByPlaceholderText(
-      'Search for location',
-    )
-    // console.log(refNameAutocomplete)
-    fireEvent.keyDown(refNameAutocomplete, { key: 'Enter', code: 'Enter' })
-    const after = await findByPlaceholderText('Search for location')
-    // console.log(after)
+    const test1 = await findByPlaceholderText('Search for location')
+    fireEvent.keyDown(test1, { key: 'Enter', code: 'Enter' })
     fireEvent.keyDown(await findByPlaceholderText('Search for location'))
-    await timeout(100)
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
-      expect.stringContaining('ctgA:'),
+      expect.stringContaining('ctgA:1..500'),
     )
-    // expect(refNameAutocomplete.value).toBe('')
   })
 })
