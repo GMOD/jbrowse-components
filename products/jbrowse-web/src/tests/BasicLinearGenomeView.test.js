@@ -15,7 +15,6 @@ import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
-import { timeout } from 'rxjs/operators'
 
 setup()
 afterEach(cleanup)
@@ -173,7 +172,6 @@ describe('valid file tests', () => {
 
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
     const { findByText, findByTestId, findByPlaceholderText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
