@@ -1,5 +1,5 @@
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util' // eslint-disable-line no-unused-vars
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
