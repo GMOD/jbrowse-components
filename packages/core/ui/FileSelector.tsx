@@ -34,7 +34,7 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 const FileLocationEditor = observer(
   (props: {
     location?: FileLocation
-    setLocation: Function
+    setLocation: (param: FileLocation) => void
     name?: string
     description?: string
     localFileAllowed?: boolean

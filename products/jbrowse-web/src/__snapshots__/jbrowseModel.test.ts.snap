@@ -2681,6 +2681,48 @@ Object {
       "trackId": "pOOtg9wxcUC",
       "type": "QuantitativeTrack",
     },
+    Object {
+      "adapter": Object {
+        "assemblyNames": Array [
+          "volvox",
+          "volvox",
+        ],
+        "pafLocation": Object {
+          "uri": "volvox_fake_synteny.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_fake_synteny-DotplotDisplay",
+          "renderer": Object {
+            "type": "DotplotRenderer",
+          },
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny-LinearComparativeDisplay",
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_fake_synteny-LinearSyntenyDisplay",
+          "renderer": Object {
+            "type": "LinearSyntenyRenderer",
+          },
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_fake_synteny",
+      "trackId": "volvox_fake_synteny",
+      "type": "SyntenyTrack",
+    },
   ],
 }
 `;

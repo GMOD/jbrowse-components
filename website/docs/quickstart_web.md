@@ -72,7 +72,7 @@ In the directory where you would like to download JBrowse 2, run this command
 jbrowse create jbrowse2
 ```
 
-### Downloading using the JBrowse CLI
+### Downloading manually
 
 You can also download JBrowse 2 manually. Go to the
 [releases page](https://github.com/GMOD/jbrowse-components/releases/) of the

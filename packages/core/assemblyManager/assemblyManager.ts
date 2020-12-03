@@ -13,9 +13,13 @@ import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import assemblyFactory from './assembly'
+import PluginManager from '../PluginManager'
 
-export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
-  const Assembly = assemblyFactory(assemblyConfigType)
+export default function assemblyManagerFactory(
+  assemblyConfigType: IAnyType,
+  pluginManager: PluginManager,
+) {
+  const Assembly = assemblyFactory(assemblyConfigType, pluginManager)
   return types
     .model({
       assemblies: types.array(Assembly),
@@ -27,6 +31,11 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           assembly => assembly.name === (canonicalName || assemblyName),
         )
       },
+
+      get assemblyList() {
+        return getParent(self).jbrowse.assemblies.slice()
+      },
+
       get aliasMap() {
         const aliases: Map<string, string> = new Map()
         self.assemblies.forEach(assembly => {
@@ -131,7 +140,7 @@ export default function assemblyManagerFactory(assemblyConfigType: IAnyType) {
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => getParent(self).jbrowse.assemblies.slice(),
+            () => self.assemblyList,
             (
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],

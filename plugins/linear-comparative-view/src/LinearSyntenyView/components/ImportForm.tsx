@@ -8,6 +8,7 @@ import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { makeStyles } from '@material-ui/core/styles'
 import { FileSelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
@@ -72,7 +73,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([0, 0])
   const [error, setError] = useState('')
   const [numRows] = useState(2)
-  const [trackData, setTrackData] = useState({ uri: '' })
+  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
   if (!assemblyNames.length) {
     setError('No configured assemblies')
@@ -107,7 +108,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
     model.views.forEach(view => view.setWidth(model.width))
 
-    if (trackData.uri) {
+    if ('uri' in trackData) {
       const fileName = trackData.uri
         ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
         : null
@@ -117,7 +118,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         trackId: `fileName-${Date.now()}`,
         name: fileName,
         assemblyNames: selected.map(selection => assemblyNames[selection]),
-        type: 'LinearSyntenyTrack',
+        type: 'SyntenyTrack',
         adapter: {
           type: 'PAFAdapter',
           pafLocation: trackData,
@@ -127,7 +128,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           type: 'LinearSyntenyRenderer',
         },
       })
-      model.toggleTrack(configuration)
+      model.toggleTrack(configuration.trackId)
     }
   }
 
@@ -159,7 +160,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
             name="URL"
             description=""
             location={trackData}
-            setLocation={setTrackData}
+            setLocation={loc => setTrackData(loc)}
           />
         </Grid>
 
