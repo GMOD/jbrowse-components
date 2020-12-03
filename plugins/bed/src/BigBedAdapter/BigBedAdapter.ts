@@ -50,6 +50,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys((await this.bigbed.getHeader()).refsByName)
   }
 
+  async getHeader(opts?: BaseOptions) {
+    const { version, fileType } = await this.bigbed.getHeader(opts)
+    // @ts-ignore
+    const { autoSql } = await this.parser
+    return { version, fileType, autoSql }
+  }
+
   public async refIdToName(refId: number) {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
