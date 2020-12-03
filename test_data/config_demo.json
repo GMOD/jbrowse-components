@@ -2165,7 +2165,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "gnomad_v2.1_sv.sites",
-      "name": "gnomad_v2.1_sv.sites",
+      "name": "Gnomad - v2.1 SVs",
       "category": ["Variation"],
       "assemblyNames": ["hg19"],
       "adapter": {
@@ -2178,7 +2178,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "missenseConstrained",
-      "name": "missenseConstrained",
+      "name": "Gnomad - missense constraint",
       "category": ["Variation"],
       "assemblyNames": ["hg19"],
       "adapter": {
@@ -2191,13 +2191,78 @@
     {
       "type": "FeatureTrack",
       "trackId": "pliByGene",
-      "name": "pliByGene",
+      "name": "Gnomad - probability of loss-of-function intolerant (pLI) by gene",
       "category": ["Variation"],
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvGold",
+      "name": "dgvGold",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvGold.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvSupporting.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged_hg19",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting_hg19",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvSupporting.bb"
         }
       }
     }
