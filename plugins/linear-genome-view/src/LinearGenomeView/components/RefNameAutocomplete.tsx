@@ -5,7 +5,6 @@
 import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
-// import ListSubheader from '@material-ui/core/ListSubheader'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Autocomplete, {
@@ -13,12 +12,17 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import React, { useEffect } from 'react'
-// import { ListChildComponentProps, VariableSizeList } from 'react-window'
+import React from 'react'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
-const filter = createFilterOptions({ trim: true, limit: 36 })
+const filter = createFilterOptions<Option>({ trim: true, limit: 36 })
+
+export interface Option {
+  type: string
+  value: string
+  inputValue?: string
+}
 
 function RefNameAutocomplete({
   model,
@@ -34,7 +38,6 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const [possibleOptions, setPossibleOptions] = React.useState<Array<any>>([])
   const {
     coarseVisibleLocStrings,
     visibleLocStrings: nonCoarseVisibleLocStrings,
@@ -46,46 +49,22 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   const loaded = regions.length !== 0
+  const options: Array<Option> = regions.map(option => {
+    return { type: 'reference sequence', value: option.refName }
+  })
 
-  useEffect(() => {
-    let active = true
-    /*
-    TODO: name indexing, gene search, identifier implementation
-    Will need to: 
-    1) add method ex: handleFetchOptions for API request when the searchValue changes
-    2) dynamically change the array of possibleOptions according to searchValue
-      const [searchValue, setSearchValue] = React.useState<any | null>()
-    3) Change filterOptions in the autocomplete method to filter accordingly
-    4) Modify onInputChange to set the searched Value in the state
-    onInputChange={(e, inputValue) => setSearchValue(inputValue)} use this to fetch for newOptions
-    */
-    if (loaded && active) {
-      const options = regions.map(option => {
-        return { type: 'reference sequence', value: option.refName }
-      })
-      setPossibleOptions(options)
-      return undefined
-    }
-    return () => {
-      active = false
-    }
-  }, [loaded, regions])
-
-  function onChange(_: unknown, newRegionName: any | null) {
+  function onChange(e: any, newRegionName: any | null) {
+    e.preventDefault()
     if (newRegionName) {
+      const newRegionValue =
+        newRegionName.inputValue || newRegionName.value || newRegionName
       const newRegion: Region | undefined = regions.find(
-        region =>
-          region.refName === newRegionName.inputValue ||
-          region.refName === newRegionName.value ||
-          region.refName === newRegionName,
+        region => newRegionValue === region.refName,
       )
       if (newRegion) {
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
       } else {
-        if (typeof newRegionName === 'string') {
-          // fetchNewOptions(newRegionName)
-        }
         switch (typeof newRegionName) {
           case 'string':
             navTo(newRegionName)
@@ -121,17 +100,18 @@ function RefNameAutocomplete({
       value={visibleLocStrings || ''}
       includeInputInList
       disabled={!assemblyName || !loaded}
-      options={possibleOptions} // sort them
+      options={options} // sort them
       groupBy={option => String(option.type)}
-      filterOptions={(options, params) => {
-        const filtered = filter(options, params)
+      filterOptions={(possibleOptions, params) => {
+        const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
-          filtered.push({
+          const newOption: Option = {
             type: 'Search',
             inputValue: params.inputValue,
             value: `Navigate to...${params.inputValue}`,
-          })
+          }
+          filtered.push(newOption)
         }
         return filtered
       }}
