@@ -37,7 +37,7 @@ function View() {
 }
 ```
 
-For a full working example, see [this example](./docs/example).
+For a full working example, see [this example](docs/example.md).
 
 ## Install
 
