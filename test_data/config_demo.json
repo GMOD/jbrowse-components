@@ -2122,6 +2122,84 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151.bed4",
+      "name": "snp151.bed4",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp137",
+      "name": "snp137",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp137.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151_hg38",
+      "name": "snp151_hg38",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gnomad_v2.1_sv.sites",
+      "name": "gnomad_v2.1_sv.sites",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/structuralVariants/gnomad_v2.1_sv.sites.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "missenseConstrained",
+      "name": "missenseConstrained",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/missense/missenseConstrained.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "pliByGene",
+      "name": "pliByGene",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb"
+        }
+      }
     }
   ],
   "connections": [],
