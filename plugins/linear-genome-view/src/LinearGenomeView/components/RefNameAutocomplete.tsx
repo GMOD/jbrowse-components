@@ -7,11 +7,10 @@ import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import ListSubheader from '@material-ui/core/ListSubheader'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
-// import Typography from '@material-ui/core/Typography'
+import Typography from '@material-ui/core/Typography'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
-// import SearchIcon from '@material-ui/icons/Search'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import React, { useEffect } from 'react'
@@ -33,7 +32,6 @@ function renderRow(props: ListChildComponentProps) {
 const OuterElementContext = React.createContext({})
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
-  // console.log(props)
   const outerProps = React.useContext(OuterElementContext)
   return <div ref={ref} {...props} {...outerProps} />
 })
@@ -41,16 +39,13 @@ const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
 // Adapter for react-window
 const ListboxComponent = React.forwardRef<HTMLDivElement>(
   function ListboxComponent(props, ref) {
-    // console.log(ref)
     // eslint-disable-next-line react/prop-types
     const { children, ...other } = props
-    // console.log(props)
     const itemData = React.Children.toArray(children)
     const itemCount = itemData.length
     const itemSize = 36
 
     const getChildSize = (child: React.ReactNode) => {
-      // console.log(itemSize)
       if (React.isValidElement(child) && child.type === ListSubheader) {
         return 48
       }
@@ -59,11 +54,9 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
     }
 
     const getHeight = () => {
-      // console.log(itemCount)
       if (itemCount > 8) {
         return 8 * itemSize
       }
-      // console.log(itemData.map(getChildSize).reduce((a, b) => a + b, 0))
       return itemData.map(getChildSize).reduce((a, b) => a + b, 0)
     }
 
@@ -152,6 +145,9 @@ function RefNameAutocomplete({
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
       } else {
+        if (typeof newRegionName === 'string') {
+          // fetchNewOptions(newRegionName)
+        }
         switch (typeof newRegionName) {
           case 'string':
             navTo(newRegionName)
@@ -184,11 +180,11 @@ function RefNameAutocomplete({
       value={visibleLocStrings || ''}
       disabled={!assemblyName || !loaded}
       options={possibleOptions} // sort them
-      ListboxComponent={
-        ListboxComponent as React.ComponentType<
-          React.HTMLAttributes<HTMLElement>
-        >
-      }
+      // ListboxComponent={
+      //   ListboxComponent as React.ComponentType<
+      //     React.HTMLAttributes<HTMLElement>
+      //   >
+      // }
       groupBy={option => String(option.type)}
       filterOptions={(options, params) => {
         const filtered = filter(options, params)
@@ -196,6 +192,7 @@ function RefNameAutocomplete({
         if (params.inputValue !== '') {
           filtered.push({
             inputValue: params.inputValue,
+            value: `Navigate to...${params.inputValue}`,
             type: 'Search',
           })
         }
@@ -224,6 +221,7 @@ function RefNameAutocomplete({
           />
         )
       }}
+      renderOption={option => <Typography noWrap>{option.value}</Typography>}
       getOptionLabel={option => {
         if (typeof option === 'string') {
           return option
