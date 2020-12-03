@@ -53,11 +53,12 @@ function RefNameAutocomplete({
     return { type: 'reference sequence', value: option.refName }
   })
 
-  function onChange(e: any, newRegionName: any | null) {
-    e.preventDefault()
+  function onChange(_: unknown, newRegionName: Option | string | null) {
     if (newRegionName) {
-      const newRegionValue =
-        newRegionName.inputValue || newRegionName.value || newRegionName
+      let newRegionValue = newRegionName
+      if (typeof newRegionName === 'object') {
+        newRegionValue = newRegionName.inputValue || newRegionName.value
+      }
       const newRegion: Region | undefined = regions.find(
         region => newRegionValue === region.refName,
       )
