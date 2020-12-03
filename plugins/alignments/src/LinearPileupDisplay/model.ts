@@ -65,7 +65,7 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
-            color: types.maybe(types.string),
+            colorPalette: types.maybe(types.array(types.string)),
             values: types.maybe(
               types.array(
                 types.model({
@@ -201,7 +201,7 @@ const stateModelFactory = (
       setColorScheme(colorScheme: {
         type: string
         tag?: string
-        color?: string
+        colorPalette?: string[]
         values?: [
           {
             value: number

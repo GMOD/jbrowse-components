@@ -13,6 +13,7 @@ import AddIcon from '@material-ui/icons/Add'
 import CloseIcon from '@material-ui/icons/Close'
 import { ChromePicker, Color, ColorResult, RGBColor } from 'react-color'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import * as d3 from 'd3-scale-chromatic'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -96,7 +97,7 @@ export default function ColorByTagDlg(props: {
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const [customName, setCustomName] = useState('')
-  const [defaultColor, setDefaultColor] = useState('')
+  const [colorPalette, setColorPalette] = useState({ name: '', palette: [] })
 
   const emptyValue = { value: '', color: '' }
   const [valueState, setValueState] = useState([])
@@ -111,7 +112,20 @@ export default function ColorByTagDlg(props: {
     'Custom Color',
   ]) // randomly selected, need to change
 
-  const [defaultDisplayed, setDefaultDisplayed] = useState(false)
+  const colorPalettes = [
+    'Category10',
+    'Accent',
+    'Dark2',
+    'Paired',
+    'Pastel1',
+    'Pastel2',
+    'Set1',
+    'Set2',
+    'Set3',
+    'Tableau10',
+    'Custom Palette',
+  ]
+
   const [valueDisplayed, setValueDisplayed] = useState(false)
 
   // there should be a better way of accessing this
@@ -136,20 +150,16 @@ export default function ColorByTagDlg(props: {
     setValueState(updatedValues)
   }
 
-  const handleColorPickerChange = (e, idx?) => {
+  const handleColorPickerChange = (e, idx) => {
     const colorChosen = serializeColor(e.rgb)
     if (!colors.includes(colorChosen)) setColors([colorChosen, ...colors])
-    if (idx !== undefined) {
-      const updatedValues = [...valueState]
-      updatedValues[idx].color = colorChosen
-      setValueState(updatedValues)
-    } else setDefaultColor(colorChosen)
+    const updatedValues = [...valueState]
+    updatedValues[idx].color = colorChosen
+    setValueState(updatedValues)
   }
 
   const handleColorPickerClose = () => {
     // if open and close color picker without choice, reset
-    if (defaultColor === 'Custom Color') setDefaultColor('')
-    setDefaultDisplayed(false)
     setValueDisplayed(false)
   }
 
@@ -205,56 +215,64 @@ export default function ColorByTagDlg(props: {
             )}
             {!presetTags.has(tag) ? (
               <TextField
-                id="default-color"
+                id="color-palette"
                 select
-                value={defaultColor}
+                value={colorPalette.name}
                 onChange={e => {
-                  setDefaultColor(e.target.value)
-                  if (e.target.value === 'Custom Color')
-                    setDefaultDisplayed(true)
+                  console.log(e.target.value)
+                  setColorPalette({
+                    ...colorPalette,
+                    name: e.target.value,
+                    palette:
+                      e.target.value !== 'Custom Palette'
+                        ? d3[`scheme${e.target.value}`]
+                        : [],
+                  })
                 }}
                 className={classes.formFields}
-                helperText="Default Color"
+                helperText="Select Color Palette"
               >
                 <MenuItem value="" disabled selected>
-                  Select default color
+                  Select Color Palette
                 </MenuItem>
-                {colors.map(color => (
-                  <MenuItem
-                    key={color}
-                    value={color}
-                    style={{ backgroundColor: color || 'none' }}
-                  >
-                    {color}
-                  </MenuItem>
-                ))}
+                {colorPalettes.map(paletteName => {
+                  const paletteColors = d3[`scheme${paletteName}`]
+                  return (
+                    <MenuItem
+                      key={paletteName}
+                      value={paletteName}
+                      style={{
+                        background: paletteColors
+                          ? `-webkit-linear-gradient(left, ${paletteColors.join()})`
+                          : 'none',
+                      }}
+                    >
+                      {paletteName}
+                    </MenuItem>
+                  )
+                })}
               </TextField>
             ) : tag ? (
               <TextField
                 id="preset-color"
                 disabled
-                placeholder="Using Preset Colors"
-                helperText="Default Color"
+                placeholder="Using Preset Palette"
+                helperText="Default Palette"
               />
             ) : null}
-            {defaultDisplayed ? (
-              <ColorPicker
-                color={defaultColor}
-                onChange={e => handleColorPickerChange(e)}
-                handleClose={handleColorPickerClose}
-              />
-            ) : null}
-            {!presetTags.has(tag) && (
-              <Button
-                startIcon={<AddIcon />}
-                variant="contained"
-                color="primary"
-                style={{ marginRight: 5 }}
-                onClick={() => addValueRow()}
-              >
-                Add Value
-              </Button>
-            )}
+            {!presetTags.has(tag) &&
+              colorPalette.name &&
+              !colorPalette.palette.length && (
+                <Button
+                  startIcon={<AddIcon />}
+                  variant="contained"
+                  color="primary"
+                  style={{ marginRight: 5 }}
+                  onClick={() => addValueRow()}
+                >
+                  Add Value
+                </Button>
+              )}
             {valueState.map((val, idx) => {
               const valueId = `value-${idx}`
               const colorId = `color-${idx}`
@@ -314,12 +332,12 @@ export default function ColorByTagDlg(props: {
                 ;(display.PileupDisplay || display).setColorScheme({
                   type: 'tag',
                   tag: tag !== 'customTag' ? tag : customName,
-                  color: defaultColor,
+                  colorPalette: colorPalette.palette,
                   values: valueState,
                 })
                 handleClose()
               }}
-              disabled={!tag || (!presetTags.has(tag) && !defaultColor)}
+              disabled={!tag || (!presetTags.has(tag) && !colorPalette.palette)}
             >
               Submit
             </Button>
