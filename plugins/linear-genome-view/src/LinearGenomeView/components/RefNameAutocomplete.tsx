@@ -18,7 +18,7 @@ import { ListChildComponentProps, VariableSizeList } from 'react-window'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
-const filter = createFilterOptions({ trim: true, limit: 30 })
+const filter = createFilterOptions({ trim: true, limit: 36 })
 
 function renderRow(props: ListChildComponentProps) {
   const { data, index, style } = props
@@ -32,6 +32,7 @@ function renderRow(props: ListChildComponentProps) {
 const OuterElementContext = React.createContext({})
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {
+  console.log(props)
   const outerProps = React.useContext(OuterElementContext)
   return <div ref={ref} {...props} {...outerProps} />
 })
@@ -41,6 +42,7 @@ const ListboxComponent = React.forwardRef<HTMLDivElement>(
   function ListboxComponent(props, ref) {
     // eslint-disable-next-line react/prop-types
     const { children, ...other } = props
+    console.log(props)
     const itemData = React.Children.toArray(children)
     const itemCount = itemData.length
     const itemSize = 36
@@ -87,6 +89,7 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   style,
+  value,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
@@ -114,7 +117,7 @@ function RefNameAutocomplete({
     /*
     TODO: name indexing, gene search, identifier implementation
     Will need to: 
-    1) dd method ex: handleFetchOptions for API request when the searchValue changes
+    1) add method ex: handleFetchOptions for API request when the searchValue changes
     2) dynamically change the array of possibleOptions according to searchValue
       const [searchValue, setSearchValue] = React.useState<any | null>()
     3) Change filterOptions in the autocomplete method to filter accordingly
@@ -171,29 +174,31 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
+      autoComplete
       freeSolo
       selectOnFocus
       disableListWrap
       disableClearable
       style={style}
       loading={loaded}
-      value={visibleLocStrings || ''}
-      disabled={!assemblyName || !loaded}
-      options={possibleOptions} // sort them
       // ListboxComponent={
       //   ListboxComponent as React.ComponentType<
       //     React.HTMLAttributes<HTMLElement>
       //   >
       // }
+      value={visibleLocStrings || ''}
+      includeInputInList
+      disabled={!assemblyName || !loaded}
+      options={possibleOptions} // sort them
       groupBy={option => String(option.type)}
       filterOptions={(options, params) => {
         const filtered = filter(options, params)
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
           filtered.push({
+            type: 'Search',
             inputValue: params.inputValue,
             value: `Navigate to...${params.inputValue}`,
-            type: 'Search',
           })
         }
         return filtered
