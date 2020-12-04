@@ -37,7 +37,7 @@ export interface PileupRenderProps {
     colorPalette?: string[]
     values?: [
       {
-        value: number
+        value: number | string
         color: string
       },
     ]

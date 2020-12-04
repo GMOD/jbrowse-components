@@ -12,6 +12,7 @@ import IconButton from '@material-ui/core/IconButton'
 import AddIcon from '@material-ui/icons/Add'
 import CloseIcon from '@material-ui/icons/Close'
 import { ChromePicker, Color, ColorResult, RGBColor } from 'react-color'
+// import Draggable from 'react-draggable'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import * as d3 from 'd3-scale-chromatic'
 
@@ -108,7 +109,6 @@ export default function ColorByTagDlg(props: {
     'yellow',
     'blue',
     'green',
-    'orange',
     'Custom Color',
   ]) // randomly selected, need to change
 
@@ -126,14 +126,15 @@ export default function ColorByTagDlg(props: {
     'Custom Palette',
   ]
 
+  // save values in a volalite and load again if they color hte same track
   const [valueDisplayed, setValueDisplayed] = useState(false)
 
-  // there should be a better way of accessing this
-  // not sure if right tags
+  // get possible tags matching regex
+  const regex = /^[A-Za-z][A-Za-z0-9]$/
   model.displays[0].features.submaps[0].forEach(feature =>
     feature
       .tags()
-      .filter(featTag => featTag.length === 2)
+      .filter(featTag => featTag.match(regex))
       .forEach(featureTag => {
         uniqueTags.add(featureTag)
       }),
@@ -163,6 +164,8 @@ export default function ColorByTagDlg(props: {
     setValueDisplayed(false)
   }
 
+  // 3 cases
+  // 3. custom tag, choose name and palette or make own palette with colors (can use color picker)
   return (
     <Dialog
       open
@@ -180,7 +183,7 @@ export default function ColorByTagDlg(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent style={{ overflowX: 'hidden' }}>
         <Typography>Set the tag to color by</Typography>
         <div className={classes.root}>
           <form>
@@ -203,7 +206,10 @@ export default function ColorByTagDlg(props: {
               ))}
               <MenuItem value="customTag"> Custom Tag </MenuItem>
             </TextField>
+
             {!presetTags.has(tag) && tag === 'customTag' && (
+              // User chooses custom tag
+              // must assign name and choose or make custom palette below
               <TextField
                 id="custom-name"
                 onBlur={event => {
@@ -214,20 +220,27 @@ export default function ColorByTagDlg(props: {
               />
             )}
             {!presetTags.has(tag) ? (
+              // User chooses preset tag or custom and now must choose palette
+              // or make own custom palette with colors (can use color picker)
+              // can also load previous custom palette
               <TextField
                 id="color-palette"
                 select
                 value={colorPalette.name}
                 onChange={e => {
-                  console.log(e.target.value)
                   setColorPalette({
                     ...colorPalette,
                     name: e.target.value,
                     palette:
-                      e.target.value !== 'Custom Palette'
+                      e.target.value !== 'Custom Palette' &&
+                      e.target.value !== 'Previous Custom Palette'
                         ? d3[`scheme${e.target.value}`]
                         : [],
                   })
+                  if (e.target.value === 'Previous Custom Palette')
+                    setValueState(
+                      model.displays[0].PileupDisplay.previousCustomPalette,
+                    )
                 }}
                 className={classes.formFields}
                 helperText="Select Color Palette"
@@ -242,6 +255,7 @@ export default function ColorByTagDlg(props: {
                       key={paletteName}
                       value={paletteName}
                       style={{
+                        border: paletteColors ? 'solid 1px' : 'none',
                         background: paletteColors
                           ? `-webkit-linear-gradient(left, ${paletteColors.join()})`
                           : 'none',
@@ -251,8 +265,15 @@ export default function ColorByTagDlg(props: {
                     </MenuItem>
                   )
                 })}
+                {model.displays[0].PileupDisplay?.previousCustomPalette
+                  ?.length && (
+                  <MenuItem value="Previous Custom Palette">
+                    Previous Custom Palette
+                  </MenuItem>
+                )}
               </TextField>
             ) : tag ? (
+              // User chooses preset tag that has a preset palette
               <TextField
                 id="preset-color"
                 disabled
@@ -274,6 +295,10 @@ export default function ColorByTagDlg(props: {
                 </Button>
               )}
             {valueState.map((val, idx) => {
+              // For custom palette, user makes value color pairs
+              // determine a value and assign it a preselected color
+              // or use color picker for any color
+
               const valueId = `value-${idx}`
               const colorId = `color-${idx}`
               return (
@@ -335,9 +360,19 @@ export default function ColorByTagDlg(props: {
                   colorPalette: colorPalette.palette,
                   values: valueState,
                 })
+                // save created custom palette if applicable
+                if (valueState.length)
+                  model.displays[0].PileupDisplay.setPreviousCustomPalette(
+                    valueState,
+                  )
                 handleClose()
               }}
-              disabled={!tag || (!presetTags.has(tag) && !colorPalette.palette)}
+              disabled={
+                !tag ||
+                (!presetTags.has(tag) &&
+                  !colorPalette.palette.length &&
+                  !valueState.length)
+              }
             >
               Submit
             </Button>

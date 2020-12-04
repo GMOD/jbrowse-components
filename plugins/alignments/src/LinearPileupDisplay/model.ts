@@ -40,6 +40,11 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+interface CustomPalette {
+  value: number | string
+  color: string
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: LinearPileupDisplayConfigModel,
@@ -88,6 +93,7 @@ const stateModelFactory = (
     .volatile(() => ({
       ready: false,
       currBpPerPx: 0,
+      previousCustomPalette: [],
     }))
 
     .actions(self => ({
@@ -96,6 +102,9 @@ const stateModelFactory = (
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
+      },
+      setPreviousCustomPalette(palette: CustomPalette[]) {
+        self.previousCustomPalette = palette
       },
     }))
     .actions(self => ({
@@ -204,7 +213,7 @@ const stateModelFactory = (
         colorPalette?: string[]
         values?: [
           {
-            value: number
+            value: number | string
             color: string
           },
         ]
