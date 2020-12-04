@@ -110,7 +110,7 @@ export default function ColorByTagDlg(props: {
     'blue',
     'green',
     'Custom Color',
-  ]) // randomly selected, need to change
+  ])
 
   const colorPalettes = [
     'Category10',
@@ -164,8 +164,6 @@ export default function ColorByTagDlg(props: {
     setValueDisplayed(false)
   }
 
-  // 3 cases
-  // 3. custom tag, choose name and palette or make own palette with colors (can use color picker)
   return (
     <Dialog
       open
