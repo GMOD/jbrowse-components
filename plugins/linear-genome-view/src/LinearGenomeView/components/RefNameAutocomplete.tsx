@@ -111,7 +111,7 @@ function RefNameAutocomplete({
           const newOption: Option = {
             type: 'Search',
             inputValue: params.inputValue,
-            value: `Navigate to...${params.inputValue}`,
+            value: params.inputValue,
           }
           filtered.push(newOption)
         }
