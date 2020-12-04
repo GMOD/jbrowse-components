@@ -476,6 +476,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       setDefaultSession() {
         return getParent(self).setDefaultSession()
       },
+      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return getParent(self).setSession(sessionSnapshot)
+      },
     }))
     .extend(() => {
       const snackbarMessages = observable.array()
