@@ -24,6 +24,7 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
+  const [loaded, setLoaded] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
@@ -42,6 +43,12 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       done = true
     }
   }, [assemblyManager, assemblyName])
+
+  useEffect(() => {
+    if (model.volatileWidth) {
+      setLoaded(true)
+    }
+  }, [loaded, model.volatileWidth])
 
   function onAssemblyChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -79,14 +86,14 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {model.initialized ? (
+          {loaded ? (
             <RefNameAutocomplete
               model={model}
               assemblyName={
                 error ? undefined : assemblyNames[selectedAssemblyIdx]
               }
+              value={selectedRegion?.refName}
               onSelect={setSelectedRegion}
-              value={selectedRegion && selectedRegion.refName}
               TextFieldProps={{
                 margin: 'normal',
                 variant: 'outlined',
