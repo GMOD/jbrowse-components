@@ -15,7 +15,7 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
@@ -99,7 +99,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['File', 'Add'], {
         label: 'Linear genome view',
-        icon: TrackSelectorIcon,
+        icon: LineStyleIcon,
         onClick: (session: AbstractSessionModel) => {
           session.addView('LinearGenomeView', {})
         },
