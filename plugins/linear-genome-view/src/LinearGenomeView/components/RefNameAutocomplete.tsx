@@ -29,6 +29,7 @@ function RefNameAutocomplete({
   onSelect,
   assemblyName,
   style,
+  value,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
@@ -38,14 +39,14 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const {
-    coarseVisibleLocStrings,
-    visibleLocStrings: nonCoarseVisibleLocStrings,
-  } = model
   const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
+  const {
+    coarseVisibleLocStrings,
+    visibleLocStrings: nonCoarseVisibleLocStrings,
+  } = model
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   const loaded = regions.length !== 0
@@ -53,7 +54,7 @@ function RefNameAutocomplete({
     return { type: 'reference sequence', value: option.refName }
   })
 
-  function onChange(_: unknown, newRegionName: Option | string | null) {
+  function onChange(newRegionName: Option | string | null) {
     if (newRegionName) {
       let newRegionValue = newRegionName
       if (typeof newRegionName === 'object') {
@@ -91,14 +92,13 @@ function RefNameAutocomplete({
       id={`refNameAutocomplete-${model.id}`}
       ListboxProps={{ style: { maxHeight: 250 } }}
       data-testid="autocomplete"
-      autoComplete
       freeSolo
       selectOnFocus
       disableListWrap
       disableClearable
       style={style}
       loading={loaded}
-      value={visibleLocStrings || ''}
+      value={visibleLocStrings || value || ''}
       includeInputInList
       disabled={!assemblyName || !loaded}
       options={options} // sort them
@@ -116,7 +116,10 @@ function RefNameAutocomplete({
         }
         return filtered
       }}
-      onChange={(e, newRegion) => onChange(e, newRegion)}
+      onChange={(e, newRegion) => {
+        e.preventDefault()
+        onChange(newRegion)
+      }}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {

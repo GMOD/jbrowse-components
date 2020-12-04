@@ -253,7 +253,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                     >
                       <input
-                        aria-autocomplete="both"
+                        aria-autocomplete="list"
                         aria-invalid="false"
                         autocapitalize="none"
                         autocomplete="off"
