@@ -117,7 +117,7 @@ export default class extends Plugin {
       pluginManager.rootModel.insertInMenu(
         'File',
         {
-          label: 'Import session',
+          label: 'Import session…',
           icon: PublishIcon,
           onClick: (session: SessionWithWidgets) => {
             const widget = session.addWidget(
