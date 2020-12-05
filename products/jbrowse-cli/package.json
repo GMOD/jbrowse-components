@@ -10,7 +10,11 @@
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
-  "repository": "https://github.com/GMOD/jbrowse-components.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-cli"
+  },
   "author": "JBrowse Team",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -27,7 +31,7 @@
     "node": ">=10.4.0"
   },
   "scripts": {
-    "build": "cp ../../yarn.lock . && oclif-dev pack && rm yarn.lock",
+    "build": "oclif-dev pack",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "version": "oclif-dev readme && git add README.md",

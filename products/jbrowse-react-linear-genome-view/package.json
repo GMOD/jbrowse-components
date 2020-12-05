@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/jbrowse-react-linear-genome-view"
+    "directory": "products/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
@@ -36,6 +36,7 @@
     "@jbrowse/core": "^1.0.2",
     "@jbrowse/plugin-alignments": "^1.0.2",
     "@jbrowse/plugin-bed": "^1.0.2",
+    "@jbrowse/plugin-circular-view": "^1.0.2",
     "@jbrowse/plugin-config": "^1.0.2",
     "@jbrowse/plugin-data-management": "^1.0.2",
     "@jbrowse/plugin-gff3": "^1.0.2",
