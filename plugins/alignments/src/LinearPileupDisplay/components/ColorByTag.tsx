@@ -131,7 +131,7 @@ export default function ColorByTagDlg(props: {
 
   // get possible tags matching regex
   const regex = /^[A-Za-z][A-Za-z0-9]$/
-  model.displays[0].features.submaps[0].forEach(feature =>
+  model.displays[0].features.submaps[0]?.forEach(feature =>
     feature
       .tags()
       .filter(featTag => featTag.match(regex))
@@ -159,8 +159,13 @@ export default function ColorByTagDlg(props: {
     setValueState(updatedValues)
   }
 
-  const handleColorPickerClose = () => {
+  const handleColorPickerClose = (e, idx) => {
     // if open and close color picker without choice, reset
+    if (valueState[idx].color === 'Custom Color') {
+      const resetValue = [...valueState]
+      resetValue[idx].color = ''
+      setValueState(resetValue)
+    }
     setValueDisplayed(false)
   }
 
@@ -248,14 +253,24 @@ export default function ColorByTagDlg(props: {
                 </MenuItem>
                 {colorPalettes.map(paletteName => {
                   const paletteColors = d3[`scheme${paletteName}`]
+                  const gradientArray = []
+                  // calculate hard stop % for nice looking gradients
+                  paletteColors?.forEach((color, idx) => {
+                    const percentRange = 100 / paletteColors.length
+                    gradientArray.push(
+                      `${color} ${percentRange * idx}% ${
+                        percentRange * (idx + 1)
+                      }%`,
+                    )
+                  })
                   return (
                     <MenuItem
                       key={paletteName}
                       value={paletteName}
                       style={{
-                        border: paletteColors ? 'solid 1px' : 'none',
+                        border: paletteColors ? 'solid 0.5px' : 'none',
                         background: paletteColors
-                          ? `-webkit-linear-gradient(left, ${paletteColors.join()})`
+                          ? `linear-gradient(to left, ${gradientArray.join()})`
                           : 'none',
                       }}
                     >
@@ -341,7 +356,7 @@ export default function ColorByTagDlg(props: {
                     <ColorPicker
                       color={valueState[idx].color}
                       onChange={e => handleColorPickerChange(e, idx)}
-                      handleClose={handleColorPickerClose}
+                      handleClose={e => handleColorPickerClose(e, idx)}
                     />
                   ) : null}
                 </div>

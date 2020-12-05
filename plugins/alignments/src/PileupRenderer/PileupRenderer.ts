@@ -339,6 +339,18 @@ export default class PileupRenderer extends BoxRendererType {
 
     const colorMap = ['lightblue', 'pink', 'lightgreen', 'lightpurple']
     const colorType = colorBy ? colorBy.type : ''
+
+    // NEED TO CHANGE only a simple hash to get 'unique' color for each value
+    // has a lot of collision, not final solution
+    const simpleHash = input => {
+      if (input === undefined) return undefined
+      const stringToHash = isNaN(input) ? input : input.toString()
+      let sum = 0
+      for (let i = 0; i < stringToHash.length; i++)
+        sum += ((i + 1) * stringToHash.codePointAt(i)) / (1 << 8)
+      return Math.floor((sum % 1) * 11)
+    }
+
     switch (colorType) {
       case 'insertSize':
         ctx.fillStyle = this.colorByInsertSize(feature, config)
@@ -392,7 +404,7 @@ export default class PileupRenderer extends BoxRendererType {
 
           const foundColor = values.find(setVal => setVal.value === val)
           ctx.fillStyle = colorPalette
-            ? colorPalette[val]
+            ? colorPalette[simpleHash(val)]
             : foundColor?.color || 'color_nostrand'
         }
         break
