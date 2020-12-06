@@ -172,11 +172,12 @@ describe('valid file tests', () => {
 
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
     const { findByText, findByTestId, findByPlaceholderText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
+    expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
-
     // need this to complete before we can try to search
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId(
@@ -185,13 +186,14 @@ describe('valid file tests', () => {
     const inputBox = await findByTestId('autocomplete')
     inputBox.focus()
     fireEvent.change(await findByPlaceholderText('Search for location'), {
-      target: { value: 'ctgA:1..500' },
+      target: { value: 'ctgB:1..200' },
     })
     const test1 = await findByPlaceholderText('Search for location')
     fireEvent.keyDown(test1, { key: 'Enter', code: 'Enter' })
     fireEvent.keyDown(await findByPlaceholderText('Search for location'))
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
-      expect.stringContaining('ctgA:1..500'),
+      expect.stringContaining('ctgB:1..200'),
     )
+    expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgB')
   })
 })
