@@ -136,6 +136,7 @@ function RefNameAutocomplete({
                   <SearchIcon />
                 </InputAdornment>
               )}
+              {params.InputProps.endAdornment}
             </>
           ),
         }

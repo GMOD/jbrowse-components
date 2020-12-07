@@ -104,7 +104,12 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
               }}
             />
           ) : (
-            <CircularProgress color="inherit" size={20} />
+            <CircularProgress
+              role="progressbar"
+              color="inherit"
+              size={20}
+              disableShrink
+            />
           )}
         </Grid>
         <Grid item>
