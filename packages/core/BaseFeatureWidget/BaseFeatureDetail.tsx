@@ -63,13 +63,14 @@ const coreRenderedDetails = [
 
 interface BaseCardProps {
   title?: string
+  defaultExpanded?: boolean
 }
 
 export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
-  const { children, title } = props
+  const { children, title, defaultExpanded = true } = props
   return (
-    <Accordion style={{ marginTop: '4px' }} defaultExpanded>
+    <Accordion style={{ marginTop: '4px' }} defaultExpanded={defaultExpanded}>
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
@@ -83,14 +84,14 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
 }
 
 interface BaseProps extends BaseCardProps {
-  feature: Record<string, any>
+  feature: any
   descriptions?: Record<string, React.ReactNode>
 }
 
-export const BaseCoreDetails = (props: BaseProps) => {
+const CoreDetails = (props: BaseProps) => {
   const { feature } = props
   const { refName, start, end, strand } = feature
-  const strandMap: Record<number, string> = {
+  const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
@@ -101,15 +102,22 @@ export const BaseCoreDetails = (props: BaseProps) => {
     length: end - start,
     position: `${refName}:${start + 1}..${end} ${strandStr}`,
   }
-
   return (
-    <BaseCard {...props} title="Primary data">
+    <>
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
         return value !== null && value !== undefined ? (
           <SimpleValue key={key} name={key} value={value} />
         ) : null
       })}
+    </>
+  )
+}
+
+export const BaseCoreDetails = (props: BaseProps) => {
+  return (
+    <BaseCard {...props} title="Primary data">
+      <CoreDetails {...props} />
     </BaseCard>
   )
 }
@@ -126,12 +134,14 @@ const globalOmit = [
   'subfeatures',
   'uniqueId',
   'exonFrames',
+  'thickStart',
+  'thickEnd',
+  'parentId',
 ]
 
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
   prefix?: string
 }
@@ -334,19 +344,55 @@ export const BaseAttributes = (props: BaseProps) => {
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
-  formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
 }
-
+const Subfeature = (props: BaseProps) => {
+  const { feature } = props
+  const { type, name, id } = feature
+  const displayName = name || id
+  return (
+    <>
+      <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
+        <CoreDetails {...props} />
+        <Divider />
+        <Attributes attributes={feature} {...props} />
+        {feature.subfeatures ? (
+          <BaseCard title="Subfeatures" defaultExpanded={false}>
+            {feature.subfeatures.map((subfeature: any) => (
+              <Subfeature
+                key={JSON.stringify(subfeature)}
+                feature={subfeature}
+              />
+            ))}
+          </BaseCard>
+        ) : null}
+      </BaseCard>
+    </>
+  )
+}
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model, descriptions } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
+  const feature = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.paperRoot}>
-      <BaseCoreDetails feature={feat} {...props} />
+      <BaseCoreDetails feature={feature} {...props} />
       <Divider />
-      <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
+      <BaseAttributes
+        feature={feature}
+        {...props}
+        descriptions={descriptions}
+      />
+      <BaseCard title="Subfeatures">
+        {feature.subfeatures
+          ? feature.subfeatures.map((subfeature: any) => (
+              <Subfeature
+                key={JSON.stringify(subfeature)}
+                feature={subfeature}
+              />
+            ))
+          : null}
+      </BaseCard>
     </Paper>
   )
 })
