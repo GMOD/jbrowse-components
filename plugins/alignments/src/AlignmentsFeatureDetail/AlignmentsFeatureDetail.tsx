@@ -1,8 +1,7 @@
 import Paper from '@material-ui/core/Paper'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
-import React, { useState, FunctionComponent } from 'react'
-import copy from 'copy-to-clipboard'
+import React, { FunctionComponent } from 'react'
 import {
   BaseFeatureDetails,
   BaseCard,
@@ -17,15 +16,7 @@ interface AlnProps extends AlnCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const featureFlags = [
-  'unmapped',
-  'qc_failed',
-  'duplicate',
-  'secondary_alignment',
-  'supplementary_alignment',
-]
-
-const omit = ['length_on_ref', 'clipPos', 'template_length']
+const globalOmit = ['clipPos']
 
 const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
@@ -73,36 +64,17 @@ interface AlnInputProps {
   model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-function Formatter({ value }: { value: unknown }) {
-  const [show, setShow] = useState(false)
-  const display = String(value)
-  if (display.length > 100) {
-    return (
-      <>
-        <button type="button" onClick={() => copy(display)}>
-          Copy
-        </button>
-        <button type="button" onClick={() => setShow(val => !val)}>
-          {show ? 'Show less' : 'Show more'}
-        </button>
-        <div>{show ? display : `${display.slice(0, 100)}...`}</div>
-      </>
-    )
-  }
-  return <div>{display}</div>
-}
-
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
-  const { model } = props
+  const { model, omit = [] } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper data-testid="alignment-side-drawer">
-      <BaseFeatureDetails
+      <BaseFeatureDetails {...props} />
+      <AlignmentFlags
+        omit={[...globalOmit, ...omit]}
+        feature={feat}
         {...props}
-        omit={featureFlags.concat(omit)}
-        formatter={(value: unknown) => <Formatter value={value} />}
       />
-      <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
 }
