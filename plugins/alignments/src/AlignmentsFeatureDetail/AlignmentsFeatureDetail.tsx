@@ -65,16 +65,12 @@ interface AlnInputProps {
 }
 
 const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
-  const { model, omit = [] } = props
+  const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper data-testid="alignment-side-drawer">
-      <BaseFeatureDetails {...props} />
-      <AlignmentFlags
-        omit={[...globalOmit, ...omit]}
-        feature={feat}
-        {...props}
-      />
+      <BaseFeatureDetails {...props} omit={globalOmit} />
+      <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
 }
