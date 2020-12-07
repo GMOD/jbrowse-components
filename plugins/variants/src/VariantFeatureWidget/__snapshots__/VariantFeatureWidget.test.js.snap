@@ -188,11 +188,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
-                    title="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                   >
                     REF
                   </div>
@@ -205,11 +204,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
-                    title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
                   >
                     ALT
                   </div>
@@ -222,11 +220,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
-                    title="quality: Phred-scaled quality score for the assertion made in ALT"
                   >
                     QUAL
                   </div>
@@ -239,7 +236,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -255,6 +252,72 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
+      style="margin-top: 4px;"
+    >
+      <div
+        aria-disabled="false"
+        aria-expanded="true"
+        class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
+        role="button"
+        tabindex="0"
+      >
+        <div
+          class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
+        >
+          <span
+            class="MuiTypography-root MuiTypography-button"
+          >
+             
+            Subfeatures
+          </span>
+        </div>
+        <div
+          aria-disabled="false"
+          aria-hidden="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
+        >
+          <span
+            class="MuiIconButton-label"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root makeStyles-expandIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </div>
+      </div>
+      <div
+        class="MuiCollapse-container MuiCollapse-entered"
+        style="min-height: 0px;"
+      >
+        <div
+          class="MuiCollapse-wrapper"
+        >
+          <div
+            class="MuiCollapse-wrapperInner"
+          >
+            <div
+              role="region"
+            >
+              <div
+                class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
+              />
             </div>
           </div>
         </div>
