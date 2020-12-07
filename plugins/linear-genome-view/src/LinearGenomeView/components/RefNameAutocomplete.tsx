@@ -7,6 +7,8 @@ import { getSession } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
+import SearchIcon from '@material-ui/icons/Search'
+import { InputAdornment } from '@material-ui/core'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -53,7 +55,6 @@ function RefNameAutocomplete({
   const options: Array<Option> = regions.map(option => {
     return { type: 'reference sequence', value: option.refName }
   })
-
   function onChange(newRegionName: Option | string | null) {
     let newRegionValue: string | undefined
     if (newRegionName) {
@@ -128,8 +129,13 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {!loaded ? <CircularProgress color="inherit" size={20} /> : null}
-              {params.InputProps.endAdornment}
+              {!loaded ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : (
+                <InputAdornment position="end" style={{ marginRight: 7 }}>
+                  <SearchIcon />
+                </InputAdornment>
+              )}
             </>
           ),
         }

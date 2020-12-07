@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
@@ -86,7 +87,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {loaded ? (
+          {selectedRegion && loaded ? (
             <RefNameAutocomplete
               model={model}
               assemblyName={
@@ -102,7 +103,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 helperText: 'Select sequence to view',
               }}
             />
-          ) : null}
+          ) : (
+            <CircularProgress color="inherit" size={20} />
+          )}
         </Grid>
         <Grid item>
           <Button
