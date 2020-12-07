@@ -57,6 +57,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         resolution: types.optional(types.number, 1),
         fill: types.optional(types.boolean, true),
         logScale: types.optional(types.boolean, false),
+        autoscale: types.maybe(types.string),
       }),
     )
     .volatile(() => ({
@@ -91,6 +92,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       },
       setLogScale(log: boolean) {
         self.logScale = log
+      },
+      setAutoscale(val: string) {
+        self.autoscale = val
       },
     }))
     .views(self => {
@@ -151,6 +155,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           )
         },
 
+        get autoscaleType() {
+          return self.autoscale || getConf(self, 'autoscale')
+        },
+
         get renderProps() {
           const configBlob =
             getConf(self, ['renderers', this.rendererTypeName]) || {}
@@ -170,7 +178,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             scaleOpts: {
               domain: this.domain,
               stats: self.stats,
-              autoscaleType: getConf(self, 'autoscale'),
+              autoscaleType: this.autoscaleType,
               scaleType: this.scaleType,
               inverted: getConf(self, 'inverted'),
             },
@@ -208,6 +216,22 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                     self.setLogScale(!self.logScale)
                   },
                 },
+                {
+                  label: 'Autoscale type',
+                  subMenu: [
+                    ['local', 'Local'],
+                    ['global', 'Global'],
+                    ['globalsd', 'Global within +/- 3SD'],
+                    ['localsd', 'Local within +/- 3SD'],
+                  ].map(([val, label]) => {
+                    return {
+                      label,
+                      onClick() {
+                        self.setAutoscale(val)
+                      },
+                    }
+                  }),
+                },
               ]
             : []
         },
@@ -227,8 +251,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev')
-        const autoscaleType = getConf(self, 'autoscale', [])
-        const { adapterConfig } = self
+        const { adapterConfig, autoscaleType } = self
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results = (await rpcManager.call(
             getRpcSessionId(self),
