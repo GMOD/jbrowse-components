@@ -27,6 +27,10 @@ const useStyles = makeStyles(theme => ({
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
+  headerForm: {
+    flexWrap: 'nowrap',
+    marginRight: 7,
+  },
   spacer: {
     flexGrow: 1,
   },
@@ -117,7 +121,7 @@ export default observer(({ model }: { model: LGV }) => {
     <div className={classes.headerBar}>
       <Controls model={model} />
       <div className={classes.spacer} />
-      <FormGroup row style={{ flexWrap: 'nowrap', marginRight: 7 }}>
+      <FormGroup row className={classes.headerForm}>
         <PanControls model={model} />
         <RefNameAutocomplete
           onSelect={setDisplayedRegion}
