@@ -55,6 +55,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         configuration: ConfigurationReference(configSchema),
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
+        fill: types.optional(types.boolean, true),
+        logScale: types.optional(types.boolean, false),
       }),
     )
     .volatile(() => ({
@@ -83,6 +85,13 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       setResolution(res: number) {
         self.resolution = res
       },
+
+      setFill(fill: boolean) {
+        self.fill = fill
+      },
+      setLogScale(log: boolean) {
+        self.logScale = log
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
@@ -109,12 +118,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           return undefined
         },
 
+        get scaleType() {
+          return self.logScale ? 'log' : getConf(self, 'scaleType')
+        },
+
         get domain() {
           const maxScore = getConf(self, 'maxScore')
           const minScore = getConf(self, 'minScore')
           const ret = getNiceDomain({
             domain: [self.stats.scoreMin, self.stats.scoreMax],
-            scaleType: getConf(self, 'scaleType'),
+            scaleType: this.scaleType,
             bounds: [minScore, maxScore],
           })
 
@@ -139,9 +152,14 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get renderProps() {
-          const config = self.rendererType.configSchema.create(
-            getConf(self, ['renderers', this.rendererTypeName]) || {},
-          )
+          const configBlob =
+            getConf(self, ['renderers', this.rendererTypeName]) || {}
+
+          const config = self.rendererType.configSchema.create({
+            ...configBlob,
+            filled: self.fill,
+            scaleType: this.scaleType,
+          })
 
           return {
             ...self.composedRenderProps,
@@ -153,7 +171,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
               domain: this.domain,
               stats: self.stats,
               autoscaleType: getConf(self, 'autoscale'),
-              scaleType: getConf(self, 'scaleType'),
+              scaleType: this.scaleType,
               inverted: getConf(self, 'inverted'),
             },
             resolution: self.resolution,
@@ -165,15 +183,29 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           return this.adapterTypeName === 'BigWigAdapter'
             ? [
                 {
-                  label: 'Finer resolution',
+                  label: 'Finer BigWig resolution',
                   onClick: () => {
                     self.setResolution(self.resolution * 5)
                   },
                 },
                 {
-                  label: 'Coarser resolution',
+                  label: 'Coarser BigWig resolution',
                   onClick: () => {
                     self.setResolution(self.resolution / 5)
+                  },
+                },
+                {
+                  label: self.fill
+                    ? 'Turn off histogram fill'
+                    : 'Turn on histogram fill',
+                  onClick: () => {
+                    self.setFill(!self.fill)
+                  },
+                },
+                {
+                  label: self.logScale ? 'Set linear scale' : 'Set log scale',
+                  onClick: () => {
+                    self.setLogScale(!self.logScale)
                   },
                 },
               ]
