@@ -282,23 +282,18 @@ const Subfeature = (props: BaseProps) => {
   const { type, name, id } = feature
   const displayName = name || id
   return (
-    <>
-      <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
-        <CoreDetails {...props} />
-        <Divider />
-        <Attributes attributes={feature} {...props} />
-        {feature.subfeatures ? (
-          <BaseCard title="Subfeatures" defaultExpanded={false}>
-            {feature.subfeatures.map((subfeature: any) => (
-              <Subfeature
-                key={JSON.stringify(subfeature)}
-                feature={subfeature}
-              />
-            ))}
-          </BaseCard>
-        ) : null}
-      </BaseCard>
-    </>
+    <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
+      <CoreDetails {...props} />
+      <Divider />
+      <Attributes attributes={feature} {...props} />
+      {feature.subfeatures && feature.subfeatures.length ? (
+        <BaseCard title="Subfeatures" defaultExpanded={false}>
+          {feature.subfeatures.map((subfeature: any) => (
+            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+          ))}
+        </BaseCard>
+      ) : null}
+    </BaseCard>
   )
 }
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
@@ -314,16 +309,13 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
         {...props}
         descriptions={descriptions}
       />
-      <BaseCard title="Subfeatures">
-        {feature.subfeatures
-          ? feature.subfeatures.map((subfeature: any) => (
-              <Subfeature
-                key={JSON.stringify(subfeature)}
-                feature={subfeature}
-              />
-            ))
-          : null}
-      </BaseCard>
+      {feature.subfeatures && feature.subfeatures.length ? (
+        <BaseCard title="Subfeatures">
+          {feature.subfeatures.map((subfeature: any) => (
+            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+          ))}
+        </BaseCard>
+      ) : null}
     </Paper>
   )
 })
