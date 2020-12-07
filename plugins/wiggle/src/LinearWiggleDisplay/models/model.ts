@@ -14,13 +14,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
-import {
-  addDisposer,
-  isAlive,
-  getParent,
-  types,
-  Instance,
-} from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import React from 'react'
 
 import { getNiceDomain } from '../../util'
