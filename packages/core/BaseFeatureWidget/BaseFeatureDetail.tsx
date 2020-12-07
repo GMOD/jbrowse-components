@@ -9,9 +9,27 @@ import Paper from '@material-ui/core/Paper'
 import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
+import clsx from 'clsx'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
+
+const omit = [
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'type',
+  'length',
+  'position',
+  'subfeatures',
+  'uniqueId',
+  'exonFrames',
+  'parentId',
+  'thickStart',
+  'thickEnd',
+]
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -27,12 +45,17 @@ export const useStyles = makeStyles(theme => ({
   field: {
     display: 'flex',
   },
+  fieldDescription: {
+    '&:hover': {
+      background: 'yellow',
+    },
+  },
   fieldName: {
     wordBreak: 'break-all',
     minWidth: '90px',
     maxWidth: '150px',
     borderBottom: '1px solid #0003',
-    backgroundColor: theme.palette.grey[200],
+    background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -46,19 +69,12 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-word',
     maxHeight: 300,
     padding: theme.spacing(0.5),
-    backgroundColor: theme.palette.grey[100],
+    background: theme.palette.grey[100],
     border: `1px solid ${theme.palette.grey[300]}`,
     boxSizing: 'border-box',
     overflow: 'auto',
   },
 }))
-const coreRenderedDetails = [
-  'Position',
-  'Description',
-  'Name',
-  'Length',
-  'Type',
-]
 
 interface BaseCardProps {
   title?: string
@@ -97,7 +113,9 @@ const FieldName = ({
     <>
       {description ? (
         <Tooltip title={description} placement="left">
-          <div className={classes.fieldName}>{val}</div>
+          <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+            {val}
+          </div>
         </Tooltip>
       ) : (
         <div className={classes.fieldName}>{val}</div>
@@ -189,6 +207,14 @@ const CoreDetails = (props: BaseProps) => {
       start + 1
     }..${end} ${strandStr}`,
   }
+
+  const coreRenderedDetails = [
+    'Position',
+    'Description',
+    'Name',
+    'Length',
+    'Type',
+  ]
   return (
     <>
       {coreRenderedDetails.map(key => {
@@ -208,23 +234,6 @@ export const BaseCoreDetails = (props: BaseProps) => {
     </BaseCard>
   )
 }
-
-const omit = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
-  'length',
-  'position',
-  'subfeatures',
-  'uniqueId',
-  'exonFrames',
-  'parentId',
-  'thickStart',
-  'thickEnd',
-]
 
 interface AttributeProps {
   attributes: Record<string, any>
@@ -249,11 +258,22 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             v !== undefined && !omit.includes(k) && !propOmit.includes(k),
         )
         .map(([key, value]) => {
+          const description = descriptions && descriptions[key]
           if (Array.isArray(value)) {
             return value.length === 1 ? (
-              <SimpleValue key={key} name={key} value={value[0]} />
+              <SimpleValue
+                key={key}
+                name={key}
+                value={value[0]}
+                description={description}
+              />
             ) : (
-              <ArrayValue key={key} name={key} value={value} />
+              <ArrayValue
+                key={key}
+                name={key}
+                value={value}
+                description={description}
+              />
             )
           }
           if (isObject(value)) {
@@ -266,17 +286,24 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             )
           }
 
-          return <SimpleValue key={key} name={key} value={formatter(value)} />
+          return (
+            <SimpleValue
+              key={key}
+              name={key}
+              value={formatter(value)}
+              description={description}
+            />
+          )
         })}
     </>
   )
 }
 
 export const BaseAttributes = (props: BaseProps) => {
-  const { feature, descriptions } = props
+  const { feature } = props
   return (
     <BaseCard {...props} title="Attributes">
-      <Attributes {...props} attributes={feature} descriptions={descriptions} />
+      <Attributes {...props} attributes={feature} />
     </BaseCard>
   )
 }
@@ -287,6 +314,7 @@ export interface BaseInputProps extends BaseCardProps {
   descriptions?: Record<string, React.ReactNode>
   formatter?: (val: unknown) => JSX.Element
 }
+
 const Subfeature = (props: BaseProps) => {
   const { feature } = props
   const { type, name, id } = feature
@@ -306,19 +334,16 @@ const Subfeature = (props: BaseProps) => {
     </BaseCard>
   )
 }
+
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
-  const { model, descriptions } = props
+  const { model } = props
   const feature = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feature} {...props} />
       <Divider />
-      <BaseAttributes
-        feature={feature}
-        {...props}
-        descriptions={descriptions}
-      />
+      <BaseAttributes feature={feature} {...props} />
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures">
           {feature.subfeatures.map((subfeature: any) => (
