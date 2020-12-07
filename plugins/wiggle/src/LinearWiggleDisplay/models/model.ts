@@ -188,52 +188,57 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get composedTrackMenuItems() {
-          return this.adapterTypeName === 'BigWigAdapter'
-            ? [
-                {
-                  label: 'Finer BigWig resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution * 5)
+          const bigWigOptions =
+            this.adapterTypeName === 'BigWigAdapter'
+              ? [
+                  {
+                    label: 'Finer resolution',
+                    onClick: () => {
+                      self.setResolution(self.resolution * 5)
+                    },
                   },
-                },
-                {
-                  label: 'Coarser BigWig resolution',
-                  onClick: () => {
-                    self.setResolution(self.resolution / 5)
+                  {
+                    label: 'Coarser resolution',
+                    onClick: () => {
+                      self.setResolution(self.resolution / 5)
+                    },
                   },
-                },
-                {
-                  label: self.fill
-                    ? 'Turn off histogram fill'
-                    : 'Turn on histogram fill',
-                  onClick: () => {
-                    self.setFill(!self.fill)
+                ]
+              : []
+
+          const otherOptions = [
+            {
+              label: self.fill
+                ? 'Turn off histogram fill'
+                : 'Turn on histogram fill',
+              onClick: () => {
+                self.setFill(!self.fill)
+              },
+            },
+            {
+              label: self.logScale ? 'Set linear scale' : 'Set log scale',
+              onClick: () => {
+                self.setLogScale(!self.logScale)
+              },
+            },
+            {
+              label: 'Autoscale type',
+              subMenu: [
+                ['local', 'Local'],
+                ['global', 'Global'],
+                ['globalsd', 'Global within +/- 3SD'],
+                ['localsd', 'Local within +/- 3SD'],
+              ].map(([val, label]) => {
+                return {
+                  label,
+                  onClick() {
+                    self.setAutoscale(val)
                   },
-                },
-                {
-                  label: self.logScale ? 'Set linear scale' : 'Set log scale',
-                  onClick: () => {
-                    self.setLogScale(!self.logScale)
-                  },
-                },
-                {
-                  label: 'Autoscale type',
-                  subMenu: [
-                    ['local', 'Local'],
-                    ['global', 'Global'],
-                    ['globalsd', 'Global within +/- 3SD'],
-                    ['localsd', 'Local within +/- 3SD'],
-                  ].map(([val, label]) => {
-                    return {
-                      label,
-                      onClick() {
-                        self.setAutoscale(val)
-                      },
-                    }
-                  }),
-                },
-              ]
-            : []
+                }
+              }),
+            },
+          ]
+          return [...bigWigOptions, ...otherOptions]
         },
 
         get trackMenuItems() {
