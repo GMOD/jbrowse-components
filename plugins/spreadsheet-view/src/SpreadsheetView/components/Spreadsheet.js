@@ -205,13 +205,11 @@ export default pluginManager => {
         </th>
         {columnDisplayOrder.map(colNumber => (
           <td key={colNumber}>
-            {rowModel.cellsWithDerived.length > colNumber ? (
-              <CellData
-                cell={rowModel.cellsWithDerived[colNumber]}
-                spreadsheetModel={spreadsheetModel}
-                columnNumber={colNumber}
-              />
-            ) : null}
+            <CellData
+              cell={rowModel.cellsWithDerived[colNumber]}
+              spreadsheetModel={spreadsheetModel}
+              columnNumber={colNumber}
+            />
           </td>
         ))}
       </tr>
