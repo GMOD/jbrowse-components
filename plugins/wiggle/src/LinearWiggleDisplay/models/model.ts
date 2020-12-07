@@ -106,7 +106,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get adapterTypeName() {
-          return getConf(getParent(self, 2), ['adapter', 'type'])
+          let curr = self
+          while (!curr.configuration || !curr.configuration.trackId) {
+            curr = getParent(curr)
+          }
+          return getConf(curr, ['adapter', 'type'])
         },
 
         get rendererTypeName() {
