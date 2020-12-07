@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-linear-genome-view",
-  "version": "0.0.1-beta.0",
+  "version": "1.0.2",
   "description": "JBrowse 2 linear genome view React component",
   "keywords": [
     "jbrowse",
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "packages/jbrowse-react-linear-genome-view"
+    "directory": "products/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
   "main": "dist/index.js",
@@ -20,7 +20,8 @@
   "typings": "dist/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "docs"
   ],
   "scripts": {
     "start": "tsdx watch",
@@ -32,17 +33,18 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-alignments": "^1.0.0",
-    "@jbrowse/plugin-bed": "^1.0.0",
-    "@jbrowse/plugin-config": "^1.0.0",
-    "@jbrowse/plugin-data-management": "^1.0.0",
-    "@jbrowse/plugin-gff3": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
-    "@jbrowse/plugin-sequence": "^1.0.0",
-    "@jbrowse/plugin-svg": "^1.0.0",
-    "@jbrowse/plugin-variants": "^1.0.0",
-    "@jbrowse/plugin-wiggle": "^1.0.0",
+    "@jbrowse/core": "^1.0.2",
+    "@jbrowse/plugin-alignments": "^1.0.2",
+    "@jbrowse/plugin-bed": "^1.0.2",
+    "@jbrowse/plugin-circular-view": "^1.0.2",
+    "@jbrowse/plugin-config": "^1.0.2",
+    "@jbrowse/plugin-data-management": "^1.0.2",
+    "@jbrowse/plugin-gff3": "^1.0.2",
+    "@jbrowse/plugin-linear-genome-view": "^1.0.2",
+    "@jbrowse/plugin-sequence": "^1.0.2",
+    "@jbrowse/plugin-svg": "^1.0.2",
+    "@jbrowse/plugin-variants": "^1.0.1",
+    "@jbrowse/plugin-wiggle": "^1.0.2",
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",

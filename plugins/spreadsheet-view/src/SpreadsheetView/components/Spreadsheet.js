@@ -235,23 +235,25 @@ export default pluginManager => {
     return null
   }
 
-  const DataTableBody = observer(({ rows, spreadsheetModel }) => {
-    const classes = useStyles()
-    return (
-      <tbody className={classes.dataTableBody}>
-        {rows.map(row => (
-          <DataRow
-            key={row.id}
-            rowNumber={row.id}
-            spreadsheetModel={spreadsheetModel}
-            rowModel={row}
-          />
-        ))}
-      </tbody>
-    )
-  })
+  const DataTableBody = observer(
+    ({ rows, spreadsheetModel, page, rowsPerPage }) => {
+      const classes = useStyles()
+      return (
+        <tbody className={classes.dataTableBody}>
+          {rows.slice(rowsPerPage * page, rowsPerPage * (page + 1)).map(row => (
+            <DataRow
+              key={row.id}
+              rowNumber={row.id}
+              spreadsheetModel={spreadsheetModel}
+              rowModel={row}
+            />
+          ))}
+        </tbody>
+      )
+    },
+  )
 
-  const DataTable = observer(({ model }) => {
+  const DataTable = observer(({ model, page, rowsPerPage }) => {
     const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
     const classes = useStyles()
 
@@ -335,7 +337,12 @@ export default pluginManager => {
               ))}
             </tr>
           </thead>
-          <DataTableBody rows={rows} spreadsheetModel={model} />
+          <DataTableBody
+            rows={rows}
+            spreadsheetModel={model}
+            page={page}
+            rowsPerPage={rowsPerPage}
+          />
           {!rows.length ? (
             <caption className={classes.emptyMessage}>
               {totalRows ? 'no rows match criteria' : 'no rows present'}
@@ -346,13 +353,13 @@ export default pluginManager => {
     )
   })
 
-  function Spreadsheet({ model, height }) {
+  function Spreadsheet({ model, height, page, rowsPerPage }) {
     const classes = useStyles()
 
     return (
       <div className={classes.root} style={{ height }}>
         {model && model.rowSet && model.rowSet.isLoaded && model.initialized ? (
-          <DataTable model={model} />
+          <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
         ) : (
           <div>Loading...</div>
         )}

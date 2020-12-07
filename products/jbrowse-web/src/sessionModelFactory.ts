@@ -324,13 +324,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView(view: any) {
-        for (const [id, widget] of self.activeWidgets) {
-          if (
-            id === 'hierarchicalTrackSelector' &&
-            widget.view &&
-            widget.view.id === view.id
-          )
+        for (const [, widget] of self.activeWidgets) {
+          if (widget.view && widget.view.id === view.id) {
             this.hideWidget(widget)
+          }
         }
         self.views.remove(view)
       },
@@ -516,6 +513,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
       loadAutosaveSession() {
         return getParent(self).loadAutosaveSession()
+      },
+      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return getParent(self).setSession(sessionSnapshot)
       },
     }))
     .extend(() => {

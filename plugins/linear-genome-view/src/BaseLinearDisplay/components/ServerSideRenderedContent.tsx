@@ -22,12 +22,12 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     function doHydrate() {
       const {
         data,
-        region,
         html,
+        filled,
         renderProps,
         renderingComponent: RenderingComponent,
       } = model
-      if (domNode && model.filled) {
+      if (domNode && filled) {
         if (isHydrated && domNode) {
           unmountComponentAtNode(domNode)
         }
@@ -42,7 +42,15 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         // so
         requestIdleCallback(
           () => {
-            if (!isAlive(model) || !isAlive(region)) return
+            if (!isAlive(model)) {
+              return
+            }
+
+            const { region } = model
+            if (!isAlive(region)) {
+              return
+            }
+
             const serializedRegion = isStateTreeNode(region)
               ? getSnapshot(region)
               : region

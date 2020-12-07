@@ -8,9 +8,13 @@ import {
 } from '@jbrowse/core/util'
 import FileCopyIcon from '@material-ui/icons/FileCopy'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import GetAppIcon from '@material-ui/icons/GetApp'
 import HelpIcon from '@material-ui/icons/Help'
 import InfoIcon from '@material-ui/icons/Info'
+import PublishIcon from '@material-ui/icons/Publish'
 import SaveIcon from '@material-ui/icons/Save'
+import { saveAs } from 'file-saver'
+import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchema as aboutConfigSchema,
   ReactComponent as AboutReactComponent,
@@ -22,10 +26,10 @@ import {
   stateModel as helpStateModel,
 } from './HelpWidget'
 import {
-  configSchema as importConfigurationConfigSchema,
-  ReactComponent as ImportConfigurationReactComponent,
-  stateModel as importConfigurationStateModel,
-} from './ImportConfigurationWidget'
+  configSchema as importSessionConfigSchema,
+  ReactComponent as ImportSessionReactComponent,
+  stateModel as importSessionStateModel,
+} from './ImportSessionWidget'
 import {
   configSchema as sessionManagerConfigSchema,
   ReactComponent as SessionManagerReactComponent,
@@ -58,11 +62,11 @@ export default class extends Plugin {
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({
-        name: 'ImportConfigurationWidget',
-        heading: 'Import Configuration',
-        configSchema: importConfigurationConfigSchema,
-        stateModel: importConfigurationStateModel,
-        ReactComponent: ImportConfigurationReactComponent,
+        name: 'ImportSessionWidget',
+        heading: 'Import session',
+        configSchema: importSessionConfigSchema,
+        stateModel: importSessionStateModel,
+        ReactComponent: ImportSessionReactComponent,
       })
     })
 
@@ -95,6 +99,36 @@ export default class extends Plugin {
           session.showWidget(widget)
         },
       })
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Export session',
+          icon: GetAppIcon,
+          onClick: (session: IAnyStateTreeNode) => {
+            const sessionBlob = new Blob(
+              [JSON.stringify({ session: getSnapshot(session) }, null, 2)],
+              { type: 'text/plain;charset=utf-8' },
+            )
+            saveAs(sessionBlob, 'session.json')
+          },
+        },
+        1,
+      )
+      pluginManager.rootModel.insertInMenu(
+        'File',
+        {
+          label: 'Import session…',
+          icon: PublishIcon,
+          onClick: (session: SessionWithWidgets) => {
+            const widget = session.addWidget(
+              'ImportSessionWidget',
+              'importSessionWidget',
+            )
+            session.showWidget(widget)
+          },
+        },
+        1,
+      )
       pluginManager.rootModel.insertInMenu(
         'File',
         {
