@@ -106,13 +106,17 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string }) => {
+const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
-      <SanitizedHTML
-        html={isObject(value) ? JSON.stringify(value) : String(value)}
-      />
+      {React.isValidElement(value) ? (
+        value
+      ) : (
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
+      )}
     </div>
   )
 }
@@ -230,7 +234,12 @@ interface AttributeProps {
 }
 
 export const Attributes: FunctionComponent<AttributeProps> = props => {
-  const { attributes, omit: propOmit = [], descriptions } = props
+  const {
+    attributes,
+    omit: propOmit = [],
+    descriptions,
+    formatter = val => val,
+  } = props
 
   return (
     <>
@@ -257,7 +266,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             )
           }
 
-          return <SimpleValue key={key} name={key} value={value} />
+          return <SimpleValue key={key} name={key} value={formatter(value)} />
         })}
     </>
   )
@@ -276,6 +285,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
+  formatter?: (val: unknown) => JSX.Element
 }
 const Subfeature = (props: BaseProps) => {
   const { feature } = props

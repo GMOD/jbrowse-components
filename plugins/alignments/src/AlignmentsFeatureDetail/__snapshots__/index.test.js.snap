@@ -246,8 +246,18 @@ exports[`open up a widget 1`] = `
                   <div
                     class="makeStyles-fieldValue"
                   >
+                    <button
+                      type="button"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                    >
+                      Show more
+                    </button>
                     <div>
-                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17
+                      17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 17 1...
                     </div>
                   </div>
                 </div>
@@ -280,22 +290,6 @@ exports[`open up a widget 1`] = `
                   >
                     <div>
                       100M
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="makeStyles-field"
-                >
-                  <div
-                    class="makeStyles-fieldName"
-                  >
-                    length_on_ref
-                  </div>
-                  <div
-                    class="makeStyles-fieldValue"
-                  >
-                    <div>
-                      100
                     </div>
                   </div>
                 </div>
