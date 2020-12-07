@@ -14,7 +14,13 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import {
+  addDisposer,
+  isAlive,
+  getParent,
+  types,
+  Instance,
+} from 'mobx-state-tree'
 import React from 'react'
 
 import { getNiceDomain } from '../../util'
@@ -48,6 +54,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         type: types.literal('LinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
         selectedRendering: types.optional(types.string, ''),
+        resolution: types.optional(types.number, 1),
       }),
     )
     .volatile(() => ({
@@ -72,12 +79,21 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         }
         self.statsFetchInProgress = aborter
       },
+
+      setResolution(res: number) {
+        self.resolution = res
+      },
     }))
     .views(self => {
+      const { trackMenuItems } = self
       let oldDomain: [number, number] = [0, 0]
       return {
         get TooltipComponent(): React.FC {
           return (Tooltip as unknown) as React.FC
+        },
+
+        get adapterTypeName() {
+          return getConf(getParent(self, 2), ['adapter', 'type'])
         },
 
         get rendererTypeName() {
@@ -122,16 +138,6 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           )
         },
 
-        get scaleOpts() {
-          return {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          }
-        },
-
         get renderProps() {
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', this.rendererTypeName]) || {},
@@ -142,10 +148,40 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             ...getParentRenderProps(self),
             notReady: !self.ready,
             displayModel: self,
-            scaleOpts: this.scaleOpts,
-            height: self.height,
             config,
+            scaleOpts: {
+              domain: this.domain,
+              stats: self.stats,
+              autoscaleType: getConf(self, 'autoscale'),
+              scaleType: getConf(self, 'scaleType'),
+              inverted: getConf(self, 'inverted'),
+            },
+            resolution: self.resolution,
+            height: self.height,
           }
+        },
+
+        get composedTrackMenuItems() {
+          return this.adapterTypeName === 'BigWigAdapter'
+            ? [
+                {
+                  label: 'Finer resolution',
+                  onClick: () => {
+                    self.setResolution(self.resolution * 5)
+                  },
+                },
+                {
+                  label: 'Coarser resolution',
+                  onClick: () => {
+                    self.setResolution(self.resolution / 5)
+                  },
+                },
+              ]
+            : []
+        },
+
+        get trackMenuItems() {
+          return [...trackMenuItems, ...this.composedTrackMenuItems]
         },
       }
     })
