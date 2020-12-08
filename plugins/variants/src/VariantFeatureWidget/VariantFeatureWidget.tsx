@@ -61,7 +61,7 @@ function VariantSamples(props: any) {
           />
         )
       })}
-      <div style={{ height: 600, width: '100%' }}>
+      <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
         <DataGrid
           autoHeight
           rows={rows}
