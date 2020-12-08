@@ -24,7 +24,7 @@ const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue:
         // eslint-disable-next-line no-template-curly-in-string
-        'https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&email=colin.diesh@gmail.com&species=human',
+        'https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human',
     },
   },
   { explicitlyTyped: true },
