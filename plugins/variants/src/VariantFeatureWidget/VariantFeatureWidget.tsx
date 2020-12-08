@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import { makeStyles } from '@material-ui/core/styles'
@@ -6,8 +7,7 @@ import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import React from 'react'
 import {
   BaseFeatureDetails,
@@ -48,17 +48,18 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function VariantSamples(props) {
+function VariantSamples(props: any) {
   const classes = useStyles()
   const { feature } = props
-  if (!feature.samples) {
+  const samples = feature.samples as Record<string, any>
+  if (!samples) {
     return null
   }
-  const ret = Object.keys(feature.samples)
+  const ret = Object.keys(samples)
   if (!ret.length) {
     return null
   }
-  const infoFields = Object.keys(feature.samples[ret[0]])
+  const infoFields = Object.keys(samples[ret[0]])
 
   return (
     <BaseCard {...props} title="Samples">
@@ -73,7 +74,7 @@ function VariantSamples(props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {Object.entries(feature.samples).map(
+            {Object.entries(samples).map(
               ([key, value]) =>
                 value && (
                   <TableRow key={key}>
@@ -95,12 +96,7 @@ function VariantSamples(props) {
   )
 }
 
-VariantSamples.propTypes = {
-  feature: PropTypes.shape().isRequired,
-}
-
-function VariantFeatureDetails(props) {
-  const classes = useStyles()
+function VariantFeatureDetails(props: any) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   const { samples, ...rest } = feat
@@ -120,7 +116,7 @@ function VariantFeatureDetails(props) {
   }
 
   return (
-    <Paper className={classes.root} data-testid="variant-side-drawer">
+    <Paper data-testid="variant-side-drawer">
       <BaseFeatureDetails
         feature={rest}
         descriptions={descriptions}
@@ -130,10 +126,6 @@ function VariantFeatureDetails(props) {
       <VariantSamples feature={feat} {...props} />
     </Paper>
   )
-}
-
-VariantFeatureDetails.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(VariantFeatureDetails)
