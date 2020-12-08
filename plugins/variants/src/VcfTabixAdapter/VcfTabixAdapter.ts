@@ -59,15 +59,11 @@ export default class extends BaseFeatureDataAdapter {
 
   async getHeader() {
     const header = await this.vcf.getHeader()
-    return header
-      .split('\n')
-      .filter(line => line.startsWith('##'))
-      .map(line => {
-        const str = line.slice(2)
-        const index = str.indexOf('=')
-        const [tag, data] = [str.slice(0, index), str.slice(index + 1)]
-        return { tag, data }
-      })
+    return {
+      header: `<pre>${header
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')}</pre>`,
+    }
   }
 
   async getMetadata() {
