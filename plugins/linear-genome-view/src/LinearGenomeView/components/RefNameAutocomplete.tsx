@@ -14,7 +14,7 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
@@ -41,6 +41,9 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const [possibleOptions, setPossibleOptions] = React.useState<Array<Option>>(
+    [],
+  )
   const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
@@ -52,9 +55,21 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   const loaded = regions.length !== 0
-  const options: Array<Option> = regions.map(option => {
-    return { type: 'reference sequence', value: option.refName }
-  })
+
+  useEffect(() => {
+    let active = true
+    if (loaded && active) {
+      const possOptions = regions.map(option => {
+        return { type: 'reference sequence', value: option.refName }
+      })
+      setPossibleOptions(possOptions)
+      return undefined
+    }
+    return () => {
+      active = false
+    }
+  }, [loaded, regions])
+
   function onChange(newRegionName: Option | string | null) {
     let newRegionValue: string | undefined
     if (newRegionName) {
@@ -83,6 +98,7 @@ function RefNameAutocomplete({
       } else {
         throw new Error(`Unknown reference sequence "${locString}"`)
       }
+      // model.navToLocString(locString)
     } catch (e) {
       console.warn(e)
       session.notify(`${e}`, 'warning')
@@ -103,10 +119,10 @@ function RefNameAutocomplete({
       value={visibleLocStrings || value || ''}
       includeInputInList
       disabled={!assemblyName || !loaded}
-      options={options} // sort them
+      options={possibleOptions} // sort them
       groupBy={option => String(option.type)}
-      filterOptions={(possibleOptions, params) => {
-        const filtered = filter(possibleOptions, params)
+      filterOptions={(options, params) => {
+        const filtered = filter(options, params)
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
           const newOption: Option = {
