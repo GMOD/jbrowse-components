@@ -85,7 +85,11 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   const classes = useStyles()
   const { children, title, defaultExpanded = true } = props
   return (
-    <Accordion style={{ marginTop: '4px' }} defaultExpanded={defaultExpanded}>
+    <Accordion
+      style={{ marginTop: '4px' }}
+      defaultExpanded={defaultExpanded}
+      TransitionProps={{ unmountOnExit: true }}
+    >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
