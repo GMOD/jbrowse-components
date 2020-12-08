@@ -2,10 +2,12 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const spawn = require('cross-spawn')
 
-function main(changed) {
-  const lernaChangelog = spawn.sync('yarn', ['--silent', 'lerna-changelog'], {
-    encoding: 'utf8',
-  }).stdout
+function main(changed, version) {
+  const lernaChangelog = spawn.sync(
+    'yarn',
+    ['--silent', 'lerna-changelog', '--next-version', version],
+    { encoding: 'utf8' },
+  ).stdout
   const changelogLines = lernaChangelog.split('\n')
   const changedPackages = JSON.parse(changed)
   const updatesTable = ['| Package | Download |', '| --- | --- |']
@@ -34,4 +36,8 @@ const changed = process.argv[2]
 if (!changed) {
   throw new Error('No list of changed packages provided')
 }
-main(changed)
+const version = process.argv[3]
+if (!version) {
+  throw new Error('No new version provided')
+}
+main(changed, version)

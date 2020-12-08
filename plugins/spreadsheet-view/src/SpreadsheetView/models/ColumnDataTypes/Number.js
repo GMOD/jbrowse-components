@@ -136,8 +136,8 @@ export default ({ jbrequire }) => {
 
         const { firstNumber, secondNumber, operation, columnNumber } = self // avoid closing over self
         return function stringPredicate(sheet, row) {
-          const { cells } = row
-          const cell = cells[columnNumber]
+          const { cellsWithDerived } = row
+          const cell = cellsWithDerived[columnNumber]
 
           if (!cell || !cell.text) return false
 

@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
@@ -12,7 +12,7 @@ import {
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-function VariantSamples(props) {
+function VariantSamples(props: any) {
   const [filter, setFilter] = useState({})
   const { feature } = props
 
@@ -73,7 +73,7 @@ function VariantSamples(props) {
   )
 }
 
-function VariantFeatureDetails(props) {
+function VariantFeatureDetails(props: any) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
   const { samples, ...rest } = feat

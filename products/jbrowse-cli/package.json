@@ -10,7 +10,11 @@
   "license": "Apache-2.0",
   "homepage": "https://jbrowse.org",
   "bugs": "https://github.com/GMOD/jbrowse-components/issues",
-  "repository": "https://github.com/GMOD/jbrowse-components.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-cli"
+  },
   "author": "JBrowse Team",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

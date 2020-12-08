@@ -8,11 +8,28 @@ import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
-import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
+import clsx from 'clsx'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
+
+const globalOmit = [
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'type',
+  'length',
+  'position',
+  'subfeatures',
+  'uniqueId',
+  'exonFrames',
+  'parentId',
+  'thickStart',
+  'thickEnd',
+]
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -29,12 +46,17 @@ export const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexWrap: 'wrap',
   },
+  fieldDescription: {
+    '&:hover': {
+      background: 'yellow',
+    },
+  },
   fieldName: {
     wordBreak: 'break-all',
     minWidth: '90px',
     maxWidth: '150px',
     borderBottom: '1px solid #0003',
-    backgroundColor: theme.palette.grey[300],
+    background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -48,18 +70,12 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-word',
     maxHeight: 300,
     padding: theme.spacing(0.5),
+    background: theme.palette.grey[100],
     border: `1px solid ${theme.palette.grey[300]}`,
     boxSizing: 'border-box',
     overflow: 'auto',
   },
 }))
-const coreRenderedDetails = [
-  'Position',
-  'Description',
-  'Name',
-  'Length',
-  'Type',
-]
 
 interface BaseCardProps {
   title?: string
@@ -83,69 +99,6 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   )
 }
 
-interface BaseProps extends BaseCardProps {
-  feature: any
-  descriptions?: Record<string, React.ReactNode>
-}
-
-const CoreDetails = (props: BaseProps) => {
-  const { feature } = props
-  const { refName, start, end, strand } = feature
-  const strandMap: Record<string, string> = {
-    '-1': '-',
-    '0': '',
-    '1': '+',
-  }
-  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
-  const displayedDetails: Record<string, any> = {
-    ...feature,
-    length: end - start,
-    position: `${refName}:${start + 1}..${end} ${strandStr}`,
-  }
-  return (
-    <>
-      {coreRenderedDetails.map(key => {
-        const value = displayedDetails[key.toLowerCase()]
-        return value !== null && value !== undefined ? (
-          <SimpleValue key={key} name={key} value={value} />
-        ) : null
-      })}
-    </>
-  )
-}
-
-export const BaseCoreDetails = (props: BaseProps) => {
-  return (
-    <BaseCard {...props} title="Primary data">
-      <CoreDetails {...props} />
-    </BaseCard>
-  )
-}
-
-const globalOmit = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
-  'length',
-  'position',
-  'subfeatures',
-  'uniqueId',
-  'exonFrames',
-  'thickStart',
-  'thickEnd',
-  'parentId',
-]
-
-interface AttributeProps {
-  attributes: Record<string, any>
-  omit?: string[]
-  descriptions?: Record<string, React.ReactNode>
-  prefix?: string
-}
-
 const FieldName = ({
   description,
   name,
@@ -161,7 +114,9 @@ const FieldName = ({
     <>
       {description ? (
         <Tooltip title={description} placement="left">
-          <div className={classes.fieldName}>{val}</div>
+          <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+            {val}
+          </div>
         </Tooltip>
       ) : (
         <div className={classes.fieldName}>{val}</div>
@@ -170,13 +125,17 @@ const FieldName = ({
   )
 }
 
-const BasicValue = ({ value }: { value: string }) => {
+const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
   return (
     <div className={classes.fieldValue}>
-      <SanitizedHTML
-        html={isObject(value) ? JSON.stringify(value) : String(value)}
-      />
+      {React.isValidElement(value) ? (
+        value
+      ) : (
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
+      )}
     </div>
   )
 }
@@ -227,6 +186,49 @@ const ArrayValue = ({
     </div>
   )
 }
+
+interface BaseProps extends BaseCardProps {
+  feature: any
+  descriptions?: Record<string, React.ReactNode>
+}
+
+const CoreDetails = (props: BaseProps) => {
+  const { feature } = props
+  const { refName, start, end, strand } = feature
+  const strandMap: Record<string, string> = {
+    '-1': '-',
+    '0': '',
+    '1': '+',
+  }
+  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  const displayedDetails: Record<string, any> = {
+    ...feature,
+    length: end - start,
+    position: `${refName ? `${refName}:` : ''}${
+      start + 1
+    }..${end} ${strandStr}`,
+  }
+
+  const coreRenderedDetails = [
+    'Position',
+    'Description',
+    'Name',
+    'Length',
+    'Type',
+  ]
+  return (
+    <>
+      {coreRenderedDetails.map(key => {
+        const value = displayedDetails[key.toLowerCase()]
+        return value !== null && value !== undefined ? (
+          <SimpleValue key={key} name={key} value={value} />
+        ) : null
+      })}
+    </>
+  )
+}
+
+
 function measureText(str: string, fontSize = 10) {
   // prettier-ignore
   const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
@@ -240,8 +242,31 @@ function measureText(str: string, fontSize = 10) {
       .reduce((cur, acc) => acc + cur) * fontSize
   )
 }
+
+
+
+export const BaseCoreDetails = (props: BaseProps) => {
+  return (
+    <BaseCard {...props} title="Primary data">
+      <CoreDetails {...props} />
+    </BaseCard>
+  )
+}
+
+interface AttributeProps {
+  attributes: Record<string, any>
+  omit?: string[]
+  formatter?: (val: unknown) => JSX.Element
+  descriptions?: Record<string, React.ReactNode>
+}
+
 export const Attributes: FunctionComponent<AttributeProps> = props => {
-  const { attributes, omit = [], descriptions = {}, prefix = '' } = props
+  const {
+    attributes,
+    omit = [],
+    descriptions,
+    formatter = val => val,
+  } = props
   const omits = [...omit, ...globalOmit]
 
   return (
@@ -297,12 +322,22 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 )
               }
             }
-            return (
+          }
+          const description = descriptions && descriptions[key]
+          if (Array.isArray(value)) {
+            return value.length === 1 ? (
+              <SimpleValue
+                key={key}
+                name={key}
+                value={value[0]}
+                description={description}
+              />
+            ) : (
               <ArrayValue
                 key={key}
                 name={key}
                 value={value}
-                description={descriptions[key]}
+                description={description}
                 prefix={prefix}
               />
             )
@@ -322,8 +357,8 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             <SimpleValue
               key={key}
               name={key}
-              value={value}
-              description={descriptions[key]}
+              value={formatter(value)}
+              description={description}
               prefix={prefix}
             />
           )
@@ -333,10 +368,10 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
 }
 
 export const BaseAttributes = (props: BaseProps) => {
-  const { feature, descriptions } = props
+  const { feature } = props
   return (
     <BaseCard {...props} title="Attributes">
-      <Attributes {...props} attributes={feature} descriptions={descriptions} />
+      <Attributes {...props} attributes={feature} />
     </BaseCard>
   )
 }
@@ -345,54 +380,45 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
+  formatter?: (val: unknown) => JSX.Element
 }
+
 const Subfeature = (props: BaseProps) => {
   const { feature } = props
   const { type, name, id } = feature
   const displayName = name || id
   return (
-    <>
-      <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
-        <CoreDetails {...props} />
-        <Divider />
-        <Attributes attributes={feature} {...props} />
-        {feature.subfeatures ? (
-          <BaseCard title="Subfeatures" defaultExpanded={false}>
-            {feature.subfeatures.map((subfeature: any) => (
-              <Subfeature
-                key={JSON.stringify(subfeature)}
-                feature={subfeature}
-              />
-            ))}
-          </BaseCard>
-        ) : null}
-      </BaseCard>
-    </>
+    <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
+      <CoreDetails {...props} />
+      <Divider />
+      <Attributes attributes={feature} {...props} />
+      {feature.subfeatures && feature.subfeatures.length ? (
+        <BaseCard title="Subfeatures" defaultExpanded={false}>
+          {feature.subfeatures.map((subfeature: any) => (
+            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+          ))}
+        </BaseCard>
+      ) : null}
+    </BaseCard>
   )
 }
+
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
-  const { model, descriptions } = props
+  const { model } = props
   const feature = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feature} {...props} />
       <Divider />
-      <BaseAttributes
-        feature={feature}
-        {...props}
-        descriptions={descriptions}
-      />
-      <BaseCard title="Subfeatures">
-        {feature.subfeatures
-          ? feature.subfeatures.map((subfeature: any) => (
-              <Subfeature
-                key={JSON.stringify(subfeature)}
-                feature={subfeature}
-              />
-            ))
-          : null}
-      </BaseCard>
+      <BaseAttributes feature={feature} {...props} />
+      {feature.subfeatures && feature.subfeatures.length ? (
+        <BaseCard title="Subfeatures">
+          {feature.subfeatures.map((subfeature: any) => (
+            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+          ))}
+        </BaseCard>
+      ) : null}
     </Paper>
   )
 })
