@@ -27,6 +27,24 @@ export interface AdapterConstructor {
 
 export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
 
+// generates a short "id fingerprint" from the config passed to the base
+// feature adapter by recursively enumerating props up to an ID of length 100
+function idMaker(args: any, id = '') {
+  const keys = Object.keys(args)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (id.length > 100) {
+      break
+    }
+    if (typeof args[key] === 'object') {
+      id += idMaker(args[key], id)
+    } else {
+      id += `${key}-${args[key]};`
+    }
+  }
+  return id.slice(0, 100)
+}
+
 /**
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
@@ -39,7 +57,7 @@ export abstract class BaseFeatureDataAdapter {
     // in test environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(args) ? getSnapshot(args) : args
-      this.id = objectHash(data, { ignoreUnknown: true }).slice(0, 5)
+      this.id = idMaker(data)
     } else {
       this.id = 'test'
     }
