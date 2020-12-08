@@ -40,11 +40,6 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-interface CustomPalette {
-  value: number | string
-  color: string
-}
-
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: LinearPileupDisplayConfigModel,
@@ -70,15 +65,6 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
-            colorPalette: types.maybe(types.array(types.string)),
-            values: types.maybe(
-              types.array(
-                types.model({
-                  value: types.union(types.number, types.string),
-                  color: types.string,
-                }),
-              ),
-            ),
           }),
         ),
         filterBy: types.optional(
@@ -93,7 +79,6 @@ const stateModelFactory = (
     .volatile(() => ({
       ready: false,
       currBpPerPx: 0,
-      previousCustomPalette: [],
     }))
 
     .actions(self => ({
@@ -102,9 +87,6 @@ const stateModelFactory = (
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
-      },
-      setPreviousCustomPalette(palette: CustomPalette[]) {
-        self.previousCustomPalette = palette
       },
     }))
     .actions(self => ({
@@ -207,17 +189,11 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setColorScheme(colorScheme: {
-        type: string
-        tag?: string
-        colorPalette?: string[]
-        values?: [
-          {
-            value: number | string
-            color: string
-          },
-        ]
-      }) {
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        if (colorScheme.tag) {
+          console.log('filler')
+        } // need to somehow get val for tag for all features in the display
+        // similar to isCram ? feature.get('tags')[tag] : feature.get(tag)
         self.colorBy = cast(colorScheme)
         self.ready = false
       },

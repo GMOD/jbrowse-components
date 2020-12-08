@@ -34,13 +34,6 @@ export interface PileupRenderProps {
   colorBy: {
     type: string
     tag?: string
-    colorPalette?: string[]
-    values?: [
-      {
-        value: number | string
-        color: string
-      },
-    ]
   }
   height: number
   width: number
