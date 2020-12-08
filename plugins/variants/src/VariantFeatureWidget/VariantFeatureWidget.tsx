@@ -13,10 +13,11 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
 function VariantSamples(props: any) {
-  const [filter, setFilter] = useState({})
+  const [filter, setFilter] = useState<any>({})
   const { feature } = props
 
-  const preFilteredRows = Object.entries(feature.samples || {})
+  const { samples = {} } = feature
+  const preFilteredRows: any = Object.entries(samples)
   if (!preFilteredRows.length) {
     return null
   }
@@ -32,10 +33,10 @@ function VariantSamples(props: any) {
   // catch some error thrown from regex
   try {
     rows = preFilteredRows
-      .map(row => {
+      .map((row: any) => {
         return { sample: row[0], ...row[1], id: row[0] }
       })
-      .filter(row =>
+      .filter((row: any) =>
         filters.length
           ? filters.some(key => String(row[key]).match(filter[key] || ''))
           : true,
