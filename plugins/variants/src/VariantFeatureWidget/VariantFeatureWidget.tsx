@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
@@ -36,11 +36,15 @@ function VariantSamples(props: any) {
       .map((row: any) => {
         return { sample: row[0], ...row[1], id: row[0] }
       })
-      .filter((row: any) =>
-        filters.length
-          ? filters.some(key => String(row[key]).match(filter[key] || ''))
-          : true,
-      )
+      .filter((row: any) => {
+        return filters.length
+          ? filters.every(key => {
+              const val = row[key]
+              const currFilter = filter[key]
+              return currFilter ? String(val).match(currFilter) : true
+            })
+          : true
+      })
   } catch (e) {
     error = e
   }
@@ -63,7 +67,6 @@ function VariantSamples(props: any) {
       })}
       <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
         <DataGrid
-          autoHeight
           rows={rows}
           columns={infoFields}
           rowHeight={20}
