@@ -21,7 +21,7 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
-import MyGene from '@jbrowse/plugin-mygene'
+import Biothings from '@jbrowse/plugin-biothings'
 
 export default [
   SVG,
@@ -47,5 +47,5 @@ export default [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
-  MyGene,
+  Biothings,
 ]

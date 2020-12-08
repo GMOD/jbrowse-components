@@ -1,7 +1,7 @@
 {
-  "name": "@jbrowse/plugin-mygene",
+  "name": "@jbrowse/plugin-biothings",
   "version": "1.0.2",
-  "description": "JBrowse 2 mygene.",
+  "description": "JBrowse 2 adapter for biothings (mygene.info, myvariant.info, etc)",
   "keywords": [
     "jbrowse",
     "jbrowse2"
@@ -12,13 +12,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/GMOD/jbrowse-components.git",
-    "directory": "plugins/mygene"
+    "directory": "plugins/biothings"
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-mygene.esm.js",
+  "distModule": "dist/plugin-biothings.esm.js",
   "module": "",
   "files": [
     "dist",
@@ -27,7 +27,7 @@
   "scripts": {
     "start": "tsdx watch --verbose --noClean",
     "build": "tsdx build",
-    "test": "cd ../..; jest plugins/mygene --passWithNoTests",
+    "test": "cd ../..; jest plugins/biothings --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
@@ -53,5 +53,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "32e27bccb4eb35ee2b3ba3ab004baf68dfcbf38d"
+  "private": true
 }
