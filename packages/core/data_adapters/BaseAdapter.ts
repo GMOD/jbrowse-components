@@ -1,6 +1,5 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
-import objectHash from 'object-hash'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
@@ -29,6 +28,7 @@ export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props up to an ID of length 100
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function idMaker(args: any, id = '') {
   const keys = Object.keys(args)
   for (let i = 0; i < keys.length; i++) {
