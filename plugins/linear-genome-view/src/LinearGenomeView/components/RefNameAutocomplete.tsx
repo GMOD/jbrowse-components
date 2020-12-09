@@ -14,7 +14,7 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import React, { useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
@@ -41,9 +41,6 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const [possibleOptions, setPossibleOptions] = React.useState<Array<Option>>(
-    [],
-  )
   const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
@@ -55,22 +52,14 @@ function RefNameAutocomplete({
   const visibleLocStrings =
     coarseVisibleLocStrings || nonCoarseVisibleLocStrings
   const loaded = regions.length !== 0
+  const options: Array<Option> = useMemo(() => {
+    const possOptions = regions.map(option => {
+      return { type: 'reference sequence', value: option.refName }
+    })
+    return possOptions
+  }, [regions])
 
-  useEffect(() => {
-    let active = true
-    if (loaded && active) {
-      const possOptions = regions.map(option => {
-        return { type: 'reference sequence', value: option.refName }
-      })
-      setPossibleOptions(possOptions)
-      return undefined
-    }
-    return () => {
-      active = false
-    }
-  }, [loaded, regions])
-
-  function onChange(newRegionName: Option | string | null) {
+  function onChange(newRegionName: Option | string) {
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
@@ -98,7 +87,6 @@ function RefNameAutocomplete({
       } else {
         throw new Error(`Unknown reference sequence "${locString}"`)
       }
-      // model.navToLocString(locString)
     } catch (e) {
       console.warn(e)
       session.notify(`${e}`, 'warning')
@@ -108,7 +96,6 @@ function RefNameAutocomplete({
   return (
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
-      ListboxProps={{ style: { maxHeight: 250 } }}
       data-testid="autocomplete"
       freeSolo
       selectOnFocus
@@ -119,10 +106,10 @@ function RefNameAutocomplete({
       value={visibleLocStrings || value || ''}
       includeInputInList
       disabled={!assemblyName || !loaded}
-      options={possibleOptions} // sort them
+      options={options}
       groupBy={option => String(option.type)}
-      filterOptions={(options, params) => {
-        const filtered = filter(options, params)
+      filterOptions={(possibleOptions, params) => {
+        const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
           const newOption: Option = {
@@ -134,6 +121,7 @@ function RefNameAutocomplete({
         }
         return filtered
       }}
+      ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(e, newRegion) => {
         e.preventDefault()
         onChange(newRegion)
