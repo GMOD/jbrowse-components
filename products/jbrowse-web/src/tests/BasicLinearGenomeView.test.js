@@ -183,17 +183,27 @@ describe('valid file tests', () => {
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
     )
-    const inputBox = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
+    const test2 = await findByTestId('autocomplete')
     inputBox.focus()
-    fireEvent.change(await findByPlaceholderText('Search for location'), {
-      target: { value: 'ctgB:1..200' },
+    fireEvent.change(inputBox, {
+      target: { value: 'ctg' },
     })
-    const test1 = await findByPlaceholderText('Search for location')
-    fireEvent.keyDown(test1, { key: 'Enter', code: 'Enter' })
-    fireEvent.keyDown(await findByPlaceholderText('Search for location'))
-    expect((await findByPlaceholderText('Search for location')).value).toEqual(
-      expect.stringContaining('ctgB:1..200'),
-    )
+    fireEvent.keyDown(test2, { key: 'ArrowDown' })
+    fireEvent.keyDown(test2, { key: 'ArrowDown' })
+    fireEvent.keyDown(test2, { key: 'Enter', code: 'Enter' })
     expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgB')
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgB'),
+    )
+    const test1 = await findByPlaceholderText('Search for location')
+    fireEvent.change(inputBox, {
+      target: { value: 'ctgA:1..120' },
+    })
+    fireEvent.keyDown(test1, { key: 'Enter', code: 'Enter' })
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgA'),
+    )
+    expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgA')
   })
 })
