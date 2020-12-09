@@ -65,6 +65,7 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            valueColorMap: types.maybe(types.map(types.string, types.string)), // TODOCOLOR: figure out the actual typing
           }),
         ),
         filterBy: types.optional(
@@ -77,6 +78,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
+      // make an observable values for get value
       ready: false,
       currBpPerPx: 0,
     }))
@@ -88,6 +90,7 @@ const stateModelFactory = (
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
+      // make an action similar to getStats (fetchValues) that does an rpc call which ends up doing dataAdapter.getValues, calls setColorScheme at end
     }))
     .actions(self => ({
       afterAttach() {
@@ -189,21 +192,67 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setColorScheme(colorScheme: { type: string; tag?: string }) {
-        if (colorScheme.tag) {
-          console.log('filler')
-        } // need to somehow get val for tag for all features in the display
-        // similar to isCram ? feature.get('tags')[tag] : feature.get(tag)
+      setColorScheme(colorScheme: {
+        type: string
+        tag?: string
+        valueColorMap?: Map<string, string>
+      }) {
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
       setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
         self.filterBy = filter
       },
+      async fetchValues(
+        colorScheme: { type: string; tag?: string },
+        opts: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const { displayedRegions } = getContainingView(self) as LGV
+
+        const valueColorMap = new Map()
+        const colorPalette = [
+          '#332288',
+          '#117733',
+          '#44AA99',
+          '#88CCEE',
+          '#DDCC77',
+          '#CC6677',
+          '#AA4499',
+          '#882255',
+          '#FEFE62',
+          '#DC3220',
+        ] // sample Colorblind palette
+        rpcManager
+          .call(getRpcSessionId(self), 'PileupGetGlobalValueForTag', {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            displayedRegions,
+            ...opts,
+          })
+          .then(values => {
+            Array.from(values).forEach((value, idx) => {
+              valueColorMap.set(value, colorPalette[idx])
+            })
+            console.log('vcm', valueColorMap)
+            self.setColorScheme({
+              ...colorScheme,
+              valueColorMap,
+            })
+          })
+      },
     }))
     .actions(self => {
-      // reset the sort object and refresh whole display on reload
+      // resets the sort object and refresh whole display on reload
       const superReload = self.reload
+
       return {
         reload() {
           self.clearSelected()

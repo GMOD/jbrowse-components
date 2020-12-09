@@ -32,6 +32,7 @@ export default function ColorByTagDlg(props: {
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const regex = /^[A-Za-z][A-Za-z0-9]$/
+  const validTag = tag.match(regex)
 
   // once tag is chosen, fetch all possible values that can be returned from the tag
   // put into a map and associate it with a color from the swatch
@@ -69,21 +70,26 @@ export default function ColorByTagDlg(props: {
               }}
               placeholder="Enter Tag Name"
               inputProps={{ maxLength: 2 }}
+              error={tag.length === 2 && !validTag}
+              helperText={
+                tag.length === 2 && !validTag ? 'Not a valid tag' : ''
+              }
               autoComplete="off"
             />
             <Button
               variant="contained"
               color="primary"
+              type="submit"
               style={{ marginLeft: 20 }}
-              onClick={() => {
-                const display = model.displays[0]
-                ;(display.PileupDisplay || display).setColorScheme({
+              onClick={async () => {
+                const display = await model.displays[0]
+                ;(display.PileupDisplay || display).fetchValues({
                   type: 'tag',
                   tag,
                 })
                 handleClose()
               }}
-              disabled={!tag.match(regex)}
+              disabled={!validTag}
             >
               Submit
             </Button>
