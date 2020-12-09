@@ -45,12 +45,7 @@ function RefNameAutocomplete({
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
-  const {
-    coarseVisibleLocStrings,
-    visibleLocStrings: nonCoarseVisibleLocStrings,
-  } = model
-  const visibleLocStrings =
-    coarseVisibleLocStrings || nonCoarseVisibleLocStrings
+  const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
   const options: Array<Option> = useMemo(() => {
     const possOptions = regions.map(option => {
@@ -105,7 +100,7 @@ function RefNameAutocomplete({
       loading={loaded}
       selectOnFocus
       style={style}
-      value={visibleLocStrings || value || ''}
+      value={coarseVisibleLocStrings || value || ''}
       options={options}
       groupBy={option => String(option.type)}
       filterOptions={(possibleOptions, params) => {
