@@ -6,6 +6,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import GetAppIcon from '@material-ui/icons/GetApp';
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
@@ -168,6 +169,26 @@ function RubberBand({
     model.moveTo(leftOffset, rightOffset)
   }
 
+  function getSequence() {
+    console.log("get sequence")
+    // will handle calling assembly manager to check if 
+    // there is an assembly available 
+    if (startX === undefined || anchorPosition === undefined) {
+      return
+    }
+    let leftPx = startX
+    let rightPx = anchorPosition.left
+    if (rightPx < leftPx) {
+      ;[leftPx, rightPx] = [rightPx, leftPx]
+    }
+    const leftOffset = model.pxToBp(leftPx)
+    const rightOffset = model.pxToBp(rightPx)
+    const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
+    const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed? rightOffset.end - rightOffset.offset : rightOffset.offset)
+    console.log(leftBp)
+    console.log(rightBp)
+  }
+
   function handleClose() {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -187,6 +208,14 @@ function RubberBand({
       icon: ZoomInIcon,
       onClick: () => {
         zoomToRegion()
+        handleClose()
+      },
+    },
+    {
+      label: 'Get Sequence',
+      icon: GetAppIcon,
+      onClick: () => {
+        getSequence()
         handleClose()
       },
     },
