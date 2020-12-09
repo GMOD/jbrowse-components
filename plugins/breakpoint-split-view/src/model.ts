@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
 import { MenuItem } from '@jbrowse/core/ui'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
