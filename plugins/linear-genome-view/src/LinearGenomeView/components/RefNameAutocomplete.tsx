@@ -97,15 +97,15 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
-      freeSolo
-      selectOnFocus
+      disabled={!assemblyName || !loaded}
       disableListWrap
       disableClearable
-      style={style}
-      loading={loaded}
-      value={visibleLocStrings || value || ''}
+      freeSolo
       includeInputInList
-      disabled={!assemblyName || !loaded}
+      loading={loaded}
+      selectOnFocus
+      style={style}
+      value={visibleLocStrings || value || ''}
       options={options}
       groupBy={option => String(option.type)}
       filterOptions={(possibleOptions, params) => {
