@@ -1,28 +1,62 @@
-We welcome contributions
+Welcome, we are happy to receive contributions to jbrowse 2. This short guide
+will help you get started
 
 ## Source editing
 
-See the README.md for how to get started as a developer
+The TLDR of getting started with the app is using
 
-A lot of the jbrowse codebase is structured into many "plugins" in the plugins
+```
+git clone https://github.com/GMOD/jbrowse-components
+cd jbrowse-components
+yarn
+cd products/jbrowse-web
+yarn start
+```
 
-The products/jbrowse-web and products/jbrowse-desktop are "front ends" that
-bundle the plugins and add some extra organization
+This will boot up a dev server of jbrowse-web, or web version of jbrowse 2
 
-We suggest having lint-on-save configured for your source code editor
+To get orientated with the source code, please see
+https://jbrowse.org/jb2/docs/developer_guide
+
+As far as helpful tips, we suggest having lint-on-save configured for your
+source code editor, so that prettier and eslint fix simple issues in formatting
 
 You can also run lint from the command line from the repo root
 
-    yarn lint
+    yarn lint # optionally with --fix
 
-Similarly, we use typescript, and you can use this command in the repo root
+We also use typescript, and you can use this command in the repo root
 
     yarn tsc
 
-## Adding images to the docs
+## Documentation
+
+We store all our docs in the `website/` folder
+
+To run the website
+
+```
+cd website
+yarn
+yarn start
+```
+
+You can edit the markdown by hand. The documentation is built into a website
+and a PDF using latex here http://jbrowse.org/jb2/jbrowse2.pdf
+
+### Adding images to the docs
 
 Please use an image compressor such as pngquant before adding images to the
-docs
+docs. For each image, please also specify a caption using text below the image
+line in the markdown
+
+```
+![](yourfile.png)
+Your caption of the image here
+```
+
+This creates a caption of the image properly in the PDF, and just shows the
+text below the image on the website
 
 ## Developers
 
