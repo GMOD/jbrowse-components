@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
 import { MenuItem } from '@jbrowse/core/ui'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
@@ -92,8 +92,8 @@ export default function stateModelFactory(pluginManager: any) {
 
       // Paired reads are handled slightly differently than split reads
       hasPairedReads(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(f =>
-          f.get('multi_segment_first'),
+        return this.getTrackFeatures(trackConfigId).find(
+          f => f.get('flags') & 64,
         )
       },
 
@@ -170,7 +170,9 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          if (!alreadySeen.has(feature.id()) && !feature.get('unmapped')) {
+          const id = feature.id()
+          const unmapped = feature.get('flags') & 4
+          if (!alreadySeen.has(id) && !unmapped) {
             const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []
@@ -192,11 +194,12 @@ export default function stateModelFactory(pluginManager: any) {
 
         // this finds candidate features that share the same name
         for (const feature of features.values()) {
-          if (
-            !alreadySeen.has(feature.id()) &&
-            !feature.get('multi_segment_all_correctly_aligned') &&
-            !feature.get('unmapped')
-          ) {
+          const flags = feature.get('flags')
+          const id = feature.id()
+          const unmapped = flags & 4
+          const correctlyPaired = flags & 2
+
+          if (!alreadySeen.has(id) && !correctlyPaired && !unmapped) {
             const n = feature.get('name')
             if (!candidates[n]) {
               candidates[n] = []
