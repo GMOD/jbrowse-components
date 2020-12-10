@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
@@ -79,21 +80,30 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          <RefNameAutocomplete
-            model={model}
-            assemblyName={
-              error ? undefined : assemblyNames[selectedAssemblyIdx]
-            }
-            onSelect={setSelectedRegion}
-            value={selectedRegion && selectedRegion.refName}
-            TextFieldProps={{
-              margin: 'normal',
-              variant: 'outlined',
-              label: 'Sequence',
-              className: classes.importFormEntry,
-              helperText: 'Select sequence to view',
-            }}
-          />
+          {selectedRegion && model.volatileWidth ? (
+            <RefNameAutocomplete
+              model={model}
+              assemblyName={
+                error ? undefined : assemblyNames[selectedAssemblyIdx]
+              }
+              value={selectedRegion?.refName}
+              onSelect={setSelectedRegion}
+              TextFieldProps={{
+                margin: 'normal',
+                variant: 'outlined',
+                label: 'Sequence',
+                className: classes.importFormEntry,
+                helperText: 'Select sequence to view',
+              }}
+            />
+          ) : (
+            <CircularProgress
+              role="progressbar"
+              color="inherit"
+              size={20}
+              disableShrink
+            />
+          )}
         </Grid>
         <Grid item>
           <Button
