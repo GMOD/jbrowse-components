@@ -74,7 +74,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     doHydrate()
 
     return () => {
-      if (domNode && isHydrated) {
+      if (domNode && hydrated.current) {
         unmountComponentAtNode(domNode)
       }
     }
