@@ -13,10 +13,9 @@ export default ({ jbrequire }) => {
 
     useEffect(() => {
       const domNode = ssrContainerNode.current
-      const isHydrated = hydrated.current
       function doHydrate() {
         if (domNode && filled) {
-          if (domNode && domNode.innerHTML && isHydrated) {
+          if (domNode && domNode.innerHTML && hydrated.current) {
             domNode.style.display = 'none'
             requestIdleCallback(() => unmountComponentAtNode(domNode))
           }
@@ -40,6 +39,11 @@ export default ({ jbrequire }) => {
         }
       }
       doHydrate()
+      return () => {
+        if (hydrated.current && domNode) {
+          unmountComponentAtNode(domNode)
+        }
+      }
     })
 
     return <g ref={ssrContainerNode} />

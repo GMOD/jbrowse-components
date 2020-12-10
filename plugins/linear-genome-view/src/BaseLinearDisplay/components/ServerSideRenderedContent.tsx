@@ -18,7 +18,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
 
   useEffect(() => {
     const domNode = ssrContainerNode.current
-    const isHydrated = hydrated.current
     function doHydrate() {
       const {
         data,
@@ -28,7 +27,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         renderingComponent: RenderingComponent,
       } = model
       if (domNode && filled) {
-        if (isHydrated && domNode) {
+        if (hydrated.current && domNode) {
           unmountComponentAtNode(domNode)
         }
         domNode.innerHTML = html
