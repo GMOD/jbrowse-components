@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 interface AnalyticsObj {
@@ -21,8 +20,6 @@ export async function writeAWSAnalytics(
   const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
     (track: any) => (readConfObject(track, 'assemblyNames') || []).length > 1,
   ).length
-
-  console.log(rootModel.jbrowse.plugins)
 
   // stats to be recorded in db
   const stats: AnalyticsObj = {

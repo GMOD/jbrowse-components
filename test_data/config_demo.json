@@ -1,5 +1,11 @@
 {
   "configuration": {},
+  "plugins": [
+    {
+      "name": "Biothings",
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/dist/plugin.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg19",
