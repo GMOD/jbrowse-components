@@ -10,7 +10,6 @@ import type { BlockModel } from '../models/serverSideRenderedBlock'
 
 function ServerSideRenderedContent(props: { model: BlockModel }) {
   const ssrContainerNode = useRef<HTMLDivElement>(null)
-  const hydrated = useRef(false)
 
   const { model } = props
   const session = getSession(model)
@@ -27,7 +26,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         renderingComponent: RenderingComponent,
       } = model
       if (domNode && filled) {
-        if (hydrated.current && domNode) {
+        if (domNode) {
           unmountComponentAtNode(domNode)
         }
         domNode.innerHTML = html
@@ -63,7 +62,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
               </ThemeProvider>,
               domNode,
             )
-            hydrated.current = true
           },
           { timeout: 300 },
         )
@@ -73,7 +71,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     doHydrate()
 
     return () => {
-      if (domNode && hydrated.current) {
+      if (domNode) {
         unmountComponentAtNode(domNode)
       }
     }
