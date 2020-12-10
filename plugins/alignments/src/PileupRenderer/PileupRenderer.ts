@@ -34,7 +34,12 @@ export interface PileupRenderProps {
   colorBy: {
     type: string
     tag?: string
-    valueColorMap?: Map<string, string>
+    valueColorPairing?: [
+      {
+        value: string | number
+        color: string
+      },
+    ]
   }
   height: number
   width: number
@@ -353,7 +358,9 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'tag': {
         const tag = colorBy.tag as string
-        const valueColorMap = colorBy.valueColorMap as Map<string, string>
+        const valueColorPairing = colorBy.valueColorPairing as [
+          { value: string | number; color: string },
+        ]
         const isCram = feature.get('tags')
         if (tag === 'HP') {
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
@@ -368,10 +375,9 @@ export default class PileupRenderer extends BoxRendererType {
         }
         // tag is not one of the autofilled tags, has color-value pairs from fetchValues
         else {
-          console.log('at end', valueColorMap)
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
-          const foundColor = valueColorMap?.has(val)
-          ctx.fillStyle = foundColor ? valueColorMap.get(val) : 'color_nostrand'
+          const foundValue = valueColorPairing?.find(obj => obj.value === val)
+          ctx.fillStyle = foundValue ? foundValue.color : 'color_nostrand'
         }
         break
       }

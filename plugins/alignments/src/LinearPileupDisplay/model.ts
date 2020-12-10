@@ -65,7 +65,14 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
-            valueColorMap: types.maybe(types.map(types.string, types.string)), // TODOCOLOR: figure out the actual typing
+            valueColorPairing: types.maybe(
+              types.array(
+                types.model({
+                  value: types.union(types.number, types.string),
+                  color: types.string,
+                }),
+              ),
+            ),
           }),
         ),
         filterBy: types.optional(
@@ -195,7 +202,7 @@ const stateModelFactory = (
       setColorScheme(colorScheme: {
         type: string
         tag?: string
-        valueColorMap?: Map<string, string>
+        valueColorPairing?: [{ value: string | number; color: string }]
       }) {
         self.colorBy = cast(colorScheme)
         self.ready = false
@@ -229,6 +236,7 @@ const stateModelFactory = (
           '#FEFE62',
           '#DC3220',
         ] // sample Colorblind palette
+        const valueColorPairing = []
         rpcManager
           .call(getRpcSessionId(self), 'PileupGetGlobalValueForTag', {
             adapterConfig,
@@ -239,12 +247,12 @@ const stateModelFactory = (
           })
           .then(values => {
             Array.from(values).forEach((value, idx) => {
-              valueColorMap.set(value, colorPalette[idx])
+              valueColorMap.set(value, colorPalette[idx % 10])
+              valueColorPairing.push({ value, color: colorPalette[idx % 10] })
             })
-            console.log('vcm', valueColorMap)
             self.setColorScheme({
               ...colorScheme,
-              valueColorMap,
+              valueColorPairing,
             })
           })
       },
