@@ -141,10 +141,13 @@ export default () => {
 
             <Paper style={{ padding: 12 }}>
               <p style={{ textAlign: 'center' }}>
-                <b>Optional</b>: Add a PAF (pairwise alignment format) file for
-                the dotplot view. Note that the first assembly should be the
-                left column of the PAF and the second assembly should be the
-                right column
+                <b>Optional</b>: Add a PAF{' '}
+                <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+                  (pairwise mapping format)
+                </a>{' '}
+                file for the dotplot view. Note that the first assembly should
+                be the left column of the PAF and the second assembly should be
+                the right column
               </p>
               <div style={{ margin: '0 auto' }}>
                 <FileSelector
