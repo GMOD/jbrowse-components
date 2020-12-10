@@ -6,6 +6,7 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
+import Paper from '@material-ui/core/Paper'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -16,6 +17,7 @@ export default () => {
   const useStyles = makeStyles(theme => ({
     importFormContainer: {
       padding: theme.spacing(4),
+      margin: '0 auto',
     },
     importFormEntry: {
       minWidth: 180,
@@ -110,34 +112,49 @@ export default () => {
 
     return (
       <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justify="center" alignItems="center">
+        <Grid
+          container
+          spacing={1}
+          justify="center"
+          alignItems="center"
+          style={{ width: '50%', margin: '0 auto' }}
+        >
           <Grid item>
-            <p style={{ textAlign: 'center' }}>
-              Select assemblies for dotplot view
-            </p>
-            {[...new Array(numRows)].map((_, index) => (
-              <FormRow
-                key={`row_${index}_${selected[index]}`}
-                error={error}
-                selected={selected[index]}
-                onChange={val => {
-                  const copy = selected.slice(0)
-                  copy[index] = val
-                  setSelected(copy)
-                }}
-                model={model}
-              />
-            ))}
-          </Grid>
+            <Paper style={{ padding: 12 }}>
+              <p style={{ textAlign: 'center' }}>
+                Select assemblies for dotplot view
+              </p>
+              {[...new Array(numRows)].map((_, index) => (
+                <FormRow
+                  key={`row_${index}_${selected[index]}`}
+                  error={error}
+                  selected={selected[index]}
+                  onChange={val => {
+                    const copy = selected.slice(0)
+                    copy[index] = val
+                    setSelected(copy)
+                  }}
+                  model={model}
+                />
+              ))}
+            </Paper>
 
-          <Grid item>
-            <Typography>Add a PAF file for the dotplot view</Typography>
-            <FileSelector
-              name="URL"
-              description=""
-              location={trackData}
-              setLocation={loc => setTrackData(loc)}
-            />
+            <Paper style={{ padding: 12 }}>
+              <p style={{ textAlign: 'center' }}>
+                <b>Optional</b>: Add a PAF (pairwise alignment format) file for
+                the dotplot view. Note that the first assembly should be the
+                left column of the PAF and the second assembly should be the
+                right column
+              </p>
+              <div style={{ margin: '0 auto' }}>
+                <FileSelector
+                  name="URL"
+                  description=""
+                  location={trackData}
+                  setLocation={loc => setTrackData(loc)}
+                />
+              </div>
+            </Paper>
           </Grid>
           <Grid item>
             <Button onClick={onOpenClick} variant="contained" color="primary">
