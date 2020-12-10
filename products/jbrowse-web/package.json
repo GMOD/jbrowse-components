@@ -18,7 +18,6 @@
     "@jbrowse/core": "^1.0.2",
     "@jbrowse/plugin-alignments": "^1.0.2",
     "@jbrowse/plugin-bed": "^1.0.2",
-    "@jbrowse/plugin-biothings": "^1.0.2",
     "@jbrowse/plugin-breakpoint-split-view": "^1.0.2",
     "@jbrowse/plugin-circular-view": "^1.0.2",
     "@jbrowse/plugin-config": "^1.0.2",
