@@ -22,15 +22,15 @@ export async function writeAWSAnalytics(
     (track: any) => (readConfObject(track, 'assemblyNames') || []).length > 1,
   ).length
 
+  console.log(rootModel.jbrowse.plugins)
+
   // stats to be recorded in db
   const stats: AnalyticsObj = {
     ver: rootModel.version,
     'assemblies-count': rootModel.jbrowse.assemblies.length,
     'tracks-count': rootModel.jbrowse.tracks.length,
     'session-tracks-count': rootModel?.session?.sessionTracks.length,
-    plugins: rootModel.jbrowse.plugins
-      ? getSnapshot(rootModel.jbrowse.plugins)
-      : '',
+    plugins: rootModel.jbrowse.plugins,
     'open-views': rootModel?.session?.views.length || undefined,
     'synteny-tracks-count': multiAssemblyTracks,
     'saved-sessions-count': Object.keys(localStorage).filter(name =>
@@ -86,9 +86,7 @@ export async function writeGAAnalytics(
     ver: rootModel.version,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     loadTime: Date.now() - initialTimeStamp,
-    plugins: rootModel.jbrowse.plugins
-      ? getSnapshot(rootModel.jbrowse.plugins)
-      : undefined,
+    plugins: rootModel.jbrowse.plugins,
   }
 
   // create script
