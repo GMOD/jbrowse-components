@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
@@ -120,7 +119,7 @@ export default () => {
           style={{ width: '50%', margin: '0 auto' }}
         >
           <Grid item>
-            <Paper style={{ padding: 12 }}>
+            <Paper style={{ padding: 12, marginBottom: 10 }}>
               <p style={{ textAlign: 'center' }}>
                 Select assemblies for dotplot view
               </p>
@@ -139,7 +138,7 @@ export default () => {
               ))}
             </Paper>
 
-            <Paper style={{ padding: 12 }}>
+            <Paper style={{ padding: 12, marginBottom: 10 }}>
               <p style={{ textAlign: 'center' }}>
                 <b>Optional</b>: Add a PAF{' '}
                 <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
@@ -149,14 +148,16 @@ export default () => {
                 be the left column of the PAF and the second assembly should be
                 the right column
               </p>
-              <div style={{ margin: '0 auto' }}>
-                <FileSelector
-                  name="URL"
-                  description=""
-                  location={trackData}
-                  setLocation={loc => setTrackData(loc)}
-                />
-              </div>
+              <Grid container justify="center">
+                <Grid item>
+                  <FileSelector
+                    name="URL"
+                    description=""
+                    location={trackData}
+                    setLocation={loc => setTrackData(loc)}
+                  />
+                </Grid>
+              </Grid>
             </Paper>
           </Grid>
           <Grid item>
