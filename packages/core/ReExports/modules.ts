@@ -28,6 +28,8 @@ import MUIIcon from '@material-ui/core/Icon'
 import MUIIconButton from '@material-ui/core/IconButton'
 import MUIInputAdornment from '@material-ui/core/InputAdornment'
 import MUILinearProgress from '@material-ui/core/LinearProgress'
+import MUIList from '@material-ui/core/List'
+import MUIListItem from '@material-ui/core/ListItem'
 import MUIListItemIcon from '@material-ui/core/ListItemIcon'
 import MUIListItemText from '@material-ui/core/ListItemText'
 import MUIMenu from '@material-ui/core/Menu'
@@ -106,6 +108,8 @@ const libs = {
   '@material-ui/core/IconButton': MUIIconButton,
   '@material-ui/core/InputAdornment': MUIInputAdornment,
   '@material-ui/core/LinearProgress': MUILinearProgress,
+  '@material-ui/core/List': MUIList,
+  '@material-ui/core/ListItem': MUIListItem,
   '@material-ui/core/ListItemIcon': MUIListItemIcon,
   '@material-ui/core/ListItemText': MUIListItemText,
   '@material-ui/core/Menu': MUIMenu,
