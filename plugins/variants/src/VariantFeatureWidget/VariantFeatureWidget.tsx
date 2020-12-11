@@ -1,96 +1,77 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import Table from '@material-ui/core/Table'
-import TableBody from '@material-ui/core/TableBody'
-import TableCell from '@material-ui/core/TableCell'
-import TableHead from '@material-ui/core/TableHead'
-import TableRow from '@material-ui/core/TableRow'
+
+import { DataGrid } from '@material-ui/data-grid'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import React from 'react'
 import {
   BaseFeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-const useStyles = makeStyles(theme => ({
-  table: {
-    padding: 0,
-  },
-  valueCell: {
-    wordWrap: 'break-word',
-    padding: theme.spacing(1),
-  },
-  fieldName: {
-    display: 'inline-block',
-    minWidth: '90px',
-    fontSize: '0.9em',
-    borderBottom: '1px solid #0003',
-    backgroundColor: '#ddd',
-    marginRight: theme.spacing(1),
-    padding: theme.spacing(0.5),
-  },
-  fieldValue: {
-    display: 'inline-block',
-    fontSize: '0.8em',
-  },
-  header: {
-    padding: theme.spacing(0.5),
-    backgroundColor: '#ddd',
-  },
-  title: {
-    fontSize: '1em',
-  },
-
-  valbox: {
-    border: '1px solid #bbb',
-  },
-}))
-
 function VariantSamples(props: any) {
-  const classes = useStyles()
+  const [filter, setFilter] = useState<any>({})
   const { feature } = props
-  const samples = feature.samples as Record<string, any>
-  if (!samples) {
+
+  const { samples = {} } = feature
+  const preFilteredRows: any = Object.entries(samples)
+  if (!preFilteredRows.length) {
     return null
   }
-  const ret = Object.keys(samples)
-  if (!ret.length) {
-    return null
+  const infoFields = ['sample', ...Object.keys(preFilteredRows[0][1])].map(
+    field => ({
+      field,
+    }),
+  )
+  let error
+  let rows = []
+  const filters = Object.keys(filter)
+
+  // catch some error thrown from regex
+  try {
+    rows = preFilteredRows
+      .map((row: any) => {
+        return { sample: row[0], ...row[1], id: row[0] }
+      })
+      .filter((row: any) => {
+        return filters.length
+          ? filters.every(key => {
+              const val = row[key]
+              const currFilter = filter[key]
+              return currFilter ? String(val).match(currFilter) : true
+            })
+          : true
+      })
+  } catch (e) {
+    error = e
   }
-  const infoFields = Object.keys(samples[ret[0]])
 
   return (
     <BaseCard {...props} title="Samples">
-      <div style={{ width: '100%', maxHeight: 600, overflow: 'auto' }}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Sample</TableCell>
-              {infoFields.map(f => (
-                <TableCell key={f}>{f}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.entries(samples).map(
-              ([key, value]) =>
-                value && (
-                  <TableRow key={key}>
-                    <TableCell component="th" scope="row">
-                      {key}
-                    </TableCell>
-                    {infoFields.map(f => (
-                      <TableCell className={classes.valueCell} key={f}>
-                        {value === null ? '.' : String(value[f])}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ),
-            )}
-          </TableBody>
-        </Table>
+      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+
+      {infoFields.map(({ field }) => {
+        return (
+          <TextField
+            key={`filter-${field}`}
+            placeholder={`Filter ${field} (regex)`}
+            value={filter[field] || ''}
+            onChange={event =>
+              setFilter({ ...filter, [field]: event.target.value })
+            }
+          />
+        )
+      })}
+      <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
+        <DataGrid
+          rows={rows}
+          columns={infoFields}
+          rowHeight={20}
+          headerHeight={25}
+        />
       </div>
     </BaseCard>
   )

@@ -45,6 +45,7 @@ export default class extends BaseFeatureDataAdapter {
           ? openLocation(location as FileLocation)
           : undefined,
       chunkCacheSize: 50 * 2 ** 20,
+      chunkSizeLimit: 1000000000,
     })
 
     this.parser = this.vcf

@@ -8,13 +8,14 @@ import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
+import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
 import SanitizedHTML from '../ui/SanitizedHTML'
 
-const omit = [
+const globalOmit = [
   'name',
   'start',
   'end',
@@ -44,6 +45,7 @@ export const useStyles = makeStyles(theme => ({
   },
   field: {
     display: 'flex',
+    flexWrap: 'wrap',
   },
   fieldDescription: {
     '&:hover': {
@@ -231,6 +233,20 @@ const CoreDetails = (props: BaseProps) => {
   )
 }
 
+function measureText(str: string, fontSize = 10) {
+  // prettier-ignore
+  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+  const avg = 0.5279276315789471
+  return (
+    str
+      .split('')
+      .map(c =>
+        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
+      )
+      .reduce((cur, acc) => acc + cur) * fontSize
+  )
+}
+
 export const BaseCoreDetails = (props: BaseProps) => {
   return (
     <BaseCard {...props} title="Primary data">
@@ -244,24 +260,82 @@ interface AttributeProps {
   omit?: string[]
   formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
+  prefix?: string
 }
 
 export const Attributes: FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
-    omit: propOmit = [],
+    omit = [],
     descriptions,
     formatter = val => val,
+    prefix = '',
   } = props
+  const omits = [...omit, ...globalOmit]
 
   return (
     <>
       {Object.entries(attributes)
-        .filter(
-          ([k, v]) =>
-            v !== undefined && !omit.includes(k) && !propOmit.includes(k),
-        )
+        .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
+          if (Array.isArray(value) && value.length) {
+            if (value.length > 2 && value.every(val => isObject(val))) {
+              const keys = Object.keys(value[0]).sort()
+              const unionKeys = new Set(keys)
+              value.forEach(val =>
+                Object.keys(val).forEach(k => unionKeys.add(k)),
+              )
+              if (unionKeys.size < keys.length + 5) {
+                // avoids key 'id' from being used in row data
+                const rows = Object.entries(value).map(([k, val]) => {
+                  const { id, ...rest } = val
+                  return {
+                    id: k, // used by material UI
+                    identifier: id, // renamed from id to identifier
+                    ...rest,
+                  }
+                })
+
+                // avoids key 'id' from being used in column names
+                const colNames = unionKeys.has('id')
+                  ? ['identifier', ...unionKeys]
+                  : [...unionKeys]
+
+                const columns = colNames.map(val => ({
+                  field: val,
+                  width: Math.max(
+                    ...rows.map(row => {
+                      const result = String(row[val])
+                      return Math.min(
+                        Math.max(measureText(result, 14) + 50, 80),
+                        1000,
+                      )
+                    }),
+                  ),
+                }))
+                return (
+                  <React.Fragment key={key}>
+                    <FieldName prefix={prefix} name={key} />
+                    <div
+                      key={key}
+                      style={{
+                        height: rows.length * 20 + 50,
+                        width: '100%',
+                      }}
+                    >
+                      <DataGrid
+                        rowHeight={20}
+                        headerHeight={25}
+                        hideFooter
+                        rows={rows}
+                        columns={columns}
+                      />
+                    </div>
+                  </React.Fragment>
+                )
+              }
+            }
+          }
           const description = descriptions && descriptions[key]
           if (Array.isArray(value)) {
             return value.length === 1 ? (
@@ -277,6 +351,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 name={key}
                 value={value}
                 description={description}
+                prefix={prefix}
               />
             )
           }
@@ -286,6 +361,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
+                prefix={key}
               />
             )
           }
@@ -296,6 +372,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
               name={key}
               value={formatter(value)}
               description={description}
+              prefix={prefix}
             />
           )
         })}
