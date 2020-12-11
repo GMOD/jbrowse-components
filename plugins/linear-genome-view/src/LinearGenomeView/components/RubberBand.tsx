@@ -170,7 +170,6 @@ function RubberBand({
   }
 
   function getSequence() {
-    console.log("get sequence")
     // will handle calling assembly manager to check if 
     // there is an assembly available 
     if (startX === undefined || anchorPosition === undefined) {
@@ -185,8 +184,6 @@ function RubberBand({
     const rightOffset = model.pxToBp(rightPx)
     const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
     const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed? rightOffset.end - rightOffset.offset : rightOffset.offset)
-    console.log(leftBp)
-    console.log(rightBp)
   }
 
   function handleClose() {
