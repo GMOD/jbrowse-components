@@ -24,19 +24,19 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     adapterConfig: {}
     signal?: RemoteAbortSignal
     headers?: Record<string, string>
-    displayedRegions: Region[]
+    regions: Region[]
     sessionId: string
     tag: string
   }): Promise<Set<string>> {
     const deserializedArgs = await this.deserializeArguments(args)
-    const { adapterConfig, sessionId, displayedRegions, tag } = deserializedArgs
+    const { adapterConfig, sessionId, regions, tag } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
 
-    const features = dataAdapter.getFeatures(displayedRegions[0])
+    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()
 
     const uniqueValues = new Set()

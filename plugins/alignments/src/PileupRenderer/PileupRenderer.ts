@@ -34,13 +34,13 @@ export interface PileupRenderProps {
   colorBy: {
     type: string
     tag?: string
-    valueColorPairing?: [
-      {
-        value: string | number
-        color: string
-      },
-    ]
   }
+  valueColorPairing?: [
+    {
+      value: string | number
+      color: string
+    },
+  ]
   height: number
   width: number
   highResolutionScaling: number
@@ -332,7 +332,7 @@ export default class PileupRenderer extends BoxRendererType {
     },
     props: PileupRenderProps,
   ) {
-    const { config, bpPerPx, regions, colorBy } = props
+    const { config, bpPerPx, regions, colorBy, valueColorPairing } = props
     const { heightPx, topPx, feature } = feat
     const region = regions[0]
 
@@ -358,9 +358,6 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'tag': {
         const tag = colorBy.tag as string
-        const valueColorPairing = colorBy.valueColorPairing as [
-          { value: string | number; color: string },
-        ]
         const isCram = feature.get('tags')
         if (tag === 'HP') {
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)

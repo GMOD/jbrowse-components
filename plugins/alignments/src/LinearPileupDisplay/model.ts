@@ -65,14 +65,6 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
-            valueColorPairing: types.maybe(
-              types.array(
-                types.model({
-                  value: types.union(types.number, types.string),
-                  color: types.string,
-                }),
-              ),
-            ),
           }),
         ),
         filterBy: types.optional(
@@ -85,7 +77,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      // make an observable values for get value
+      valueColorPairing: undefined,
       ready: false,
       currBpPerPx: 0,
     }))
@@ -97,7 +89,11 @@ const stateModelFactory = (
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
-      // make an action similar to getStats (fetchValues) that does an rpc call which ends up doing dataAdapter.getValues, calls setColorScheme at end
+      setValueColorPairing(
+        vcArray: { value: string | number; color: string }[],
+      ) {
+        self.valueColorPairing = vcArray
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -107,8 +103,14 @@ const stateModelFactory = (
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, renderProps } = self
+                const { sortedBy, colorBy, renderProps } = self
                 const view = getContainingView(self) as LGV
+
+                // refetch since pairing is volatile
+                if (colorBy?.tag && !self.valueColorPairing) {
+                  await self.fetchValues(colorBy)
+                }
+
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
                   const region = {
@@ -199,11 +201,7 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setColorScheme(colorScheme: {
-        type: string
-        tag?: string
-        valueColorPairing?: [{ value: string | number; color: string }]
-      }) {
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
@@ -221,9 +219,9 @@ const stateModelFactory = (
         const { rpcManager } = getSession(self)
         const { adapterConfig } = self
         const sessionId = getRpcSessionId(self)
-        const { displayedRegions } = getContainingView(self) as LGV
-
-        const valueColorMap = new Map()
+        const { displayedRegions, staticBlocks } = getContainingView(
+          self,
+        ) as LGV
         const colorPalette = [
           '#332288',
           '#117733',
@@ -242,18 +240,17 @@ const stateModelFactory = (
             adapterConfig,
             tag: colorScheme.tag,
             sessionId,
-            displayedRegions,
+            regions: staticBlocks.contentBlocks, // displayedRegions,
             ...opts,
           })
           .then(values => {
-            Array.from(values).forEach((value, idx) => {
-              valueColorMap.set(value, colorPalette[idx % 10])
-              valueColorPairing.push({ value, color: colorPalette[idx % 10] })
-            })
-            self.setColorScheme({
-              ...colorScheme,
-              valueColorPairing,
-            })
+            Array.from(values)
+              .sort((a, b) => a - b)
+              .forEach((value, idx) => {
+                valueColorPairing.push({ value, color: colorPalette[idx % 10] })
+              })
+            self.setValueColorPairing(valueColorPairing)
+            self.setColorScheme(colorScheme)
           })
       },
     }))
@@ -333,6 +330,7 @@ const stateModelFactory = (
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
+            valueColorPairing: self.valueColorPairing,
             filters: self.filterBy
               ? [
                   `function(feature) {
