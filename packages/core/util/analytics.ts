@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getSnapshot } from 'mobx-state-tree'
 import { readConfObject } from '../configuration'
 
 interface AnalyticsObj {
