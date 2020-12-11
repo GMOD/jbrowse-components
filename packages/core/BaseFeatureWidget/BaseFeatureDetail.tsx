@@ -282,43 +282,52 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 Object.keys(val).forEach(k => unionKeys.add(k)),
               )
               if (unionKeys.size < keys.length + 5) {
-                const rowsPerPage = 50
+                // avoids key 'id' from being used in row data
+                const rows = Object.entries(value).map(([k, val]) => {
+                  const { id, ...rest } = val
+                  return {
+                    id: k, // used by material UI
+                    identifier: id, // renamed from id to identifier
+                    ...rest,
+                  }
+                })
+
+                // avoids key 'id' from being used in column names
+                const colNames = unionKeys.has('id')
+                  ? ['identifier', ...unionKeys]
+                  : [...unionKeys]
+
+                const columns = colNames.map(val => ({
+                  field: val,
+                  width: Math.max(
+                    ...rows.map(row => {
+                      const result = String(row[val])
+                      return Math.min(
+                        Math.max(measureText(result, 14) + 50, 80),
+                        1000,
+                      )
+                    }),
+                  ),
+                }))
                 return (
-                  <div
-                    key={key}
-                    style={{
-                      height:
-                        Math.min(rowsPerPage, value.length) * 20 +
-                        100 +
-                        (value.length > rowsPerPage ? 50 : 0),
-                      width: '100%',
-                    }}
-                  >
+                  <React.Fragment key={key}>
                     <FieldName prefix={prefix} name={key} />
-                    <DataGrid
-                      rowHeight={20}
-                      headerHeight={25}
-                      autoHeight
-                      hideFooter={value.length < rowsPerPage}
-                      pageSize={rowsPerPage}
-                      rows={Object.entries(value).map(([k, val]) => ({
-                        id: k,
-                        ...val,
-                      }))}
-                      columns={[...unionKeys].map(val => ({
-                        field: val,
-                        width: Math.max(
-                          ...value.map(row => {
-                            const result = String(row[val])
-                            return Math.min(
-                              Math.max(measureText(result, 14) + 50, 80),
-                              1000,
-                            )
-                          }),
-                        ),
-                      }))}
-                    />
-                  </div>
+                    <div
+                      key={key}
+                      style={{
+                        height: rows.length * 20 + 50,
+                        width: '100%',
+                      }}
+                    >
+                      <DataGrid
+                        rowHeight={20}
+                        headerHeight={25}
+                        hideFooter
+                        rows={rows}
+                        columns={columns}
+                      />
+                    </div>
+                  </React.Fragment>
                 )
               }
             }
