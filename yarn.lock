@@ -3921,10 +3921,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.2.tgz#52812db06eb0e6506403aad7b2919ae689f60d97"
-  integrity sha512-BvTBE2u9/FYqWRK0r2mAgxkJ5+1AA5PgLI+1vo3MkT0qvFnjyj09CGBcWAld4/PS+Pmoazg6x2sg/e9p4uE7vg==
+"@gmod/bam@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.5.tgz#565bcf86105f6a26f8633dde2cbac8866896193f"
+  integrity sha512-/3eu0D+xYE0kXnNdO6ZqD6fk9uuxL9vGhSadau2cuZZ6dognNHDo4z8pBvlj4SJXdFwgkG9qVvR5DabRXq212Q==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
@@ -3975,10 +3975,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.5.6":
-  version "1.5.6"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.6.tgz#6a44e17913fc6431930786f71ec9f4398e81e16d"
-  integrity sha512-Ue8RLzsOG7ykB6dA8SSpbWZMP2YsOaaIb3iLSvyEx1SazTLIMGA/oVRzGYpnIHCQbCe26snFto/rfXo+gXUGeQ==
+"@gmod/cram@^1.5.7":
+  version "1.5.7"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.7.tgz#f8922081ea37f77fe5f2d167b4e400c22d63799c"
+  integrity sha512-ivGfFSJf/orKeWhLUl2WfiD14ZCW3TaFbEgxSeaOmFr0sLe8sFWAx5V5xAXXhMgFvvou28vd2pXhZcqvEBXiAw==
   dependencies:
     "@babel/runtime-corejs3" "^7.4.5"
     "@gmod/binary-parser" "^1.3.5"
