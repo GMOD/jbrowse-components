@@ -79,8 +79,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    const header = await this.cram.cram.getRawHeader(opts)
-    return { header: `<pre>${header}</pre>` }
+    return this.cram.cram.getHeaderText(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {

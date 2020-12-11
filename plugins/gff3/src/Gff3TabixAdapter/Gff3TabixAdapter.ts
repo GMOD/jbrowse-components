@@ -63,12 +63,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public async getHeader() {
-    const header = await this.gff.getHeader()
-    return {
-      header: `<pre>${header
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')}</pre>`,
-    }
+    return this.gff.getHeader()
   }
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {

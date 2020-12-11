@@ -70,8 +70,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    const header = await this.bam.getRawHeader(opts)
-    return { header: `<pre>${header}</pre>` }
+    return this.bam.getHeaderText(opts)
   }
 
   private async setup(opts?: BaseOptions) {

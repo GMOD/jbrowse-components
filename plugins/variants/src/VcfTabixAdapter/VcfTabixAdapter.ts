@@ -58,12 +58,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   async getHeader() {
-    const header = await this.vcf.getHeader()
-    return {
-      header: `<pre>${header
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')}</pre>`,
-    }
+    return this.vcf.getHeader()
   }
 
   async getMetadata() {

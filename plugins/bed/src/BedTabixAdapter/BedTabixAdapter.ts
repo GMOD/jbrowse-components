@@ -49,12 +49,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader() {
-    const header = await this.bed.getHeader()
-    return {
-      header: `<pre>${header
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')}</pre>`,
-    }
+    return this.bed.getHeader()
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
