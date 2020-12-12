@@ -296,10 +296,15 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                   }
                 })
 
-                // avoids key 'id' from being used in column names
-                const colNames = unionKeys.has('id')
-                  ? ['identifier', ...unionKeys]
-                  : [...unionKeys]
+                // avoids key 'id' from being used in column names, and tries
+                // to make it at the start of the colNames array
+                let colNames
+                if (unionKeys.has('id')) {
+                  unionKeys.delete('id')
+                  colNames = ['identifier', ...unionKeys]
+                } else {
+                  colNames = [...unionKeys]
+                }
 
                 const columns = colNames.map(val => ({
                   field: val,
@@ -313,22 +318,29 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                     }),
                   ),
                 }))
+
                 return (
                   <React.Fragment key={key}>
                     <FieldName prefix={prefix} name={key} />
                     <div
                       key={key}
                       style={{
-                        height: rows.length * 20 + 50,
+                        height:
+                          Math.min(rows.length, 100) * 20 +
+                          50 +
+                          (rows.length < 100 ? 0 : 50),
                         width: '100%',
                       }}
                     >
                       <DataGrid
                         rowHeight={20}
                         headerHeight={25}
-                        hideFooter
                         rows={rows}
+                        rowsPerPageOptions={[]}
+                        hideFooterRowCount
+                        hideFooterSelectedRowCount
                         columns={columns}
+                        hideFooter={rows.length < 100}
                       />
                     </div>
                   </React.Fragment>
