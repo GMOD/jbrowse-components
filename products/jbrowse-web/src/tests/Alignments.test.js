@@ -208,11 +208,11 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.02, 2086500)
+    state.session.views[0].setNewView(0.465, 85055)
 
     // load track
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
+    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
