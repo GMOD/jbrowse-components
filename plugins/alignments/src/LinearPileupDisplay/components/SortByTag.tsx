@@ -70,6 +70,8 @@ export default function ColorByTagDlg(props: {
               data-testid="sort-tag-name"
             />
             <Button
+              variant="contained"
+              color="primary"
               onClick={() => {
                 const display = model.displays[0]
                 ;(display.PileupDisplay || display).setSortedBy('tag', tag)

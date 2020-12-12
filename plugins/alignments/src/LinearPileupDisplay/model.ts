@@ -76,6 +76,9 @@ const stateModelFactory = (
           types.model({
             flagInclude: types.optional(types.number, 0),
             flagExclude: types.optional(types.number, 1536),
+            tagFilter: types.maybe(
+              types.model({ tag: types.string, value: types.string }),
+            ),
           }),
           {},
         ),
@@ -253,8 +256,12 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
-        self.filterBy = filter
+      setFilterBy(filter: {
+        flagInclude: number
+        flagExclude: number
+        tagFilter?: { tag: string; value: string }
+      }) {
+        self.filterBy = cast(filter)
       },
     }))
     .actions(self => {
@@ -318,12 +325,35 @@ const stateModelFactory = (
           return LinearPileupDisplayBlurb
         },
 
+        get filters() {
+          let filters: string[] = []
+          if (self.filterBy) {
+            const { flagInclude, flagExclude } = self.filterBy
+            filters = [
+              `function(f) {
+                const flags = f.get('flags');
+                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
+              }`,
+            ]
+            if (self.filterBy.tagFilter) {
+              const { tag, value } = self.filterBy.tagFilter
+              // use eqeq instead of eqeqeq for number vs string comparison
+              filters.push(`function(f) {
+              const tags = f.get('tags');
+              const tag = tags?tags["${tag}"]:f.get("${tag}");
+              return tag == "${value}";
+              }`)
+            }
+          }
+          return filters
+        },
+
         get renderProps() {
           const view = getContainingView(self) as LGV
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
-          const { flagInclude, flagExclude } = self.filterBy
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -334,14 +364,7 @@ const stateModelFactory = (
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
             valueColorPairing: self.valueColorPairing,
-            filters: self.filterBy
-              ? [
-                  `function(feature) {
-                const flags = feature.get('flags')
-                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude})
-              }`,
-                ]
-              : undefined,
+            filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config,
           }

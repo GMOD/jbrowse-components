@@ -8,19 +8,27 @@ import Typography from '@material-ui/core/Typography'
 import Link from '@material-ui/core/Link'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
+import Paper from '@material-ui/core/Paper'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
   root: {
-    width: 600,
+    width: 500,
+  },
+  paper: {
+    padding: theme.spacing(2),
+    margin: theme.spacing(2),
   },
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
+  },
+  field: {
+    margin: theme.spacing(2),
   },
 }))
 
@@ -56,7 +64,6 @@ function Bitmask(props: { flag: number; setFlag: Function }) {
             <input
               type="checkbox"
               checked={Boolean(val)}
-              id={key}
               onChange={event => {
                 if (event.target.checked) {
                   setFlag(flag | (1 << index))
@@ -82,6 +89,11 @@ export default observer((props: { model: any; handleClose: () => void }) => {
   const filter = effectiveDisplay.filterBy
   const [flagInclude, setFlagInclude] = useState(filter?.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filter?.flagExclude)
+  const [tag, setTag] = useState(filter?.tagFilter?.tag || '')
+  const [tagValue, setTagValue] = useState(filter?.tagFilter?.value || '')
+  const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
+
+  const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
 
   return (
     <Dialog
@@ -102,30 +114,69 @@ export default observer((props: { model: any; handleClose: () => void }) => {
       </DialogTitle>
       <DialogContent>
         <Typography>
-          Set filter bitmask options. Refer to{' '}
-          <Link href="https://broadinstitute.github.io/picard/explain-flags.html">
-            https://broadinstitute.github.io/picard/explain-flags.html
-          </Link>{' '}
+          Set filter bitmask options. Refer to <Link href={site}>{site}</Link>{' '}
           for details
         </Typography>
         <div className={classes.root}>
           <form>
-            <div style={{ display: 'flex' }}>
-              <div>
-                <Typography>Read must have ALL these flags</Typography>
-                <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
+            <Paper className={classes.paper} variant="outlined">
+              <div style={{ display: 'flex' }}>
+                <div>
+                  <Typography>Read must have ALL these flags</Typography>
+                  <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
+                </div>
+                <div>
+                  <Typography>Read must have NONE of these flags</Typography>
+                  <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
+                </div>
               </div>
-              <div>
-                <Typography>Read must have NONE of these flags</Typography>
-                <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
-              </div>
-            </div>
+            </Paper>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography>Filter by tag name and value (optional)</Typography>
+              <TextField
+                className={classes.field}
+                value={tag}
+                onChange={event => {
+                  setTag(event.target.value)
+                }}
+                placeholder="Enter tag name"
+                inputProps={{
+                  maxLength: 2,
+                  'data-testid': 'color-tag-name-input',
+                }}
+                error={tag.length === 2 && !validTag}
+                helperText={
+                  tag.length === 2 && !validTag ? 'Not a valid tag' : ''
+                }
+                data-testid="color-tag-name"
+              />
+              <TextField
+                className={classes.field}
+                value={tagValue}
+                onChange={event => {
+                  setTagValue(event.target.value)
+                }}
+                placeholder="Enter tag value"
+                inputProps={{
+                  'data-testid': 'color-tag-name-input',
+                }}
+                data-testid="color-tag-value"
+              />
+            </Paper>
             <Button
               variant="contained"
+              color="primary"
               onClick={() => {
                 effectiveDisplay.setFilterBy({
                   flagInclude,
                   flagExclude,
+                  tagFilter:
+                    tag !== ''
+                      ? {
+                          tag,
+                          value: tagValue,
+                        }
+                      : undefined,
                 })
                 handleClose()
               }}

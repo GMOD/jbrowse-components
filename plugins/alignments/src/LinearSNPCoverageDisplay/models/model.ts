@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { types, cast } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getConf } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
@@ -20,6 +20,9 @@ const stateModelFactory = (configSchema: any) =>
           types.model({
             flagInclude: types.optional(types.number, 0),
             flagExclude: types.optional(types.number, 1536),
+            tagFilter: types.maybe(
+              types.model({ tag: types.string, value: types.string }),
+            ),
           }),
           {},
         ),
@@ -29,8 +32,12 @@ const stateModelFactory = (configSchema: any) =>
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
-      setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
-        self.filterBy = filter
+      setFilterBy(filter: {
+        flagInclude: number
+        flagExclude: number
+        tagFilter?: { tag: string; value: string }
+      }) {
+        self.filterBy = cast(filter)
       },
     }))
     .views(self => ({
@@ -39,15 +46,28 @@ const stateModelFactory = (configSchema: any) =>
       },
 
       get filters() {
-        const { flagInclude, flagExclude } = self.filterBy
-        return self.filterBy
-          ? [
-              `function(feature) {
-                const flags = feature.get('flags')
-                return (((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude}))
+        let filters: string[] = []
+        if (self.filterBy) {
+          const { flagInclude, flagExclude } = self.filterBy
+          filters = [
+            `function(f) {
+                const flags = f.get('flags');
+                if(f.get('snpinfo')) return true
+                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
               }`,
-            ]
-          : undefined
+          ]
+          if (self.filterBy.tagFilter) {
+            const { tag, value } = self.filterBy.tagFilter
+            // use eqeq instead of eqeqeq for number vs string comparison
+            filters.push(`function(f) {
+              const tags = f.get('tags');
+              if(f.get('snpinfo')) return true
+              const tag = tags?tags["${tag}"]:f.get("${tag}");
+              return tag == "${value}";
+              }`)
+          }
+        }
+        return filters
       },
 
       get scaleOpts() {
