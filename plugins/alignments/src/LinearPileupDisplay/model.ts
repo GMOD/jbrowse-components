@@ -40,6 +40,11 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+interface VCPairing {
+  value: string | number
+  color: string
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: LinearPileupDisplayConfigModel,
@@ -77,7 +82,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      valueColorPairing: undefined,
+      valueColorPairing: undefined as undefined | VCPairing[],
       ready: false,
       currBpPerPx: 0,
     }))
@@ -89,10 +94,57 @@ const stateModelFactory = (
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
-      setValueColorPairing(
-        vcArray: { value: string | number; color: string }[],
-      ) {
+      setValueColorPairing(vcArray: VCPairing[]) {
         self.valueColorPairing = vcArray
+      },
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        self.colorBy = cast(colorScheme)
+        self.ready = false
+      },
+      async fetchValues(
+        colorScheme: { type: string; tag?: string },
+        opts?: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const { staticBlocks } = getContainingView(self) as LGV
+        const colorPalette = [
+          '#332288',
+          '#117733',
+          '#44AA99',
+          '#88CCEE',
+          '#DDCC77',
+          '#CC6677',
+          '#AA4499',
+          '#882255',
+          '#FEFE62',
+          '#DC3220',
+        ] // default colorblind friendly palette
+        const valueColorPairing: VCPairing[] = []
+        rpcManager
+          .call(getRpcSessionId(self), 'PileupGetGlobalValueForTag', {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            regions: staticBlocks.contentBlocks,
+            ...opts,
+          })
+          // @ts-ignore // need to fix this ignore
+          .then((values: Set<string | number>) => {
+            Array.from(values)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .sort((a: any, b: any) => a - b)
+              .forEach((value, idx) => {
+                valueColorPairing.push({ value, color: colorPalette[idx % 10] }) // have to repeat if more than 10 values
+              })
+            this.setValueColorPairing(valueColorPairing)
+            this.setColorScheme(colorScheme)
+          })
       },
     }))
     .actions(self => ({
@@ -201,55 +253,8 @@ const stateModelFactory = (
         }
         self.ready = false
       },
-      setColorScheme(colorScheme: { type: string; tag?: string }) {
-        self.colorBy = cast(colorScheme)
-        self.ready = false
-      },
       setFilterBy(filter: { flagInclude: number; flagExclude: number }) {
         self.filterBy = filter
-      },
-      async fetchValues(
-        colorScheme: { type: string; tag?: string },
-        opts: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const { staticBlocks } = getContainingView(self) as LGV
-        const colorPalette = [
-          '#332288',
-          '#117733',
-          '#44AA99',
-          '#88CCEE',
-          '#DDCC77',
-          '#CC6677',
-          '#AA4499',
-          '#882255',
-          '#FEFE62',
-          '#DC3220',
-        ] // default colorblind friendly palette
-        const valueColorPairing = []
-        rpcManager
-          .call(getRpcSessionId(self), 'PileupGetGlobalValueForTag', {
-            adapterConfig,
-            tag: colorScheme.tag,
-            sessionId,
-            regions: staticBlocks.contentBlocks,
-            ...opts,
-          })
-          .then(values => {
-            Array.from(values)
-              .sort((a, b) => a - b)
-              .forEach((value, idx) => {
-                valueColorPairing.push({ value, color: colorPalette[idx % 10] }) // have to repeat if more than 10 values
-              })
-            self.setValueColorPairing(valueColorPairing)
-            self.setColorScheme(colorScheme)
-          })
       },
     }))
     .actions(self => {
