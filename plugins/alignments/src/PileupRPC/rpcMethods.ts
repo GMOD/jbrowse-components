@@ -5,6 +5,8 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { toArray } from 'rxjs/operators'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export class PileupGetGlobalValueForTag extends RpcMethodType {
   name = 'PileupGetGlobalValueForTag'
@@ -28,7 +30,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     regions: Region[]
     sessionId: string
     tag: string
-  }): Promise<Set<string>> {
+  }): Promise<Set<string | number>> {
     const deserializedArgs = await this.deserializeArguments(args)
     const { adapterConfig, sessionId, regions, tag } = deserializedArgs
     const { dataAdapter } = getAdapter(
@@ -37,10 +39,12 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       adapterConfig,
     )
 
-    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
-    const featuresArray = await features.pipe(toArray()).toPromise()
+    const features = (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
+      regions,
+    )
+    const featuresArray: Feature[] = await features.pipe(toArray()).toPromise()
 
-    const uniqueValues = new Set()
+    const uniqueValues: Set<string | number> = new Set()
     featuresArray.forEach(feature => {
       const val = feature.get('tags')
         ? feature.get('tags')[tag]
