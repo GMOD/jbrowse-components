@@ -13,8 +13,7 @@ for (let i = -20; i < 20; i += 1) {
 
 export const YScaleBar = observer(
   ({ model }: { model: WiggleDisplayModel }) => {
-    const { domain, height } = model
-    const scaleType = getConf(model, 'scaleType')
+    const { domain, height, scaleType } = model
     const scale = getScale({
       scaleType,
       domain,

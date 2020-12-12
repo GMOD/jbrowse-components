@@ -14,7 +14,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import { addDisposer, getRoot, isAlive, types, Instance } from 'mobx-state-tree'
 import React from 'react'
 
 import { getNiceDomain } from '../../util'
@@ -49,8 +49,8 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         configuration: ConfigurationReference(configSchema),
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
-        fill: types.optional(types.boolean, true),
-        logScale: types.optional(types.boolean, false),
+        fill: types.maybe(types.boolean),
+        logScale: types.maybe(types.boolean),
         autoscale: types.maybe(types.string),
       }),
     )
@@ -68,11 +68,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       },
 
       setLoading(aborter: AbortController) {
-        if (
-          self.statsFetchInProgress !== undefined &&
-          !self.statsFetchInProgress.signal.aborted
-        ) {
-          self.statsFetchInProgress.abort()
+        const { statsFetchInProgress: statsFetch } = self
+        if (statsFetch !== undefined && !statsFetch.signal.aborted) {
+          statsFetch.abort()
         }
         self.statsFetchInProgress = aborter
       },
@@ -106,8 +104,9 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
           const rendererType = rendererTypes.get(viewName)
-          if (!rendererType)
+          if (!rendererType) {
             throw new Error(`unknown alignments view name ${viewName}`)
+          }
           return rendererType
         },
 
@@ -149,6 +148,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           )
         },
 
+        get canHaveFill() {
+          return self.rendererTypeName === 'XYPlotRenderer'
+        },
+
         get autoscaleType() {
           return self.autoscale || getConf(self, 'autoscale')
         },
@@ -182,57 +185,67 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get composedTrackMenuItems() {
-          const bigWigOptions =
-            this.adapterTypeName === 'BigWigAdapter'
+          return [
+            ...(this.adapterTypeName === 'BigWigAdapter'
               ? [
                   {
-                    label: 'Finer resolution',
-                    onClick: () => {
-                      self.setResolution(self.resolution * 5)
-                    },
+                    label: 'Resolution',
+                    subMenu: [
+                      {
+                        label: 'Finer resolution',
+                        onClick: () => {
+                          self.setResolution(self.resolution * 5)
+                        },
+                      },
+                      {
+                        label: 'Coarser resolution',
+                        onClick: () => {
+                          self.setResolution(self.resolution / 5)
+                        },
+                      },
+                    ],
                   },
+                ]
+              : []),
+            ...(this.canHaveFill
+              ? [
                   {
-                    label: 'Coarser resolution',
+                    label: self.fill
+                      ? 'Turn off histogram fill'
+                      : 'Turn on histogram fill',
                     onClick: () => {
-                      self.setResolution(self.resolution / 5)
+                      self.setFill(!self.fill)
                     },
                   },
                 ]
-              : []
-
-          const otherOptions = [
-            {
-              label: self.fill
-                ? 'Turn off histogram fill'
-                : 'Turn on histogram fill',
-              onClick: () => {
-                self.setFill(!self.fill)
-              },
-            },
+              : []),
             {
               label: self.logScale ? 'Set linear scale' : 'Set log scale',
               onClick: () => {
                 self.setLogScale(!self.logScale)
               },
             },
-            {
-              label: 'Autoscale type',
-              subMenu: [
-                ['local', 'Local'],
-                ['global', 'Global'],
-                ['globalsd', 'Global within +/- 3SD'],
-                ['localsd', 'Local within +/- 3SD'],
-              ].map(([val, label]) => {
-                return {
-                  label,
-                  onClick() {
-                    self.setAutoscale(val)
+            ...(this.adapterTypeName === 'BigWigAdapter'
+              ? [
+                  {
+                    label: 'Autoscale type',
+                    subMenu: [
+                      ['local', 'Local'],
+                      ['global', 'Global'],
+                      ['globalsd', 'Global ± 3σ'],
+                      ['localsd', 'Local ± 3σ'],
+                    ].map(([val, label]) => {
+                      return {
+                        label,
+                        onClick() {
+                          self.setAutoscale(val)
+                        },
+                      }
+                    }),
                   },
-                }
-              }),
-            },
+                ]
+              : []),
           ]
-          return [...bigWigOptions, ...otherOptions]
         },
 
         get trackMenuItems() {
