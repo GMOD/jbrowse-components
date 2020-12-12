@@ -15,7 +15,6 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import { types, Instance, SnapshotOut } from 'mobx-state-tree'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
@@ -34,12 +33,6 @@ import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
 
-if (!window.TextEncoder) {
-  window.TextEncoder = TextEncoder
-}
-if (!window.TextDecoder) {
-  window.TextDecoder = TextDecoder
-}
 function NoConfigMessage() {
   const s = window.location.search
   const links = [

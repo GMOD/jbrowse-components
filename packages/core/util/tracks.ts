@@ -175,7 +175,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: makeLocation(fileName),
@@ -183,7 +183,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: makeLocation(fileName),
