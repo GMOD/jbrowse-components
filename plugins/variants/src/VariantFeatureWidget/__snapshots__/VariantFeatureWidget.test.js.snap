@@ -244,7 +244,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   <div
                     class="makeStyles-fieldName"
                   >
-                    MQ
+                    INFO.MQ
                   </div>
                   <div
                     class="makeStyles-fieldValue"

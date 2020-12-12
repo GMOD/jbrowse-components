@@ -70,7 +70,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.bam.getHeader(opts)
+    return this.bam.getHeaderText(opts)
   }
 
   private async setup(opts?: BaseOptions) {

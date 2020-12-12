@@ -45,6 +45,7 @@ export default class extends BaseFeatureDataAdapter {
           ? openLocation(location as FileLocation)
           : undefined,
       chunkCacheSize: 50 * 2 ** 20,
+      chunkSizeLimit: 1000000000,
     })
 
     this.parser = this.vcf
@@ -57,16 +58,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   async getHeader() {
-    const header = await this.vcf.getHeader()
-    return header
-      .split('\n')
-      .filter(line => line.startsWith('##'))
-      .map(line => {
-        const str = line.slice(2)
-        const index = str.indexOf('=')
-        const [tag, data] = [str.slice(0, index), str.slice(index + 1)]
-        return { tag, data }
-      })
+    return this.vcf.getHeader()
   }
 
   async getMetadata() {

@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@gmod/gff": "^1.1.2",
-    "@gmod/tabix": "^1.4.6",
+    "@gmod/tabix": "^1.5.0",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
