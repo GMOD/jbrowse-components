@@ -1,5 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
@@ -46,7 +47,6 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
         : feature.get(tag)
       if (val) uniqueValues.add(val)
     })
-
     return uniqueValues
   }
 }
