@@ -447,11 +447,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               {
                 label: 'Open track selector',
                 onClick: self.activateTrackSelector,
-                disabled:
-                  session.visibleWidget &&
-                  session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                  // @ts-ignore
-                  session.visibleWidget.view.id === self.id,
               },
             ]
           }

@@ -66,6 +66,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
+      sessionConnections: types.array(
+        pluginManager.pluggableConfigSchemaType('connection'),
+      ),
     })
     .volatile((/* self */) => ({
       pluginManager,
@@ -102,7 +105,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
       },
       get connections() {
-        return getParent(self).jbrowse.connections
+        return [
+          ...self.sessionConnections,
+          ...getParent(self).jbrowse.connections,
+        ]
       },
       get adminMode() {
         return getParent(self).adminMode
@@ -272,7 +278,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       deleteConnection(configuration: AnyConfigurationModel) {
-        return getParent(self).jbrowse.deleteConnectionConf(configuration)
+        let deletedConn
+        if (self.adminMode) {
+          deletedConn = getParent(self).jbrowse.deleteConnectionConf(
+            configuration,
+          )
+        }
+        if (!deletedConn) {
+          const { connectionId } = configuration
+          const idx = self.sessionConnections.findIndex(
+            c => c.connectionId === connectionId,
+          )
+          if (idx === -1) {
+            return undefined
+          }
+          return self.sessionConnections.splice(idx, 1)
+        }
+        return deletedConn
       },
 
       updateDrawerWidth(drawerWidth: number) {
@@ -302,13 +324,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView(view: any) {
-        for (const [id, widget] of self.activeWidgets) {
-          if (
-            id === 'hierarchicalTrackSelector' &&
-            widget.view &&
-            widget.view.id === view.id
-          )
+        for (const [, widget] of self.activeWidgets) {
+          if (widget.view && widget.view.id === view.id) {
             this.hideWidget(widget)
+          }
         }
         self.views.remove(view)
       },
@@ -356,7 +375,21 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       addConnectionConf(connectionConf: any) {
-        return getParent(self).jbrowse.addConnectionConf(connectionConf)
+        if (self.adminMode) {
+          return getParent(self).jbrowse.addConnectionConf(connectionConf)
+        }
+        const { connectionId, type } = connectionConf
+        if (!type) {
+          throw new Error(`unknown connection type ${type}`)
+        }
+        const connection = self.sessionTracks.find(
+          (c: any) => c.connectionId === connectionId,
+        )
+        if (connection) {
+          return connection
+        }
+        const length = self.sessionConnections.push(connectionConf)
+        return self.sessionConnections[length - 1]
       },
 
       addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
@@ -451,6 +484,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       clearConnections() {
         self.connectionInstances.clear()
+        self.sessionConnections.clear()
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
@@ -479,6 +513,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
       loadAutosaveSession() {
         return getParent(self).loadAutosaveSession()
+      },
+      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return getParent(self).setSession(sessionSnapshot)
       },
     }))
     .extend(() => {

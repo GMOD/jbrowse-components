@@ -168,7 +168,7 @@ exports[`open up a widget 1`] = `
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
               <div
-                style="display: flex;"
+                class="makeStyles-field"
               >
                 <div
                   class="makeStyles-fieldName"

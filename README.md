@@ -43,14 +43,3 @@ yarn
 ## Quick start
 
 Either cd to products/jbrowse-web or products/jbrowse-desktop and run `yarn start`.
-
-## Developers
-
-To make a release of jbrowse-components tools, run the following
-
-```sh
-scripts/release.sh blogpost.txt
-```
-
-This will analyze which packages have changed, and prompt you to publish each
-package in the monorepo individually.

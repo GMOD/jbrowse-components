@@ -40,7 +40,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: AnyConfigurationModel,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
 
@@ -65,9 +65,9 @@ export class CramAdapter extends BaseFeatureDataAdapter {
       'type',
     ])
 
-    const { dataAdapter } = getSubAdapter(
+    const dataAdapter = getSubAdapter?.(
       readConfObject(config, 'sequenceAdapter'),
-    )
+    ).dataAdapter
     // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       this.sequenceAdapter = dataAdapter
@@ -79,7 +79,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.cram.cram.getSamHeader(opts)
+    return this.cram.cram.getHeaderText(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {

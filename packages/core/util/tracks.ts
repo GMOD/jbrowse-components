@@ -175,7 +175,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: makeLocation(fileName),
@@ -183,7 +183,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: makeLocation(fileName),
@@ -228,7 +228,7 @@ export function guessAdapter(
 
   if (/\.paf/i.test(fileName)) {
     return {
-      type: 'PafAdapter',
+      type: 'PAFAdapter',
       pafLocation: makeLocation(fileName),
     }
   }
@@ -248,7 +248,7 @@ export function guessTrackType(adapterType: string): string {
     TwoBitAdapter: 'ReferenceSequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
-    PafAdapter: 'LinearSyntenyTrack',
+    PAFAdapter: 'SyntenyTrack',
   }
   return known[adapterType] || 'FeatureTrack'
 }

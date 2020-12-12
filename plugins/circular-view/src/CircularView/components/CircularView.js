@@ -23,7 +23,6 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -103,7 +102,6 @@ export default pluginManager => {
 
   const Controls = observer(({ model, showingFigure }) => {
     const classes = useStyles()
-    const session = getSession(model)
     return (
       <div className={classes.controls}>
         <IconButton
@@ -163,20 +161,14 @@ export default pluginManager => {
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
-          <ToggleButton
+          <IconButton
             onClick={model.activateTrackSelector}
             title="Open track selector"
-            selected={
-              session.visibleWidget &&
-              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleWidget.view.id === model.id
-            }
-            value="track_select"
             data-testid="circular_track_select"
             color="secondary"
           >
             <TrackSelectorIcon />
-          </ToggleButton>
+          </IconButton>
         )}
       </div>
     )

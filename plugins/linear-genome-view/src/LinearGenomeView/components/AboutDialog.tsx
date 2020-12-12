@@ -234,7 +234,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   )
 }
 
-type FileInfo = Record<string, unknown>
+type FileInfo = Record<string, unknown> | string
 
 export default function AboutDialog({
   model,
@@ -299,7 +299,17 @@ export default function AboutDialog({
             ) : info === undefined ? (
               'Loading file data...'
             ) : (
-              <Attributes attributes={info} />
+              <Attributes
+                attributes={
+                  typeof info === 'string'
+                    ? {
+                        header: `<pre>${info
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')}</pre>`,
+                      }
+                    : info
+                }
+              />
             )}
           </BaseCard>
         ) : null}

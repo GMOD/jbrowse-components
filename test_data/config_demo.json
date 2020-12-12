@@ -1,5 +1,11 @@
 {
   "configuration": {},
+  "plugins": [
+    {
+      "name": "Biothings",
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/dist/plugin.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg19",
@@ -24,7 +30,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+            "uri": "hg19_aliases.txt"
           }
         }
       }
@@ -65,14 +71,18 @@
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
+      "metadata": {
+        "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
+        "dateaccessed": "12/03/2020"
+      },
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
           }
         }
       }
@@ -167,6 +177,28 @@
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
         }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg38",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg19",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "type": "MyGeneV3Adapter"
       }
     },
     {
@@ -364,7 +396,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_109_hg38",
-      "name": "NCBI RefSeq (GFF3Tabix)",
+      "name": "NCBI RefSeq analysis set (GFF3Tabix)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -375,6 +407,24 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_109_hg38_latest",
+      "name": "NCBI RefSeq (GFF3Tabix)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi"
           }
         }
       }
@@ -1706,6 +1756,655 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenTriplo.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliSwissprot",
+      "name": "unipAliSwissprot",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliSwissprot.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliTrembl",
+      "name": "unipAliTrembl",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliTrembl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipChain",
+      "name": "unipChain",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipChain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipConflict",
+      "name": "unipConflict",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipConflict.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDisulfBond",
+      "name": "unipDisulfBond",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDisulfBond.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDomain",
+      "name": "unipDomain",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDomain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipInterest",
+      "name": "unipInterest",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipInterest.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocCytopl",
+      "name": "unipLocCytopl",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocCytopl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocExtra",
+      "name": "unipLocExtra",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocExtra.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocSignal",
+      "name": "unipLocSignal",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocSignal.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocTransMemb",
+      "name": "unipLocTransMemb",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocTransMemb.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipModif",
+      "name": "unipModif",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipModif.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipMut",
+      "name": "unipMut",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipMut.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipOther",
+      "name": "unipOther",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipOther.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipRepeat",
+      "name": "unipRepeat",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipRepeat.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipSplice",
+      "name": "unipSplice",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipSplice.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipStruct",
+      "name": "unipStruct",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipStruct.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliSwissprot_hg38",
+      "name": "unipAliSwissprot_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliSwissprot.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliTrembl_hg38",
+      "name": "unipAliTrembl_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliTrembl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipChain_hg38",
+      "name": "unipChain_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipChain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipConflict_hg38",
+      "name": "unipConflict_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipConflict.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDisulfBond_hg38",
+      "name": "unipDisulfBond_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDisulfBond.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDomain_hg38",
+      "name": "unipDomain_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipInterest_hg38",
+      "name": "unipInterest_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipInterest.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocCytopl_hg38",
+      "name": "unipLocCytopl_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocCytopl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocExtra_hg38",
+      "name": "unipLocExtra_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocExtra.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocSignal_hg38",
+      "name": "unipLocSignal_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocSignal.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocTransMemb_hg38",
+      "name": "unipLocTransMemb_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocTransMemb.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipModif_hg38",
+      "name": "unipModif_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipModif.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipMut_hg38",
+      "name": "unipMut_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipMut.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipOther_hg38",
+      "name": "unipOther_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipOther.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipRepeat_hg38",
+      "name": "unipRepeat_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipRepeat.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipSplice_hg38",
+      "name": "unipSplice_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipSplice.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipStruct_hg38",
+      "name": "unipStruct_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipStruct.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "knownGene",
+      "name": "knownGene",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/knownGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "knownGene_hg38",
+      "name": "knownGene_hg38",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151.bed4",
+      "name": "snp151.bed4",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp137",
+      "name": "snp137",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp137.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151_hg38",
+      "name": "snp151_hg38",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gnomad_v2.1_sv.sites",
+      "name": "Gnomad - v2.1 SVs",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/structuralVariants/gnomad_v2.1_sv.sites.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "missenseConstrained",
+      "name": "Gnomad - missense constraint",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/missense/missenseConstrained.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "pliByGene",
+      "name": "Gnomad - probability of loss-of-function intolerant (pLI) by gene",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvGold",
+      "name": "dgvGold",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvGold.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvSupporting.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged_hg19",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting_hg19",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvSupporting.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36lift37.annotation.sort.gff3",
+      "name": "Gencode v36 (GRCh37 liftover)",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36.annotation.sort.gff3",
+      "name": "Gencode v36",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
         }
       }
     }

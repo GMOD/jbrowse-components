@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
 import { FileSelector } from '@jbrowse/core/ui'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
+import Paper from '@material-ui/core/Paper'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -15,6 +16,7 @@ export default () => {
   const useStyles = makeStyles(theme => ({
     importFormContainer: {
       padding: theme.spacing(4),
+      margin: '0 auto',
     },
     importFormEntry: {
       minWidth: 180,
@@ -67,7 +69,7 @@ export default () => {
     const [numRows] = useState(2)
     const [selected, setSelected] = useState([0, 0])
     const [error, setError] = useState('')
-    const [trackData, setTrackData] = useState({ uri: '' })
+    const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
     const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
     if (!assemblyNames.length) {
       setError('No configured assemblies')
@@ -83,7 +85,7 @@ export default () => {
         assemblyNames[selected[1]],
       ])
 
-      if (trackData.uri) {
+      if ('uri' in trackData) {
         const fileName = trackData.uri
           ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
           : null
@@ -109,34 +111,54 @@ export default () => {
 
     return (
       <Container className={classes.importFormContainer}>
-        <Grid container spacing={1} justify="center" alignItems="center">
+        <Grid
+          container
+          spacing={1}
+          justify="center"
+          alignItems="center"
+          style={{ width: '50%', margin: '0 auto' }}
+        >
           <Grid item>
-            <p style={{ textAlign: 'center' }}>
-              Select assemblies for dotplot view
-            </p>
-            {[...new Array(numRows)].map((_, index) => (
-              <FormRow
-                key={`row_${index}_${selected[index]}`}
-                error={error}
-                selected={selected[index]}
-                onChange={val => {
-                  const copy = selected.slice(0)
-                  copy[index] = val
-                  setSelected(copy)
-                }}
-                model={model}
-              />
-            ))}
-          </Grid>
+            <Paper style={{ padding: 12, marginBottom: 10 }}>
+              <p style={{ textAlign: 'center' }}>
+                Select assemblies for dotplot view
+              </p>
+              {[...new Array(numRows)].map((_, index) => (
+                <FormRow
+                  key={`row_${index}_${selected[index]}`}
+                  error={error}
+                  selected={selected[index]}
+                  onChange={val => {
+                    const copy = selected.slice(0)
+                    copy[index] = val
+                    setSelected(copy)
+                  }}
+                  model={model}
+                />
+              ))}
+            </Paper>
 
-          <Grid item>
-            <Typography>Add a PAF file for the dotplot view</Typography>
-            <FileSelector
-              name="URL"
-              description=""
-              location={trackData}
-              setLocation={setTrackData}
-            />
+            <Paper style={{ padding: 12, marginBottom: 10 }}>
+              <p style={{ textAlign: 'center' }}>
+                <b>Optional</b>: Add a PAF{' '}
+                <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+                  (pairwise mapping format)
+                </a>{' '}
+                file for the dotplot view. Note that the first assembly should
+                be the left column of the PAF and the second assembly should be
+                the right column
+              </p>
+              <Grid container justify="center">
+                <Grid item>
+                  <FileSelector
+                    name="URL"
+                    description=""
+                    location={trackData}
+                    setLocation={loc => setTrackData(loc)}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
           <Grid item>
             <Button onClick={onOpenClick} variant="contained" color="primary">

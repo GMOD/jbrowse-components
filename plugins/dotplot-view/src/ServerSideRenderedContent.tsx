@@ -54,7 +54,6 @@ class RenderErrorBoundary extends Component<{}, ErrorBoundaryState> {
 
 function ServerSideRenderedContent(props: { model: BlockModel }) {
   const ssrContainerNode = useRef<HTMLDivElement>(null)
-  const hydrated = useRef(false)
 
   const { model } = props
   const session = getSession(model)
@@ -62,7 +61,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
 
   useEffect(() => {
     const domNode = ssrContainerNode.current
-    const isHydrated = hydrated.current
     function doHydrate() {
       const {
         data,
@@ -71,7 +69,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         renderingComponent: RenderingComponent,
       } = model
       if (domNode && model.filled) {
-        if (isHydrated && domNode) {
+        if (domNode) {
           unmountComponentAtNode(domNode)
         }
         domNode.innerHTML = html
@@ -96,7 +94,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
               </ThemeProvider>,
               domNode,
             )
-            hydrated.current = true
           },
           { timeout: 300 },
         )
@@ -106,7 +103,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     doHydrate()
 
     return () => {
-      if (domNode && isHydrated) {
+      if (domNode) {
         unmountComponentAtNode(domNode)
       }
     }

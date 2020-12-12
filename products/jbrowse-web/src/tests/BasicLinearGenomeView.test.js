@@ -172,26 +172,34 @@ describe('valid file tests', () => {
 
   it('test navigation with the search input box', async () => {
     const pluginManager = getPluginManager()
-    const { findByTestId, findByText } = render(
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId, findByPlaceholderText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
+    expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
-
     // need this to complete before we can try to search
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
     )
+    const autocomplete = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
 
-    const target = await findByTestId('search-input')
-    const form = await findByTestId('search-form')
-    fireEvent.change(target, { target: { value: 'contigA:1-200' } })
-    form.submit()
-    // can't just hit enter it seems
-    // fireEvent.keyDown(target, { key: 'Enter', code: 'Enter' })
-    await wait(() => {
-      expect(target.value).toBe('ctgA:1..200')
+    autocomplete.focus()
+    fireEvent.change(inputBox, {
+      target: { value: 'ctgB:1..200' },
     })
-    expect(target.value).toBe('ctgA:1..200')
+
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    await wait(() =>
+      expect(state.session.views[0].displayedRegions[0].refName).toEqual(
+        'ctgB',
+      ),
+    )
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgB'),
+    )
   })
 })

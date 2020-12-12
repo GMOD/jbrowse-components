@@ -1,6 +1,5 @@
 import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
-import objectHash from 'object-hash'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
@@ -21,11 +20,30 @@ export interface BaseOptions {
 export interface AdapterConstructor {
   new (
     config: AnyConfigurationModel,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ): AnyDataAdapter
 }
 
 export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
+
+// generates a short "id fingerprint" from the config passed to the base
+// feature adapter by recursively enumerating props up to an ID of length 100
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function idMaker(args: any, id = '') {
+  const keys = Object.keys(args)
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    if (id.length > 100) {
+      break
+    }
+    if (typeof args[key] === 'object') {
+      id += idMaker(args[key], id)
+    } else {
+      id += `${key}-${args[key]};`
+    }
+  }
+  return id.slice(0, 100)
+}
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
@@ -39,7 +57,7 @@ export abstract class BaseFeatureDataAdapter {
     // in test environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(args) ? getSnapshot(args) : args
-      this.id = objectHash(data, { ignoreUnknown: true }).slice(0, 5)
+      this.id = idMaker(data)
     } else {
       this.id = 'test'
     }

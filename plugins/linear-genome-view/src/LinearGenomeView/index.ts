@@ -129,11 +129,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
-        const { assemblyNames } = this
         const { assemblyManager } = getSession(self)
-        const assembliesInitialized = assemblyNames.every(
-          asm => assemblyManager.get(asm)?.initialized,
-        )
+
+        // if the assemblyManager is tracking a given assembly name, wait for
+        // it to be loaded. this is done by looking in the assemblyManager's
+        // assembly list, and then waiting on it's initialized state which is
+        // updated later
+        const assembliesInitialized = this.assemblyNames.every(assemblyName => {
+          if (
+            assemblyManager.assemblyList
+              .map((asm: { name: string }) => asm.name)
+              .includes(assemblyName)
+          ) {
+            return (assemblyManager.get(assemblyName) || {}).initialized
+          }
+          return true
+        })
+
         return (
           self.volatileWidth !== undefined &&
           self.displayedRegions.length > 0 &&
@@ -1025,20 +1037,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuItems(): MenuItem[] {
-          const session = getSession(self)
           const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: TrackSelectorIcon,
-              disabled:
-                isSessionModelWithWidgets(session) &&
-                session.visibleWidget &&
-                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view &&
-                // @ts-ignore
-                session.visibleWidget.view.id === self.id,
             },
             {
               label: 'Horizontally flip',

@@ -157,5 +157,5 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('About this track'))
-  await findAllByText('SQ')
+  await findAllByText(/SQ/)
 })
