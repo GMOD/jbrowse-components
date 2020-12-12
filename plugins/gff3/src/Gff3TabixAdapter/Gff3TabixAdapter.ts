@@ -62,6 +62,10 @@ export default class extends BaseFeatureDataAdapter {
     return this.gff.getReferenceSequenceNames(opts)
   }
 
+  public async getHeader() {
+    return this.gff.getHeader()
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()

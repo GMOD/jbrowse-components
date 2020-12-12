@@ -79,7 +79,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.cram.cram.getSamHeader(opts)
+    return this.cram.cram.getHeaderText(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {
