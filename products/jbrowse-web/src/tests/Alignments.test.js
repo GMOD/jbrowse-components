@@ -104,14 +104,14 @@ describe('alignments track', () => {
     )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    // opens the track menu and turns on soft clipping
+    // opens the track menu
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
 
     await waitForElement(() => getByText('Show soft clipping'))
     fireEvent.click(getByText('Show soft clipping'))
 
-    // wait for block to rerender after softclipping
+    // wait for block to rerender
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -139,7 +139,7 @@ describe('alignments track', () => {
     await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    // opens the track menu and turns on soft clipping
+    // opens the track menu
     const trackMenu = await findByTestId('track_menu_icon')
 
     fireEvent.click(trackMenu)
@@ -148,6 +148,87 @@ describe('alignments track', () => {
 
     // wait for pileup track to render with sort
     await findAllByTestId('pileup-Read strand')
+
+    // wait for pileup track to render
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[1].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('selects a color, updates object and layout', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.02, 2086500)
+
+    // load track
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+
+    // opens the track menu and turns on soft clipping
+    const trackMenu = await findByTestId('track_menu_icon')
+
+    fireEvent.click(trackMenu)
+    fireEvent.click(await findByText('Color scheme'))
+    fireEvent.click(await findByText('Strand'))
+
+    // wait for pileup track to render with color
+    await findAllByTestId('pileup-strand')
+
+    // wait for pileup track to render
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[1].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('colors by tag, updates object and layout', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.02, 2086500)
+
+    // load track
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+
+    // opens the track menu
+    const trackMenu = await findByTestId('track_menu_icon')
+
+    // colors by HP tag
+    fireEvent.click(trackMenu)
+    fireEvent.click(await findByText('Color scheme'))
+    fireEvent.click(await findByText('Color by tag...'))
+    fireEvent.change(await findByTestId('color-tag-name-input'), {
+      target: { value: 'HP' },
+    })
+    fireEvent.click(await findByText('Submit'))
+
+    // wait for pileup track to render with color
+    await findAllByTestId('pileup-tagHP')
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(

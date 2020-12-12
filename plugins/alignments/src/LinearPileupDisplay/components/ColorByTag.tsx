@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -9,7 +8,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-// import Draggable from 'react-draggable'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const useStyles = makeStyles(theme => ({
@@ -33,13 +31,6 @@ export default function ColorByTagDlg(props: {
   const [tag, setTag] = useState('')
   const regex = /^[A-Za-z][A-Za-z0-9]$/
   const validTag = tag.match(regex)
-
-  // once tag is chosen, fetch all possible values that can be returned from the tag
-  // put into a map and associate it with a color from the swatch
-  // potentially will have to be done on the main thread bc
-  // would have to be done across blocks
-  // in the PileupDisplayModel, example look at wiggle where it fetches across blocks and d/ls the domain of value for the scalebar
-  // this would download data to get all values for the tag selected
 
   return (
     <Dialog
@@ -69,12 +60,16 @@ export default function ColorByTagDlg(props: {
                 setTag(event.target.value)
               }}
               placeholder="Enter Tag Name"
-              inputProps={{ maxLength: 2 }}
+              inputProps={{
+                maxLength: 2,
+                'data-testid': 'color-tag-name-input',
+              }}
               error={tag.length === 2 && !validTag}
               helperText={
                 tag.length === 2 && !validTag ? 'Not a valid tag' : ''
               }
               autoComplete="off"
+              data-testid="color-tag-name"
             />
             <Button
               variant="contained"

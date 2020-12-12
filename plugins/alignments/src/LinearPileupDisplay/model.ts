@@ -219,9 +219,7 @@ const stateModelFactory = (
         const { rpcManager } = getSession(self)
         const { adapterConfig } = self
         const sessionId = getRpcSessionId(self)
-        const { displayedRegions, staticBlocks } = getContainingView(
-          self,
-        ) as LGV
+        const { staticBlocks } = getContainingView(self) as LGV
         const colorPalette = [
           '#332288',
           '#117733',
@@ -233,21 +231,21 @@ const stateModelFactory = (
           '#882255',
           '#FEFE62',
           '#DC3220',
-        ] // sample Colorblind palette
+        ] // default colorblind friendly palette
         const valueColorPairing = []
         rpcManager
           .call(getRpcSessionId(self), 'PileupGetGlobalValueForTag', {
             adapterConfig,
             tag: colorScheme.tag,
             sessionId,
-            regions: staticBlocks.contentBlocks, // displayedRegions,
+            regions: staticBlocks.contentBlocks,
             ...opts,
           })
           .then(values => {
             Array.from(values)
               .sort((a, b) => a - b)
               .forEach((value, idx) => {
-                valueColorPairing.push({ value, color: colorPalette[idx % 10] })
+                valueColorPairing.push({ value, color: colorPalette[idx % 10] }) // have to repeat if more than 10 values
               })
             self.setValueColorPairing(valueColorPairing)
             self.setColorScheme(colorScheme)
