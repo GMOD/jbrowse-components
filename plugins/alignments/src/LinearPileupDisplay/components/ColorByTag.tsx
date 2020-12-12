@@ -29,8 +29,7 @@ export default function ColorByTagDlg(props: {
   const classes = useStyles()
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
-  const regex = /^[A-Za-z][A-Za-z0-9]$/
-  const validTag = tag.match(regex)
+  const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
   return (
     <Dialog
@@ -50,16 +49,14 @@ export default function ColorByTagDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent style={{ overflowX: 'hidden' }}>
-        <Typography>Enter tag to color by</Typography>
         <div className={classes.root}>
           <form>
             <TextField
-              id="standard-select-currency"
               value={tag}
               onChange={event => {
                 setTag(event.target.value)
               }}
-              placeholder="Enter Tag Name"
+              placeholder="Enter tag name"
               inputProps={{
                 maxLength: 2,
                 'data-testid': 'color-tag-name-input',

@@ -377,7 +377,7 @@ const stateModelFactory = (
                   },
                 ),
                 {
-                  label: 'Sort by tag',
+                  label: 'Sort by tag...',
                   onClick: () =>
                     getParent(self, 3).setDialogComponent(SortByTagDlg),
                 },
