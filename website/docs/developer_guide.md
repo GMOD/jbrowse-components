@@ -884,10 +884,19 @@ instead of manually cleaning up resources
 
 We have a couple plugin examples here
 
-- https://github.com/GMOD/jbrowse-plugin-gdc
-- https://github.com/cmdcolin/jbrowse-plugin-biothings-api
+- https://github.com/GMOD/jbrowse-plugin-gdc - demonstrates accessing GDC
+  cancer data GraphQL API, plus a custom drawer and track type for coloring
+  variants by impact score
+- https://github.com/cmdcolin/jbrowse-plugin-biothings-api - demonstrates
+  accessing data from mygene.info, part of the "biothings API" family
+- https://github.com/cmdcolin/jbrowse-plugin-ucsc-api - demonstrates accessing
+  data from UCSC
 
-We will go over in detail how to implement your own
+We will go over in detail some of these steps. Note that the best practices
+may be found by looking at the above plugins source code directly, and you can
+copy these plugins as a template for your own.
+
+### Intro to plugins
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 data adapters, etc), and to modify behavior of the application by adding code
@@ -895,9 +904,8 @@ that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
 elements](developer_guide#pluggable-elements) page.
 
-We will go over creating an example plugin. The first thing that we have is a
-`src/index.js` which exports a default class containing the plugin registration
-code
+The first thing that we have is a `src/index.js` which exports a default class
+containing the plugin registration code
 
 src/index.js
 
