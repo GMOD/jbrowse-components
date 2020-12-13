@@ -8,6 +8,10 @@
     {
       "name": "GDC",
       "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/master/dist/plugin.js"
+    },
+    {
+      "name": "UCSC",
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/master/dist/plugin.js"
     }
   ],
   "assemblies": [
