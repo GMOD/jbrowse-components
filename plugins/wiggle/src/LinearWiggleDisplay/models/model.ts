@@ -83,11 +83,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         self.fill = fill
       },
       toggleLogScale() {
-        console.log(self.scale)
-        if (self.scale === 'log') {
-          self.scale = 'linear'
-        } else {
+        if (self.scale !== 'log') {
           self.scale = 'log'
+        } else {
+          self.scale = 'linear'
         }
       },
       setAutoscale(val: string) {
@@ -136,7 +135,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const ret = getNiceDomain({
             domain: [self.stats.scoreMin, self.stats.scoreMax],
             scaleType: this.scaleType,
-            bounds: [minScore, 100],
+            bounds: [minScore, maxScore],
           })
 
           // uses a heuristic to just give some extra headroom on bigwig scores

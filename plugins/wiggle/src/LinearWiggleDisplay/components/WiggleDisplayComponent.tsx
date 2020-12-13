@@ -6,11 +6,6 @@ import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
 import { WiggleDisplayModel } from '../models/model'
 
-const powersOfTen: number[] = []
-for (let i = -20; i < 20; i += 1) {
-  powersOfTen.push(10 ** i)
-}
-
 export const YScaleBar = observer(
   ({ model }: { model: WiggleDisplayModel }) => {
     const { domain, height, scaleType } = model
@@ -22,10 +17,7 @@ export const YScaleBar = observer(
     })
     const ticks = height < 50 ? 2 : 4
     const axisProps = axisPropsFromTickScale(scale, ticks)
-    const values =
-      scaleType === 'log'
-        ? axisProps.values.filter((s: number) => powersOfTen.includes(s))
-        : axisProps.values
+    const { values } = axisProps
 
     return (
       <svg
