@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import {
   isAbortException,
   getSession,
@@ -130,9 +134,9 @@ const stateModelFactory = (
         },
 
         get filled() {
-          return typeof self.fill === 'undefined'
+          return typeof self.fill !== 'undefined'
             ? self.fill
-            : getConf(this.rendererConfig, 'filled')
+            : readConfObject(this.rendererConfig, 'filled')
         },
 
         get domain() {
@@ -214,6 +218,7 @@ const stateModelFactory = (
           const { AdapterClass } = pluginManager.getAdapterType(
             this.adapterTypeName,
           )
+          // @ts-ignore
           return AdapterClass.capabilities.includes('hasResolution')
         },
 
@@ -243,11 +248,11 @@ const stateModelFactory = (
             ...(this.canHaveFill
               ? [
                   {
-                    label: self.fill
+                    label: this.filled
                       ? 'Turn off histogram fill'
                       : 'Turn on histogram fill',
                     onClick: () => {
-                      self.setFill(!self.fill)
+                      self.setFill(!this.filled)
                     },
                   },
                 ]
