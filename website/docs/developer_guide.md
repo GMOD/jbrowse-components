@@ -4,10 +4,9 @@ title: Developer guide
 toplevel: true
 ---
 
-In this Developer Guide, will introduce the JBrowse 2 ecosystem from the
-developer's point of view. We'll examine the core concepts of how code is
-packaged and structured, and then go over how to create new plugins and
-pluggable elements.
+In this guide, will introduce the JBrowse 2 ecosystem from the developer's
+point of view. We'll examine the core concepts of how code is packaged and
+structured, and then go over how to create new plugins and pluggable elements.
 
 ## Introduction and overview
 
@@ -19,7 +18,6 @@ The JBrowse 2 ecosystem has two main type of top-level artifacts that are
 published on their own: products and plugins.
 
 ![](./img/products_and_plugins.png)
-
 Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g.
 LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack,
 etc.), data adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
@@ -399,7 +397,7 @@ Add a menu item to a sub-menu
 | menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
 | menuItem | Menu item to append.                                                                          |
 
-##### Return Value
+##### Return value
 
 The new length of the sub-menu
 
@@ -415,7 +413,7 @@ Insert a menu item into a sub-menu
 | menuItem | Menu item to insert.                                                                                                                             |
 | position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
 
-##### Return Value
+##### Return value
 
 The new length of the sub-menu
 
@@ -442,7 +440,7 @@ types
   }))
 ```
 
-### Adding track context menu items
+### Adding track context-menu items
 
 When you right-click in a linear track, a context menu will appear if there are
 any menu items defined for it. It's possible to add items to that menu, and you
@@ -496,120 +494,7 @@ class SomePlugin extends Plugin {
 }
 ```
 
-## Monorepo code organization
-
-JBrowse 2 code is organized as a monorepo using [lerna](https://lerna.js.org/)
-and [yarn workspaces](https://classic.yarnpkg.com/en/docs/workspaces/). Using a
-monorepo means that instead of separate GitHub repositories for each piece of
-JBrowse, they are all in a single place and can share code easily. In the top
-level of the repository there are two directories, `packages/` and `products/`
-that each contain multiple packages.
-
-Each "package" is an npm-style (i.e. contains `package.json`) package. The
-packages in `packages/` are core code, development tools, etc. The packages in
-`plugins/` are JBrowse plugins. Most of JBrowse is written as plugins, so that
-is where most of the code is. The packages in `products/` are user-facing
-products, such as JBrowse Web, JBrowse Desktop, JBrowse CLI, etc.
-
-### Monorepo packages
-
-The following is a summary of some of the individual packages in the monorepo.
-It's not a comprehensive list, but will hopefully help familiarize you with how
-the code is organized.
-
-#### products/jbrowse-web
-
-This is the full JBrowse Web app. It is built using
-[create-react-app](https://create-react-app.dev/).
-
-It includes many other packages as core plugins, can load other plugins at
-runtime, and more.
-
-It also currently holds the "integration tests" that we use for our code in
-`products/jbrowse-web/src/tests`.
-
-#### products/jbrowse-desktop
-
-JBrowse Desktop is our essentially the same as JBrowse Web, but packaged with
-[electron](https://www.electronjs.org/) into a desktop app. This gives it the
-ability to easily load and save tracks based on files on your local filesystem.
-It also has save sessions locally, and works offline.
-
-#### products/website
-
-This provides the docusaurus website with docs, blog, and pdf documentation
-
-#### plugins/alignments
-
-This package provides the "alignments" related features including
-
-- BamAdapter - our BAM parser that wraps @gmod/bam NPM module
-- CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
-- PileupTrack type - draws alignments as boxes in a "pileup" style view
-- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
-- AlignmentsTrack - a "supertrack" which contains a PileupTrack and
-  SNPCoverageTrack "subtracks"
-- AlignmentsFeatureWidget for alignments features
-
-#### plugins/variants/
-
-Provides variant features including
-
-- VCF tabix parser
-- VariantFeatureWidget
-- VariantTrack that is basically just a normal track, but has logic to popup
-  the VariantFeatureWidget on feature click
-
-#### plugins/hic
-
-This provides a HicAdapter based on the .hic file format
-([ref](https://github.com/aidenlab/juicer/wiki/Data#hic-files))
-
-Also a track type and renderer to visualize these
-
-#### plugins/bed
-
-Provides two bed related data adapters
-
-- BigBedAdapter
-- BedTabixAdapter
-
-These can be used with the SvgFeatureRenderer
-
-#### plugins/wiggle
-
-Provides wiggle track types with different types of rendering formats including
-
-- XYPlotRenderer
-- LinePlotRenderer
-- DensityRenderer
-
-The WiggleTrack type can swap out these different rendering types, and
-calculates stats such as max and min score over a region before the region is
-rendered
-
-#### plugins/svg
-
-This is the main gene glyphs, which are rendered using SVG
-
-General usage of this involves referencing the SvgFeatureRenderer
-
-#### plugins/spreadsheet-view
-
-This provides a spreadsheet-in-the-browser that can be used as a data backend
-to power other views
-
-#### plugins/circular-view
-
-This provides our 'Circos-style' whole-genome overview of data, especially
-genomic translocations
-
-#### plugins/sv-inspector
-
-This is a "superview" type that contains a circular and spreadsheet view as
-child views
-
-### Plugin Build system
+### Plugin build system
 
 Plugins may be built as separate packages that can be distributed on NPM. In
 order to streamline development and avoid having to build every plugin before
@@ -996,6 +881,13 @@ Most data adapters in fact use an LRU cache to make resources go away over time
 instead of manually cleaning up resources
 
 ## Creating a new plugin
+
+We have a couple plugin examples here
+
+- https://github.com/GMOD/jbrowse-plugin-gdc
+- https://github.com/cmdcolin/jbrowse-plugin-biothings-api
+
+We will go over in detail how to implement your own
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
 data adapters, etc), and to modify behavior of the application by adding code
