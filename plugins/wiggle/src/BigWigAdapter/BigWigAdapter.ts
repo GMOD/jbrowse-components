@@ -29,6 +29,12 @@ export default class BigWigAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
 
+  public static capabilities = [
+    'hasResolution',
+    'hasLocalStats',
+    'hasGlobalStats',
+  ]
+
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
     this.bigwig = new BigWig({

@@ -95,7 +95,10 @@ export default class AlignmentsPlugin extends Plugin {
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
-        stateModel: linearSNPCoverageDisplayModelFactory(configSchema),
+        stateModel: linearSNPCoverageDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,

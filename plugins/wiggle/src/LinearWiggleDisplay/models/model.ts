@@ -15,13 +15,14 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
 
+import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import { FeatureStats } from '../../statsUtil'
-import ConfigSchemaF from './configSchema'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -39,7 +40,10 @@ function round(v: number, b = 1.5) {
 
 type LGV = LinearGenomeViewModel
 
-const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
+const stateModelFactory = (
+  pluginManager: PluginManager,
+  configSchema: AnyConfigurationSchemaType,
+) =>
   types
     .compose(
       'LinearWiggleDisplay',
@@ -82,6 +86,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       setFill(fill: boolean) {
         self.fill = fill
       },
+
       toggleLogScale() {
         if (self.scale !== 'log') {
           self.scale = 'log'
@@ -89,6 +94,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           self.scale = 'linear'
         }
       },
+
       setAutoscale(val: string) {
         self.autoscale = val
       },
@@ -204,9 +210,16 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           }
         },
 
+        get hasResolution() {
+          const { AdapterClass } = pluginManager.getAdapterType(
+            this.adapterTypeName,
+          )
+          return AdapterClass.capabilities.includes('hasResolution')
+        },
+
         get composedTrackMenuItems() {
           return [
-            ...(this.adapterTypeName === 'BigWigAdapter'
+            ...(this.hasResolution
               ? [
                   {
                     label: 'Resolution',
