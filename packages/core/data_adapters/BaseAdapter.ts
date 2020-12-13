@@ -52,7 +52,7 @@ function idMaker(args: any, id = '') {
 export abstract class BaseFeatureDataAdapter {
   public id: string
 
-  static capabilities = []
+  static capabilities = [] as string[]
 
   constructor(args: unknown = {}) {
     // note: we use switch on jest here for more simple feature IDs
