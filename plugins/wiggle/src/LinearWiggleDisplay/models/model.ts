@@ -218,6 +218,7 @@ const stateModelFactory = (
           const { AdapterClass } = pluginManager.getAdapterType(
             this.adapterTypeName,
           )
+          // @ts-ignore
           return AdapterClass.capabilities.includes('hasResolution')
         },
 
