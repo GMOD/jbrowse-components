@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
@@ -41,7 +41,7 @@ export const YScaleBar = observer(
   },
 )
 
-function WiggleDisplayComponent(props: { model: WiggleDisplayModel }) {
+export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, needsScalebar } = model
   return (
@@ -49,10 +49,4 @@ function WiggleDisplayComponent(props: { model: WiggleDisplayModel }) {
       {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
     </BaseLinearDisplayComponent>
   )
-}
-
-WiggleDisplayComponent.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
-}
-
-export default observer(WiggleDisplayComponent)
+})

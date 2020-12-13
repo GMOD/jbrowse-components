@@ -138,6 +138,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             bounds: [minScore, maxScore],
           })
 
+          // avoid weird scalebar if log value and empty region displayed
+          if (this.scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
+            return [0, Number.MIN_VALUE]
+          }
+
           // uses a heuristic to just give some extra headroom on bigwig scores
           if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
             ret[1] = round(ret[1])
@@ -146,9 +151,11 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
             ret[0] = round(ret[0])
           }
 
+          // avoid returning a new object if it matches the old value
           if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
             oldDomain = ret
           }
+
           return oldDomain
         },
 
