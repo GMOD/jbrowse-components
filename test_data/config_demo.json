@@ -4,6 +4,10 @@
     {
       "name": "Biothings",
       "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/dist/plugin.js"
+    },
+    {
+      "name": "GDC",
+      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/master/dist/plugin.js"
     }
   ],
   "assemblies": [
@@ -202,6 +206,29 @@
       }
     },
     {
+      "type": "GDCTrack",
+      "trackId": "gdc_plugin_track",
+      "name": "GDC cancer variants (GraphQL plugin)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "GDCAdapter"
+      },
+      "displays": [
+        {
+          "type": "LinearGDCDisplay",
+          "displayId": "gdc_plugin_track_linear",
+          "renderer": {
+            "color1": "function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.vep_impact; switch(impact) {case 'LOW': return 'blue'; break;case 'MODIFIER': return 'goldenrod'; break;case 'MODERATE': return 'orange'; break;case 'HIGH': return 'red'; break;case '': return 'lightgrey'; break;}}",
+            "labels": {
+              "name": "function(feature) { return feature.get('genomicDnaChange') }"
+            },
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
       "name": "ClinVar variants (UCSC)",
@@ -370,7 +397,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "gdc_features",
-      "name": "GDC Cancer",
+      "name": "GDC cancer variants (UCSC BigBed)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
