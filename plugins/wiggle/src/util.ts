@@ -27,7 +27,9 @@ export function getScale({
 }: ScaleOpts) {
   let scale
   const [min, max] = domain
-  if (min === undefined || max === undefined) throw new Error('invalid domain')
+  if (min === undefined || max === undefined) {
+    throw new Error('invalid domain')
+  }
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {

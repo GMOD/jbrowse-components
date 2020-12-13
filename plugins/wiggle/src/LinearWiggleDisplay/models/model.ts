@@ -14,7 +14,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable } from 'mobx'
-import { addDisposer, getRoot, isAlive, types, Instance } from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import React from 'react'
 
 import { getNiceDomain } from '../../util'
@@ -50,7 +50,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
-        logScale: types.maybe(types.boolean),
+        scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
       }),
     )
@@ -82,8 +82,13 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
       setFill(fill: boolean) {
         self.fill = fill
       },
-      setLogScale(log: boolean) {
-        self.logScale = log
+      toggleLogScale() {
+        console.log(self.scale)
+        if (self.scale === 'log') {
+          self.scale = 'linear'
+        } else {
+          self.scale = 'log'
+        }
       },
       setAutoscale(val: string) {
         self.autoscale = val
@@ -116,7 +121,13 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
         },
 
         get scaleType() {
-          return self.logScale ? 'log' : getConf(self, 'scaleType')
+          return self.scale || getConf(self, 'scaleType')
+        },
+
+        get filled() {
+          return typeof self.fill === 'undefined'
+            ? self.fill
+            : getConf(this.rendererConfig, 'filled')
         },
 
         get domain() {
@@ -125,7 +136,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           const ret = getNiceDomain({
             domain: [self.stats.scoreMin, self.stats.scoreMax],
             scaleType: this.scaleType,
-            bounds: [minScore, maxScore],
+            bounds: [minScore, 100],
           })
 
           // uses a heuristic to just give some extra headroom on bigwig scores
@@ -135,6 +146,7 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           if (minScore !== Number.MAX_VALUE && ret[0] < -1.0) {
             ret[0] = round(ret[0])
           }
+
           if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
             oldDomain = ret
           }
@@ -156,22 +168,24 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
           return self.autoscale || getConf(self, 'autoscale')
         },
 
-        get renderProps() {
+        get rendererConfig() {
           const configBlob =
             getConf(self, ['renderers', this.rendererTypeName]) || {}
 
-          const config = self.rendererType.configSchema.create({
+          return self.rendererType.configSchema.create({
             ...configBlob,
             filled: self.fill,
             scaleType: this.scaleType,
           })
+        },
 
+        get renderProps() {
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
             displayModel: self,
-            config,
+            config: this.rendererConfig,
             scaleOpts: {
               domain: this.domain,
               stats: self.stats,
@@ -220,9 +234,10 @@ const stateModelFactory = (configSchema: ReturnType<typeof ConfigSchemaF>) =>
                 ]
               : []),
             {
-              label: self.logScale ? 'Set linear scale' : 'Set log scale',
+              label:
+                this.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
               onClick: () => {
-                self.setLogScale(!self.logScale)
+                self.toggleLogScale()
               },
             },
             ...(this.adapterTypeName === 'BigWigAdapter'
