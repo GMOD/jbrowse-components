@@ -50,6 +50,7 @@ export default function ColorByTagDlg(props: {
       </DialogTitle>
       <DialogContent style={{ overflowX: 'hidden' }}>
         <div className={classes.root}>
+          <Typography>Enter tag to color by</Typography>
           <form>
             <TextField
               value={tag}
