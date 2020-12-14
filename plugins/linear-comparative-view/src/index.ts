@@ -294,7 +294,7 @@ export default class extends Plugin {
                 )
 
                 const refLength = features.reduce(
-                  (a, f) => a + f.end - f.start,
+                  (a, f) => a + f.end - f.start + 2 * totalLength,
                   0,
                 )
 
@@ -308,8 +308,8 @@ export default class extends Plugin {
                       bpPerPx: refLength / 800,
                       displayedRegions: features.map(f => {
                         return {
-                          start: f.start,
-                          end: f.end,
+                          start: f.start - totalLength,
+                          end: f.end + totalLength,
                           refName: f.refName,
                           assemblyName: trackAssembly,
                         }
