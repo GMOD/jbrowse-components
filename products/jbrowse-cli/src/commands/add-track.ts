@@ -143,7 +143,7 @@ export default class AddTrack extends JBrowseCommand {
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    let { type, trackId, name, assemblyNames } = runFlags
+    let { trackType, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
     if (!argsTrack) {
@@ -208,7 +208,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    type = type || this.guessTrackType(adapter.type)
+    const type = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
     assemblyNames = assemblyNames || configContents.assemblies[0].name
