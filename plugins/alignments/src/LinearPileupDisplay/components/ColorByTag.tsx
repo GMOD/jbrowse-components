@@ -74,8 +74,8 @@ export default function ColorByTagDlg(props: {
               color="primary"
               type="submit"
               style={{ marginLeft: 20 }}
-              onClick={async () => {
-                const display = await model.displays[0]
+              onClick={() => {
+                const display = model.displays[0]
                 ;(display.PileupDisplay || display).fetchValues({
                   type: 'tag',
                   tag,

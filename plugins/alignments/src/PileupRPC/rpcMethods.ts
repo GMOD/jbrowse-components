@@ -49,7 +49,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       const val = feature.get('tags')
         ? feature.get('tags')[tag]
         : feature.get(tag)
-      if (val) uniqueValues.add(val)
+      if (val !== undefined) uniqueValues.add(val)
     })
     return uniqueValues
   }
