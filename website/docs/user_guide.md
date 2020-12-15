@@ -419,15 +419,15 @@ We can start the SV inspector by launching it from the App level menu bar
 The SV inspector can be launched from the main menu bar
 
 This will bring up an "import form" that asks you for your SV evidence. This
-can be provided using a URL in these formats:
+can be provided opening a file locally or using a URL for files in the
+following formats:
 
-- VCF (plain text VCF, not tabix VCF)
+- VCF or VCF.gz (plain text VCF, or (b)gzipped VCF)
 - BEDPE
 - STAR-fusion result file
-- or other formats
 
 ![](./img/sv_inspector_importform.png)
-SV inspector import form
+Figure showing the SV inspector import form
 
 ### Example SV inspector workflow
 
@@ -441,7 +441,7 @@ these published data http://schatz-lab.org/publications/SKBR3/
 Copy this URL and paste it into the import form and select hg19
 
 ![](./img/sv_inspector_importform_after.png)
-SV inspector import form with URL
+Figure showing the SV inspector import form with URL
 
 ### SV inspector results
 
@@ -470,3 +470,9 @@ view"
 
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
+
+![](./img/breakpoint_split_view.png)
+Figure showing "breakpoint split view" which examines the breakpoints of a
+structural variant, e.g. an interchromosomal translocation, and connects
+supporting reads (black splines) and the variant call itself (green thicker
+line, with feet indicating directionality)
