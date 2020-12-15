@@ -175,6 +175,15 @@ const stateModelFactory = (
             self.rendererTypeName === 'LinePlotRenderer'
           )
         },
+        get scaleOpts() {
+          return {
+            domain: this.domain,
+            stats: self.stats,
+            autoscaleType: this.autoscaleType,
+            scaleType: this.scaleType,
+            inverted: getConf(self, 'inverted'),
+          }
+        },
 
         get canHaveFill() {
           return self.rendererTypeName === 'XYPlotRenderer'
@@ -202,13 +211,7 @@ const stateModelFactory = (
             notReady: !self.ready,
             displayModel: self,
             config: this.rendererConfig,
-            scaleOpts: {
-              domain: this.domain,
-              stats: self.stats,
-              autoscaleType: this.autoscaleType,
-              scaleType: this.scaleType,
-              inverted: getConf(self, 'inverted'),
-            },
+            scaleOpts: this.scaleOpts,
             resolution: self.resolution,
             height: self.height,
           }

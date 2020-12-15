@@ -1,6 +1,6 @@
 import { types, cast } from 'mobx-state-tree'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getConf } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
   AnyConfigurationSchemaType,
@@ -69,6 +69,57 @@ const stateModelFactory = (
 
       get contextMenuItems() {
         return []
+      },
+
+      get filters() {
+        let filters: string[] = []
+        if (self.filterBy) {
+          const { flagInclude, flagExclude } = self.filterBy
+          filters = [
+            `function(f) {
+                const flags = f.get('flags');
+                if(f.get('snpinfo')) return true
+                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
+              }`,
+          ]
+          if (self.filterBy.tagFilter) {
+            const { tag, value } = self.filterBy.tagFilter
+            // use eqeq instead of eqeqeq for number vs string comparison
+            filters.push(`function(f) {
+              const tags = f.get('tags');
+              if(f.get('snpinfo')) return true
+              const tag = tags?tags["${tag}"]:f.get("${tag}");
+              return tag == "${value}";
+              }`)
+          }
+        }
+        return filters
+      },
+
+      get scaleOpts() {
+        return {
+          domain: self.domain,
+          stats: self.stats,
+          autoscaleType: getConf(self, 'autoscale'),
+          scaleType: getConf(self, 'scaleType'),
+          inverted: getConf(self, 'inverted'),
+        }
+      },
+
+      get renderProps() {
+        const config = self.rendererType.configSchema.create(
+          getConf(self, ['renderers', self.rendererTypeName]) || {},
+        )
+        return {
+          ...self.composedRenderProps,
+          ...getParentRenderProps(self),
+          notReady: !self.ready,
+          height: self.height,
+          displayModel: self,
+          scaleOpts: this.scaleOpts,
+          filters: self.filters,
+          config,
+        }
       },
     }))
 

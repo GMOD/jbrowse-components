@@ -53,11 +53,24 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     const [region] = regions
     const viewScale = getScale({ ...scaleOpts, range: [0, height] })
+    const snpViewScale = getScale({
+      ...scaleOpts,
+      scaleType: 'linear',
+      range: [0, height],
+    })
     const originY = getOrigin(scaleOpts.scaleType)
+    const snpOriginY = getOrigin('linear')
+
     const toY = (rawscore: number, curr = 0) =>
       height - viewScale(rawscore) - curr
+    const snpToY = (rawscore: number, curr = 0) =>
+      height - snpViewScale(rawscore) - curr
+
     const toHeight = (rawscore: number, curr = 0) =>
       toY(originY) - toY(rawscore, curr)
+
+    const snpToHeight = (rawscore: number, curr = 0) =>
+      snpToY(snpOriginY) - snpToY(rawscore, curr)
 
     const insRegex = /^ins.[A-Za-z0-9]/
     const colorForBase: { [key: string]: string } = {
@@ -95,7 +108,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         ctx.fillStyle = info.base.match(insRegex)
           ? 'darkgrey'
           : colorForBase[info.base]
-        ctx.fillRect(leftPx, toY(info.score + curr), w, toHeight(info.score))
+        ctx.fillRect(
+          leftPx,
+          snpToY(info.score + curr),
+          w,
+          snpToHeight(info.score),
+        )
         curr += info.score
       })
     }
