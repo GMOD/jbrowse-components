@@ -76,7 +76,7 @@ export default function ColorByTagDlg(props: {
               style={{ marginLeft: 20 }}
               onClick={() => {
                 const display = model.displays[0]
-                ;(display.PileupDisplay || display).fetchValues({
+                ;(display.PileupDisplay || display).setColorScheme({
                   type: 'tag',
                   tag,
                 })
