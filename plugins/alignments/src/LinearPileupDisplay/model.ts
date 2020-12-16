@@ -146,17 +146,17 @@ const stateModelFactory = (
         ] // default colorblind friendly palette
         const valueColorPairing: VCPairing[] = []
         uniqueTag
-          .sort((a, b) => {
-            // sort alphabetically
-            if (typeof a === 'string' && typeof b === 'string') {
-              if (a < b) return -1
-              if (a > b) return 1
-              return 0
-            }
-            // sort numerically
-            if (typeof a === 'number' && typeof b === 'number') return a - b
-            throw new Error('tried to compare number and string value')
-          })
+          // .sort((a, b) => {
+          //   // sort alphabetically
+          //   if (typeof a === 'string' && typeof b === 'string') {
+          //     if (a < b) return -1
+          //     if (a > b) return 1
+          //     return 0
+          //   }
+          //   // sort numerically
+          //   if (typeof a === 'number' && typeof b === 'number') return a - b
+          //   throw new Error('tried to compare number and string value')
+          // })
           .forEach((value, idx) => {
             valueColorPairing.push({ value, color: colorPalette[idx % 10] }) // have to repeat if more than 10 values
           })
