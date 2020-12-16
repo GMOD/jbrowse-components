@@ -23,7 +23,8 @@ interface built into JBrowse 2. See that guide [here](quickstart_gui).
 - A copy of the jbrowse 2 web application in your web folder e.g. `jbrowse create /var/www/html/jb2` (see
   [here](quickstart_web#using-jbrowse-create-to-download-jbrowse-2) for details)
 
-You may also want to install these tool pre-requisites
+You may also want to install these tool pre-requisites. You can use a package
+manager such as apt to install samtools
 
 - samtools (`sudo apt install samtools` or `brew install samtools`), used for
   loading indexed fasta files and BAM files
@@ -91,14 +92,14 @@ samtools faidx volvox.fa
 Or if you want to compress your FASTA, you can use `bgzip` as well.
 
 ```sh-session
-bgzip -i volvox.fa
-# creates volvox.fa.gz and volvox.fa.gzi
-
+bgzip volvox.fa
 samtools faidx volvox.fa.gz
 # generates volvox.fa.gz.fai
 ```
 
-With bgzip indexed FASTA you end up with 3 files, with plain indexed FASTA just 2
+With bgzip indexed FASTA you end up with 3 files (volvox.fa.gz,
+volvox.fa.gz.gzi, volvox.fa.gz.fai), with plain indexed FASTA just 2 files
+(volvox.fa, volvox.fa.fai)
 
 For more info about `bgzip` and `samtools`, see https://www.htslib.org/.
 
