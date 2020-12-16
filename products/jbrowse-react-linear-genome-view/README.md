@@ -50,7 +50,7 @@ $ yarn add @jbrowse/react-linear-genome-view
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-linear-view
+$ npm install @jbrowse/react-linear-genome-view
 ```
 
 ### Note on fonts
