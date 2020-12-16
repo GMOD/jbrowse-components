@@ -184,6 +184,15 @@ Object {
         "@jbrowse/core/util/mst-reflection",
       ],
     },
+    "@jbrowse/core/util/rxjs": Object {
+      "amd": "@jbrowse/core/util/rxjs",
+      "commonjs": "@jbrowse/core/util/rxjs",
+      "commonjs2": "@jbrowse/core/util/rxjs",
+      "root": Array [
+        "JBrowseExports",
+        "@jbrowse/core/util/rxjs",
+      ],
+    },
     "@jbrowse/core/util/tracks": Object {
       "amd": "@jbrowse/core/util/tracks",
       "commonjs": "@jbrowse/core/util/tracks",
@@ -209,6 +218,15 @@ Object {
       "root": Array [
         "JBrowseExports",
         "@material-ui/core",
+      ],
+    },
+    "@material-ui/core/styles": Object {
+      "amd": "@material-ui/core/styles",
+      "commonjs": "@material-ui/core/styles",
+      "commonjs2": "@material-ui/core/styles",
+      "root": Array [
+        "JBrowseExports",
+        "@material-ui/core/styles",
       ],
     },
     "@material-ui/lab": Object {
