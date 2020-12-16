@@ -18,9 +18,17 @@ interface built into JBrowse 2. See that guide [here](quickstart_gui).
 
 ## Pre-requisites
 
-- [JBrowse CLI](quickstart_web#installing-the-cli-tools)
+- Have the jbrowse CLI tool installed e.g. `npm install -g @jbrowse/cli` (see
+  [here](quickstart_web#installing-the-cli-tools) for details)
+- A copy of the jbrowse 2 web application in your web folder e.g. `jbrowse create /var/www/html/jb2` (see
+  [here](quickstart_web#using-jbrowse-create-to-download-jbrowse-2) for details)
 
-- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
+You may also want to install these tool pre-requisites
+
+- samtools (`sudo apt install samtools` or `brew install samtools`), used for
+  loading indexed fasta files and BAM files
+- tabix (`sudo apt install tabix` or `brew install tabix`)
+- optionally bcftools (`sudo apt install bcftools` or `brew install bcftools`)
 
 ## Adding a genome assembly
 
@@ -37,12 +45,19 @@ This usually means providing a file that describes the reference sequence for
 the organism, such as a FASTA or 2BIT file.
 
 You will want to use your own data for your organism, but for this example we
-provide a small example reference sequence for a simulated organism, _volvox
+provide a small example reference sequence for a simulated organism, _Volvox
 mythicus_, that you can use.
 
 ```sh-session
-# Make sure you are in the directory where you have downloaded JBrowse 2
-jbrowse add-assembly http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.fa
+## First download the fasta file
+wget http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.fa
+
+## Create an indexed fasta with samtools faidx
+samtools faidx volvox.fa
+
+## Then load it with the CLI, this will copy volvox.fa and volvox.fa.fai to
+## the --out directory containing your jbrowse instance
+jbrowse add-assembly volvox.fa --out /var/www/html/jb2 --load copy
 ```
 
 :::caution
@@ -76,10 +91,14 @@ samtools faidx volvox.fa
 Or if you want to compress your FASTA, you can use `bgzip` as well.
 
 ```sh-session
-bgzip volvox.fa
+bgzip -i volvox.fa
+# creates volvox.fa.gz and volvox.fa.gzi
+
 samtools faidx volvox.fa.gz
-# compresses volvox.fa to volvox.fa.gz and generates volvox.fa.gz.fai and volvox.fa.gz.gzi
+# generates volvox.fa.gz.fai
 ```
+
+With bgzip indexed FASTA you end up with 3 files, with plain indexed FASTA just 2
 
 For more info about `bgzip` and `samtools`, see https://www.htslib.org/.
 
@@ -111,42 +130,23 @@ For this example we will use a BAM file to add an alignments track. Again, for
 this example we provide a small example BAM, but for your data you will replace
 the file name with the names of your data files.
 
-For this track we will assume the data is on your computer at the locations
-`/data/volvox.bam` and `/data/volvox.bam.bai`. You can download these file here
-if you want to run this example:
-[BAM](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
-[BAM index](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai).
-
-To add the track, run
+To add a BAM track, run
 
 ```sh-session
 # Replace with the location of your BAM file
-jbrowse add-track /data/volvox.bam --load copy
+wget http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam
+
+# Create index
+samtools index volvox.bam
+
+## Load track, this will automatically copy volvox.bam and volvox.bam.bai to
+## tou the --out directory
+jbrowse add-track volvox.bam --load copy --out /var/www/html/jb2
 ```
 
 This will copy the BAM and BAM index into the JBrowse 2 directory and add a
 track pointing at those files to the config file. To see more options adding the
 track, such as specifying a name, run `jbrowse add-track --help`.
-
-If you don't want to copy your BAM file, you can use `--move` to move the file
-into the JBrowse 2 directory or `--symlink` to add a symlink to the file to the
-JBrowse 2 directory. If you want more control over the location, you can use
-`inPlace` to point the track at the file where it is, but be careful with this
-option because on a traditional server you will need to ensure that the file is
-in a place where the web server is serving it.
-
-:::note
-
-If your BAM is not indexed, you can use the `samtools` tool to index it.
-
-```sh-session
-samtools index volvox.bam
-# generates volvox.bam.bai
-```
-
-For more info about `samtools`, see https://www.htslib.org/.
-
-:::
 
 If you have your JBrowse 2
 [running as described](quickstart_web#running-jbrowse-2) in the JBrowse web
@@ -159,17 +159,20 @@ track.
 ### Adding a variant track
 
 Adding a variant track is similar to adding an alignments track. For this
-example, we will use a VCF file for the track. JBrowse 2 expects VCFs to be
-compressed with `bgzip` and indexed. Similar to the above example, we will
-assume the files are at `/data/volvox.vcf.gz` and `/data/volvox.vcf.gz.tbi`. You
-can download these file here:
-[VCF](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz) and
-[VCF index](http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz.tbi).
+example, we will use a VCF file for the track.
 
-To add the track, run
+To add a VCF track, we use bgzip and tabix first, and then load it with the CLI
 
 ```sh-session
-jbrowse add-track /data/volvox.vcf.gz --load copy
+## Download vcf (it is already bgzipped)
+wget http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz
+
+## Generate tabix index for VCF
+tabix volvox.vcf.gz
+
+## Adds the VCF to the config and copies volvox.vcf.gz and volvox.vcf.gz.tbi
+## to the --out directory
+jbrowse add-track volvox.vcf.gz --load copy --out /var/www/html/jb2
 ```
 
 :::note
@@ -185,9 +188,19 @@ tabix yourfile.vcf.gz
 Alternatively, you can do the same thing with the `bcftools` tool.
 
 ```sh-session
+
 bcftools view volvox.vcf --output-type z > volvox.vcf.gz
 rm volvox.vcf
 bcftools index --tbi volvox.vcf.gz
+```
+
+Note if you get errors about your VCF file not being sorted when using tabix,
+you can use bcftools to sort your VCF
+
+```sh-session
+bcftools sort file.vcf > file.sorted.vcf
+bgzip file.sorted.vcf
+tabix file.sorted.vcf.gz
 ```
 
 For more info about `bgzip`, `tabix`, and `bcftools`, see
@@ -201,6 +214,17 @@ quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the variant track.
 
 ![JBrowse 2 linear genome view with variant track](./img/volvox_variants.png)
+
+### Adding a bigwig track
+
+Probably one of the most simple track types to load is a bigwig file since it does not have any external index file, it is just a single file
+
+```sh-session
+## Download bigwig
+wget http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw
+
+jbrowse add-track volvox-sorted.bam.coverage.bw --load copy --out /var/www/html/jb2/
+```
 
 ## Conclusion
 
