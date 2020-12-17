@@ -18,6 +18,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import AboutDialog from './AboutDialog'
+import SequenceDialog from './SequenceDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -41,6 +42,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   // rendered as a child of the TracksContainer, then clicking on
   // the dialog scrolls the LGV
   const aboutTrack = model.tracks.find(t => t.showAbout)
+  const getSequenceDialog = false
   const handleClose = () => {
     aboutTrack.setShowAbout(false)
   }
@@ -50,7 +52,10 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
     <div style={{ position: 'relative' }}>
       {aboutTrack ? (
         <AboutDialog model={aboutTrack} handleClose={handleClose} />
-      ) : null}
+        ) : null}
+        {getSequenceDialog ? (
+        <SequenceDialog handleClose={() => console.log("i closed")} />
+        ) : null}
       {!hideHeader ? (
         <Header model={model} />
       ) : (

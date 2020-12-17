@@ -11,6 +11,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
+import SequenceDialog from './SequenceDialog'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -170,8 +171,6 @@ function RubberBand({
   }
 
   function getSequence() {
-    // will handle calling assembly manager to check if 
-    // there is an assembly available 
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -183,7 +182,11 @@ function RubberBand({
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
-    const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed? rightOffset.end - rightOffset.offset : rightOffset.offset)
+    const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed ? rightOffset.end - rightOffset.offset : rightOffset.offset)
+    // adapter info to get sequence
+    // mobx -> to set things i need to render
+    // opne dialog
+
   }
 
   function handleClose() {
@@ -323,6 +326,7 @@ function RubberBand({
           menuItems={menuItems}
         />
       ) : null}
+      {/* {getSequenceOpen ? (<SequenceDialog handleClose={}/>) : null} */}
     </>
   )
 }
