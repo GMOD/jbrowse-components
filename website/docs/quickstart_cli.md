@@ -18,9 +18,9 @@ interface built into JBrowse 2. See that guide [here](quickstart_gui).
 
 ## Pre-requisites
 
-- [JBrowse CLI](quickstart_web#install-the-cli-tools)
+- [JBrowse CLI](quickstart_web#installing-the-cli-tools)
 
-- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Adding a genome assembly
 
