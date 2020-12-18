@@ -11,7 +11,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
-import SequenceDialog from './SequenceDialog'
+// import SequenceDialog from './SequenceDialog'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -171,6 +171,7 @@ function RubberBand({
   }
 
   function getSequence() {
+    // toggle open dialog?
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -181,12 +182,9 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
-    const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed ? rightOffset.end - rightOffset.offset : rightOffset.offset)
-    // adapter info to get sequence
-    // mobx -> to set things i need to render
-    // opne dialog
-
+    // const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
+    // const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed ? rightOffset.end - rightOffset.offset : rightOffset.offset)
+    console.log(model.sequenceRegion(leftBpOffset, rightBpOffset))
   }
 
   function handleClose() {
