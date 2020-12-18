@@ -65,11 +65,17 @@ export default class PluginLoader {
       await this.loadScript(definition.url)
       const moduleName = definition.name
       const umdName = `JBrowsePlugin${moduleName}`
+      // Based on window-or-global
+      // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
+      const scope =
+        (typeof self === 'object' && self.self === self && self) ||
+        (typeof global === 'object' && global.global === global && global) ||
+        this
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const plugin = (window as any)[umdName] as { default: PluginConstructor }
+      const plugin = (scope as any)[umdName] as { default: PluginConstructor }
       if (!plugin)
         throw new Error(
-          `plugin ${moduleName} failed to load, window.${umdName} is undefined`,
+          `plugin ${moduleName} failed to load, ${scope.constructor.name}.${umdName} is undefined`,
         )
 
       return plugin.default

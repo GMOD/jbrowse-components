@@ -41,7 +41,7 @@ async function getPluginManager() {
   // Load runtime plugins
   const config = await receiveConfiguration()
   const pluginLoader = new PluginLoader(config.plugins)
-  pluginLoader.installGlobalReExports(self.window)
+  pluginLoader.installGlobalReExports(self)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins, ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P()))
