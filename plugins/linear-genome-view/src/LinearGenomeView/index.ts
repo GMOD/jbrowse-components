@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -36,6 +36,8 @@ import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+// import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+// import { toArray } from 'rxjs/operators'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -203,7 +205,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
-
       get displayedParentRegions() {
         const wholeRefSeqs = [] as Region[]
         const { assemblyManager } = getSession(self)
@@ -578,7 +579,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
-
+      
       navToLocString(locString: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
@@ -885,6 +886,61 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      async sequenceRegion(leftPx: BpOffset, rightPx: BpOffset) {
+        // make an adapter
+        // getFeatures on the adapter to get the sequence
+        // cleanup
+        // console.log('leftPx',leftPx)
+        // console.log('rightPx',rightPx)
+        // const { assemblyManager } = getSession(self)
+        // console.log('assembly manager', assemblyManager)
+        // console.log(getSession(self))
+        // console.log('lgv model', self)
+        // const assembly = assemblyManager.get("volvox") //
+        // console.log('assembly', assembly)
+        // const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
+        //   'sequence',
+        //   'adapter',
+        // ])
+        // console.log('sequenceAdapterConfig', sequenceAdapterConfig)
+        // const dataAdapterType = pluginManager.getAdapterType(
+        //   sequenceAdapterConfig.type,
+        // )
+        // console.log('dataAdapterType', dataAdapterType)
+        // const sequenceAdapter = new dataAdapterType.AdapterClass(
+        //   sequenceAdapterConfig,
+        // ) as BaseFeatureDataAdapter
+        // console.log('sequenceAdapter', sequenceAdapter)
+        // const features = sequenceAdapter.getFeatures(leftPx)
+        // console.log(features)
+        // const seqChunks = await features.pipe(toArray()).toPromise()
+        // console.log(seqChunks)
+        /* const trimmed: string[] = []
+          seqChunks
+            .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+            .forEach((chunk: Feature) => {
+              const chunkStart = chunk.get('start')
+              const chunkEnd = chunk.get('end')
+              const trimStart = Math.max(start - chunkStart, 0)
+              const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+              const trimLength = trimEnd - trimStart
+              const chunkSeq = chunk.get('seq') || chunk.get('residues')
+              trimmed.push(chunkSeq.substr(trimStart, trimLength))
+            })
+
+          const sequence = trimmed.join('')
+          if (sequence.length !== end - start) {
+            throw new Error(
+              `sequence fetch failed: fetching ${refName}:${(
+                start - 1
+              ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
+                end - start
+              ).toLocaleString()}`,
+            )
+          }
+          return sequence */
+        return 'hi'
+      },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
