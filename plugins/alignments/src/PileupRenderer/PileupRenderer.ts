@@ -35,6 +35,12 @@ export interface PileupRenderProps {
     type: string
     tag?: string
   }
+  valueColorPairing?: [
+    {
+      value: string | number
+      color: string
+    },
+  ]
   height: number
   width: number
   highResolutionScaling: number
@@ -142,6 +148,7 @@ const alignmentColoring: { [key: string]: string } = {
 
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
+
 class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
 
@@ -325,12 +332,13 @@ export default class PileupRenderer extends BoxRendererType {
     },
     props: PileupRenderProps,
   ) {
-    const { config, bpPerPx, regions, colorBy } = props
+    const { config, bpPerPx, regions, colorBy, valueColorPairing } = props
     const { heightPx, topPx, feature } = feat
     const region = regions[0]
 
     const colorMap = ['lightblue', 'pink', 'lightgreen', 'lightpurple']
     const colorType = colorBy ? colorBy.type : ''
+
     switch (colorType) {
       case 'insertSize':
         ctx.fillStyle = this.colorByInsertSize(feature, config)
@@ -361,6 +369,12 @@ export default class PileupRenderer extends BoxRendererType {
           }
           const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
           ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
+        }
+        // tag is not one of the autofilled tags, has color-value pairs from fetchValues
+        else {
+          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+          const foundValue = valueColorPairing?.find(obj => obj.value === val)
+          ctx.fillStyle = foundValue ? foundValue.color : 'color_nostrand'
         }
         break
       }

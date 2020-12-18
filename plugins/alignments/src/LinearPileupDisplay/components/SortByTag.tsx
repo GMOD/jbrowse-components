@@ -4,7 +4,6 @@ import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import Dialog from '@material-ui/core/Dialog'
-import MenuItem from '@material-ui/core/MenuItem'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import IconButton from '@material-ui/core/IconButton'
@@ -31,6 +30,7 @@ export default function ColorByTagDlg(props: {
   const classes = useStyles()
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
+  const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
   return (
     <Dialog
       open
@@ -49,22 +49,29 @@ export default function ColorByTagDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Typography>Set the tag to sort by</Typography>
         <div>
+          <Typography>Set the tag to sort by</Typography>
           <form>
             <TextField
-              id="standard-select-currency"
-              select
               value={tag}
               onChange={event => {
                 setTag(event.target.value)
               }}
-            >
-              <MenuItem value="" />
-              <MenuItem value="HP">HP (haplotype)</MenuItem>
-              <MenuItem value="YC">YC (color encoded)</MenuItem>
-            </TextField>
+              placeholder="Enter tag name"
+              inputProps={{
+                maxLength: 2,
+                'data-testid': 'sort-tag-name-input',
+              }}
+              error={tag.length === 2 && !validTag}
+              helperText={
+                tag.length === 2 && !validTag ? 'Not a valid tag' : ''
+              }
+              autoComplete="off"
+              data-testid="sort-tag-name"
+            />
             <Button
+              variant="contained"
+              color="primary"
               onClick={() => {
                 const display = model.displays[0]
                 ;(display.PileupDisplay || display).setSortedBy('tag', tag)
