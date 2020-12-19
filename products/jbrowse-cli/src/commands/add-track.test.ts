@@ -265,7 +265,7 @@ describe('add-track', () => {
       'customTrackId',
       '--description',
       'new description',
-      '--type',
+      '--trackType',
       'CustomTrackType',
       '--category',
       'newcategory',

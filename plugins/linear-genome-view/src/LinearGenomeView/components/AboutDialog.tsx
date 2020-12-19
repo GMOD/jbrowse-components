@@ -253,6 +253,7 @@ export default function AboutDialog({
   useEffect(() => {
     const aborter = new AbortController()
     const { signal } = aborter
+    let cancelled = false
     ;(async () => {
       try {
         const adapterConfig = getConf(model, 'adapter')
@@ -260,14 +261,19 @@ export default function AboutDialog({
           adapterConfig,
           signal,
         })
-        setInfo(result as FileInfo)
+        if (!cancelled) {
+          setInfo(result as FileInfo)
+        }
       } catch (e) {
-        setError(e)
+        if (!cancelled) {
+          setError(e)
+        }
       }
     })()
 
     return () => {
       aborter.abort()
+      cancelled = true
     }
   }, [model, rpcManager, sessionId])
 

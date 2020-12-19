@@ -1,9 +1,9 @@
-# @jbrowse/react-linear-view
+# @jbrowse/react-linear-genome-view
 
 > JBrowse 2 linear genome view React component
 
 [JBrowse 2](https://jbrowse.org/jb2/) is a pluggable open-source platform for
-visualizing and integrating biological data. This component consist of a single
+visualizing and integrating biological data. This component consists of a single
 linear view of the same type exists in the full JBrowse 2 application.
 
 ## Usage
@@ -44,13 +44,13 @@ For a full working example, see [this example](docs/example.md).
 With [yarn](https://yarnpkg.com/):
 
 ```
-$ yarn add @jbrowse/react-linear-view
+$ yarn add @jbrowse/react-linear-genome-view
 ```
 
 Or with [npm](https://npmjs.org/):
 
 ```
-$ npm install @jbrowse/react-linear-view
+$ npm install @jbrowse/react-linear-genome-view
 ```
 
 ### Note on fonts

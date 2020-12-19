@@ -295,7 +295,12 @@ export default (pluginManager: PluginManager) => {
                       bin.getNested(base).decrement('reference', overlap)
                     }
 
-                    if (base && base !== '*' && base !== 'skip') {
+                    if (
+                      base &&
+                      base !== '*' &&
+                      base !== 'skip' &&
+                      base !== 'softclip'
+                    ) {
                       bin.getNested(base).increment(strand, overlap)
                     }
                   },
