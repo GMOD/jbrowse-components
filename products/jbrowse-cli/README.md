@@ -217,7 +217,7 @@ OPTIONS
 
   -n, --name=name                       Name of the track. Will be defaulted to the trackId if none specified
 
-  -t, --type=type                       Type of track, by default inferred from track file
+  -t, --trackType=trackType             Type of track, by default inferred from track file
 
   --category=category                   Optional Comma separated string of categories to group tracks
 
@@ -246,7 +246,7 @@ EXAMPLES
   $ jbrowse add-track /path/to/my.bam --load copy
   $ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink
   $ jbrowse add-track https://mywebsite.com/my.bam
-  $ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move
+  $ jbrowse add-track /path/to/my.bam --trackType AlignmentsTrack --name 'New Track' --load move
   $ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite
   $ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'
 ```
