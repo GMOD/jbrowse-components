@@ -25,7 +25,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TooltipContents({ feature }: { feature: Feature }) {
-  const start = feature.get('start')
+  const start = feature.get('start').toLocaleString('en-US')
+  const end = feature.get('end').toLocaleString('en-US')
   const refName = feature.get('refName')
   const info = feature.get('snpinfo')
   const total = info
@@ -35,7 +36,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
   return (
     <div>
       <table>
-        <caption>{`${refName}:${start.toLocaleString('en-US')}`}</caption>
+        <caption>{`${refName}:${start}..${end}`}</caption>
         <thead>
           <tr>
             <th id={condId}>Base</th>
