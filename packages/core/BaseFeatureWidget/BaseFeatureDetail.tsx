@@ -209,9 +209,9 @@ const CoreDetails = (props: BaseProps) => {
   const displayedDetails: Record<string, any> = {
     ...feature,
     length: end - start,
-    position: `${refName ? `${refName}:` : ''}${
-      start + 1
-    }..${end} ${strandStr}`,
+    position: `${refName ? `${refName}:` : ''}${(start + 1).toLocaleString(
+      'en-US',
+    )}..${end.toLocaleString('en-US')} ${strandStr}`,
   }
 
   const coreRenderedDetails = [
