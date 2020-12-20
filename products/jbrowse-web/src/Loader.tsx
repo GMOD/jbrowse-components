@@ -470,7 +470,8 @@ const Renderer = observer(
             <div
               style={{
                 border: '1px solid black',
-
+                overflow: 'auto',
+                maxHeight: 200,
                 padding: 2,
                 margin: 2,
                 backgroundColor: '#ff8888',
