@@ -482,7 +482,13 @@ const Renderer = observer(
                 <>
                   {' '}
                   ... Failed element had snapshot:
-                  <pre>
+                  <pre
+                    style={{
+                      background: 'lightgrey',
+                      border: '1px solid black',
+                      margin: 20,
+                    }}
+                  >
                     {JSON.stringify(JSON.parse(snapshotError), null, 2)}
                   </pre>
                 </>
