@@ -348,6 +348,7 @@ export default class PileupRenderer extends BoxRendererType {
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
           const clips = [mismatches[0], mismatches[mismatches.length - 1]]
+          if (!seq) return
           clips.forEach(mismatch => {
             if (mismatch.type === 'softclip') {
               const softClipLength = mismatch.cliplen || 0
