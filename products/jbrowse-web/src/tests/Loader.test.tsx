@@ -155,4 +155,21 @@ describe('<Loader />', () => {
     )
     await findAllByText(/Unable to fetch session/)
   }, 10000)
+
+  it('can catch error from loading a bad config', async () => {
+    const { findAllByText } = render(
+      <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
+        <QueryParamProvider
+          // @ts-ignore
+          location={{
+            search:
+              '?config=test_data/bad_config_for_testing_error_catcher.json',
+          }}
+        >
+          <Loader initialTimestamp={initialTimestamp} />
+        </QueryParamProvider>
+      </ErrorBoundary>,
+    )
+    await findAllByText(/Failed to load/)
+  }, 10000)
 })
