@@ -6,11 +6,13 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginLoader from '@jbrowse/core/PluginLoader'
+
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
+import factoryReset from './factoryReset'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -40,7 +42,7 @@ export default function Loader({
   const classes = useStyles()
   const [error, setError] = useState('')
   const [snapshotError, setSnapshotError] = useState('')
-  const [pluginManager, setPluginManager] = useState<any>()
+  const [pluginManager, setPluginManager] = useState<PluginManager>()
 
   const ipcRenderer = (electron && electron.ipcRenderer) || {
     invoke: () => {},
@@ -54,9 +56,11 @@ export default function Loader({
             configuration: { rpc: { defaultDriver: 'ElectronRpcDriver' } },
           }),
         )
-      } catch (error) {
+      } catch (e) {
+        // used to launch an error dialog for whatever caused loadConfig to
+        // fail
         setConfigSnapshot(() => {
-          throw error
+          throw e
         })
       }
     }
@@ -73,9 +77,11 @@ export default function Loader({
           pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
-        } catch (error) {
+        } catch (e) {
+          // used to launch an error dialog for whatever caused plugin loading
+          // to fail
           setConfigSnapshot(() => {
-            throw error
+            throw e
           })
         }
       }
@@ -133,7 +139,7 @@ export default function Loader({
         console.error(e)
       }
     }
-  }, [plugins])
+  }, [plugins, configSnapshot, initialTimestamp])
 
   if (!(configSnapshot && plugins && pluginManager) && !error) {
     return (
@@ -168,6 +174,8 @@ export default function Loader({
                   style={{
                     background: 'lightgrey',
                     border: '1px solid black',
+                    maxHeight: 200,
+                    overflow: 'auto',
                     margin: 20,
                   }}
                 >
@@ -177,6 +185,9 @@ export default function Loader({
             ) : null}
           </div>
         ) : null}
+        <button type="button" onClick={() => factoryReset()}>
+          Factory reset
+        </button>
       </div>
     )
   }
