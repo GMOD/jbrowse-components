@@ -19,7 +19,6 @@ import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
-import { lighten } from '@material-ui/core/styles/colorManipulator'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 
@@ -249,6 +248,7 @@ export default class PileupRenderer extends BoxRendererType {
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
       const mismatches: Mismatch[] = feature.get('mismatches')
+      const seq = feature.get('seq')
 
       if (mismatches) {
         const colorForBase: { [key: string]: string } = {
@@ -309,9 +309,12 @@ export default class PileupRenderer extends BoxRendererType {
             }
           } else if (
             mismatch.type === 'hardclip' ||
-            (!showSoftClip && mismatch.type === 'softclip')
+            mismatch.type === 'softclip'
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
+            if (!seq) {
+              ctx.fillStyle = 'black'
+            }
             const pos = mismatchLeftPx - 1
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
             ctx.fillRect(pos - w, topPx, w * 3, 1)
@@ -344,10 +347,8 @@ export default class PileupRenderer extends BoxRendererType {
         }
         // Display all bases softclipped off in lightened colors
         if (showSoftClip) {
-          const seq = feature.get('seq')
-          if (!seq) return
-          for (let j = 0; j < mismatches.length; j += 1) {
-            const mismatch = mismatches[j]
+          const clips = [mismatches[0], mismatches[mismatches.length - 1]]
+          clips.forEach(mismatch => {
             if (mismatch.type === 'softclip') {
               const softClipLength = mismatch.cliplen || 0
               const softClipStart =
@@ -370,15 +371,17 @@ export default class PileupRenderer extends BoxRendererType {
                   Math.abs(softClipLeftPx - softClipRightPx),
                 )
 
-                // Black accounts for IUPAC ambiguity code bases such as N that show in soft clipping
-                ctx.fillStyle = lighten(colorForBase[base] || '#000000', 0.3)
+                // Black accounts for IUPAC ambiguity code bases such as N that
+                // show in soft clipping
+                const baseColor = colorForBase[base] || '#000000'
+                ctx.fillStyle = baseColor
                 ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
 
                 if (
                   softClipWidthPx >= charSize.width &&
                   heightPx >= charSize.height - 5
                 ) {
-                  ctx.fillStyle = 'black'
+                  ctx.fillStyle = theme.palette.getContrastText(baseColor)
                   ctx.fillText(
                     base,
                     softClipLeftPx + (softClipWidthPx - charSize.width) / 2 + 1,
@@ -387,7 +390,7 @@ export default class PileupRenderer extends BoxRendererType {
                 }
               }
             }
-          }
+          })
         }
       }
     })
