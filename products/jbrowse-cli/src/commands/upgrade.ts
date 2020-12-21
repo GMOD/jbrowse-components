@@ -46,6 +46,9 @@ export default class Upgrade extends JBrowseCommand {
     branch: flags.string({
       description: 'Download the latest build release off of the master branch',
     }),
+    nightly: flags.boolean({
+      description: 'Get the latest build from master',
+    }),
     url: flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
@@ -56,7 +59,7 @@ export default class Upgrade extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, tag, url, branch } = runFlags
+    const { listVersions, tag, url, branch, nightly } = runFlags
 
     if (listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
@@ -81,6 +84,7 @@ export default class Upgrade extends JBrowseCommand {
 
     const locationUrl =
       url ||
+      (nightly ? await this.getBranch('master') : '') ||
       (branch ? await this.getBranch(branch) : '') ||
       (tag ? await this.getTag(tag) : await this.getLatest())
 

@@ -329,6 +329,8 @@ OPTIONS
 
   --branch=branch     Branch name to fetch from
 
+  --nightly           Get the latest build from master
+
 EXAMPLES
   $ jbrowse create /path/to/new/installation
   $ jbrowse create /path/to/new/installation --force
@@ -412,6 +414,8 @@ OPTIONS
   -u, --url=url       A direct URL to a JBrowse 2 release
 
   --branch=branch     Download the latest build release off of the master branch
+
+  --nightly           Get the latest build from master
 
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
