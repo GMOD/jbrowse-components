@@ -25,9 +25,13 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TooltipContents({ feature }: { feature: Feature }) {
-  const start = feature.get('start').toLocaleString('en-US')
+  const ref = feature.get('refName')
+  const displayRef = `${ref ? `${ref}:` : ''}`
+  const start = (feature.get('start') + 1).toLocaleString('en-US')
   const end = feature.get('end').toLocaleString('en-US')
-  const refName = feature.get('refName')
+  const coord = start === end ? start : `${start}..${end}`
+  const loc = `${displayRef}${coord}`
+
   const info = feature.get('snpinfo')
   const total = info
     ? info[info.map((e: any) => e.base).indexOf('total')].score
@@ -36,7 +40,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
   return (
     <div>
       <table>
-        <caption>{`${refName}:${start}..${end}`}</caption>
+        <caption>{loc}</caption>
         <thead>
           <tr>
             <th id={condId}>Base</th>

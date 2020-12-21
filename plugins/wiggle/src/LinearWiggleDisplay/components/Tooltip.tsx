@@ -29,9 +29,12 @@ const useStyles = makeStyles(theme => ({
 function TooltipContents(props: { feature: Feature }) {
   const { feature } = props
   const ref = feature.get('refName')
-  const start = feature.get('start').toLocaleString('en-US')
+  const displayRef = `${ref ? `${ref}:` : ''}`
+  const start = (feature.get('start') + 1).toLocaleString('en-US')
   const end = feature.get('end').toLocaleString('en-US')
-  const loc = `${ref ? `${ref}:` : ''}${start}..${end}`
+  const coord = start === end ? start : `${start}..${end}`
+  const loc = `${displayRef}${coord}`
+
   return feature.get('summary') !== undefined ? (
     <div>
       {loc}
