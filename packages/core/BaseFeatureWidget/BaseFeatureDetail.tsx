@@ -430,6 +430,10 @@ const Subfeature = (props: BaseProps) => {
   )
 }
 
+function isEmpty(obj: Record<string, unknown>) {
+  return Object.keys(obj).length === 0
+}
+
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model } = props
@@ -438,6 +442,10 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
     return null
   }
   const feature = JSON.parse(JSON.stringify(model.featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feature} {...props} />
