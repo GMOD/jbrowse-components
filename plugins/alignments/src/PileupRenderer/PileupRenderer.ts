@@ -313,7 +313,7 @@ export default class PileupRenderer extends BoxRendererType {
           ) {
             ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
             if (!seq) {
-              ctx.fillStyle = 'black'
+              ctx.fillStyle = theme.palette.text.primary
             }
             const pos = mismatchLeftPx - 1
             ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
