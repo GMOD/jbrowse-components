@@ -8,14 +8,14 @@ const stateModel = types
   .model('BaseFeatureWidget', {
     id: ElementId,
     type: types.literal('BaseFeatureWidget'),
-    featureData: types.frozen({}),
+    featureData: types.frozen(),
   })
   .actions(self => ({
     setFeatureData(data: Record<string, unknown>) {
       self.featureData = data
     },
     clearFeatureData() {
-      self.featureData = {}
+      self.featureData = undefined
     },
   }))
 

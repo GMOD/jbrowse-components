@@ -433,6 +433,10 @@ const Subfeature = (props: BaseProps) => {
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model } = props
+
+  if (!model.featureData) {
+    return null
+  }
   const feature = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper className={classes.paperRoot}>
