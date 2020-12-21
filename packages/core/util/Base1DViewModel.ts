@@ -64,7 +64,7 @@ const Base1DView = types
       return 2
     },
     get minimumBlockWidth() {
-      return 20
+      return 3
     },
     /**
      * calculates the Px at which coord is found.
