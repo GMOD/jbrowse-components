@@ -7,14 +7,14 @@ export const stateModel = types
   .model('VariantFeatureWidget', {
     id: ElementId,
     type: types.literal('VariantFeatureWidget'),
-    featureData: types.frozen({}),
+    featureData: types.frozen(),
   })
   .actions(self => ({
     setFeatureData(data) {
       self.featureData = data
     },
     clearFeatureData() {
-      self.featureData = {}
+      self.featureData = undefined
     },
   }))
 

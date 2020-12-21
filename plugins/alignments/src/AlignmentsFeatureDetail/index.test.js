@@ -5,7 +5,6 @@ import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
   const model = stateModel.create({ type: 'AlignmentsFeatureWidget' })
-  const { container, getByText } = render(<ReactComponent model={model} />)
   model.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
@@ -29,6 +28,7 @@ test('open up a widget', () => {
     refName: 'ctgA',
     type: 'match',
   })
+  const { container, getByText } = render(<ReactComponent model={model} />)
   expect(container.firstChild).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })
