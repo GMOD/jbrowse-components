@@ -409,6 +409,8 @@ OPTIONS
 
   -u, --url=url       A direct URL to a JBrowse 2 release
 
+  --nightly=nightly   Download the latest build release off of the master branch
+
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
   $ jbrowse upgrade /path/to/jbrowse2/installation

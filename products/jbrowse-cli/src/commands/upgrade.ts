@@ -43,6 +43,9 @@ export default class Upgrade extends JBrowseCommand {
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
+    nightly: flags.string({
+      description: 'Download the latest build release off of the master branch',
+    }),
     url: flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
