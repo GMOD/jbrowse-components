@@ -118,6 +118,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
+      seqDialogActive: false
     }))
     .views(self => ({
       get width(): number {
@@ -462,7 +463,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
-
+      showSeqDialog(state: boolean) {
+        self.seqDialogActive = state
+      },
       showTrack(trackId: string, initialSnapshot = {}) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
           'track',

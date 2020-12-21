@@ -185,6 +185,7 @@ function RubberBand({
     // const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
     // const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed ? rightOffset.end - rightOffset.offset : rightOffset.offset)
     console.log(model.sequenceRegion(leftBpOffset, rightBpOffset))
+    model.showSeqDialog(true)
   }
 
   function handleClose() {

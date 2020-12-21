@@ -16,7 +16,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import copy from 'copy-to-clipboard'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-
+import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   shareDiv: {
@@ -46,11 +46,14 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function SequenceDialog({
+    model,
     handleClose
 }: {
+    model: LinearGenomeViewModel,
     handleClose: () => void
 }) {
     const classes = useStyles()
+    console.log(model)
     return (
       <>
         <Dialog
@@ -80,7 +83,7 @@ function SequenceDialog({
             <DialogContent>
                 <TextField
                   label="rubberband-sequence"
-                  value={"hello"}
+                  value={"hello, this is where the sequence will go"}
                   InputProps={{
                     readOnly: true,
                   }}
