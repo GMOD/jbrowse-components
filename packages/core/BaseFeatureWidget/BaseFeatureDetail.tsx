@@ -199,7 +199,7 @@ interface BaseProps extends BaseCardProps {
 
 const CoreDetails = (props: BaseProps) => {
   const { feature } = props
-  const { refName, start = '', end = '', strand } = feature
+  const { refName, start, end, strand } = feature
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
