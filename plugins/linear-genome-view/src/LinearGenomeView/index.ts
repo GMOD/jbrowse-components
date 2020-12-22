@@ -1,4 +1,4 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -18,6 +18,7 @@ import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+// misc
 import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
@@ -118,7 +119,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
-      seqDialogActive: false
+      seqDialogActive: false,
+      selectedSequence: undefined as string | undefined
     }))
     .views(self => ({
       get width(): number {
@@ -465,6 +467,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       showSeqDialog(state: boolean) {
         self.seqDialogActive = state
+      },
+      setSelectedSequence(seq: string) {
+        self.selectedSequence = seq
       },
       showTrack(trackId: string, initialSnapshot = {}) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
@@ -891,58 +896,50 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       async sequenceRegion(leftPx: BpOffset, rightPx: BpOffset) {
         // make an adapter
-        // getFeatures on the adapter to get the sequence
-        // cleanup
-        // console.log('leftPx',leftPx)
-        // console.log('rightPx',rightPx)
         // const { assemblyManager } = getSession(self)
-        // console.log('assembly manager', assemblyManager)
-        // console.log(getSession(self))
-        // console.log('lgv model', self)
-        // const assembly = assemblyManager.get("volvox") //
-        // console.log('assembly', assembly)
+        // const assembly = assemblyManager.get("volvox") // change to get assemblyName
         // const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
         //   'sequence',
         //   'adapter',
         // ])
-        // console.log('sequenceAdapterConfig', sequenceAdapterConfig)
         // const dataAdapterType = pluginManager.getAdapterType(
         //   sequenceAdapterConfig.type,
         // )
-        // console.log('dataAdapterType', dataAdapterType)
         // const sequenceAdapter = new dataAdapterType.AdapterClass(
         //   sequenceAdapterConfig,
         // ) as BaseFeatureDataAdapter
-        // console.log('sequenceAdapter', sequenceAdapter)
+
+        // getFeatures on the adapter to get the sequence
+       
         // const features = sequenceAdapter.getFeatures(leftPx)
         // console.log(features)
         // const seqChunks = await features.pipe(toArray()).toPromise()
-        // console.log(seqChunks)
-        /* const trimmed: string[] = []
-          seqChunks
-            .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-            .forEach((chunk: Feature) => {
-              const chunkStart = chunk.get('start')
-              const chunkEnd = chunk.get('end')
-              const trimStart = Math.max(start - chunkStart, 0)
-              const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-              const trimLength = trimEnd - trimStart
-              const chunkSeq = chunk.get('seq') || chunk.get('residues')
-              trimmed.push(chunkSeq.substr(trimStart, trimLength))
-            })
+        // console.log(seqChunks.forEach(chunk => console.log(chunk.get("seq"))))
+        // const trimmed: string[] = []
+        //   seqChunks
+        //     .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+        //     .forEach((chunk: Feature) => {
+        //       const chunkStart = chunk.get('start')
+        //       const chunkEnd = chunk.get('end')
+        //       const trimStart = Math.max(start - chunkStart, 0)
+        //       const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+        //       const trimLength = trimEnd - trimStart
+        //       const chunkSeq = chunk.get('seq') || chunk.get('residues')
+        //       trimmed.push(chunkSeq.substr(trimStart, trimLength))
+        //     })
+        //   const sequence = trimmed.join('')
+        //   if (sequence.length !== end - start) {
+        //     throw new Error(
+        //       `sequence fetch failed: fetching ${refName}:${(
+        //         start - 1
+        //       ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
+        //         end - start
+        //       ).toLocaleString()}`,
+        //     )
+        //   }
 
-          const sequence = trimmed.join('')
-          if (sequence.length !== end - start) {
-            throw new Error(
-              `sequence fetch failed: fetching ${refName}:${(
-                start - 1
-              ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-                end - start
-              ).toLocaleString()}`,
-            )
-          }
-          return sequence */
-        return 'hi'
+        self.setSelectedSequence('Sequence preview will go here...')
+        // cleanup
       },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {

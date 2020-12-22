@@ -6,12 +6,11 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
-import GetAppIcon from '@material-ui/icons/GetApp';
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import ReactPropTypes from 'prop-types'
 import React, { useRef, useEffect, useState } from 'react'
-// import SequenceDialog from './SequenceDialog'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -171,7 +170,9 @@ function RubberBand({
   }
 
   function getSequence() {
-    // toggle open dialog?
+    // open the dialog
+    model.showSeqDialog(true)
+    // get sequence from selected bp
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -182,10 +183,7 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    // const leftBp = leftBpOffset.coord || Math.round(leftOffset.reversed? leftOffset.end - leftOffset.offset : leftOffset.offset)
-    // const rightBp = rightBpOffset.coord || Math.round(rightOffset.reversed ? rightOffset.end - rightOffset.offset : rightOffset.offset)
-    console.log(model.sequenceRegion(leftBpOffset, rightBpOffset))
-    model.showSeqDialog(true)
+    model.sequenceRegion(leftBpOffset, rightBpOffset)
   }
 
   function handleClose() {
@@ -212,7 +210,7 @@ function RubberBand({
     },
     {
       label: 'Get Sequence',
-      icon: GetAppIcon,
+      icon: MenuOpenIcon,
       onClick: () => {
         getSequence()
         handleClose()
@@ -248,7 +246,6 @@ function RubberBand({
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(left + width)
   const numOfBpSelected = Math.round(width * model.bpPerPx)
-
   return (
     <>
       {rubberBandRef.current ? (
@@ -325,7 +322,6 @@ function RubberBand({
           menuItems={menuItems}
         />
       ) : null}
-      {/* {getSequenceOpen ? (<SequenceDialog handleClose={}/>) : null} */}
     </>
   )
 }
