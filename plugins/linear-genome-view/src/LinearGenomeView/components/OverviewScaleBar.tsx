@@ -5,7 +5,12 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
-import Paper from '@material-ui/core/Paper'
+import {
+  BlockSet,
+  ContentBlock,
+  ElidedBlock,
+  InterRegionPaddingBlock,
+} from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
@@ -25,15 +30,16 @@ const useStyles = makeStyles(theme => {
     : theme.palette.primary.light
   return {
     scaleBar: {
-      display: 'flex',
       width: '100%',
       height: HEADER_OVERVIEW_HEIGHT,
       overflow: 'hidden',
     },
     scaleBarContig: {
       backgroundColor: theme.palette.background.default,
-      position: 'relative',
-      borderColor: theme.palette.text.primary,
+      position: 'absolute',
+      top: 0,
+      height: HEADER_OVERVIEW_HEIGHT,
+      border: '1px solid',
       borderBottomColor: 'black',
     },
     scaleBarContigForward: {
@@ -82,10 +88,12 @@ const useStyles = makeStyles(theme => {
       pointerEvents: 'none',
     },
     scaleBarVisibleRegion: {
-      height: '100%',
       background: fade(scaleBarColor, 0.3),
       position: 'absolute',
+      height: HEADER_OVERVIEW_HEIGHT,
+      pointerEvents: 'none',
       top: -1,
+      zIndex: 100,
       borderWidth: 1,
       borderStyle: 'solid',
       borderColor: fade(scaleBarColor, 0.8),
@@ -95,7 +103,7 @@ const useStyles = makeStyles(theme => {
       height: HEADER_BAR_HEIGHT,
       position: 'relative',
     },
-    overviewSvg: { display: 'block', position: 'absolute' },
+    overviewSvg: { position: 'absolute' },
   }
 })
 
@@ -110,59 +118,39 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const { offsetPx, width, bpPerPx, dynamicBlocks: visibleRegions } = model
+    const { offsetPx, bpPerPx, dynamicBlocks: visibleRegions } = model
 
-    const blocks = visibleRegions
-      .getBlocks()
-      .filter(block => block.refName !== undefined)
-    overview.setVolatileWidth(width)
-    overview.showAllRegions()
+    const blocks = visibleRegions.getBlocks().filter(block => !!block.refName)
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
 
-    let bottomLeft: number | undefined
-    let newTopLeft: number | undefined
-    let points: (number | undefined)[][] = []
-    // Iterating over blocks to find the rightmost (endPx and topRight)
-    // and leftmost (startPx and topLeft) points in order to draw a single polygon
-    blocks.forEach((region, index) => {
-      const startPx = region.offsetPx - offsetPx
-      const endPx = startPx + (region.end - region.start) / bpPerPx
-      let topLeft = overview.bpToPx({
-        refName: region.refName,
-        coord: region.start,
-        regionNumber: region.regionNumber,
-      })
-      let topRight = overview.bpToPx({
-        refName: region.refName,
-        coord: region.end,
-        regionNumber: region.regionNumber,
-      })
-      //  p1 right to -> p2  up to -> p3  left to -> p4 and back down to p1
-      if (region.reversed) {
-        ;[topLeft, topRight] = [topRight, topLeft]
-      }
-      if (index === 0) {
-        // leftmost bottom and top points
-        bottomLeft = startPx
-        newTopLeft = topLeft
-      }
-      points = [
-        [startPx, HEADER_BAR_HEIGHT],
-        [endPx, HEADER_BAR_HEIGHT],
-        [topRight, 0],
-        [topLeft, 0],
-      ]
-      if (index === blocks.length - 1) {
-        points = [
-          [bottomLeft, HEADER_BAR_HEIGHT],
-          [endPx, HEADER_BAR_HEIGHT],
-          [topRight, 0],
-          [newTopLeft, 0],
-        ]
-      }
+    const firstBlock = blocks[0]
+    const lastBlock = blocks[blocks.length - 1]
+    const topLeft = overview.bpToPx({
+      refName: firstBlock.refName,
+      coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
+      regionNumber: firstBlock.regionNumber,
     })
+    const topRight = overview.bpToPx({
+      refName: lastBlock.refName,
+      coord: lastBlock.reversed ? lastBlock.start : lastBlock.end,
+      regionNumber: lastBlock.regionNumber,
+    })
+
+    const startPx = firstBlock.offsetPx - offsetPx
+    const endPx =
+      startPx +
+      visibleRegions.totalBp / bpPerPx +
+      model.interRegionPaddingWidth * blocks.length
+
+    const points = [
+      [startPx, HEADER_BAR_HEIGHT],
+      [endPx, HEADER_BAR_HEIGHT],
+      [topRight, 0],
+      [topLeft, 0],
+    ]
+
     return (
       <svg
         height={HEADER_BAR_HEIGHT}
@@ -183,130 +171,120 @@ const Polygon = observer(
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
-const ScaleBar = observer(({ model, scale }: { model: LGV; scale: number }) => {
-  const classes = useStyles()
-  const { displayedRegions, dynamicBlocks: visibleRegions } = model
-  const { assemblyManager } = getSession(model)
-  const gridPitch = chooseGridPitch(scale, 120, 15)
+const ScaleBar = observer(
+  ({
+    model,
+    scale,
+    overview,
+  }: {
+    model: LGV
+    overview: Base1DViewModel
+    scale: number
+  }) => {
+    const classes = useStyles()
+    const { dynamicBlocks: visibleRegions } = model
+    const { assemblyManager } = getSession(model)
+    const gridPitch = chooseGridPitch(scale, 120, 15)
+    const { dynamicBlocks: overviewVisibleRegions } = overview
 
-  return (
-    <div className={classes.scaleBar}>
-      {/* this is the entire scale bar */}
-      {displayedRegions.map((seq, idx) => {
-        const assembly = assemblyManager.get(seq.assemblyName)
-        let refNameColor: string | undefined
-        if (assembly) {
-          refNameColor = assembly.getRefNameColor(seq.refName)
-        }
-        const regionLength = seq.end - seq.start
-        // boolean if displayed region length is smaller than its parent's
-        const parent = model.parentRegion(seq.assemblyName, seq.refName)
-        const incompleteRegion = parent
-          ? parent.end - parent.start > seq.end - seq.start
-          : false
-        // number of labels to draw in the overview scale bar
-        const numLabels = Math.floor(regionLength / gridPitch.majorPitch)
-        // calculating the number labels
-        const tickLabels = []
-        for (let index = 0; index < numLabels; index++) {
-          const offsetLabel = (index + 1) * gridPitch.majorPitch
-          tickLabels.push(
-            seq.reversed ? seq.end - offsetLabel : seq.start + offsetLabel,
-          )
-        }
-        return (
-          <Paper
-            key={`${JSON.stringify(seq)}-${idx.toLocaleString('en-US')}`}
-            variant="outlined"
-            className={clsx(
-              classes.scaleBarContig,
-              seq.reversed
-                ? classes.scaleBarContigReverse
-                : classes.scaleBarContigForward,
-            )}
-            style={{
-              minWidth: regionLength / scale,
-              marginRight:
-                idx === displayedRegions.length - 1
-                  ? undefined
-                  : wholeSeqSpacer,
-              borderColor: refNameColor,
-            }}
-          >
-            {incompleteRegion && (
-              <div
-                className={classes.scaleBarRegionIncompleteLeft}
-                style={{
-                  backgroundImage: `linear-gradient(-225deg, ${refNameColor} 3px, transparent 1px),
-                linear-gradient(45deg, ${refNameColor} 3px, transparent 1px)`,
-                  backgroundSize: '10px 8px',
-                  backgroundRepeat: 'repeat-y',
-                }}
-              />
-            )}
-            {/* name of sequence */}
-            <Typography
-              style={{ color: refNameColor }}
-              className={classes.scaleBarRefName}
+    const firstBlock = visibleRegions.blocks[0]
+    const firstOverviewPx =
+      overview.bpToPx({
+        refName: firstBlock.refName,
+        coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
+      }) || 0
+    const lastBlock = visibleRegions.blocks[visibleRegions.blocks.length - 1]
+    const lastOverviewPx =
+      overview.bpToPx({
+        refName: lastBlock.refName,
+        coord: lastBlock.reversed ? lastBlock.start : lastBlock.end,
+      }) || 0
+
+    return (
+      <div className={classes.scaleBar}>
+        <div
+          className={classes.scaleBarVisibleRegion}
+          style={{
+            width: lastOverviewPx - firstOverviewPx,
+            left: firstOverviewPx,
+          }}
+        />
+        {/* this is the entire scale bar */}
+        {overviewVisibleRegions.map((seq, idx) => {
+          const assembly = assemblyManager.get(seq.assemblyName)
+          let refNameColor: string | undefined
+          if (assembly) {
+            refNameColor = assembly.getRefNameColor(seq.refName)
+          }
+          const regionLength = seq.end - seq.start
+          const tickLabels = []
+          for (
+            let index = 0;
+            index < Math.floor(regionLength / gridPitch.majorPitch);
+            index++
+          ) {
+            const offsetLabel = (index + 1) * gridPitch.majorPitch
+            tickLabels.push(
+              seq.reversed ? seq.end - offsetLabel : seq.start + offsetLabel,
+            )
+          }
+
+          return !(seq instanceof ContentBlock) ? (
+            <div
+              key={`${JSON.stringify(seq)}-${idx}`}
+              className={classes.scaleBarContig}
+              style={{
+                width: seq.widthPx,
+                left: seq.offsetPx,
+                backgroundColor: '#999',
+                backgroundImage:
+                  'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+              }}
+            />
+          ) : (
+            <div
+              key={`${JSON.stringify(seq)}-${idx}`}
+              className={clsx(
+                classes.scaleBarContig,
+                seq.reversed
+                  ? classes.scaleBarContigReverse
+                  : classes.scaleBarContigForward,
+              )}
+              style={{
+                left: seq.offsetPx,
+                width: seq.widthPx,
+                borderColor: refNameColor,
+              }}
             >
-              {seq.refName}
-            </Typography>
-
-            {/* where the rubberband selection boxes actually get drawn */}
-            {visibleRegions.map((r, visibleRegionIdx) => {
-              if (
-                seq.assemblyName === r.assemblyName &&
-                seq.refName === r.refName &&
-                r.regionNumber === idx
-              ) {
-                const leftStyle = r.reversed
-                  ? (seq.end - r.end) / scale - 1
-                  : (r.start - seq.start) / scale - 1
-                return (
-                  <div
-                    key={`${r.key}-${visibleRegionIdx}`}
-                    className={classes.scaleBarVisibleRegion}
-                    style={{
-                      width: Math.max((r.end - r.start) / scale, 1),
-                      left: leftStyle,
-                      pointerEvents: 'none',
-                    }}
-                  />
-                )
-              }
-              return null
-            })}
-            {/* the number labels drawn in overview scale bar*/}
-            {tickLabels.map((tickLabel, labelIdx) => (
-              <div
-                key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
-                className={classes.scaleBarLabel}
-                style={{
-                  left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
-                  pointerEvents: 'none',
-                  color: refNameColor,
-                }}
+              {/* name of sequence */}
+              <Typography
+                style={{ color: refNameColor }}
+                className={classes.scaleBarRefName}
               >
-                {tickLabel.toLocaleString('en-US')}
-              </div>
-            ))}
-            {incompleteRegion && (
-              <div
-                className={classes.scaleBarRegionIncompleteRight}
-                style={{
-                  backgroundImage: `linear-gradient(225deg, ${refNameColor} 3px, transparent 1px),
-              linear-gradient(-45deg, ${refNameColor} 3px, transparent 1px)`,
-                  backgroundSize: '10px 8px',
-                  backgroundRepeat: 'repeat-y',
-                }}
-              />
-            )}
-          </Paper>
-        )
-      })}
-    </div>
-  )
-})
+                {seq.refName}
+              </Typography>
+
+              {/* the number labels drawn in overview scale bar*/}
+              {tickLabels.map((tickLabel, labelIdx) => (
+                <div
+                  key={`${JSON.stringify(seq)}-${tickLabel}-${labelIdx}`}
+                  className={classes.scaleBarLabel}
+                  style={{
+                    left: ((labelIdx + 1) * gridPitch.majorPitch) / scale,
+                    pointerEvents: 'none',
+                    color: refNameColor,
+                  }}
+                >
+                  {tickLabel.toLocaleString('en-US')}
+                </div>
+              ))}
+            </div>
+          )
+        })}
+      </div>
+    )
+  },
+)
 
 function OverviewScaleBar({
   model,
@@ -320,7 +298,10 @@ function OverviewScaleBar({
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+    interRegionPaddingWidth: 0,
   })
+  overview.setVolatileWidth(width)
+  overview.showAllRegions()
 
   const scale =
     model.totalBp / (width - (displayedRegions.length - 1) * wholeSeqSpacer)
@@ -344,7 +325,9 @@ function OverviewScaleBar({
       <OverviewRubberBand
         model={model}
         overview={overview}
-        ControlComponent={<ScaleBar model={model} scale={scale} />}
+        ControlComponent={
+          <ScaleBar model={model} overview={overview} scale={scale} />
+        }
       />
       <div className={classes.overview}>
         <Polygon model={model} overview={overview} />

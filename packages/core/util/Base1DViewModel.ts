@@ -19,6 +19,8 @@ const Base1DView = types
     displayedRegions: types.array(Region),
     bpPerPx: 0,
     offsetPx: 0,
+    interRegionPaddingWidth: types.optional(types.number, 2),
+    minimumBlockWidth: types.optional(types.number, 3),
   })
   .volatile(() => ({
     features: undefined as undefined | Feature[],
@@ -59,12 +61,6 @@ const Base1DView = types
       return self.displayedRegions
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
-    },
-    get interRegionPaddingWidth() {
-      return 2
-    },
-    get minimumBlockWidth() {
-      return 3
     },
     /**
      * calculates the Px at which coord is found.
