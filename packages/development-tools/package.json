@@ -17,7 +17,8 @@
   "author": "JBrowse Team",
   "main": "index.js",
   "files": [
-    "patches/"
+    "patches/",
+    "postinstall.js"
   ],
   "bin": {
     "jbrowse-plugin-postinstall": "./postinstall.js"
