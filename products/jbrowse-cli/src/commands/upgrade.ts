@@ -44,10 +44,11 @@ export default class Upgrade extends JBrowseCommand {
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
     branch: flags.string({
-      description: 'Download the latest build release off of the master branch',
+      description: 'Download a development build from a named git branch',
     }),
     nightly: flags.boolean({
-      description: 'Get the latest build from master',
+      description:
+        'Download the latest development build from the master branch',
     }),
     url: flags.string({
       char: 'u',

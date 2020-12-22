@@ -39,10 +39,11 @@ export default class Create extends JBrowseCommand {
       description: 'Lists out all versions of JBrowse 2',
     }),
     branch: flags.string({
-      description: 'Branch name to fetch from',
+      description: 'Download a development build from a named git branch',
     }),
     nightly: flags.boolean({
-      description: 'Get the latest build from master',
+      description:
+        'Download the latest development build from the master branch',
     }),
     url: flags.string({
       char: 'u',
