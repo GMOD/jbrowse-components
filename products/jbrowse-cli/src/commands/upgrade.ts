@@ -43,6 +43,13 @@ export default class Upgrade extends JBrowseCommand {
       description:
         'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
+    branch: flags.string({
+      description: 'Download a development build from a named git branch',
+    }),
+    nightly: flags.boolean({
+      description:
+        'Download the latest development build from the master branch',
+    }),
     url: flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
@@ -53,7 +60,7 @@ export default class Upgrade extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, tag, url } = runFlags
+    const { listVersions, tag, url, branch, nightly } = runFlags
 
     if (listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
@@ -77,7 +84,10 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     const locationUrl =
-      url || (tag ? await this.getTag(tag) : await this.getLatest())
+      url ||
+      (nightly ? await this.getBranch('master') : '') ||
+      (branch ? await this.getBranch(branch) : '') ||
+      (tag ? await this.getTag(tag) : await this.getLatest())
 
     this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)
