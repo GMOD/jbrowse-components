@@ -1,16 +1,18 @@
-import { Menu } from '@jbrowse/core/ui'
-import { stringify } from '@jbrowse/core/util'
-import Popover from '@material-ui/core/Popover'
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useRef, useEffect, useState } from 'react'
+import ReactPropTypes from 'prop-types'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
+// material ui
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@material-ui/core/styles'
+import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useRef, useEffect, useState } from 'react'
+
+import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>

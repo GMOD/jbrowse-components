@@ -61,6 +61,7 @@ function SequenceDialog({
             {handleClose ? (
               <IconButton className={classes.closeButton} onClick={() => {
                 handleClose()
+                model.showSeqDialog(false)
                 model.setSelectedSequence('')
               }}>
                 <CloseIcon />
