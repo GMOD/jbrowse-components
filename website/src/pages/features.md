@@ -50,6 +50,7 @@ view types
 | Can connect to UCSC track hubs                                      | :heavy_check_mark: [^1] | :x:                |
 | Can load plugins at run-time instead of build time                  | :heavy_check_mark: [^2] | :x:                |
 | Non-admin users can open tracks and share them with others          | :heavy_check_mark: [^3] | :x:                |
+| Re-usable NPM package                                               | :heavy_check_mark: [^3] | :x:                |
 | Name searching e.g. ability to type a gene name/ID to search for it | :x:                     | :heavy_check_mark: |
 | URL query params API e.g. specifying ?loc=chr1:1-100 in URL bar     | :x:                     | :heavy_check_mark: |
 
@@ -76,3 +77,20 @@ Here is a short list of current data format support
 - Indexed FASTA/BGZip indexed FASTA
 - 2bit
 - .hic (Hi-C contact matrix visualization)
+
+## Embeddability
+
+JBrowse 1 has some notion of being embeddable but it is not ideal and it
+doesn't have very optimal routes for being packaged and re-used on NPM
+
+With JBrowse 2 we have some new concepts for embeddability. For example, we can
+install just the linear-genome-view and use it as a react component.
+
+The @jbrowse/react-linear-genome-view is specialized for certain use cases and
+is not hooked up to session sharing, URL params, or anything but instead is a
+simple React component
+
+See here for more details https://www.npmjs.com/package/@jbrowse/react-linear-genome-view
+
+Note that the entire jbrowse-web app that contains multiple views can't
+currently be installed via NPM though
