@@ -498,9 +498,9 @@ class SomePlugin extends Plugin {
 
 Plugins may be built as separate packages that can be distributed on NPM. In
 order to streamline development and avoid having to build every plugin before
-developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry by
-default points to the un-built code (e.g. `src/index.ts`). JBrowse Web then
-takes care of building the plugins itself (see
+developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry for
+plugins in this monorepo by default points to the un-built code (e.g.
+`src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
 `products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
 
 When you want to use a built plugin, you can run `yarn useDist` in the plugin's
@@ -882,7 +882,12 @@ instead of manually cleaning up resources
 
 ## Creating a new plugin
 
-We have a couple plugin examples here
+You can use this template to create a new JBrowse plugin:
+https://github.com/GMOD/jbrowse-plugin-template.
+
+Here are some examples of plugins. You can use these to see how plugins are
+generally structured, and can use the pluggable elements in them as templates
+for your own pluggable elements.
 
 - https://github.com/GMOD/jbrowse-plugin-gdc - demonstrates accessing GDC
   cancer data GraphQL API, plus a custom drawer and track type for coloring
@@ -893,8 +898,7 @@ We have a couple plugin examples here
   data from UCSC
 
 We will go over in detail some of these steps. Note that the best practices
-may be found by looking at the above plugins source code directly, and you can
-copy these plugins as a template for your own.
+may be found by looking at the above plugins source code directly.
 
 ### Intro to plugins
 
