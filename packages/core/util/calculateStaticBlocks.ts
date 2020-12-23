@@ -128,6 +128,7 @@ export default function calculateStaticBlocks(
           blockData.isRightEndOfDisplayedRegion &&
           regionNumber < displayedRegions.length - 1
         ) {
+          regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-rightpad`,
@@ -140,6 +141,7 @@ export default function calculateStaticBlocks(
           regionNumber === displayedRegions.length - 1 &&
           blockData.isRightEndOfDisplayedRegion
         ) {
+          regionBpOffset += interRegionPaddingWidth * bpPerPx
           blocks.push(
             new InterRegionPaddingBlock({
               key: `${blockData.key}-afterLastRegion`,
@@ -151,7 +153,6 @@ export default function calculateStaticBlocks(
         }
       }
     }
-    regionBpOffset += interRegionPaddingWidth * bpPerPx
     regionBpOffset += regionEnd - regionStart
   })
   return blocks
