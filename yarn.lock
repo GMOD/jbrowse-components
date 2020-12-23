@@ -3952,10 +3952,10 @@
     quick-lru "^4.0.0"
     rxjs "^6.5.2"
 
-"@gmod/bed@^2.0.4":
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.4.tgz#44228a731a6b522f8b08502f676867fe09ab957c"
-  integrity sha512-qKwXAdutelLNS2ivSv0RKTsdq9D7GFa89HEn/T6tnZbFPHKYf4piYZvHFhbmamh/9/nouqD7EM8ZL9FfMQoulQ==
+"@gmod/bed@^2.0.5":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bed/-/bed-2.0.5.tgz#c2598cacd05a01ae185a6ac8fdebd38b8a4c0e93"
+  integrity sha512-n8RRoG049vmSCMjVQq/CMw6eCsaV3JzipcB/nQThojGkKhNeBQm6BN21NvVEH7KZRflZWmHy4PGznQOAmZQ6aw==
 
 "@gmod/bgzf-filehandle@^1.2.4", "@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.3.4":
   version "1.3.4"
