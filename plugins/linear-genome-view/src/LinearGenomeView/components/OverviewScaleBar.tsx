@@ -118,15 +118,17 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const { offsetPx, bpPerPx, dynamicBlocks: visibleRegions } = model
+    const { offsetPx, width, bpPerPx, dynamicBlocks: visibleRegions } = model
 
-    const blocks = visibleRegions.getBlocks().filter(block => !!block.refName)
+    const blocks = visibleRegions.getBlocks()
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
 
-    const firstBlock = blocks[0]
-    const lastBlock = blocks[blocks.length - 1]
+    const firstBlock = visibleRegions.contentBlocks[0]
+    // contentBlocks[0]
+    const lastBlock =
+      visibleRegions.contentBlocks[visibleRegions.contentBlocks.length - 1]
     const topLeft = overview.bpToPx({
       refName: firstBlock.refName,
       coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
@@ -138,12 +140,13 @@ const Polygon = observer(
       regionNumber: lastBlock.regionNumber,
     })
 
-    const startPx = firstBlock.offsetPx - offsetPx
+    const startPx = Math.max(0, -offsetPx)
+    const lastVisible = blocks[blocks.length - 1]
+    const lastVisible2 = blocks[blocks.length - 2]
     const endPx =
-      startPx +
-      visibleRegions.totalBp / bpPerPx +
-      model.interRegionPaddingWidth * blocks.length
-
+      lastVisible instanceof InterRegionPaddingBlock
+        ? lastVisible2.offsetPx + lastVisible2.widthPx - offsetPx
+        : width
     const points = [
       [startPx, HEADER_BAR_HEIGHT],
       [endPx, HEADER_BAR_HEIGHT],
