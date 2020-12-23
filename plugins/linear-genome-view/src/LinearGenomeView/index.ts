@@ -300,6 +300,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
+
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -309,10 +310,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let bpSoFar = 0
         const bp = (self.offsetPx + px) * self.bpPerPx
         const n = self.displayedRegions.length
-        const nNotEllided = self.displayedRegions.filter(r => {
-          return (r.end - r.start) / self.bpPerPx > self.minimumBlockWidth
-        }).length
-
         if (bp < 0) {
           const region = self.displayedRegions[0]
           const offset = bp
@@ -326,9 +323,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: 0,
           }
         }
-        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
-
-        if (bp >= this.totalBp + (nNotEllided + 1) * interRegionPaddingBp) {
+        if (bp >= this.totalBp) {
           const region = self.displayedRegions[n - 1]
           const len = region.end - region.start
           const offset = bp - this.totalBp + len
@@ -342,14 +337,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: n - 1,
           }
         }
+
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
-          let len = region.end - region.start
-          const extra =
-            len / self.bpPerPx > self.minimumBlockWidth
-              ? interRegionPaddingBp
-              : 0
-          len += extra
+          const len = region.end - region.start
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             const offset = bp - bpSoFar
             return {
@@ -362,10 +355,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
               index,
             }
           }
-          bpSoFar += len
+          if (region.end - region.start > interRegionPaddingBp) {
+            bpSoFar += len + interRegionPaddingBp
+          } else {
+            bpSoFar += len
+          }
         }
-        return { refName: '', coord: '' }
+        return { coord: '', refName: '' }
       },
+
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },

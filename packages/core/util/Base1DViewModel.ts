@@ -62,6 +62,7 @@ const Base1DView = types
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
+
     /**
      * calculates the Px at which coord is found.
      *
