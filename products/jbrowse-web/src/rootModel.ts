@@ -43,6 +43,10 @@ function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
   type MSTArray = Instance<ReturnType<typeof types.array>>
   type MSTMap = Instance<ReturnType<typeof types.map>>
 
+  // makes it work with session sharing
+  if (node === undefined) {
+    return
+  }
   if (isArrayType(nodeType)) {
     const array = node as MSTArray
     const childType = getChildType(node)
@@ -76,6 +80,7 @@ function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
   } else if (isModelType(nodeType)) {
     // iterate over children
     const { properties } = getPropertyMembers(node)
+
     Object.entries(properties).forEach(([pname, ptype]) => {
       // @ts-ignore
       filterSessionInPlace(node[pname], ptype)

@@ -17,6 +17,7 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 
+import { autorun } from 'mobx'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
@@ -71,19 +72,25 @@ export function stateModelFactory(configSchema: any) {
 
       return {
         afterAttach() {
-          makeAbortableReaction(
-            self as any,
-            renderBlockData,
-            renderBlockEffect as any,
-            {
-              name: `${self.type} ${self.id} rendering`,
-              delay: 1000,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
+          const parent = getContainingView(self) as DotplotViewModel
+          autorun(reaction => {
+            if (parent.initialized) {
+              makeAbortableReaction(
+                self as any,
+                renderBlockData,
+                renderBlockEffect as any,
+                {
+                  name: `${self.type} ${self.id} rendering`,
+                  delay: 1000,
+                  fireImmediately: true,
+                },
+                this.setLoading,
+                this.setRendered,
+                this.setError,
+              )
+              reaction.dispose()
+            }
+          })
         },
 
         setLoading(abortController: AbortController) {
