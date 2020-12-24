@@ -28,9 +28,16 @@ const useStyles = makeStyles(theme => ({
 
 function TooltipContents(props: { feature: Feature }) {
   const { feature } = props
+  const ref = feature.get('refName')
+  const displayRef = `${ref ? `${ref}:` : ''}`
+  const start = (feature.get('start') + 1).toLocaleString('en-US')
+  const end = feature.get('end').toLocaleString('en-US')
+  const coord = start === end ? start : `${start}..${end}`
+  const loc = `${displayRef}${coord}`
+
   return feature.get('summary') !== undefined ? (
     <div>
-      Summary
+      {loc}
       <br />
       Max: {toP(feature.get('maxScore'))}
       <br />
@@ -39,7 +46,11 @@ function TooltipContents(props: { feature: Feature }) {
       Min: {toP(feature.get('minScore'))}
     </div>
   ) : (
-    <div>{toP(feature.get('score'))}</div>
+    <div>
+      {loc}
+      <br />
+      {`${toP(feature.get('score'))}`}
+    </div>
   )
 }
 

@@ -251,7 +251,9 @@ export default (pluginManager: PluginManager) => {
         const strand = getStrand(feature)
         const start = feature.get('start')
         const end = feature.get('end')
-        // increment start and end partial-overlap bins by proportion of overlap
+
+        // increment start and end partial-overlap bins by proportion of
+        // overlap
         forEachBin(start, end, (bin, overlap) => {
           coverageBins[bin].getNested('reference').increment(strand, overlap)
         })
@@ -259,13 +261,17 @@ export default (pluginManager: PluginManager) => {
         // Calculate SNP coverage
         if (binWidth === 1) {
           const mismatches: Mismatch[] = feature.get('mismatches')
-          // bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
 
-          // loops through mismatches and updates coverage variables accordingly.
+          // loops through mismatches and updates coverage variables
+          // accordingly.
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              if (mismatch.type !== 'insertion') {
+              if (
+                mismatch.type !== 'insertion' &&
+                mismatch.type !== 'softclip' &&
+                mismatch.type !== 'hardclip'
+              ) {
                 forEachBin(
                   start + mismatch.start,
                   start + mismatch.start + mismatch.length,

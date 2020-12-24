@@ -75,6 +75,14 @@ Let's start with creating a plugin that accesses the UCSC REST API. See https://
 
 We will clone a working version of this plugin for brevity and analyze it
 
+:::caution
+
+The development and build process for plugins has changed since this tutorial
+was created. See https://github.com/GMOD/jbrowse-plugin-template#readme for current
+instructions.
+
+:::
+
 ```sh
 cd ~/
 git clone https://github.com/cmdcolin/jbrowse-plugin-ucsc-api

@@ -8,14 +8,14 @@ const stateModel = types
   .model('BreakpointAlignmentsWidget', {
     id: ElementId,
     type: types.literal('BreakpointAlignmentsWidget'),
-    featureData: types.frozen({}),
+    featureData: types.frozen(),
   })
   .actions(self => ({
     setFeatureData(data) {
       self.featureData = data
     },
     clearFeatureData() {
-      self.featureData = {}
+      self.featureData = undefined
     },
   }))
 

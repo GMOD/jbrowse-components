@@ -1,5 +1,5 @@
 ---
-title: jbrowse-web 0.0.1-beta.27
+title: v0.0.1-beta.27 Release
 date: 2020-10-22
 tags: ['release', 'jbrowse 2']
 ---

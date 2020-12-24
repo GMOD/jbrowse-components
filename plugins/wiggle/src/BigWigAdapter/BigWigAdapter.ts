@@ -113,8 +113,8 @@ export default class BigWigAdapter
         mergeAll(),
         map((record: BBIFeature) => {
           return new SimpleFeature({
-            id: String(record.start + 1),
-            data: record,
+            id: `${refName}:${record.start}-${record.end}`,
+            data: { ...record, refName },
           })
         }),
       ).subscribe(observer)

@@ -73,7 +73,13 @@ https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
 #### How can I setup JBrowse 2 in production
 
-We recommend following the steps in the [quickstart web](quickstart_web) guide
+We recommend following the steps in the [quickstart web](quickstart_web) guide.
+
+The general procedure is using the `jbrowse create /var/www/html/jb2` and this
+will download the latest version of jbrowse to your web folder e.g. in
+/var/www/html
+
+You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version
 
 #### How can I setup JBrowse 2 without the CLI tools
 
@@ -94,10 +100,6 @@ tracks are loaded however be careful because corrupt configs can produce hard
 to understand errors, because our config system is strongly typed
 
 Feel free to message the team if you encounter these
-
-#### How can I setup JBrowse 2 with the CLI tools
-
-See the [quickstart guide](quickstart_web)
 
 #### How do I load a track into JBrowse 2
 
@@ -134,3 +136,10 @@ In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
+
+### Why do some of my reads not display soft clipping?
+
+Some reads, such as secondary reads, do not have a SEQ field on their records,
+so they will not display softclipping.
+
+These reads will display their soft-clipping indicator as black

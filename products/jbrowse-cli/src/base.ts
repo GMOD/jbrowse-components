@@ -249,4 +249,8 @@ export default abstract class JBrowseCommand extends Command {
       exit: 90,
     })
   }
+
+  async getBranch(branch: string) {
+    return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
+  }
 }

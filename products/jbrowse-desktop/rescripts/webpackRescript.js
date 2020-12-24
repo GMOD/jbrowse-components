@@ -1,5 +1,7 @@
 const path = require('path')
 // eslint-disable-next-line import/no-extraneous-dependencies
+const webpack = require('webpack')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
@@ -19,6 +21,14 @@ module.exports = {
       new HtmlWebpackPlugin({
         chunks: ['rpc'],
         filename: 'worker.html',
+      }),
+    )
+    config.plugins.unshift(
+      new webpack.DefinePlugin({
+        // Global mobx-state-tree configuration.
+        // Force type checking in production for easier debugging:
+        // xref https://github.com/GMOD/jbrowse-components/pull/1575
+        'process.env.ENABLE_TYPE_CHECK': '"true"',
       }),
     )
     // Not sure why, but have to change this or the rpc entrypoint won't run

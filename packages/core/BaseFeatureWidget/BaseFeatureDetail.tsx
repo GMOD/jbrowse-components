@@ -206,12 +206,13 @@ const CoreDetails = (props: BaseProps) => {
     '1': '+',
   }
   const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  const displayStart = (start + 1).toLocaleString('en-US')
+  const displayEnd = end.toLocaleString('en-US')
+  const displayRef = refName ? `${refName}:` : ''
   const displayedDetails: Record<string, any> = {
     ...feature,
     length: end - start,
-    position: `${refName ? `${refName}:` : ''}${
-      start + 1
-    }..${end} ${strandStr}`,
+    position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
   }
 
   const coreRenderedDetails = [
@@ -233,6 +234,7 @@ const CoreDetails = (props: BaseProps) => {
   )
 }
 
+// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 function measureText(str: string, fontSize = 10) {
   // prettier-ignore
   const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
@@ -296,10 +298,15 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                   }
                 })
 
-                // avoids key 'id' from being used in column names
-                const colNames = unionKeys.has('id')
-                  ? ['identifier', ...unionKeys]
-                  : [...unionKeys]
+                // avoids key 'id' from being used in column names, and tries
+                // to make it at the start of the colNames array
+                let colNames
+                if (unionKeys.has('id')) {
+                  unionKeys.delete('id')
+                  colNames = ['identifier', ...unionKeys]
+                } else {
+                  colNames = [...unionKeys]
+                }
 
                 const columns = colNames.map(val => ({
                   field: val,
@@ -313,22 +320,29 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                     }),
                   ),
                 }))
+
                 return (
                   <React.Fragment key={key}>
                     <FieldName prefix={prefix} name={key} />
                     <div
                       key={key}
                       style={{
-                        height: rows.length * 20 + 50,
+                        height:
+                          Math.min(rows.length, 100) * 20 +
+                          50 +
+                          (rows.length < 100 ? 0 : 50),
                         width: '100%',
                       }}
                     >
                       <DataGrid
                         rowHeight={20}
                         headerHeight={25}
-                        hideFooter
                         rows={rows}
+                        rowsPerPageOptions={[]}
+                        hideFooterRowCount
+                        hideFooterSelectedRowCount
                         columns={columns}
+                        hideFooter={rows.length < 100}
                       />
                     </div>
                   </React.Fragment>
@@ -416,10 +430,22 @@ const Subfeature = (props: BaseProps) => {
   )
 }
 
+function isEmpty(obj: Record<string, unknown>) {
+  return Object.keys(obj).length === 0
+}
+
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const classes = useStyles()
   const { model } = props
+
+  if (!model.featureData) {
+    return null
+  }
   const feature = JSON.parse(JSON.stringify(model.featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
   return (
     <Paper className={classes.paperRoot}>
       <BaseCoreDetails feature={feature} {...props} />
