@@ -45,6 +45,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const handleClose = () => {
     aboutTrack.setShowAbout(false)
   }
+
   return !initialized ? (
     <ImportForm model={model} />
   ) : (
@@ -55,7 +56,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
       {model.seqDialogActive ? (
           <SequenceDialog model={model} handleClose={() => {
             model.showSeqDialog(false)
-            model.setSelectedSequence('')
+            model.setSelectedSeqRegion(undefined)
           }} />
         ) : null}
       {!hideHeader ? (
