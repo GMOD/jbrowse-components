@@ -100,7 +100,7 @@ function RubberBand({
   const rubberBandRef = useRef(null)
   const classes = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
-
+  
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
       if (controlsRef.current && mouseDragging) {
@@ -175,6 +175,9 @@ function RubberBand({
     // open the dialog
     model.showSeqDialog(true)
     // get sequence from selected bp
+    // check if these are teh same as these
+    // const leftBpOffset = model.pxToBp(left)
+    // const rightBpOffset = model.pxToBp(left + width)
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -185,7 +188,7 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    model.sequenceRegion(leftBpOffset, rightBpOffset)
+    model.fetchSequence(leftOffset, rightOffset)
   }
 
   function handleClose() {

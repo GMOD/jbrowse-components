@@ -36,17 +36,20 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
+  
 function SequenceDialog({
     model,
     handleClose
 }: {
     model: LinearGenomeViewModel,
     handleClose: () => void
-}) {
-    const classes = useStyles()
+  }) {
+  const classes = useStyles()
   const session = getSession(model)
-  const loading = model.selectedSequence === undefined || model.selectedSequence === ''
-  const error = false
+  const loading = model.selectedSequence === undefined // when fetching for the specific region
+  const error = false // add error thrown by the get sequence
+  console.log(model)
+
     return (
       <>
         <Dialog
@@ -62,7 +65,7 @@ function SequenceDialog({
               <IconButton className={classes.closeButton} onClick={() => {
                 handleClose()
                 model.showSeqDialog(false)
-                model.setSelectedSequence('')
+                model.setSelectedSeqRegion(undefined)
               }}>
                 <CloseIcon />
               </IconButton>
@@ -85,13 +88,9 @@ function SequenceDialog({
                   rowsMax={4}
                   className={classes.dialogContent}
                   fullWidth
-                  value={model.selectedSequence}
+                  value={'sequence preview'}
                   InputProps={{
                     readOnly: true,
-                  }}
-                  onClick={event => {
-                    const target = event.target as HTMLTextAreaElement
-                    target.select()
                   }}
                   />)}
               
@@ -103,12 +102,17 @@ function SequenceDialog({
                 copy("hello, this is where the sequence will go")
                 session.notify('Copied to clipboard', 'success')
               }}
+              disabled={loading}
               color="primary"
               startIcon={<ContentCopyIcon />}
             >
               Copy Sequence to Clipboard
             </Button>
-            <Button onClick={() => console.log("download fasta file")} color="primary" startIcon={<GetAppIcon />}
+            <Button
+              onClick={() => console.log("download fasta file")}
+              disabled={loading}
+              color="primary"
+              startIcon={<GetAppIcon />}
             >
               Download FASTA file
             </Button>
