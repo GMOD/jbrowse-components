@@ -142,14 +142,13 @@ const Polygon = observer(
 
     const startPx = Math.max(0, -offsetPx)
     const lastVisible = blocks[blocks.length - 1]
-    const lastVisible2 = blocks[blocks.length - 2]
     const endPx =
       lastVisible instanceof InterRegionPaddingBlock
-        ? lastVisible2.offsetPx + lastVisible2.widthPx - offsetPx
+        ? lastVisible.offsetPx - offsetPx
         : width
     const points = [
-      [startPx, HEADER_BAR_HEIGHT],
-      [endPx, HEADER_BAR_HEIGHT],
+      [startPx, HEADER_BAR_HEIGHT - 10],
+      [endPx, HEADER_BAR_HEIGHT - 10],
       [topRight, 0],
       [topLeft, 0],
     ]
