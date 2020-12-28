@@ -363,7 +363,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: n - 1,
           }
         }
-        return { coord: '', refName: '' }
+        return {
+          coord: 0,
+          index: 0,
+          refName: '',
+          oob: true,
+          assemblyName: '',
+          offset: 0,
+          reversed: false,
+        }
       },
 
       getTrack(id: string) {

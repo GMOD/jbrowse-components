@@ -5,12 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import LinearProgress from '@material-ui/core/LinearProgress'
-import {
-  BlockSet,
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import React from 'react'
@@ -118,7 +113,7 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const { offsetPx, width, dynamicBlocks: visibleRegions } = model
+    const { offsetPx, dynamicBlocks: visibleRegions } = model
 
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
