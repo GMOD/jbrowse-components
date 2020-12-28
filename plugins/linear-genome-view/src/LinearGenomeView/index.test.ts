@@ -619,9 +619,8 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
 // determined objectively by looking at
 // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on
 //
-// this test is important because this is after a chunk of ellided blocks and
-// is zoomed in, and pxToBp has to take into account only interRegionPadding
-// for things in the view
+// this test is important because interregionpadding blocks outside the current
+// view should not be taken into account
 test('can perform pxToBp on human genome things with ellided blocks (zoomed in)', () => {
   const session = Session.create({
     configuration: {},
@@ -643,6 +642,9 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
 })
 
 // determined objectively from looking at http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-TUJdqKI2c9&password=01tan
+//
+// this tests some places on hg38 when zoomed to whole genome, so inter-region
+// padding blocks and elided blocks matter
 test('can perform pxToBp on human genome things with ellided blocks (zoomed out)', () => {
   const session = Session.create({
     configuration: {},
