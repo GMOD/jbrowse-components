@@ -780,10 +780,9 @@ export function stringify({
   refName: string
   oob?: boolean
 }) {
-  return (
-    `${refName}:${coord.toLocaleString('en-US')}` +
-    (oob ? ' (out of bounds)' : '')
-  )
+  return `${refName}:${coord.toLocaleString('en-US')}${
+    oob ? ' (out of bounds)' : ''
+  }`
 }
 
 export const isElectron =
