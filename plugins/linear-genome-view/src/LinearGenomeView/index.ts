@@ -344,10 +344,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
 
           // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
+          //
           if (
             region.end - region.start > interRegionPaddingBp &&
-            offset > 0 &&
-            offset < self.width
+            offset / self.bpPerPx > 0 &&
+            offset / self.bpPerPx < self.width
           ) {
             bpSoFar += len + interRegionPaddingBp
           } else {
