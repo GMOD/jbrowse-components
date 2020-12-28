@@ -147,8 +147,8 @@ const Polygon = observer(
         ? lastVisible.offsetPx - offsetPx
         : width
     const points = [
-      [startPx, HEADER_BAR_HEIGHT - 10],
-      [endPx, HEADER_BAR_HEIGHT - 10],
+      [startPx, HEADER_BAR_HEIGHT],
+      [endPx, HEADER_BAR_HEIGHT],
       [topRight, 0],
       [topLeft, 0],
     ]

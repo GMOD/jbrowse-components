@@ -323,20 +323,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: 0,
           }
         }
-        if (bp >= this.totalBp) {
-          const region = self.displayedRegions[n - 1]
-          const len = region.end - region.start
-          const offset = bp - this.totalBp + len
-          return {
-            ...getSnapshot(region),
-            oob: true,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index: n - 1,
-          }
-        }
 
         const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
 
@@ -359,6 +345,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpSoFar += len + interRegionPaddingBp
           } else {
             bpSoFar += len
+          }
+        }
+
+        if (bp >= bpSoFar) {
+          const region = self.displayedRegions[n - 1]
+          const len = region.end - region.start
+          const offset = bp - bpSoFar + len
+          return {
+            ...getSnapshot(region),
+            oob: true,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
+            index: n - 1,
           }
         }
         return { coord: '', refName: '' }
