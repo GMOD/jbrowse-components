@@ -330,8 +330,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
           const len = region.end - region.start
+          const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
-            const offset = bp - bpSoFar
             return {
               ...getSnapshot(region),
               oob: false,
@@ -342,7 +342,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
               index,
             }
           }
-          if (region.end - region.start > interRegionPaddingBp) {
+
+          // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
+          if (
+            region.end - region.start > interRegionPaddingBp &&
+            offset > 0 &&
+            offset < self.width
+          ) {
             bpSoFar += len + interRegionPaddingBp
           } else {
             bpSoFar += len
