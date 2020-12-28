@@ -331,7 +331,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:1,025..2,048-1",
-      "offsetPx": 1226,
+      "offsetPx": 1224,
       "parentRegion": Object {
         "assemblyName": "test",
         "end": 10000000,
@@ -350,7 +350,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:2,049..3,072-1",
-      "offsetPx": 2250,
+      "offsetPx": 2248,
       "parentRegion": Object {
         "assemblyName": "test",
         "end": 10000000,
@@ -542,7 +542,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgA:9,201..10,000-1-reversed",
-      "offsetPx": 3,
+      "offsetPx": 1,
       "parentRegion": Object {
         "assemblyName": "test",
         "end": 10000,
@@ -562,7 +562,7 @@ BlockSet {
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgA:8,401..9,200-1-reversed",
-      "offsetPx": 803,
+      "offsetPx": 801,
       "parentRegion": Object {
         "assemblyName": "test",
         "end": 10000,
