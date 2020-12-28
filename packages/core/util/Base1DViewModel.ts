@@ -81,6 +81,7 @@ const Base1DView = types
     }) {
       let offsetBp = 0
 
+      const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
       const index = self.displayedRegions.findIndex((r, idx) => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
           // using optional parameter ,regionNumber, as additional requirement to find
@@ -90,7 +91,7 @@ const Base1DView = types
             return true
           }
         }
-        offsetBp += r.end - r.start
+        offsetBp += r.end - r.start + interRegionPaddingBp
         return false
       })
       const foundRegion = self.displayedRegions[index]

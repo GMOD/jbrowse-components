@@ -280,6 +280,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let offsetBp = 0
 
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
         const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
             if (regionNumber ? regionNumber === idx : true) {
@@ -287,7 +288,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               return true
             }
           }
-          offsetBp += r.end - r.start
+          offsetBp += r.end - r.start + interRegionPaddingBp
           return false
         })
         const foundRegion = self.displayedRegions[index]
