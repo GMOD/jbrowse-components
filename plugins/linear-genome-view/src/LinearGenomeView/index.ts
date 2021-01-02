@@ -122,7 +122,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
-      seqDialogActive: false,
+      seqDialogActive: false as boolean,
       selectedSequence: undefined as string | undefined
     }))
     .views(self => ({
@@ -159,6 +159,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.displayedRegions.length > 0 &&
           assembliesInitialized
         )
+      },
+      get isSeqDialogDisplayed() {
+        return self.seqDialogActive
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -411,7 +414,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
-
       setError(error: Error | undefined) {
         self.error = error
       },
@@ -453,7 +455,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         return newBpPerPx
       },
-
+      setSelectedSeqRegion(seqString: string | undefined) {
+        self.selectedSequence = seqString
+      },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
@@ -470,9 +474,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       showSeqDialog(state: boolean) {
         self.seqDialogActive = state
-      },
-      setSelectedSeqRegion(seqString: string | undefined) {
-        self.selectedSequence = seqString
       },
       showTrack(trackId: string, initialSnapshot = {}) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(

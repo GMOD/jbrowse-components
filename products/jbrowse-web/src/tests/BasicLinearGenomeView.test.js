@@ -89,10 +89,10 @@ describe('valid file tests', () => {
     fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
     const getSeqMenuItem = await findByText('Get Sequence')
     fireEvent.click(getSeqMenuItem)
-    expect(state.session.views[0].isSeqDialogDisplayed).toEqual(true)
+    expect(state.session.views[0].seqDialogActive).toEqual(true)
     const closeSeqDialog = await findByTestId('close-seqDialog')
     fireEvent.click(closeSeqDialog)
-    expect(state.session.views[0].isSeqDialogDisplayed).toEqual(false)
+    expect(state.session.views[0].seqDialogActive).toEqual(false)
   })
 
   it('click and drag to reorder tracks', async () => {

@@ -17,6 +17,7 @@ import TextField from '@material-ui/core/TextField'
 // core
 import { getSession } from '@jbrowse/core/util'
 // other
+import { saveAs } from 'file-saver'
 import copy from 'copy-to-clipboard'
 import { LinearGenomeViewModel } from '..'
 
@@ -53,6 +54,7 @@ function SequenceDialog({
     return (
       <>
         <Dialog
+          data-testid="sequence-dialog"
           maxWidth="xl"
           open
           onClose={handleClose}
@@ -62,7 +64,7 @@ function SequenceDialog({
           <DialogTitle id="alert-dialog-title">
             Get Sequence
             {handleClose ? (
-              <IconButton className={classes.closeButton} onClick={() => {
+              <IconButton data-testid="close-seqDialog" className={classes.closeButton} onClick={() => {
                 handleClose()
                 model.showSeqDialog(false)
                 model.setSelectedSeqRegion(undefined)
@@ -109,7 +111,13 @@ function SequenceDialog({
               Copy Sequence to Clipboard
             </Button>
             <Button
-              onClick={() => console.log("download fasta file")}
+              onClick={() => {
+                const selectedSeq = new Blob(
+                  ['>TestingDownload abcdefg'],
+                  { type: 'text/x-fasta;charset=utf-8' },
+                )
+                saveAs(selectedSeq, 'selected-seq.fa')
+              }}
               disabled={loading}
               color="primary"
               startIcon={<GetAppIcon />}
