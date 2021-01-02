@@ -75,6 +75,23 @@ describe('valid file tests', () => {
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
+  it('click and drag rubberBand to get sequence', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    const rubberBandComponent = await findByTestId('rubberBand_controls')
+
+    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const getSeqMenuItem = await findByText('Get Sequence')
+    fireEvent.click(getSeqMenuItem)
+    expect(state.session.views[0].isSeqDialogDisplayed).toEqual(true)
+  })
+
   it('click and drag to reorder tracks', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
