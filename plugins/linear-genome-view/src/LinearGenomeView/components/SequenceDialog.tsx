@@ -90,7 +90,7 @@ function SequenceDialog({
                   rowsMax={4}
                   className={classes.dialogContent}
                   fullWidth
-                  value={'sequence preview'}
+                  value={model.selectedSequence}
                   InputProps={{
                     readOnly: true,
                   }}

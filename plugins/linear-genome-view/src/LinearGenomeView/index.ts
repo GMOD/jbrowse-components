@@ -39,9 +39,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-// import { Feature } from '@jbrowse/core/util/simpleFeature'
-// import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-// import { toArray } from 'rxjs/operators'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -901,63 +899,52 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
         try {
-          const { assemblyManager } = getSession(self)
-          const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
-          const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
-          const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
-            'sequence',
-            'adapter',
-          ])
-          const dataAdapterType = pluginManager.getAdapterType(
-            sequenceAdapterConfig.type,
-          )
-          const sequenceAdapter = new dataAdapterType.AdapterClass(
-            sequenceAdapterConfig,
-          ) as BaseFeatureDataAdapter
+          if (leftOffset && rightOffset) {
+            const { assemblyManager } = getSession(self)
+            const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
+            const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
+            const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
+              'sequence',
+              'adapter',
+            ])
+            const dataAdapterType = pluginManager.getAdapterType(
+              sequenceAdapterConfig.type,
+            )
+            const sequenceAdapter = new dataAdapterType.AdapterClass(
+              sequenceAdapterConfig,
+            ) as BaseFeatureDataAdapter
 
-          // getFeatures on the adapter to get the sequence
-        
-          const features = sequenceAdapter.getFeatures({
-            refName: leftOffset?.refName || '',
-            start: leftOffset?.coord || 0,
-            end: rightOffset?.coord || 0,
-            assemblyName: assemblyName
-          })
-          // console.log(features)
-          const seqChunks = features.pipe(toArray()).toPromise()
-          const seq = (await seqChunks).forEach(chunk => console.log(chunk.get("seq")))
-          self.setSelectedSeqRegion('Sequence preview will go here...')
+            // getFeatures on the adapter to get the sequence
+          
+            const features = sequenceAdapter.getFeatures({
+              refName: leftOffset?.refName || '',
+              start: leftOffset?.coord || 0,
+              end: rightOffset?.coord || 0,
+              assemblyName: assemblyName
+            })
+            // console.log(features)
+            const seqChunks = await features.pipe(toArray()).toPromise()
+            const trimmed: string[] = []
+              seqChunks
+                .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+                .forEach((chunk: Feature) => {
+                  const chunkStart = chunk.get('start')
+                  const chunkEnd = chunk.get('end')
+                  const trimStart = Math.max(leftOffset.start - chunkStart, 0)
+                  const trimEnd = Math.min(leftOffset.end - chunkStart, chunkEnd - chunkStart)
+                  const trimLength = trimEnd - trimStart
+                  const chunkSeq = chunk.get('seq') || chunk.get('residues')
+                  trimmed.push(chunkSeq.substr(trimStart, trimLength))
+                })
+            const sequence = trimmed.join('')
+            console.log('sequence trimmed', sequence)
+            self.setSelectedSeqRegion(sequence)
+          }
         } catch(error) {
           throw new Error(
             `Unable to fetch sequence for selected region : ${error}`
           )
         }
-        
-        // console.log(seqChunks.forEach(chunk => console.log(chunk.get("seq"))))
-        // const trimmed: string[] = []
-        //   seqChunks
-        //     .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-        //     .forEach((chunk: Feature) => {
-        //       const chunkStart = chunk.get('start')
-        //       const chunkEnd = chunk.get('end')
-        //       const trimStart = Math.max(leftPx.start - chunkStart, 0)
-        //       const trimEnd = Math.min(leftPx.end - chunkStart, chunkEnd - chunkStart)
-        //       const trimLength = trimEnd - trimStart
-        //       const chunkSeq = chunk.get('seq') || chunk.get('residues')
-        //       trimmed.push(chunkSeq.substr(trimStart, trimLength))
-        //     })
-        //   const sequence = trimmed.join('')
-        //   if (sequence.length !== leftPx.end - leftPx.start) {
-        //     throw new Error(
-        //       `sequence fetch failed: fetching ${leftPx.refName}:${(
-        //         leftPx.start - 1
-        //       ).toLocaleString()}-${leftPx.end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-        //         leftPx.end - leftPx.start
-        //       ).toLocaleString()}`,
-        //     )
-        //   }
-
-        
         // cleanup
       },
       // schedule something to be run after the next time displayedRegions is set
