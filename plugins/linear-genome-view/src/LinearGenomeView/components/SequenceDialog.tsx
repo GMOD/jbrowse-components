@@ -101,7 +101,7 @@ function SequenceDialog({
           <DialogActions>
             <Button
               onClick={() => {
-                copy("hello, this is where the sequence will go")
+                copy(model.selectedSequence)
                 session.notify('Copied to clipboard', 'success')
               }}
               disabled={loading}
@@ -123,6 +123,14 @@ function SequenceDialog({
               startIcon={<GetAppIcon />}
             >
               Download FASTA file
+            </Button>
+            <Button onClick={() => {
+                handleClose()
+                model.showSeqDialog(false)
+                model.setSelectedSeqRegion(undefined)
+              }} 
+              color="primary" autoFocus>
+              Close
             </Button>
           </DialogActions>
         </Dialog>
