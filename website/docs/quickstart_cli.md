@@ -190,6 +190,15 @@ rm volvox.vcf
 bcftools index --tbi volvox.vcf.gz
 ```
 
+Note if you get errors about your VCF file not being sorted when using tabix,
+you can use bcftools to sort your VCF.
+
+```sh-session
+bcftools sort file.vcf > file.sorted.vcf
+bgzip file.sorted.vcf
+tabix file.sorted.vcf.gz
+```
+
 For more info about `bgzip`, `tabix`, and `bcftools`, see
 https://www.htslib.org/.
 
