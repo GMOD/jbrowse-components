@@ -11,7 +11,6 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import DOMPurify from 'dompurify'
 import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
 
@@ -270,34 +269,24 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
                     hub.assembly.synonyms.includes(selectedAssembly),
                 )
                 .map(hub => {
-                  const disabled = Boolean(hub.error)
-                  const cleanShortLabel = (
-                    <div
-                      __dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(hub.hub.shortLabel),
-                      }}
-                    />
-                  )
-                  const cleanLongLabel = (
-                    <div
-                      __dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(hub.hub.longLabel),
-                      }}
-                    />
-                  )
+                  const {
+                    error,
+                    id,
+                    hub: { shortLabel, longLabel },
+                  } = hub
                   return (
-                    <Wire key={hub.id} value={hub.id}>
+                    <Wire key={id} value={id}>
                       {formControlProps => (
                         <Tooltip
-                          title={disabled ? hub.error : cleanLongLabel}
+                          title={error || longLabel}
                           placement="left"
                           interactive
                         >
                           <FormControlLabel
-                            key={hub.id}
-                            value={hub.id}
-                            label={cleanShortLabel}
-                            disabled={disabled}
+                            key={id}
+                            value={id}
+                            label={shortLabel}
+                            disabled={Boolean(error)}
                             control={<Radio />}
                             {...formControlProps}
                           />
