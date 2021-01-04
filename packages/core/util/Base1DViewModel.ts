@@ -84,8 +84,6 @@ const Base1DView = types
       const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
       const index = self.displayedRegions.findIndex((r, idx) => {
         if (refName === r.refName && coord >= r.start && coord <= r.end) {
-          // using optional parameter ,regionNumber, as additional requirement to find
-          // a specific displayedRegion when many exist with the same refName
           if (regionNumber ? regionNumber === idx : true) {
             offsetBp += r.reversed ? r.end - coord : coord - r.start
             return true
@@ -119,25 +117,14 @@ const Base1DView = types
           index: 0,
         }
       }
-      if (bp >= this.totalBp) {
-        const region = self.displayedRegions[n - 1]
-        const len = region.end - region.start
-        const offset = bp - this.totalBp + len
-        return {
-          ...getSnapshot(region),
-          oob: true,
-          offset,
-          coord: region.reversed
-            ? Math.floor(region.end - offset) + 1
-            : Math.floor(region.start + offset) + 1,
-          index: n - 1,
-        }
-      }
+
+      const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
+
       for (let index = 0; index < self.displayedRegions.length; index += 1) {
         const region = self.displayedRegions[index]
         const len = region.end - region.start
+        const offset = bp - bpSoFar
         if (len + bpSoFar > bp && bpSoFar <= bp) {
-          const offset = bp - bpSoFar
           return {
             ...getSnapshot(region),
             oob: false,
@@ -148,9 +135,44 @@ const Base1DView = types
             index,
           }
         }
-        bpSoFar += len
+
+        // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
+        //
+        if (
+          region.end - region.start > interRegionPaddingBp &&
+          offset / self.bpPerPx > 0 &&
+          offset / self.bpPerPx < this.width
+        ) {
+          bpSoFar += len + interRegionPaddingBp
+        } else {
+          bpSoFar += len
+        }
       }
-      throw new Error('pxToBp failed to map to a region')
+
+      if (bp >= bpSoFar) {
+        const region = self.displayedRegions[n - 1]
+        const len = region.end - region.start
+        const offset = bp - bpSoFar + len
+        return {
+          ...getSnapshot(region),
+          oob: true,
+          offset,
+          coord: region.reversed
+            ? Math.floor(region.end - offset) + 1
+            : Math.floor(region.start + offset) + 1,
+          index: n - 1,
+        }
+      }
+      return {
+        coord: 0,
+        index: 0,
+        start: 0,
+        refName: '',
+        oob: true,
+        assemblyName: '',
+        offset: 0,
+        reversed: false,
+      }
     },
   }))
   .views(self => ({
