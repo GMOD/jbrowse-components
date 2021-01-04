@@ -208,18 +208,18 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    const type = trackType || this.guessTrackType(adapter.type)
+    trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
     assemblyNames = assemblyNames || configContents.assemblies[0].name
     this.debug(`Name is: ${name}`)
-    this.debug(`Type is: ${type}`)
+    this.debug(`Type is: ${trackType}`)
     this.debug(`Track is :${trackId}`)
     this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
-      type,
+      type: trackType,
       trackId,
       name,
       category: category ? category.split(',').map(c => c.trim()) : undefined,
@@ -235,7 +235,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // any special track modifications go here
-    switch (type) {
+    switch (trackType) {
       case 'AlignmentsTrack': {
         const assembly = configContents.assemblies.find(
           asm => asm.name === assemblyNames,

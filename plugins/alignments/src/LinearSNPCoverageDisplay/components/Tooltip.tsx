@@ -25,45 +25,55 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TooltipContents({ feature }: { feature: Feature }) {
+  const ref = feature.get('refName')
+  const displayRef = `${ref ? `${ref}:` : ''}`
+  const start = (feature.get('start') + 1).toLocaleString('en-US')
+  const end = feature.get('end').toLocaleString('en-US')
+  const coord = start === end ? start : `${start}..${end}`
+  const loc = `${displayRef}${coord}`
+
   const info = feature.get('snpinfo')
   const total = info
     ? info[info.map((e: any) => e.base).indexOf('total')].score
     : 0
   const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
   return (
-    <table>
-      <thead>
-        <tr>
-          <th id={condId}>Base</th>
-          <th id={condId}>Count</th>
-          <th id={condId}>% of Total</th>
-          <th id={condId}>Strands</th>
-        </tr>
-      </thead>
-      <tbody>
-        {(info || []).map((mismatch: any) => {
-          const { base, score, strands } = mismatch
-          return (
-            <tr key={base}>
-              <td id={condId}>{base.toUpperCase()}</td>
-              <td id={condId}>{score}</td>
-              <td id={condId}>
-                {base === 'total'
-                  ? '---'
-                  : `${Math.floor((score / total) * 100)}%`}
-              </td>
-              <td id={condId}>
-                {base === 'total'
-                  ? '---'
-                  : (strands['+']
-                      ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
-                      : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+    <div>
+      <table>
+        <caption>{loc}</caption>
+        <thead>
+          <tr>
+            <th id={condId}>Base</th>
+            <th id={condId}>Count</th>
+            <th id={condId}>% of Total</th>
+            <th id={condId}>Strands</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(info || []).map((mismatch: any) => {
+            const { base, score, strands } = mismatch
+            return (
+              <tr key={base}>
+                <td id={condId}>{base.toUpperCase()}</td>
+                <td id={condId}>{score}</td>
+                <td id={condId}>
+                  {base === 'total'
+                    ? '---'
+                    : `${Math.floor((score / total) * 100)}%`}
+                </td>
+                <td id={condId}>
+                  {base === 'total'
+                    ? '---'
+                    : (strands['+']
+                        ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
+                        : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
