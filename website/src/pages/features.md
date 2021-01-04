@@ -15,7 +15,7 @@ For more screenshots see the [gallery](./gallery)
 JBrowse 2 supports creating new "view types" that can be shown alongside other
 views in the app. Importantly, these can be added by third-party plugins.
 
-The view types included by default with JBrowse 2 web include
+The view types available by default with JBrowse 2 web include
 
 - Circular view - Used to show whole genome overview of chromosomal
   translocations. The VCF breakend `<BND>` and `<TRA>` type features can be

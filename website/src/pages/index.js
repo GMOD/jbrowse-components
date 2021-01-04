@@ -63,7 +63,7 @@ function Home() {
                   href={siteConfig.customFields.currentLink}
                   variant="contained"
                 >
-                  Browse web demo
+                  Browse web demo instance
                 </Link>
               </li>
             </ul>
