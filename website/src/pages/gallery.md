@@ -25,7 +25,7 @@ Shows rendering of a .hic file type in the HicTrack
 
 ![](./img/sv_inspector_importform_loaded.png)
 Screenshot of the SV inspector displaying inter-chromosomal translocations in
-the SKBR3 cell line. The SV inspector is a spreadsheet view plus whole-genome
+the SKBR3 cell line. The SV inspector is a tabular view plus whole-genome
 circular overview of the SVs
 
 ---

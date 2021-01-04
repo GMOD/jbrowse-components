@@ -168,7 +168,7 @@ the standard linear-genome-view.
 We have demonstrated a couple new view types in JBrowse 2 already including
 
 - `LinearGenomeView` - the classic linear view of a genome
-- `CircularView` - a Circos-style whole genome view
+- `CircularView` - a Circos-like circular whole genome view
 - `DotplotView` - a comparative 2-D genome view
 - `SvInspectorView` - superview containing `CircularView` and `SpreadsheetView`
   subviews
