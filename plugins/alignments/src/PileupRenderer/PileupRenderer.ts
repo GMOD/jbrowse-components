@@ -192,9 +192,10 @@ export default class PileupRenderer extends BoxRendererType {
     let expansionBefore = 0
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
+    const seq = feature.get('seq')
 
     // Expand the start and end of feature when softclipping enabled
-    if (showSoftClip && feature.get('seq')) {
+    if (showSoftClip && seq) {
       for (let i = 0; i < mismatches.length; i += 1) {
         const mismatch = mismatches[i]
         if (mismatch.type === 'softclip') {
@@ -426,7 +427,7 @@ export default class PileupRenderer extends BoxRendererType {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
-    const { config, bpPerPx, regions, showSoftClip } = props
+    const { config, bpPerPx, regions } = props
     const [region] = regions
     const { heightPx, topPx, feature } = feat
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
@@ -477,10 +478,7 @@ export default class PileupRenderer extends BoxRendererType {
             topPx + heightPx,
           )
         }
-      } else if (
-        mismatch.type === 'hardclip' ||
-        (!showSoftClip && mismatch.type === 'softclip')
-      ) {
+      } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
         const pos = mismatchLeftPx - 1
         ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
@@ -581,22 +579,20 @@ export default class PileupRenderer extends BoxRendererType {
       if (mismatches) {
         this.drawMismatches(ctx, feat, mismatches, props, colorForBase, theme)
         // Display all bases softclipped off in lightened colors
-        if (showSoftClip) {
-          const clips = [mismatches[0], mismatches[mismatches.length - 1]]
-          if (!seq) {
-            return
-          }
-          clips.forEach(mismatch => {
-            if (mismatch.type === 'softclip') {
+        if (showSoftClip && seq) {
+          mismatches
+            .filter(mismatch => mismatch.type === 'softclip')
+            .forEach(mismatch => {
               const softClipLength = mismatch.cliplen || 0
               const softClipStart =
                 mismatch.start === 0
                   ? feature.get('start') - softClipLength
                   : feature.get('start') + mismatch.start
+
               for (let k = 0; k < softClipLength; k += 1) {
                 const base = seq.charAt(k + mismatch.start)
-                // If softclip length+start is longer than sequence, no need to
-                // continue showing base
+
+                // If softclip length+start is longer than sequence, no need to continue showing base
                 if (!base) return
 
                 const [softClipLeftPx, softClipRightPx] = bpSpanPx(
@@ -628,8 +624,7 @@ export default class PileupRenderer extends BoxRendererType {
                   )
                 }
               }
-            }
-          })
+            })
         }
       }
     })
