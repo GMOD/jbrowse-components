@@ -355,8 +355,8 @@ export default class PileupRenderer extends BoxRendererType {
       case 'xs':
       case 'tag': {
         const tag = colorBy.tag as string
-        const isCram = feature.get('tags')
-        const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+        const tags = feature.get('tags')
+        const val = tags ? tags[tag] : feature.get(tag)
 
         // special for for XS/TS tag
         if (tag === 'XS' || tag === 'TS') {

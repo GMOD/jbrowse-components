@@ -28,7 +28,7 @@ export const sortFeature = (
     }
   })
 
-  const isCram = featureArray[0].get('tags')
+  const isCram = featureArray.length ? featureArray[0].get('tags') : false
   switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))

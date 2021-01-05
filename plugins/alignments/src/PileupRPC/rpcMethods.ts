@@ -38,9 +38,9 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()
     const uniqueValues = new Set<string>()
-    const isCram = !!featuresArray[0].get('tags')
     featuresArray.forEach(feature => {
-      const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+      const tags = feature.get('tags')
+      const val = tags ? tags[tag] : feature.get(tag)
       if (val !== undefined) {
         uniqueValues.add(`${val}`)
       }
