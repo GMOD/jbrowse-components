@@ -8,6 +8,7 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import { makeStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
@@ -278,14 +279,14 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
                     <Wire key={id} value={id}>
                       {formControlProps => (
                         <Tooltip
-                          title={error || longLabel}
+                          title={error || <SanitizedHTML html={longLabel} />}
                           placement="left"
                           interactive
                         >
                           <FormControlLabel
                             key={id}
                             value={id}
-                            label={shortLabel}
+                            label={<SanitizedHTML html={shortLabel} />}
                             disabled={Boolean(error)}
                             control={<Radio />}
                             {...formControlProps}
