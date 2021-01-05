@@ -101,7 +101,7 @@ function SequenceDialog({
           <DialogActions>
             <Button
               onClick={() => {
-                copy(model.selectedSequence)
+                copy(model?.selectedSequence || '')
                 session.notify('Copied to clipboard', 'success')
               }}
               disabled={loading}

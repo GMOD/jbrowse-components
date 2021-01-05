@@ -51,6 +51,7 @@ export interface BpOffset {
   end?: number
   coord?: number
   reversed?: boolean
+  assemblyName?: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -895,13 +896,73 @@ export function stateModelFactory(pluginManager: PluginManager) {
           session.notify('No regions found to navigate to', 'warning')
         }
       },
-
+      /**
+       * Helper method for the fetchSequence.
+       * Retrieves the corresponding regions that were selected by the rubberband 
+       * 
+       * @param leftOffset- `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
+       */
+      getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
+        console.log(leftOffset)
+        console.log(rightOffset)
+        if (leftOffset === undefined || rightOffset === undefined) return []
+        const singleRegion = leftOffset.refName === rightOffset.refName && leftOffset.index === rightOffset.index
+        const selected: Region[] = []
+        if (singleRegion) {
+          const singleRegion = self.displayedRegions[leftOffset.index]
+          selected.push(
+            {
+              refName: singleRegion.refName,
+              assemblyName: singleRegion.assemblyName,
+              start: leftOffset.reversed? Math.floor(singleRegion.end - rightOffset.offset) + 1: Math.floor(singleRegion.start + leftOffset.offset) + 1,
+              end: rightOffset.reversed? Math.floor(singleRegion.end - leftOffset.offset) + 1 : Math.floor(singleRegion.start + rightOffset.offset) + 1
+            }
+          )
+        } else {
+          // more than one region
+          for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
+            const region = self.displayedRegions[i]
+            if (leftOffset.index === i) {
+              const first = {
+                refName: region.refName,
+                assemblyName: region.assemblyName,
+                start: leftOffset.reversed? region.start : Math.floor(region.start + leftOffset.offset) + 1,
+                end: leftOffset.reversed? Math.floor(region.end - leftOffset.offset) + 1 : region.end
+              }
+              selected.push(first)
+            } else if (rightOffset.index === i) {
+              const last = {
+                refName: region.refName,
+                assemblyName: region.assemblyName,
+                start: rightOffset.reversed? Math.floor(region.end - rightOffset.offset) + 1 : region.start,
+                end: rightOffset.reversed? region.end : Math.floor(region.start + rightOffset.offset) + 1,
+              }
+              selected.push(last)
+            } else {
+              // in between regions
+              selected.push(region)
+            }
+          }
+        }
+        return selected
+      },
+      /**
+       * Fetch ref sequence  based on user clicking and dragging on the
+       * rubberband to select a region.
+       * Can handle if there are multiple displayedRegions from same refName.
+       * Can handle if there are displayedRegions from different refNames.
+       *
+       * @param leftOffset- `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
+       */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
         try {
-          if (leftOffset && rightOffset) {
+          const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
+          if (leftOffset && rightOffset && assemblyName) {
+            console.log(this.getSelectedRegions(leftOffset, rightOffset))
             const { assemblyManager } = getSession(self)
-            const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
             const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
             const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
               'sequence',
@@ -915,30 +976,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
             ) as BaseFeatureDataAdapter
 
             // getFeatures on the adapter to get the sequence
-          
-            const features = sequenceAdapter.getFeatures({
-              refName: leftOffset?.refName || '',
-              start: leftOffset?.coord || 0,
-              end: rightOffset?.coord || 0,
-              assemblyName: assemblyName
-            })
-            // console.log(features)
-            const seqChunks = await features.pipe(toArray()).toPromise()
-            const trimmed: string[] = []
+            const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(this.getSelectedRegions(leftOffset, rightOffset))
+            const seqChunks = await featuresMultRegions.pipe(toArray()).toPromise()
+            const seqChunksStrings: string[] = []
               seqChunks
                 .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
                 .forEach((chunk: Feature) => {
-                  const chunkStart = chunk.get('start')
-                  const chunkEnd = chunk.get('end')
-                  const trimStart = Math.max(leftOffset.start - chunkStart, 0)
-                  const trimEnd = Math.min(leftOffset.end - chunkStart, chunkEnd - chunkStart)
-                  const trimLength = trimEnd - trimStart
+                  // const chunkStart = chunk.get('start')
+                  // const chunkEnd = chunk.get('end')  
+                  console.log(chunk)
                   const chunkSeq = chunk.get('seq') || chunk.get('residues')
-                  trimmed.push(chunkSeq.substr(trimStart, trimLength))
+                  seqChunksStrings.push(chunkSeq)
+                  // trimmed.push(chunkSeq.substr(trimStart, trimLength))
                 })
-            const sequence = trimmed.join('')
-            console.log('sequence trimmed', sequence)
-            self.setSelectedSeqRegion(sequence)
+            console.log(seqChunksStrings)
+            self.setSelectedSeqRegion('hello')
           }
         } catch(error) {
           throw new Error(

@@ -174,10 +174,7 @@ function RubberBand({
   function getSequence() {
     // open the dialog
     model.showSeqDialog(true)
-    // get sequence from selected bp
-    // check if these are teh same as these
-    // const leftBpOffset = model.pxToBp(left)
-    // const rightBpOffset = model.pxToBp(left + width)
+    // fetch the sequence for the selected region
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
