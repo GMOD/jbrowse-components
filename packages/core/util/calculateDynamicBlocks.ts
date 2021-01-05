@@ -115,6 +115,17 @@ export default function calculateDynamicBlocks(
         reversed ? '-reversed' : ''
       }`
 
+      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push(
+          new InterRegionPaddingBlock({
+            key: `${blockData.key}-beforeFirstRegion`,
+            widthPx: -offsetPx,
+            offsetPx: blockData.offsetPx + offsetPx,
+            variant: 'boundary',
+          }),
+        )
+      }
+
       if (elision && regionWidthPx < minimumBlockWidth) {
         blocks.push(new ElidedBlock(blockData))
       } else {
@@ -136,6 +147,21 @@ export default function calculateDynamicBlocks(
             }),
           )
           displayedRegionLeftPx += interRegionPaddingWidth
+        }
+
+        if (
+          regionNumber === displayedRegions.length - 1 &&
+          blockData.isRightEndOfDisplayedRegion
+        ) {
+          blockOffsetPx = blockData.offsetPx + blockData.widthPx
+          blocks.push(
+            new InterRegionPaddingBlock({
+              key: `${blockData.key}-afterLastRegion`,
+              widthPx: width - blockOffsetPx + offsetPx,
+              offsetPx: blockOffsetPx,
+              variant: 'boundary',
+            }),
+          )
         }
       }
     }

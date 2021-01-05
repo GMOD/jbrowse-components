@@ -139,7 +139,7 @@ const Polygon = observer(
     const startPx = Math.max(0, -offsetPx)
     const endPx =
       startPx +
-      visibleRegions.totalWidthPx +
+      visibleRegions.totalWidthPxWithoutBorders +
       (visibleRegions.contentBlocks.length * model.interRegionPaddingWidth) / 2
 
     const points = [
