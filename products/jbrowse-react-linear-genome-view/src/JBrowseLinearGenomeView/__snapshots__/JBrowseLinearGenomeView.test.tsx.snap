@@ -89,8 +89,16 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="makeStyles-scaleBar"
               >
                 <div
-                  class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
-                  style="min-width: 800px; border-color: rgb(153, 102, 0);"
+                  class="makeStyles-scaleBarVisibleRegion"
+                  style="width: 267px; left: 0px;"
+                />
+                <div
+                  class="makeStyles-scaleBarContig"
+                  style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+                />
+                <div
+                  class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+                  style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                 >
                   <p
                     class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -98,10 +106,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     ctgA
                   </p>
-                  <div
-                    class="makeStyles-scaleBarVisibleRegion"
-                    style="width: 266.6666666666667px; left: -1px; pointer-events: none;"
-                  />
                   <div
                     class="makeStyles-scaleBarLabel"
                     style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
@@ -139,6 +143,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     120
                   </div>
                 </div>
+                <div
+                  class="makeStyles-scaleBarContig"
+                  style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+                />
               </div>
             </div>
           </div>
@@ -152,7 +160,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             >
               <polygon
                 fill="rgba(121, 134, 203, 0.3)"
-                points="0,48,800,48,267,0,0,0"
+                points="0,48,801,48,267,0,0,0"
                 stroke="rgba(121, 134, 203, 0.8)"
               />
             </svg>

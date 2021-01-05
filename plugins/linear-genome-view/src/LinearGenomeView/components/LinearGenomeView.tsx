@@ -92,6 +92,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                   variant="contained"
                   color="primary"
                   onClick={model.activateTrackSelector}
+                  style={{ zIndex: 1000 }}
                 >
                   <TrackSelectorIcon className={classes.spacer} />
                   Open track selector

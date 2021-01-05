@@ -104,7 +104,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      minimumBlockWidth: 20,
+      minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 
@@ -281,6 +281,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let offsetBp = 0
 
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
         const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
             if (regionNumber ? regionNumber === idx : true) {
@@ -288,7 +289,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               return true
             }
           }
-          offsetBp += r.end - r.start
+          offsetBp += r.end - r.start + interRegionPaddingBp
           return false
         })
         const foundRegion = self.displayedRegions[index]
@@ -301,6 +302,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
+
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -323,25 +325,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: 0,
           }
         }
-        if (bp >= this.totalBp) {
-          const region = self.displayedRegions[n - 1]
-          const len = region.end - region.start
-          const offset = bp - this.totalBp + len
-          return {
-            ...getSnapshot(region),
-            oob: true,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index: n - 1,
-          }
-        }
+
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
           const len = region.end - region.start
+          const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
-            const offset = bp - bpSoFar
             return {
               ...getSnapshot(region),
               oob: false,
@@ -352,10 +343,45 @@ export function stateModelFactory(pluginManager: PluginManager) {
               index,
             }
           }
-          bpSoFar += len
+
+          // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
+          //
+          if (
+            region.end - region.start > interRegionPaddingBp &&
+            offset / self.bpPerPx > 0 &&
+            offset / self.bpPerPx < self.width
+          ) {
+            bpSoFar += len + interRegionPaddingBp
+          } else {
+            bpSoFar += len
+          }
         }
-        throw new Error('pxToBp failed to map to a region')
+
+        if (bp >= bpSoFar) {
+          const region = self.displayedRegions[n - 1]
+          const len = region.end - region.start
+          const offset = bp - bpSoFar + len
+          return {
+            ...getSnapshot(region),
+            oob: true,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
+            index: n - 1,
+          }
+        }
+        return {
+          coord: 0,
+          index: 0,
+          refName: '',
+          oob: true,
+          assemblyName: '',
+          offset: 0,
+          reversed: false,
+        }
       },
+
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },

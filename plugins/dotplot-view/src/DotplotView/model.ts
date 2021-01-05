@@ -38,12 +38,6 @@ export const Dotplot1DView = Base1DView.extend(self => {
   const scaleFactor = observable.box(1)
   return {
     views: {
-      get interRegionPaddingWidth() {
-        return 0
-      },
-      get minimumBlockWidth() {
-        return 0
-      },
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
       },
@@ -380,8 +374,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const [x1, x2, y1, y2] = result
             const session = getSession(self)
 
-            const d1 = Dotplot1DView.create(getSnapshot(self.hview))
-            const d2 = Dotplot1DView.create(getSnapshot(self.vview))
+            const d1 = Dotplot1DView.create({
+              ...getSnapshot(self.hview),
+              minimumBlockWidth: 0,
+              interRegionPaddingWidth: 0,
+            })
+            const d2 = Dotplot1DView.create({
+              ...getSnapshot(self.vview),
+              minimumBlockWidth: 0,
+              interRegionPaddingWidth: 0,
+            })
             d1.setVolatileWidth(self.hview.width)
             d2.setVolatileWidth(self.vview.width)
             d1.moveTo(x1, x2)

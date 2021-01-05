@@ -47,6 +47,15 @@ export class BlockSet {
       : 0
   }
 
+  get totalWidthPxWithoutBorders() {
+    return this.blocks.length
+      ? this.blocks
+          .filter(block => block.variant !== 'boundary')
+          .map(blocks => blocks.widthPx)
+          .reduce((a, b) => a + b)
+      : 0
+  }
+
   get offsetPx() {
     return this.blocks.length ? this.blocks[0].offsetPx : 0
   }

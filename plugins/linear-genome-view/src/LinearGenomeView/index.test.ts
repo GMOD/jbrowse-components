@@ -10,6 +10,7 @@ import { Instance, types } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
+import hg38DisplayedRegions from './hg38DisplayedRegions.json'
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
@@ -557,7 +558,7 @@ test('can instantiate a model that >2 regions', () => {
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: Math.round(10100 / model.bpPerPx),
+    offsetPx: Math.round(10100 / model.bpPerPx) + model.interRegionPaddingWidth,
   })
 })
 
@@ -613,4 +614,66 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   model.toggleHeaderOverview()
   model.setError(Error('pxToBp failed to map to a region'))
   expect(model.error?.message).toEqual('pxToBp failed to map to a region')
+})
+
+// determined objectively by looking at
+// http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on
+//
+// this test is important because interregionpadding blocks outside the current
+// view should not be taken into account
+test('can perform pxToBp on human genome things with ellided blocks (zoomed in)', () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test6',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+    }),
+  )
+  const width = 800
+  model.setWidth(width)
+  model.setDisplayedRegions(hg38DisplayedRegions)
+  model.setNewView(6359.273152497633, 503862)
+  expect(model.pxToBp(0).refName).toBe('Y')
+  expect(model.pxToBp(400).refName).toBe('Y')
+  expect(model.pxToBp(800).refName).toBe('Y_KI270740v1_random')
+})
+
+// determined objectively from looking at http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-TUJdqKI2c9&password=01tan
+//
+// this tests some places on hg38 when zoomed to whole genome, so inter-region
+// padding blocks and elided blocks matter
+test('can perform pxToBp on human genome things with ellided blocks (zoomed out)', () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test6',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+    }),
+  )
+  const width = 800
+  model.setWidth(width)
+  model.setDisplayedRegions(hg38DisplayedRegions)
+  model.setNewView(3209286.105, -225.5083315372467)
+  // chr1 to the left
+  expect(model.pxToBp(0).refName).toBe('1')
+  expect(model.pxToBp(0).oob).toBeTruthy()
+  // chr10 in the middle, tests a specific coord but should just be probably
+  // somewhat around here
+  expect(model.pxToBp(800).coord).toBe(111057351)
+  expect(model.pxToBp(800).refName).toBe('10')
+
+  // chrX after an ellided block, this tests a specific coord but should just be
+  // probably somewhat around here
+  expect(model.pxToBp(1228).coord).toBe(99349155)
+  expect(model.pxToBp(1228).refName).toBe('X')
+
+  // chrY_random at the end
+  expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(1500).oob).toBeTruthy()
 })
