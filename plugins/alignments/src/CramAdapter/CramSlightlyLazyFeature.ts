@@ -229,7 +229,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   id() {
-    return this.record.uniqueId + 1
+    return `${this._store.id}-${this.record.uniqueId}`
   }
 
   get(field: string) {
