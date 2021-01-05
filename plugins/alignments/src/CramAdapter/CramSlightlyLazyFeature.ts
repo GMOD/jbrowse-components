@@ -68,7 +68,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_read_group_id() {
-    return this.record.readGroupId
+    return this._store.samHeader.readGroups[this.record.readGroupId]
   }
 
   _get_qual() {
@@ -112,7 +112,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_tags() {
-    return this.record.tags
+    return { RG: this._get_read_group_id(), ...this.record.tags }
   }
 
   _get_seq() {

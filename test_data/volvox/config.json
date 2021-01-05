@@ -1151,6 +1151,28 @@
           }
         }
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-rg-cram",
+      "name": "volvox-rg (read groups, cram)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-rg.cram"
+        },
+        "craiLocation": {
+          "uri": "volvox-rg.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {
