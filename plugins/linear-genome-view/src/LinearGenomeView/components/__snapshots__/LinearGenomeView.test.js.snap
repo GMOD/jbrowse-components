@@ -20,6 +20,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="width: 800px; left: 0px;"
           />
           <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div
             class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
             style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
           >
@@ -60,6 +64,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               100
             </div>
           </div>
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
         </div>
       </div>
     </div>
@@ -692,6 +700,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="width: 580px; left: 0px;"
           />
           <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div
             class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
             style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
           >
@@ -746,6 +758,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               2,000
             </div>
           </div>
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
         </div>
       </div>
     </div>
