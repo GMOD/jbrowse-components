@@ -47,10 +47,9 @@ function SequenceDialog({
   }) {
   const classes = useStyles()
   const session = getSession(model)
-  const loading = model.selectedSequence === undefined // when fetching for the specific region
+  const loading = model.selectedSequence === undefined
   const error = false // add error thrown by the get sequence
   console.log(model)
-
     return (
       <>
         <Dialog
@@ -90,7 +89,7 @@ function SequenceDialog({
                   rowsMax={4}
                   className={classes.dialogContent}
                   fullWidth
-                  value={model.selectedSequence}
+                  value={model.getSequenceDisabled? 'Selected Region is more than 100KB': model.selectedSequence}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -104,7 +103,7 @@ function SequenceDialog({
                 copy(model?.selectedSequence || '')
                 session.notify('Copied to clipboard', 'success')
               }}
-              disabled={loading}
+              disabled={loading || model.getSequenceDisabled}
               color="primary"
               startIcon={<ContentCopyIcon />}
             >
@@ -112,10 +111,7 @@ function SequenceDialog({
             </Button>
             <Button
               onClick={() => {
-                const selectedSeq = new Blob(
-                  ['>TestingDownload abcdefg'],
-                  { type: 'text/x-fasta;charset=utf-8' },
-                )
+                const selectedSeq = new Blob([model?.selectedSequence || ''], { type: 'text/x-fasta;charset=utf-8' })
                 saveAs(selectedSeq, 'selected-seq.fa')
               }}
               disabled={loading}

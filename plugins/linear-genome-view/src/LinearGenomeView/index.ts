@@ -122,7 +122,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       seqDialogActive: false as boolean,
-      selectedSequence: undefined as string | undefined
+      selectedSequence: undefined as undefined | string,
+      getSequenceDisabled: false as boolean
     }))
     .views(self => ({
       get width(): number {
@@ -455,13 +456,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return newBpPerPx
       },
       setSelectedSeqRegion(seqString: string | undefined) {
-        self.selectedSequence = seqString
+        self.selectedSequence = seqString    
+      },
+      setDisableGetSequence(disable: boolean) {
+        self.getSequenceDisabled = disable
       },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
       },
-
       horizontallyFlip() {
         self.displayedRegions = cast(
           self.displayedRegions
@@ -904,8 +907,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
-        console.log(leftOffset)
-        console.log(rightOffset)
         if (leftOffset === undefined || rightOffset === undefined) return []
         const singleRegion = leftOffset.refName === rightOffset.refName && leftOffset.index === rightOffset.index
         const selected: Region[] = []
@@ -940,7 +941,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               }
               selected.push(last)
             } else {
-              // in between regions
               selected.push(region)
             }
           }
@@ -958,52 +958,56 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
-        try {
-          const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
-          if (leftOffset && rightOffset && assemblyName) {
-            console.log(this.getSelectedRegions(leftOffset, rightOffset))
-            const { assemblyManager } = getSession(self)
-            const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
-            const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
-              'sequence',
-              'adapter',
-            ])
-            const dataAdapterType = pluginManager.getAdapterType(
-              sequenceAdapterConfig.type,
-            )
-            const sequenceAdapter = new dataAdapterType.AdapterClass(
-              sequenceAdapterConfig,
-            ) as BaseFeatureDataAdapter
-
-            // getFeatures on the adapter to get the sequence
-            const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(this.getSelectedRegions(leftOffset, rightOffset))
-            const seqChunks = await featuresMultRegions.pipe(toArray()).toPromise()
-            const seqChunksStrings: string[] = []
-              seqChunks
-                .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-                .forEach((chunk: Feature) => {
-                  // const chunkStart = chunk.get('start')
-                  // const chunkEnd = chunk.get('end')  
-                  console.log(chunk)
-                  const chunkSeq = chunk.get('seq') || chunk.get('residues')
-                  seqChunksStrings.push(chunkSeq)
-                  // trimmed.push(chunkSeq.substr(trimStart, trimLength))
-                })
-            console.log(seqChunksStrings)
-            self.setSelectedSeqRegion('hello')
-          }
-        } catch(error) {
-          throw new Error(
-            `Unable to fetch sequence for selected region : ${error}`
+        const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
+        if (leftOffset && rightOffset && assemblyName) {
+          console.log(this.getSelectedRegions(leftOffset, rightOffset))
+          const { assemblyManager } = getSession(self)
+          const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
+          const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
+            'sequence',
+            'adapter',
+          ])
+          const dataAdapterType = pluginManager.getAdapterType(
+            sequenceAdapterConfig.type,
           )
+          const sequenceAdapter = new dataAdapterType.AdapterClass(
+            sequenceAdapterConfig,
+          ) as BaseFeatureDataAdapter
+
+          // getFeatures on the adapter to get the sequence
+          const selectedRegions = this.getSelectedRegions(leftOffset, rightOffset)
+          const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(selectedRegions)
+          const seqChunks = await featuresMultRegions.pipe(toArray()).toPromise()
+          const sequenceChunks: any[] = []
+          // format sequences into Fasta
+          seqChunks.forEach((chunk: Feature) => {
+            const chunkSeq = chunk.get('seq')
+            const chunkRefName = chunk.get('refName')
+            sequenceChunks.push({ refName: chunkRefName, seq: chunkSeq })
+          })
+          const seqFasta = this.formatSeqFasta(sequenceChunks)
+          self.setSelectedSeqRegion(seqFasta)
+          self.setDisableGetSequence(this.checkSequencesSize(seqFasta).size > 100000)
+          console.log(seqFasta)
         }
         // cleanup
+      },
+      formatSeqFasta(chunks: any[]) {
+        console.log(chunks)
+        let result = ''
+        chunks.forEach(chunk => {
+          result += `>${chunk.refName}` + '\n' + chunk.seq + '\n'
+        })
+        return result
+      },
+      checkSequencesSize(seqFileContent: string) {
+        const selectedSeq = new Blob([seqFileContent])
+        return selectedSeq
       },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
-
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
