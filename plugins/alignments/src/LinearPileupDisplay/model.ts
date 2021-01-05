@@ -127,12 +127,12 @@ const stateModelFactory = (
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
           '#BBCCEE',
+          'pink',
           '#CCDDAA',
           '#EEEEBB',
           '#FFCCCC',
           'lightblue',
           'lightgreen',
-          'pink',
           'tan',
           '#CCEEFF',
           'lightsalmon',
@@ -447,15 +447,15 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Color by tag...',
+                  label: 'Stranded paired-end',
                   onClick: () => {
-                    getParent(self, 3).setDialogComponent(ColorByTagDlg)
+                    self.setColorScheme({ type: 'reverseTemplate' })
                   },
                 },
                 {
-                  label: 'Color paired end RNA-seq',
+                  label: 'Color by tag...',
                   onClick: () => {
-                    self.setColorScheme({ type: 'reverseTemplate' })
+                    getParent(self, 3).setDialogComponent(ColorByTagDlg)
                   },
                 },
               ],

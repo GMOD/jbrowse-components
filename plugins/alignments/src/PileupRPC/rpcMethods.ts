@@ -6,7 +6,6 @@ import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 export class PileupGetGlobalValueForTag extends RpcMethodType {
   name = 'PileupGetGlobalValueForTag'
@@ -33,23 +32,18 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
   }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const { adapterConfig, sessionId, regions, tag } = deserializedArgs
-    const { dataAdapter } = getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const dataAdapter = getAdapter(this.pluginManager, sessionId, adapterConfig)
+      .dataAdapter as BaseFeatureDataAdapter
 
-    const features = (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
-      regions,
-    )
-    const featuresArray: Feature[] = await features.pipe(toArray()).toPromise()
-
+    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
+    const featuresArray = await features.pipe(toArray()).toPromise()
     const uniqueValues = new Set<string>()
+    const isCram = !!featuresArray[0].get('tags')
     featuresArray.forEach(feature => {
-      const val = feature.get('tags')
-        ? feature.get('tags')[tag]
-        : feature.get(tag)
-      if (val !== undefined) uniqueValues.add('' + val)
+      const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+      if (val !== undefined) {
+        uniqueValues.add(`${val}`)
+      }
     })
     return [...uniqueValues]
   }

@@ -289,7 +289,7 @@ export default class PileupRenderer extends BoxRendererType {
       : `hsl(${Math.abs(feature.get('template_length')) / 10},50%,50%)`
   }
 
-  colorByReverseTemplate(feature: Feature, _config: AnyConfigurationModel) {
+  colorByStranded(feature: Feature, _config: AnyConfigurationModel) {
     const flags = feature.get('flags')
     const strand = feature.get('strand')
     // is paired
@@ -325,12 +325,16 @@ export default class PileupRenderer extends BoxRendererType {
     },
     props: PileupRenderProps,
   ) {
-    const { config, bpPerPx, regions, colorBy, colorTagMap } = props
+    const {
+      config,
+      bpPerPx,
+      regions,
+      colorBy = { type: '' },
+      colorTagMap,
+    } = props
     const { heightPx, topPx, feature } = feat
+    const { type: colorType } = colorBy
     const region = regions[0]
-
-    const colorMap = ['lightblue', 'pink', 'lightgreen', 'lightpurple']
-    const colorType = colorBy ? colorBy.type : ''
 
     switch (colorType) {
       case 'insertSize':
@@ -345,25 +349,40 @@ export default class PileupRenderer extends BoxRendererType {
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
         break
-      case 'reverseTemplate':
-        ctx.fillStyle =
-          alignmentColoring[this.colorByReverseTemplate(feature, config)]
+      case 'stranded':
+        ctx.fillStyle = alignmentColoring[this.colorByStranded(feature, config)]
         break
       case 'tag': {
         const tag = colorBy.tag as string
         const isCram = feature.get('tags')
+        const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
+
+        // special for for XS/TS tag
         if (tag === 'XS' || tag === 'TS') {
           const map: { [key: string]: string | undefined } = {
             '-': 'color_rev_strand',
             '+': 'color_fwd_strand',
           }
-          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
           ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
         }
+
+        // lower case 'ts' from minimap2 is flipped from xs
+        if (tag === 'ts') {
+          const map: { [key: string]: string } = {
+            '-':
+              feature.get('strand') === -1
+                ? 'color_fwd_strand'
+                : 'color_rev_strand',
+            '+':
+              feature.get('strand') === -1
+                ? 'color_rev_strand'
+                : 'color_fwd_strand',
+          }
+          ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
+        }
+
         // tag is not one of the autofilled tags, has color-value pairs from fetchValues
         else {
-          const val = isCram ? feature.get('tags')[tag] : feature.get(tag)
-
           const foundValue = colorTagMap[val]
           ctx.fillStyle = foundValue || 'color_nostrand'
         }

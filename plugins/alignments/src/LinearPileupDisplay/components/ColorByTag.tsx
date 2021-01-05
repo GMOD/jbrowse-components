@@ -50,7 +50,12 @@ export default function ColorByTagDlg(props: {
       </DialogTitle>
       <DialogContent style={{ overflowX: 'hidden' }}>
         <div className={classes.root}>
-          <Typography>Enter tag to color by</Typography>
+          <Typography>Enter tag to color by: </Typography>
+          <Typography color="textSecondary">
+            Examples: XS or TS for RNA-seq inferred read strand, ts (lower-case)
+            for minimap2 read strand, HP for haplotype, RG for read group, etc.
+          </Typography>
+
           <form>
             <TextField
               value={tag}
