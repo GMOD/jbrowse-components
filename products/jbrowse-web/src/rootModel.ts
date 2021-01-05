@@ -220,7 +220,6 @@ export default function RootModel(
           // validate all references in the session snapshot
           try {
             filterSessionInPlace(self.session, getType(self.session))
-            console.log('done')
           } catch (error) {
             // throws error if session filtering failed
             self.session = oldSession

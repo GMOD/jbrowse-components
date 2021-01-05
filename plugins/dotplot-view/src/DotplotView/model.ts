@@ -116,7 +116,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }))
       .views(self => ({
         get width(): number {
-          console.log(self, self.volatileWidth)
           if (!self.volatileWidth) {
             throw new Error('width not initialized')
           }
