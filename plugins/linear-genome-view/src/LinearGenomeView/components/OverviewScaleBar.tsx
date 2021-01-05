@@ -185,13 +185,15 @@ const ScaleBar = observer(
     const gridPitch = chooseGridPitch(scale, 120, 15)
     const { dynamicBlocks: overviewVisibleRegions } = overview
 
-    const firstBlock = visibleRegions.blocks[0]
+    const firstBlock = visibleRegions.contentBlocks[0]
     const firstOverviewPx =
       overview.bpToPx({
         refName: firstBlock.refName,
         coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
       }) || 0
-    const lastBlock = visibleRegions.blocks[visibleRegions.blocks.length - 1]
+
+    const lastBlock =
+      visibleRegions.contentBlocks[visibleRegions.contentBlocks.length - 1]
     const lastOverviewPx =
       overview.bpToPx({
         refName: lastBlock.refName,
