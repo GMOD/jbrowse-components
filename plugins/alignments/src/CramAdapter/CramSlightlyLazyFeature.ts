@@ -31,10 +31,6 @@ export default class CramSlightlyLazyFeature implements Feature {
     this._store = store
   }
 
-  _get_id() {
-    return this.id()
-  }
-
   _get_name() {
     return this.record.readName
   }
@@ -68,7 +64,8 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _read_group_id() {
-    return this._store.samHeader?.readGroups[this.record.readGroupId]
+    const rg = this._store.samHeader.readGroups
+    return rg ? rg[this.record.readGroupId] : undefined
   }
 
   _get_qual() {
@@ -114,7 +111,8 @@ export default class CramSlightlyLazyFeature implements Feature {
   _get_tags() {
     const RG = this._read_group_id()
     const { tags } = this.record
-    return { ...tags, RG }
+    // avoids a tag copy if no RG, but just copy if there is one
+    return RG !== undefined ? { ...tags, RG } : tags
   }
 
   _get_seq() {
