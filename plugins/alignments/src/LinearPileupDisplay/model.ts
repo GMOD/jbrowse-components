@@ -132,34 +132,43 @@ const stateModelFactory = (
         return Array.from(values as Set<number | string>)
       },
       generateValueColorPairing(uniqueTag: (number | string)[]) {
+        // okabe-ito color palette, a color blind friendly palette, copied from
+        // https://rdrr.io/github/duckmayr/bggum/man/color_palettes.html
         const colorPalette = [
-          '#332288',
-          '#117733',
-          '#44AA99',
-          '#88CCEE',
-          '#DDCC77',
-          '#CC6677',
-          '#AA4499',
-          '#882255',
-          '#FEFE62',
-          '#DC3220',
-        ] // default colorblind friendly palette
+          '#e69f00',
+          '#56b4e9',
+          '#009e73',
+          '#f0e442',
+          '#0072b2',
+          '#d55e00',
+          '#cc79a7',
+          '#000000',
+        ]
+
+        //from https://stackoverflow.com/questions/57153428/r-plot-color-combinations-that-are-colorblind-accessible
+        //const colorPalette2 = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
+        //"#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
+
+        //from ?
+        // const colorPalette3 = [
+        //   '#332288',
+        //   '#117733',
+        //   '#44AA99',
+        //   '#88CCEE',
+        //   '#DDCC77',
+        //   '#CC6677',
+        //   '#AA4499',
+        //   '#882255',
+        //   '#FEFE62',
+        //   '#DC3220',
+        // ] // default colorblind friendly palette
         const valueColorPairing: VCPairing[] = []
-        uniqueTag
-          // .sort((a, b) => {
-          //   // sort alphabetically
-          //   if (typeof a === 'string' && typeof b === 'string') {
-          //     if (a < b) return -1
-          //     if (a > b) return 1
-          //     return 0
-          //   }
-          //   // sort numerically
-          //   if (typeof a === 'number' && typeof b === 'number') return a - b
-          //   throw new Error('tried to compare number and string value')
-          // })
-          .forEach((value, idx) => {
-            valueColorPairing.push({ value, color: colorPalette[idx % 10] }) // have to repeat if more than 10 values
+        uniqueTag.forEach((value, idx) => {
+          valueColorPairing.push({
+            value,
+            color: colorPalette[idx % colorPalette.length],
           })
+        })
         return valueColorPairing
       },
     }))
