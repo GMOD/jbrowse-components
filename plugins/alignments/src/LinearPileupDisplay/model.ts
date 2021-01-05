@@ -41,11 +41,6 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-interface VCPairing {
-  value: string | number
-  color: string
-}
-
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: LinearPileupDisplayConfigModel,
@@ -86,8 +81,7 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      // valueColorPairing: undefined as undefined | VCPairing[],
-      valueColorPairing: observable.array([] as VCPairing[]),
+      colorTagMap: observable.map<string, string>({}),
       ready: false,
       currBpPerPx: 0,
     }))
@@ -98,11 +92,9 @@ const stateModelFactory = (
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
-      setValueColorPairing(vcArray: VCPairing[]) {
-        if (JSON.stringify(vcArray) !== JSON.stringify(self.valueColorPairing))
-          self.valueColorPairing = observable.array(vcArray)
-      },
+
       setColorScheme(colorScheme: { type: string; tag?: string }) {
+        self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
@@ -129,47 +121,30 @@ const stateModelFactory = (
             ...opts,
           },
         )
-        return Array.from(values as Set<number | string>)
+        return values as string[]
       },
-      generateValueColorPairing(uniqueTag: (number | string)[]) {
-        // okabe-ito color palette, a color blind friendly palette, copied from
-        // https://rdrr.io/github/duckmayr/bggum/man/color_palettes.html
+      updateColorTagMap(uniqueTag: string[]) {
+        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
-          '#e69f00',
-          '#56b4e9',
-          '#009e73',
-          '#f0e442',
-          '#0072b2',
-          '#d55e00',
-          '#cc79a7',
-          '#000000',
+          '#BBCCEE',
+          '#CCDDAA',
+          '#EEEEBB',
+          '#FFCCCC',
+          'lightblue',
+          'lightgreen',
+          'pink',
+          'tan',
+          '#CCEEFF',
+          'lightsalmon',
         ]
 
-        //from https://stackoverflow.com/questions/57153428/r-plot-color-combinations-that-are-colorblind-accessible
-        //const colorPalette2 = ["#88CCEE", "#CC6677", "#DDCC77", "#117733", "#332288", "#AA4499",
-        //"#44AA99", "#999933", "#882255", "#661100", "#6699CC", "#888888"]
-
-        //from ?
-        // const colorPalette3 = [
-        //   '#332288',
-        //   '#117733',
-        //   '#44AA99',
-        //   '#88CCEE',
-        //   '#DDCC77',
-        //   '#CC6677',
-        //   '#AA4499',
-        //   '#882255',
-        //   '#FEFE62',
-        //   '#DC3220',
-        // ] // default colorblind friendly palette
-        const valueColorPairing: VCPairing[] = []
-        uniqueTag.forEach((value, idx) => {
-          valueColorPairing.push({
-            value,
-            color: colorPalette[idx % colorPalette.length],
-          })
+        uniqueTag.forEach(value => {
+          if (!self.colorTagMap.has(value)) {
+            const totalKeys = [...self.colorTagMap.keys()].length
+            const newColor = colorPalette[totalKeys]
+            self.colorTagMap.set(value, newColor)
+          }
         })
-        return valueColorPairing
       },
     }))
     .actions(self => ({
@@ -186,11 +161,10 @@ const stateModelFactory = (
                 // continually generate the vc pairing, set and rerender if any new values seen
                 if (colorBy?.tag) {
                   const uniqueTagSet = await self.getUniqueTagValues(
-                    colorBy as { type: string; tag: string },
+                    colorBy,
                     view.staticBlocks,
                   )
-                  const vcPairing = self.generateValueColorPairing(uniqueTagSet)
-                  self.setValueColorPairing(vcPairing)
+                  self.updateColorTagMap(uniqueTagSet)
                 }
 
                 if (sortedBy) {
@@ -391,7 +365,7 @@ const stateModelFactory = (
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
-            valueColorPairing: self.valueColorPairing,
+            colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config,

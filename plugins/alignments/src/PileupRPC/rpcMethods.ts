@@ -30,7 +30,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     regions: Region[]
     sessionId: string
     tag: string
-  }): Promise<Set<string | number>> {
+  }) {
     const deserializedArgs = await this.deserializeArguments(args)
     const { adapterConfig, sessionId, regions, tag } = deserializedArgs
     const { dataAdapter } = getAdapter(
@@ -44,13 +44,13 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     )
     const featuresArray: Feature[] = await features.pipe(toArray()).toPromise()
 
-    const uniqueValues: Set<string | number> = new Set()
+    const uniqueValues = new Set<string>()
     featuresArray.forEach(feature => {
       const val = feature.get('tags')
         ? feature.get('tags')[tag]
         : feature.get(tag)
-      if (val !== undefined) uniqueValues.add(val)
+      if (val !== undefined) uniqueValues.add('' + val)
     })
-    return uniqueValues
+    return [...uniqueValues]
   }
 }
