@@ -2406,6 +2406,58 @@
           "indexType": "TBI"
         }
       }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "SexAveraged",
+      "name": "deCODE recombination rate (sex-avg)",
+      "category": ["Recombination rate"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/SexAveraged.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hapMapRelease24CEURecombMap",
+      "name": "HapMap24 CEU RecombMap",
+      "category": ["Recombination rate"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/hapMapRelease24CEURecombMap.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hapMapRelease24CombinedRecombMap",
+      "name": "HapMap24 combined RecombMap",
+      "category": ["Recombination rate"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/hapMapRelease24CombinedRecombMap.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hapMapRelease24YRIRecombMap",
+      "name": "HapMap24 YRI RecombMap",
+      "category": ["Recombination rate"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/decode/hapMapRelease24YRIRecombMap.bw"
+        }
+      }
     }
   ],
   "connections": [],
