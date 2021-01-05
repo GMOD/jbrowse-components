@@ -74,23 +74,19 @@ in your application
 
 Let's add the hg38 human reference genome to our JBrowse 2 application.
 
-Press the "Add New Assembly" button, and enter `hg38` as the assembly name in
-the text field
+Press the "Add New Assembly" button, and enter the necessary information in the
+form:
 
-![Assembly manager page for adding an assembly](./img/add_hg38_assembly.png)
-
-Click on "Create New Assembly". Great, we've added an assembly! Now, in the
-configuration editor, add an alias, and configure the adapter to point the hg38
-genome hosted by JBrowse:
-
+- name: `hg38`
+- type: `BgzipFastaAdapter`
 - fasta: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz`
 - fasta index: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai`
 - gzi: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi`
 
-![Figure showing the settings](./img/configure_hg38_assembly.png)
+![Assembly manager page for adding an assembly](./img/add_hg38_assembly.png)
 
-After clicking the back arrow to return to the table of assemblies, we see that
-we have successfully added the hg38 assembly.
+Click on "Create New Assembly". Great, we've added an assembly!
+We can see that we have successfully added the hg38 assembly.
 
 ![Figure showing the assembly manager](./img/hg38_assembly_table.png)
 
@@ -150,6 +146,18 @@ track.
 Open the configuration editor for the track by clicking on the "Settings" button
 shown above. You can use the configuration editor to live-edit any configurable
 value for a given track.
+
+## Setting a default session
+
+It is also possible to use the graphical admin server to set the default session
+of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
+is first visited. To do so, open the form to set the default session
+(`Admin > Set default session`):
+
+![Figure showing the default session form](./img/default_session_form.png)
+
+You can use the form to clear your default session,
+select the currently open session, or any of your previously saved sessions.
 
 ## Additional resources
 
