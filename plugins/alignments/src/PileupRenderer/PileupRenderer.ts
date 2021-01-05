@@ -352,6 +352,7 @@ export default class PileupRenderer extends BoxRendererType {
       case 'stranded':
         ctx.fillStyle = alignmentColoring[this.colorByStranded(feature, config)]
         break
+      case 'xs':
       case 'tag': {
         const tag = colorBy.tag as string
         const isCram = feature.get('tags')

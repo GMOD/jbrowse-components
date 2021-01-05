@@ -67,8 +67,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.isReverseComplemented() ? -1 : 1
   }
 
-  _get_read_group_id() {
-    return this._store.samHeader.readGroups[this.record.readGroupId]
+  _read_group_id() {
+    return this._store.samHeader?.readGroups[this.record.readGroupId]
   }
 
   _get_qual() {
@@ -112,7 +112,9 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_tags() {
-    return { RG: this._get_read_group_id(), ...this.record.tags }
+    const RG = this._read_group_id()
+    const { tags } = this.record
+    return { ...tags, RG }
   }
 
   _get_seq() {
@@ -272,7 +274,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      tags[t] = this.get(t)
+      const val = this.get(t)
+      if (val !== undefined) {
+        tags[t] = val
+      }
     })
 
     return {

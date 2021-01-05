@@ -343,7 +343,6 @@ const stateModelFactory = (
               filters.push(`function(f) {
               const tags = f.get('tags');
               const tag = tags?tags["${tag}"]:f.get("${tag}");
-              console.log(${value},tag,tags);
               return tag == "${value}";
               }`)
             }
