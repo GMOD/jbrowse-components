@@ -1126,6 +1126,31 @@
         },
         "assemblyNames": ["volvox", "volvox"]
       }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-rg",
+      "name": "volvox-rg (read groups, bam)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-rg.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-rg.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {
