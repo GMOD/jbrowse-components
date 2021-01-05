@@ -21,7 +21,8 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(2),
     },
     createButton: {
-      margin: `5px 0px 5px 200px`,
+      marginTop: '1em',
+      justifyContent: 'center',
     },
     paperContent: {
       flex: 'auto',
@@ -235,15 +236,18 @@ const AssemblyAddForm = observer(
             />
           </div>
         </Paper>
-        <Button
-          className={classes.createButton}
-          variant="contained"
-          color="secondary"
-          startIcon={<AddIcon />}
-          onClick={createAssembly}
-        >
-          Create new assembly
-        </Button>
+        <Grid container className={classes.createButton}>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={createAssembly}
+            >
+              Create new assembly
+            </Button>
+          </Grid>
+        </Grid>
       </div>
     )
   },
