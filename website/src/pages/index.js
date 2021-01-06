@@ -49,8 +49,13 @@ function Home() {
             <h1>JBrowse 2</h1>
             <p>
               A pluggable open-source platform for visualizing and integrating
-              biological data
+              biological data.
             </p>
+            <p>
+              Includes as a full-featured web application, embeddable components
+              for developers, and soon a desktop application.
+            </p>
+            <h3>Web</h3>
             <ul>
               <li>
                 {' '}
@@ -66,6 +71,22 @@ function Home() {
                   Browse web demo instance
                 </Link>
               </li>
+            </ul>
+            <h3>Embedded</h3>
+            <ul>
+              <li>
+                <Link
+                  href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view"
+                  variant="contained"
+                >
+                  Linear genome view React component on <tt>npm</tt>
+                </Link>
+              </li>
+              <li>More embeddable products coming soon</li>
+            </ul>
+            <h3>Desktop</h3>
+            <ul>
+              <li>Coming summer 2021</li>
             </ul>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
