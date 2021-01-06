@@ -54,7 +54,7 @@ const Assembly = types
   .model({
     regions: types.array(Region),
   })
-  .views(self => ({
+  .views(() => ({
     getCanonicalRefName(refName: string) {
       if (refName === 'contigA') {
         return 'ctgA'
