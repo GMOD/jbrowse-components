@@ -186,7 +186,7 @@ export default observer((props: { model: any; handleClose: () => void }) => {
                 effectiveDisplay.setFilterBy({
                   flagInclude,
                   flagExclude,
-                  readName: readName,
+                  readName,
                   tagFilter:
                     tag !== ''
                       ? {

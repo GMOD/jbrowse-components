@@ -262,6 +262,7 @@ const stateModelFactory = (
       setFilterBy(filter: {
         flagInclude: number
         flagExclude: number
+        readName?: string
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)

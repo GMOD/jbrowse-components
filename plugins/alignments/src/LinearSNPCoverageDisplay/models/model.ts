@@ -20,6 +20,7 @@ const stateModelFactory = (configSchema: any) =>
           types.model({
             flagInclude: types.optional(types.number, 0),
             flagExclude: types.optional(types.number, 1536),
+            readName: types.maybe(types.string),
             tagFilter: types.maybe(
               types.model({ tag: types.string, value: types.string }),
             ),
@@ -35,6 +36,7 @@ const stateModelFactory = (configSchema: any) =>
       setFilterBy(filter: {
         flagInclude: number
         flagExclude: number
+        readName?: string
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
@@ -64,6 +66,14 @@ const stateModelFactory = (configSchema: any) =>
               if(f.get('snpinfo')) return true
               const tag = tags?tags["${tag}"]:f.get("${tag}");
               return tag == "${value}";
+              }`)
+          }
+          if (self.filterBy.readName) {
+            const { readName } = self.filterBy
+            // use eqeq instead of eqeqeq for number vs string comparison
+            filters.push(`function(f) {
+              const name = f.get('name')
+              return name?name == "${readName}":true
               }`)
           }
         }
