@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { Region } from '@jbrowse/core/util/types/mst'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -49,6 +50,18 @@ stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 
+const Assembly = types
+  .model({
+    regions: types.array(Region),
+  })
+  .views(self => ({
+    getCanonicalRefName(refName: string) {
+      if (refName === 'contigA') {
+        return 'ctgA'
+      }
+      return refName
+    },
+  }))
 const Session = types
   .model({
     name: 'testSession',
@@ -66,32 +79,24 @@ const Session = types
     assemblyManager: new Map([
       [
         'volvox',
-        {
-          getCanonicalRefName(refName: string) {
-            if (refName === 'contigA') {
-              return 'ctgA'
-            }
-            return refName
-          },
-          get regions() {
-            return [
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 50001,
-                refName: 'ctgA',
-                reversed: false,
-              },
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 6079,
-                refName: 'ctgB',
-                reversed: false,
-              },
-            ]
-          },
-        },
+        Assembly.create({
+          regions: [
+            {
+              assemblyName: 'volvox',
+              start: 0,
+              end: 50001,
+              refName: 'ctgA',
+              reversed: false,
+            },
+            {
+              assemblyName: 'volvox',
+              start: 0,
+              end: 6079,
+              refName: 'ctgB',
+              reversed: false,
+            },
+          ],
+        }),
       ],
     ]),
   }))

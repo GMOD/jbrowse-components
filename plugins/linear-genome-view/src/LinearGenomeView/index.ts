@@ -25,7 +25,6 @@ import {
   cast,
   Instance,
   getRoot,
-  isStateTreeNode,
   resolveIdentifier,
   addDisposer,
 } from 'mobx-state-tree'
@@ -193,7 +192,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get maxBpPerPx() {
-        return this.totalBp / 1000
+        return this.totalBp / (self.width * 0.9)
       },
 
       get minBpPerPx() {
@@ -1025,10 +1024,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
-          // isStateTreeNode is used in test where assembly is not an STN
-          const { regions } = isStateTreeNode(assembly)
-            ? getSnapshot(assembly)
-            : assembly
+          const { regions } = getSnapshot(assembly)
           if (regions) {
             this.setDisplayedRegions(regions)
             self.zoomTo(self.maxBpPerPx)
