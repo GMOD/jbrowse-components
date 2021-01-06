@@ -43,3 +43,14 @@ export const orientationTypes = {
     F1F2: 'RL',
   } as { [key: string]: string },
 }
+
+export function getColorWGBS(strand: number, base: string) {
+  if (strand === 1) {
+    if (base === 'C') return '#f00'
+    if (base === 'T') return '#00f'
+  } else if (strand === -1) {
+    if (base === 'G') return '#f00'
+    if (base === 'A') return '#00f'
+  }
+  return '#888'
+}

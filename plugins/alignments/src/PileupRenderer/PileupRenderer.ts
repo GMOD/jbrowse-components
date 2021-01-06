@@ -17,8 +17,11 @@ import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/rend
 import { ThemeOptions } from '@material-ui/core'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { orientationTypes } from './util'
-import { PileupLayoutSession } from './PileupLayoutSession'
+import { getColorWGBS, orientationTypes } from './util'
+import {
+  PileupLayoutSession,
+  PileupLayoutSessionProps,
+} from './PileupLayoutSession'
 
 export interface PileupRenderProps {
   features: Map<string, Feature>
@@ -232,7 +235,7 @@ export default class PileupRenderer extends BoxRendererType {
   colorByPerBaseQuality(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    config: AnyConfigurationModel,
+    _config: AnyConfigurationModel,
     region: Region,
     bpPerPx: number,
   ) {
@@ -250,8 +253,8 @@ export default class PileupRenderer extends BoxRendererType {
 
       const w = 1 / bpPerPx
       for (let i = 0; i < len; i++) {
-        ctx.fillStyle = `hsl(${(scores[i] * 3) / 4},50%,50%)`
-        ctx.fillRect(leftPx + i * w, topPx, w, heightPx)
+        ctx.fillStyle = `hsl(${scores[i] * 0.75},50%,60%)`
+        ctx.fillRect(leftPx + i * w, topPx, w + 0.5, heightPx)
       }
     }
   }
@@ -385,7 +388,6 @@ export default class PileupRenderer extends BoxRendererType {
   drawMismatches(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    mismatches: Mismatch[],
     props: PileupRenderProps,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -405,6 +407,7 @@ export default class PileupRenderer extends BoxRendererType {
     const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
+    const mismatches: Mismatch[] = feature.get('mismatches')
 
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
@@ -422,20 +425,9 @@ export default class PileupRenderer extends BoxRendererType {
       )
 
       if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
-        let baseColor =
+        const baseColor =
           colorType === 'wgbs'
-            ? // modified SNP coloring when using colorBy wgbs
-              strand === 1
-              ? mismatch.base === 'C'
-                ? '#f00'
-                : mismatch.base === 'T'
-                ? '#00f'
-                : '#888'
-              : mismatch.base === 'G'
-              ? '#f00'
-              : mismatch.base === 'A'
-              ? '#00f'
-              : '#888'
+            ? getColorWGBS(strand, mismatch.base)
             : colorForBase[
                 mismatch.type === 'deletion' ? 'deletion' : mismatch.base
               ] || '#888'
@@ -521,9 +513,28 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  drawSoftClipping(ctx, feat) {
-    const mismatches = feat.get('mismatches')
-    const seq = feat.get('seq')
+  drawSoftClipping(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    props: PileupRenderProps,
+    config: AnyConfigurationModel,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    theme: any,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const { regions, bpPerPx } = props
+    const [region] = regions
+    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const mismatches: Mismatch[] = feature.get('mismatches')
+    const seq = feature.get('seq')
+    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const colorForBase: { [key: string]: string } = {
+      A: theme.palette.bases.A.main,
+      C: theme.palette.bases.C.main,
+      G: theme.palette.bases.G.main,
+      T: theme.palette.bases.T.main,
+      deletion: '#808080', // gray
+    }
 
     // Display all bases softclipped off in lightened colors
     if (seq) {
@@ -600,7 +611,6 @@ export default class PileupRenderer extends BoxRendererType {
       throw new Error('invalid layout object')
     }
 
-    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const sortedFeatures =
       sortedBy && sortedBy.type && region.start === sortedBy.pos
         ? sortFeature(features, sortedBy)
@@ -639,13 +649,9 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      const mismatches: Mismatch[] = feature.get('mismatches')
-
-      if (mismatches) {
-        this.drawMismatches(ctx, feat, mismatches, props, colorForBase, theme)
-      }
+      this.drawMismatches(ctx, feat, props, colorForBase, theme)
       if (showSoftClip) {
-        this.drawSoftClipping(ctx, feat)
+        this.drawSoftClipping(ctx, feat, props, config, theme)
       }
     })
 
