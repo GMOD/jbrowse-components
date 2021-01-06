@@ -91,6 +91,7 @@ export default observer((props: { model: any; handleClose: () => void }) => {
   const [flagExclude, setFlagExclude] = useState(filter?.flagExclude)
   const [tag, setTag] = useState(filter?.tagFilter?.tag || '')
   const [tagValue, setTagValue] = useState(filter?.tagFilter?.value || '')
+  const [readName, setReadName] = useState(filter?.readName || '')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
@@ -163,6 +164,21 @@ export default observer((props: { model: any; handleClose: () => void }) => {
                 data-testid="color-tag-value"
               />
             </Paper>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography>Filter by read name</Typography>
+              <TextField
+                className={classes.field}
+                value={readName}
+                onChange={event => {
+                  setReadName(event.target.value)
+                }}
+                placeholder="Enter read name"
+                inputProps={{
+                  'data-testid': 'color-tag-readname-input',
+                }}
+                data-testid="color-tag-readname"
+              />
+            </Paper>
             <Button
               variant="contained"
               color="primary"
@@ -170,6 +186,7 @@ export default observer((props: { model: any; handleClose: () => void }) => {
                 effectiveDisplay.setFilterBy({
                   flagInclude,
                   flagExclude,
+                  readName: readName,
                   tagFilter:
                     tag !== ''
                       ? {
