@@ -453,6 +453,18 @@ const stateModelFactory = (
                   },
                 },
                 {
+                  label: 'Per-base quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'perBaseQuality' })
+                  },
+                },
+                {
+                  label: 'Methylation tag',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'methylation' })
+                  },
+                },
+                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })

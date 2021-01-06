@@ -140,6 +140,12 @@ const alignmentColoring: { [key: string]: string } = {
   color_shortinsert: 'pink',
 }
 
+interface LayoutFeat {
+  heightPx: number
+  topPx: number
+  feature: Feature
+}
+
 // Sorting and revealing soft clip changes the layout of Pileup renderer
 // Adds extra conditions to see if cached layout is valid
 class PileupLayoutSession extends LayoutSession {
@@ -316,13 +322,71 @@ export default class PileupRenderer extends BoxRendererType {
     return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
 
+  colorByPerBaseQuality(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const qual = feature.get('qual')
+    const [leftPx, rightPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    if (qual) {
+      const scores = qual.split(' ')
+      const len = feature.get('end') - feature.get('start')
+
+      const w = 1 / bpPerPx
+      for (let i = 0; i < len; i++) {
+        ctx.fillStyle = `hsl(${scores[i]},50%,50%)`
+        ctx.fillRect(leftPx + i * w, topPx, w, heightPx)
+      }
+    } else {
+      ctx.fillStyle = 'gray'
+      ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+    }
+  }
+
+
+  colorByPerBaseMethylation(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const tags = feature.get('tags')
+    const MM = tags?tags.MM||feature.get('MM')
+    const [leftPx, rightPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    if (qual) {
+      const scores = qual.split(' ')
+      const len = feature.get('end') - feature.get('start')
+
+      const w = 1 / bpPerPx
+      for (let i = 0; i < len; i++) {
+        ctx.fillStyle = `hsl(${scores[i]},50%,50%)`
+        ctx.fillRect(leftPx + i * w, topPx, w, heightPx)
+      }
+    } else {
+      ctx.fillStyle = 'gray'
+      ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+    }
+  }
+
   drawRect(
     ctx: CanvasRenderingContext2D,
-    feat: {
-      heightPx: number
-      topPx: number
-      feature: Feature
-    },
+    feat: LayoutFeat,
     props: PileupRenderProps,
   ) {
     const {
@@ -391,6 +455,11 @@ export default class PileupRenderer extends BoxRendererType {
       }
       case 'insertSizeAndPairOrientation':
         break
+
+      case 'perBaseQuality':
+        this.colorByPerBaseQuality(ctx, feat, config, region, bpPerPx)
+        return
+
       case 'normal':
       default:
         ctx.fillStyle = readConfObject(config, 'color', [feature])
@@ -424,7 +493,6 @@ export default class PileupRenderer extends BoxRendererType {
       ctx.closePath()
       ctx.fill()
     }
-    // ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
   }
 
   drawMismatches(
