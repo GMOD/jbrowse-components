@@ -327,6 +327,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
 
         const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
 
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
@@ -344,10 +345,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
 
-          // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
-          //
+          // add the interRegionPaddingWidth if the boundary is in the screen
+          // e.g. offset>0 && offset<width
           if (
-            region.end - region.start > interRegionPaddingBp &&
+            region.end - region.start > minimumBlockBp &&
             offset / self.bpPerPx > 0 &&
             offset / self.bpPerPx < self.width
           ) {

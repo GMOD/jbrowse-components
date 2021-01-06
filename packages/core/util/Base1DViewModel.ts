@@ -119,6 +119,7 @@ const Base1DView = types
       }
 
       const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
+      const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
 
       for (let index = 0; index < self.displayedRegions.length; index += 1) {
         const region = self.displayedRegions[index]
@@ -136,10 +137,10 @@ const Base1DView = types
           }
         }
 
-        // add the interRegionPaddingWidth if the boundary is in the screen e.g. offset>0 && offset<width
-        //
+        // add the interRegionPaddingWidth if the boundary is in the screen
+        // e.g. offset>0 && offset<width
         if (
-          region.end - region.start > interRegionPaddingBp &&
+          region.end - region.start > minimumBlockBp &&
           offset / self.bpPerPx > 0 &&
           offset / self.bpPerPx < this.width
         ) {
