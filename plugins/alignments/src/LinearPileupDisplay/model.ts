@@ -459,9 +459,9 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Methylation tag',
+                  label: 'WGBS methylation',
                   onClick: () => {
-                    self.setColorScheme({ type: 'methylation' })
+                    self.setColorScheme({ type: 'wgbs' })
                   },
                 },
                 {

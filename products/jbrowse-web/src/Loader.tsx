@@ -51,6 +51,7 @@ function NoConfigMessage() {
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
+    ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (
     <div>
