@@ -677,3 +677,23 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
   expect(model.pxToBp(1500).oob).toBeTruthy()
 })
+
+test('can showAllRegionsInAssembly', async () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test4',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+    }),
+  )
+  model.setWidth(width)
+  model.showAllRegionsInAssembly('volvox')
+  expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+    'ctgA',
+    'ctgB',
+  ])
+})
