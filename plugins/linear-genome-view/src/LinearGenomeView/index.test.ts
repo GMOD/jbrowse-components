@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { Region } from '@jbrowse/core/util/types/mst'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -49,6 +50,18 @@ stubManager.createPluggableElements()
 stubManager.configure()
 const LinearGenomeModel = stateModelFactory(stubManager)
 
+const Assembly = types
+  .model({
+    regions: types.array(Region),
+  })
+  .views(() => ({
+    getCanonicalRefName(refName: string) {
+      if (refName === 'contigA') {
+        return 'ctgA'
+      }
+      return refName
+    },
+  }))
 const Session = types
   .model({
     name: 'testSession',
@@ -66,32 +79,24 @@ const Session = types
     assemblyManager: new Map([
       [
         'volvox',
-        {
-          getCanonicalRefName(refName: string) {
-            if (refName === 'contigA') {
-              return 'ctgA'
-            }
-            return refName
-          },
-          get regions() {
-            return [
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 50001,
-                refName: 'ctgA',
-                reversed: false,
-              },
-              {
-                assemblyName: 'volvox',
-                start: 0,
-                end: 6079,
-                refName: 'ctgB',
-                reversed: false,
-              },
-            ]
-          },
-        },
+        Assembly.create({
+          regions: [
+            {
+              assemblyName: 'volvox',
+              start: 0,
+              end: 50001,
+              refName: 'ctgA',
+              reversed: false,
+            },
+            {
+              assemblyName: 'volvox',
+              start: 0,
+              end: 6079,
+              refName: 'ctgB',
+              reversed: false,
+            },
+          ],
+        }),
       ],
     ]),
   }))
@@ -121,11 +126,11 @@ test('can instantiate a model that lets you navigate', () => {
       tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
     }),
   )
+  model.setWidth(800)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
   ])
-  model.setWidth(800)
-  expect(model.maxBpPerPx).toEqual(10)
+  expect(model.maxBpPerPx).toBeCloseTo(13.888)
   model.setNewView(0.02, 0)
 
   expect(model.scaleBarHeight).toEqual(20)
@@ -167,12 +172,12 @@ test('can instantiate a model that has multiple displayed regions', () => {
       tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
     }),
   )
+  model.setWidth(800)
   model.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  model.setWidth(800)
-  expect(model.maxBpPerPx).toEqual(20)
+  expect(model.maxBpPerPx).toBeCloseTo(27.777)
   model.setNewView(0.02, 0)
 
   expect(model.offsetPx).toEqual(0)
@@ -199,7 +204,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  expect(model.maxBpPerPx).toEqual(20)
+  expect(model.maxBpPerPx).toBeCloseTo(27.7777)
 
   model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
@@ -357,16 +362,10 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgB',
       },
     )
-    // 15000 + 10000 + 1 = 25001 / 800 - 8 = 28
-    // this is the newBpPerPx ~ 28
-    // minBpPerPx = 0.2 & max is 28
-    //  extrabp = 0
-    //  bpToStart 464 / 28
-    // expect(model.scrollTo(16.58)).toEqual(0)
-    // This should be 28
+
     largestBpPerPx = model.bpPerPx
     expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toEqual(28)
+    expect(model.bpPerPx).toBeCloseTo(31.408)
   })
 
   it('can select if start and end object are swapped', () => {
@@ -390,7 +389,7 @@ describe('Zoom to selected displayed regions', () => {
       },
     )
     expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toEqual(28)
+    expect(model.bpPerPx).toBeCloseTo(31.408)
   })
 
   it('can select over one refSeq', () => {
@@ -447,7 +446,7 @@ describe('Zoom to selected displayed regions', () => {
   it('can select over two regions in the same reference sequence', () => {
     model.setWidth(800)
     model.showAllRegions()
-    expect(model.bpPerPx).toBe(28)
+    expect(model.bpPerPx).toBeCloseTo(38.8888)
     // totalBp = 28000 / 1000 = 28 as maxBpPerPx
     model.zoomToDisplayedRegions(
       {
@@ -480,8 +479,9 @@ describe('Zoom to selected displayed regions', () => {
     ])
     model.setWidth(800)
     model.showAllRegions()
-    // totalBo 15000 + 3000 + 35000 = 53000 / 800 = 66.25 but maxBp is 53000/ 1000  thus 53
-    expect(model.bpPerPx).toBe(53)
+    // totalBp 15000 + 3000 + 35000 = 53000
+    // then 53000 / (width*0.9) = 73.6111
+    expect(model.bpPerPx).toBeCloseTo(73.61111)
     model.zoomToDisplayedRegions(
       {
         start: 5000,
@@ -549,7 +549,7 @@ test('can instantiate a model that >2 regions', () => {
   expect(model.offsetPx).toEqual(10000 / model.bpPerPx + 2)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
-  expect(model.offsetPx).toEqual(100)
+  expect(model.offsetPx).toEqual(-40)
 
   expect(model.bpToPx({ refName: 'ctgA', coord: 100 })).toEqual({
     index: 0,
@@ -676,4 +676,24 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
   expect(model.pxToBp(1500).oob).toBeTruthy()
+})
+
+test('can showAllRegionsInAssembly', async () => {
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test4',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+    }),
+  )
+  model.setWidth(width)
+  model.showAllRegionsInAssembly('volvox')
+  expect(model.displayedRegions.map(reg => reg.refName)).toEqual([
+    'ctgA',
+    'ctgB',
+  ])
 })

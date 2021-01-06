@@ -192,7 +192,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get maxBpPerPx() {
-        return this.totalBp / 1000
+        return this.totalBp / (self.width * 0.9)
       },
 
       get minBpPerPx() {
@@ -1005,6 +1005,35 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.center()
       },
 
+      showAllRegionsInAssembly(assemblyName?: string) {
+        const session = getSession(self)
+        const { assemblyManager } = session
+        if (!assemblyName) {
+          const assemblyNames = [
+            ...new Set(
+              self.displayedRegions.map(region => region.assemblyName),
+            ),
+          ]
+          if (assemblyNames.length > 1) {
+            session.notify(
+              `Can't perform this with multiple assemblies currently`,
+            )
+            return
+          }
+
+          ;[assemblyName] = assemblyNames
+        }
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly) {
+          const { regions } = getSnapshot(assembly)
+          if (regions) {
+            this.setDisplayedRegions(regions)
+            self.zoomTo(self.maxBpPerPx)
+            this.center()
+          }
+        }
+      },
+
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
@@ -1076,9 +1105,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.horizontallyFlip,
             },
             {
-              label: 'Show all regions',
+              label: 'Show all regions in assembly',
               icon: VisibilityIcon,
-              onClick: self.showAllRegions,
+              onClick: self.showAllRegionsInAssembly,
             },
             {
               label: 'Show center line',
