@@ -1,4 +1,8 @@
-# JBrowse 2 gallery
+# JBrowse 2 Visualizations Gallery
+
+Below are some examples of the visualizations JBrowse 2 has to offer. For live demos, have a look at the [demos page](demos).
+
+---
 
 ![](./img/dotplot.png)
 A genome vs genome dotplot displayed in the DotplotView. This displays grape vs
