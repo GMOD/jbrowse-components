@@ -346,7 +346,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   />
                   <span
                     class="MuiSlider-track"
-                    style="left: 0%; width: 48.86084055306146%;"
+                    style="left: 0%; width: 56.78411120929245%;"
                   />
                   <input
                     type="hidden"
@@ -355,12 +355,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <span
                     aria-orientation="horizontal"
                     aria-valuemax="564.3856189774724"
-                    aria-valuemin="305.8893689053569"
+                    aria-valuemin="258.49625007211563"
                     aria-valuenow="432.19280948873626"
                     class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
                     data-index="0"
                     role="slider"
-                    style="left: 48.86084055306146%;"
+                    style="left: 56.78411120929245%;"
                     tabindex="0"
                   />
                 </span>

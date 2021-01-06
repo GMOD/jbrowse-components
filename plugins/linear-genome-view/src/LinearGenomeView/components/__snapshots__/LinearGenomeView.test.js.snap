@@ -269,13 +269,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
             <input
               type="hidden"
-              value="332.1928094887362"
+              value="284.799690655495"
             />
             <span
               aria-orientation="horizontal"
               aria-valuemax="564.3856189774724"
-              aria-valuemin="332.1928094887362"
-              aria-valuenow="332.1928094887362"
+              aria-valuemin="284.799690655495"
+              aria-valuenow="284.799690655495"
               class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
               data-index="0"
               role="slider"
@@ -961,7 +961,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <span
               class="MuiSlider-track"
-              style="left: 0%; width: 2.3783941938133566%;"
+              style="left: 0%; width: 9.774680693120512%;"
             />
             <input
               type="hidden"
@@ -970,12 +970,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <span
               aria-orientation="horizontal"
               aria-valuemax="564.3856189774724"
-              aria-valuemin="-13.750352374993502"
+              aria-valuemin="-61.143471208234715"
               aria-valuenow="0"
               class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
               data-index="0"
               role="slider"
-              style="left: 2.3783941938133566%;"
+              style="left: 9.774680693120512%;"
               tabindex="0"
             />
           </span>
