@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
 import { stringify } from '@jbrowse/core/util'
-import { LinearGenomeViewStateModel } from '..'
+import { BpOffset, LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -124,6 +124,11 @@ function RubberBand({
         window.removeEventListener('mouseup', globalMouseUp)
       }
     }
+    try {
+      getSequence()
+    } catch (error) {
+      console.log(error)
+    }
     return () => {}
   }, [startX, mouseDragging, anchorPosition])
 
@@ -173,18 +178,23 @@ function RubberBand({
 
   function getSequence() {
     // open the dialog
-    model.showSeqDialog(true)
+    // model.showSeqDialog(true)
     // fetch the sequence for the selected region
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
     let leftPx = startX
     let rightPx = anchorPosition.left
+    // handles if I click and drag towards the left
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
-    const leftOffset = model.pxToBp(leftPx)
-    const rightOffset = model.pxToBp(rightPx)
+    // const leftOffset = model.pxToBp(leftPx)
+    // const rightOffset = model.pxToBp(rightPx)
+    const {leftOffset, rightOffset} = model.handleOutOfBoundPx(leftPx, rightPx)
+    // handles selecting oob bp
+    console.log(leftOffset)
+    console.log(rightOffset)
     model.fetchSequence(leftOffset, rightOffset)
   }
 
@@ -212,9 +222,10 @@ function RubberBand({
     },
     {
       label: 'Get Sequence',
+      disabled: model.getSequenceDisabled,
       icon: MenuOpenIcon,
       onClick: () => {
-        getSequence()
+        model.showSeqDialog(true)
         handleClose()
       },
     },

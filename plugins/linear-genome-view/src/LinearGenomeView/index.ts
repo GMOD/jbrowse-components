@@ -310,6 +310,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
+      handleOutOfBoundPx(leftPx: number, rightPx: number) {
+        let leftOffset = this.pxToBp(leftPx)
+        let rightOffset = this.pxToBp(rightPx)
+        if (leftOffset.oob) {
+          leftOffset = {
+            ...leftOffset,
+            offset: leftOffset.start
+          }
+        }
+        if (rightOffset.oob) {
+          rightOffset = {
+            ...rightOffset,
+            offset: rightOffset.end
+          }
+        }
+        return {
+          leftOffset,
+          rightOffset
+        }
+      },
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -916,8 +936,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               refName: singleRegion.refName,
               assemblyName: singleRegion.assemblyName,
-              start: leftOffset.reversed? Math.floor(singleRegion.end - rightOffset.offset) + 1: Math.floor(singleRegion.start + leftOffset.offset) + 1,
-              end: rightOffset.reversed? Math.floor(singleRegion.end - leftOffset.offset) + 1 : Math.floor(singleRegion.start + rightOffset.offset) + 1
+              start: leftOffset.reversed? Math.floor(singleRegion.end - rightOffset.offset): Math.floor(singleRegion.start + leftOffset.offset),
+              end: rightOffset.reversed? Math.floor(singleRegion.end - leftOffset.offset) + 1: Math.floor(singleRegion.start + rightOffset.offset) + 1
             }
           )
         } else {
@@ -928,16 +948,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
               const first = {
                 refName: region.refName,
                 assemblyName: region.assemblyName,
-                start: leftOffset.reversed? region.start : Math.floor(region.start + leftOffset.offset) + 1,
-                end: leftOffset.reversed? Math.floor(region.end - leftOffset.offset) + 1 : region.end
+                start: leftOffset.reversed? region.start : Math.floor(region.start + leftOffset.offset),
+                end: leftOffset.reversed? Math.floor(region.end - leftOffset.offset) + 1 : region.end + 1
               }
               selected.push(first)
             } else if (rightOffset.index === i) {
               const last = {
                 refName: region.refName,
                 assemblyName: region.assemblyName,
-                start: rightOffset.reversed? Math.floor(region.end - rightOffset.offset) + 1 : region.start,
-                end: rightOffset.reversed? region.end : Math.floor(region.start + rightOffset.offset) + 1,
+                start: rightOffset.reversed? Math.floor(region.end - rightOffset.offset) : region.start,
+                end: rightOffset.reversed? region.end + 1 : Math.floor(region.start + rightOffset.offset) + 1,
               }
               selected.push(last)
             } else {
@@ -959,8 +979,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
         const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
+        // console.log(assemblyName)
         if (leftOffset && rightOffset && assemblyName) {
-          console.log(this.getSelectedRegions(leftOffset, rightOffset))
           const { assemblyManager } = getSession(self)
           const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
           const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
@@ -973,32 +993,79 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const sequenceAdapter = new dataAdapterType.AdapterClass(
             sequenceAdapterConfig,
           ) as BaseFeatureDataAdapter
+          // TODO: check if sequence adapter exists else disable the getSequence Menu Item
 
           // getFeatures on the adapter to get the sequence
           const selectedRegions = this.getSelectedRegions(leftOffset, rightOffset)
+          // console.log(selectedRegions)
           const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(selectedRegions)
           const seqChunks = await featuresMultRegions.pipe(toArray()).toPromise()
           const sequenceChunks: any[] = []
+          // console.log(seqChunks)
           // format sequences into Fasta
           seqChunks.forEach((chunk: Feature) => {
+            // console.log(chunk)
             const chunkSeq = chunk.get('seq')
             const chunkRefName = chunk.get('refName')
-            sequenceChunks.push({ refName: chunkRefName, seq: chunkSeq })
+            const chunkLocstring = `${chunkRefName}:${chunk.get('start')}-${chunk.get('end')}`
+            if (chunkSeq) {
+              sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
+            }
           })
+          //  const trimmed: string[] = []
+            // seqChunks
+            //   .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+            //   .forEach((chunk: Feature) => {
+            //     const chunkStart = chunk.get('start')
+            //     const chunkEnd = chunk.get('end')
+            //     const trimStart = Math.max(start - chunkStart, 0)
+            //     const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
+            //     const trimLength = trimEnd - trimStart
+            //     const chunkSeq = chunk.get('seq') || chunk.get('residues')
+            //     trimmed.push(chunkSeq.substr(trimStart, trimLength))
+            //   })
+
+            // const sequence = trimmed.join('')
+            // if (sequence.length !== end - start) {
+            //   throw new Error(
+            //     `sequence fetch failed: fetching ${refName}:${(
+            //       start - 1
+            //     ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
+            //       end - start
+            //     ).toLocaleString()}`,
+            //   )
+            // }
+          // TODO: check if chunks is empty array for error handling (region had no seq/seq feature)
           const seqFasta = this.formatSeqFasta(sequenceChunks)
           self.setSelectedSeqRegion(seqFasta)
+          // TODO: check size of the sequence fasta,if more than 500MG selected, disable menu item
           self.setDisableGetSequence(this.checkSequencesSize(seqFasta).size > 100000)
-          console.log(seqFasta)
+          // console.log(seqFasta)
         }
-        // cleanup
+        // TODO: adapter cleanup
+        // freeResources
       },
       formatSeqFasta(chunks: any[]) {
-        console.log(chunks)
+        // console.log(chunks)
         let result = ''
-        chunks.forEach(chunk => {
-          result += `>${chunk.refName}` + '\n' + chunk.seq + '\n'
+        chunks.forEach((chunk, idx) => {
+          if (idx === 0) {
+            result += `>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+          } else if (idx === chunks.length - 1) {
+            result += `>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+          } else {
+            result += `\n>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+          }
         })
         return result
+      },
+      formatFastaLines(seqString: string) {
+        var formatted = ''
+        while (seqString.length > 0) {
+          formatted += seqString.substring(0, 80) + '\n'
+          seqString = seqString.substring(80)
+        }
+        return formatted
       },
       checkSequencesSize(seqFileContent: string) {
         const selectedSeq = new Blob([seqFileContent])
