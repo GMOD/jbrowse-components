@@ -229,7 +229,7 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(error: Error) {
+      setError(error?: Error) {
         self.error = error
       },
     }))

@@ -7,6 +7,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -16,7 +17,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, getParent, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -413,7 +414,10 @@ const stateModelFactory = (
                 {
                   label: 'Sort by tag...',
                   onClick: () =>
-                    getParent(self, 3).setDialogComponent(SortByTagDlg),
+                    getContainingTrack(self).setDialogComponent(
+                      SortByTagDlg,
+                      self,
+                    ),
                 },
                 {
                   label: 'Clear sort',
@@ -464,7 +468,10 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getParent(self, 3).setDialogComponent(ColorByTagDlg)
+                    getContainingTrack(self).setDialogComponent(
+                      ColorByTagDlg,
+                      self,
+                    )
                   },
                 },
               ],
@@ -473,7 +480,10 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getParent(self, 3).setDialogComponent(FilterByTagDlg)
+                getContainingTrack(self).setDialogComponent(
+                  FilterByTagDlg,
+                  self,
+                )
               },
             },
           ]

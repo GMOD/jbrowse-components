@@ -60,7 +60,10 @@ export default class extends Plugin {
       return new DisplayType({
         name: 'LinearWiggleDisplay',
         configSchema,
-        stateModel: linearWiggleDisplayModelFactory(configSchema),
+        stateModel: linearWiggleDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
         trackType: 'QuantitativeTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,
