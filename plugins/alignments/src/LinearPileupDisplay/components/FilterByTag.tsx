@@ -81,16 +81,14 @@ function Bitmask(props: { flag: number; setFlag: Function }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default observer((props: { model: any; handleClose: () => void }) => {
-  const { model, handleClose } = props
+export default observer((props: { display: any; handleClose: () => void }) => {
+  const { display, handleClose } = props
   const classes = useStyles()
-  const display = model.displays[0]
-  const effectiveDisplay = display.PileupDisplay || display
-  const filter = effectiveDisplay.filterBy
-  const [flagInclude, setFlagInclude] = useState(filter?.flagInclude)
-  const [flagExclude, setFlagExclude] = useState(filter?.flagExclude)
-  const [tag, setTag] = useState(filter?.tagFilter?.tag || '')
-  const [tagValue, setTagValue] = useState(filter?.tagFilter?.value || '')
+  const { filterBy } = display
+  const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
+  const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)
+  const [tag, setTag] = useState(filterBy?.tagFilter?.tag || '')
+  const [tagValue, setTagValue] = useState(filterBy?.tagFilter?.value || '')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
@@ -167,7 +165,7 @@ export default observer((props: { model: any; handleClose: () => void }) => {
               variant="contained"
               color="primary"
               onClick={() => {
-                effectiveDisplay.setFilterBy({
+                display.setFilterBy({
                   flagInclude,
                   flagExclude,
                   tagFilter:

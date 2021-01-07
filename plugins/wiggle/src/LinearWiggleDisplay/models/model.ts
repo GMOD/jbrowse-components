@@ -7,6 +7,7 @@ import {
   isAbortException,
   getSession,
   getContainingView,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -27,6 +28,7 @@ import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import { FeatureStats } from '../../statsUtil'
+import SetMinMaxDlg from '../components/SetMinMaxDialog'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -60,6 +62,13 @@ const stateModelFactory = (
         fill: types.maybe(types.boolean),
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
+        constraints: types.optional(
+          types.model({
+            max: types.maybe(types.number),
+            min: types.maybe(types.number),
+          }),
+          {},
+        ),
       }),
     )
     .volatile(() => ({
@@ -67,7 +76,6 @@ const stateModelFactory = (
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
       statsFetchInProgress: undefined as undefined | AbortController,
-      constraints: {} as { maxScore?: number; minScore?: number },
     }))
     .actions(self => ({
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
@@ -105,11 +113,11 @@ const stateModelFactory = (
       },
 
       setMaxScore(val?: number) {
-        self.constraints.maxScore = val
+        self.constraints.max = val
       },
 
       setMinScore(val?: number) {
-        self.constraints.minScore = val
+        self.constraints.min = val
       },
     }))
     .views(self => ({
@@ -145,15 +153,13 @@ const stateModelFactory = (
       },
 
       get maxScore() {
-        return self.constraints.maxScore !== undefined
-          ? self.constraints.maxScore
-          : getConf(self, 'maxScore')
+        const { max } = self.constraints
+        return max !== undefined ? max : getConf(self, 'maxScore')
       },
 
       get minScore() {
-        return self.constraints.maxScore !== undefined
-          ? self.constraints.maxScore
-          : getConf(self, 'maxScore')
+        const { min } = self.constraints
+        return min !== undefined ? min : getConf(self, 'minScore')
       },
 
       get rendererConfig() {
@@ -172,24 +178,25 @@ const stateModelFactory = (
       let oldDomain: [number, number] = [0, 0]
       return {
         get domain() {
-          const maxScore = getConf(self, 'maxScore')
-          const minScore = getConf(self, 'minScore')
+          const { stats, scaleType, minScore, maxScore } = self
+
           const ret = getNiceDomain({
-            domain: [self.stats.scoreMin, self.stats.scoreMax],
-            scaleType: self.scaleType,
+            domain: [stats.scoreMin, stats.scoreMax],
             bounds: [minScore, maxScore],
+            scaleType,
           })
 
           // avoid weird scalebar if log value and empty region displayed
-          if (self.scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
+          if (scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
             return [0, Number.MIN_VALUE]
           }
 
-          // uses a heuristic to just give some extra headroom on bigwig scores
-          if (maxScore !== Number.MIN_VALUE && ret[1] > 1.0) {
+          // heuristic to just give some extra headroom on bigwig scores if no
+          // maxScore/minScore specified (they have MAX_VALUE/MIN_VALUE if so)
+          if (maxScore === Number.MAX_VALUE && ret[1] > 1.0) {
             ret[1] = round(ret[1])
           }
-          if (minScore !== Number.MAX_VALUE && ret[0] < -1.0) {
+          if (minScore === Number.MIN_VALUE && ret[0] < -1.0) {
             ret[0] = round(ret[0])
           }
 
@@ -316,6 +323,12 @@ const stateModelFactory = (
                 }
               }),
             },
+            {
+              label: 'Set min/max score',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(SetMinMaxDlg, self)
+              },
+            },
           ]
         },
 
@@ -335,19 +348,22 @@ const stateModelFactory = (
         const { rpcManager } = getSession(self)
         const nd = getConf(self, 'numStdDev') || 3
         const { adapterConfig, autoscaleType } = self
+        const sessionId = getRpcSessionId(self)
+        const params = {
+          sessionId,
+          adapterConfig,
+          statusCallback: (message: string) => {
+            if (isAlive(self)) {
+              self.setMessage(message)
+            }
+          },
+          ...opts,
+        }
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const results = (await rpcManager.call(
-            getRpcSessionId(self),
+          const results: FeatureStats = (await rpcManager.call(
+            sessionId,
             'WiggleGetGlobalStats',
-            {
-              adapterConfig,
-              statusCallback: (message: string) => {
-                if (isAlive(self)) {
-                  self.setMessage(message)
-                }
-              },
-              ...opts,
-            },
+            params,
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
           // globalsd uses heuristic to avoid unnecessary scoreMin<0
@@ -363,12 +379,11 @@ const stateModelFactory = (
         }
         if (autoscaleType === 'local' || autoscaleType === 'localsd') {
           const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
-          const sessionId = getRpcSessionId(self)
           const results = (await rpcManager.call(
             sessionId,
             'WiggleGetMultiRegionStats',
             {
-              adapterConfig,
+              ...params,
               assemblyName: getTrackAssemblyNames(self.parentTrack)[0],
               regions: JSON.parse(
                 JSON.stringify(
@@ -382,14 +397,7 @@ const stateModelFactory = (
                   }),
                 ),
               ),
-              sessionId,
-              statusCallback: (message: string) => {
-                if (isAlive(self)) {
-                  self.setMessage(message)
-                }
-              },
               bpPerPx,
-              ...opts,
             },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
@@ -406,17 +414,9 @@ const stateModelFactory = (
         }
         if (autoscaleType === 'zscale') {
           return rpcManager.call(
-            getRpcSessionId(self),
+            sessionId,
             'WiggleGetGlobalStats',
-            {
-              adapterConfig,
-              statusCallback: (message: string) => {
-                if (isAlive(self)) {
-                  self.setMessage(message)
-                }
-              },
-              ...opts,
-            },
+            params,
           ) as Promise<FeatureStats>
         }
         throw new Error(`invalid autoscaleType '${autoscaleType}'`)
@@ -428,7 +428,6 @@ const stateModelFactory = (
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,
-            headers: { cache: 'no-store,no-cache' },
             filters: self.filters,
           })
           if (isAlive(self)) {

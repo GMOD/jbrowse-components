@@ -7,6 +7,7 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -404,7 +405,10 @@ const stateModelFactory = (
                 {
                   label: 'Sort by tag...',
                   onClick: () =>
-                    getParent(self, 3).setDialogComponent(SortByTagDlg),
+                    getContainingTrack(self).setDialogComponent(
+                      SortByTagDlg,
+                      self,
+                    ),
                 },
                 {
                   label: 'Clear sort',
@@ -455,7 +459,10 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getParent(self, 3).setDialogComponent(ColorByTagDlg)
+                    getContainingTrack(self).setDialogComponent(
+                      ColorByTagDlg,
+                      self,
+                    )
                   },
                 },
               ],
@@ -464,7 +471,10 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getParent(self, 3).setDialogComponent(FilterByTagDlg)
+                getContainingTrack(self).setDialogComponent(
+                  FilterByTagDlg,
+                  self,
+                )
               },
             },
           ]

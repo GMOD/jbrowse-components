@@ -126,6 +126,20 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
     'setWidth' in thing
   )
 }
+
+export interface AbstractTrackModel {
+  setDialogComponent(dlg: unknown, display?: unknown): void
+}
+export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    //@ts-ignore
+    thing.configuration.trackId
+  )
+}
+
 export interface TrackViewModel extends AbstractViewModel {
   showTrack(trackId: string): void
   hideTrack(trackId: string): void
