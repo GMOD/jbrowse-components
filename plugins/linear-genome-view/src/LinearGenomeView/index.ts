@@ -123,7 +123,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       seqDialogActive: false as boolean,
       selectedSequence: undefined as undefined | string,
-      getSequenceDisabled: false as boolean
+      getSequenceDisabled: false as boolean,
+      disableCopyClipboard: false as boolean
     }))
     .views(self => ({
       get width(): number {
@@ -978,11 +979,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
-        const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName
+        const assemblyName = leftOffset?.assemblyName || rightOffset?.assemblyName  // change to get assemblyName
         // console.log(assemblyName)
         if (leftOffset && rightOffset && assemblyName) {
           const { assemblyManager } = getSession(self)
-          const assembly = assemblyManager.get(assemblyName) // change to get assemblyName
+          const assembly = assemblyManager.get(assemblyName)
           const sequenceAdapterConfig = readConfObject(assembly?.configuration, [
             'sequence',
             'adapter',
@@ -1037,9 +1038,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             // }
           // TODO: check if chunks is empty array for error handling (region had no seq/seq feature)
           const seqFasta = this.formatSeqFasta(sequenceChunks)
-          self.setSelectedSeqRegion(seqFasta)
           // TODO: check size of the sequence fasta,if more than 500MG selected, disable menu item
-          self.setDisableGetSequence(this.checkSequencesSize(seqFasta).size > 100000)
+          self.setDisableGetSequence(this.checkSequencesSize(seqFasta) > 500000000)
+          self.setSelectedSeqRegion(seqFasta) // only set if less than 500MB
+
           // console.log(seqFasta)
         }
         // TODO: adapter cleanup
@@ -1069,7 +1071,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       checkSequencesSize(seqFileContent: string) {
         const selectedSeq = new Blob([seqFileContent])
-        return selectedSeq
+        return selectedSeq.size
       },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {

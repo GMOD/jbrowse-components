@@ -48,7 +48,6 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const loading = model.selectedSequence === undefined
-  const error = false // add error thrown by the get sequence
   console.log(model)
     return (
       <>
@@ -76,8 +75,8 @@ function SequenceDialog({
 
           <>
             <DialogContent>
-            {error ? (<Typography color="error">
-                    Failed to retrieve sequence: {`${error}`}
+            {model.error ? (<Typography color="error">
+                    Failed to retrieve sequence: {`${model.error}`}
                   </Typography>) : loading ? (
                   <Typography>Retrieving Sequence...</Typography>
                 )  :
@@ -86,10 +85,11 @@ function SequenceDialog({
                   variant="outlined"
                   multiline
                   rows={3}
-                  rowsMax={4}
+                  rowsMax={5}
+                  disabled={model.disableCopyClipboard}
                   className={classes.dialogContent}
                   fullWidth
-                  value={model.getSequenceDisabled? 'Selected Region is more than 100KB': model.selectedSequence}
+                  value={model.disableCopyClipboard ? 'Reference Sequence too large to display': model.selectedSequence}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -100,10 +100,14 @@ function SequenceDialog({
           <DialogActions>
             <Button
               onClick={() => {
-                copy(model?.selectedSequence || '')
-                session.notify('Copied to clipboard', 'success')
+                try {
+                  copy(model?.selectedSequence || '')
+                  session.notify('Copied to clipboard', 'success')
+                } catch (error) {
+                  session.notify('Error while attempting to copy to clipboard', 'error')
+                }
               }}
-              disabled={loading || model.getSequenceDisabled}
+              disabled={model.disableCopyClipboard || copy('no clipboard support') === false || loading}
               color="primary"
               startIcon={<ContentCopyIcon />}
             >
@@ -112,7 +116,7 @@ function SequenceDialog({
             <Button
               onClick={() => {
                 const selectedSeq = new Blob([model?.selectedSequence || ''], { type: 'text/x-fasta;charset=utf-8' })
-                saveAs(selectedSeq, 'selected-seq.fa')
+                saveAs(selectedSeq, 'JBrowseSelectedRefSeq.fa')
               }}
               disabled={loading}
               color="primary"
