@@ -40,6 +40,8 @@ interface BaseInfo {
 }
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
+  // note: the snps are drawn on linear scale even if the data is drawn in log scape
+  // hence the two different scales being used
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
     const {
       features,
@@ -52,12 +54,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const theme = createJBrowseTheme(configTheme)
 
     const [region] = regions
-    const viewScale = getScale({ ...scaleOpts, range: [0, height] })
-    const snpViewScale = getScale({
-      ...scaleOpts,
-      scaleType: 'linear',
-      range: [0, height],
-    })
+    const opts = { ...scaleOpts, range: [0, height] }
+
+    const viewScale = getScale(opts)
+    const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
+
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
 
@@ -65,14 +66,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       height - viewScale(rawscore) - curr
     const snpToY = (rawscore: number, curr = 0) =>
       height - snpViewScale(rawscore) - curr
-
     const toHeight = (rawscore: number, curr = 0) =>
       toY(originY) - toY(rawscore, curr)
-
     const snpToHeight = (rawscore: number, curr = 0) =>
       snpToY(snpOriginY) - snpToY(rawscore, curr)
 
-    const insRegex = /^ins.[A-Za-z0-9]/
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
       C: theme.palette.bases.C.main,
@@ -83,31 +81,26 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher bpPerPx
     // First pass: draw the gray background
-    // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
-    // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score') as number
-      // console.log(score, toHeight(score))
-
-      // draw total
       ctx.fillStyle = colorForBase.total
       const w = rightPx - leftPx + 0.3
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
+
+    // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
+    // This reduces overdrawing of the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = Math.max(rightPx - leftPx + 0.3, 1)
-      // grab array with nestedtable's info, draw mismatches
-      const infoArray = feature.get('snpinfo') || []
+      const infoArray: BaseInfo[] = feature.get('snpinfo') || []
       let curr = 0
-      infoArray.forEach(function iterate(info: BaseInfo) {
+      infoArray.forEach(info => {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }
-        ctx.fillStyle = info.base.match(insRegex)
-          ? 'darkgrey'
-          : colorForBase[info.base]
+        ctx.fillStyle = colorForBase[info.base]
         ctx.fillRect(
           leftPx,
           snpToY(info.score + curr),
