@@ -12,6 +12,12 @@ import dotplotConfig from '../../test_data/config_dotplot.json'
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
 
+dotplotConfig.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+}
+
 expect.extend({ toMatchImageSnapshot })
 setup()
 afterEach(cleanup)

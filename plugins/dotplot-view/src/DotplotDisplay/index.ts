@@ -17,7 +17,6 @@ import {
   makeAbortableReaction,
 } from '@jbrowse/core/util'
 
-import { autorun } from 'mobx'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { DotplotViewModel } from '../DotplotView/model'
 
@@ -73,10 +72,6 @@ export function stateModelFactory(configSchema: any) {
       return {
         afterAttach() {
           const parent = getContainingView(self) as DotplotViewModel
-          // autorun(reaction => {
-          //   if (parent.initialized) {
-
-          // makeAbortableReaction( self, () => {{...renderBlockData(), initialized => parent.initialized }}, (data) => { if (data.initialized) renderBlockEffect(data)} )
           makeAbortableReaction(
             self as any,
             () => ({
@@ -90,9 +85,6 @@ export function stateModelFactory(configSchema: any) {
                 return renderBlockEffect(blockData.data)
               return undefined
             },
-            // self as any,
-            // renderBlockData,
-            // renderBlockEffect as any,
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,
@@ -102,9 +94,6 @@ export function stateModelFactory(configSchema: any) {
             this.setRendered,
             this.setError,
           )
-          //     reaction.dispose()
-          //   }
-          // })
         },
 
         setLoading(abortController: AbortController) {
@@ -133,8 +122,7 @@ export function stateModelFactory(configSchema: any) {
           html: any
           renderingComponent: React.Component
         }) {
-          // note: need to determine what to do for setRendered if above is undefined
-          // since parent.initialized is not ready
+          if (args === undefined) return
           const { data, html, renderingComponent } = args
           self.filled = true
           self.message = undefined
@@ -205,7 +193,6 @@ function renderBlockData(self: DotplotDisplayModel) {
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
 ) {
-  console.log(props)
   if (!props) {
     throw new Error('cannot render with no props')
   }
