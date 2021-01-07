@@ -47,8 +47,7 @@ function SequenceDialog({
   }) {
   const classes = useStyles()
   const session = getSession(model)
-  const loading = model.selectedSequence === undefined
-  console.log(model)
+  const loading = model.selectedSequence === undefined  
     return (
       <>
         <Dialog
@@ -86,10 +85,10 @@ function SequenceDialog({
                   multiline
                   rows={3}
                   rowsMax={5}
-                  disabled={model.disableCopyClipboard}
+                  disabled={model.copyToClipboardDisabled}
                   className={classes.dialogContent}
                   fullWidth
-                  value={model.disableCopyClipboard ? 'Reference Sequence too large to display': model.selectedSequence}
+                  value={model.copyToClipboardDisabled ? 'Reference Sequence too large to display': model.selectedSequence}
                   InputProps={{
                     readOnly: true,
                   }}
@@ -107,7 +106,7 @@ function SequenceDialog({
                   session.notify('Error while attempting to copy to clipboard', 'error')
                 }
               }}
-              disabled={model.disableCopyClipboard || copy('no clipboard support') === false || loading}
+              disabled={loading || model.copyToClipboardDisabled || copy('no clipboard support') === false}
               color="primary"
               startIcon={<ContentCopyIcon />}
             >
@@ -118,7 +117,7 @@ function SequenceDialog({
                 const selectedSeq = new Blob([model?.selectedSequence || ''], { type: 'text/x-fasta;charset=utf-8' })
                 saveAs(selectedSeq, 'JBrowseSelectedRefSeq.fa')
               }}
-              disabled={loading}
+              disabled={loading }
               color="primary"
               startIcon={<GetAppIcon />}
             >
