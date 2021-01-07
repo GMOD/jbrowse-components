@@ -67,6 +67,7 @@ const stateModelFactory = (
       message: undefined as undefined | string,
       stats: observable({ scoreMin: 0, scoreMax: 50 }),
       statsFetchInProgress: undefined as undefined | AbortController,
+      constraints: {} as { maxScore?: number; minScore?: number },
     }))
     .actions(self => ({
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
@@ -102,54 +103,85 @@ const stateModelFactory = (
       setAutoscale(val: string) {
         self.autoscale = val
       },
+
+      setMaxScore(val?: number) {
+        self.constraints.maxScore = val
+      },
+
+      setMinScore(val?: number) {
+        self.constraints.minScore = val
+      },
+    }))
+    .views(self => ({
+      get TooltipComponent(): React.FC {
+        return (Tooltip as unknown) as React.FC
+      },
+
+      get adapterTypeName() {
+        return self.adapterConfig.type
+      },
+
+      get rendererTypeName() {
+        const viewName = getConf(self, 'defaultRendering')
+        const rendererType = rendererTypes.get(viewName)
+        if (!rendererType) {
+          throw new Error(`unknown alignments view name ${viewName}`)
+        }
+        return rendererType
+      },
+
+      // subclasses can define these, as snpcoverage track does
+      get filters() {
+        return undefined
+      },
+
+      get scaleType() {
+        return self.scale || getConf(self, 'scaleType')
+      },
+      get filled() {
+        return typeof self.fill !== 'undefined'
+          ? self.fill
+          : readConfObject(this.rendererConfig, 'filled')
+      },
+
+      get maxScore() {
+        return self.constraints.maxScore !== undefined
+          ? self.constraints.maxScore
+          : getConf(self, 'maxScore')
+      },
+
+      get minScore() {
+        return self.constraints.maxScore !== undefined
+          ? self.constraints.maxScore
+          : getConf(self, 'maxScore')
+      },
+
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', this.rendererTypeName]) || {}
+
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          filled: self.fill,
+          scaleType: this.scaleType,
+        })
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
       let oldDomain: [number, number] = [0, 0]
       return {
-        get TooltipComponent(): React.FC {
-          return (Tooltip as unknown) as React.FC
-        },
-
-        get adapterTypeName() {
-          return self.adapterConfig.type
-        },
-
-        get rendererTypeName() {
-          const viewName = getConf(self, 'defaultRendering')
-          const rendererType = rendererTypes.get(viewName)
-          if (!rendererType) {
-            throw new Error(`unknown alignments view name ${viewName}`)
-          }
-          return rendererType
-        },
-
-        // subclasses can define these, as snpcoverage track does
-        get filters() {
-          return undefined
-        },
-
-        get scaleType() {
-          return self.scale || getConf(self, 'scaleType')
-        },
-
-        get filled() {
-          return typeof self.fill !== 'undefined'
-            ? self.fill
-            : readConfObject(this.rendererConfig, 'filled')
-        },
-
         get domain() {
           const maxScore = getConf(self, 'maxScore')
           const minScore = getConf(self, 'minScore')
           const ret = getNiceDomain({
             domain: [self.stats.scoreMin, self.stats.scoreMax],
-            scaleType: this.scaleType,
+            scaleType: self.scaleType,
             bounds: [minScore, maxScore],
           })
 
           // avoid weird scalebar if log value and empty region displayed
-          if (this.scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
+          if (self.scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
             return [0, Number.MIN_VALUE]
           }
 
@@ -180,7 +212,7 @@ const stateModelFactory = (
             domain: this.domain,
             stats: self.stats,
             autoscaleType: this.autoscaleType,
-            scaleType: this.scaleType,
+            scaleType: self.scaleType,
             inverted: getConf(self, 'inverted'),
           }
         },
@@ -193,24 +225,13 @@ const stateModelFactory = (
           return self.autoscale || getConf(self, 'autoscale')
         },
 
-        get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', this.rendererTypeName]) || {}
-
-          return self.rendererType.configSchema.create({
-            ...configBlob,
-            filled: self.fill,
-            scaleType: this.scaleType,
-          })
-        },
-
         get renderProps() {
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
             displayModel: self,
-            config: this.rendererConfig,
+            config: self.rendererConfig,
             scaleOpts: this.scaleOpts,
             resolution: self.resolution,
             height: self.height,
@@ -219,10 +240,18 @@ const stateModelFactory = (
 
         get hasResolution() {
           const { AdapterClass } = pluginManager.getAdapterType(
-            this.adapterTypeName,
+            self.adapterTypeName,
           )
           // @ts-ignore
           return AdapterClass.capabilities.includes('hasResolution')
+        },
+
+        get hasGlobalStats() {
+          const { AdapterClass } = pluginManager.getAdapterType(
+            self.adapterTypeName,
+          )
+          // @ts-ignore
+          return AdapterClass.capabilities.includes('hasGlobalStats')
         },
 
         get composedTrackMenuItems() {
@@ -251,42 +280,42 @@ const stateModelFactory = (
             ...(this.canHaveFill
               ? [
                   {
-                    label: this.filled
+                    label: self.filled
                       ? 'Turn off histogram fill'
                       : 'Turn on histogram fill',
                     onClick: () => {
-                      self.setFill(!this.filled)
+                      self.setFill(!self.filled)
                     },
                   },
                 ]
               : []),
             {
               label:
-                this.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
+                self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
               onClick: () => {
                 self.toggleLogScale()
               },
             },
-            ...(this.adapterTypeName === 'BigWigAdapter'
-              ? [
-                  {
-                    label: 'Autoscale type',
-                    subMenu: [
-                      ['local', 'Local'],
+            {
+              label: 'Autoscale type',
+              subMenu: [
+                ['local', 'Local'],
+                ...(this.hasGlobalStats
+                  ? [
                       ['global', 'Global'],
                       ['globalsd', 'Global ± 3σ'],
-                      ['localsd', 'Local ± 3σ'],
-                    ].map(([val, label]) => {
-                      return {
-                        label,
-                        onClick() {
-                          self.setAutoscale(val)
-                        },
-                      }
-                    }),
+                    ]
+                  : []),
+                ['localsd', 'Local ± 3σ'],
+              ].map(([val, label]) => {
+                return {
+                  label,
+                  onClick() {
+                    self.setAutoscale(val)
                   },
-                ]
-              : []),
+                }
+              }),
+            },
           ]
         },
 
@@ -304,7 +333,7 @@ const stateModelFactory = (
         filters?: string[]
       }): Promise<FeatureStats> {
         const { rpcManager } = getSession(self)
-        const nd = getConf(self, 'numStdDev')
+        const nd = getConf(self, 'numStdDev') || 3
         const { adapterConfig, autoscaleType } = self
         if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
           const results = (await rpcManager.call(
@@ -395,7 +424,7 @@ const stateModelFactory = (
       return {
         // re-runs stats and refresh whole display on reload
         async reload() {
-          self.setError('')
+          self.setError()
           const aborter = new AbortController()
           const stats = await getStats({
             signal: aborter.signal,
@@ -414,12 +443,14 @@ const stateModelFactory = (
               async () => {
                 try {
                   const aborter = new AbortController()
-                  self.setLoading(aborter)
                   const view = getContainingView(self) as LGV
-                  if (
-                    (!view.initialized && !self.ready) ||
-                    view.bpPerPx > self.maxViewBpPerPx
-                  ) {
+                  self.setLoading(aborter)
+
+                  if (!view.initialized) {
+                    return
+                  }
+
+                  if (view.bpPerPx > self.maxViewBpPerPx) {
                     return
                   }
 
