@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function ColorByTagDlg(props: {
-  display: any
+  display: { setSortedBy: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()

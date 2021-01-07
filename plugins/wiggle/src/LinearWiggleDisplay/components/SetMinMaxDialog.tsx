@@ -8,7 +8,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const useStyles = makeStyles(theme => ({
   root: {},
@@ -21,8 +20,12 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function SetMinMaxDlg(props: {
-  track: AnyConfigurationModel
-  display: any
+  display: {
+    minScore: number
+    maxScore: number
+    setMinScore: Function
+    setMaxScore: Function
+  }
   handleClose: () => void
 }) {
   const classes = useStyles()

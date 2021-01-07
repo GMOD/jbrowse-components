@@ -135,7 +135,7 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    //@ts-ignore
+    // @ts-ignore
     thing.configuration.trackId
   )
 }
