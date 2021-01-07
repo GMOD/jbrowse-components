@@ -3,15 +3,15 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/v1.0.0/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "GDC",
-      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/v1.0.0/rawgit/jbrowse-plugin-gdc.umd.production.min.js"
     },
     {
       "name": "UCSC",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/v1.0.0/rawgit/jbrowse-plugin-ucsc.umd.production.min.js"
     }
   ],
   "assemblies": [
