@@ -221,7 +221,7 @@ function RubberBand({
       },
     },
     {
-      label: 'Get Sequence',
+      label: 'Get sequence',
       disabled: model.getSequenceDisabled,
       icon: MenuOpenIcon,
       onClick: () => {

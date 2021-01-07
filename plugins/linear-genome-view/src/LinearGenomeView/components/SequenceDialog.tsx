@@ -59,7 +59,7 @@ function SequenceDialog({
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Get Sequence
+            Reference Sequence
             {handleClose ? (
               <IconButton data-testid="close-seqDialog" className={classes.closeButton} onClick={() => {
                 handleClose()
@@ -110,7 +110,7 @@ function SequenceDialog({
               color="primary"
               startIcon={<ContentCopyIcon />}
             >
-              Copy Sequence to Clipboard
+              Copy to clipboard
             </Button>
             <Button
               onClick={() => {
@@ -121,7 +121,7 @@ function SequenceDialog({
               color="primary"
               startIcon={<GetAppIcon />}
             >
-              Download FASTA file
+              Download FASTA
             </Button>
             <Button onClick={() => {
                 handleClose()
