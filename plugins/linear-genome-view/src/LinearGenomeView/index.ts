@@ -124,7 +124,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       seqDialogActive: false as boolean,
       selectedSequence: undefined as undefined | string,
       getSequenceDisabled: false as boolean,
-      disableCopyClipboard: false as boolean
+      copyToClipboardDisabled: false as boolean
     }))
     .views(self => ({
       get width(): number {
@@ -479,8 +479,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setSelectedSeqRegion(seqString: string | undefined) {
         self.selectedSequence = seqString    
       },
-      setDisableGetSequence(disable: boolean) {
-        self.getSequenceDisabled = disable
+      disableGetSequence() {
+        self.getSequenceDisabled = !self.getSequenceDisabled
+      },
+      disableCopyToClipBoard() {
+        self.copyToClipboardDisabled = !self.copyToClipboardDisabled
       },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
@@ -1039,9 +1042,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // TODO: check if chunks is empty array for error handling (region had no seq/seq feature)
           const seqFasta = this.formatSeqFasta(sequenceChunks)
           // TODO: check size of the sequence fasta,if more than 500MG selected, disable menu item
-          self.setDisableGetSequence(this.checkSequencesSize(seqFasta) > 500000000)
-          self.setSelectedSeqRegion(seqFasta) // only set if less than 500MB
-
+          const seqSize = this.checkSequencesSize(seqFasta)
+          console.log(seqSize)
+          if (seqSize > 500000000 || seqSize === 0) {
+            self.disableGetSequence()
+          } else {
+            if (seqSize > 100000) {
+              self.disableCopyToClipBoard()
+            }
+            self.setSelectedSeqRegion(seqFasta)
+          }
           // console.log(seqFasta)
         }
         // TODO: adapter cleanup
@@ -1054,7 +1064,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (idx === 0) {
             result += `>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
           } else if (idx === chunks.length - 1) {
-            result += `>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+            result += `\n>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
           } else {
             result += `\n>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
           }
@@ -1064,7 +1074,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       formatFastaLines(seqString: string) {
         var formatted = ''
         while (seqString.length > 0) {
-          formatted += seqString.substring(0, 80) + '\n'
+          if (seqString.substring(0, 80).length < 80) {
+            formatted += seqString.substring(0, 80)
+          } else {
+            formatted += seqString.substring(0, 80) + '\n'
+          }
           seqString = seqString.substring(80)
         }
         return formatted
