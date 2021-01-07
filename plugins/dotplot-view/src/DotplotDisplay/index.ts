@@ -73,24 +73,36 @@ export function stateModelFactory(configSchema: any) {
       return {
         afterAttach() {
           const parent = getContainingView(self) as DotplotViewModel
-          autorun(reaction => {
-            if (parent.initialized) {
-              makeAbortableReaction(
-                self as any,
-                renderBlockData,
-                renderBlockEffect as any,
-                {
-                  name: `${self.type} ${self.id} rendering`,
-                  delay: 1000,
-                  fireImmediately: true,
-                },
-                this.setLoading,
-                this.setRendered,
-                this.setError,
-              )
-              reaction.dispose()
-            }
-          })
+          // autorun(reaction => {
+          //   if (parent.initialized) {
+
+          // makeAbortableReaction( self, () => {{...renderBlockData(), initialized => parent.initialized }}, (data) => { if (data.initialized) renderBlockEffect(data)} )
+          makeAbortableReaction(
+            self as any,
+            () => ({
+              ...renderBlockData(self as any),
+              initialized: parent.initialized,
+            }),
+            (blockData): any => {
+              // @ts-ignore
+              if (blockData?.initialized) return renderBlockEffect(blockData)
+              return undefined
+            },
+            // self as any,
+            // renderBlockData,
+            // renderBlockEffect as any,
+            {
+              name: `${self.type} ${self.id} rendering`,
+              delay: 1000,
+              fireImmediately: true,
+            },
+            this.setLoading,
+            this.setRendered,
+            this.setError,
+          )
+          //     reaction.dispose()
+          //   }
+          // })
         },
 
         setLoading(abortController: AbortController) {
@@ -119,6 +131,8 @@ export function stateModelFactory(configSchema: any) {
           html: any
           renderingComponent: React.Component
         }) {
+          // note: need to determine what to do for setRendered if above is undefined
+          // since parent.initialized is not ready
           const { data, html, renderingComponent } = args
           self.filled = true
           self.message = undefined
@@ -160,33 +174,37 @@ function renderBlockData(self: DotplotDisplayModel) {
   const { adapterConfig } = self
   const parent = getContainingView(self) as DotplotViewModel
   getSnapshot(parent)
-  const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
-
-  return {
-    rendererType,
-    rpcManager,
-    renderProps,
-    renderArgs: {
-      adapterConfig,
-      rendererType: rendererType.name,
-      renderProps: {
-        ...renderProps,
-        view: getSnapshot(parent),
-        width: viewWidth,
-        height: viewHeight,
-        borderSize,
-        borderX,
-        borderY,
+  if (parent.initialized) {
+    const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
+    return {
+      rendererType,
+      rpcManager,
+      renderProps,
+      renderArgs: {
+        adapterConfig,
+        rendererType: rendererType.name,
+        renderProps: {
+          ...renderProps,
+          view: getSnapshot(parent),
+          width: viewWidth,
+          height: viewHeight,
+          borderSize,
+          borderX,
+          borderY,
+        },
+        sessionId: getRpcSessionId(self),
+        timeout: 1000000, // 10000,
       },
-      sessionId: getRpcSessionId(self),
-      timeout: 1000000, // 10000,
-    },
+      initialized: parent.initialized,
+    }
   }
+  return undefined
 }
 
 async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
 ) {
+  console.log(props)
   if (!props) {
     throw new Error('cannot render with no props')
   }
