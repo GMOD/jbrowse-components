@@ -20,10 +20,20 @@ import {
 
 import configSchema from './configSchema'
 
+interface WiggleOptions extends BaseOptions {
+  resolution?: number
+}
+
 export default class BigWigAdapter
   extends BaseFeatureDataAdapter
   implements DataAdapterWithGlobalStats {
   private bigwig: BigWig
+
+  public static capabilities = [
+    'hasResolution',
+    'hasLocalStats',
+    'hasGlobalStats',
+  ]
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
@@ -100,14 +110,19 @@ export default class BigWigAdapter
     })
   }
 
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, opts: WiggleOptions = {}) {
     const { refName, start, end } = region
-    const { bpPerPx, signal, statusCallback = () => {} } = opts || {}
+    const {
+      bpPerPx = 0,
+      signal,
+      resolution = 1,
+      statusCallback = () => {},
+    } = opts
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,
-        basesPerSpan: bpPerPx,
+        basesPerSpan: bpPerPx / resolution,
       })
       ob.pipe(
         mergeAll(),

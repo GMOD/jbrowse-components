@@ -41,7 +41,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
 
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
-      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+      const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
 
       const c = colorCallback(feature)
       if (summaryScoreMode === 'max') {
@@ -56,12 +56,24 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         // max
         if (maxr !== undefined) {
           ctx.fillStyle = Color(c).lighten(0.6).toString()
-          ctx.fillRect(leftPx, toY(maxr), w, filled ? toHeight(maxr) : 1)
+          ctx.fillRect(
+            leftPx,
+            toY(maxr),
+            w - 0.1,
+            filled ? toHeight(maxr) - toHeight(score) : 1,
+          )
         }
 
         // normal
         ctx.fillStyle = c
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        ctx.fillRect(
+          leftPx,
+          toY(score),
+          w - 0.1,
+          filled
+            ? toHeight(score) - (minr !== undefined ? toHeight(minr) : 0)
+            : 1,
+        )
         // min
         if (minr !== undefined) {
           ctx.fillStyle = Color(c).darken(0.6).toString()

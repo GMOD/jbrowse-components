@@ -1,19 +1,25 @@
 import { types, cast } from 'mobx-state-tree'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getConf } from '@jbrowse/core/configuration'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  AnyConfigurationSchemaType,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
 import Tooltip from '../components/Tooltip'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const stateModelFactory = (configSchema: any) =>
+const stateModelFactory = (
+  pluginManager: PluginManager,
+  configSchema: AnyConfigurationSchemaType,
+) =>
   types
     .compose(
       'LinearSNPCoverageDisplay',
-      linearWiggleDisplayModelFactory(configSchema),
+      linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
         type: types.literal('LinearSNPCoverageDisplay'),
         filterBy: types.optional(
@@ -43,6 +49,26 @@ const stateModelFactory = (configSchema: any) =>
     .views(self => ({
       get TooltipComponent() {
         return Tooltip
+      },
+
+      get adapterConfig() {
+        const subadapter = getConf(self.parentTrack, 'adapter')
+        return {
+          type: 'SNPCoverageAdapter',
+          subadapter,
+        }
+      },
+
+      get rendererTypeName() {
+        return rendererTypes.get('snpcoverage')
+      },
+
+      get needsScalebar() {
+        return true
+      },
+
+      get contextMenuItems() {
+        return []
       },
 
       get filters() {
@@ -90,29 +116,10 @@ const stateModelFactory = (configSchema: any) =>
           notReady: !self.ready,
           height: self.height,
           displayModel: self,
-          scaleOpts: self.scaleOpts,
+          scaleOpts: this.scaleOpts,
           filters: self.filters,
           config,
         }
-      },
-      get adapterConfig() {
-        const subadapter = getConf(self.parentTrack, 'adapter')
-        return {
-          type: 'SNPCoverageAdapter',
-          subadapter,
-        }
-      },
-
-      get rendererTypeName() {
-        return rendererTypes.get('snpcoverage')
-      },
-
-      get needsScalebar() {
-        return true
-      },
-
-      get contextMenuItems() {
-        return []
       },
     }))
 

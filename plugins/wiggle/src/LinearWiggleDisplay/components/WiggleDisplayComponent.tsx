@@ -1,20 +1,14 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
 import { WiggleDisplayModel } from '../models/model'
 
-const powersOfTen: number[] = []
-for (let i = -20; i < 20; i += 1) {
-  powersOfTen.push(10 ** i)
-}
-
 export const YScaleBar = observer(
   ({ model }: { model: WiggleDisplayModel }) => {
-    const { domain, height } = model
-    const scaleType = getConf(model, 'scaleType')
+    const { domain, height, scaleType } = model
     const scale = getScale({
       scaleType,
       domain,
@@ -23,10 +17,7 @@ export const YScaleBar = observer(
     })
     const ticks = height < 50 ? 2 : 4
     const axisProps = axisPropsFromTickScale(scale, ticks)
-    const values =
-      scaleType === 'log'
-        ? axisProps.values.filter((s: number) => powersOfTen.includes(s))
-        : axisProps.values
+    const { values } = axisProps
 
     return (
       <svg
@@ -50,7 +41,7 @@ export const YScaleBar = observer(
   },
 )
 
-function WiggleDisplayComponent(props: { model: WiggleDisplayModel }) {
+export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, needsScalebar } = model
   return (
@@ -58,10 +49,4 @@ function WiggleDisplayComponent(props: { model: WiggleDisplayModel }) {
       {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
     </BaseLinearDisplayComponent>
   )
-}
-
-WiggleDisplayComponent.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
-}
-
-export default observer(WiggleDisplayComponent)
+})

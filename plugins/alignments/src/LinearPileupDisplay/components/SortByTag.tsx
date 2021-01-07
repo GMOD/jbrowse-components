@@ -8,7 +8,6 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -24,11 +23,11 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function ColorByTagDlg(props: {
-  model: AnyConfigurationModel
+  display: { setSortedBy: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { model, handleClose } = props
+  const { display, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
   return (
@@ -73,8 +72,7 @@ export default function ColorByTagDlg(props: {
               variant="contained"
               color="primary"
               onClick={() => {
-                const display = model.displays[0]
-                ;(display.PileupDisplay || display).setSortedBy('tag', tag)
+                display.setSortedBy('tag', tag)
                 handleClose()
               }}
             >
