@@ -80,12 +80,14 @@ export function stateModelFactory(configSchema: any) {
           makeAbortableReaction(
             self as any,
             () => ({
-              ...renderBlockData(self as any),
+              data: { ...renderBlockData(self as any) } as
+                | ReturnType<typeof renderBlockData>
+                | undefined,
               initialized: parent.initialized,
             }),
             (blockData): any => {
-              // @ts-ignore
-              if (blockData?.initialized) return renderBlockEffect(blockData)
+              if (blockData?.initialized && blockData.data)
+                return renderBlockEffect(blockData.data)
               return undefined
             },
             // self as any,
@@ -195,7 +197,6 @@ function renderBlockData(self: DotplotDisplayModel) {
         sessionId: getRpcSessionId(self),
         timeout: 1000000, // 10000,
       },
-      initialized: parent.initialized,
     }
   }
   return undefined
