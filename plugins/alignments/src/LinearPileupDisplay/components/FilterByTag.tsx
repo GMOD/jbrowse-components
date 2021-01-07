@@ -142,7 +142,11 @@ export default observer(
                 </div>
               </Paper>
               <Paper className={classes.paper} variant="outlined">
-                <Typography>Filter by tag name and value (optional)</Typography>
+                <Typography>
+                  Filter by tag name and value. Use * in the value field to get
+                  all reads containing any value for that tag. Example: filter
+                  tag name SA with value * to get all split/supplementary reads
+                </Typography>
                 <TextField
                   className={classes.field}
                   value={tag}

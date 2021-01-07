@@ -346,14 +346,13 @@ const stateModelFactory = (
               filters.push(`function(f) {
               const tags = f.get('tags');
               const val = tags ? tags["${tag}"]:f.get("${tag}")
-              return val == "${value}";
+              return "${value}"==='*'?val !== undefined:val == "${value}";
               }`)
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
-              // use eqeq instead of eqeqeq for number vs string comparison
               filters.push(`function(f) {
-              return f.get('name') == "${readName}";
+              return f.get('name') === "${readName}";
               }`)
             }
           }
