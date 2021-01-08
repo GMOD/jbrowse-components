@@ -6,7 +6,7 @@ import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 
-interface PileupLayoutSessionProps {
+export interface PileupLayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain

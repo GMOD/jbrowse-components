@@ -275,24 +275,28 @@ export default class PileupRenderer extends BoxRendererType {
     )
     const flip = region.reversed ? -1 : 1
     const strand = feature.get('strand') * flip
-    if (strand === -1) {
-      ctx.beginPath()
-      ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
-      ctx.lineTo(leftPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx)
-      ctx.lineTo(leftPx, topPx)
-      ctx.closePath()
-      ctx.fill()
+    if (bpPerPx < 10) {
+      if (strand === -1) {
+        ctx.beginPath()
+        ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
+        ctx.lineTo(leftPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx)
+        ctx.lineTo(leftPx, topPx)
+        ctx.closePath()
+        ctx.fill()
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(leftPx, topPx)
+        ctx.lineTo(leftPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx + heightPx)
+        ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
+        ctx.lineTo(rightPx, topPx)
+        ctx.closePath()
+        ctx.fill()
+      }
     } else {
-      ctx.beginPath()
-      ctx.moveTo(leftPx, topPx)
-      ctx.lineTo(leftPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx + heightPx)
-      ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
-      ctx.lineTo(rightPx, topPx)
-      ctx.closePath()
-      ctx.fill()
+      ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
     }
   }
 
