@@ -100,7 +100,7 @@ function RubberBand({
   const rubberBandRef = useRef(null)
   const classes = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
-  
+
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
       if (controlsRef.current && mouseDragging) {
@@ -191,7 +191,10 @@ function RubberBand({
     }
     // const leftOffset = model.pxToBp(leftPx)
     // const rightOffset = model.pxToBp(rightPx)
-    const {leftOffset, rightOffset} = model.handleOutOfBoundPx(leftPx, rightPx)
+    const { leftOffset, rightOffset } = model.handleOutOfBoundPx(
+      leftPx,
+      rightPx,
+    )
     // handles selecting oob bp
     console.log(leftOffset)
     console.log(rightOffset)

@@ -634,10 +634,11 @@ test('Format and sizing of fasta files', () => {
   model.setWidth(800)
   // check different sizes
   const small = 'cattgttgcg'
-  const large = 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
+  const large =
+    'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
   const mockChunks = [
     { header: 'ctgA:1-10', seq: small },
-    { header: 'ctgA:1-81', seq: large}
+    { header: 'ctgA:1-81', seq: large },
   ]
   // check the correct size in bytes is returned
   const size = model.checkSequencesSize('')
@@ -648,7 +649,9 @@ test('Format and sizing of fasta files', () => {
   expect(size3).toEqual(81)
   // checks that the first 80 chars are followed by a space
   const formattedSeqFasta = model.formatFastaLines(large)
-  expect(formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length).toEqual(80)
+  expect(
+    formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length,
+  ).toEqual(80)
   const formattedFasta = model.formatSeqFasta(mockChunks)
   expect(model.checkSequencesSize(formattedFasta)).toEqual(115)
 })

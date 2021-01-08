@@ -52,13 +52,16 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
     <div style={{ position: 'relative' }}>
       {aboutTrack ? (
         <AboutDialog model={aboutTrack} handleClose={handleClose} />
-        ) : null}
+      ) : null}
       {model.seqDialogActive ? (
-          <SequenceDialog model={model} handleClose={() => {
+        <SequenceDialog
+          model={model}
+          handleClose={() => {
             model.showSeqDialog(false)
             model.setSelectedSeqRegion(undefined)
-          }} />
-        ) : null}
+          }}
+        />
+      ) : null}
       {!hideHeader ? (
         <Header model={model} />
       ) : (
