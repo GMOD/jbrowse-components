@@ -50,35 +50,31 @@ export default function ColorByTagDlg(props: {
       <DialogContent>
         <div>
           <Typography>Set the tag to sort by</Typography>
-          <form>
-            <TextField
-              value={tag}
-              onChange={event => {
-                setTag(event.target.value)
-              }}
-              placeholder="Enter tag name"
-              inputProps={{
-                maxLength: 2,
-                'data-testid': 'sort-tag-name-input',
-              }}
-              error={tag.length === 2 && !validTag}
-              helperText={
-                tag.length === 2 && !validTag ? 'Not a valid tag' : ''
-              }
-              autoComplete="off"
-              data-testid="sort-tag-name"
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                display.setSortedBy('tag', tag)
-                handleClose()
-              }}
-            >
-              Submit
-            </Button>
-          </form>
+          <TextField
+            value={tag}
+            onChange={event => {
+              setTag(event.target.value)
+            }}
+            placeholder="Enter tag name"
+            inputProps={{
+              maxLength: 2,
+              'data-testid': 'sort-tag-name-input',
+            }}
+            error={tag.length === 2 && !validTag}
+            helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+            autoComplete="off"
+            data-testid="sort-tag-name"
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              display.setSortedBy('tag', tag)
+              handleClose()
+            }}
+          >
+            Submit
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

@@ -12,6 +12,7 @@ import {
   AbstractSessionModel,
   getSession,
   getContainingTrack,
+  getContainingView,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -149,156 +150,162 @@ function WindowSizeDlg(props: {
   display: any
   handleClose: () => void
   track: any
-  feature: any
 }) {
   const classes = useStyles()
-  const { track, display: feature, handleClose } = props
-  const [windowSize, setWindowSize] = useState('')
+  const {
+    track,
+    display: { feature },
+    handleClose,
+  } = props
+  const [window, setWindowSize] = useState('0')
+  const windowSize = +window
 
   function onSubmit() {
-    const session = getSession(track)
-    const clipPos = feature.get('clipPos')
-    const cigar = feature.get('CIGAR')
-    const flags = feature.get('flags')
-    const SA: string =
-      (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
-    const readName = feature.get('name')
-    const readAssembly = `${readName}_assembly`
-    const trackAssembly = getConf(
-      // @ts-ignore
-      track.parentTrack,
-      'assemblyNames',
-    )[0]
-    const assemblyNames = [trackAssembly, readAssembly]
-    const trackId = `track-${Date.now()}`
-    const trackName = `${readName}_vs_${trackAssembly}`
-    const supplementaryAlignments = SA.split(';')
-      .filter(aln => !!aln)
-      .map((aln, index) => {
-        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-        const saLengthOnRef = getLengthOnRef(saCigar)
-        const saLength = getLength(saCigar)
-        const saLengthSansClipping = getLengthSansClipping(saCigar)
-        const saStrandNormalized = saStrand === '-' ? -1 : 1
-        const saClipPos = getClip(saCigar, saStrandNormalized)
-        const saRealStart = +saStart - 1 + saClipPos
-        return {
-          refName: saRef,
-          start: saRealStart,
-          end: saRealStart + saLengthOnRef,
-          seqLength: saLength,
-          clipPos: saClipPos,
-          CIGAR: saCigar,
-          assemblyName: trackAssembly,
-          strand: saStrandNormalized,
-          uniqueId: `${feature.id()}_SA${index}`,
-          mate: {
-            start: saClipPos,
-            end: saClipPos + saLengthSansClipping,
-            refName: readName,
-          },
-        }
-      })
-
-    const feat = feature.toJSON()
-
-    feat.mate = {
-      refName: readName,
-      start: clipPos,
-      end: clipPos + getLengthSansClipping(cigar),
-    }
-
-    // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
-    // which is the primary alignments. otherwise it is the primary alignment just use
-    // seq.length if primary alignment
-    const totalLength =
-      // eslint-disable-next-line no-bitwise
-      flags & 2048
-        ? getLength(supplementaryAlignments[0].CIGAR)
-        : getLength(cigar)
-
-    const features = [feat, ...supplementaryAlignments] as ReducedFeature[]
-
-    features.forEach((f, index) => {
-      f.syntenyId = index
-      f.mate.syntenyId = index
-      f.mate.uniqueId = `${f.uniqueId}_mate`
-    })
-    features.sort((a, b) => a.clipPos - b.clipPos)
-
-    // the config feature store includes synthetic mate features
-    // mapped to the read assembly
-    const configFeatureStore = features.concat(
-      // @ts-ignore
-      features.map(f => f.mate),
-    )
-
-    const refLength = features.reduce(
-      (a, f) => a + f.end - f.start + 2 * totalLength,
-      0,
-    )
-
-    session.addView('LinearSyntenyView', {
-      type: 'LinearSyntenyView',
-      views: [
-        {
-          type: 'LinearGenomeView',
-          hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: refLength / 800,
-          displayedRegions: features.map(f => {
-            return {
-              start: f.start - totalLength,
-              end: f.end + totalLength,
-              refName: f.refName,
-              assemblyName: trackAssembly,
-            }
-          }),
-        },
-        {
-          type: 'LinearGenomeView',
-          hideHeader: true,
-          offsetPx: 0,
-          bpPerPx: totalLength / 800,
-          displayedRegions: [
-            {
-              assemblyName: readAssembly,
-              start: 0,
-              end: totalLength,
+    try {
+      const session = getSession(track)
+      const view = getContainingView(track)
+      const clipPos = feature.get('clipPos')
+      const cigar = feature.get('CIGAR')
+      const flags = feature.get('flags')
+      const SA: string =
+        (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
+      const readName = feature.get('name')
+      const readAssembly = `${readName}_assembly`
+      const [trackAssembly] = getConf(track, 'assemblyNames')
+      const assemblyNames = [trackAssembly, readAssembly]
+      const trackId = `track-${Date.now()}`
+      const trackName = `${readName}_vs_${trackAssembly}`
+      const supplementaryAlignments = SA.split(';')
+        .filter(aln => !!aln)
+        .map((aln, index) => {
+          const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+          const saLengthOnRef = getLengthOnRef(saCigar)
+          const saLength = getLength(saCigar)
+          const saLengthSansClipping = getLengthSansClipping(saCigar)
+          const saStrandNormalized = saStrand === '-' ? -1 : 1
+          const saClipPos = getClip(saCigar, saStrandNormalized)
+          const saRealStart = +saStart - 1 + saClipPos
+          return {
+            refName: saRef,
+            start: saRealStart,
+            end: saRealStart + saLengthOnRef,
+            seqLength: saLength,
+            clipPos: saClipPos,
+            CIGAR: saCigar,
+            assemblyName: trackAssembly,
+            strand: saStrandNormalized,
+            uniqueId: `${feature.id()}_SA${index}`,
+            mate: {
+              start: saClipPos,
+              end: saClipPos + saLengthSansClipping,
               refName: readName,
             },
-          ],
-        },
-      ],
-      viewTrackConfigs: [
-        {
-          type: 'SyntenyTrack',
-          assemblyNames,
-          adapter: {
-            type: 'FromConfigAdapter',
-            features: configFeatureStore,
+          }
+        })
+
+      const feat = feature.toJSON()
+
+      feat.mate = {
+        refName: readName,
+        start: clipPos,
+        end: clipPos + getLengthSansClipping(cigar),
+      }
+
+      // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
+      // which is the primary alignments. otherwise it is the primary alignment just use
+      // seq.length if primary alignment
+      const totalLength =
+        // eslint-disable-next-line no-bitwise
+        flags & 2048
+          ? getLength(supplementaryAlignments[0].CIGAR)
+          : getLength(cigar)
+
+      const features = [feat, ...supplementaryAlignments] as ReducedFeature[]
+
+      features.forEach((f, index) => {
+        f.syntenyId = index
+        f.mate.syntenyId = index
+        f.mate.uniqueId = `${f.uniqueId}_mate`
+      })
+      features.sort((a, b) => a.clipPos - b.clipPos)
+
+      // the config feature store includes synthetic mate features
+      // mapped to the read assembly
+      const configFeatureStore = features.concat(
+        // @ts-ignore
+        features.map(f => f.mate),
+      )
+
+      const refLength = features.reduce(
+        (a, f) => a + f.end - f.start + 2 * windowSize,
+        0,
+      )
+
+      session.addView('LinearSyntenyView', {
+        type: 'LinearSyntenyView',
+        views: [
+          {
+            type: 'LinearGenomeView',
+            hideHeader: true,
+            offsetPx: 0,
+            bpPerPx: refLength / view.width,
+            displayedRegions: features.map(f => {
+              return {
+                start: f.start - windowSize,
+                end: f.end + windowSize,
+                refName: f.refName,
+                assemblyName: trackAssembly,
+              }
+            }),
           },
-          renderer: {
-            type: 'LinearSyntenyRenderer',
+          {
+            type: 'LinearGenomeView',
+            hideHeader: true,
+            offsetPx: 0,
+            bpPerPx: totalLength / view.width,
+            displayedRegions: [
+              {
+                assemblyName: readAssembly,
+                start: 0,
+                end: totalLength,
+                refName: readName,
+              },
+            ],
           },
-          trackId,
-          name: trackName,
-        },
-      ],
-      tracks: [
-        {
-          configuration: trackId,
-          type: 'SyntenyTrack',
-          displays: [
-            {
-              type: 'LinearSyntenyDisplay',
-              configuration: `${trackId}-LinearSyntenyDisplay`,
+        ],
+        viewTrackConfigs: [
+          {
+            type: 'SyntenyTrack',
+            assemblyNames,
+            adapter: {
+              type: 'FromConfigAdapter',
+              features: configFeatureStore,
             },
-          ],
-        },
-      ],
-      displayName: `${readName} vs ${trackAssembly}`,
-    })
+            renderer: {
+              type: 'LinearSyntenyRenderer',
+            },
+            trackId,
+            name: trackName,
+          },
+        ],
+        tracks: [
+          {
+            configuration: trackId,
+            type: 'SyntenyTrack',
+            displays: [
+              {
+                type: 'LinearSyntenyDisplay',
+                configuration: `${trackId}-LinearSyntenyDisplay`,
+              },
+            ],
+          },
+        ],
+        displayName: `${readName} vs ${trackAssembly}`,
+      })
+      handleClose()
+    } catch (e) {
+      console.error(e)
+    }
   }
   return (
     <Dialog
@@ -308,7 +315,7 @@ function WindowSizeDlg(props: {
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        Color by tag
+        Set window size
         <IconButton
           aria-label="close"
           className={classes.closeButton}
@@ -320,27 +327,25 @@ function WindowSizeDlg(props: {
       <DialogContent style={{ overflowX: 'hidden' }}>
         <div className={classes.root}>
           <Typography>
-            Set a window size that surrounds the place you zoom in on
+            Show an extra window around each part of the split alignment. Using
+            a larger value can allow you to see more genomic context.
           </Typography>
 
-          <form>
-            <TextField
-              value={windowSize}
-              onChange={event => {
-                setWindowSize(event.target.value)
-              }}
-              placeholder="Set window size"
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              style={{ marginLeft: 20 }}
-              onClick={onSubmit}
-            >
-              Submit
-            </Button>
-          </form>
+          <TextField
+            value={window}
+            onChange={event => {
+              setWindowSize(event.target.value)
+            }}
+            placeholder="Set window size"
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ marginLeft: 20 }}
+            onClick={onSubmit}
+          >
+            Submit
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -437,7 +442,6 @@ export default class extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 const track = getContainingTrack(display)
-                console.log({ track })
                 track.setDialogComponent(WindowSizeDlg, {
                   feature,
                 })

@@ -55,41 +55,36 @@ export default function ColorByTagDlg(props: {
             for minimap2 read strand, HP for haplotype, RG for read group, etc.
           </Typography>
 
-          <form>
-            <TextField
-              value={tag}
-              onChange={event => {
-                setTag(event.target.value)
-              }}
-              placeholder="Enter tag name"
-              inputProps={{
-                maxLength: 2,
-                'data-testid': 'color-tag-name-input',
-              }}
-              error={tag.length === 2 && !validTag}
-              helperText={
-                tag.length === 2 && !validTag ? 'Not a valid tag' : ''
-              }
-              autoComplete="off"
-              data-testid="color-tag-name"
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              type="submit"
-              style={{ marginLeft: 20 }}
-              onClick={() => {
-                display.setColorScheme({
-                  type: 'tag',
-                  tag,
-                })
-                handleClose()
-              }}
-              disabled={!validTag}
-            >
-              Submit
-            </Button>
-          </form>
+          <TextField
+            value={tag}
+            onChange={event => {
+              setTag(event.target.value)
+            }}
+            placeholder="Enter tag name"
+            inputProps={{
+              maxLength: 2,
+              'data-testid': 'color-tag-name-input',
+            }}
+            error={tag.length === 2 && !validTag}
+            helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+            autoComplete="off"
+            data-testid="color-tag-name"
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            style={{ marginLeft: 20 }}
+            onClick={() => {
+              display.setColorScheme({
+                type: 'tag',
+                tag,
+              })
+              handleClose()
+            }}
+            disabled={!validTag}
+          >
+            Submit
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
