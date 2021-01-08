@@ -71,7 +71,6 @@ export function stateModelFactory(configSchema: any) {
 
       return {
         afterAttach() {
-          const parent = getContainingView(self) as DotplotViewModel
           makeAbortableReaction(
             self as any,
             () => renderBlockData(self as any),

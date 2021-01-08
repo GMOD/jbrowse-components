@@ -1,3 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react'
+import { makeStyles } from '@material-ui/core/styles'
+import Button from '@material-ui/core/Button'
+import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
+import AddIcon from '@material-ui/icons/Add'
+import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -17,8 +30,6 @@ import {
 } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-import AddIcon from '@material-ui/icons/Add'
-import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { autorun } from 'mobx'
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
@@ -40,17 +51,6 @@ import {
   configSchema as MCScanAnchorsConfigSchema,
 } from './MCScanAnchorsAdapter'
 
-import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
-
 const { parseCigar } = MismatchParser
 
 interface Track {
@@ -61,7 +61,6 @@ interface Track {
     additionalContextMenuItemCallbacks: Function[]
     id: string
     type: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     PileupDisplay: any
   }[]
 }
