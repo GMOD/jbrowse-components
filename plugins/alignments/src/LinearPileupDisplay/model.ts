@@ -73,6 +73,7 @@ const stateModelFactory = (
           types.model({
             flagInclude: types.optional(types.number, 0),
             flagExclude: types.optional(types.number, 1536),
+            readName: types.maybe(types.string),
             tagFilter: types.maybe(
               types.model({ tag: types.string, value: types.string }),
             ),
@@ -262,6 +263,7 @@ const stateModelFactory = (
       setFilterBy(filter: {
         flagInclude: number
         flagExclude: number
+        readName?: string
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
@@ -343,8 +345,14 @@ const stateModelFactory = (
               // use eqeq instead of eqeqeq for number vs string comparison
               filters.push(`function(f) {
               const tags = f.get('tags');
-              const tag = tags?tags["${tag}"]:f.get("${tag}");
-              return tag == "${value}";
+              const val = tags ? tags["${tag}"]:f.get("${tag}")
+              return "${value}"==='*'?val !== undefined:val == "${value}";
+              }`)
+            }
+            if (self.filterBy.readName) {
+              const { readName } = self.filterBy
+              filters.push(`function(f) {
+              return f.get('name') === "${readName}";
               }`)
             }
           }

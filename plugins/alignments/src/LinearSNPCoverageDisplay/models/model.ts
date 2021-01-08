@@ -26,6 +26,7 @@ const stateModelFactory = (
           types.model({
             flagInclude: types.optional(types.number, 0),
             flagExclude: types.optional(types.number, 1536),
+            readName: types.maybe(types.string),
             tagFilter: types.maybe(
               types.model({ tag: types.string, value: types.string }),
             ),
@@ -41,6 +42,7 @@ const stateModelFactory = (
       setFilterBy(filter: {
         flagInclude: number
         flagExclude: number
+        readName?: string
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
@@ -71,25 +73,38 @@ const stateModelFactory = (
         return []
       },
 
+      // The SNPCoverage filters are called twice because the BAM/CRAM features
+      // pass filters and then the SNPCoverage score features pass through
+      // here, and those have no name/flags/tags so those are passed thru
       get filters() {
         let filters: string[] = []
         if (self.filterBy) {
           const { flagInclude, flagExclude } = self.filterBy
           filters = [
             `function(f) {
-                const flags = f.get('flags');
+                const flags = f.get('');
                 if(f.get('snpinfo')) return true
                 return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
               }`,
           ]
+
           if (self.filterBy.tagFilter) {
             const { tag, value } = self.filterBy.tagFilter
             // use eqeq instead of eqeqeq for number vs string comparison
             filters.push(`function(f) {
               const tags = f.get('tags');
               if(f.get('snpinfo')) return true
-              const tag = tags?tags["${tag}"]:f.get("${tag}");
-              return tag == "${value}";
+              const val = tags ? tags["${tag}"]:f.get("${tag}")
+              return "${value}"==='*'? val !== undefined :val == "${value}";
+              }`)
+          }
+          if (self.filterBy.readName) {
+            const { readName } = self.filterBy
+
+            filters.push(`function(f) {
+              const name = f.get('name')
+              if(f.get('snpinfo')) return true
+              return name == "${readName}"
               }`)
           }
         }

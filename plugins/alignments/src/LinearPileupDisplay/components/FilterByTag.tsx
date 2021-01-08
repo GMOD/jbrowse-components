@@ -86,6 +86,7 @@ export default observer(
       filterBy?: {
         flagExclude: number
         flagInclude: number
+        readName?: string
         tagFilter?: { tag: string; value: string }
       }
       setFilterBy: Function
@@ -99,6 +100,7 @@ export default observer(
     const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)
     const [tag, setTag] = useState(filterBy?.tagFilter?.tag || '')
     const [tagValue, setTagValue] = useState(filterBy?.tagFilter?.value || '')
+    const [readName, setReadName] = useState(filterBy?.readName || '')
     const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
     const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
@@ -140,7 +142,11 @@ export default observer(
                 </div>
               </Paper>
               <Paper className={classes.paper} variant="outlined">
-                <Typography>Filter by tag name and value (optional)</Typography>
+                <Typography>
+                  Filter by tag name and value. Use * in the value field to get
+                  all reads containing any value for that tag. Example: filter
+                  tag name SA with value * to get all split/supplementary reads
+                </Typography>
                 <TextField
                   className={classes.field}
                   value={tag}
@@ -171,6 +177,21 @@ export default observer(
                   data-testid="color-tag-value"
                 />
               </Paper>
+              <Paper className={classes.paper} variant="outlined">
+                <Typography>Filter by read name</Typography>
+                <TextField
+                  className={classes.field}
+                  value={readName}
+                  onChange={event => {
+                    setReadName(event.target.value)
+                  }}
+                  placeholder="Enter read name"
+                  inputProps={{
+                    'data-testid': 'color-tag-readname-input',
+                  }}
+                  data-testid="color-tag-readname"
+                />
+              </Paper>
               <Button
                 variant="contained"
                 color="primary"
@@ -178,6 +199,7 @@ export default observer(
                   display.setFilterBy({
                     flagInclude,
                     flagExclude,
+                    readName,
                     tagFilter:
                       tag !== ''
                         ? {
