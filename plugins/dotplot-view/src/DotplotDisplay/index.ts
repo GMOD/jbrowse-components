@@ -74,16 +74,9 @@ export function stateModelFactory(configSchema: any) {
           const parent = getContainingView(self) as DotplotViewModel
           makeAbortableReaction(
             self as any,
-            () => ({
-              data: { ...renderBlockData(self as any) } as
-                | ReturnType<typeof renderBlockData>
-                | undefined,
-              initialized: parent.initialized,
-            }),
+            () => renderBlockData(self as any),
             (blockData): any => {
-              if (blockData?.initialized && blockData.data)
-                return renderBlockEffect(blockData.data)
-              return undefined
+              return blockData ? renderBlockEffect(blockData) : undefined
             },
             {
               name: `${self.type} ${self.id} rendering`,
@@ -152,18 +145,16 @@ export function stateModelFactory(configSchema: any) {
 
 function renderBlockData(self: DotplotDisplayModel) {
   const { rpcManager } = getSession(self)
-  const display = self
-
-  const { renderProps, rendererType } = display
+  const { renderProps, rendererType } = self
+  const { adapterConfig } = self
+  const parent = getContainingView(self) as DotplotViewModel
 
   // Alternative to readConfObject(config) is below
   // used because renderProps is something under our control.
   // Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
-
-  const { adapterConfig } = self
-  const parent = getContainingView(self) as DotplotViewModel
   getSnapshot(parent)
+
   if (parent.initialized) {
     const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
     return {
