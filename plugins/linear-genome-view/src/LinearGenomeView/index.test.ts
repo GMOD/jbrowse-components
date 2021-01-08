@@ -614,3 +614,41 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   model.setError(Error('pxToBp failed to map to a region'))
   expect(model.error?.message).toEqual('pxToBp failed to map to a region')
 })
+
+test('Format and sizing of fasta files', () => {
+  let model: Instance<ReturnType<typeof stateModelFactory>>
+  const session = Session.create({
+    configuration: {},
+  })
+  model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testGetSequence',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
+  ])
+  model.setWidth(800)
+  // check different sizes
+  const small = 'cattgttgcg'
+  const large = 'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
+  const mockChunks = [
+    { header: 'ctgA:1-10', seq: small },
+    { header: 'ctgA:1-81', seq: large}
+  ]
+  // check the correct size in bytes is returned
+  const size = model.checkSequencesSize('')
+  expect(size).toEqual(0)
+  const size2 = model.checkSequencesSize(small)
+  expect(size2).toEqual(10)
+  const size3 = model.checkSequencesSize(large)
+  expect(size3).toEqual(81)
+  // checks that the first 80 chars are followed by a space
+  const formattedSeqFasta = model.formatFastaLines(large)
+  expect(formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length).toEqual(80)
+  const formattedFasta = model.formatSeqFasta(mockChunks)
+  expect(model.checkSequencesSize(formattedFasta)).toEqual(115)
+})

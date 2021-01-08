@@ -59,7 +59,7 @@ function SequenceDialog({
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">
-            Reference Sequence
+            Reference sequence
             {handleClose ? (
               <IconButton data-testid="close-seqDialog" className={classes.closeButton} onClick={() => {
                 handleClose()
