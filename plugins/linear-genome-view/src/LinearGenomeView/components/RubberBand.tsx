@@ -108,8 +108,10 @@ function RubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined) {
-        setAnchorPosition({ left: event.clientX, top: event.clientY })
+      if (startX !== undefined && controlsRef.current) {
+        const left =
+          event.clientX - controlsRef.current.getBoundingClientRect().left
+        setAnchorPosition({ left, top: event.clientY })
         setGuideX(undefined)
       }
     }
