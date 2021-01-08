@@ -16,8 +16,8 @@
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
-  "main": "src/index.ts",
+  "srcMain": "src/index.tsx",
+  "main": "src/index.tsx",
   "distModule": "dist/plugin-linear-comparative-view.esm.js",
   "module": "",
   "files": [

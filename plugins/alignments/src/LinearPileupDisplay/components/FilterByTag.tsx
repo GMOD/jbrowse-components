@@ -128,92 +128,90 @@ export default observer(
             for details
           </Typography>
           <div className={classes.root}>
-            <form>
-              <Paper className={classes.paper} variant="outlined">
-                <div style={{ display: 'flex' }}>
-                  <div>
-                    <Typography>Read must have ALL these flags</Typography>
-                    <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
-                  </div>
-                  <div>
-                    <Typography>Read must have NONE of these flags</Typography>
-                    <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
-                  </div>
+            <Paper className={classes.paper} variant="outlined">
+              <div style={{ display: 'flex' }}>
+                <div>
+                  <Typography>Read must have ALL these flags</Typography>
+                  <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
                 </div>
-              </Paper>
-              <Paper className={classes.paper} variant="outlined">
-                <Typography>
-                  Filter by tag name and value. Use * in the value field to get
-                  all reads containing any value for that tag. Example: filter
-                  tag name SA with value * to get all split/supplementary reads
-                </Typography>
-                <TextField
-                  className={classes.field}
-                  value={tag}
-                  onChange={event => {
-                    setTag(event.target.value)
-                  }}
-                  placeholder="Enter tag name"
-                  inputProps={{
-                    maxLength: 2,
-                    'data-testid': 'color-tag-name-input',
-                  }}
-                  error={tag.length === 2 && !validTag}
-                  helperText={
-                    tag.length === 2 && !validTag ? 'Not a valid tag' : ''
-                  }
-                  data-testid="color-tag-name"
-                />
-                <TextField
-                  className={classes.field}
-                  value={tagValue}
-                  onChange={event => {
-                    setTagValue(event.target.value)
-                  }}
-                  placeholder="Enter tag value"
-                  inputProps={{
-                    'data-testid': 'color-tag-name-input',
-                  }}
-                  data-testid="color-tag-value"
-                />
-              </Paper>
-              <Paper className={classes.paper} variant="outlined">
-                <Typography>Filter by read name</Typography>
-                <TextField
-                  className={classes.field}
-                  value={readName}
-                  onChange={event => {
-                    setReadName(event.target.value)
-                  }}
-                  placeholder="Enter read name"
-                  inputProps={{
-                    'data-testid': 'color-tag-readname-input',
-                  }}
-                  data-testid="color-tag-readname"
-                />
-              </Paper>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  display.setFilterBy({
-                    flagInclude,
-                    flagExclude,
-                    readName,
-                    tagFilter:
-                      tag !== ''
-                        ? {
-                            tag,
-                            value: tagValue,
-                          }
-                        : undefined,
-                  })
-                  handleClose()
+                <div>
+                  <Typography>Read must have NONE of these flags</Typography>
+                  <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
+                </div>
+              </div>
+            </Paper>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography>
+                Filter by tag name and value. Use * in the value field to get
+                all reads containing any value for that tag. Example: filter tag
+                name SA with value * to get all split/supplementary reads
+              </Typography>
+              <TextField
+                className={classes.field}
+                value={tag}
+                onChange={event => {
+                  setTag(event.target.value)
                 }}
-              >
-                Submit
-              </Button>
-            </form>
+                placeholder="Enter tag name"
+                inputProps={{
+                  maxLength: 2,
+                  'data-testid': 'color-tag-name-input',
+                }}
+                error={tag.length === 2 && !validTag}
+                helperText={
+                  tag.length === 2 && !validTag ? 'Not a valid tag' : ''
+                }
+                data-testid="color-tag-name"
+              />
+              <TextField
+                className={classes.field}
+                value={tagValue}
+                onChange={event => {
+                  setTagValue(event.target.value)
+                }}
+                placeholder="Enter tag value"
+                inputProps={{
+                  'data-testid': 'color-tag-name-input',
+                }}
+                data-testid="color-tag-value"
+              />
+            </Paper>
+            <Paper className={classes.paper} variant="outlined">
+              <Typography>Filter by read name</Typography>
+              <TextField
+                className={classes.field}
+                value={readName}
+                onChange={event => {
+                  setReadName(event.target.value)
+                }}
+                placeholder="Enter read name"
+                inputProps={{
+                  'data-testid': 'color-tag-readname-input',
+                }}
+                data-testid="color-tag-readname"
+              />
+            </Paper>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                display.setFilterBy({
+                  flagInclude,
+                  flagExclude,
+                  readName,
+                  tagFilter:
+                    tag !== ''
+                      ? {
+                          tag,
+                          value: tagValue,
+                        }
+                      : undefined,
+                })
+                handleClose()
+              }}
+            >
+              Submit
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
