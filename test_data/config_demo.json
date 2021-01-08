@@ -3,15 +3,15 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/v1.0.0/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "GDC",
-      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/v1.0.0/rawgit/jbrowse-plugin-gdc.umd.production.min.js"
     },
     {
       "name": "UCSC",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/master/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/v1.0.0/rawgit/jbrowse-plugin-ucsc.umd.production.min.js"
     }
   ],
   "assemblies": [
@@ -827,6 +827,42 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "na12878_highcov",
+      "name": "NA12878 high-coverage",
+      "assemblyNames": ["hg38"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": ["hg19"],
@@ -1029,6 +1065,24 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "get_rm_vcf",
+      "name": "GeT-RM NCBI vcf",
+      "assemblyNames": ["hg19"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz.tbi"
+          }
         }
       }
     },

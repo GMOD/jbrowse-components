@@ -309,6 +309,7 @@ const ShareDialog = observer(
               }}
               color="primary"
               startIcon={<ContentCopyIcon />}
+              disabled={currentSetting === 'short' && loading}
             >
               Copy URL to Clipboard
             </Button>

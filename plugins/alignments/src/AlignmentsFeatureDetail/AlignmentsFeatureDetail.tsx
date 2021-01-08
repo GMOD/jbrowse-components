@@ -17,15 +17,7 @@ interface AlnProps extends AlnCardProps {
   feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-const featureFlags = [
-  'unmapped',
-  'qc_failed',
-  'duplicate',
-  'secondary_alignment',
-  'supplementary_alignment',
-]
-
-const omit = ['length_on_ref', 'clipPos', 'template_length']
+const omit = ['clipPos', 'flags']
 
 const AlignmentFlags: FunctionComponent<AlnProps> = props => {
   const classes = useStyles()
@@ -99,7 +91,7 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
     <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails
         {...props}
-        omit={featureFlags.concat(omit)}
+        omit={omit}
         formatter={(value: unknown) => <Formatter value={value} />}
       />
       <AlignmentFlags feature={feat} {...props} />

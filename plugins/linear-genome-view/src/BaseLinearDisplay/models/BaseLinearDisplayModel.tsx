@@ -55,7 +55,6 @@ export const BaseLinearDisplay = types
     featureIdUnderMouse: undefined as undefined | string,
     contextMenuFeature: undefined as undefined | Feature,
     additionalContextMenuItemCallbacks: [] as Function[],
-
     scrollTop: 0,
     userBpPerPxLimit: undefined as undefined | number,
   }))

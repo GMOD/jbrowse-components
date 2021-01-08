@@ -14,7 +14,7 @@ export const BaseDisplay = types
   })
   .volatile(() => ({
     rendererTypeName: '',
-    error: undefined as Error | string | undefined,
+    error: undefined as Error | undefined,
   }))
   .views(self => ({
     get RenderingComponent(): React.FC<{
@@ -106,8 +106,8 @@ export const BaseDisplay = types
     },
   }))
   .actions(self => ({
-    setError(e: string) {
-      self.error = e
+    setError(error?: Error) {
+      self.error = error
     },
     // base display reload does nothing, see specialized displays for details
     reload() {},

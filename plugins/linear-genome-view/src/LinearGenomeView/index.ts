@@ -109,7 +109,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      minimumBlockWidth: 20,
+      minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 
@@ -147,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
           if (
             assemblyManager.assemblyList
-              .map((asm: { name: string }) => asm.name)
+              ?.map((asm: { name: string }) => asm.name)
               .includes(assemblyName)
           ) {
             return (assemblyManager.get(assemblyName) || {}).initialized
@@ -181,6 +181,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           .map(t => t.displays[0].height)
           .reduce((a, b) => a + b, 0)
       },
+
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
@@ -203,7 +204,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get maxBpPerPx() {
-        return this.totalBp / 1000
+        return this.totalBp / (self.width * 0.9)
       },
 
       get minBpPerPx() {
@@ -291,6 +292,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let offsetBp = 0
 
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
         const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
             if (regionNumber ? regionNumber === idx : true) {
@@ -298,7 +300,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               return true
             }
           }
-          offsetBp += r.end - r.start
+          offsetBp += r.end - r.start + interRegionPaddingBp
           return false
         })
         const foundRegion = self.displayedRegions[index]
@@ -311,26 +313,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
-      handleOutOfBoundPx(leftPx: number, rightPx: number) {
-        let leftOffset = this.pxToBp(leftPx)
-        let rightOffset = this.pxToBp(rightPx)
-        if (leftOffset.oob) {
-          leftOffset = {
-            ...leftOffset,
-            offset: leftOffset.start,
-          }
-        }
-        if (rightOffset.oob) {
-          rightOffset = {
-            ...rightOffset,
-            offset: rightOffset.end,
-          }
-        }
-        return {
-          leftOffset,
-          rightOffset,
-        }
-      },
+      // handleOutOfBoundPx(leftPx: number, rightPx: number) {
+      //   let leftOffset = this.pxToBp(leftPx)
+      //   let rightOffset = this.pxToBp(rightPx)
+      //   if (leftOffset.oob) {
+      //     leftOffset = {
+      //       ...leftOffset,
+      //       offset: leftOffset.start,
+      //     }
+      //   }
+      //   if (rightOffset.oob) {
+      //     rightOffset = {
+      //       ...rightOffset,
+      //       offset: rightOffset.end,
+      //     }
+      //   }
+      //   return {
+      //     leftOffset,
+      //     rightOffset,
+      //   }
+      // },
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -353,25 +355,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: 0,
           }
         }
-        if (bp >= this.totalBp) {
-          const region = self.displayedRegions[n - 1]
-          const len = region.end - region.start
-          const offset = bp - this.totalBp + len
-          return {
-            ...getSnapshot(region),
-            oob: true,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index: n - 1,
-          }
-        }
+
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
           const len = region.end - region.start
+          const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
-            const offset = bp - bpSoFar
             return {
               ...getSnapshot(region),
               oob: false,
@@ -382,10 +374,45 @@ export function stateModelFactory(pluginManager: PluginManager) {
               index,
             }
           }
-          bpSoFar += len
+
+          // add the interRegionPaddingWidth if the boundary is in the screen
+          // e.g. offset>0 && offset<width
+          if (
+            region.end - region.start > minimumBlockBp &&
+            offset / self.bpPerPx > 0 &&
+            offset / self.bpPerPx < self.width
+          ) {
+            bpSoFar += len + interRegionPaddingBp
+          } else {
+            bpSoFar += len
+          }
         }
-        throw new Error('pxToBp failed to map to a region')
+
+        if (bp >= bpSoFar) {
+          const region = self.displayedRegions[n - 1]
+          const len = region.end - region.start
+          const offset = bp - bpSoFar + len
+          return {
+            ...getSnapshot(region),
+            oob: true,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
+            index: n - 1,
+          }
+        }
+        return {
+          coord: 0,
+          index: 0,
+          refName: '',
+          oob: true,
+          assemblyName: '',
+          offset: 0,
+          reversed: false,
+        }
       },
+
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
@@ -1200,6 +1227,35 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.center()
       },
 
+      showAllRegionsInAssembly(assemblyName?: string) {
+        const session = getSession(self)
+        const { assemblyManager } = session
+        if (!assemblyName) {
+          const assemblyNames = [
+            ...new Set(
+              self.displayedRegions.map(region => region.assemblyName),
+            ),
+          ]
+          if (assemblyNames.length > 1) {
+            session.notify(
+              `Can't perform this with multiple assemblies currently`,
+            )
+            return
+          }
+
+          ;[assemblyName] = assemblyNames
+        }
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly) {
+          const { regions } = getSnapshot(assembly)
+          if (regions) {
+            this.setDisplayedRegions(regions)
+            self.zoomTo(self.maxBpPerPx)
+            this.center()
+          }
+        }
+      },
+
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
@@ -1271,9 +1327,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.horizontallyFlip,
             },
             {
-              label: 'Show all regions',
+              label: 'Show all regions in assembly',
               icon: VisibilityIcon,
-              onClick: self.showAllRegions,
+              onClick: self.showAllRegionsInAssembly,
             },
             {
               label: 'Show center line',

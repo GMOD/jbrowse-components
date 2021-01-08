@@ -111,8 +111,10 @@ function RubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined) {
-        setAnchorPosition({ left: event.clientX, top: event.clientY })
+      if (startX !== undefined && controlsRef.current) {
+        const left =
+          event.clientX - controlsRef.current.getBoundingClientRect().left
+        setAnchorPosition({ left, top: event.clientY })
         setGuideX(undefined)
       }
     }
@@ -189,12 +191,12 @@ function RubberBand({
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
-    // const leftOffset = model.pxToBp(leftPx)
-    // const rightOffset = model.pxToBp(rightPx)
-    const { leftOffset, rightOffset } = model.handleOutOfBoundPx(
-      leftPx,
-      rightPx,
-    )
+    const leftOffset = model.pxToBp(leftPx)
+    const rightOffset = model.pxToBp(rightPx)
+    // const { leftOffset, rightOffset } = model.handleOutOfBoundPx(
+    //   leftPx,
+    //   rightPx,
+    // )
     // handles selecting oob bp
     console.log(leftOffset)
     console.log(rightOffset)

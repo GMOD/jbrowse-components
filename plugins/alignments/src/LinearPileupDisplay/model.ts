@@ -7,24 +7,32 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  getContainingTrack,
 } from '@jbrowse/core/util'
 
+import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
-import { autorun } from 'mobx'
+import PaletteIcon from '@material-ui/icons/Palette'
+import FilterListIcon from '@material-ui/icons/ClearAll'
+
+import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import ColorByTagDlg from './components/ColorByTag'
+import FilterByTagDlg from './components/FilterByTag'
+import SortByTagDlg from './components/SortByTag'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -50,23 +58,95 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             pos: types.number,
+            tag: types.maybe(types.string),
             refName: types.string,
             assemblyName: types.string,
           }),
         ),
+        colorBy: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        ),
+        filterBy: types.optional(
+          types.model({
+            flagInclude: types.optional(types.number, 0),
+            flagExclude: types.optional(types.number, 1536),
+            readName: types.maybe(types.string),
+            tagFilter: types.maybe(
+              types.model({ tag: types.string, value: types.string }),
+            ),
+          }),
+          {},
+        ),
       }),
     )
     .volatile(() => ({
+      colorTagMap: observable.map<string, string>({}),
       ready: false,
       currBpPerPx: 0,
     }))
-
     .actions(self => ({
       setReady(flag: boolean) {
         self.ready = flag
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
+      },
+
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        self.colorTagMap = observable.map({}) // clear existing mapping
+        self.colorBy = cast(colorScheme)
+        self.ready = false
+      },
+      async getUniqueTagValues(
+        colorScheme: { type: string; tag?: string },
+        blocks: BlockSet,
+        opts?: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const values = await rpcManager.call(
+          getRpcSessionId(self),
+          'PileupGetGlobalValueForTag',
+          {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            regions: blocks.contentBlocks,
+            ...opts,
+          },
+        )
+        return values as string[]
+      },
+      updateColorTagMap(uniqueTag: string[]) {
+        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        const colorPalette = [
+          '#BBCCEE',
+          'pink',
+          '#CCDDAA',
+          '#EEEEBB',
+          '#FFCCCC',
+          'lightblue',
+          'lightgreen',
+          'tan',
+          '#CCEEFF',
+          'lightsalmon',
+        ]
+
+        uniqueTag.forEach(value => {
+          if (!self.colorTagMap.has(value)) {
+            const totalKeys = [...self.colorTagMap.keys()].length
+            const newColor = colorPalette[totalKeys]
+            self.colorTagMap.set(value, newColor)
+          }
+        })
       },
     }))
     .actions(self => ({
@@ -77,13 +157,24 @@ const stateModelFactory = (
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, renderProps } = self
+                const { sortedBy, colorBy, renderProps } = self
                 const view = getContainingView(self) as LGV
+
+                // continually generate the vc pairing, set and rerender if any new values seen
+                if (colorBy?.tag) {
+                  const uniqueTagSet = await self.getUniqueTagValues(
+                    colorBy,
+                    view.staticBlocks,
+                  )
+                  self.updateColorTagMap(uniqueTagSet)
+                }
+
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
+
                   const region = {
                     start: pos,
-                    end: pos + 1,
+                    end: (pos || 0) + 1,
                     refName,
                     assemblyName,
                   }
@@ -105,7 +196,8 @@ const stateModelFactory = (
                   self.setReady(true)
                 }
               } catch (error) {
-                self.setError(error.message)
+                console.error(error)
+                self.setError(error)
               }
             },
             { delay: 1000 },
@@ -146,7 +238,7 @@ const stateModelFactory = (
         self.configuration = configuration
       },
 
-      sortSelected(type: string) {
+      setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
           return
@@ -159,26 +251,28 @@ const stateModelFactory = (
           return
         }
 
-        this.setSortedBy({
+        self.sortedBy = {
           type,
           pos: centerBp,
           refName: centerRefName,
           assemblyName,
-        })
-      },
-      setSortedBy(sort: {
-        type: string
-        pos: number
-        refName: string
-        assemblyName: string
-      }) {
-        self.sortedBy = sort
+          tag,
+        }
         self.ready = false
+      },
+      setFilterBy(filter: {
+        flagInclude: number
+        flagExclude: number
+        readName?: string
+        tagFilter?: { tag: string; value: string }
+      }) {
+        self.filterBy = cast(filter)
       },
     }))
     .actions(self => {
-      // reset the sort object and refresh whole display on reload
+      // resets the sort object and refresh whole display on reload
       const superReload = self.reload
+
       return {
         reload() {
           self.clearSelected()
@@ -232,12 +326,37 @@ const stateModelFactory = (
           return contextMenuItems
         },
 
-        get sortOptions() {
-          return ['Start location', 'Read strand', 'Base pair', 'Clear sort']
-        },
-
         get DisplayBlurb() {
           return LinearPileupDisplayBlurb
+        },
+
+        get filters() {
+          let filters: string[] = []
+          if (self.filterBy) {
+            const { flagInclude, flagExclude } = self.filterBy
+            filters = [
+              `function(f) {
+                const flags = f.get('flags');
+                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
+              }`,
+            ]
+            if (self.filterBy.tagFilter) {
+              const { tag, value } = self.filterBy.tagFilter
+              // use eqeq instead of eqeqeq for number vs string comparison
+              filters.push(`function(f) {
+              const tags = f.get('tags');
+              const val = tags ? tags["${tag}"]:f.get("${tag}")
+              return "${value}"==='*'?val !== undefined:val == "${value}";
+              }`)
+            }
+            if (self.filterBy.readName) {
+              const { readName } = self.filterBy
+              filters.push(`function(f) {
+              return f.get('name') === "${readName}";
+              }`)
+            }
+          }
+          return filters
         },
 
         get renderProps() {
@@ -245,6 +364,7 @@ const stateModelFactory = (
           const config = self.rendererType.configSchema.create(
             getConf(self, ['renderers', self.rendererTypeName]) || {},
           )
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -253,6 +373,9 @@ const stateModelFactory = (
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
             displayModel: self,
             sortedBy: self.sortedBy,
+            colorBy: self.colorBy,
+            colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
+            filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config,
           }
@@ -278,16 +401,89 @@ const stateModelFactory = (
               label: 'Sort by',
               icon: SortIcon,
               disabled: self.showSoftClipping,
-              subMenu: this.sortOptions.map((option: string) => {
-                return {
-                  label: option,
-                  onClick() {
-                    option === 'Clear sort'
-                      ? self.clearSelected()
-                      : self.sortSelected(option)
+              subMenu: [
+                ...['Start location', 'Read strand', 'Base pair'].map(
+                  option => {
+                    return {
+                      label: option,
+                      onClick: () => self.setSortedBy(option),
+                    }
                   },
-                }
-              }),
+                ),
+                {
+                  label: 'Sort by tag...',
+                  onClick: () =>
+                    getContainingTrack(self).setDialogComponent(
+                      SortByTagDlg,
+                      self,
+                    ),
+                },
+                {
+                  label: 'Clear sort',
+                  onClick: () => self.clearSelected(),
+                },
+              ],
+            },
+            {
+              label: 'Color scheme',
+              icon: PaletteIcon,
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'normal' })
+                  },
+                },
+                {
+                  label: 'Mapping quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'mappingQuality' })
+                  },
+                },
+                {
+                  label: 'Strand',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'strand' })
+                  },
+                },
+                {
+                  label: 'Pair orientation',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'pairOrientation' })
+                  },
+                },
+                {
+                  label: 'Insert size',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'insertSize' })
+                  },
+                },
+                {
+                  label: 'Stranded paired-end',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'reverseTemplate' })
+                  },
+                },
+                {
+                  label: 'Color by tag...',
+                  onClick: () => {
+                    getContainingTrack(self).setDialogComponent(
+                      ColorByTagDlg,
+                      self,
+                    )
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Filter by',
+              icon: FilterListIcon,
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  FilterByTagDlg,
+                  self,
+                )
+              },
             },
           ]
         },

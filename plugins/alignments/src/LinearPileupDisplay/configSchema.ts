@@ -29,6 +29,19 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         description: 'maximum bpPerPx that is displayed in the view',
         defaultValue: 100,
       },
+      colorScheme: {
+        type: 'stringEnum',
+        model: types.enumeration('colorScheme', [
+          'strand',
+          'normal',
+          'insertSize',
+          'insertSizeAndOrientation',
+          'mappingQuality',
+          'tag',
+        ]),
+        description: 'color scheme to use',
+        defaultValue: 'normal',
+      },
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
   )

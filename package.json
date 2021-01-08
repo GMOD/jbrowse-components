@@ -139,7 +139,7 @@
     "standard-changelog": "^2.0.7",
     "ts-loader": "^7.0.5",
     "ts-node": "^8",
-    "tsdx": "^0.14.0",
+    "tsdx": "^0.14.1",
     "tslib": "^2.0.1",
     "typescript": "^3.7.2",
     "wait-on": "^5.0.0",
