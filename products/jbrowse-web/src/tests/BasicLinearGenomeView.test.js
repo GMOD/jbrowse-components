@@ -4,8 +4,7 @@ import {
   createEvent,
   fireEvent,
   render,
-  wait,
-  waitForElement,
+  waitFor,
 } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -53,7 +52,7 @@ describe('valid file tests', () => {
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
     // wait for requestAnimationFrame
-    await wait(() => {})
+    await waitFor(() => {})
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
   })
@@ -100,7 +99,9 @@ describe('valid file tests', () => {
     fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
-    await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
+    await waitFor(() =>
+      expect(state.session.views[0].tracks[0].id).toBe(trackId1),
+    )
   })
 
   it('click and zoom in and back out', async () => {
@@ -112,13 +113,13 @@ describe('valid file tests', () => {
     await findAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
-    await wait(() => {
+    await waitFor(() => {
       const after = state.session.views[0].bpPerPx
       expect(after).toBe(before / 2)
     })
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
-    await wait(() => {
+    await waitFor(() => {
       const after = state.session.views[0].bpPerPx
       expect(after).toBe(before)
     })
@@ -151,7 +152,7 @@ describe('valid file tests', () => {
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, getByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
 
@@ -161,8 +162,7 @@ describe('valid file tests', () => {
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
     fireEvent.click(viewMenu)
-    await waitForElement(() => getByText('Show center line'))
-    fireEvent.click(getByText('Show center line'))
+    fireEvent.click(await findByText('Show center line'))
     expect(state.session.views[0].showCenterLine).toBe(true)
 
     const { centerLineInfo } = state.session.views[0]
@@ -193,7 +193,7 @@ describe('valid file tests', () => {
 
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    await wait(() =>
+    await waitFor(() =>
       expect(state.session.views[0].displayedRegions[0].refName).toEqual(
         'ctgB',
       ),
