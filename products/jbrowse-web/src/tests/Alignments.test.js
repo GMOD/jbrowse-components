@@ -4,7 +4,7 @@ import {
   fireEvent,
   render,
   within,
-  waitForElement,
+  waitFor,
 } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -108,8 +108,7 @@ describe('alignments track', () => {
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
 
-    await waitForElement(() => getByText('Show soft clipping'))
-    fireEvent.click(getByText('Show soft clipping'))
+    fireEvent.click(await findByText('Show soft clipping'))
 
     // wait for block to rerender
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -147,7 +146,11 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand')
+    try {
+      await findAllByTestId('pileup-Read strand')
+    } catch (e) {
+      await findAllByTestId('pileup-Read strand')
+    }
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
