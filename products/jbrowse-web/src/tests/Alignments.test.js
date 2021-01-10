@@ -1,11 +1,5 @@
 // library
-import {
-  cleanup,
-  fireEvent,
-  render,
-  within,
-  waitForElement,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -47,7 +41,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupCanvas = await findAllByTestId1(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -59,7 +57,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId2 } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    const snpCoverageCanvas = await findAllByTestId2(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
     const snpCoverageData = snpCoverageImg.replace(
       /^data:image\/\w+;base64,/,
@@ -89,7 +91,7 @@ describe('alignments track', () => {
   it('opens the track menu and enables soft clipping', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, getByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
@@ -108,8 +110,7 @@ describe('alignments track', () => {
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
 
-    await waitForElement(() => getByText('Show soft clipping'))
-    fireEvent.click(getByText('Show soft clipping'))
+    fireEvent.click(await findByText('Show soft clipping'))
 
     // wait for block to rerender
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -147,7 +148,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand')
+    await findAllByTestId('pileup-Read strand', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -228,7 +229,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Submit'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP')
+    await findAllByTestId('pileup-tagHP', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -252,6 +253,7 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached')
-  })
+
+    await findAllByText('Max height reached', {}, { timeout: 10000 })
+  }, 15000)
 })

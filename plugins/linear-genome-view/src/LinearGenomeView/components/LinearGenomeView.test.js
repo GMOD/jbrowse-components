@@ -75,6 +75,9 @@ describe('<LinearGenomeView />', () => {
     model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
+    // test needs to wait until it's updated to display 100 bp in the header to
+    // make snapshot pass
+    await findByText('100 bp')
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
