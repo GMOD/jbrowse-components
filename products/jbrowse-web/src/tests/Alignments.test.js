@@ -246,12 +246,16 @@ describe('alignments track', () => {
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
-    const { findByTestId, findAllByText } = render(
+    const { findByTestId, getAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached')
-  })
+
+    // https://testing-library.com/docs/guide-disappearance/
+    await waitFor(() => {
+      expect(getAllByText('Max height reached')).toBeInTheDocument()
+    })
+  }, 10000)
 })

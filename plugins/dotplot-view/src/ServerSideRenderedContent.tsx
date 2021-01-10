@@ -60,7 +60,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
   const theme = createJBrowseTheme(getConf(session, 'theme'))
 
   useEffect(() => {
-    console.log('here')
     const domNode = ssrContainerNode.current
     function doHydrate() {
       const {

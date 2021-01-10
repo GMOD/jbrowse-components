@@ -1,5 +1,6 @@
 // library
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -40,14 +41,18 @@ describe('dotplot view', () => {
       false,
       'Grape vs Peach (small)',
     )
-    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
+    const { getByTestId, findByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
 
-    let canvas
-    try {
-      canvas = await findByTestId('prerendered_canvas', { timeout: 20000 })
-    } catch (e) {
-      canvas = await findByTestId('prerendered_canvas', { timeout: 20000 })
-    }
+    // https://testing-library.com/docs/guide-disappearance/
+    await waitFor(
+      () => {
+        expect(getByTestId('prerendered_canvas')).toBeInTheDocument()
+      },
+      { timeout: 10000 },
+    )
+    const canvas = await findByTestId('prerendered_canvas')
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
@@ -58,5 +63,5 @@ describe('dotplot view', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  })
+  }, 25000)
 }, 25000)
