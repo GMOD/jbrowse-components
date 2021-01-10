@@ -133,7 +133,9 @@ export default class AdminServer extends JBrowseCommand {
       const ip = getNetworkAddress()
 
       localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
-      networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+      if (ip) {
+        networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+      }
     }
     let message = chalk.green(
       'Now serving JBrowse\nNavigate to the below URL to configure',
@@ -163,5 +165,4 @@ function getNetworkAddress() {
       }
     }
   }
-  throw new Error('Could not determine IP address')
 }
