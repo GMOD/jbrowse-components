@@ -1,7 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, wait } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -45,11 +45,11 @@ test('copy and delete track in admin mode', async () => {
   fireEvent.click(await findByText('Copy track'))
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   expect(queryByText(/Session tracks/)).toBeNull()
-  await wait(() => expect(state.session.views[0].tracks.length).toBe(1))
+  await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
   await findAllByTestId('box-test-vcf-604452')
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
-  await wait(() => expect(state.session.views[0].tracks.length).toBe(0))
+  await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
 })
 
 test('copy and delete track to session tracks', async () => {
@@ -64,11 +64,11 @@ test('copy and delete track to session tracks', async () => {
   fireEvent.click(await findByText('Copy track'))
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   await findByText(/Session tracks/)
-  await wait(() => expect(state.session.views[0].tracks.length).toBe(1))
+  await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
   await findAllByTestId('box-test-vcf-604452')
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
-  await wait(() => expect(state.session.views[0].tracks.length).toBe(0))
+  await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
 })
 
 test('delete connection', async () => {

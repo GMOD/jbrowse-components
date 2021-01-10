@@ -1,9 +1,4 @@
-import {
-  render,
-  cleanup,
-  fireEvent,
-  waitForElement,
-} from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 import React from 'react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddConnectionWidget from './AddConnectionWidget'
@@ -79,15 +74,14 @@ type bigWig
       container,
       getAllByRole,
       getByText,
+      findByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    await waitForElement(() => getByText('volMyt1'), { container })
-    fireEvent.click(getByText('volMyt1'))
+    fireEvent.click(await findByText('volMyt1'))
     fireEvent.mouseDown(getAllByRole('button')[1])
-    await waitForElement(() => getByText('UCSC Track Hub'), { container })
-    fireEvent.click(getByText('UCSC Track Hub'))
+    fireEvent.click(await findByText('UCSC Track Hub'))
     fireEvent.click(getByTestId('addConnectionNext'))
     fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
       target: { value: 'Test UCSC connection name' },
@@ -117,15 +111,14 @@ type bigWig
       container,
       getAllByRole,
       getByText,
+      findByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    await waitForElement(() => getByText('volMyt1'), { container })
-    fireEvent.click(getByText('volMyt1'))
+    fireEvent.click(await findByText('volMyt1'))
     fireEvent.mouseDown(getAllByRole('button')[1])
-    await waitForElement(() => getByText('JBrowse 1 Data'), { container })
-    fireEvent.click(getByText('JBrowse 1 Data'))
+    fireEvent.click(await findByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
     fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
       target: { value: 'Test JBrowse 1 connection name' },

@@ -42,7 +42,12 @@ describe('dotplot view', () => {
     )
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
-    const canvas = await findByTestId('prerendered_canvas', { timeout: 20000 })
+    let canvas
+    try {
+      canvas = await findByTestId('prerendered_canvas', { timeout: 20000 })
+    } catch (e) {
+      canvas = await findByTestId('prerendered_canvas', { timeout: 20000 })
+    }
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
