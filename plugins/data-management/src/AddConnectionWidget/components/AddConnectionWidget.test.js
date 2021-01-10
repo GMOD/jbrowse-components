@@ -71,9 +71,7 @@ type bigWig
     const {
       getByTestId,
       getAllByTestId,
-      container,
       getAllByRole,
-      getByText,
       findByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
@@ -108,9 +106,7 @@ type bigWig
     const {
       getByTestId,
       getAllByTestId,
-      container,
       getAllByRole,
-      getByText,
       findByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)

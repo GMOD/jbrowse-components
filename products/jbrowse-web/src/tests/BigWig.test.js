@@ -26,9 +26,8 @@ beforeEach(() => {
   )
 })
 
-jest.setTimeout(15000)
 describe('bigwig', () => {
-  test('open a bigwig track', async () => {
+  it('open a bigwig track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -41,7 +40,7 @@ describe('bigwig', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 20000,
+        timeout: 10000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -51,8 +50,8 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 25000)
-  test('open a bigwig line track 2', async () => {
+  }, 15000)
+  it('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -65,7 +64,7 @@ describe('bigwig', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 20000,
+        timeout: 10000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -75,8 +74,8 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 25000)
-  test('open a bigwig density track', async () => {
+  }, 15000)
+  it('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -91,7 +90,7 @@ describe('bigwig', () => {
       'prerendered_canvas',
       {},
       {
-        timeout: 20000,
+        timeout: 10000,
       },
     )
     const bigwigImg = canvas[0].toDataURL()
@@ -101,5 +100,5 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 25000)
+  }, 15000)
 })

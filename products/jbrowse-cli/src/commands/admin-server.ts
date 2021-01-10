@@ -165,4 +165,5 @@ function getNetworkAddress() {
       }
     }
   }
+  return undefined
 }

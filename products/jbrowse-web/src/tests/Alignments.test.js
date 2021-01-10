@@ -1,11 +1,5 @@
 // library
-import {
-  cleanup,
-  fireEvent,
-  render,
-  within,
-  waitFor,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -97,7 +91,7 @@ describe('alignments track', () => {
   it('opens the track menu and enables soft clipping', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, getByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')

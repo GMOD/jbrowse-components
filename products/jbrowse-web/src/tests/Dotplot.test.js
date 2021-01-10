@@ -1,5 +1,5 @@
 // library
-import { cleanup, render, waitFor } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -41,9 +41,7 @@ describe('dotplot view', () => {
       false,
       'Grape vs Peach (small)',
     )
-    const { getByTestId, findByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
+    const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     const canvas = await findByTestId(
       'prerendered_canvas',
