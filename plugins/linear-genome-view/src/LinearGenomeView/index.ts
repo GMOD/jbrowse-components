@@ -52,6 +52,7 @@ export interface BpOffset {
   coord?: number
   reversed?: boolean
   assemblyName?: string
+  oob?: boolean
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -313,26 +314,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
-      // handleOutOfBoundPx(leftPx: number, rightPx: number) {
-      //   let leftOffset = this.pxToBp(leftPx)
-      //   let rightOffset = this.pxToBp(rightPx)
-      //   if (leftOffset.oob) {
-      //     leftOffset = {
-      //       ...leftOffset,
-      //       offset: leftOffset.start,
-      //     }
-      //   }
-      //   if (rightOffset.oob) {
-      //     rightOffset = {
-      //       ...rightOffset,
-      //       offset: rightOffset.end,
-      //     }
-      //   }
-      //   return {
-      //     leftOffset,
-      //     rightOffset,
-      //   }
-      // },
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -958,57 +939,56 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
-        if (leftOffset === undefined || rightOffset === undefined) return []
-        const singleRegion =
-          leftOffset.refName === rightOffset.refName &&
-          leftOffset.index === rightOffset.index
-        const selected: Region[] = []
-        if (singleRegion) {
-          const singleRegion = self.displayedRegions[leftOffset.index]
-          selected.push({
-            refName: singleRegion.refName,
-            assemblyName: singleRegion.assemblyName,
-            start: leftOffset.reversed
-              ? Math.floor(singleRegion.end - rightOffset.offset)
-              : Math.floor(singleRegion.start + leftOffset.offset),
-            end: rightOffset.reversed
-              ? Math.floor(singleRegion.end - leftOffset.offset) + 1
-              : Math.floor(singleRegion.start + rightOffset.offset) + 1,
-          })
-        } else {
-          // more than one region
-          for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
-            const region = self.displayedRegions[i]
-            if (leftOffset.index === i) {
-              const first = {
-                refName: region.refName,
-                assemblyName: region.assemblyName,
-                start: leftOffset.reversed
-                  ? region.start
-                  : Math.floor(region.start + leftOffset.offset),
-                end: leftOffset.reversed
-                  ? Math.floor(region.end - leftOffset.offset) + 1
-                  : region.end + 1,
-              }
-              selected.push(first)
-            } else if (rightOffset.index === i) {
-              const last = {
-                refName: region.refName,
-                assemblyName: region.assemblyName,
-                start: rightOffset.reversed
-                  ? Math.floor(region.end - rightOffset.offset)
-                  : region.start,
-                end: rightOffset.reversed
-                  ? region.end + 1
-                  : Math.floor(region.start + rightOffset.offset) + 1,
-              }
-              selected.push(last)
+        if (leftOffset.coord && rightOffset.coord) {
+          const singleRegion =
+            leftOffset.refName === rightOffset.refName &&
+            leftOffset.index === rightOffset.index
+          const selected: Region[] = []
+          if (singleRegion) {
+            const singleRegion = self.displayedRegions[leftOffset.index]
+            if (leftOffset.oob && rightOffset.oob) {
+                selected.push({
+                  ...singleRegion,
+                  start: Math.max(1, singleRegion.start)
+                })
             } else {
-              selected.push(region)
+              selected.push({
+              ...singleRegion,
+              start: leftOffset.oob? (singleRegion.reversed? rightOffset.coord : Math.max(1, singleRegion.start)) : (singleRegion.reversed? Math.max(1, singleRegion.start) : leftOffset.coord),
+              end: rightOffset.oob? (singleRegion.reversed? leftOffset.coord : singleRegion.end) : (singleRegion.reversed? singleRegion.end : rightOffset.coord),
+            })
+            }
+          } else {
+            // more than one region
+            for (let i = leftOffset.index; i <=  rightOffset.index; i += 1) {
+              const currentRegion = self.displayedRegions[i]
+              if (leftOffset.index === i) {
+                const first = {
+                  ...currentRegion,
+                  start: leftOffset.oob ? Math.max(1, currentRegion.start) : (currentRegion.reversed? Math.max(1, currentRegion.start) : leftOffset.coord),
+                  end: leftOffset.oob ? currentRegion.end: (currentRegion.reversed? leftOffset.coord :  currentRegion.end)
+                }
+                selected.push(first)
+              } else if (rightOffset.index === i) {
+                const last = {
+                  ...currentRegion,
+                  start: rightOffset.oob? Math.max(1, currentRegion.start): rightOffset.reversed? rightOffset.coord : Math.max(1, currentRegion.start),
+                  end:  rightOffset.oob? currentRegion.end : (currentRegion.reversed? currentRegion.end : rightOffset.coord),
+                }
+                selected.push(last)
+              } else {
+                // middle regions
+                selected.push({
+                  ...currentRegion,
+                  start: Math.max(1, currentRegion.start)
+                })
+              }
             }
           }
+          return selected
+        } else {
+          throw new Error("Error fetching sequence. Coordinates undefined.")
         }
-        return selected
       },
       /**
        * Fetch ref sequence  based on user clicking and dragging on the
@@ -1021,10 +1001,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
+        const session = getSession(self)
+
         const assemblyName =
           leftOffset?.assemblyName || rightOffset?.assemblyName // change to get assemblyName
         if (leftOffset && rightOffset && assemblyName) {
-          const { assemblyManager } = getSession(self)
+          const assemblyManager  = session.assemblyManager
           const assembly = assemblyManager.get(assemblyName)
           const sequenceAdapterConfig = readConfObject(
             assembly?.configuration,
@@ -1050,42 +1032,31 @@ export function stateModelFactory(pluginManager: PluginManager) {
             .pipe(toArray())
             .toPromise()
           const sequenceChunks: any[] = []
-          // console.log(seqChunks)
+          const incompleteSeqErrs: string[] = []
           // format sequences into Fasta
           seqChunks.forEach((chunk: Feature) => {
-            // console.log(chunk)
             const chunkSeq = chunk.get('seq')
             const chunkRefName = chunk.get('refName')
-            const chunkLocstring = `${chunkRefName}:${chunk.get(
-              'start',
-            )}-${chunk.get('end')}`
+            const chunkStart = chunk.get('start')
+            const chunkEnd = chunk.get('end')
+            const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
             if (chunkSeq) {
               sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
+              if (chunkSeq.length !== chunkEnd - chunkStart) {
+                incompleteSeqErrs.push(`${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                  chunkEnd - chunkStart
+                ).toLocaleString()}`)
+              }
             }
           })
-          //  const trimmed: string[] = []
-          // seqChunks
-          //   .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
-          //   .forEach((chunk: Feature) => {
-          //     const chunkStart = chunk.get('start')
-          //     const chunkEnd = chunk.get('end')
-          //     const trimStart = Math.max(start - chunkStart, 0)
-          //     const trimEnd = Math.min(end - chunkStart, chunkEnd - chunkStart)
-          //     const trimLength = trimEnd - trimStart
-          //     const chunkSeq = chunk.get('seq') || chunk.get('residues')
-          //     trimmed.push(chunkSeq.substr(trimStart, trimLength))
-          //   })
+
+          if (incompleteSeqErrs.length > 0) {
+            session.notify(
+              `sequence fetch failed: fetching ${incompleteSeqErrs.join()}`,
+            )
+          }
           // TODO: check if chunks is empty array for error handling (region had no seq/seq feature)
           // const sequence = trimmed.join('')
-          // if (sequence.length !== end - start) {
-          //   throw new Error(
-          //     `sequence fetch failed: fetching ${refName}:${(
-          //       start - 1
-          //     ).toLocaleString()}-${end.toLocaleString()} returned ${sequence.length.toLocaleString()} bases, but should have returned ${(
-          //       end - start
-          //     ).toLocaleString()}`,
-          //   )
-          // }
           const seqFasta = this.formatSeqFasta(sequenceChunks)
           // check size of the sequence fasta,
           // if more than 500MG selected, disable menu item
@@ -1099,7 +1070,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             self.setSelectedSeqRegion(seqFasta)
           }
-          // console.log(seqFasta)
         }
         // TODO: adapter cleanup
         // freeResources

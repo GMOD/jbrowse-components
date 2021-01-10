@@ -193,13 +193,6 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    // const { leftOffset, rightOffset } = model.handleOutOfBoundPx(
-    //   leftPx,
-    //   rightPx,
-    // )
-    // handles selecting oob bp
-    console.log(leftOffset)
-    console.log(rightOffset)
     model.fetchSequence(leftOffset, rightOffset)
   }
 
