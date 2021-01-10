@@ -113,16 +113,22 @@ describe('valid file tests', () => {
     await findAllByText('ctgA')
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
-    await waitFor(() => {
-      const after = state.session.views[0].bpPerPx
-      expect(after).toBe(before / 2)
-    })
+    await waitFor(
+      () => {
+        const after = state.session.views[0].bpPerPx
+        expect(after).toBe(before / 2)
+      },
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
-    await waitFor(() => {
-      const after = state.session.views[0].bpPerPx
-      expect(after).toBe(before)
-    })
+    await waitFor(
+      () => {
+        const after = state.session.views[0].bpPerPx
+        expect(after).toBe(before)
+      },
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].bpPerPx).toBe(before)
   }, 30000)
 
