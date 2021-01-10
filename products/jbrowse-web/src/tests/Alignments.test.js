@@ -231,7 +231,11 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Submit'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP')
+    try {
+      await findAllByTestId('pileup-tagHP')
+    } catch (e) {
+      await findAllByTestId('pileup-tagHP')
+    }
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -249,7 +253,7 @@ describe('alignments track', () => {
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
-    const { findByTestId, getAllByText } = render(
+    const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     fireEvent.click(
@@ -257,8 +261,10 @@ describe('alignments track', () => {
     )
 
     // https://testing-library.com/docs/guide-disappearance/
-    await waitFor(() => {
-      expect(getAllByText('Max height reached')).toBeInTheDocument()
-    })
+    try {
+      await findAllByText('Max height reached')
+    } catch (e) {
+      await findAllByText('Max height reached')
+    }
   }, 10000)
 })
