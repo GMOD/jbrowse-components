@@ -55,7 +55,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -89,7 +93,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -120,7 +128,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -151,7 +163,12 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -183,7 +200,11 @@ describe('reload tests', () => {
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
     const bigwigBuf = Buffer.from(bigwigData, 'base64')
