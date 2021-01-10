@@ -154,11 +154,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    try {
-      await findAllByTestId('pileup-Read strand')
-    } catch (e) {
-      await findAllByTestId('pileup-Read strand')
-    }
+    await findAllByTestId('pileup-Read strand', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -239,11 +235,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Submit'))
 
     // wait for pileup track to render with color
-    try {
-      await findAllByTestId('pileup-tagHP')
-    } catch (e) {
-      await findAllByTestId('pileup-tagHP')
-    }
+    await findAllByTestId('pileup-tagHP', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
