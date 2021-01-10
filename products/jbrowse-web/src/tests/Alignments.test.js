@@ -47,7 +47,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupCanvas = await findAllByTestId1(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -59,7 +63,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId2 } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    const snpCoverageCanvas = await findAllByTestId2(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
     const snpCoverageData = snpCoverageImg.replace(
       /^data:image\/\w+;base64,/,
@@ -260,11 +268,6 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
 
-    // https://testing-library.com/docs/guide-disappearance/
-    try {
-      await findAllByText('Max height reached')
-    } catch (e) {
-      await findAllByText('Max height reached')
-    }
-  }, 10000)
+    await findAllByText('Max height reached', {}, { timeout: 10000 })
+  }, 15000)
 })

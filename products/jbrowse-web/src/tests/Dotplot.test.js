@@ -45,14 +45,11 @@ describe('dotplot view', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
 
-    // https://testing-library.com/docs/guide-disappearance/
-    await waitFor(
-      () => {
-        expect(getByTestId('prerendered_canvas')).toBeInTheDocument()
-      },
+    const canvas = await findByTestId(
+      'prerendered_canvas',
+      {},
       { timeout: 10000 },
     )
-    const canvas = await findByTestId('prerendered_canvas')
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
@@ -63,5 +60,5 @@ describe('dotplot view', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  }, 25000)
-}, 25000)
+  }, 15000)
+})
