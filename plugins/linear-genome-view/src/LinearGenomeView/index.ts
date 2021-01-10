@@ -939,11 +939,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
-        if (leftOffset.coord && rightOffset.coord) {
+        const selected: Region[] = []
+        if (leftOffset.coord !== undefined && rightOffset.coord !== undefined) {
           const singleRegion =
             leftOffset.refName === rightOffset.refName &&
             leftOffset.index === rightOffset.index
-          const selected: Region[] = []
           if (singleRegion) {
             const singleRegion = self.displayedRegions[leftOffset.index]
             if (leftOffset.oob && rightOffset.oob) {
@@ -954,8 +954,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             } else {
               selected.push({
               ...singleRegion,
-              start: leftOffset.oob? (singleRegion.reversed? rightOffset.coord : Math.max(1, singleRegion.start)) : (singleRegion.reversed? Math.max(1, singleRegion.start) : leftOffset.coord),
-              end: rightOffset.oob? (singleRegion.reversed? leftOffset.coord : singleRegion.end) : (singleRegion.reversed? singleRegion.end : rightOffset.coord),
+              start: leftOffset.oob? (singleRegion.reversed? rightOffset.coord : Math.max(1, singleRegion.start)) : (singleRegion.reversed? rightOffset.coord : leftOffset.coord),
+              end: rightOffset.oob? (singleRegion.reversed? leftOffset.coord : singleRegion.end) : (singleRegion.reversed? leftOffset.coord : rightOffset.coord),
             })
             }
           } else {
@@ -986,9 +986,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
           return selected
-        } else {
-          throw new Error("Error fetching sequence. Coordinates undefined.")
         }
+        return selected
       },
       /**
        * Fetch ref sequence  based on user clicking and dragging on the
@@ -1025,6 +1024,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             leftOffset,
             rightOffset,
           )
+          console.log(selectedRegions)
           const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
             selectedRegions,
           )
