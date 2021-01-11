@@ -162,6 +162,7 @@ function RubberBand({
 
   function mouseOut() {
     setGuideX(undefined)
+    model.resetDialog()
   }
 
   function zoomToRegion() {
@@ -179,20 +180,18 @@ function RubberBand({
   }
 
   function getSequence() {
-    // open the dialog
-    // model.showSeqDialog(true)
-    // fetch the sequence for the selected region
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
     let leftPx = startX
     let rightPx = anchorPosition.left
-    // handles if I click and drag towards the left
+    // handles clicking and draging to the left
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
+    // fetch the sequence for the selected region
     model.fetchSequence(leftOffset, rightOffset)
   }
 
@@ -224,6 +223,7 @@ function RubberBand({
       disabled: model.getSequenceDisabled,
       icon: MenuOpenIcon,
       onClick: () => {
+        // open the dialog
         model.showSeqDialog(true)
         handleClose()
       },

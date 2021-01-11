@@ -987,10 +987,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               ? Math.floor(region.end - rightBpOffset) + 1
               : Math.floor(region.start + leftBpOffset) + 1,
             end: rightOffset.reversed
-              ? Math.min(
-                  Math.floor(region.end - leftBpOffset) + 1,
-                  region.end,
-                )
+              ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
               : Math.min(
                   Math.floor(region.start + rightBpOffset) + 1,
                   region.end,
@@ -1153,14 +1150,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let result = ''
         chunks.forEach((chunk, idx) => {
           if (idx === 0) {
-            result +=
-              `>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
+            result += `>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           } else if (idx === chunks.length - 1) {
-            result +=
-              `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
+            result += `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           } else {
-            result +=
-              `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
+            result += `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           }
         })
         return result
