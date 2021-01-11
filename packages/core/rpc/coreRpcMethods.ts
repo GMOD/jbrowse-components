@@ -36,12 +36,12 @@ export class CoreGetRefNames extends RpcMethodType {
   }
 }
 // export class CoreGetFeaturesInMultipleRegions extends RpcMethodType {
-//   name = 'CoreGetFeaturesFromMultipleRegions'
+//   name = 'CoreGetFeaturesInMultipleRegions'
 
 //   async execute(args: {
 //     regions: Region[]
 //     sessionId: string
-//     signal: RemoteAbortSignal
+//     signal?: RemoteAbortSignal
 //     adapterConfig: {}
 //   }) {
 //     const deserializedArgs = await this.deserializeArguments(args)

@@ -1,5 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { saveAs } from 'file-saver'
+import copy from 'copy-to-clipboard'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -19,8 +21,6 @@ import TextField from '@material-ui/core/TextField'
 // core
 import { getSession } from '@jbrowse/core/util'
 // other
-import { saveAs } from 'file-saver'
-import copy from 'copy-to-clipboard'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({

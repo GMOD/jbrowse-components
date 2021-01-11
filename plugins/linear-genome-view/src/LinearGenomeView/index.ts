@@ -19,7 +19,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 // misc
-import { transaction, autorun} from 'mobx'
+import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
   types,
@@ -1060,7 +1060,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           try {
             const assemblyName =
               leftOffset?.assemblyName || rightOffset?.assemblyName || ''
-            const assemblyManager = session.assemblyManager
+            const { assemblyManager } = session
             const assembly = assemblyManager.get(assemblyName)
             // make an adapter
             if (!assembly) {
@@ -1068,7 +1068,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               throw new Error(`Could not find assembly ${assemblyName}`)
             }
             const sequenceAdapterConfig = readConfObject(
-              assembly?.configuration,
+              assembly.configuration,
               ['sequence', 'adapter'],
             )
             const dataAdapterType = pluginManager.getAdapterType(
@@ -1080,6 +1080,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
               selectedRegions,
             )
+            // TODO: check for errors with features/rpc call
+            // try {
+            //   const sessionId = ''
+            //   const aborter = new AbortController()
+            //   const { signal } = aborter
+            //   const otherChunks = await rpcManager.call(
+            //     sessionId,
+            //     'CoreGetFeaturesFromMultipleRegions',
+            //     {
+            //       adapterConfig: sequenceAdapterConfig,
+            //       regions: selectedRegions,
+            //       signal
+            //     },
+            //     { timeout: 1000000 },
+            //   )
+            //   console.log(otherChunks)
+            // } catch (error) {
+            //   console.log(error)
+            // }
             // format sequences into Fasta
             const seqChunks = await featuresMultRegions
               .pipe(toArray())
@@ -1131,19 +1150,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             // self.disableGetSequence()
             session.notify(`${error}`)
           }
-
-          // TODO: check for errors with features/rpc call
-          // const otherChunks = await assembly?.rpcManager.call(
-          //   sessionId,
-          //   'CoreGetFeaturesFromMultipleRegions',
-          //   {
-          //     adapterConfig: sequenceAdapterConfig,
-          //     regions: selectedRegions
-          //     signal,
-          //   },
-          //   { timeout: 1000000 },
-          // )
-          // console.log(otherChunks)
         }
       },
       formatSeqFasta(chunks: SeqChunk[]) {
