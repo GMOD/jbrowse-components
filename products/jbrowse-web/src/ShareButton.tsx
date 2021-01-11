@@ -264,9 +264,7 @@ const ShareDialog = observer(
             <DialogContent>
               {currentSetting === 'short' ? (
                 error ? (
-                  <Typography color="error">
-                    Failed to generate short URL: {`${error}`}
-                  </Typography>
+                  <Typography color="error">{`${error}`}</Typography>
                 ) : loading ? (
                   <Typography>Generating short URL...</Typography>
                 ) : (
