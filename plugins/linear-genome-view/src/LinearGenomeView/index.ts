@@ -489,11 +489,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setSelectedSeqRegion(seqString: string | undefined) {
         self.selectedSequence = seqString
       },
-      disableGetSequence() {
-        self.getSequenceDisabled = !self.getSequenceDisabled
+      disableGetSequence(state: boolean) {
+        self.getSequenceDisabled = state
       },
-      disableCopyToClipBoard() {
-        self.copyToClipboardDisabled = !self.copyToClipboardDisabled
+      disableCopyToClipBoard(state: boolean) {
+        self.copyToClipboardDisabled = state
+      },
+      resetDialog() {
+        self.selectedSequence = undefined
+        self.getSequenceDisabled = false
+        self.copyToClipboardDisabled = false
       },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
@@ -941,15 +946,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
-        if (leftOffset === undefined || rightOffset === undefined) return []
+        const selected: Region[] = []
+        if (leftOffset === undefined || rightOffset === undefined)
+          return selected
 
         // handle out of bound offsets
         let leftBpOffset = leftOffset.offset
         let rightBpOffset = rightOffset.offset
-        if (leftOffset.oob && leftOffset.start !== undefined && leftOffset.end !== undefined ) {
+        if (
+          leftOffset.oob &&
+          leftOffset.start !== undefined &&
+          leftOffset.end !== undefined
+        ) {
           leftBpOffset = leftOffset.start
         }
-        if (rightOffset.oob && rightOffset.start !== undefined && rightOffset.end !== undefined) {
+        if (
+          rightOffset.oob &&
+          rightOffset.start !== undefined &&
+          rightOffset.end !== undefined
+        ) {
           rightBpOffset = rightOffset.end
         }
 
@@ -957,7 +972,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const singleRegion =
           leftOffset.refName === rightOffset.refName &&
           leftOffset.index === rightOffset.index
-        const selected: Region[] = []
+        if (singleRegion && rightOffset.oob && leftOffset.oob) {
+          return selected
+        }
         if (singleRegion) {
           const singleRegion = self.displayedRegions[leftOffset.index]
           selected.push({
@@ -966,8 +983,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               ? Math.floor(singleRegion.end - rightBpOffset) + 1
               : Math.floor(singleRegion.start + leftBpOffset) + 1,
             end: rightOffset.reversed
-              ? Math.min(Math.floor(singleRegion.end - leftBpOffset) + 1, singleRegion.end)
-              : Math.min(Math.floor(singleRegion.start + rightBpOffset) + 1, singleRegion.end)
+              ? Math.min(
+                  Math.floor(singleRegion.end - leftBpOffset) + 1,
+                  singleRegion.end,
+                )
+              : Math.min(
+                  Math.floor(singleRegion.start + rightBpOffset) + 1,
+                  singleRegion.end,
+                ),
           })
         } else {
           // handle more than one region
@@ -980,7 +1003,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   ? region.start + 1
                   : Math.floor(region.start + leftBpOffset) + 1,
                 end: leftOffset.reversed
-                  ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
+                  ? Math.min(
+                      Math.floor(region.end - leftBpOffset) + 1,
+                      region.end,
+                    )
                   : region.end,
               }
               selected.push(first)
@@ -992,13 +1018,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   : region.start + 1,
                 end: rightOffset.reversed
                   ? region.end
-                  : Math.min(Math.floor(region.start + rightBpOffset) + 1, region.end)
+                  : Math.min(
+                      Math.floor(region.start + rightBpOffset) + 1,
+                      region.end,
+                    ),
               }
               selected.push(last)
             } else {
               selected.push({
                 ...region,
-                start: region.start + 1
+                start: region.start + 1,
               })
             }
           }
@@ -1015,39 +1044,95 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
-        // make an adapter
         const session = getSession(self)
-        console.log(session)
-        const assemblyName =
-          leftOffset?.assemblyName || rightOffset?.assemblyName // change to get assemblyName
-        if (leftOffset && rightOffset && assemblyName) {
-          const assemblyManager = session.assemblyManager
-          const sessionId = ''
-          const assembly = assemblyManager.get(assemblyName)
-          const sequenceAdapterConfig = readConfObject(
-            assembly?.configuration,
-            ['sequence', 'adapter'],
+        // TODO: check for errors with Left and Right offset
+        const selectedRegions = this.getSelectedRegions(leftOffset, rightOffset)
+        // console.log(selectedRegions)
+        // TODO: check for errors with empty selectedRegions array
+        if (selectedRegions.length === 0) {
+          self.disableGetSequence(true)
+          session.notify(
+            `Selected region: ${leftOffset.refName}:${leftOffset.coord} to ${rightOffset.refName}:${rightOffset.coord} out of bounds`,
           )
+        } else {
+          // TODO: check for errors with assembly, disable the getSequence Menu Item
+          try {
+            const assemblyName =
+              leftOffset?.assemblyName || rightOffset?.assemblyName || ''
+            const assemblyManager = session.assemblyManager
+            const assembly = assemblyManager.get(assemblyName)
+            // make an adapter
+            if (!assembly) {
+              self.disableGetSequence(true)
+              throw new Error(`Could not find assembly ${assemblyName}`)
+            }
+            const sequenceAdapterConfig = readConfObject(
+              assembly?.configuration,
+              ['sequence', 'adapter'],
+            )
+            const dataAdapterType = pluginManager.getAdapterType(
+              sequenceAdapterConfig.type,
+            )
+            const sequenceAdapter = new dataAdapterType.AdapterClass(
+              sequenceAdapterConfig,
+            ) as BaseFeatureDataAdapter
+            const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
+              selectedRegions,
+            )
+            // format sequences into Fasta
+            const seqChunks = await featuresMultRegions
+              .pipe(toArray())
+              .toPromise()
+            const sequenceChunks: any[] = []
+            const incompleteSeqErrs: string[] = []
+            seqChunks.forEach((chunk: Feature) => {
+              const chunkSeq = chunk.get('seq')
+              const chunkRefName = chunk.get('refName')
+              const chunkStart = chunk.get('start')
+              const chunkEnd = chunk.get('end')
+              const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+              if (chunkSeq) {
+                sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
+                if (chunkSeq.length !== chunkEnd - chunkStart) {
+                  incompleteSeqErrs.push(
+                    `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                      chunkEnd - chunkStart
+                    ).toLocaleString()}`,
+                  )
+                }
+              }
+            })
+            // TODO: check for errors with fetching seq/warning if seq length === bases returned
+            if (incompleteSeqErrs.length > 0) {
+              session.notify(
+                `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
+              )
+            }
+            // TODO: error handling and warnings for file sizes (add session warnings)
+            const seqFasta = this.formatSeqFasta(sequenceChunks)
+            const seqSize = this.checkSequencesSize(seqFasta)
+            if (seqSize > 500000000 || seqSize === 0) {
+              self.disableGetSequence(true)
+              session.notify(
+                `Reference sequence size too large. Unable to get reference sequence`,
+              )
+            } else {
+              if (seqSize > 100000) {
+                self.disableCopyToClipBoard(true)
+                session.notify(
+                  `Reference sequence too large. Copy to clipboard was disabled. Please download as Fasta file.`,
+                )
+              }
+              self.setSelectedSeqRegion(seqFasta)
+            }
+            // TODO: adapter cleanup
+          } catch (error) {
+            // self.disableGetSequence()
+            session.notify(`${error}`)
+          }
 
-
-          const dataAdapterType = pluginManager.getAdapterType(
-            sequenceAdapterConfig.type,
-          )
-          const sequenceAdapter = new dataAdapterType.AdapterClass(
-            sequenceAdapterConfig,
-          ) as BaseFeatureDataAdapter
-          // TODO: check if sequence adapter exists else disable the getSequence Menu Item
-
-          // getFeatures on the adapter to get the sequence
-          const selectedRegions = this.getSelectedRegions(
-            leftOffset,
-            rightOffset,
-          )
-          console.log(selectedRegions)
-          const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
-            selectedRegions,
-          )
-          // const otherChunks = await a.ssembly?.rpcManager.call(
+          // TODO: check for errors with features/rpc call
+          // const otherChunks = await assembly?.rpcManager.call(
           //   sessionId,
           //   'CoreGetFeaturesFromMultipleRegions',
           //   {
@@ -1058,51 +1143,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           //   { timeout: 1000000 },
           // )
           // console.log(otherChunks)
-          const seqChunks = await featuresMultRegions
-            .pipe(toArray())
-            .toPromise()
-          const sequenceChunks: any[] = []
-          const incompleteSeqErrs: string[] = []
-          // format sequences into Fasta
-          seqChunks.forEach((chunk: Feature) => {
-            const chunkSeq = chunk.get('seq')
-            const chunkRefName = chunk.get('refName')
-            const chunkStart = chunk.get('start')
-            const chunkEnd = chunk.get('end')
-            const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-            if (chunkSeq) {
-              sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-              if (chunkSeq.length !== chunkEnd - chunkStart) {
-                incompleteSeqErrs.push(`${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                  chunkEnd - chunkStart
-                ).toLocaleString()}`)
-              }
-            }
-          })
-
-          if (incompleteSeqErrs.length > 0) {
-            session.notify(
-              `sequence fetch failed: fetching ${incompleteSeqErrs.join()}`,
-            )
-          }
-          // TODO: check if chunks is empty array for error handling (region had no seq/seq feature)
-          // const sequence = trimmed.join('')
-          const seqFasta = this.formatSeqFasta(sequenceChunks)
-          // check size of the sequence fasta,
-          // if more than 500MG selected, disable menu item
-          // if no adapter for that assembly, disable menu item
-          const seqSize = this.checkSequencesSize(seqFasta)
-          if (seqSize > 500000000 || seqSize === 0) {
-            self.disableGetSequence()
-          } else {
-            if (seqSize > 100000) {
-              self.disableCopyToClipBoard()
-            }
-            self.setSelectedSeqRegion(seqFasta)
-          }
         }
-        // TODO: adapter cleanup
-        // freeResources
       },
       formatSeqFasta(chunks: any[]) {
         let result = ''

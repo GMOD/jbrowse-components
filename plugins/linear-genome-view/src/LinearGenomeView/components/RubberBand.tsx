@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
 import { stringify } from '@jbrowse/core/util'
-import { BpOffset, LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -126,11 +126,6 @@ function RubberBand({
         window.removeEventListener('mouseup', globalMouseUp)
       }
     }
-    try {
-      getSequence()
-    } catch (error) {
-      console.log(error)
-    }
     return () => {}
   }, [startX, mouseDragging, anchorPosition])
 
@@ -142,6 +137,11 @@ function RubberBand({
       Math.abs(currentX - startX) <= 3
     ) {
       handleClose()
+    }
+    try {
+      getSequence()
+    } catch (error) {
+      console.log(error)
     }
   })
 
@@ -200,6 +200,7 @@ function RubberBand({
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
+    model.resetDialog()
   }
 
   const open = Boolean(anchorPosition)

@@ -4,16 +4,18 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
 import CloseIcon from '@material-ui/icons/Close'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import { Typography } from '@material-ui/core'
+import { Container, Typography } from '@material-ui/core'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import TextField from '@material-ui/core/TextField'
+
 // core
 import { getSession } from '@jbrowse/core/util'
 // other
@@ -66,6 +68,8 @@ function SequenceDialog({
                 handleClose()
                 model.showSeqDialog(false)
                 model.setSelectedSeqRegion(undefined)
+                model.disableGetSequence(false)
+                model.disableCopyToClipBoard(false)
               }}
             >
               <CloseIcon />
@@ -76,12 +80,17 @@ function SequenceDialog({
 
         <>
           <DialogContent>
-            {model.error ? (
-              <Typography color="error">
-                Failed to retrieve sequence: {`${model.error}`}
-              </Typography>
-            ) : loading ? (
-              <Typography>Retrieving Sequence...</Typography>
+            {loading ? (
+              <Container>
+                Retrieving reference sequence...
+                <CircularProgress
+                  style={{
+                    marginLeft: 10,
+                  }}
+                  size={20}
+                  disableShrink
+                />
+              </Container>
             ) : (
               <TextField
                 data-testid="rubberband-sequence"
@@ -94,7 +103,7 @@ function SequenceDialog({
                 fullWidth
                 value={
                   model.copyToClipboardDisabled
-                    ? 'Reference Sequence too large to display'
+                    ? 'Reference sequence too large to display'
                     : model.selectedSequence
                 }
                 InputProps={{
@@ -112,7 +121,7 @@ function SequenceDialog({
                 session.notify('Copied to clipboard', 'success')
               } catch (error) {
                 session.notify(
-                  'Error while attempting to copy to clipboard',
+                  'Error occurred attempting to copy to clipboard',
                   'error',
                 )
               }
@@ -145,6 +154,8 @@ function SequenceDialog({
               handleClose()
               model.showSeqDialog(false)
               model.setSelectedSeqRegion(undefined)
+              model.disableGetSequence(false)
+              model.disableCopyToClipBoard(false)
             }}
             color="primary"
             autoFocus
