@@ -34,7 +34,7 @@ The state can be gotten by JSON stringifying the view's view attribute. We're
 going to add a button to our page that will show the current view state when
 clicked. Update "index.html" like this:
 
-```html {35-43,45-46} title="index.html"
+```html {34-37,39-40} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
