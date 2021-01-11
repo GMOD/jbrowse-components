@@ -1,6 +1,6 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
-import { cleanup, render, waitForElement } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
 
@@ -70,12 +70,12 @@ describe('HierarchicalTrackSelector widget', () => {
     firstView.showTrack(session.sessionTracks[1].trackId)
     const model = firstView.activateTrackSelector()
 
-    const { container, getByTestId } = render(
+    const { container, findByTestId } = render(
       <ThemeProvider theme={createMuiTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
-    await waitForElement(() => getByTestId('hierarchical_track_selector'))
+    await findByTestId('hierarchical_track_selector')
     expect(container.firstChild).toMatchSnapshot()
   })
 
@@ -131,12 +131,12 @@ describe('HierarchicalTrackSelector widget', () => {
     ])
     const model = firstView.activateTrackSelector()
 
-    const { container, getByTestId } = render(
+    const { container, findByTestId } = render(
       <ThemeProvider theme={createMuiTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
-    await waitForElement(() => getByTestId('hierarchical_track_selector'))
+    await findByTestId('hierarchical_track_selector')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

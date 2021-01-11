@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "test-ci": "jest --ci --coverage",
     "built-test-ci": "jest --ci integration.test.js",
-    "test": "jest"
+    "test": "DEBUG_PRINT_LIMIT=0 jest"
   },
   "husky": {
     "hooks": {
@@ -46,7 +46,7 @@
     "@storybook/preset-create-react-app": "^3.1.5",
     "@storybook/react": "^6.0.28",
     "@testing-library/jest-dom": "^5.5.0",
-    "@testing-library/react": "^9.0.0",
+    "@testing-library/react": "^11.0.0",
     "@types/base64-js": "^1.2.5",
     "@types/clone": "^0.1.30",
     "@types/color": "^3.0.1",
