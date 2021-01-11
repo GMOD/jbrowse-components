@@ -157,6 +157,8 @@ describe('<LinearGenomeView />', () => {
     const model = session.views[0]
     model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
+    await findByText('Open')
+    expect(container.firstChild).toMatchSnapshot()
     await model.fetchSequence(
       {
         refName: 'ctgA',
@@ -175,7 +177,6 @@ describe('<LinearGenomeView />', () => {
         assemblyName: 'volMyt1',
       },
     )
-    console.log(model.selectedSequence)
-    expect(model.selectedSequence).toEqual('>ctgA:0-10\n' + 'cattgttgcg')
+    expect(model.selectedSequence).toEqual('>ctgA:0-10\ncattgttgcg')
   })
 })

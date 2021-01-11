@@ -55,6 +55,10 @@ export interface BpOffset {
   oob?: boolean
 }
 
+export interface SeqChunk {
+  header: string
+  seq: string
+}
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
@@ -976,20 +980,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return selected
         }
         if (singleRegion) {
-          const singleRegion = self.displayedRegions[leftOffset.index]
+          const region = self.displayedRegions[leftOffset.index]
           selected.push({
-            ...singleRegion,
+            ...region,
             start: leftOffset.reversed
-              ? Math.floor(singleRegion.end - rightBpOffset) + 1
-              : Math.floor(singleRegion.start + leftBpOffset) + 1,
+              ? Math.floor(region.end - rightBpOffset) + 1
+              : Math.floor(region.start + leftBpOffset) + 1,
             end: rightOffset.reversed
               ? Math.min(
-                  Math.floor(singleRegion.end - leftBpOffset) + 1,
-                  singleRegion.end,
+                  Math.floor(region.end - leftBpOffset) + 1,
+                  region.end,
                 )
               : Math.min(
-                  Math.floor(singleRegion.start + rightBpOffset) + 1,
-                  singleRegion.end,
+                  Math.floor(region.start + rightBpOffset) + 1,
+                  region.end,
                 ),
           })
         } else {
@@ -1083,7 +1087,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const seqChunks = await featuresMultRegions
               .pipe(toArray())
               .toPromise()
-            const sequenceChunks: any[] = []
+            const sequenceChunks: SeqChunk[] = []
             const incompleteSeqErrs: string[] = []
             seqChunks.forEach((chunk: Feature) => {
               const chunkSeq = chunk.get('seq')
@@ -1145,18 +1149,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // console.log(otherChunks)
         }
       },
-      formatSeqFasta(chunks: any[]) {
+      formatSeqFasta(chunks: SeqChunk[]) {
         let result = ''
         chunks.forEach((chunk, idx) => {
           if (idx === 0) {
             result +=
-              `>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+              `>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           } else if (idx === chunks.length - 1) {
             result +=
-              `\n>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+              `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           } else {
             result +=
-              `\n>${chunk.header}` + `\n${this.formatFastaLines(chunk.seq)}`
+              `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
           }
         })
         return result
@@ -1167,7 +1171,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (seqString.substring(0, 80).length < 80) {
             formatted += seqString.substring(0, 80)
           } else {
-            formatted += seqString.substring(0, 80) + '\n'
+            formatted += `${seqString.substring(0, 80)}\n`
           }
           seqString = seqString.substring(80)
         }
