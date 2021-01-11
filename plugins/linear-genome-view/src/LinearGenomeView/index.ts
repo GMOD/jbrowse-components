@@ -19,7 +19,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 // misc
-import { transaction, autorun, when } from 'mobx'
+import { transaction, autorun} from 'mobx'
 import {
   getSnapshot,
   types,
@@ -1160,7 +1160,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return result
       },
       formatFastaLines(seqString: string) {
-        var formatted = ''
+        let formatted = ''
         while (seqString.length > 0) {
           if (seqString.substring(0, 80).length < 80) {
             formatted += seqString.substring(0, 80)

@@ -699,14 +699,14 @@ test('can showAllRegionsInAssembly', async () => {
 })
 
 test('Format and sizing of fasta files', () => {
-  let model: Instance<ReturnType<typeof stateModelFactory>>
   const session = Session.create({
     configuration: {},
   })
-  model = session.setView(
+  const model = session.setView(
     LinearGenomeModel.create({
-      id: 'testGetSequence',
+      id: 'testFasta',
       type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
     }),
   )
   model.setWidth(800)
