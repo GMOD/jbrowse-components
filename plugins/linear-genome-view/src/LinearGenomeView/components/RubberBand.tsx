@@ -257,7 +257,7 @@ function RubberBand({
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(left + width)
-  const numOfBpSelected = Math.round(width * model.bpPerPx)
+  const numOfBpSelected = Math.round(width * model.bpPerPx) + 1
   return (
     <>
       {rubberBandRef.current ? (
