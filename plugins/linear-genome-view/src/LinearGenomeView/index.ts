@@ -1047,7 +1047,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         const session = getSession(self)
         // TODO: check for errors with Left and Right offset
-        const selectedRegions = this.getSelectedRegions(leftOffset, rightOffset)
+        const selectedRegions = this.getSelectedRegions(
+          leftOffset,
+          rightOffset,
+        ).map(region => {
+          return {
+            ...region,
+            start: region.start - 1,
+          }
+        })
+
         // console.log(selectedRegions)
         // TODO: check for errors with empty selectedRegions array
         if (selectedRegions.length === 0) {
@@ -1108,12 +1117,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             seqChunks.forEach((chunk: Feature) => {
               const chunkSeq = chunk.get('seq')
               const chunkRefName = chunk.get('refName')
-              const chunkStart = chunk.get('start')
+              const chunkStart = chunk.get('start') + 1
               const chunkEnd = chunk.get('end')
               const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
               if (chunkSeq) {
                 sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-                if (chunkSeq.length !== chunkEnd - chunkStart) {
+                if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
                   incompleteSeqErrs.push(
                     `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
                       chunkEnd - chunkStart
