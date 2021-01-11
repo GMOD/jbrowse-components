@@ -1,7 +1,7 @@
 ---
 title: ${RELEASE_TAG} Release
 date: ${DATE}
-tags: ['release','jbrowse 2']
+tags: ['release', 'jbrowse 2']
 ---
 
 ${NOTES}

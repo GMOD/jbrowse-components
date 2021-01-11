@@ -1,7 +1,5 @@
 ## [1.0.3](https://github.com/GMOD/jbrowse-components/compare/v1.0.2...v1.0.3) (2021-01-11)
 
-
-
 ## [1.0.2](https://github.com/GMOD/jbrowse-components/compare/v1.0.1...v1.0.2) (2020-12-02)
 
 ## [1.0.1](https://github.com/GMOD/jbrowse-components/compare/v0.0.1-beta.11...v1.0.1) (2020-11-25)
