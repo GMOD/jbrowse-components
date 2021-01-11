@@ -15,6 +15,11 @@ set -o pipefail
 [[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
 [[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
 
+BRANCH=$(git branch --show-current)
+[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+NPMUSER=$(npm whoami)
+[[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
+
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
 # Use semver to get the new version from the semver level
