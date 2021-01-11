@@ -19,7 +19,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 // misc
-import { transaction, autorun } from 'mobx'
+import { transaction, autorun, when } from 'mobx'
 import {
   getSnapshot,
   types,
@@ -390,6 +390,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           oob: true,
           assemblyName: '',
           offset: 0,
+          start: 0,
+          end: 0,
           reversed: false,
         }
       },
@@ -939,53 +941,67 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
+        if (leftOffset === undefined || rightOffset === undefined) return []
+
+        // handle out of bound offsets
+        let leftBpOffset = leftOffset.offset
+        let rightBpOffset = rightOffset.offset
+        if (leftOffset.oob && leftOffset.start !== undefined && leftOffset.end !== undefined ) {
+          leftBpOffset = leftOffset.start
+        }
+        if (rightOffset.oob && rightOffset.start !== undefined && rightOffset.end !== undefined) {
+          rightBpOffset = rightOffset.end
+        }
+
+        // handle single region
+        const singleRegion =
+          leftOffset.refName === rightOffset.refName &&
+          leftOffset.index === rightOffset.index
         const selected: Region[] = []
-        if (leftOffset.coord !== undefined && rightOffset.coord !== undefined) {
-          const singleRegion =
-            leftOffset.refName === rightOffset.refName &&
-            leftOffset.index === rightOffset.index
-          if (singleRegion) {
-            const singleRegion = self.displayedRegions[leftOffset.index]
-            if (leftOffset.oob && rightOffset.oob) {
-                selected.push({
-                  ...singleRegion,
-                  start: Math.max(1, singleRegion.start)
-                })
+        if (singleRegion) {
+          const singleRegion = self.displayedRegions[leftOffset.index]
+          selected.push({
+            ...singleRegion,
+            start: leftOffset.reversed
+              ? Math.floor(singleRegion.end - rightBpOffset) + 1
+              : Math.floor(singleRegion.start + leftBpOffset) + 1,
+            end: rightOffset.reversed
+              ? Math.min(Math.floor(singleRegion.end - leftBpOffset) + 1, singleRegion.end)
+              : Math.min(Math.floor(singleRegion.start + rightBpOffset) + 1, singleRegion.end)
+          })
+        } else {
+          // handle more than one region
+          for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
+            const region = self.displayedRegions[i]
+            if (leftOffset.index === i) {
+              const first = {
+                ...region,
+                start: leftOffset.reversed
+                  ? region.start + 1
+                  : Math.floor(region.start + leftBpOffset) + 1,
+                end: leftOffset.reversed
+                  ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
+                  : region.end,
+              }
+              selected.push(first)
+            } else if (rightOffset.index === i) {
+              const last = {
+                ...region,
+                start: rightOffset.reversed
+                  ? Math.floor(region.end - rightBpOffset) + 1
+                  : region.start + 1,
+                end: rightOffset.reversed
+                  ? region.end
+                  : Math.min(Math.floor(region.start + rightBpOffset) + 1, region.end)
+              }
+              selected.push(last)
             } else {
               selected.push({
-              ...singleRegion,
-              start: leftOffset.oob? (singleRegion.reversed? rightOffset.coord : Math.max(1, singleRegion.start)) : (singleRegion.reversed? rightOffset.coord : leftOffset.coord),
-              end: rightOffset.oob? (singleRegion.reversed? leftOffset.coord : singleRegion.end) : (singleRegion.reversed? leftOffset.coord : rightOffset.coord),
-            })
-            }
-          } else {
-            // more than one region
-            for (let i = leftOffset.index; i <=  rightOffset.index; i += 1) {
-              const currentRegion = self.displayedRegions[i]
-              if (leftOffset.index === i) {
-                const first = {
-                  ...currentRegion,
-                  start: leftOffset.oob ? Math.max(1, currentRegion.start) : (currentRegion.reversed? Math.max(1, currentRegion.start) : leftOffset.coord),
-                  end: leftOffset.oob ? currentRegion.end: (currentRegion.reversed? leftOffset.coord :  currentRegion.end)
-                }
-                selected.push(first)
-              } else if (rightOffset.index === i) {
-                const last = {
-                  ...currentRegion,
-                  start: rightOffset.oob? Math.max(1, currentRegion.start): rightOffset.reversed? rightOffset.coord : Math.max(1, currentRegion.start),
-                  end:  rightOffset.oob? currentRegion.end : (currentRegion.reversed? currentRegion.end : rightOffset.coord),
-                }
-                selected.push(last)
-              } else {
-                // middle regions
-                selected.push({
-                  ...currentRegion,
-                  start: Math.max(1, currentRegion.start)
-                })
-              }
+                ...region,
+                start: region.start + 1
+              })
             }
           }
-          return selected
         }
         return selected
       },
@@ -1001,16 +1017,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         // make an adapter
         const session = getSession(self)
-
+        console.log(session)
         const assemblyName =
           leftOffset?.assemblyName || rightOffset?.assemblyName // change to get assemblyName
         if (leftOffset && rightOffset && assemblyName) {
-          const assemblyManager  = session.assemblyManager
+          const assemblyManager = session.assemblyManager
+          const sessionId = ''
           const assembly = assemblyManager.get(assemblyName)
           const sequenceAdapterConfig = readConfObject(
             assembly?.configuration,
             ['sequence', 'adapter'],
           )
+
+
           const dataAdapterType = pluginManager.getAdapterType(
             sequenceAdapterConfig.type,
           )
@@ -1028,6 +1047,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
             selectedRegions,
           )
+          // const otherChunks = await a.ssembly?.rpcManager.call(
+          //   sessionId,
+          //   'CoreGetFeaturesFromMultipleRegions',
+          //   {
+          //     adapterConfig: sequenceAdapterConfig,
+          //     regions: selectedRegions
+          //     signal,
+          //   },
+          //   { timeout: 1000000 },
+          // )
+          // console.log(otherChunks)
           const seqChunks = await featuresMultRegions
             .pipe(toArray())
             .toPromise()
