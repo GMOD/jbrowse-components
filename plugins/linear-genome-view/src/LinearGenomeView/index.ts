@@ -959,88 +959,89 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
         const selected: Region[] = []
-        if (leftOffset === undefined || rightOffset === undefined)
-          return selected
-
-        // handle out of bound offsets
-        let leftBpOffset = leftOffset.offset
-        let rightBpOffset = rightOffset.offset
-        if (
-          leftOffset.oob &&
-          leftOffset.start !== undefined &&
-          leftOffset.end !== undefined
-        ) {
-          leftBpOffset = leftOffset.start
-        }
-        if (
-          rightOffset.oob &&
-          rightOffset.start !== undefined &&
-          rightOffset.end !== undefined
-        ) {
-          rightBpOffset = rightOffset.end
-        }
-
-        // handle single region
-        const singleRegion =
-          leftOffset.refName === rightOffset.refName &&
-          leftOffset.index === rightOffset.index
-        // if (singleRegion && rightOffset.oob && leftOffset.oob) {
-        //   return selected
-        // }
-        if (singleRegion) {
-          const region = self.displayedRegions[leftOffset.index]
-          if (rightOffset.oob && leftOffset.oob && self.displayedRegions.length > 1) {
-            return selected
+        if (leftOffset !== undefined && rightOffset !== undefined) {
+          // handle out of bound offsets
+          let leftBpOffset = leftOffset.offset
+          let rightBpOffset = rightOffset.offset
+          if (
+            leftOffset.oob &&
+            leftOffset.start !== undefined &&
+            leftOffset.end !== undefined
+          ) {
+            leftBpOffset = leftOffset.start
           }
-          selected.push({
-            ...region,
-            start: leftOffset.reversed
-              ? Math.floor(region.end - rightBpOffset) + 1
-              : Math.floor(region.start + leftBpOffset) + 1,
-            end: rightOffset.reversed
-              ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
-              : Math.min(
-                  Math.floor(region.start + rightBpOffset) + 1,
-                  region.end,
-                ),
-          })
-        } else {
-          // handle more than one region
-          for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
-            const region = self.displayedRegions[i]
-            if (leftOffset.index === i) {
-              const first = {
-                ...region,
-                start: leftOffset.reversed
-                  ? region.start + 1
-                  : Math.floor(region.start + leftBpOffset) + 1,
-                end: leftOffset.reversed
-                  ? Math.min(
-                      Math.floor(region.end - leftBpOffset) + 1,
-                      region.end,
-                    )
-                  : region.end,
+          if (
+            rightOffset.oob &&
+            rightOffset.start !== undefined &&
+            rightOffset.end !== undefined
+          ) {
+            rightBpOffset = rightOffset.end
+          }
+
+          // handle single region
+          const singleRegion =
+            leftOffset.refName === rightOffset.refName &&
+            leftOffset.index === rightOffset.index
+          if (singleRegion) {
+            const region = self.displayedRegions[leftOffset.index]
+            // selecting region oob
+            if (rightOffset.oob && leftOffset.oob) {
+              const leftOob = (leftOffset?.coord || 0) < (leftOffset?.start || 0)
+              const rightOob = (rightOffset?.coord || 0) > (rightOffset?.end || 0)
+              if (!(rightOob && leftOob)) {
+                return selected
               }
-              selected.push(first)
-            } else if (rightOffset.index === i) {
-              const last = {
-                ...region,
-                start: rightOffset.reversed
-                  ? Math.floor(region.end - rightBpOffset) + 1
-                  : region.start + 1,
-                end: rightOffset.reversed
-                  ? region.end
-                  : Math.min(
-                      Math.floor(region.start + rightBpOffset) + 1,
-                      region.end,
-                    ),
+            }
+            selected.push({
+              ...region,
+              start: leftOffset.reversed
+                ? Math.floor(region.end - rightBpOffset) + 1
+                : Math.floor(region.start + leftBpOffset) + 1,
+              end: rightOffset.reversed
+                ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
+                : Math.min(
+                    Math.floor(region.start + rightBpOffset) + 1,
+                    region.end,
+                  ),
+            })
+          } else {
+            // handle more than one region
+            for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
+              const region = self.displayedRegions[i]
+              if (leftOffset.index === i) {
+                const first = {
+                  ...region,
+                  start: leftOffset.reversed
+                    ? region.start + 1
+                    : Math.floor(region.start + leftBpOffset) + 1,
+                  end: leftOffset.reversed
+                    ? Math.min(
+                        Math.floor(region.end - leftBpOffset) + 1,
+                        region.end,
+                      )
+                    : region.end,
+                }
+                selected.push(first)
+              } else if (rightOffset.index === i) {
+                const last = {
+                  ...region,
+                  start: rightOffset.reversed
+                    ? Math.floor(region.end - rightBpOffset) + 1
+                    : region.start + 1,
+                  end: rightOffset.reversed
+                    ? region.end
+                    : Math.min(
+                        Math.floor(region.start + rightBpOffset) + 1,
+                        region.end,
+                      ),
+                }
+                selected.push(last)
+              } else {
+                selected.push({
+                  ...region,
+                  start: region.start + 1,
+                })
               }
-              selected.push(last)
-            } else {
-              selected.push({
-                ...region,
-                start: region.start + 1,
-              })
             }
           }
         }
@@ -1068,11 +1069,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             start: region.start - 1,
           }
         })
-
-        // console.log(selectedRegions)
-        // TODO: check for errors with empty selectedRegions array
+        // check for errors with empty selectedRegions array
         if (selectedRegions.length === 0) {
-          self.disableGetSequence(true)
+          self.showSeqDialog(false)
           session.notify(
             `Selected region: ${leftOffset.refName}:${leftOffset.coord} to ${rightOffset.refName}:${rightOffset.coord} out of bounds`,
           )
