@@ -13,6 +13,7 @@ import {
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
+import { toArray } from 'rxjs/operators'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -35,28 +36,34 @@ export class CoreGetRefNames extends RpcMethodType {
     return []
   }
 }
-// export class CoreGetFeaturesInMultipleRegions extends RpcMethodType {
-//   name = 'CoreGetFeaturesInMultipleRegions'
+export class CoreGetFeaturesInMultipleRegions extends RpcMethodType {
+  name = 'CoreGetFeaturesInMultipleRegions'
 
-//   async execute(args: {
-//     regions: Region[]
-//     sessionId: string
-//     signal?: RemoteAbortSignal
-//     adapterConfig: {}
-//   }) {
-//     const deserializedArgs = await this.deserializeArguments(args)
-//     const { sessionId, adapterConfig, regions } = deserializedArgs
-//     const { dataAdapter } = getAdapter(
-//       this.pluginManager,
-//       sessionId,
-//       adapterConfig,
-//     )
-//     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-//       return dataAdapter.getFeaturesInMultipleRegions(regions)
-//     }
-//     return []
-//   }
-// }
+  async execute(args: {
+    regions: Region[]
+    sessionId: string
+    signal?: RemoteAbortSignal
+    adapterConfig: {}
+  }) {
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig, regions } = deserializedArgs
+    const { dataAdapter } = getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      const observableRegions = dataAdapter.getFeaturesInMultipleRegions(
+        regions,
+      )
+      const features = await observableRegions.pipe(toArray()).toPromise()
+      return features.map(feature => {
+        return feature.toJSON()
+      })
+    }
+    return []
+  }
+}
 
 export class CoreGetFileInfo extends RpcMethodType {
   name = 'CoreGetInfo'
