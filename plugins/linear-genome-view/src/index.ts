@@ -15,7 +15,6 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-// import {CoreGetFeaturesInMultipleRegions} from '@jbrowse/core/rpc/coreRpcMethods'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import {
   BaseLinearDisplay,
@@ -94,10 +93,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
           ReactComponent: BaseFeatureWidgetReactComponent,
         }),
     )
-    // install CoreGetFeaturesFromMultipleRegions rpc callback
-    // pluginManager.addRpcMethod(
-    //   () => new CoreGetFeaturesInMultipleRegions(pluginManager),
-    // )
   }
 
   configure(pluginManager: PluginManager) {

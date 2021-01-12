@@ -13,7 +13,6 @@ import {
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
-import { toArray } from 'rxjs/operators'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
