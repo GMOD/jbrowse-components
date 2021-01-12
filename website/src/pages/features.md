@@ -77,3 +77,7 @@ Here is a short list of data formats supported in core JBrowse 2. Plugins are av
 - Indexed FASTA/BGZip indexed FASTA
 - 2bit
 - .hic (Hi-C contact matrix visualization)
+
+## Integration and embedding
+
+The JBrowse 2 platform and plugins are designed from the ground up to be modular and reusable.
