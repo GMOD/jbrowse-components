@@ -138,10 +138,13 @@ function RubberBand({
     ) {
       handleClose()
     }
-    try {
-      getSequence()
-    } catch (error) {
-      throw new Error(error)
+
+    if (
+      !mouseDragging &&
+      currentX !== undefined &&
+      startX !== undefined
+    ) {
+      model.warnAboutFileSize(Math.abs(currentX - startX))
     }
   })
 
@@ -225,6 +228,7 @@ function RubberBand({
       onClick: () => {
         // open the dialog
         model.showSeqDialog(true)
+        getSequence()
         handleClose()
       },
     },

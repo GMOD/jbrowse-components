@@ -67,9 +67,7 @@ function SequenceDialog({
               onClick={() => {
                 handleClose()
                 model.showSeqDialog(false)
-                model.setSelectedSeqRegion(undefined)
-                model.disableGetSequence(false)
-                model.disableCopyToClipBoard(false)
+                model.resetDialog()
               }}
             >
               <CloseIcon />
@@ -153,9 +151,7 @@ function SequenceDialog({
             onClick={() => {
               handleClose()
               model.showSeqDialog(false)
-              model.setSelectedSeqRegion(undefined)
-              model.disableGetSequence(false)
-              model.disableCopyToClipBoard(false)
+              model.resetDialog()
             }}
             color="primary"
             autoFocus
