@@ -139,11 +139,7 @@ function RubberBand({
       handleClose()
     }
 
-    if (
-      !mouseDragging &&
-      currentX !== undefined &&
-      startX !== undefined
-    ) {
+    if (!mouseDragging && currentX !== undefined && startX !== undefined) {
       model.warnAboutFileSize(Math.abs(currentX - startX))
     }
   })

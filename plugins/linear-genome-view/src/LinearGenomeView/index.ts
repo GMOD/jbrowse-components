@@ -945,7 +945,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       warnAboutFileSize(pxSelected: number) {
         const session = getSession(self)
         // roughly 1,048,576 chars in 1MG * 500
-        if (pxSelected*self.bpPerPx > 1048576 * 500) {
+        if (pxSelected * self.bpPerPx > 1048576 * 500) {
           session.notify('Selected region is more than 500MG', 'warning')
         }
       },
@@ -986,8 +986,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const region = self.displayedRegions[leftOffset.index]
             // selecting region oob
             if (rightOffset.oob && leftOffset.oob) {
-              const leftOob = (leftOffset?.coord || 0) < (leftOffset?.start || 0)
-              const rightOob = (rightOffset?.coord || 0) > (rightOffset?.end || 0)
+              const leftOob =
+                (leftOffset?.coord || 0) < (leftOffset?.start || 0)
+              const rightOob =
+                (rightOffset?.coord || 0) > (rightOffset?.end || 0)
               if (!(rightOob && leftOob)) {
                 return selected
               }
@@ -998,7 +1000,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 ? Math.floor(region.end - rightBpOffset) + 1
                 : Math.floor(region.start + leftBpOffset) + 1,
               end: rightOffset.reversed
-                ? Math.min(Math.floor(region.end - leftBpOffset) + 1, region.end)
+                ? Math.min(
+                    Math.floor(region.end - leftBpOffset) + 1,
+                    region.end,
+                  )
                 : Math.min(
                     Math.floor(region.start + rightBpOffset) + 1,
                     region.end,
@@ -1053,13 +1058,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Can handle if there are multiple displayedRegions from same refName.
        * Can handle if there are displayedRegions from different refNames.
        * sets the selectedSequence
-       * 
+       *
        * @param leftOffset- `object as {start, end, index, offset}`, offset = start of user drag
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        */
       async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
         const session = getSession(self)
         // TODO: check for errors with Left and Right offset
+        //
         const selectedRegions = this.getSelectedRegions(
           leftOffset,
           rightOffset,
@@ -1094,33 +1100,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const dataAdapterType = pluginManager.getAdapterType(
               sequenceAdapterConfig.type,
             )
-            // to be replaced with RPC call 
             const sequenceAdapter = new dataAdapterType.AdapterClass(
               sequenceAdapterConfig,
             ) as BaseFeatureDataAdapter
             const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
               selectedRegions,
             )
-            // get features 
-            // try {
-            //   const sessionId = ''
-            //   const aborter = new AbortController()
-            //   const { signal } = aborter
-            //   const otherChunks = await rpcManager.call(
-            //     sessionId,
-            //     'CoreGetFeaturesFromMultipleRegions',
-            //     {
-            //       adapterConfig: sequenceAdapterConfig,
-            //       regions: selectedRegions,
-            //       signal
-            //     },
-            //     { timeout: 1000000 },
-            //   )
-            //   console.log(otherChunks)
-            // } catch (error) {
-            //   console.log(error)
-            // }
-
             // format feature sequences into Fasta
             const seqChunks = await featuresMultRegions
               .pipe(toArray())
@@ -1174,7 +1159,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * Formats the sequences into Fasta format
-       * 
+       *
        * @param chunks: array of seq chunks of the form { header: string, seq: string }
        * returns formatted sequence in fasta format
        */
@@ -1193,7 +1178,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * Returns sequence with new line every 80 characters
-       * 
+       *
        * @param seqString: string
        * returns formated sequence string
        */
@@ -1211,7 +1196,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * Returns the size of the sequence string
-       * 
+       *
        * @param seqString: string
        */
       checkSequencesSize(seqFileContent: string) {
