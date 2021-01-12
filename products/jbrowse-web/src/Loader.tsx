@@ -24,7 +24,10 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { readSessionFromDynamo } from './sessionSharing'
+import {
+  readSessionFromDynamo,
+  scanSharedSessionForCallbacks,
+} from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -251,7 +254,14 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      const scannedSession = scanSharedSessionForCallbacks(session)
+      // if something removed warn
+      if (JSON.stringify(session) !== JSON.stringify(scannedSession))
+        session.notify(
+          'The shared session contained callbacks that were unsafe. They have been set to default values',
+          'warning',
+        )
+      self.setSessionSnapshot({ ...scannedSession, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {

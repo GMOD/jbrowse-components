@@ -25,7 +25,10 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from 'mobx-state-tree'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
-import { shareSessionToDynamo } from './sessionSharing'
+import {
+  shareSessionToDynamo,
+  scanSharedSessionForCallbacks,
+} from './sessionSharing'
 import { SessionModel } from './sessionModelFactory'
 
 const useStyles = makeStyles(theme => ({
@@ -201,8 +204,14 @@ const ShareDialog = observer(
           try {
             setLoading(true)
             const locationUrl = new URL(window.location.href)
+            const scannedSnap = await scanSharedSessionForCallbacks(snap)
+            if (JSON.stringify(snap) !== JSON.stringify(scannedSnap))
+              session.notify(
+                'The session being shared contained unsafe callbacks. They have been replaced with default values',
+                'warning',
+              )
             const result = await shareSessionToDynamo(
-              snap,
+              scannedSnap,
               url,
               locationUrl.href,
             )
@@ -224,7 +233,7 @@ const ShareDialog = observer(
       return () => {
         cancelled = true
       }
-    }, [currentSetting, url, snap])
+    }, [currentSetting, url, snap, session])
 
     // generate long URL
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`

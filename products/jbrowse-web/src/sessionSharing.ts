@@ -23,6 +23,21 @@ const decrypt = (text: string, password: string) => {
   const bytes = AES.decrypt(text, password)
   return bytes.toString(Utf8)
 }
+
+export async function scanSharedSessionForCallbacks(
+  session: Record<string, unknown>,
+) {
+  const scannedSession = session
+  Object.entries(scannedSession).forEach(entry => {
+    const [key, value] = entry
+    if (value instanceof Function) {
+      console.log('key', key, 'value', value)
+      scannedSession[`${key}`] = '' // need to find default value based off key
+    }
+  })
+
+  return scannedSession
+}
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
   session: Record<string, unknown>,
