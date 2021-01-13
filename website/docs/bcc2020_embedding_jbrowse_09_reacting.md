@@ -15,7 +15,7 @@ change.
 
 Make the following changes to "index.html":
 
-```html {19,25-27,51-52} title="index.html"
+```html {18,24-26,45-52} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>

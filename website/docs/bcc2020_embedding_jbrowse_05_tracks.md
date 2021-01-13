@@ -134,7 +134,7 @@ export default [
 
 Now update "index.html" to import this file.
 
-```html {12} title="index.html"
+```html {11} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
