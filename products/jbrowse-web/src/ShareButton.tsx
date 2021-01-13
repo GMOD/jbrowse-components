@@ -205,11 +205,12 @@ const ShareDialog = observer(
             setLoading(true)
             const locationUrl = new URL(window.location.href)
             const scannedSnap = await scanSharedSessionForCallbacks(snap)
-            if (JSON.stringify(snap) !== JSON.stringify(scannedSnap))
+            if (JSON.stringify(snap) !== JSON.stringify(scannedSnap)) {
               session.notify(
-                'The session being shared contained unsafe callbacks. They have been replaced with default values',
+                'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
                 'warning',
               )
+            }
             const result = await shareSessionToDynamo(
               scannedSnap,
               url,
@@ -249,6 +250,7 @@ const ShareDialog = observer(
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
+          data-testid="share-dialog"
         >
           <DialogTitle id="alert-dialog-title">
             JBrowse Shareable Link
@@ -291,6 +293,7 @@ const ShareDialog = observer(
                       const target = event.target as HTMLTextAreaElement
                       target.select()
                     }}
+                    data-testid="share-url-field"
                   />
                 )
               ) : (

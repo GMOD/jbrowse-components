@@ -6,13 +6,17 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
+import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import * as sessionSharing from '../sessionSharing'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
+
+window.TextEncoder = TextEncoder
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -139,6 +143,67 @@ describe('test configuration editor', () => {
 function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }
+
+describe('test sharing', () => {
+  sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
+    encryptedSession: 'A',
+    json: {
+      sessionId: 'abc',
+    },
+    password: '123',
+  })
+  it('can click and share a session', async () => {
+    const pluginManager = getPluginManager()
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    fireEvent.click(await findByText('Share'))
+
+    // check the share dialog has the above session shared
+    expect(await findByTestId('share-dialog')).toBeTruthy()
+    const url = await findByTestId('share-url-field')
+    // see if there is a better way to access the URL value
+    expect(url.lastChild.firstChild.value).toBe(
+      'http://localhost/?session=share-abc&password=123',
+    )
+  })
+
+  it('can clear a session of callbacks before sharing', async () => {
+    const sessionWithCustomCallback = {
+      name: 'testSession',
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'function(customCallback)',
+          name: 'testTrack',
+        },
+      ],
+    }
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    state.setSession(sessionWithCustomCallback)
+
+    await findByText('Help')
+    fireEvent.click(await findByText('Share'))
+
+    expect(await findByTestId('share-dialog')).toBeTruthy()
+    const url = await findByTestId('share-url-field')
+    expect(url.lastChild.firstChild.value).toBe(
+      'http://localhost/?session=share-abc&password=123',
+    )
+
+    // since a custom callback is in sessionTracks, should have warning message
+    expect(
+      await findByText(
+        'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
+      ),
+    ).toBeTruthy()
+  })
+})
 
 test('404 sequence file', async () => {
   console.error = jest.fn()

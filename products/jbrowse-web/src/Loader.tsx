@@ -254,11 +254,11 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const scannedSession = scanSharedSessionForCallbacks(session)
+      const scannedSession = await scanSharedSessionForCallbacks(session)
       // if something removed warn
       if (JSON.stringify(session) !== JSON.stringify(scannedSession))
         session.notify(
-          'The shared session contained callbacks that were unsafe. They have been set to default values',
+          'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
           'warning',
         )
       self.setSessionSnapshot({ ...scannedSession, id: shortid() })

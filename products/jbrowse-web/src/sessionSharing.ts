@@ -24,20 +24,33 @@ const decrypt = (text: string, password: string) => {
   return bytes.toString(Utf8)
 }
 
+// recusively checks config for callbacks and removes them
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const deleteCallbacks = (key: any) => {
+  if (Array.isArray(key)) {
+    key.forEach(a => {
+      deleteCallbacks(a)
+    })
+  } else if (key && typeof key === 'object') {
+    Object.entries(key).forEach(([innerKey, value]) => {
+      if (typeof value === 'string' && value.startsWith('function')) {
+        delete key[innerKey] // removing sets it to the default callback
+      } else deleteCallbacks(key[innerKey])
+    })
+  }
+}
+
 export async function scanSharedSessionForCallbacks(
   session: Record<string, unknown>,
 ) {
-  const scannedSession = session
-  Object.entries(scannedSession).forEach(entry => {
-    const [key, value] = entry
-    if (value instanceof Function) {
-      console.log('key', key, 'value', value)
-      scannedSession[`${key}`] = '' // need to find default value based off key
-    }
-  })
+  const scannedSession = JSON.parse(JSON.stringify(session))
+  const { sessionTracks, sessionConnections } = scannedSession
+  if (sessionTracks) deleteCallbacks(sessionTracks)
+  if (sessionConnections) deleteCallbacks(sessionConnections)
 
   return scannedSession
 }
+
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
   session: Record<string, unknown>,
