@@ -264,7 +264,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.02, 133696.67902350426)
+    state.session.views[0].setNewView(0.03932, 67884.16536402702)
 
     // load track
     fireEvent.click(
@@ -279,15 +279,27 @@ describe('alignments track', () => {
       {},
       { timeout: 10000 },
     )
-    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
-    const snpCoverageData = snpCoverageImg.replace(
-      /^data:image\/\w+;base64,/,
-      '',
-    )
-    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
-    expect(snpCoverageBuf).toMatchImageSnapshot({
-      failureThreshold: 0.01,
-      failureThresholdType: 'percent',
-    })
+
+    // this block tests that softclip avoids decrementing the total block
+    // e.g. this line is not called for softclip/hardclip
+    // bin.getNested('reference').decrement(strand, overlap)
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[0]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
+
+    // test that softclip doesn't contibute to coverage
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[1]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
   }, 15000)
 })
