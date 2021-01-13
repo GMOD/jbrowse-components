@@ -114,6 +114,7 @@ function SequenceDialog({
   }
 
   async function fetchSelectedRegions() {
+    // convert from 1-based closed to interbase
     const regionsSelected = model.getSelectedRegions(model.leftOffset, model.rightOffset).map(region => {
           return {
             ...region,
