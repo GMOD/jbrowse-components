@@ -74,7 +74,7 @@ describe('valid file tests', () => {
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
   })
 
-  it('click and drag rubberBand to get sequence', async () => {
+  it('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
@@ -83,15 +83,15 @@ describe('valid file tests', () => {
     const rubberBandComponent = await findByTestId('rubberBand_controls')
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
-    fireEvent.mouseDown(rubberBandComponent, { clientX: 0, clientY: 0 })
+    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent,{ clientX: 250,clientY: 0 })
+    expect(state.session.views[0].seqDialogActive).toEqual(false)
     const getSeqMenuItem = await findByText('Get sequence')
     fireEvent.click(getSeqMenuItem)
     expect(state.session.views[0].seqDialogActive).toEqual(true)
-    const closeSeqDialog = await findByTestId('close-seqDialog')
-    fireEvent.click(closeSeqDialog)
-    expect(state.session.views[0].seqDialogActive).toEqual(false)
+    expect(state.session.views[0].leftOffset).toBeTruthy()
+    expect(state.session.views[0].rightOffset).toBeTruthy()
   })
 
   it('click and drag to reorder tracks', async () => {

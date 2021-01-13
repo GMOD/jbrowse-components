@@ -59,6 +59,7 @@ function SequenceDialog({
 
   useEffect(() => {
     let active = true
+
     const regionsSelected = model
       .getSelectedRegions(model.leftOffset, model.rightOffset)
       .map(region => {
@@ -148,17 +149,19 @@ function SequenceDialog({
       >
         <DialogTitle id="alert-dialog-title">
           Reference sequence
-          <IconButton
-            data-testid="close-seqDialog"
-            className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-              model.showSeqDialog(false)
-              model.setOffsets(undefined, undefined)
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
+          {handleClose ? (
+            <IconButton
+              data-testid="close-seqDialog"
+              className={classes.closeButton}
+              onClick={() => {
+                handleClose()
+                model.showSeqDialog(false)
+                model.setOffsets(undefined, undefined)
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          ) : null}
         </DialogTitle>
         <Divider />
 

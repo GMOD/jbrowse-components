@@ -485,15 +485,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         return newBpPerPx
       },
+
       setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
       },
+
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
       },
+
       horizontallyFlip() {
         self.displayedRegions = cast(
           self.displayedRegions
@@ -503,9 +506,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
+
       showSeqDialog(state: boolean) {
         self.seqDialogActive = state
       },
+
       showTrack(trackId: string, initialSnapshot = {}) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
           'track',
@@ -1062,7 +1067,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
           selectedRegions,
         )
-        // format feature sequences into Fasta
         const seqChunks: Feature[] = await featuresMultRegions
           .pipe(toArray())
           .toPromise()

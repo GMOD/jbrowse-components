@@ -141,7 +141,7 @@ function RubberBand({
     }
 
     if (!mouseDragging && currentX !== undefined && startX !== undefined) {
-      // Disabled if more than 500MB
+      // Disabled if more than approx 500MB
       const possibleSize = Math.abs(currentX - startX) * model.bpPerPx
       disableGetSequence(possibleSize > 1048576 * 500)
     }
@@ -193,7 +193,6 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
-    // fetch the sequence for the selected region
     model.setOffsets(leftOffset, rightOffset)
     model.showSeqDialog(true)
   }
@@ -222,11 +221,9 @@ function RubberBand({
     },
     {
       label: 'Get sequence',
-      // disabled: model.getSequenceDisabled,
       disabled: getSeqDisabled,
       icon: MenuOpenIcon,
       onClick: () => {
-        // open the dialog
         getSequence()
         handleClose()
       },
