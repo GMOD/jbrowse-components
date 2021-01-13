@@ -85,7 +85,7 @@ describe('valid file tests', () => {
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-    fireEvent.mouseUp(rubberBandComponent,{ clientX: 250,clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
     expect(state.session.views[0].seqDialogActive).toEqual(false)
     const getSeqMenuItem = await findByText('Get sequence')
     fireEvent.click(getSeqMenuItem)

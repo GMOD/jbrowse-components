@@ -11,7 +11,7 @@ export interface SeqChunk {
 export function formatFastaLines(seqString: string) {
   let formatted = ''
   while (seqString.length > 0) {
-    if (seqString.substring(0, 80).length < 80) {
+    if (seqString.length <= 80) {
       formatted += seqString.substring(0, 80)
     } else {
       formatted += `${seqString.substring(0, 80)}\n`

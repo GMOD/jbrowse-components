@@ -38,6 +38,8 @@
     "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
+    "copy-to-clipboard": "^3.3.1",
+    "file-saver": "^2.0.0",
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
@@ -54,7 +56,8 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "rxjs": "^6.0.0"
   },
   "publishConfig": {
     "access": "public"
