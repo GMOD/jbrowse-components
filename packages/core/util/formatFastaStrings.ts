@@ -5,8 +5,8 @@ export interface SeqChunk {
 /**
  * Returns sequence with new line every 80 characters
  *
- * @param seqString: string
- * returns formated sequence string
+ * @param seqString -  string
+ * @returns formated sequence string
  */
 export function formatFastaLines(seqString: string) {
   let formatted = ''
@@ -23,8 +23,8 @@ export function formatFastaLines(seqString: string) {
 /**
  * Formats the sequences chunks into Fasta format
  *
- * @param chunks: array of seq chunks of the form { header: string, seq: string }
- * returns formatted sequence in fasta format
+ * @param chunks - array of seq chunks of the form `{ header: string, seq: string }`
+ * @returns formatted sequence in fasta format
  */
 export function formatSeqFasta(chunks: SeqChunk[]) {
   let result = ''

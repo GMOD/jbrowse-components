@@ -145,7 +145,7 @@ function RubberBand({
       const possibleSize = Math.abs(currentX - startX) * model.bpPerPx
       disableGetSequence(possibleSize > 1048576 * 500)
     }
-  })
+  }, [mouseDragging, currentX, startX, model.bpPerPx])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()

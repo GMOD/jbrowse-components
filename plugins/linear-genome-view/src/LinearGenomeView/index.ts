@@ -934,7 +934,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
        * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
-       * @retuns array of Region[]
+       * @returns array of Region[]
        */
       getSelectedRegions(
         leftOffset: BpOffset | undefined,

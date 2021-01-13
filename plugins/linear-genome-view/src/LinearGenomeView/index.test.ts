@@ -8,15 +8,11 @@ import {
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
+import { formatFastaLines } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
 import hg38DisplayedRegions from './hg38DisplayedRegions.json'
-import {
-  formatFastaLines,
-  SeqChunk,
-  formatSeqFasta,
-} from '@jbrowse/core/util/formatFastaStrings'
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
@@ -720,21 +716,13 @@ test('Format and sizing of fasta files', async () => {
     { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
   ])
   model.setWidth(800)
-  // check different sizes
-  const small = 'cattgttgcg'
   const large =
     'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
-  const mockChunks: SeqChunk[] = [
-    { header: 'ctgA:1-10', seq: small },
-    { header: 'ctgA:1-81', seq: large },
-  ]
-
   // checks that the first 80 chars are followed by a space
   const formattedSeqFasta = formatFastaLines(large)
   expect(
     formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length,
   ).toEqual(80)
-  // const formattedFasta = formatSeqFasta(mockChunks)
   model.setOffsets(
     {
       refName: 'ctgA',

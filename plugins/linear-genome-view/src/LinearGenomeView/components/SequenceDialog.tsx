@@ -20,10 +20,10 @@ import TextField from '@material-ui/core/TextField'
 
 // core
 import { getSession } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 // other
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const useStyles = makeStyles(theme => ({
   loadingMessage: {
@@ -52,22 +52,43 @@ function SequenceDialog({
 
   const [error, setError] = useState<Error>()
   const [sequence, setSequence] = useState<string>()
-  const [file, setFile] = useState<Blob>()
+  const [fileBlob, setFileBlob] = useState<Blob>()
   const [copyDisabled, disableCopy] = useState<boolean>(true)
   const [downloadDisabled, disableDownload] = useState<boolean>(true)
   const loading = sequence === undefined && error === undefined
 
   useEffect(() => {
+    let active = true
+    const regionsSelected = model
+      .getSelectedRegions(model.leftOffset, model.rightOffset)
+      .map(region => {
+        return {
+          ...region,
+          start: region.start - 1,
+        }
+      })
     ;(async () => {
       try {
-        fetchSelectedRegions()
+        if (regionsSelected.length > 0) {
+          const chunks = await model.fetchSequence(regionsSelected)
+          if (chunks.length > 0 && active) {
+            formatSequence(chunks)
+          }
+        } else if (active) {
+          handleClose()
+          session.notify(`Selected region is out of bounds`)
+        }
       } catch (e) {
-        setError(e)
+        if (active) {
+          setError(e)
+        }
       }
     })()
 
-    return () => {}
-  }, [error])
+    return () => {
+      active = false
+    }
+  })
 
   function formatSequence(seqChunks: Feature[]) {
     const sequenceChunks: SeqChunk[] = []
@@ -95,11 +116,11 @@ function SequenceDialog({
       )
     }
     const seqFasta = formatSeqFasta(sequenceChunks)
-    const file = new Blob([seqFasta], {
+    const seqFastaFile = new Blob([seqFasta], {
       type: 'text/x-fasta;charset=utf-8',
     })
-    setFile(file)
-    const seqSize = file.size
+    setFileBlob(seqFastaFile)
+    const seqSize = seqFastaFile.size
     if (seqSize > 500000000) {
       disableCopy(true)
     } else {
@@ -115,28 +136,6 @@ function SequenceDialog({
     }
   }
 
-  async function fetchSelectedRegions() {
-    // convert from 1-based closed to interbase
-    const regionsSelected = model
-      .getSelectedRegions(model.leftOffset, model.rightOffset)
-      .map(region => {
-        return {
-          ...region,
-          start: region.start - 1,
-        }
-      })
-    if (regionsSelected.length === 0) {
-      handleClose()
-      model.showSeqDialog(false)
-      model.setOffsets(undefined, undefined)
-      session.notify(`Selected region is out of bounds`)
-    }
-    const chunks = await model.fetchSequence(regionsSelected)
-    if (chunks.length > 0) {
-      formatSequence(chunks)
-    }
-  }
-
   return (
     <>
       <Dialog
@@ -149,27 +148,24 @@ function SequenceDialog({
       >
         <DialogTitle id="alert-dialog-title">
           Reference sequence
-          {handleClose ? (
-            <IconButton
-              data-testid="close-seqDialog"
-              className={classes.closeButton}
-              onClick={() => {
-                handleClose()
-                model.showSeqDialog(false)
-                model.setOffsets(undefined, undefined)
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
+          <IconButton
+            data-testid="close-seqDialog"
+            className={classes.closeButton}
+            onClick={() => {
+              handleClose()
+              model.showSeqDialog(false)
+              model.setOffsets(undefined, undefined)
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
         <Divider />
 
         <>
           <DialogContent>
-            {error ? (
-              <Typography color="error">{`${error}`}</Typography>
-            ) : loading ? (
+            {error ? <Typography color="error">{`${error}`}</Typography> : null}
+            {loading && !error ? (
               <Container>
                 Retrieving reference sequence...
                 <CircularProgress
@@ -187,11 +183,11 @@ function SequenceDialog({
                 multiline
                 rows={3}
                 rowsMax={5}
-                disabled={copyDisabled} // disabled={model.copyToClipboardDisabled}
+                disabled={copyDisabled}
                 className={classes.dialogContent}
                 fullWidth
                 value={
-                  copyDisabled //model.copyToClipboardDisabled
+                  copyDisabled
                     ? 'Reference sequence too large to display'
                     : sequence
                 }
@@ -205,16 +201,8 @@ function SequenceDialog({
         <DialogActions>
           <Button
             onClick={() => {
-              try {
-                // copy(model?.selectedSequence || '')
-                copy(sequence || '')
-                session.notify('Copied to clipboard', 'success')
-              } catch (error) {
-                session.notify(
-                  'Error occurred attempting to copy to clipboard',
-                  'error',
-                )
-              }
+              copy(sequence || '')
+              session.notify('Copied to clipboard', 'success')
             }}
             disabled={loading || copyDisabled}
             color="primary"
@@ -224,9 +212,9 @@ function SequenceDialog({
           </Button>
           <Button
             onClick={() => {
-              saveAs(file || '', 'jbrowse_ref_seq.fa')
+              saveAs(fileBlob || '', 'jbrowse_ref_seq.fa')
             }}
-            disabled={loading || downloadDisabled || file === undefined}
+            disabled={loading || downloadDisabled || fileBlob === undefined}
             color="primary"
             startIcon={<GetAppIcon />}
           >
