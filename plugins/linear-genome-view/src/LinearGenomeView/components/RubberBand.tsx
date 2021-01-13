@@ -92,7 +92,6 @@ function RubberBand({
   model: LGV
   ControlComponent?: React.ReactElement
 }) {
-  const session = getSession(model)
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [anchorPosition, setAnchorPosition] = useState<Coord>()
@@ -165,7 +164,6 @@ function RubberBand({
 
   function mouseOut() {
     setGuideX(undefined)
-    // model.resetDialog()
     model.setOffsets(undefined, undefined)
   }
 
@@ -198,8 +196,6 @@ function RubberBand({
     // fetch the sequence for the selected region
     model.setOffsets(leftOffset, rightOffset)
     model.showSeqDialog(true)
-    const pxSelected = Math.abs(rightPx - leftPx)
-    model.setBpSelected(pxSelected * model.bpPerPx)
   }
 
   function handleClose() {

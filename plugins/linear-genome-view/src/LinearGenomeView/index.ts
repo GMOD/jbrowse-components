@@ -125,7 +125,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       seqDialogActive: false as boolean,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      bpSelected: 0 as number,
     }))
     .views(self => ({
       get width(): number {
@@ -490,9 +489,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
-      },
-      setBpSelected(bp: number) {
-        self.bpSelected = bp
       },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)

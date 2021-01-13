@@ -125,15 +125,12 @@ function SequenceDialog({
           start: region.start - 1,
         }
       })
-    console.log(model.leftOffset)
-    console.log(model.rightOffset)
     if (regionsSelected.length === 0) {
       handleClose()
       model.showSeqDialog(false)
       model.setOffsets(undefined, undefined)
       session.notify(`Selected region is out of bounds`)
     }
-    console.log(regionsSelected)
     const chunks = await model.fetchSequence(regionsSelected)
     if (chunks.length > 0) {
       formatSequence(chunks)
