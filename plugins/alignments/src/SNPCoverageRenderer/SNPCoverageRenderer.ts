@@ -40,8 +40,8 @@ interface BaseInfo {
 }
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
-  // note: the snps are drawn on linear scale even if the data is drawn in log scape
-  // hence the two different scales being used
+  // note: the snps are drawn on linear scale even if the data is drawn in log
+  // scape hence the two different scales being used
   draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
     const {
       features,
@@ -77,49 +77,47 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       G: theme.palette.bases.G.main,
       T: theme.palette.bases.T.main,
       total: 'lightgrey',
+      insertion: 'purple',
+      softclip: 'blue',
+      hardclip: 'red',
     }
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
+    ctx.fillStyle = colorForBase.total
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score') as number
-      ctx.fillStyle = colorForBase.total
-      const w = rightPx - leftPx + 0.3
-      ctx.fillRect(leftPx, toY(score), w, toHeight(score))
+      ctx.fillRect(leftPx, toY(score), rightPx - leftPx + 0.3, toHeight(score))
     }
-
-    const colorMap = { insertion: 'purple', softclip: 'blue', hardclip: 'red' }
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
     // the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = Math.max(rightPx - leftPx + 0.3, 1)
       const infoArray: BaseInfo[] = feature.get('snpinfo') || []
       let curr = 0
       infoArray.forEach(info => {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }
+        ctx.fillStyle = colorForBase[info.base]
         if (
           info.base === 'insertion' ||
           info.base === 'softclip' ||
           info.base === 'hardclip'
         ) {
-          ctx.fillStyle = colorMap[info.base]
           ctx.beginPath()
           ctx.moveTo(leftPx - 3, 0)
           ctx.lineTo(leftPx + 3, 0)
           ctx.lineTo(leftPx, 4.5)
           ctx.fill()
         } else {
-          ctx.fillStyle = colorForBase[info.base]
           ctx.fillRect(
             leftPx,
             snpToY(info.score + curr),
-            w,
+            Math.max(rightPx - leftPx + 0.3, 1),
             snpToHeight(info.score),
           )
           curr += info.score

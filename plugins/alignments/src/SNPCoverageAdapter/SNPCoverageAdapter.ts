@@ -136,14 +136,21 @@ export default (pluginManager: PluginManager) => {
           region,
           opts.bpPerPx || 1,
         )
+
+        // avoid having the softclip and hardclip count towards score
+        const score = (bin: NestedFrequencyTable) =>
+          bin.total() -
+          (bin.categories.softclip?.total() || 0) -
+          (bin.categories.hardclip?.total() || 0)
+
         coverageBins.forEach((bin, index) => {
           if (bin.total()) {
             observer.next(
               new SimpleFeature({
                 id: `${this.id}-${region.start}-${index}`,
                 data: {
-                  score: bin.total(),
-                  snpinfo: generateInfoList(bin), // info needed to draw snps
+                  score: score(bin),
+                  snpinfo: generateInfoList(bin),
                   start: region.start + index,
                   end: region.start + index + 1,
                   refName: region.refName,
@@ -201,7 +208,10 @@ export default (pluginManager: PluginManager) => {
         let sb = Math.floor(s)
         let eb = Math.floor(e)
 
-        if (sb >= binMax || eb < 0) return // does not overlap this block
+        if (sb >= binMax || eb < 0) {
+          // does not overlap this block
+          return
+        }
 
         // enforce 0 <= bin < binMax
         if (sb < 0) {
@@ -278,7 +288,13 @@ export default (pluginManager: PluginManager) => {
                   // Note: we decrement 'reference' so that total of the score
                   // is the total coverage
                   const bin = coverageBins[binNum]
-                  bin.getNested('reference').decrement(strand, overlap)
+                  if (
+                    mismatch.type !== 'softclip' &&
+                    mismatch.type !== 'hardclip'
+                  ) {
+                    bin.getNested('reference').decrement(strand, overlap)
+                  }
+
                   let { base } = mismatch
 
                   if (mismatch.type === 'insertion') {
