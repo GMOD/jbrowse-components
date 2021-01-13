@@ -12,7 +12,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
-import { getSession, stringify } from '@jbrowse/core/util'
+import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
