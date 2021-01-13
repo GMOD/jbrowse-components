@@ -257,7 +257,7 @@ describe('alignments track', () => {
     await findAllByText('Max height reached', {}, { timeout: 10000 })
   }, 15000)
 
-  it('test that bam with small max height displays message', async () => {
+  it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByText, findByTestId } = render(
@@ -271,10 +271,10 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
     )
 
-    const { findAllByTestId: findAllByTestId2 } = within(
+    const { findAllByTestId } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId2(
+    const snpCoverageCanvas = await findAllByTestId(
       'prerendered_canvas',
       {},
       { timeout: 10000 },
@@ -286,7 +286,7 @@ describe('alignments track', () => {
     )
     const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
     expect(snpCoverageBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
+      failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
   }, 15000)
