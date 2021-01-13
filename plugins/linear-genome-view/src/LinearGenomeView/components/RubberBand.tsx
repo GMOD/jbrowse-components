@@ -12,7 +12,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
-import { stringify } from '@jbrowse/core/util'
+import { getSession, stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -91,11 +91,13 @@ function RubberBand({
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
-}) {
+  }) {
+  const session = getSession(model)
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
   const [anchorPosition, setAnchorPosition] = useState<Coord>()
   const [guideX, setGuideX] = useState<number | undefined>()
+  const [getSeqDisabled, disableGetSequence] = useState<boolean>(true)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -140,7 +142,10 @@ function RubberBand({
     }
 
     if (!mouseDragging && currentX !== undefined && startX !== undefined) {
-      model.warnAboutFileSize(Math.abs(currentX - startX))
+      // Disabled if more than 500MB, or if there is no sequence adapter for the assembly in question. 
+      const possibleSize = Math.abs(currentX - startX)*model.bpPerPx
+      disableGetSequence(possibleSize > 1048576 * 500)
+      // model.warnAboutFileSize(Math.abs(currentX - startX))
     }
   })
 
@@ -161,7 +166,8 @@ function RubberBand({
 
   function mouseOut() {
     setGuideX(undefined)
-    model.resetDialog()
+    // model.resetDialog()
+    model.setOffsets(undefined, undefined)
   }
 
   function zoomToRegion() {
@@ -191,14 +197,16 @@ function RubberBand({
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     // fetch the sequence for the selected region
-    model.fetchSequence(leftOffset, rightOffset)
+    model.setOffsets(leftOffset, rightOffset)
+    model.showSeqDialog(true)
+    const pxSelected = Math.abs(rightPx - leftPx)
+    model.setBpSelected(pxSelected * model.bpPerPx)
   }
 
   function handleClose() {
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(undefined)
-    model.resetDialog()
   }
 
   const open = Boolean(anchorPosition)
@@ -219,11 +227,11 @@ function RubberBand({
     },
     {
       label: 'Get sequence',
-      disabled: model.getSequenceDisabled,
+      // disabled: model.getSequenceDisabled,
+      disabled: getSeqDisabled,
       icon: MenuOpenIcon,
       onClick: () => {
         // open the dialog
-        model.showSeqDialog(true)
         getSequence()
         handleClose()
       },

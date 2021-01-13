@@ -55,10 +55,6 @@ export interface BpOffset {
   oob?: boolean
 }
 
-export interface SeqChunk {
-  header: string
-  seq: string
-}
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
@@ -127,9 +123,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       seqDialogActive: false as boolean,
-      selectedSequence: undefined as undefined | string,
-      getSequenceDisabled: false as boolean,
-      copyToClipboardDisabled: false as boolean,
+      leftOffset: undefined as undefined |  BpOffset, 
+      rightOffset: undefined as undefined | BpOffset,
+      bpSelected: 0 as number,
     }))
     .views(self => ({
       get width(): number {
@@ -490,19 +486,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
         return newBpPerPx
       },
-      setSelectedSeqRegion(seqString: string | undefined) {
-        self.selectedSequence = seqString
+      setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
+        // sets offsets used in the get sequence dialog
+        self.leftOffset = left
+        self.rightOffset = right
       },
-      disableGetSequence(state: boolean) {
-        self.getSequenceDisabled = state
-      },
-      disableCopyToClipBoard(state: boolean) {
-        self.copyToClipboardDisabled = state
-      },
-      resetDialog() {
-        self.selectedSequence = undefined
-        self.getSequenceDisabled = false
-        self.copyToClipboardDisabled = false
+      setBpSelected(bp: number) {
+        self.bpSelected = bp
       },
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
@@ -942,13 +932,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           session.notify('No regions found to navigate to', 'warning')
         }
       },
-      warnAboutFileSize(pxSelected: number) {
-        const session = getSession(self)
-        // roughly 1,048,576 chars in 1MG * 500
-        if (pxSelected * self.bpPerPx > 1048576 * 500) {
-          session.notify('Selected region is more than 500MG', 'warning')
-        }
-      },
       /**
        * Helper method for the fetchSequence.
        * Retrieves the corresponding regions that were selected by the rubberband
@@ -957,7 +940,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
        * Retuns array of Region[]
        */
-      getSelectedRegions(leftOffset: BpOffset, rightOffset: BpOffset) {
+      getSelectedRegions(leftOffset: BpOffset | undefined, rightOffset: BpOffset | undefined) {
         const selected: Region[] = []
         if (leftOffset !== undefined && rightOffset !== undefined) {
           // handle out of bound offsets
@@ -1053,155 +1036,38 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return selected
       },
       /**
-       * Fetch ref sequence  based on user clicking and dragging on the
-       * rubberband to select a region.
-       * Can handle if there are multiple displayedRegions from same refName.
-       * Can handle if there are displayedRegions from different refNames.
-       * sets the selectedSequence
-       *
-       * @param leftOffset- `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
+       * Fetches and returns a list features for a given list of regions
+       * @param selectedRegions 
        */
-      async fetchSequence(leftOffset: BpOffset, rightOffset: BpOffset) {
+      async fetchSequence(selectedRegions: Region[]) {
+        // check for errors with assembly, if any disable the getSequence MenuItem
         const session = getSession(self)
-        // TODO: check for errors with Left and Right offset
-        //
-        const selectedRegions = this.getSelectedRegions(
-          leftOffset,
-          rightOffset,
-        ).map(region => {
-          return {
-            ...region,
-            start: region.start - 1,
-          }
-        })
-        // check for errors with empty selectedRegions array
-        if (selectedRegions.length === 0) {
-          self.showSeqDialog(false)
-          session.notify(
-            `Selected region: ${leftOffset.refName}:${leftOffset.coord} to ${rightOffset.refName}:${rightOffset.coord} out of bounds`,
-          )
-        } else {
-          // check for errors with assembly, if any disable the getSequence MenuItem
-          try {
-            const assemblyName =
-              leftOffset?.assemblyName || rightOffset?.assemblyName || ''
-            const { assemblyManager } = session
-            const assembly = assemblyManager.get(assemblyName)
-            if (!assembly) {
-              self.disableGetSequence(true)
-              throw new Error(`Could not find assembly ${assemblyName}`)
-            }
-            // assembly configuration
-            const sequenceAdapterConfig = readConfObject(
-              assembly.configuration,
-              ['sequence', 'adapter'],
-            )
-            const dataAdapterType = pluginManager.getAdapterType(
-              sequenceAdapterConfig.type,
-            )
-            const sequenceAdapter = new dataAdapterType.AdapterClass(
-              sequenceAdapterConfig,
-            ) as BaseFeatureDataAdapter
-            const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
-              selectedRegions,
-            )
-            // format feature sequences into Fasta
-            const seqChunks = await featuresMultRegions
-              .pipe(toArray())
-              .toPromise()
-            const sequenceChunks: SeqChunk[] = []
-            const incompleteSeqErrs: string[] = []
-            seqChunks.forEach((chunk: Feature) => {
-              const chunkSeq = chunk.get('seq')
-              const chunkRefName = chunk.get('refName')
-              const chunkStart = chunk.get('start') + 1
-              const chunkEnd = chunk.get('end')
-              const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-              if (chunkSeq) {
-                sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-                if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
-                  incompleteSeqErrs.push(
-                    `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                      chunkEnd - chunkStart
-                    ).toLocaleString()}`,
-                  )
-                }
-              }
-            })
-            // incomplete sequences
-            if (incompleteSeqErrs.length > 0) {
-              session.notify(
-                `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
-              )
-            }
-            // file sizes warnings
-            const seqFasta = this.formatSeqFasta(sequenceChunks)
-            const seqSize = this.checkSequencesSize(seqFasta)
-            if (seqSize > 500000000 || seqSize === 0) {
-              self.disableGetSequence(true)
-              session.notify(
-                `Reference sequence size too large. Unable to get reference sequence`,
-              )
-            } else {
-              if (seqSize > 100000) {
-                self.disableCopyToClipBoard(true)
-                session.notify(
-                  `Reference sequence too large.Copy to clipboard was disabled. Please download as Fasta file.`,
-                )
-              }
-              self.setSelectedSeqRegion(seqFasta)
-            }
-          } catch (error) {
-            session.notify(`${error}`)
-          }
+        const assemblyName =
+          self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!assembly) {
+          throw new Error(`Could not find assembly ${assemblyName}`)
         }
-      },
-      /**
-       * Formats the sequences into Fasta format
-       *
-       * @param chunks: array of seq chunks of the form { header: string, seq: string }
-       * returns formatted sequence in fasta format
-       */
-      formatSeqFasta(chunks: SeqChunk[]) {
-        let result = ''
-        chunks.forEach((chunk, idx) => {
-          if (idx === 0) {
-            result += `>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
-          } else if (idx === chunks.length - 1) {
-            result += `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
-          } else {
-            result += `\n>${chunk.header}\n${this.formatFastaLines(chunk.seq)}`
-          }
-        })
-        return result
-      },
-      /**
-       * Returns sequence with new line every 80 characters
-       *
-       * @param seqString: string
-       * returns formated sequence string
-       */
-      formatFastaLines(seqString: string) {
-        let formatted = ''
-        while (seqString.length > 0) {
-          if (seqString.substring(0, 80).length < 80) {
-            formatted += seqString.substring(0, 80)
-          } else {
-            formatted += `${seqString.substring(0, 80)}\n`
-          }
-          seqString = seqString.substring(80)
-        }
-        return formatted
-      },
-      /**
-       * Returns the size of the sequence string
-       *
-       * @param seqString: string
-       */
-      checkSequencesSize(seqFileContent: string) {
-        const selectedSeq = new Blob([seqFileContent])
-        return selectedSeq.size
+        // assembly configuration
+        const sequenceAdapterConfig = readConfObject(
+          assembly.configuration,
+          ['sequence', 'adapter'],
+        )
+        const dataAdapterType = pluginManager.getAdapterType(
+          sequenceAdapterConfig.type,
+        )
+        const sequenceAdapter = new dataAdapterType.AdapterClass(
+          sequenceAdapterConfig,
+        ) as BaseFeatureDataAdapter
+        const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
+          selectedRegions,
+        )
+        // format feature sequences into Fasta
+        const seqChunks: Feature[] = await featuresMultRegions
+          .pipe(toArray())
+          .toPromise()
+        return seqChunks
       },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {

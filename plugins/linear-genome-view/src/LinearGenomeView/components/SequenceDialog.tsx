@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import copy from 'copy-to-clipboard'
@@ -11,7 +11,7 @@ import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
-import { Container } from '@material-ui/core'
+import { Container, Typography } from '@material-ui/core'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
@@ -21,7 +21,9 @@ import TextField from '@material-ui/core/TextField'
 // core
 import { getSession } from '@jbrowse/core/util'
 // other
+import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const useStyles = makeStyles(theme => ({
   loadingMessage: {
@@ -44,10 +46,95 @@ function SequenceDialog({
 }: {
   model: LinearGenomeViewModel
   handleClose: () => void
-}) {
+  }) {
   const classes = useStyles()
   const session = getSession(model)
-  const loading = model.selectedSequence === undefined
+
+  const [error, setError] = useState<Error>()
+  const [sequence, setSequence] = useState<string>()
+  const [file, setFile] = useState<Blob>()
+  const [copyDisabled, disableCopy] = useState<boolean>(true)
+  const [downloadDisabled, disableDownload] = useState<boolean>(true)
+  const loading = sequence === undefined && error === undefined
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        fetchSelectedRegions()
+      } catch (e) {
+        setError(e)
+      }
+    })()
+
+    return () => {}
+   }, [error])
+
+  function formatSequence(seqChunks: Feature[]) {
+    const sequenceChunks: SeqChunk[] = []
+    const incompleteSeqErrs: string[] = []
+    seqChunks.forEach((chunk: Feature) => {
+      const chunkSeq = chunk.get('seq')
+      const chunkRefName = chunk.get('refName')
+      const chunkStart = chunk.get('start') + 1
+      const chunkEnd = chunk.get('end')
+      const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+      if (chunkSeq) {
+        sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
+        if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
+          incompleteSeqErrs.push(
+            `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+              chunkEnd - chunkStart
+            ).toLocaleString()}`,
+          )
+        }
+      }
+    })
+    if (incompleteSeqErrs.length > 0) {
+      session.notify(
+        `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
+      )
+    }
+    const seqFasta = formatSeqFasta(sequenceChunks)
+    const file = new Blob([seqFasta], {
+                type: 'text/x-fasta;charset=utf-8',
+    })
+    setFile(file)
+    const seqSize = file.size
+    if (seqSize > 500000000) {
+      disableCopy(true)
+    } else {
+      if (seqSize > 100000) {
+        disableCopy(true)
+        session.notify(`Copy to clipboard was disabled. Please download as Fasta file.`)
+      }
+      setSequence(seqFasta)
+      disableDownload(false)
+      disableCopy(false)
+    }
+  }
+
+  async function fetchSelectedRegions() {
+    const regionsSelected = model.getSelectedRegions(model.leftOffset, model.rightOffset).map(region => {
+          return {
+            ...region,
+            start: region.start - 1,
+          }
+        })
+    if (regionsSelected.length === 0) {
+      handleClose()
+      model.showSeqDialog(false)
+      model.setOffsets(undefined, undefined)
+      session.notify(
+        `Selected region is out of bounds`,
+      )
+    }    
+    console.log(regionsSelected)
+    const chunks = await model.fetchSequence(regionsSelected)
+    if (chunks.length > 0) {
+      formatSequence(chunks)
+    }
+  }
+
   return (
     <>
       <Dialog
@@ -67,7 +154,7 @@ function SequenceDialog({
               onClick={() => {
                 handleClose()
                 model.showSeqDialog(false)
-                model.resetDialog()
+                model.setOffsets(undefined, undefined)
               }}
             >
               <CloseIcon />
@@ -78,7 +165,9 @@ function SequenceDialog({
 
         <>
           <DialogContent>
-            {loading ? (
+            {error ? (
+              <Typography color="error">{`${error}`}</Typography>
+            ) : loading ? (
               <Container>
                 Retrieving reference sequence...
                 <CircularProgress
@@ -96,13 +185,13 @@ function SequenceDialog({
                 multiline
                 rows={3}
                 rowsMax={5}
-                disabled={model.copyToClipboardDisabled}
+                disabled={copyDisabled} // disabled={model.copyToClipboardDisabled}
                 className={classes.dialogContent}
                 fullWidth
                 value={
-                  model.copyToClipboardDisabled
+                  copyDisabled //model.copyToClipboardDisabled
                     ? 'Reference sequence too large to display'
-                    : model.selectedSequence
+                    : sequence
                 }
                 InputProps={{
                   readOnly: true,
@@ -115,7 +204,8 @@ function SequenceDialog({
           <Button
             onClick={() => {
               try {
-                copy(model?.selectedSequence || '')
+                // copy(model?.selectedSequence || '')
+                copy(sequence || '')
                 session.notify('Copied to clipboard', 'success')
               } catch (error) {
                 session.notify(
@@ -126,8 +216,7 @@ function SequenceDialog({
             }}
             disabled={
               loading ||
-              model.copyToClipboardDisabled ||
-              copy('no clipboard support') === false
+              copyDisabled
             }
             color="primary"
             startIcon={<ContentCopyIcon />}
@@ -136,12 +225,9 @@ function SequenceDialog({
           </Button>
           <Button
             onClick={() => {
-              const selectedSeq = new Blob([model?.selectedSequence || ''], {
-                type: 'text/x-fasta;charset=utf-8',
-              })
-              saveAs(selectedSeq, 'JBrowseSelectedRefSeq.fa')
+              saveAs(file || '', 'jbrowse_ref_seq.fa')
             }}
-            disabled={loading}
+            disabled={loading || downloadDisabled || file === undefined}
             color="primary"
             startIcon={<GetAppIcon />}
           >
@@ -151,7 +237,7 @@ function SequenceDialog({
             onClick={() => {
               handleClose()
               model.showSeqDialog(false)
-              model.resetDialog()
+              model.setOffsets(undefined, undefined)
             }}
             color="primary"
             autoFocus

@@ -69,7 +69,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
           model={model}
           handleClose={() => {
             model.showSeqDialog(false)
-            model.setSelectedSeqRegion(undefined)
+            model.setOffsets(undefined, undefined)
           }}
         />
       ) : null}
