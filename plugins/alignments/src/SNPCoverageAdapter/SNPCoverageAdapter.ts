@@ -35,22 +35,20 @@ export default (pluginManager: PluginManager) => {
   const MyConfigSchema = MyConfigSchemaF(pluginManager)
 
   function generateInfoList(table: NestedFrequencyTable) {
-    const infoList = []
     const overallScore = table.total()
 
     // log info w/ base name, total score, and strand breakdown
-    // eslint-disable-next-line guard-for-in
-    for (const base in table.categories) {
-      const strands = table.categories[base].categories as {
+    const infoList = Object.entries(table.categories).map(([base, strand]) => {
+      const strands = strand.categories as {
         [key: string]: number
       }
       const score = Object.values(strands).reduce((a, b) => a + b, 0)
-      infoList.push({
+      return {
         base,
         score,
         strands,
-      })
-    }
+      }
+    })
 
     // sort so higher scores get drawn last, reference always first
     infoList.sort((a, b) =>
@@ -58,6 +56,7 @@ export default (pluginManager: PluginManager) => {
     )
 
     // add overall total to end
+    // @ts-ignore
     infoList.push({
       base: 'total',
       score: overallScore,
@@ -150,7 +149,7 @@ export default (pluginManager: PluginManager) => {
           if (bin.total()) {
             observer.next(
               new SimpleFeature({
-                id: `pos_${region.start}${index}`,
+                id: `${this.id}-${region.start}-${index}`,
                 data: {
                   score: bin.total(),
                   snpinfo: generateInfoList(bin), // info needed to draw snps
@@ -201,11 +200,11 @@ export default (pluginManager: PluginManager) => {
         }
       }
 
-      const forEachBin = function forEachBin(
+      const forEachBin = (
         start: number,
         end: number,
         callback: (bin: number, overlap: number) => void,
-      ) {
+      ) => {
         let s = (start - leftBase) / binWidth
         let e = (end - 1 - leftBase) / binWidth
         let sb = Math.floor(s)
@@ -273,36 +272,43 @@ export default (pluginManager: PluginManager) => {
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              if (
-                mismatch.type !== 'insertion' &&
-                mismatch.type !== 'softclip' &&
-                mismatch.type !== 'hardclip'
-              ) {
-                forEachBin(
-                  start + mismatch.start,
-                  start + mismatch.start + mismatch.length,
-                  (binNum, overlap) => {
-                    // Note: we decrement 'reference' so that total of the score is the total coverage
-                    const bin = coverageBins[binNum]
-                    bin.getNested('reference').decrement(strand, overlap)
-                    let { base } = mismatch
-
-                    if (mismatch.type === 'insertion') {
-                      base = `ins ${base}`
-                    } else if (mismatch.type === 'skip') {
-                      base = 'skip'
-                    }
-
-                    if (base === 'skip') {
-                      bin.getNested(base).decrement('reference', overlap)
-                    }
-
-                    if (base && base !== '*' && base !== 'skip') {
-                      bin.getNested(base).increment(strand, overlap)
-                    }
-                  },
-                )
+              const len = (base: Mismatch) => {
+                return base.type !== 'insertion' &&
+                  base.type !== 'softclip' &&
+                  base.type !== 'hardclip'
+                  ? base.length
+                  : 1
               }
+
+              forEachBin(
+                start + mismatch.start,
+                start + mismatch.start + len(mismatch),
+                (binNum, overlap) => {
+                  // Note: we decrement 'reference' so that total of the score
+                  // is the total coverage
+                  const bin = coverageBins[binNum]
+                  bin.getNested('reference').decrement(strand, overlap)
+                  let { base } = mismatch
+
+                  if (mismatch.type === 'insertion') {
+                    base = `insertion`
+                  } else if (mismatch.type === 'skip') {
+                    base = 'skip'
+                  } else if (mismatch.type === 'softclip') {
+                    base = 'softclip'
+                  } else if (mismatch.type === 'hardclip') {
+                    base = 'hardclip'
+                  }
+
+                  if (base === 'skip') {
+                    bin.getNested(base).decrement('reference', overlap)
+                  }
+
+                  if (base && base !== '*' && base !== 'skip') {
+                    bin.getNested(base).increment(strand, overlap)
+                  }
+                },
+              )
             }
           }
         }

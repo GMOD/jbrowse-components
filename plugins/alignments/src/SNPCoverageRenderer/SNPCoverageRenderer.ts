@@ -79,8 +79,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       total: 'lightgrey',
     }
 
-    // Use two pass rendering, which helps in visualizing the SNPs at higher bpPerPx
-    // First pass: draw the gray background
+    // Use two pass rendering, which helps in visualizing the SNPs at higher
+    // bpPerPx First pass: draw the gray background
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score') as number
@@ -89,8 +89,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
 
-    // Second pass: draw the SNP data, and add a minimum feature width of 1px which can be wider than the actual bpPerPx
-    // This reduces overdrawing of the grey background over the SNPs
+    const colorMap = { insertion: 'purple', softclip: 'blue', hardclip: 'red' }
+
+    // Second pass: draw the SNP data, and add a minimum feature width of 1px
+    // which can be wider than the actual bpPerPx This reduces overdrawing of
+    // the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = Math.max(rightPx - leftPx + 0.3, 1)
@@ -100,14 +103,27 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         if (!info || info.base === 'reference' || info.base === 'total') {
           return
         }
-        ctx.fillStyle = colorForBase[info.base]
-        ctx.fillRect(
-          leftPx,
-          snpToY(info.score + curr),
-          w,
-          snpToHeight(info.score),
-        )
-        curr += info.score
+        if (
+          info.base === 'insertion' ||
+          info.base === 'softclip' ||
+          info.base === 'hardclip'
+        ) {
+          ctx.fillStyle = colorMap[info.base]
+          ctx.beginPath()
+          ctx.moveTo(leftPx - 3, 0)
+          ctx.lineTo(leftPx + 3, 0)
+          ctx.lineTo(leftPx, 4.5)
+          ctx.fill()
+        } else {
+          ctx.fillStyle = colorForBase[info.base]
+          ctx.fillRect(
+            leftPx,
+            snpToY(info.score + curr),
+            w,
+            snpToHeight(info.score),
+          )
+          curr += info.score
+        }
       })
     }
   }
