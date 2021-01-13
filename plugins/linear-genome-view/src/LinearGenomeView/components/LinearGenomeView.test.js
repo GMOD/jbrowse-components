@@ -144,42 +144,4 @@ describe('<LinearGenomeView />', () => {
     await findByText('Foo Track')
     expect(container.firstChild).toMatchSnapshot()
   })
-  it('get seq', async () => {
-    const session = createTestSession()
-    session.addAssemblyConf(assemblyConf)
-    session.addView('LinearGenomeView', {
-      type: 'LinearGenomeView',
-      id: 'lgv',
-      offsetPx: 0,
-      bpPerPx: 1,
-      displayedRegions: [
-        { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
-      ],
-      configuration: {},
-    })
-    const model = session.views[0]
-    model.setWidth(800)
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Open')
-    expect(container.firstChild).toMatchSnapshot()
-    await model.fetchSequence(
-      {
-        refName: 'ctgA',
-        index: 0,
-        offset: 0,
-        start: 0,
-        end: 100,
-        assemblyName: 'volMyt1',
-      },
-      {
-        refName: 'ctgA',
-        index: 0,
-        offset: 10,
-        start: 0,
-        end: 100,
-        assemblyName: 'volMyt1',
-      },
-    )
-    expect(model.selectedSequence).toEqual('>ctgA:0-10\ncattgttgcg')
-  })
 })

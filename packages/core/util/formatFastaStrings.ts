@@ -9,16 +9,16 @@ export interface SeqChunk {
  * returns formated sequence string
  */
 export function formatFastaLines(seqString: string) {
-    let formatted = ''
-    while (seqString.length > 0) {
-        if (seqString.substring(0, 80).length < 80) {
-        formatted += seqString.substring(0, 80)
-        } else {
-        formatted += `${seqString.substring(0, 80)}\n`
-        }
-        seqString = seqString.substring(80)
+  let formatted = ''
+  while (seqString.length > 0) {
+    if (seqString.substring(0, 80).length < 80) {
+      formatted += seqString.substring(0, 80)
+    } else {
+      formatted += `${seqString.substring(0, 80)}\n`
     }
-    return formatted
+    seqString = seqString.substring(80)
+  }
+  return formatted
 }
 /**
  * Formats the sequences chunks into Fasta format
@@ -27,15 +27,15 @@ export function formatFastaLines(seqString: string) {
  * returns formatted sequence in fasta format
  */
 export function formatSeqFasta(chunks: SeqChunk[]) {
-    let result = ''
-    chunks.forEach((chunk, idx) => {
-        if (idx === 0) {
-        result += `>${chunk.header}\n${formatFastaLines(chunk.seq)}`
-        } else if (idx === chunks.length - 1) {
-        result += `\n>${chunk.header}\n${formatFastaLines(chunk.seq)}`
-        } else {
-        result += `\n>${chunk.header}\n${formatFastaLines(chunk.seq)}`
-        }
-    })
-    return result
+  let result = ''
+  chunks.forEach((chunk, idx) => {
+    if (idx === 0) {
+      result += `>${chunk.header}\n${formatFastaLines(chunk.seq)}`
+    } else if (idx === chunks.length - 1) {
+      result += `\n>${chunk.header}\n${formatFastaLines(chunk.seq)}`
+    } else {
+      result += `\n>${chunk.header}\n${formatFastaLines(chunk.seq)}`
+    }
+  })
+  return result
 }

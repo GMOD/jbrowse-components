@@ -123,7 +123,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
       seqDialogActive: false as boolean,
-      leftOffset: undefined as undefined |  BpOffset, 
+      leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
       bpSelected: 0 as number,
     }))
@@ -936,11 +936,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * Helper method for the fetchSequence.
        * Retrieves the corresponding regions that were selected by the rubberband
        *
-       * @param leftOffset- `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightOffset- `object as {start, end, index, offset}`, offset = end of user drag
-       * Retuns array of Region[]
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @retuns array of Region[]
        */
-      getSelectedRegions(leftOffset: BpOffset | undefined, rightOffset: BpOffset | undefined) {
+      getSelectedRegions(
+        leftOffset: BpOffset | undefined,
+        rightOffset: BpOffset | undefined,
+      ) {
         const selected: Region[] = []
         if (leftOffset !== undefined && rightOffset !== undefined) {
           // handle out of bound offsets
@@ -1037,10 +1040,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * Fetches and returns a list features for a given list of regions
-       * @param selectedRegions 
+       * @param selectedRegions - Region[]
+       * @returns Features[]
        */
       async fetchSequence(selectedRegions: Region[]) {
-        // check for errors with assembly, if any disable the getSequence MenuItem
         const session = getSession(self)
         const assemblyName =
           self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
@@ -1050,10 +1053,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`Could not find assembly ${assemblyName}`)
         }
         // assembly configuration
-        const sequenceAdapterConfig = readConfObject(
-          assembly.configuration,
-          ['sequence', 'adapter'],
-        )
+        const sequenceAdapterConfig = readConfObject(assembly.configuration, [
+          'sequence',
+          'adapter',
+        ])
         const dataAdapterType = pluginManager.getAdapterType(
           sequenceAdapterConfig.type,
         )
@@ -1135,9 +1138,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp-basepair at which you want to center the view
-       * @param refName-refName of the displayedRegion you are centering at
-       * @param regionIndex-index of the displayedRegion
+       * @param bp - basepair at which you want to center the view
+       * @param refName - refName of the displayedRegion you are centering at
+       * @param regionIndex - index of the displayedRegion
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({

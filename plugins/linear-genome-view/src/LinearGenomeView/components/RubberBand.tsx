@@ -91,7 +91,7 @@ function RubberBand({
 }: {
   model: LGV
   ControlComponent?: React.ReactElement
-  }) {
+}) {
   const session = getSession(model)
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
@@ -142,10 +142,9 @@ function RubberBand({
     }
 
     if (!mouseDragging && currentX !== undefined && startX !== undefined) {
-      // Disabled if more than 500MB, or if there is no sequence adapter for the assembly in question. 
-      const possibleSize = Math.abs(currentX - startX)*model.bpPerPx
+      // Disabled if more than 500MB
+      const possibleSize = Math.abs(currentX - startX) * model.bpPerPx
       disableGetSequence(possibleSize > 1048576 * 500)
-      // model.warnAboutFileSize(Math.abs(currentX - startX))
     }
   })
 

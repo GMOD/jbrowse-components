@@ -46,7 +46,7 @@ function SequenceDialog({
 }: {
   model: LinearGenomeViewModel
   handleClose: () => void
-  }) {
+}) {
   const classes = useStyles()
   const session = getSession(model)
 
@@ -67,7 +67,7 @@ function SequenceDialog({
     })()
 
     return () => {}
-   }, [error])
+  }, [error])
 
   function formatSequence(seqChunks: Feature[]) {
     const sequenceChunks: SeqChunk[] = []
@@ -96,7 +96,7 @@ function SequenceDialog({
     }
     const seqFasta = formatSeqFasta(sequenceChunks)
     const file = new Blob([seqFasta], {
-                type: 'text/x-fasta;charset=utf-8',
+      type: 'text/x-fasta;charset=utf-8',
     })
     setFile(file)
     const seqSize = file.size
@@ -105,7 +105,9 @@ function SequenceDialog({
     } else {
       if (seqSize > 100000) {
         disableCopy(true)
-        session.notify(`Copy to clipboard was disabled. Please download as Fasta file.`)
+        session.notify(
+          `Copy to clipboard was disabled. Please download as Fasta file.`,
+        )
       }
       setSequence(seqFasta)
       disableDownload(false)
@@ -115,20 +117,22 @@ function SequenceDialog({
 
   async function fetchSelectedRegions() {
     // convert from 1-based closed to interbase
-    const regionsSelected = model.getSelectedRegions(model.leftOffset, model.rightOffset).map(region => {
-          return {
-            ...region,
-            start: region.start - 1,
-          }
-        })
+    const regionsSelected = model
+      .getSelectedRegions(model.leftOffset, model.rightOffset)
+      .map(region => {
+        return {
+          ...region,
+          start: region.start - 1,
+        }
+      })
+    console.log(model.leftOffset)
+    console.log(model.rightOffset)
     if (regionsSelected.length === 0) {
       handleClose()
       model.showSeqDialog(false)
       model.setOffsets(undefined, undefined)
-      session.notify(
-        `Selected region is out of bounds`,
-      )
-    }    
+      session.notify(`Selected region is out of bounds`)
+    }
     console.log(regionsSelected)
     const chunks = await model.fetchSequence(regionsSelected)
     if (chunks.length > 0) {
@@ -215,10 +219,7 @@ function SequenceDialog({
                 )
               }
             }}
-            disabled={
-              loading ||
-              copyDisabled
-            }
+            disabled={loading || copyDisabled}
             color="primary"
             startIcon={<ContentCopyIcon />}
           >

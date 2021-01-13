@@ -12,6 +12,11 @@ import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
 import hg38DisplayedRegions from './hg38DisplayedRegions.json'
+import {
+  formatFastaLines,
+  SeqChunk,
+  formatSeqFasta,
+} from '@jbrowse/core/util/formatFastaStrings'
 
 // a stub linear genome view state model that only accepts base track types.
 // used in unit tests.
@@ -698,7 +703,7 @@ test('can showAllRegionsInAssembly', async () => {
   ])
 })
 
-test('Format and sizing of fasta files', () => {
+test('Format and sizing of fasta files', async () => {
   const session = Session.create({
     configuration: {},
   })
@@ -719,22 +724,47 @@ test('Format and sizing of fasta files', () => {
   const small = 'cattgttgcg'
   const large =
     'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
-  const mockChunks = [
+  const mockChunks: SeqChunk[] = [
     { header: 'ctgA:1-10', seq: small },
     { header: 'ctgA:1-81', seq: large },
   ]
-  // check the correct size in bytes is returned
-  const size = model.checkSequencesSize('')
-  expect(size).toEqual(0)
-  const size2 = model.checkSequencesSize(small)
-  expect(size2).toEqual(10)
-  const size3 = model.checkSequencesSize(large)
-  expect(size3).toEqual(81)
+
   // checks that the first 80 chars are followed by a space
-  const formattedSeqFasta = model.formatFastaLines(large)
+  const formattedSeqFasta = formatFastaLines(large)
   expect(
     formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length,
   ).toEqual(80)
-  const formattedFasta = model.formatSeqFasta(mockChunks)
-  expect(model.checkSequencesSize(formattedFasta)).toEqual(115)
+  // const formattedFasta = formatSeqFasta(mockChunks)
+  model.setOffsets(
+    {
+      refName: 'ctgA',
+      index: 0,
+      offset: 49998,
+      start: 0,
+      end: 50001,
+      coord: 49999,
+      reversed: false,
+      assemblyName: 'volvox',
+      oob: false,
+    },
+    {
+      refName: 'ctgB',
+      index: 1,
+      offset: 9,
+      start: 0,
+      end: 6079,
+      coord: 10,
+      reversed: false,
+      assemblyName: 'volvox',
+      oob: false,
+    },
+  )
+  const selectedRegionsTest = model.getSelectedRegions(
+    model.leftOffset,
+    model.rightOffset,
+  )
+  expect(selectedRegionsTest[0].start).toEqual(49999)
+  expect(selectedRegionsTest[0].end).toEqual(50001)
+  expect(selectedRegionsTest[1].start).toEqual(1)
+  expect(selectedRegionsTest[1].end).toEqual(10)
 })
