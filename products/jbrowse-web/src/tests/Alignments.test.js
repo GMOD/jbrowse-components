@@ -256,4 +256,38 @@ describe('alignments track', () => {
 
     await findAllByText('Max height reached', {}, { timeout: 10000 })
   }, 15000)
+
+  it('test that bam with small max height displays message', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.02, 133696.67902350426)
+
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
+    )
+
+    const { findAllByTestId: findAllByTestId2 } = within(
+      await findByTestId('Blockset-snpcoverage'),
+    )
+    const snpCoverageCanvas = await findAllByTestId2(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
+    const snpCoverageData = snpCoverageImg.replace(
+      /^data:image\/\w+;base64,/,
+      '',
+    )
+    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
+    expect(snpCoverageBuf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 15000)
 })
