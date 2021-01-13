@@ -23,6 +23,15 @@ const decrypt = (text: string, password: string) => {
   const bytes = AES.decrypt(text, password)
   return bytes.toString(Utf8)
 }
+
+function getErrorMsg(err: string) {
+  try {
+    const obj = JSON.parse(err)
+    return obj.message
+  } catch (e) {
+    return err
+  }
+}
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
   session: Record<string, unknown>,
@@ -45,7 +54,8 @@ export async function shareSessionToDynamo(
   })
 
   if (!response.ok) {
-    throw new Error(`Error sharing session ${response.statusText}`)
+    const err = await response.text()
+    throw new Error(getErrorMsg(err))
   }
   const json = await response.json()
   return {
@@ -69,17 +79,10 @@ export async function readSessionFromDynamo(
   })
 
   if (!response.ok) {
-    console.error({ response, url })
-    throw new Error(
-      `Unable to fetch session ${sessionId}\n${response.statusText}`,
-    )
+    const err = await response.text()
+    throw new Error(getErrorMsg(err))
   }
 
-  // TODO: shouldn't get a 200 back for this
-  const text = await response.text()
-  if (!text) {
-    throw new Error(`Unable to fetch session ${sessionId}`)
-  }
-  const json = JSON.parse(text)
+  const json = await response.json()
   return decrypt(json.session, password)
 }
