@@ -35,9 +35,6 @@ export default (pluginManager: PluginManager) => {
   const MyConfigSchema = MyConfigSchemaF(pluginManager)
 
   function generateInfoList(table: NestedFrequencyTable) {
-    const overallScore = table.total()
-
-    // log info w/ base name, total score, and strand breakdown
     const infoList = Object.entries(table.categories).map(([base, strand]) => {
       const strands = strand.categories as {
         [key: string]: number
@@ -55,13 +52,7 @@ export default (pluginManager: PluginManager) => {
       a.score < b.score || b.base === 'reference' ? 1 : -1,
     )
 
-    // add overall total to end
-    // @ts-ignore
-    infoList.push({
-      base: 'total',
-      score: overallScore,
-    })
-    return infoList
+    return [...infoList, { base: 'total', score: table.total() }]
   }
 
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
