@@ -113,7 +113,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.lineTo(leftPx + 3, 0)
           ctx.lineTo(leftPx, 4.5)
           ctx.fill()
-        } else {
+        } else if (info.base !== 'deletion') {
           ctx.fillRect(
             leftPx,
             snpToY(info.score + curr),

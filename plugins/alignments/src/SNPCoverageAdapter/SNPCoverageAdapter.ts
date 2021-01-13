@@ -141,7 +141,8 @@ export default (pluginManager: PluginManager) => {
         const score = (bin: NestedFrequencyTable) =>
           bin.total() -
           (bin.categories.softclip?.total() || 0) -
-          (bin.categories.hardclip?.total() || 0)
+          (bin.categories.hardclip?.total() || 0) -
+          (bin.categories.deletion?.total() || 0)
 
         coverageBins.forEach((bin, index) => {
           if (bin.total()) {
@@ -305,6 +306,8 @@ export default (pluginManager: PluginManager) => {
                     base = 'softclip'
                   } else if (mismatch.type === 'hardclip') {
                     base = 'hardclip'
+                  } else if (mismatch.type === 'deletion') {
+                    base = 'deletion'
                   }
 
                   if (base === 'skip') {
