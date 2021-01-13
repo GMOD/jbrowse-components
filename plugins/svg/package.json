@@ -45,6 +45,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@jbrowse/plugin-linear-genome-view": "^1.0.3",
     "@material-ui/icons": "^4.9.1"
   }
 }

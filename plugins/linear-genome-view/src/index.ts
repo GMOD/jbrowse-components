@@ -69,7 +69,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         name: 'LinearBasicDisplay',
         configSchema,
         stateModel: LinearBasicDisplayStateModelFactory(configSchema),
-        trackType: 'FeatureTrack',
+        trackType: 'BasicTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
       })
