@@ -53,8 +53,8 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
-  const [sequence, setSequence] = useState<string>()
-  const loading = sequence === undefined && error === undefined
+  const [sequence, setSequence] = useState('')
+  const loading = Boolean(!sequence) || Boolean(error)
   const regionsSelected = model.getSelectedRegions(
     model.leftOffset,
     model.rightOffset,
@@ -115,6 +115,7 @@ function SequenceDialog({
     }
     setSequence(formatSeqFasta(sequenceChunks))
   }
+  const sequenceTooLarge = sequence.length > 1_000_000
 
   return (
     <Dialog
@@ -164,11 +165,11 @@ function SequenceDialog({
             multiline
             rows={3}
             rowsMax={5}
-            disabled={sequence.length > 1_000_000}
+            disabled={sequenceTooLarge}
             className={classes.dialogContent}
             fullWidth
             value={
-              sequence.length > 1_000_000
+              sequenceTooLarge
                 ? 'Reference sequence too large to display, use the download FASTA button'
                 : sequence
             }
@@ -187,7 +188,7 @@ function SequenceDialog({
             copy(sequence || '')
             session.notify('Copied to clipboard', 'success')
           }}
-          disabled={loading || sequence === undefined}
+          disabled={loading || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
@@ -200,7 +201,7 @@ function SequenceDialog({
             })
             saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
           }}
-          disabled={loading || sequence === undefined}
+          disabled={loading}
           color="primary"
           startIcon={<GetAppIcon />}
         >
