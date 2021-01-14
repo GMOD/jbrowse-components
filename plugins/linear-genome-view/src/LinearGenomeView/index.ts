@@ -972,7 +972,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (singleRegion) {
             const region = self.displayedRegions[leftOffset.index]
             // selecting region oob
-            if (rightOffset.oob && leftOffset.oob) {
+            if (
+              rightOffset.oob &&
+              leftOffset.oob &&
+              leftOffset.offset &&
+              rightOffset.offset &&
+              rightOffset.end
+            ) {
               const leftOob = leftOffset.offset < 0
               const rightOob = rightOffset.offset > rightOffset.end
               if (!(rightOob && leftOob)) {
