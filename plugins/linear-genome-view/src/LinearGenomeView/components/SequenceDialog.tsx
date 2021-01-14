@@ -53,10 +53,10 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
-  const [regionsSet, setRegions] = useState<boolean>(false)
+  const [regionsSet, setRegions] = useState(false)
   const [sequence, setSequence] = useState<string>()
-  const [copyDisabled, disableCopy] = useState<boolean>(true)
-  const [downloadDisabled, disableDownload] = useState<boolean>(true)
+  const [copyDisabled, disableCopy] = useState(true)
+  const [downloadDisabled, disableDownload] = useState(true)
   const loading = sequence === undefined && error === undefined
   const regionsSelected = model.getSelectedRegions(
     model.leftOffset,
