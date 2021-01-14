@@ -189,6 +189,7 @@ const ScaleBar = observer(
     const firstOverviewPx =
       overview.bpToPx({
         refName: firstBlock.refName,
+        regionNumber: firstBlock.regionNumber,
         coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
       }) || 0
 
@@ -198,6 +199,7 @@ const ScaleBar = observer(
       overview.bpToPx({
         refName: lastBlock.refName,
         coord: lastBlock.reversed ? lastBlock.start : lastBlock.end,
+        regionNumber: lastBlock.regionNumber,
       }) || 0
 
     return (
