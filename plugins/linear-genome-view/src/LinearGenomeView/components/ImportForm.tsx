@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -33,10 +34,12 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   useEffect(() => {
     let done = false
     ;(async () => {
-      const assembly = await assemblyManager.waitForAssembly(assemblyName)
+      if (assemblyName) {
+        const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
-      if (!done && assembly && assembly.regions) {
-        setSelectedRegion(getSnapshot(assembly.regions[0]))
+        if (!done && assembly && assembly.regions) {
+          setSelectedRegion(getSnapshot(assembly.regions[0]))
+        }
       }
     })()
     return () => {
@@ -80,30 +83,32 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {selectedRegion && model.volatileWidth ? (
-            <RefNameAutocomplete
-              model={model}
-              assemblyName={
-                error ? undefined : assemblyNames[selectedAssemblyIdx]
-              }
-              value={selectedRegion?.refName}
-              onSelect={setSelectedRegion}
-              TextFieldProps={{
-                margin: 'normal',
-                variant: 'outlined',
-                label: 'Sequence',
-                className: classes.importFormEntry,
-                helperText: 'Select sequence to view',
-              }}
-            />
-          ) : (
-            <CircularProgress
-              role="progressbar"
-              color="inherit"
-              size={20}
-              disableShrink
-            />
-          )}
+          {assemblyName ? (
+            selectedRegion && model.volatileWidth ? (
+              <RefNameAutocomplete
+                model={model}
+                assemblyName={
+                  error ? undefined : assemblyNames[selectedAssemblyIdx]
+                }
+                value={selectedRegion?.refName}
+                onSelect={setSelectedRegion}
+                TextFieldProps={{
+                  margin: 'normal',
+                  variant: 'outlined',
+                  label: 'Sequence',
+                  className: classes.importFormEntry,
+                  helperText: 'Select sequence to view',
+                }}
+              />
+            ) : (
+              <CircularProgress
+                role="progressbar"
+                color="inherit"
+                size={20}
+                disableShrink
+              />
+            )
+          ) : null}
         </Grid>
         <Grid item>
           <Button
