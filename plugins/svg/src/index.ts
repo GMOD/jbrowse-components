@@ -31,25 +31,7 @@ export default class SVGPlugin extends Plugin {
           configSchema: svgFeatureRendererConfigSchema,
         }),
     )
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'FeatureTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
-      return new TrackType({
-        name: 'FeatureTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'FeatureTrack',
-          configSchema,
-        ),
-      })
-    })
+
     pluginManager.addDisplayType(() => {
       const configSchema = featuresTrackConfigSchema(pluginManager)
       return new DisplayType({
