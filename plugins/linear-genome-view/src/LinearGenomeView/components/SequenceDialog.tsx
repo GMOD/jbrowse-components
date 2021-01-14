@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
+import { Region } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
@@ -20,7 +22,10 @@ import TextField from '@material-ui/core/TextField'
 
 // core
 import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util/simpleFeature'
 // other
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
@@ -42,6 +47,44 @@ const useStyles = makeStyles(theme => ({
     fontFamily: 'Courier New',
   },
 }))
+
+/**
+ * Fetches and returns a list features for a given list of regions
+ * @param selectedRegions - Region[]
+ * @returns Features[]
+ */
+async function fetchSequence(
+  self: LinearGenomeViewModel,
+  selectedRegions: Region[],
+) {
+  const session = getSession(self)
+  const assemblyName =
+    self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
+  const { rpcManager, assemblyManager } = session
+  const assembly = assemblyManager.get(assemblyName)
+  if (!assembly) {
+    throw new Error(`Could not find assembly ${assemblyName}`)
+  }
+  // assembly configuration
+  const adapterConfig = readConfObject(assembly.configuration, [
+    'sequence',
+    'adapter',
+  ])
+
+  const sessionId = 'getSequence'
+  const chunks = (await Promise.all(
+    selectedRegions.map(region =>
+      rpcManager.call(sessionId, 'CoreGetFeatures', {
+        adapterConfig,
+        region,
+        sessionId,
+      }),
+    ),
+  )) as SimpleFeatureSerialized[][]
+
+  // assumes that we get whole sequence in a single getFeatures call
+  return chunks.map(chunk => new SimpleFeature(chunk[0]))
+}
 
 function SequenceDialog({
   model,
@@ -65,7 +108,7 @@ function SequenceDialog({
     ;(async () => {
       try {
         if (regionsSelected && regionsSelected.length > 0 && active) {
-          const chunks = await model.fetchSequence(regionsSelected)
+          const chunks = await fetchSequence(model, regionsSelected)
           if (chunks.length > 0) {
             formatSequence(chunks)
           }

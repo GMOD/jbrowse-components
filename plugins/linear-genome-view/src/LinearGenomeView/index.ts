@@ -1,4 +1,4 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -37,9 +37,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import SimpleFeature, {
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
+
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -957,40 +955,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         })
       },
-      /**
-       * Fetches and returns a list features for a given list of regions
-       * @param selectedRegions - Region[]
-       * @returns Features[]
-       */
-      async fetchSequence(selectedRegions: Region[]) {
-        const session = getSession(self)
-        const assemblyName =
-          self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
-        const { rpcManager, assemblyManager } = session
-        const assembly = assemblyManager.get(assemblyName)
-        if (!assembly) {
-          throw new Error(`Could not find assembly ${assemblyName}`)
-        }
-        // assembly configuration
-        const adapterConfig = readConfObject(assembly.configuration, [
-          'sequence',
-          'adapter',
-        ])
 
-        const sessionId = 'getSequence'
-        const chunks = (await Promise.all(
-          selectedRegions.map(region =>
-            rpcManager.call(sessionId, 'CoreGetFeatures', {
-              adapterConfig,
-              region,
-              sessionId,
-            }),
-          ),
-        )) as SimpleFeatureSerialized[][]
-
-        // assumes that we get whole sequence in a single getFeatures call
-        return chunks.map(chunk => new SimpleFeature(chunk[0]))
-      },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
