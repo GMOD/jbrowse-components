@@ -56,14 +56,11 @@ function SequenceDialog({
   const [downloadDisabled, disableDownload] = useState<boolean>(true)
   const loading = sequence === undefined && error === undefined
   // convert from 1-based closed to interbase
-  const regionsSelected = model
-    .getSelectedRegions(model.leftOffset, model.rightOffset)
-    .map(region => {
-      return {
-        ...region,
-        start: region.start - 1,
-      }
-    })
+  const regionsSelected = model.getSelectedRegions(
+    model.leftOffset,
+    model.rightOffset,
+  )
+
   if (regionsSet === false) {
     setRegions(true)
   }

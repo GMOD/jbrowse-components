@@ -40,6 +40,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -789,9 +790,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             if (e === undefined) {
               throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${
-                  s + 1
-                }`,
+                `could not find a region with refName "${refName}" that contained a start position ${s +
+                  1}`,
               )
             }
             if (index === -1) {
@@ -945,103 +945,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
         leftOffset: BpOffset | undefined,
         rightOffset: BpOffset | undefined,
       ) {
-        const selected: Region[] = []
-        if (leftOffset !== undefined && rightOffset !== undefined) {
-          // handle out of bound offsets
-          let leftBpOffset = leftOffset.offset
-          let rightBpOffset = rightOffset.offset
-          if (
-            leftOffset.oob &&
-            leftOffset.start !== undefined &&
-            leftOffset.end !== undefined
-          ) {
-            leftBpOffset = leftOffset.start
+        const simView = Base1DView.create({
+          offsetPx: self.offsetPx,
+          bpPerPx: self.bpPerPx,
+          displayedRegions: getSnapshot(self.displayedRegions),
+        })
+        simView.setVolatileWidth(self.width)
+        simView.zoomToDisplayedRegions(leftOffset, rightOffset)
+        return simView.dynamicBlocks.contentBlocks.map(region => {
+          return {
+            ...region,
+            start: Math.floor(region.start),
+            end: Math.ceil(region.end),
           }
-          if (
-            rightOffset.oob &&
-            rightOffset.start !== undefined &&
-            rightOffset.end !== undefined
-          ) {
-            rightBpOffset = rightOffset.end
-          }
-
-          // handle single region
-          const singleRegion =
-            leftOffset.refName === rightOffset.refName &&
-            leftOffset.index === rightOffset.index
-          if (singleRegion) {
-            const region = self.displayedRegions[leftOffset.index]
-            // selecting region oob
-            if (
-              rightOffset.oob &&
-              leftOffset.oob &&
-              leftOffset.offset &&
-              rightOffset.offset &&
-              rightOffset.end
-            ) {
-              const leftOob = leftOffset.offset < 0
-              const rightOob = rightOffset.offset > rightOffset.end
-              if (!(rightOob && leftOob)) {
-                return selected
-              }
-            }
-            selected.push({
-              ...region,
-              start: leftOffset.reversed
-                ? Math.floor(region.end - rightBpOffset) + 1
-                : Math.floor(region.start + leftBpOffset) + 1,
-              end: rightOffset.reversed
-                ? Math.min(
-                    Math.floor(region.end - leftBpOffset) + 1,
-                    region.end,
-                  )
-                : Math.min(
-                    Math.floor(region.start + rightBpOffset) + 1,
-                    region.end,
-                  ),
-            })
-          } else {
-            // handle more than one region
-            for (let i = leftOffset.index; i <= rightOffset.index; i += 1) {
-              const region = self.displayedRegions[i]
-              if (leftOffset.index === i) {
-                const first = {
-                  ...region,
-                  start: leftOffset.reversed
-                    ? region.start + 1
-                    : Math.floor(region.start + leftBpOffset) + 1,
-                  end: leftOffset.reversed
-                    ? Math.min(
-                        Math.floor(region.end - leftBpOffset) + 1,
-                        region.end,
-                      )
-                    : region.end,
-                }
-                selected.push(first)
-              } else if (rightOffset.index === i) {
-                const last = {
-                  ...region,
-                  start: rightOffset.reversed
-                    ? Math.floor(region.end - rightBpOffset) + 1
-                    : region.start + 1,
-                  end: rightOffset.reversed
-                    ? region.end
-                    : Math.min(
-                        Math.floor(region.start + rightBpOffset) + 1,
-                        region.end,
-                      ),
-                }
-                selected.push(last)
-              } else {
-                selected.push({
-                  ...region,
-                  start: region.start + 1,
-                })
-              }
-            }
-          }
-        }
-        return selected
+        })
       },
       /**
        * Fetches and returns a list features for a given list of regions
