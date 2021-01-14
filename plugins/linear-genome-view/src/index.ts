@@ -45,7 +45,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = ConfigurationSchema(
-        'FeatureTrack',
+        'BasicTrack',
         {},
         {
           baseConfiguration: createBaseTrackConfig(pluginManager),
@@ -53,11 +53,30 @@ export default class LinearGenomeViewPlugin extends Plugin {
         },
       )
       return new TrackType({
-        name: 'FeatureTrack',
+        name: 'BasicTrack',
         configSchema,
         stateModel: createBaseTrackModel(
           pluginManager,
-          'FeatureTrack',
+          'BasicTrack',
+          configSchema,
+        ),
+      })
+    })
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'BasicTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'BasicTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'BasicTrack',
           configSchema,
         ),
       })
