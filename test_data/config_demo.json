@@ -211,6 +211,17 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "segdups_ucsc_hg19",
+      "name": "UCSC SegDups",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "genomicSuperDups"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "genehancer_ucsc_hg38",
       "name": "UCSC GeneHancer",
       "category": ["Annotation"],
