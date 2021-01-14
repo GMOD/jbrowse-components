@@ -53,25 +53,18 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
-  const [regionsSet, setRegions] = useState(false)
   const [sequence, setSequence] = useState<string>()
-  const [copyDisabled, disableCopy] = useState(true)
-  const [downloadDisabled, disableDownload] = useState(true)
   const loading = sequence === undefined && error === undefined
   const regionsSelected = model.getSelectedRegions(
     model.leftOffset,
     model.rightOffset,
   )
 
-  if (regionsSet === false) {
-    setRegions(true)
-  }
-
   useEffect(() => {
     let active = true
     ;(async () => {
       try {
-        if (regionsSet && regionsSelected.length > 0 && active) {
+        if (regionsSelected && regionsSelected.length > 0 && active) {
           const chunks = await model.fetchSequence(regionsSelected)
           if (chunks.length > 0) {
             formatSequence(chunks)
@@ -120,130 +113,112 @@ function SequenceDialog({
         `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
       )
     }
-    const seqFasta = formatSeqFasta(sequenceChunks)
-    const checkingSize = new Blob([seqFasta]).size
-    if (checkingSize > 500000000) {
-      disableCopy(true)
-    } else {
-      if (checkingSize > 100000) {
-        disableCopy(true)
-        session.notify(
-          `Copy to clipboard was disabled. Please download as Fasta file.`,
-        )
-      }
-      setSequence(seqFasta)
-      disableDownload(false)
-      disableCopy(false)
-    }
+    setSequence(formatSeqFasta(sequenceChunks))
   }
 
   return (
-    <>
-      <Dialog
-        data-testid="sequence-dialog"
-        maxWidth="xl"
-        open
-        onClose={handleClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          Reference sequence
-          {handleClose ? (
-            <IconButton
-              data-testid="close-seqDialog"
-              className={classes.closeButton}
-              onClick={() => {
-                handleClose()
-                model.showSeqDialog(false)
-                model.setOffsets(undefined, undefined)
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
-        <Divider />
-
-        <>
-          <DialogContent>
-            {error ? <Typography color="error">{`${error}`}</Typography> : null}
-            {loading && !error ? (
-              <Container>
-                Retrieving reference sequence...
-                <CircularProgress
-                  style={{
-                    marginLeft: 10,
-                  }}
-                  size={20}
-                  disableShrink
-                />
-              </Container>
-            ) : null}
-            {sequence !== undefined ? (
-              <TextField
-                data-testid="rubberband-sequence"
-                variant="outlined"
-                multiline
-                rows={3}
-                rowsMax={5}
-                disabled={copyDisabled}
-                className={classes.dialogContent}
-                fullWidth
-                value={
-                  copyDisabled
-                    ? 'Reference sequence too large to display'
-                    : sequence
-                }
-                InputProps={{
-                  readOnly: true,
-                  classes: {
-                    input: classes.textAreaFont,
-                  },
-                }}
-              />
-            ) : null}
-          </DialogContent>
-        </>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              copy(sequence || '')
-              session.notify('Copied to clipboard', 'success')
-            }}
-            disabled={loading || copyDisabled || sequence === undefined}
-            color="primary"
-            startIcon={<ContentCopyIcon />}
-          >
-            Copy to clipboard
-          </Button>
-          <Button
-            onClick={() => {
-              const seqFastaFile = new Blob([sequence || ''], {
-                type: 'text/x-fasta;charset=utf-8',
-              })
-              saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
-            }}
-            disabled={loading || downloadDisabled || sequence === undefined}
-            color="primary"
-            startIcon={<GetAppIcon />}
-          >
-            Download FASTA
-          </Button>
-          <Button
+    <Dialog
+      data-testid="sequence-dialog"
+      maxWidth="xl"
+      open
+      onClose={handleClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Reference sequence
+        {handleClose ? (
+          <IconButton
+            data-testid="close-seqDialog"
+            className={classes.closeButton}
             onClick={() => {
               handleClose()
               model.showSeqDialog(false)
               model.setOffsets(undefined, undefined)
             }}
-            color="primary"
-            autoFocus
           >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+            <CloseIcon />
+          </IconButton>
+        ) : null}
+      </DialogTitle>
+      <Divider />
+
+      <DialogContent>
+        {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        {loading && !error ? (
+          <Container>
+            Retrieving reference sequence...
+            <CircularProgress
+              style={{
+                marginLeft: 10,
+              }}
+              size={20}
+              disableShrink
+            />
+          </Container>
+        ) : null}
+        {sequence !== undefined ? (
+          <TextField
+            data-testid="rubberband-sequence"
+            variant="outlined"
+            multiline
+            rows={3}
+            rowsMax={5}
+            disabled={sequence.length > 1_000_000}
+            className={classes.dialogContent}
+            fullWidth
+            value={
+              sequence.length > 1_000_000
+                ? 'Reference sequence too large to display, use the download FASTA button'
+                : sequence
+            }
+            InputProps={{
+              readOnly: true,
+              classes: {
+                input: classes.textAreaFont,
+              },
+            }}
+          />
+        ) : null}
+      </DialogContent>
+      <DialogActions>
+        <Button
+          onClick={() => {
+            copy(sequence || '')
+            session.notify('Copied to clipboard', 'success')
+          }}
+          disabled={loading || sequence === undefined}
+          color="primary"
+          startIcon={<ContentCopyIcon />}
+        >
+          Copy to clipboard
+        </Button>
+        <Button
+          onClick={() => {
+            const seqFastaFile = new Blob([sequence || ''], {
+              type: 'text/x-fasta;charset=utf-8',
+            })
+            saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
+          }}
+          disabled={loading || sequence === undefined}
+          color="primary"
+          startIcon={<GetAppIcon />}
+        >
+          Download FASTA
+        </Button>
+        <Button
+          onClick={() => {
+            handleClose()
+            model.showSeqDialog(false)
+            model.setOffsets(undefined, undefined)
+          }}
+          color="primary"
+          autoFocus
+        >
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
