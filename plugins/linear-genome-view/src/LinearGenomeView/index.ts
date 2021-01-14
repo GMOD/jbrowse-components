@@ -945,9 +945,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         leftOffset: BpOffset | undefined,
         rightOffset: BpOffset | undefined,
       ) {
-        const simView = Base1DView.create(getSnapshot(self))
+        const simView = Base1DView.create({
+          ...getSnapshot(self),
+          interRegionPaddingWidth: self.interRegionPaddingWidth,
+        })
+
         simView.setVolatileWidth(self.width)
         simView.zoomToDisplayedRegions(leftOffset, rightOffset)
+
         return simView.dynamicBlocks.contentBlocks.map(region => {
           return {
             ...region,

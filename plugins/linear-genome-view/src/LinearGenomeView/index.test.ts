@@ -318,7 +318,7 @@ test('can navToMultiple', () => {
 describe('Zoom to selected displayed regions', () => {
   let model: Instance<ReturnType<typeof stateModelFactory>>
   let largestBpPerPx: number
-  beforeAll(() => {
+  beforeEach(() => {
     const session = Session.create({
       configuration: {},
     })
@@ -703,7 +703,7 @@ describe('Get Sequence for selected displayed regions', () => {
   the sequence dialog then handles converting from 1-based closed to interbase
   */
   let model: Instance<ReturnType<typeof stateModelFactory>>
-  beforeAll(() => {
+  beforeEach(() => {
     const session = Session.create({
       configuration: {},
     })
@@ -754,38 +754,39 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(singleRegion.length).toEqual(1)
-    expect(singleRegion[0].start).toEqual(1)
+    expect(singleRegion[0].start).toEqual(0)
     expect(singleRegion[0].end).toEqual(800)
   })
   it('handles when start or end offsets are out of bounds of displayed regions', () => {
     model.setOffsets(
       {
         refName: 'ctgA',
-        index: 0,
-        offset: -15,
         start: 0,
         end: 50001,
-        coord: -15,
         reversed: false,
         assemblyName: 'volvox',
         oob: true,
+        coord: -8,
+        offset: -8.77999706864357,
+        index: 0,
       },
       {
         refName: 'ctgA',
-        index: -1,
-        offset: 6081,
         start: 0,
         end: 50001,
-        coord: -1,
         reversed: false,
         assemblyName: 'volvox',
         oob: true,
+        coord: -4,
+        offset: -4.12999706864357,
+        index: 0,
       },
     )
     const outOfBounds = model.getSelectedRegions(
       model.leftOffset,
       model.rightOffset,
     )
+
     expect(outOfBounds.length).toEqual(0)
   })
 
@@ -797,28 +798,31 @@ describe('Get Sequence for selected displayed regions', () => {
     ])
     model.setWidth(800)
     model.showAllRegions()
+
+    // created by console logging getSelectedRegion's arguments after manually
+    // setting up this test case in the browser
     model.setOffsets(
       {
         refName: 'ctgA',
-        index: 0,
-        offset: 200,
         start: 0,
         end: 500,
-        coord: 200,
         reversed: false,
         assemblyName: 'volvox',
         oob: false,
+        offset: 200,
+        coord: 200,
+        index: 0,
       },
       {
         refName: 'ctgA',
-        index: 2,
-        offset: 99,
         start: 0,
         end: 200,
-        coord: 100,
         reversed: false,
         assemblyName: 'volvox',
         oob: false,
+        offset: 100,
+        coord: 100,
+        index: 2,
       },
     )
     const overlapping = model.getSelectedRegions(
@@ -826,12 +830,12 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0].start).toEqual(201)
+    expect(overlapping[0].start).toEqual(200)
     expect(overlapping[0].end).toEqual(500)
-    expect(overlapping[1].start).toEqual(1)
+    expect(overlapping[1].start).toEqual(0)
     expect(overlapping[1].end).toEqual(3000)
-    expect(overlapping[2].start).toEqual(1)
-    expect(overlapping[2].end).toEqual(100)
+    expect(overlapping[2].start).toEqual(0)
+    expect(overlapping[2].end).toEqual(110)
   })
 
   it('can select over two regions in diff reference sequence', () => {
@@ -868,43 +872,49 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(multipleRegions.length).toEqual(2)
-    expect(multipleRegions[0].start).toEqual(49999)
+    expect(multipleRegions[0].start).toEqual(49998)
     expect(multipleRegions[0].end).toEqual(50001)
-    expect(multipleRegions[1].start).toEqual(1)
-    expect(multipleRegions[1].end).toEqual(10)
+    expect(multipleRegions[1].start).toEqual(0)
+    expect(multipleRegions[1].end).toEqual(9)
   })
 
   it('can handle horizontally flipped regions', () => {
-    model.setOffsets(
+    model.setDisplayedRegions([
       {
+        assemblyName: 'volvox',
         refName: 'ctgA',
-        index: 0,
-        offset: 0,
         start: 0,
         end: 50001,
-        coord: 50001,
         reversed: true,
-        assemblyName: 'volvox',
-        oob: false,
       },
-      {
-        refName: 'ctgA',
-        index: 0,
-        offset: 3,
-        start: 0,
-        end: 50001,
-        coord: 49999,
-        reversed: true,
-        assemblyName: 'volvox',
-        oob: false,
-      },
-    )
+    ])
     const hfRegion = model.getSelectedRegions(
-      model.leftOffset,
-      model.rightOffset,
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 50001,
+        reversed: true,
+        assemblyName: 'volvox',
+        oob: false,
+        offset: 1.03696711063385,
+        coord: 50000,
+        index: 0,
+      },
+      {
+        refName: 'ctgA',
+        start: 0,
+        end: 50001,
+        reversed: true,
+        assemblyName: 'volvox',
+        oob: false,
+        offset: 3.93696711063385,
+        coord: 49998,
+        index: 0,
+      },
     )
+
     expect(hfRegion.length).toEqual(1)
-    expect(hfRegion[0].start).toEqual(49999)
-    expect(hfRegion[0].end).toEqual(50001)
+    expect(hfRegion[0].start).toEqual(49997)
+    expect(hfRegion[0].end).toEqual(50000)
   })
 })
