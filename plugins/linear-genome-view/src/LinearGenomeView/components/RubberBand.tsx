@@ -187,7 +187,6 @@ function RubberBand({
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     model.setOffsets(leftOffset, rightOffset)
-    model.showSeqDialog(true)
   }
 
   function handleClose() {

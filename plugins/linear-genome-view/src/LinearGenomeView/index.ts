@@ -123,7 +123,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
-      seqDialogActive: false as boolean,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
     }))
@@ -163,7 +162,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
       get isSeqDialogDisplayed() {
-        return self.seqDialogActive
+        return self.leftOffset && self.rightOffset
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -506,10 +505,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             .map(region => ({ ...region, reversed: !region.reversed })),
         )
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
-      },
-
-      showSeqDialog(state: boolean) {
-        self.seqDialogActive = state
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {

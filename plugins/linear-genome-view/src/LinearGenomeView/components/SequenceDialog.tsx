@@ -135,7 +135,6 @@ function SequenceDialog({
             className={classes.closeButton}
             onClick={() => {
               handleClose()
-              model.showSeqDialog(false)
               model.setOffsets(undefined, undefined)
             }}
           >
@@ -211,7 +210,6 @@ function SequenceDialog({
         <Button
           onClick={() => {
             handleClose()
-            model.showSeqDialog(false)
             model.setOffsets(undefined, undefined)
           }}
           color="primary"
