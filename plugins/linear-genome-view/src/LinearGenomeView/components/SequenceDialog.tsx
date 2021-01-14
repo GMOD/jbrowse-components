@@ -49,7 +49,6 @@ function SequenceDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-
   const [error, setError] = useState<Error>()
   const [sequence, setSequence] = useState<string>()
   const [fileBlob, setFileBlob] = useState<Blob>()
@@ -59,7 +58,7 @@ function SequenceDialog({
 
   useEffect(() => {
     let active = true
-
+    // convert from 1-based closed to interbase
     const regionsSelected = model
       .getSelectedRegions(model.leftOffset, model.rightOffset)
       .map(region => {
@@ -70,14 +69,13 @@ function SequenceDialog({
       })
     ;(async () => {
       try {
-        if (regionsSelected.length > 0) {
+        if (regionsSelected.length > 0 && active) {
           const chunks = await model.fetchSequence(regionsSelected)
-          if (chunks.length > 0 && active) {
+          if (chunks.length > 0) {
             formatSequence(chunks)
           }
         } else if (active) {
-          handleClose()
-          session.notify(`Selected region is out of bounds`)
+          setError(new Error('Selected region is out of bounds'))
         }
       } catch (e) {
         if (active) {
@@ -89,7 +87,7 @@ function SequenceDialog({
     return () => {
       active = false
     }
-  })
+  }, [model.rightOffset, model.leftOffset])
 
   function formatSequence(seqChunks: Feature[]) {
     const sequenceChunks: SeqChunk[] = []
@@ -179,7 +177,8 @@ function SequenceDialog({
                   disableShrink
                 />
               </Container>
-            ) : (
+            ) : null}
+            {sequence !== undefined ? (
               <TextField
                 data-testid="rubberband-sequence"
                 variant="outlined"
@@ -198,7 +197,7 @@ function SequenceDialog({
                   readOnly: true,
                 }}
               />
-            )}
+            ) : null}
           </DialogContent>
         </>
         <DialogActions>

@@ -8,7 +8,6 @@ import {
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
-import { formatFastaLines } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
@@ -699,60 +698,213 @@ test('can showAllRegionsInAssembly', async () => {
   ])
 })
 
-test('Format and sizing of fasta files', async () => {
-  const session = Session.create({
-    configuration: {},
+describe('Get Sequence for selected displayed regions', () => {
+  /* the start of all the results should be +1
+  the sequence dialog then handles converting from 1-based closed to interbase
+  */
+  let model: Instance<ReturnType<typeof stateModelFactory>>
+  beforeAll(() => {
+    const session = Session.create({
+      configuration: {},
+    })
+    const width = 800
+    model = session.setView(
+      LinearGenomeModel.create({
+        id: 'testGetSequenceSelectedRegions',
+        type: 'LinearGenomeView',
+      }),
+    )
+    model.setWidth(width)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
+    ])
   })
-  const model = session.setView(
-    LinearGenomeModel.create({
-      id: 'testFasta',
-      type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
-    }),
-  )
-  model.setWidth(800)
-  model.setDisplayedRegions([
-    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
-    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
-  ])
-  model.setWidth(800)
-  const large =
-    'cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcctt'
-  // checks that the first 80 chars are followed by a space
-  const formattedSeqFasta = formatFastaLines(large)
-  expect(
-    formattedSeqFasta.substring(0, formattedSeqFasta.indexOf('\n')).length,
-  ).toEqual(80)
-  model.setOffsets(
-    {
-      refName: 'ctgA',
-      index: 0,
-      offset: 49998,
-      start: 0,
-      end: 50001,
-      coord: 49999,
-      reversed: false,
-      assemblyName: 'volvox',
-      oob: false,
-    },
-    {
-      refName: 'ctgB',
-      index: 1,
-      offset: 9,
-      start: 0,
-      end: 6079,
-      coord: 10,
-      reversed: false,
-      assemblyName: 'volvox',
-      oob: false,
-    },
-  )
-  const selectedRegionsTest = model.getSelectedRegions(
-    model.leftOffset,
-    model.rightOffset,
-  )
-  expect(selectedRegionsTest[0].start).toEqual(49999)
-  expect(selectedRegionsTest[0].end).toEqual(50001)
-  expect(selectedRegionsTest[1].start).toEqual(1)
-  expect(selectedRegionsTest[1].end).toEqual(10)
+
+  it('can select whole region and handles both offsets being oob', () => {
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 800 },
+    ])
+    model.setOffsets(
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: -10,
+        start: 0,
+        end: 800,
+        coord: -10,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: true,
+      },
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: 810,
+        start: 0,
+        end: 800,
+        coord: 810,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: true,
+      },
+    )
+    const singleRegion = model.getSelectedRegions(
+      model.leftOffset,
+      model.rightOffset,
+    )
+    expect(singleRegion.length).toEqual(1)
+    expect(singleRegion[0].start).toEqual(1)
+    expect(singleRegion[0].end).toEqual(800)
+  })
+  it('handles when start or end offsets are out of bounds of displayed regions', () => {
+    model.setOffsets(
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: -15,
+        start: 0,
+        end: 50001,
+        coord: -15,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: true,
+      },
+      {
+        refName: 'ctgA',
+        index: -1,
+        offset: 6081,
+        start: 0,
+        end: 50001,
+        coord: -1,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: true,
+      },
+    )
+    const outOfBounds = model.getSelectedRegions(
+      model.leftOffset,
+      model.rightOffset,
+    )
+    expect(outOfBounds.length).toEqual(0)
+  })
+
+  it('selects multiple regions with a region in between', () => {
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 500 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 3000 },
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200 },
+    ])
+    model.setWidth(800)
+    model.showAllRegions()
+    model.setOffsets(
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: 200,
+        start: 0,
+        end: 500,
+        coord: 200,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+      {
+        refName: 'ctgA',
+        index: 2,
+        offset: 99,
+        start: 0,
+        end: 200,
+        coord: 100,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+    )
+    const overlapping = model.getSelectedRegions(
+      model.leftOffset,
+      model.rightOffset,
+    )
+    expect(overlapping.length).toEqual(3)
+    expect(overlapping[0].start).toEqual(201)
+    expect(overlapping[0].end).toEqual(500)
+    expect(overlapping[1].start).toEqual(1)
+    expect(overlapping[1].end).toEqual(3000)
+    expect(overlapping[2].start).toEqual(1)
+    expect(overlapping[2].end).toEqual(100)
+  })
+
+  it('can select over two regions in diff reference sequence', () => {
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+      { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 6079 },
+    ])
+    model.setOffsets(
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: 49998,
+        start: 0,
+        end: 50001,
+        coord: 49999,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+      {
+        refName: 'ctgB',
+        index: 1,
+        offset: 9,
+        start: 0,
+        end: 6079,
+        coord: 10,
+        reversed: false,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+    )
+    const multipleRegions = model.getSelectedRegions(
+      model.leftOffset,
+      model.rightOffset,
+    )
+    expect(multipleRegions.length).toEqual(2)
+    expect(multipleRegions[0].start).toEqual(49999)
+    expect(multipleRegions[0].end).toEqual(50001)
+    expect(multipleRegions[1].start).toEqual(1)
+    expect(multipleRegions[1].end).toEqual(10)
+  })
+
+  it('can handle horizontally flipped regions', () => {
+    model.setOffsets(
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: 0,
+        start: 0,
+        end: 50001,
+        coord: 50001,
+        reversed: true,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+      {
+        refName: 'ctgA',
+        index: 0,
+        offset: 3,
+        start: 0,
+        end: 50001,
+        coord: 49999,
+        reversed: true,
+        assemblyName: 'volvox',
+        oob: false,
+      },
+    )
+    const hfRegion = model.getSelectedRegions(
+      model.leftOffset,
+      model.rightOffset,
+    )
+    expect(hfRegion.length).toEqual(1)
+    expect(hfRegion[0].start).toEqual(49999)
+    expect(hfRegion[0].end).toEqual(50001)
+  })
 })

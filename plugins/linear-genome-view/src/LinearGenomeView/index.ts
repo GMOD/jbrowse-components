@@ -1058,6 +1058,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'sequence',
           'adapter',
         ])
+        console.log(assembly.configuration)
+        console.log(sequenceAdapterConfig)
         const dataAdapterType = pluginManager.getAdapterType(
           sequenceAdapterConfig.type,
         )
