@@ -1025,27 +1025,6 @@ Object {
           },
           "type": "LinearFeatureDisplay",
         },
-        Object {
-          "displayId": "nclist_long_names-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "nclist_long_names-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "nclist_long_names-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
-        },
       ],
       "name": "nclist with long names/descriptions",
       "trackId": "nclist_long_names",
@@ -1410,20 +1389,6 @@ Object {
           },
           "type": "LinearFeatureDisplay",
         },
-        Object {
-          "displayId": "lollipop_track-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "lollipop_track-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
       ],
       "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
       "trackId": "lollipop_track",
@@ -1495,20 +1460,6 @@ Object {
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearFeatureDisplay",
-        },
-        Object {
-          "displayId": "filtering_track-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "filtering_track-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
         },
       ],
       "name": "FromConfig Track (defaults to LinearFilteringDisplay)",
@@ -2037,27 +1988,6 @@ Object {
           },
           "type": "LinearFeatureDisplay",
         },
-        Object {
-          "displayId": "gff3tabix_genes-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "gff3tabix_genes-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "gff3tabix_genes-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
-        },
       ],
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
@@ -2251,27 +2181,6 @@ Object {
           },
           "type": "LinearFeatureDisplay",
         },
-        Object {
-          "displayId": "bigbed_genes-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "bigbed_genes-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "bigbed_genes-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
-        },
       ],
       "name": "BigBed genes",
       "trackId": "bigbed_genes",
@@ -2302,27 +2211,6 @@ Object {
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearFeatureDisplay",
-        },
-        Object {
-          "displayId": "bedtabix_genes-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "bedtabix_genes-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "bedtabix_genes-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
         },
       ],
       "name": "BedTabix genes",
@@ -2385,27 +2273,6 @@ Object {
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearFeatureDisplay",
-        },
-        Object {
-          "displayId": "EA_0Jp4oPKg-LinearBasicDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "EA_0Jp4oPKg-LinearFilteringDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearFilteringDisplay",
-        },
-        Object {
-          "displayId": "EA_0Jp4oPKg-LinearLollipopDisplay",
-          "renderer": Object {
-            "type": "SvgFeatureRenderer",
-          },
-          "type": "LinearLollipopDisplay",
         },
       ],
       "name": "NCList genes",
