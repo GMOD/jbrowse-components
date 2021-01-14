@@ -790,8 +790,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             if (e === undefined) {
               throw new Error(
-                `could not find a region with refName "${refName}" that contained a start position ${s +
-                  1}`,
+                `could not find a region with refName "${refName}" that contained a start position ${
+                  s + 1
+                }`,
               )
             }
             if (index === -1) {
