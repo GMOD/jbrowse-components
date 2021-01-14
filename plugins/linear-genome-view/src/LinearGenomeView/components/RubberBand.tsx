@@ -96,7 +96,6 @@ function RubberBand({
   const [currentX, setCurrentX] = useState<number>()
   const [anchorPosition, setAnchorPosition] = useState<Coord>()
   const [guideX, setGuideX] = useState<number | undefined>()
-  const [getSeqDisabled, disableGetSequence] = useState<boolean>(true)
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const classes = useStyles()
@@ -138,12 +137,6 @@ function RubberBand({
       Math.abs(currentX - startX) <= 3
     ) {
       handleClose()
-    }
-
-    if (!mouseDragging && currentX !== undefined && startX !== undefined) {
-      // Disabled if more than approx 500MB
-      const possibleSize = Math.abs(currentX - startX) * model.bpPerPx
-      disableGetSequence(possibleSize > 1048576 * 500)
     }
   }, [mouseDragging, currentX, startX, model.bpPerPx])
 
@@ -221,7 +214,10 @@ function RubberBand({
     },
     {
       label: 'Get sequence',
-      disabled: getSeqDisabled,
+      disabled:
+        currentX !== undefined &&
+        startX !== undefined &&
+        Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
       icon: MenuOpenIcon,
       onClick: () => {
         getSequence()
