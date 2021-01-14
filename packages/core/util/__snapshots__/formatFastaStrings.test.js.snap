@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`formatting seqChunks and strings into Fasta format sequence length is 80 characters 1`] = `"cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct"`;
+
+exports[`formatting seqChunks and strings into Fasta format sequence length is less than 80 characters 1`] = `"cattgttgcg"`;
+
+exports[`formatting seqChunks and strings into Fasta format sequence length is more than 80 characters 1`] = `
+"cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct
+t"
+`;
