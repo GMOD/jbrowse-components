@@ -18,19 +18,19 @@ describe('formatting seqChunks and strings into Fasta format', () => {
     const formattedLargeFasta = formatFastaLines(large)
     expect(formattedLargeFasta).toMatchSnapshot()
   })
-  // it('formats headers and sequence', () => {
-  //   const chunks = [
-  //     { header: 'ctgA:1-10', seq: small },
-  //     { header: 'ctgB:1-81', seq: large },
-  //   ]
-  //   const formattedFastaFile = formatSeqFasta(chunks)
-  //   /*
-  //   >ctgA:1-10
-  //   cattgttgcg
-  //   >ctgB:1-81
-  //   cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct
-  //   t
-  //   */
-  //   expect(formattedFastaFile).toMatchSnapshot()
-  // })
+  it('formats headers and sequence', () => {
+    const chunks = [
+      { header: 'ctgA:1-10', seq: small },
+      { header: 'ctgB:1-81', seq: large },
+    ]
+    const formattedFastaFile = formatSeqFasta(chunks)
+    /*
+    >ctgA:1-10
+    cattgttgcg
+    >ctgB:1-81
+    cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct
+    t
+    */
+    expect(formattedFastaFile).toMatchSnapshot()
+  })
 })
