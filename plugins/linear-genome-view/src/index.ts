@@ -134,5 +134,7 @@ export {
   baseLinearDisplayConfigSchema,
   linearBasicDisplayConfigSchemaFactory,
 }
+
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
+
 export type { BaseLinearDisplayModel } from './BaseLinearDisplay'
