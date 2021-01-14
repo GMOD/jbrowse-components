@@ -973,10 +973,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             const region = self.displayedRegions[leftOffset.index]
             // selecting region oob
             if (rightOffset.oob && leftOffset.oob) {
-              const leftOob =
-                (leftOffset?.coord || 0) < (leftOffset?.start || 0)
-              const rightOob =
-                (rightOffset?.coord || 0) > (rightOffset?.end || 0)
+              const leftOob = leftOffset.offset < 0
+              const rightOob = rightOffset.offset > rightOffset.end
               if (!(rightOob && leftOob)) {
                 return selected
               }
@@ -1058,8 +1056,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'sequence',
           'adapter',
         ])
-        console.log(assembly.configuration)
-        console.log(sequenceAdapterConfig)
         const dataAdapterType = pluginManager.getAdapterType(
           sequenceAdapterConfig.type,
         )

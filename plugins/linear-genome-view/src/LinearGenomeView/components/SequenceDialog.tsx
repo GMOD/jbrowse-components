@@ -50,31 +50,34 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
+  const [regions, setRegions] = useState<Region[]>()
   const [sequence, setSequence] = useState<string>()
-  const [fileBlob, setFileBlob] = useState<Blob>()
   const [copyDisabled, disableCopy] = useState<boolean>(true)
   const [downloadDisabled, disableDownload] = useState<boolean>(true)
   const loading = sequence === undefined && error === undefined
+  // convert from 1-based closed to interbase
+  const regionsSelected = model
+    .getSelectedRegions(model.leftOffset, model.rightOffset)
+    .map(region => {
+      return {
+        ...region,
+        start: region.start - 1,
+      }
+    })
+  if (regions === undefined) {
+    setRegions(regionsSelected)
+  }
 
   useEffect(() => {
     let active = true
-    // convert from 1-based closed to interbase
-    const regionsSelected = model
-      .getSelectedRegions(model.leftOffset, model.rightOffset)
-      .map(region => {
-        return {
-          ...region,
-          start: region.start - 1,
-        }
-      })
     ;(async () => {
       try {
-        if (regionsSelected.length > 0 && active) {
-          const chunks = await model.fetchSequence(regionsSelected)
+        if (regions !== undefined && regions.length > 0 && active) {
+          const chunks = await model.fetchSequence(regions)
           if (chunks.length > 0) {
             formatSequence(chunks)
           }
-        } else if (active) {
+        } else if (active && error === undefined && regions?.length === 0) {
           setError(new Error('Selected region is out of bounds'))
         }
       } catch (e) {
@@ -87,7 +90,7 @@ function SequenceDialog({
     return () => {
       active = false
     }
-  }, [model.rightOffset, model.leftOffset])
+  })
 
   function formatSequence(seqChunks: Feature[]) {
     const sequenceChunks: SeqChunk[] = []
@@ -115,15 +118,11 @@ function SequenceDialog({
       )
     }
     const seqFasta = formatSeqFasta(sequenceChunks)
-    const seqFastaFile = new Blob([seqFasta], {
-      type: 'text/x-fasta;charset=utf-8',
-    })
-    setFileBlob(seqFastaFile)
-    const seqSize = seqFastaFile.size
-    if (seqSize > 500000000) {
+    const checkingSize = new Blob([seqFasta]).size
+    if (checkingSize > 500000000) {
       disableCopy(true)
     } else {
-      if (seqSize > 100000) {
+      if (checkingSize > 100000) {
         disableCopy(true)
         session.notify(
           `Copy to clipboard was disabled. Please download as Fasta file.`,
@@ -206,7 +205,7 @@ function SequenceDialog({
               copy(sequence || '')
               session.notify('Copied to clipboard', 'success')
             }}
-            disabled={loading || copyDisabled}
+            disabled={loading || copyDisabled || sequence === undefined}
             color="primary"
             startIcon={<ContentCopyIcon />}
           >
@@ -214,9 +213,12 @@ function SequenceDialog({
           </Button>
           <Button
             onClick={() => {
-              saveAs(fileBlob || '', 'jbrowse_ref_seq.fa')
+              const seqFastaFile = new Blob([sequence], {
+                type: 'text/x-fasta;charset=utf-8',
+              })
+              saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
             }}
-            disabled={loading || downloadDisabled || fileBlob === undefined}
+            disabled={loading || downloadDisabled || sequence === undefined}
             color="primary"
             startIcon={<GetAppIcon />}
           >
