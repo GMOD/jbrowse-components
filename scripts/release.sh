@@ -40,7 +40,7 @@ CHANGED=$(yarn --silent lerna changed --all --json)
 CHANGELOG=$(GITHUB_AUTH="$2" node scripts/changelog.js "$CHANGED" "$VERSION")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
-echo "" >tmp.md
+echo "" >>tmp.md
 cat CHANGELOG.md >>tmp.md
 mv tmp.md CHANGELOG.md
 
