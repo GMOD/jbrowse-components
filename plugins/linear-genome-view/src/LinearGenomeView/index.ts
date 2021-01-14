@@ -37,9 +37,9 @@ import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { toArray } from 'rxjs/operators'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature, {
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util/simpleFeature'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -971,29 +971,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const session = getSession(self)
         const assemblyName =
           self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
-        const { assemblyManager } = session
+        const { rpcManager, assemblyManager } = session
         const assembly = assemblyManager.get(assemblyName)
         if (!assembly) {
           throw new Error(`Could not find assembly ${assemblyName}`)
         }
         // assembly configuration
-        const sequenceAdapterConfig = readConfObject(assembly.configuration, [
+        const adapterConfig = readConfObject(assembly.configuration, [
           'sequence',
           'adapter',
         ])
-        const dataAdapterType = pluginManager.getAdapterType(
-          sequenceAdapterConfig.type,
-        )
-        const sequenceAdapter = new dataAdapterType.AdapterClass(
-          sequenceAdapterConfig,
-        ) as BaseFeatureDataAdapter
-        const featuresMultRegions = sequenceAdapter.getFeaturesInMultipleRegions(
-          selectedRegions,
-        )
-        const seqChunks: Feature[] = await featuresMultRegions
-          .pipe(toArray())
-          .toPromise()
-        return seqChunks
+
+        const sessionId = 'getSequence'
+        const chunks = (await Promise.all(
+          selectedRegions.map(region =>
+            rpcManager.call(sessionId, 'CoreGetFeatures', {
+              adapterConfig,
+              region,
+              sessionId,
+            }),
+          ),
+        )) as SimpleFeatureSerialized[][]
+
+        // assumes that we get whole sequence in a single getFeatures call
+        return chunks.map(chunk => new SimpleFeature(chunk[0]))
       },
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
