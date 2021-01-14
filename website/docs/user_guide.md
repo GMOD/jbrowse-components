@@ -275,9 +275,18 @@ Illustrating the pileup re-ordering that happens when turning on the
 read underlies the current center line position (the center line is 1bp wide,
 so sorted by that exact letter)
 
-There are other sorting options available and more to come. If you have any
-requests please drop us a line via github
-[here](https://github.com/GMOD/jbrowse-components/issues)
+### Sort, color and filter by tag
+
+We can now also do things like
+
+- Sort by tag
+- Filter by tag
+- Color by tag
+
+With these features, we can create very expressive views of alignments tracks
+
+![](./img/alignments/out-fs8.png)
+Figure showing a step-by-step of doing sort and color by HP tag to visualize the HP tagged reads showing haplotype
 
 ## BigWig tracks
 
@@ -287,11 +296,30 @@ signal, can often be done by using BigWig files
 ![](./img/bigwig_xyplot.png)
 This figure shows a BigWig using the XY plot renderer
 
-![](./img/bigwig_line.png)
-Line plot version of a BigWig
+### Viewing whole-genome coverage for profiling CNV
 
-There are many options for controlling the BigWig which can be accessed from
-the UI. See the [bigwig configuration guide](config_guide#wiggle-config)
+The latest jbrowse also allows refining the resolution of BigWig
+tracks, and viewing whole genome coverage. This allows us to get detailed
+global views of CNV for example from whole-genome coverage profiling
+
+Here is a short picture guide to setup a whole-genome view of a BigWig
+for CNV coverage visualization
+
+1. Open your BigWig track
+2. Go to the view menu and select "Show all assembly regions"
+3. Adjust the "Autoscale type" to your liking, the new options for "Local
+   +/- 3sd" allows the autoscaling to avoid outliers
+4. Go to the track menu and select "Turn off histogram fill", which then
+   shows only a dot for each point on the graph
+5. Go to the track menu and select "Resolution->Finer resolution" a
+   couple times until resolution looks nice
+
+Also note: all tracks have a drag handle on the bottom of it which you
+can drag down to make the track taller
+
+![](./img/bigwig/out-fs8.png)
+Figure showing the step-by-step way to make a whole-genome CNV profile of
+a coverage BigWig
 
 ## Variant tracks
 
