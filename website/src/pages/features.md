@@ -39,6 +39,7 @@ view types
 | Feature                                                             | JBrowse 2               | JBrowse 1          |
 | ------------------------------------------------------------------- | ----------------------- | ------------------ |
 | Status updates during track loading (e.g. Downloading BAM index...) | :heavy_check_mark:      | :x:                |
+| Sort, color, and filter by BAM/CRAM tags and other advanced options | :heavy_check_mark:      | :x:                |
 | Uses webworkers for parsing and rendering tracks                    | :heavy_check_mark:      | :x:                |
 | Supports interactive editing of configuration in the app            | :heavy_check_mark:      | :x:                |
 | Can "flip" or reverse complement the linear view                    | :heavy_check_mark:      | :x:                |
@@ -50,7 +51,7 @@ view types
 | Can connect to UCSC track hubs                                      | :heavy_check_mark: [^1] | :x:                |
 | Can load plugins at run-time instead of build time                  | :heavy_check_mark: [^2] | :x:                |
 | Non-admin users can open tracks and share them with others          | :heavy_check_mark: [^3] | :x:                |
-| Re-usable NPM package                                               | :heavy_check_mark: [^3] | :x:                |
+| Re-usable NPM package                                               | :heavy_check_mark:      | :x:                |
 | Name searching e.g. ability to type a gene name/ID to search for it | :x:                     | :heavy_check_mark: |
 | URL query params API e.g. specifying ?loc=chr1:1-100 in URL bar     | :x:                     | :heavy_check_mark: |
 
