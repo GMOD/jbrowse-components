@@ -50,7 +50,7 @@ function SequenceDialog({
   const classes = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<Error>()
-  const [regions, setRegions] = useState<Region[]>()
+  const [regionsSet, setRegions] = useState<boolean>(false)
   const [sequence, setSequence] = useState<string>()
   const [copyDisabled, disableCopy] = useState<boolean>(true)
   const [downloadDisabled, disableDownload] = useState<boolean>(true)
@@ -64,20 +64,24 @@ function SequenceDialog({
         start: region.start - 1,
       }
     })
-  if (regions === undefined) {
-    setRegions(regionsSelected)
+  if (regionsSet === false) {
+    setRegions(true)
   }
 
   useEffect(() => {
     let active = true
     ;(async () => {
       try {
-        if (regions !== undefined && regions.length > 0 && active) {
-          const chunks = await model.fetchSequence(regions)
+        if (regionsSet && regionsSelected.length > 0 && active) {
+          const chunks = await model.fetchSequence(regionsSelected)
           if (chunks.length > 0) {
             formatSequence(chunks)
           }
-        } else if (active && error === undefined && regions?.length === 0) {
+        } else if (
+          active &&
+          error === undefined &&
+          regionsSelected.length === 0
+        ) {
           setError(new Error('Selected region is out of bounds'))
         }
       } catch (e) {
@@ -213,7 +217,7 @@ function SequenceDialog({
           </Button>
           <Button
             onClick={() => {
-              const seqFastaFile = new Blob([sequence], {
+              const seqFastaFile = new Blob([sequence || ''], {
                 type: 'text/x-fasta;charset=utf-8',
               })
               saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
