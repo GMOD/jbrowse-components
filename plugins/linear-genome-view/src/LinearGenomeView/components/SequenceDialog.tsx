@@ -36,7 +36,10 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.grey[500],
   },
   dialogContent: {
-    width: '100%',
+    width: '80em',
+  },
+  textAreaFont: {
+    fontFamily: 'Courier New',
   },
 }))
 
@@ -55,7 +58,6 @@ function SequenceDialog({
   const [copyDisabled, disableCopy] = useState<boolean>(true)
   const [downloadDisabled, disableDownload] = useState<boolean>(true)
   const loading = sequence === undefined && error === undefined
-  // convert from 1-based closed to interbase
   const regionsSelected = model.getSelectedRegions(
     model.leftOffset,
     model.rightOffset,
@@ -195,6 +197,9 @@ function SequenceDialog({
                 }
                 InputProps={{
                   readOnly: true,
+                  classes: {
+                    input: classes.textAreaFont,
+                  },
                 }}
               />
             ) : null}
