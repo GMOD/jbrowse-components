@@ -5,6 +5,7 @@ import PluginManager from '../PluginManager'
 
 interface WorkerHandle {
   status?: string
+  error?: Error
   on?: (channel: string, callback: (message: string) => void) => void
   off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
@@ -63,11 +64,14 @@ class LazyWorker {
   getWorker(pluginManager: PluginManager) {
     if (!this.worker) {
       const worker = this.driver.makeWorker(pluginManager)
-      watchWorker(worker, this.driver.maxPingTime).catch(() => {
+      watchWorker(worker, this.driver.maxPingTime).catch(error => {
         if (this.worker) {
-          console.warn('worker did not respond, killing and generating new one')
+          console.warn(
+            `worker did not respond, killing and generating new one ${error}`,
+          )
           this.worker.destroy()
           this.worker.status = 'killed'
+          this.worker.error = error
           this.worker = undefined
         }
       })
@@ -207,7 +211,9 @@ export default abstract class BaseRpcDriver {
         // must've been killed
         if (worker.status === 'killed') {
           reject(
-            new Error('operation timed out, worker process stopped responding'),
+            new Error(
+              `operation timed out, worker process stopped responding, ${worker.error}`,
+            ),
           )
         }
       }, this.workerCheckFrequency)
