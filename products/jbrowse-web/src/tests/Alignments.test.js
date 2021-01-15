@@ -256,4 +256,50 @@ describe('alignments track', () => {
 
     await findAllByText('Max height reached', {}, { timeout: 10000 })
   }, 15000)
+
+  it('test snpcoverage doesnt count snpcoverage', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.03932, 67884.16536402702)
+
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
+    )
+
+    const { findAllByTestId } = within(
+      await findByTestId('Blockset-snpcoverage'),
+    )
+    const snpCoverageCanvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+
+    // this block tests that softclip avoids decrementing the total block
+    // e.g. this line is not called for softclip/hardclip
+    // bin.getNested('reference').decrement(strand, overlap)
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[0]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
+
+    // test that softclip doesn't contibute to coverage
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[1]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
+  }, 15000)
 })
