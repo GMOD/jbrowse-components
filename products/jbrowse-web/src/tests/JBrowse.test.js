@@ -162,11 +162,8 @@ describe('test sharing', () => {
 
     // check the share dialog has the above session shared
     expect(await findByTestId('share-dialog')).toBeTruthy()
-    const url = await findByTestId('share-url-field')
-    // see if there is a better way to access the URL value
-    expect(url.lastChild.firstChild.value).toBe(
-      'http://localhost/?session=share-abc&password=123',
-    )
+    const url = await findByTestId('share-url-text')
+    expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
   })
 
   it('can clear a session of callbacks before sharing', async () => {
@@ -191,10 +188,8 @@ describe('test sharing', () => {
     fireEvent.click(await findByText('Share'))
 
     expect(await findByTestId('share-dialog')).toBeTruthy()
-    const url = await findByTestId('share-url-field')
-    expect(url.lastChild.firstChild.value).toBe(
-      'http://localhost/?session=share-abc&password=123',
-    )
+    const url = await findByTestId('share-url-text')
+    expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
 
     // since a custom callback is in sessionTracks, should have warning message
     expect(

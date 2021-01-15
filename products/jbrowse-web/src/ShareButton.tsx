@@ -285,6 +285,8 @@ const ShareDialog = observer(
                     InputProps={{
                       readOnly: true,
                     }}
+                    // eslint-disable-next-line react/jsx-no-duplicate-props
+                    inputProps={{ 'data-testid': 'share-url-text' }}
                     variant="filled"
                     style={{ width: '100%' }}
                     onClick={event => {

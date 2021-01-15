@@ -44,9 +44,13 @@ export async function scanSharedSessionForCallbacks(
   session: Record<string, unknown>,
 ) {
   const scannedSession = JSON.parse(JSON.stringify(session))
-  const { sessionTracks, sessionConnections } = scannedSession
+  const { sessionTracks, sessionConnections, views } = scannedSession
   if (sessionTracks) deleteCallbacks(sessionTracks)
   if (sessionConnections) deleteCallbacks(sessionConnections)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  views.forEach((view: any) => {
+    if (view.spreadsheet) deleteCallbacks(view.spreadsheet.columns) // derivation function text can have callbacks
+  })
 
   return scannedSession
 }
