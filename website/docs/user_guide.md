@@ -394,7 +394,7 @@ See the [linear synteny
 configuration](config_guide#configuring-linear-synteny-views) for more details
 on manually configuring the synteny view
 
-## Opening a synteny view from a dotplot view
+### Opening a synteny view from a dotplot view
 
 We have designed JBrowse 2 to be able to open up a synteny view from a dotplot
 view. This is enabled by "display modes" so that the same track can be
@@ -407,7 +407,7 @@ selection
 Figure showing the click and drag selection over the dotplot view prompts you
 to open up a linear synteny view from the selected region
 
-## Long read vs reference plots
+### Long read vs reference plots
 
 One can also launch a dotplot view that compares a long read to the reference
 genome by
