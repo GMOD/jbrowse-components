@@ -15,6 +15,13 @@ set -o pipefail
 [[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
 [[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
 
+BRANCH=$(git branch --show-current)
+[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+NPMUSER=$(npm whoami)
+[[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
+MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
+[[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
+
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
 # Use semver to get the new version from the semver level
@@ -33,7 +40,7 @@ CHANGED=$(yarn --silent lerna changed --all --json)
 CHANGELOG=$(GITHUB_AUTH="$2" node scripts/changelog.js "$CHANGED" "$VERSION")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
-echo "" >tmp.md
+echo "" >>tmp.md
 cat CHANGELOG.md >>tmp.md
 mv tmp.md CHANGELOG.md
 
@@ -44,6 +51,7 @@ DATE=$(date +"%Y-%m-%d")
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
 RELEASE_TAG=$RELEASE_TAG DATE=$DATE NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
 
+yarn format
 git add .
 git commit --message "Prepare for $RELEASE_TAG release"
 

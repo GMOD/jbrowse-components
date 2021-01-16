@@ -194,6 +194,40 @@ const Base1DView = types
       self.features = features
     },
 
+    zoomToDisplayedRegions(
+      leftPx: BpOffset | undefined,
+      rightPx: BpOffset | undefined,
+    ) {
+      if (leftPx === undefined || rightPx === undefined) return
+
+      const singleRefSeq =
+        leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
+      // zooming into one displayed Region
+      if (
+        (singleRefSeq && rightPx.offset < leftPx.offset) ||
+        leftPx.index > rightPx.index
+      ) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+      const startOffset = {
+        start: leftPx.start,
+        end: leftPx.end,
+        index: leftPx.index,
+        offset: leftPx.offset,
+      }
+      const endOffset = {
+        start: rightPx.start,
+        end: rightPx.end,
+        index: rightPx.index,
+        offset: rightPx.offset,
+      }
+      if (startOffset && endOffset) {
+        this.moveTo(startOffset, endOffset)
+      } else {
+        throw new Error('regions not found')
+      }
+    },
+
     // this makes a zoomed out view that shows all displayedRegions
     // that makes the overview bar square with the scale bar
     showAllRegions() {

@@ -18,6 +18,7 @@ import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+// misc
 import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
@@ -37,6 +38,8 @@ import LabelIcon from '@material-ui/icons/Label'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+
 export { default as ReactComponent } from './components/LinearGenomeView'
 
 export interface BpOffset {
@@ -47,6 +50,8 @@ export interface BpOffset {
   end?: number
   coord?: number
   reversed?: boolean
+  assemblyName?: string
+  oob?: boolean
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -116,6 +121,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
+      leftOffset: undefined as undefined | BpOffset,
+      rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
       get width(): number {
@@ -151,6 +158,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.displayedRegions.length > 0 &&
           assembliesInitialized
         )
+      },
+      get isSeqDialogDisplayed() {
+        return self.leftOffset && self.rightOffset
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -204,7 +214,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
-
       get displayedParentRegions() {
         const wholeRefSeqs = [] as Region[]
         const { assemblyManager } = getSession(self)
@@ -302,7 +311,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         return undefined
       },
-
       /**
        *
        * @param px - px in the view area, return value is the displayed regions
@@ -379,6 +387,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           oob: true,
           assemblyName: '',
           offset: 0,
+          start: 0,
+          end: 0,
           reversed: false,
         }
       },
@@ -432,7 +442,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
-
       setError(error: Error | undefined) {
         self.error = error
       },
@@ -473,6 +482,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ),
         )
         return newBpPerPx
+      },
+
+      setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
+        // sets offsets used in the get sequence dialog
+        self.leftOffset = left
+        self.rightOffset = right
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {
@@ -912,12 +927,39 @@ export function stateModelFactory(pluginManager: PluginManager) {
           session.notify('No regions found to navigate to', 'warning')
         }
       },
+      /**
+       * Helper method for the fetchSequence.
+       * Retrieves the corresponding regions that were selected by the rubberband
+       *
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @returns array of Region[]
+       */
+      getSelectedRegions(
+        leftOffset: BpOffset | undefined,
+        rightOffset: BpOffset | undefined,
+      ) {
+        const simView = Base1DView.create({
+          ...getSnapshot(self),
+          interRegionPaddingWidth: self.interRegionPaddingWidth,
+        })
+
+        simView.setVolatileWidth(self.width)
+        simView.zoomToDisplayedRegions(leftOffset, rightOffset)
+
+        return simView.dynamicBlocks.contentBlocks.map(region => {
+          return {
+            ...region,
+            start: Math.floor(region.start),
+            end: Math.ceil(region.end),
+          }
+        })
+      },
 
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
-
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
@@ -980,9 +1022,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp-basepair at which you want to center the view
-       * @param refName-refName of the displayedRegion you are centering at
-       * @param regionIndex-index of the displayedRegion
+       * @param bp - basepair at which you want to center the view
+       * @param refName - refName of the displayedRegion you are centering at
+       * @param regionIndex - index of the displayedRegion
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({

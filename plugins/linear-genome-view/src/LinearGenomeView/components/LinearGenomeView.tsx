@@ -18,6 +18,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import AboutDialog from './AboutDialog'
+import SequenceDialog from './SequenceDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -61,6 +62,14 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
           handleClose={() =>
             dialogTrack.setDialogComponent(undefined, undefined)
           }
+        />
+      ) : null}
+      {model.isSeqDialogDisplayed ? (
+        <SequenceDialog
+          model={model}
+          handleClose={() => {
+            model.setOffsets(undefined, undefined)
+          }}
         />
       ) : null}
       {!hideHeader ? (

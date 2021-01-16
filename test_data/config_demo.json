@@ -3,7 +3,7 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/v1.0.0/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/93ab2dc32cd32d8fb2eb93d2cf44af6841911448/dist/plugin.js"
     },
     {
       "name": "GDC",
@@ -207,6 +207,17 @@
       "adapter": {
         "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "segdups_ucsc_hg19",
+      "name": "UCSC SegDups",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "genomicSuperDups"
       }
     },
     {

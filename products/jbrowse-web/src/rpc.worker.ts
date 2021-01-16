@@ -129,6 +129,10 @@ getPluginManager()
     })
   })
   .catch(error => {
-    console.error('Worker failed to start:')
-    console.error(error)
+    // @ts-ignore
+    self.rpcServer = new RpcServer.Server({
+      ping: () => {
+        throw error
+      },
+    })
   })
