@@ -27,7 +27,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
    *
-   * the base class replaces the `renderProps.displayModel` param
+   * the base class replaces the `displayModel` param
    * (which on the client is a MST model) with a stub
    * that only contains the `selectedFeature`, since
    * this is the only part of the track model that most
@@ -37,11 +37,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs) {
-    args.renderProps = {
-      ...args.renderProps,
-      // @ts-ignore
-      blockKey: args.blockKey,
-
+    args = {
+      ...args,
       displayModel: {},
     }
 

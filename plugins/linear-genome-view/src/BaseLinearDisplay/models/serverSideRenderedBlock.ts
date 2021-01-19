@@ -226,7 +226,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         regions: [self.region],
         adapterConfig,
         rendererType: rendererType.name,
-        renderProps,
         sessionId,
         blockKey: self.key,
         timeout: 1000000, // 10000,
@@ -284,7 +283,10 @@ async function renderBlockEffect(
 
   const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
     rpcManager,
-    renderArgs,
+    {
+      ...renderArgs,
+      ...renderProps,
+    },
   )
   return {
     data,
