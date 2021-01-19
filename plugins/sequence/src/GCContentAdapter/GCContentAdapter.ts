@@ -11,11 +11,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
 
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-} from '@jbrowse/plugin-wiggle/src/statsUtil'
+import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
 
 export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   private sequenceAdapter: BaseFeatureDataAdapter
