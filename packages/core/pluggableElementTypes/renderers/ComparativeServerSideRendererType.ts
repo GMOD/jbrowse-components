@@ -2,24 +2,29 @@
 import { renderToString } from 'react-dom/server'
 import { filter, toArray } from 'rxjs/operators'
 import { Feature } from '../../util/simpleFeature'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { checkAbortSignal } from '../../util'
 import { Region } from '../../util/types'
 import RendererType from './RendererType'
-import SerializableFilterChain from './util/serializableFilterChain'
+import {
+  RenderArgs as BaseRenderArgs,
+  RenderArgsSerialized as BaseRenderArgSerialized,
+  RenderArgsDeserialized as BaseRenderArgsDeserialized,
+  ResultsSerialized,
+} from './ServerSideRendererType'
+import RpcManager from '../../rpc/RpcManager'
 
-export interface RenderArgs {
-  blockKey: string
-  sessionId: string
-  signal?: AbortSignal
-  filters?: any
-  dataAdapter: BaseFeatureDataAdapter
-  bpPerPx: number
-  regions?: any
-  config: Record<string, any>
-  renderProps: { displayModel: any }
-  width: number
-  height: number
+export interface RenderArgs extends Omit<BaseRenderArgs, 'displayModel'> {
+  displayModel: {}
+}
+
+interface RenderArgsSerialized
+  extends Omit<BaseRenderArgSerialized, 'displayModel'> {
+  displayModel: {}
+}
+
+interface RenderArgsDeserialized
+  extends Omit<BaseRenderArgsDeserialized, 'displayModel'> {
+  displayModel: {}
 }
 
 export default class ComparativeServerSideRenderer extends RendererType {
@@ -46,7 +51,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
   }
 
   // deserialize some of the results that came back from the worker
-  deserializeResultsInClient(result: { features: any }, args: RenderArgs) {
+  deserializeResultsInClient(result: ResultsSerialized, args: RenderArgs) {
     // @ts-ignore
     result.blockKey = args.blockKey
     return result
@@ -57,7 +62,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * inflate arguments as necessary. called in the worker process.
    * @param args - the converted arguments to modify
    */
-  deserializeArgsInWorker(args: Record<string, any>) {
+  deserializeArgsInWorker(args: RenderArgsSerialized) {
     if (this.configSchema) {
       const config = this.configSchema.create(args.config || {})
       args.config = config
@@ -77,7 +82,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then
    * calls `render` with the RPC manager.
    */
-  async renderInClient(rpcManager: any, args: RenderArgs) {
+  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     const result = await rpcManager.call(
@@ -86,8 +91,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
       serializedArgs,
     )
 
-    this.deserializeResultsInClient(result, args)
-    return result
+    // @ts-ignore
+    const deserialized = this.deserializeResultsInClient(result, args)
+    return deserialized
   }
 
   /**
@@ -95,15 +101,13 @@ export default class ComparativeServerSideRenderer extends RendererType {
    * @param feature -
    * @returns true if this feature passes all configured filters
    */
-  featurePassesFilters(renderArgs: RenderArgs, feature: Feature) {
-    const filterChain = new SerializableFilterChain({
-      filters: renderArgs.filters,
-    })
-    return filterChain.passes(feature, renderArgs)
+  featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
+    if (!renderArgs.filters) return true
+    return renderArgs.filters.passes(feature, renderArgs)
   }
 
   // render method called on the worker
-  async renderInWorker(args: RenderArgs) {
+  async renderInWorker(args: RenderArgsSerialized) {
     checkAbortSignal(args.signal)
     this.deserializeArgsInWorker(args)
     checkAbortSignal(args.signal)
@@ -163,7 +167,7 @@ export default class ComparativeServerSideRenderer extends RendererType {
       .toPromise()
   }
 
-  freeResourcesInClient(rpcManager: any, args: RenderArgs) {
+  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const serializedArgs = this.serializeArgsInClient(args)
 
     return rpcManager.call(args.sessionId, 'freeResources', serializedArgs)
