@@ -25,10 +25,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { getSnapshot } from 'mobx-state-tree'
 import { toUrlSafeB64 } from '@jbrowse/core/util'
-import {
-  shareSessionToDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { shareSessionToDynamo } from './sessionSharing'
 import { SessionModel } from './sessionModelFactory'
 
 const useStyles = makeStyles(theme => ({
@@ -204,15 +201,8 @@ const ShareDialog = observer(
           try {
             setLoading(true)
             const locationUrl = new URL(window.location.href)
-            const scannedSnap = await scanSharedSessionForCallbacks(snap)
-            if (JSON.stringify(snap) !== JSON.stringify(scannedSnap)) {
-              session.notify(
-                'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
-                'warning',
-              )
-            }
             const result = await shareSessionToDynamo(
-              scannedSnap,
+              snap,
               url,
               locationUrl.href,
             )

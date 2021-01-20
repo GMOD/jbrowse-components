@@ -35,6 +35,7 @@ import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
+import SessionWarningModal from './sessionWarningModal'
 
 function NoConfigMessage() {
   const s = window.location.search
@@ -102,6 +103,8 @@ const SessionLoader = types
   })
   .volatile(() => ({
     blankSession: false as any,
+    trustSharedSession: false as any,
+    test: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
@@ -168,6 +171,12 @@ const SessionLoader = types
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
+    },
+    setTrustSharedSession(flag: boolean) {
+      self.trustSharedSession = flag
+    },
+    setTest(flag: boolean) {
+      self.test = flag
     },
   }))
   .actions(self => ({
@@ -254,14 +263,25 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const scannedSession = await scanSharedSessionForCallbacks(session)
+      const hasCallbacks = await scanSharedSessionForCallbacks(session)
       // if something removed warn
-      if (JSON.stringify(session) !== JSON.stringify(scannedSession))
-        session.notify(
-          'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
-          'warning',
+      let confirmedSession = true
+      if (hasCallbacks) {
+        // below is placeholder while working on custom module
+        // eslint-disable-next-line no-alert
+        confirmedSession = window.confirm(
+          'This shared session has custom callbacks. Please confirm if you trust the source',
         )
-      self.setSessionSnapshot({ ...scannedSession, id: shortid() })
+      }
+      confirmedSession
+        ? self.setSessionSnapshot({ ...session, id: shortid() })
+        : self.setBlankSession(true)
+
+      // TODO: working on making module show. remove test volatile when done
+      // if (hasCallbacks) self.setTest(true)
+      // self.trustSharedSession
+      //   ? self.setSessionSnapshot({ ...session, id: shortid() })
+      //   : self.setBlankSession(true)
     },
 
     async decodeEncodedUrlSession() {
@@ -331,6 +351,10 @@ export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
 
+  // here run urlparser on config to get origin out of it
+  // new URL(url) and get origin, check if it's same as window.location origin
+  // if not pop up warning every time
+  // only in production, production flag is imported from jbrowse-components/packages/core/util/index.ts
   const loader = SessionLoader.create({
     configPath: load(config),
     sessionQuery: load(session),
@@ -358,7 +382,7 @@ const Renderer = observer(
     initialSessionQuery: string | null | undefined
   }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
-    const { sessionError, configError, ready } = loader
+    const { sessionError, configError, ready, test } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
@@ -526,6 +550,11 @@ const Renderer = observer(
       }
       return <JBrowse pluginManager={pm} />
     }
+    if (test) {
+      return (
+        <SessionWarningModal userInputFunction={loader.setTrustSharedSession} />
+      )
+    }
     return <Loading />
   },
 )
@@ -560,3 +589,5 @@ export default ({ initialTimestamp }: { initialTimestamp: number }) => {
     </ErrorBoundary>
   )
 }
+
+export type SessionLoader = Instance<typeof SessionLoader>

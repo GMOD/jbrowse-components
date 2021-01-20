@@ -2,6 +2,7 @@ import { toUrlSafeB64 } from '@jbrowse/core/util'
 
 import AES from 'crypto-js/aes'
 import Utf8 from 'crypto-js/enc-utf8'
+import { anywhereFunctionRegexp } from '@jbrowse/core/util/functionStrings'
 
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {
@@ -25,34 +26,30 @@ const decrypt = (text: string, password: string) => {
 }
 
 // recusively checks config for callbacks and removes them
+// was used to parse and delete, saved if needed
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const deleteCallbacks = (key: any) => {
-  if (Array.isArray(key)) {
-    key.forEach(a => {
-      deleteCallbacks(a)
-    })
-  } else if (key && typeof key === 'object') {
-    Object.entries(key).forEach(([innerKey, value]) => {
-      if (typeof value === 'string' && value.startsWith('function')) {
-        delete key[innerKey] // removing sets it to the default callback
-      } else deleteCallbacks(key[innerKey])
-    })
-  }
-}
+// const deleteCallbacks = (key: any) => {
+//   if (Array.isArray(key)) {
+//     key.forEach(a => {
+//       deleteCallbacks(a)
+//     })
+//   } else if (key && typeof key === 'object') {
+//     Object.entries(key).forEach(([innerKey, value]) => {
+//       if (typeof value === 'string' && value.startsWith('function')) {
+//         delete key[innerKey] // removing sets it to the default callback
+//       } else deleteCallbacks(key[innerKey])
+//     })
+//   }
+// }
 
+// potential function regex:  function\s*([A-z0-9]+)?\s*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)\s*\{(?:[^}{]+|\{(?:[^}{]+|\{[^}{]*\})*\})*\}
+// use funciton regex imported and scan the whole object
 export async function scanSharedSessionForCallbacks(
   session: Record<string, unknown>,
 ) {
-  const scannedSession = JSON.parse(JSON.stringify(session))
-  const { sessionTracks, sessionConnections, views } = scannedSession
-  if (sessionTracks) deleteCallbacks(sessionTracks)
-  if (sessionConnections) deleteCallbacks(sessionConnections)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  views.forEach((view: any) => {
-    if (view.spreadsheet) deleteCallbacks(view.spreadsheet.columns) // derivation function text can have callbacks
-  })
-
-  return scannedSession
+  // see if this works, if so dont need
+  const stringedSession = JSON.stringify(session)
+  return anywhereFunctionRegexp.test(stringedSession)
 }
 
 function getErrorMsg(err: string) {
