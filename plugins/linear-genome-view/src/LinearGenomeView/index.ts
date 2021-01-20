@@ -39,6 +39,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { assemblyConfigSchemas } from '@jbrowse/core/assemblyManager'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -687,7 +688,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )
           }
           if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            const newDisplayedRegion = regions.find(
+            // TODO: handle changedAssembly and changing tracks
+            const newDisplayedRegion = assembly.regions.find(
               region => region.refName === canonicalRefName,
             )
             if (newDisplayedRegion) {
