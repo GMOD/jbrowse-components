@@ -3,7 +3,7 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/93ab2dc32cd32d8fb2eb93d2cf44af6841911448/dist/plugin.js"
+      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/v1.0.0/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "GDC",
