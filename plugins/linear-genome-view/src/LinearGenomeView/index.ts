@@ -694,7 +694,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )
           }
           if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            console.log('regions', regions)
             const newDisplayedRegion = regions.find(
               region => region.refName === canonicalRefName,
             )
