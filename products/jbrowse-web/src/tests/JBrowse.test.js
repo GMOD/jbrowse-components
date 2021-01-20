@@ -1,7 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, wait } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
@@ -77,13 +77,21 @@ test('variant track test - opens feature detail view', async () => {
   state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
     'test-vcf-604452',
   )
-  const feats1 = await findAllByTestId('test-vcf-604452')
+  const feats1 = await findAllByTestId(
+    'test-vcf-604452',
+    {},
+    { timeout: 10000 },
+  )
   fireEvent.click(feats1[0])
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
   fireEvent.click(await findByTestId('drawer-close'))
-  const feats2 = await findAllByTestId('test-vcf-604452')
+  const feats2 = await findAllByTestId(
+    'test-vcf-604452',
+    {},
+    { timeout: 10000 },
+  )
   fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
@@ -99,11 +107,12 @@ describe('nclist track test with long name', () => {
     await findByText('Help')
     state.session.views[0].setNewView(1, -539)
     fireEvent.click(await findByTestId('htsTrackEntry-nclist_long_names'))
-    await expect(
-      findByText(
-        'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
-      ),
-    ).resolves.toBeTruthy()
+
+    await findByText(
+      'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
+      {},
+      { timeout: 10000 },
+    )
   })
 })
 describe('test configuration editor', () => {
@@ -124,7 +133,7 @@ describe('test configuration editor', () => {
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
-    await wait(async () => {
+    await waitFor(async () => {
       const feats = await findAllByTestId('box-test-vcf-604452')
       expect(feats[0]).toHaveAttribute('fill', 'green')
     })
@@ -162,7 +171,7 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('About this track'))
-  await findAllByText('SQ')
+  await findAllByText(/SQ/, {}, { timeout: 10000 })
 })
 
 test('export svg', async () => {

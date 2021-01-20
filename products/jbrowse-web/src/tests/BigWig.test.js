@@ -27,7 +27,7 @@ beforeEach(() => {
 })
 
 describe('bigwig', () => {
-  xit('open a bigwig track', async () => {
+  it('open a bigwig track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -36,7 +36,13 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      {
+        timeout: 10000,
+      },
+    )
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
     const bigwigBuf = Buffer.from(bigwigData, 'base64')
@@ -44,8 +50,8 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  })
-  xit('open a bigwig line track 2', async () => {
+  }, 15000)
+  it('open a bigwig line track 2', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -54,7 +60,13 @@ describe('bigwig', () => {
     await findByText('Help')
     state.session.views[0].setNewView(10, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line'))
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      {
+        timeout: 10000,
+      },
+    )
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
     const bigwigBuf = Buffer.from(bigwigData, 'base64')
@@ -62,8 +74,8 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  })
-  xit('open a bigwig density track', async () => {
+  }, 15000)
+  it('open a bigwig density track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findAllByTestId, findByText } = render(
@@ -74,7 +86,13 @@ describe('bigwig', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_microarray_density'),
     )
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      {
+        timeout: 10000,
+      },
+    )
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
     const bigwigBuf = Buffer.from(bigwigData, 'base64')
@@ -82,5 +100,5 @@ describe('bigwig', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  })
+  }, 15000)
 })

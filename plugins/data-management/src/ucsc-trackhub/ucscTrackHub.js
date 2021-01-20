@@ -1,7 +1,10 @@
 import objectHash from 'object-hash'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
-import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
+import {
+  generateUnsupportedTrackConf,
+  generateUnknownTrackConf,
+} from '@jbrowse/core/util/tracks'
 import ucscAssemblies from './ucscAssemblies'
 
 export { ucscAssemblies }
@@ -96,6 +99,7 @@ function makeTrackConfig(
     }
   else bigDataLocation = { localPath: track.get('bigDataUrl') }
   let bigDataIndexLocation
+
   switch (baseTrackType) {
     case 'bam':
       if (trackDbFileLocation.uri)
@@ -152,11 +156,19 @@ function makeTrackConfig(
         categories,
       )
     case 'bigBarChart':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+        renderer: {
+          type: 'SvgFeatureRenderer',
+        },
+      }
     case 'bigBed':
       return {
         type: 'FeatureTrack',
@@ -168,30 +180,73 @@ function makeTrackConfig(
           bigBedLocation: bigDataLocation,
         },
       }
+    case 'bigGenePred':
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+      }
     case 'bigChain':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+        renderer: {
+          type: 'SvgFeatureRenderer',
+        },
+      }
     case 'bigInteract':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+        renderer: {
+          type: 'SvgFeatureRenderer',
+        },
+      }
     case 'bigMaf':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+        renderer: {
+          type: 'SvgFeatureRenderer',
+        },
+      }
     case 'bigPsl':
-      return generateUnsupportedTrackConf(
-        track.get('shortLabel'),
-        baseTrackType,
-        categories,
-      )
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+        renderer: {
+          type: 'SvgFeatureRenderer',
+        },
+      }
     case 'bigWig':
       return {
         type: 'QuantitativeTrack',
@@ -262,6 +317,17 @@ function makeTrackConfig(
         baseTrackType,
         categories,
       )
+    case 'bigNarrowPeak':
+      return {
+        type: 'FeatureTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: bigDataLocation,
+        },
+      }
     case 'peptideMapping':
       return generateUnsupportedTrackConf(
         track.get('shortLabel'),
@@ -310,7 +376,29 @@ function makeTrackConfig(
         baseTrackType,
         categories,
       )
+    case 'hic':
+      return {
+        type: 'HicTrack',
+        name: track.get('shortLabel'),
+        description: track.get('longLabel'),
+        category: categories,
+        adapter: {
+          type: 'HicAdapter',
+          hicLocation: bigDataLocation,
+        },
+      }
+    case 'halSnake':
+      return generateUnsupportedTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
+
     default:
-      throw new Error(`Unsupported track type: ${baseTrackType}`)
+      return generateUnknownTrackConf(
+        track.get('shortLabel'),
+        baseTrackType,
+        categories,
+      )
   }
 }

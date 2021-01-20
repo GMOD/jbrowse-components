@@ -48,6 +48,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getReferenceSequenceNames(opts)
   }
 
+  async getHeader() {
+    return this.bed.getHeader()
+  }
+
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       await this.bed.getLines(query.refName, query.start, query.end, {

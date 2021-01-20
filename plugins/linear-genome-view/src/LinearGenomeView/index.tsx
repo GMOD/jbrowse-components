@@ -18,6 +18,7 @@ import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+// misc
 import { transaction, autorun } from 'mobx'
 import {
   getSnapshot,
@@ -39,6 +40,8 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import { saveAs } from 'file-saver'
 import { renderToSvg } from './components/LinearGenomeView'
 
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+
 export { default as ReactComponent } from './components/LinearGenomeView'
 
 export interface BpOffset {
@@ -49,6 +52,8 @@ export interface BpOffset {
   end?: number
   coord?: number
   reversed?: boolean
+  assemblyName?: string
+  oob?: boolean
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -106,7 +111,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      minimumBlockWidth: 20,
+      minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
       error: undefined as undefined | Error,
 
@@ -118,6 +123,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
+      leftOffset: undefined as undefined | BpOffset,
+      rightOffset: undefined as undefined | BpOffset,
     }))
     .views(self => ({
       get width(): number {
@@ -140,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
           if (
             assemblyManager.assemblyList
-              .map((asm: { name: string }) => asm.name)
+              ?.map((asm: { name: string }) => asm.name)
               .includes(assemblyName)
           ) {
             return (assemblyManager.get(assemblyName) || {}).initialized
@@ -153,6 +160,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.displayedRegions.length > 0 &&
           assembliesInitialized
         )
+      },
+      get isSeqDialogDisplayed() {
+        return self.leftOffset && self.rightOffset
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -171,6 +181,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           .map(t => t.displays[0].height)
           .reduce((a, b) => a + b, 0)
       },
+
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
@@ -193,7 +204,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get maxBpPerPx() {
-        return this.totalBp / 1000
+        return this.totalBp / (self.width * 0.9)
       },
 
       get minBpPerPx() {
@@ -205,7 +216,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
-
       get displayedParentRegions() {
         const wholeRefSeqs = [] as Region[]
         const { assemblyManager } = getSession(self)
@@ -282,6 +292,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }) {
         let offsetBp = 0
 
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
         const index = self.displayedRegions.findIndex((r, idx) => {
           if (refName === r.refName && coord >= r.start && coord <= r.end) {
             if (regionNumber ? regionNumber === idx : true) {
@@ -289,7 +300,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               return true
             }
           }
-          offsetBp += r.end - r.start
+          offsetBp += r.end - r.start + interRegionPaddingBp
           return false
         })
         const foundRegion = self.displayedRegions[index]
@@ -324,25 +335,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             index: 0,
           }
         }
-        if (bp >= this.totalBp) {
-          const region = self.displayedRegions[n - 1]
-          const len = region.end - region.start
-          const offset = bp - this.totalBp + len
-          return {
-            ...getSnapshot(region),
-            oob: true,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index: n - 1,
-          }
-        }
+
+        const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
+        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+
         for (let index = 0; index < self.displayedRegions.length; index += 1) {
           const region = self.displayedRegions[index]
           const len = region.end - region.start
+          const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
-            const offset = bp - bpSoFar
             return {
               ...getSnapshot(region),
               oob: false,
@@ -353,10 +354,47 @@ export function stateModelFactory(pluginManager: PluginManager) {
               index,
             }
           }
-          bpSoFar += len
+
+          // add the interRegionPaddingWidth if the boundary is in the screen
+          // e.g. offset>0 && offset<width
+          if (
+            region.end - region.start > minimumBlockBp &&
+            offset / self.bpPerPx > 0 &&
+            offset / self.bpPerPx < self.width
+          ) {
+            bpSoFar += len + interRegionPaddingBp
+          } else {
+            bpSoFar += len
+          }
         }
-        throw new Error('pxToBp failed to map to a region')
+
+        if (bp >= bpSoFar) {
+          const region = self.displayedRegions[n - 1]
+          const len = region.end - region.start
+          const offset = bp - bpSoFar + len
+          return {
+            ...getSnapshot(region),
+            oob: true,
+            offset,
+            coord: region.reversed
+              ? Math.floor(region.end - offset) + 1
+              : Math.floor(region.start + offset) + 1,
+            index: n - 1,
+          }
+        }
+        return {
+          coord: 0,
+          index: 0,
+          refName: '',
+          oob: true,
+          assemblyName: '',
+          offset: 0,
+          start: 0,
+          end: 0,
+          reversed: false,
+        }
       },
+
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
@@ -406,7 +444,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
-
       setError(error: Error | undefined) {
         self.error = error
       },
@@ -447,6 +484,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ),
         )
         return newBpPerPx
+      },
+
+      setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
+        // sets offsets used in the get sequence dialog
+        self.leftOffset = left
+        self.rightOffset = right
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {
@@ -886,12 +929,39 @@ export function stateModelFactory(pluginManager: PluginManager) {
           session.notify('No regions found to navigate to', 'warning')
         }
       },
+      /**
+       * Helper method for the fetchSequence.
+       * Retrieves the corresponding regions that were selected by the rubberband
+       *
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
+       * @returns array of Region[]
+       */
+      getSelectedRegions(
+        leftOffset: BpOffset | undefined,
+        rightOffset: BpOffset | undefined,
+      ) {
+        const simView = Base1DView.create({
+          ...getSnapshot(self),
+          interRegionPaddingWidth: self.interRegionPaddingWidth,
+        })
+
+        simView.setVolatileWidth(self.width)
+        simView.zoomToDisplayedRegions(leftOffset, rightOffset)
+
+        return simView.dynamicBlocks.contentBlocks.map(region => {
+          return {
+            ...region,
+            start: Math.floor(region.start),
+            end: Math.ceil(region.end),
+          }
+        })
+      },
 
       // schedule something to be run after the next time displayedRegions is set
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
-
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
@@ -954,9 +1024,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp-basepair at which you want to center the view
-       * @param refName-refName of the displayedRegion you are centering at
-       * @param regionIndex-index of the displayedRegion
+       * @param bp - basepair at which you want to center the view
+       * @param refName - refName of the displayedRegion you are centering at
+       * @param regionIndex - index of the displayedRegion
        */
       centerAt(bp: number, refName: string, regionIndex: number) {
         const centerPx = self.bpToPx({
@@ -977,6 +1047,35 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showAllRegions() {
         self.zoomTo(self.maxBpPerPx)
         this.center()
+      },
+
+      showAllRegionsInAssembly(assemblyName?: string) {
+        const session = getSession(self)
+        const { assemblyManager } = session
+        if (!assemblyName) {
+          const assemblyNames = [
+            ...new Set(
+              self.displayedRegions.map(region => region.assemblyName),
+            ),
+          ]
+          if (assemblyNames.length > 1) {
+            session.notify(
+              `Can't perform this with multiple assemblies currently`,
+            )
+            return
+          }
+
+          ;[assemblyName] = assemblyNames
+        }
+        const assembly = assemblyManager.get(assemblyName)
+        if (assembly) {
+          const { regions } = getSnapshot(assembly)
+          if (regions) {
+            this.setDisplayedRegions(regions)
+            self.zoomTo(self.maxBpPerPx)
+            this.center()
+          }
+        }
       },
 
       setDraggingTrackId(idx?: string) {
@@ -1038,20 +1137,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
         get menuItems(): MenuItem[] {
-          const session = getSession(self)
           const menuItems: MenuItem[] = [
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: TrackSelectorIcon,
-              disabled:
-                isSessionModelWithWidgets(session) &&
-                session.visibleWidget &&
-                session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-                // @ts-ignore
-                session.visibleWidget.view &&
-                // @ts-ignore
-                session.visibleWidget.view.id === self.id,
             },
             {
               label: 'Horizontally flip',
@@ -1059,9 +1149,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.horizontallyFlip,
             },
             {
-              label: 'Show all regions',
+              label: 'Show all regions in assembly',
               icon: VisibilityIcon,
-              onClick: self.showAllRegions,
+              onClick: self.showAllRegionsInAssembly,
             },
             {
               label: 'Show center line',

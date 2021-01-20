@@ -9,6 +9,7 @@ export default pluginManager => {
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const IconButton = jbrequire('@material-ui/core/IconButton')
+  const { FormGroup, TablePagination } = jbrequire('@material-ui/core')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const Grid = jbrequire('@material-ui/core/Grid')
   const { ResizeHandle } = jbrequire('@jbrowse/core/ui')
@@ -20,55 +21,57 @@ export default pluginManager => {
 
   const headerHeight = 52
   const colFilterHeight = 46
-  const statusBarHeight = 20
+  const statusBarHeight = 40
 
-  const useStyles = makeStyles(theme => {
-    return {
-      root: {
-        position: 'relative',
-        marginBottom: theme.spacing(1),
-        background: 'white',
-        overflow: 'hidden',
-      },
-      header: {
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        height: headerHeight,
-        // background: '#eee',
-        // borderBottom: '1px solid #a2a2a2',
-        paddingLeft: theme.spacing(1),
-      },
-      contentArea: { overflow: 'auto' },
-      columnFilter: {
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        boxSizing: 'border-box',
-        height: headerHeight,
-        // background: '#eee',
-        // borderBottom: '1px solid #a2a2a2',
-        paddingLeft: theme.spacing(1),
-      },
-      viewControls: {
-        margin: 0,
-      },
-      rowCount: {
-        marginLeft: theme.spacing(1),
-      },
-      statusBar: {
-        position: 'absolute',
-        left: 0,
-        bottom: 0,
-        height: statusBarHeight,
-        width: '100%',
-        background: '#fafafa',
-        boxSizing: 'border-box',
-        borderTop: '1px outset #b1b1b1',
-        paddingLeft: theme.spacing(1),
-      },
-      textFilterControlAdornment: { marginRight: '-18px' },
-    }
-  })
+  const useStyles = makeStyles(theme => ({
+    root: {
+      position: 'relative',
+      marginBottom: theme.spacing(1),
+      background: 'white',
+      overflow: 'hidden',
+    },
+    header: {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      boxSizing: 'border-box',
+      height: headerHeight,
+      paddingLeft: theme.spacing(1),
+    },
+    contentArea: { overflow: 'auto' },
+    columnFilter: {
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      boxSizing: 'border-box',
+      height: headerHeight,
+      paddingLeft: theme.spacing(1),
+    },
+    viewControls: {
+      margin: 0,
+    },
+    rowCount: {
+      marginLeft: theme.spacing(1),
+    },
+    statusBar: {
+      position: 'absolute',
+      background: theme.palette.background.light,
+      left: 0,
+      bottom: 0,
+      height: statusBarHeight,
+      width: '100%',
+      boxSizing: 'border-box',
+      borderTop: '1px outset #b1b1b1',
+      paddingLeft: theme.spacing(1),
+    },
+    verticallyCenter: {
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'column',
+    },
+    spacer: {
+      flexGrow: 1,
+    },
+    textFilterControlAdornment: { marginRight: '-18px' },
+  }))
 
   const ViewControls = observer(({ model }) => {
     const classes = useStyles()
@@ -132,6 +135,17 @@ export default pluginManager => {
     const { spreadsheet, filterControls } = model
 
     const colFilterCount = filterControls.columnFilters.length
+    const [page, setPage] = React.useState(0)
+    const [rowsPerPage, setRowsPerPage] = React.useState(100)
+
+    const handleChangePage = (event, newPage) => {
+      setPage(newPage)
+    }
+
+    const handleChangeRowsPerPage = event => {
+      setRowsPerPage(+event.target.value)
+      setPage(0)
+    }
 
     return (
       <div
@@ -180,6 +194,8 @@ export default pluginManager => {
             }}
           >
             <Spreadsheet
+              page={page}
+              rowsPerPage={rowsPerPage}
               model={spreadsheet}
               height={
                 model.height -
@@ -195,7 +211,24 @@ export default pluginManager => {
           className={classes.statusBar}
           style={{ display: model.mode === 'display' ? undefined : 'none' }}
         >
-          <RowCountMessage spreadsheet={spreadsheet} />
+          {spreadsheet ? (
+            <FormGroup row>
+              <div className={classes.verticallyCenter}>
+                <RowCountMessage spreadsheet={spreadsheet} />
+              </div>
+              <div className={classes.spacer} />
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100, 1000]}
+                count={spreadsheet.rowSet.count}
+                component="div"
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+              />
+              <div className={classes.spacer} />
+            </FormGroup>
+          ) : null}
         </div>
         {model.hideVerticalResizeHandle ? null : (
           <ResizeHandle

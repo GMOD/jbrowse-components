@@ -162,6 +162,20 @@ Here is an example of before and after horizontally flipping the view
 ![](./img/horizontally_flip.png)
 Before and after horizontally flipping
 
+## Sequence track
+
+The sequence track shows the reference sequence and a three-frame translation.
+If the view is horizontally flipped, the sequence is "reverse complemented" so
+the bottom three translation frames go to the top, and the top frames go to the
+bottom.
+
+![](./img/sequence_track.png)
+The sequence track, with a positive strand gene for context, shows the start
+codon on the first exon in the top-three rows of the translation frame. The
+bottom panel shows the same view but with the view horizontally flipped, and
+the gene is now shown reversed and the start codon is in the bottom translation
+frames.
+
 ## Alignments tracks
 
 Visualizing alignments is an important aspect of genome browsers. This guide
@@ -238,10 +252,6 @@ Here is how to turn on the center line
 1. Open the hamburger menu in the top left of the linear genome view
 2. Select "Show center line"
 
-<!--
-http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJzNVU1vm0AQ_SvWnmmCQz65pYmapHJcJ7GaVlVljWEMKy8L2l0TLIv_3llwAMckh6qHHnzwzJt58_GY3TAJCTKf3UmDkQLDUzkwqM0AC0gygcxhCaiIS-a7DgsVvKB65qGJme-dHzss5_iimf9rw3hIaXibZmbTULhZZ5ZgxCWCukGZJvidgsiTLhYazaRg_vDc9Y7ODi6G3pHnnXpn5w6bZxNU1uceuPQ35DoTsMbwESNKXlMqXIzr8gMTXVJGbUCZqlKUVM6J67pDh2A5Ko1kWIDQ6DDQGpO5WG-D81TkacHK31SsgmDZ6adY3l9M5DK_bRu5FDySCUqjpxZMjhh5FBPt0QkRB6lc8GhVz6BJPptDQsgJF7jK6jh_S_FzdHLj_Rjfr4uWo4tr8w_d_fyb_pCqj7twh3-WVRDyym7fn3SqDIYHhBg0iO6E7DheZ0QjCoBWnKq1tbazsB4IITOoOkV9huRya6SNQjJKg6buleKEsCKZhWDgsGY43CuKlQ7JKsTCBom_SEA_zsqytEKgPIq0YMPrgT1uTXuTbBwU95RHXxDMSmEPvMdZVmxP48lVSsqDCHc3jsdfn29OJw-dr2MP2279-IOl94T1bl7LLNjiPlr_LuwfaaBTY6sFvZr_52p5K5dOG30i6PFWOTQKDIw9W9bKZURgW6OO05fXCOYbtcLaVouvttiDFPMQbxFCy7a9Xq3pG8XbA9y4quU_VZSpmtalxZxIVBDzAASrSSqtjGCOQne5r2iJqOyhbvmbix-hqebQTTft0jXyfh_RyP32Pch1h45Z3QsBWXW6NzS0BRdU4BQLY6dYPz59j44dPASG53j9pvyy-pYkcRH4TtJ7IQOsHOUf_vx6KA
-!-->
-
 ![](./img/alignments_center_line.png)
 Illustrates before and after turning on the center line. The center line is an
 indicator that shows what base pair underlies the center of the view. Note that
@@ -259,19 +269,24 @@ specific base-pair mutation at the position crossing the center line (which is
    track label
 2. Select 'Sort by'->'Base pair'
 
-<!--
-http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJzNVcFO20AQ_RW0Zzc4JBTwLYAoSJRGkLZSqyqaeCfrFeu1tbsxiSL_O7N2sA0xHKoeeuCQmTfz3s48xlumIUUWsRvtUBhwMtMHDq07wDWkuUIWsBSMkJpFYcC4gSc0PyV3CYtGp-OAFRKfLIt-b5nk1Ea2bea-DZW7Te4JbqVGMF9QZyn-oCLKZMulRTdds2h4Go6OTgZnw9HRaPR5dHIasEU-ReNz4SCkn1zaXMEG-T0Kal5TGlze1fJjJybU0TowrlKKmuQch2E4DAhWoLFIgSUoiwEDazFdqM2uuMhUka1Z-YfEGogfO-9ZP349m-rH4rp9yERJoVPUzs48mBIJSpEQ7dExEceZXkqxqmfQNJ8vICXkVCpc5XVdtKNIr_gv8R3uxrrl6OLa_sNwv_-2v6R6xw1_xT_PKwhldffdn2xmHPIBIQ4aRHdCfhwvM6IRxUArzszGR9tZ-AxwyB2ajqhzSCe7IG0U0tssbnSvjCSEN8mcg4PDmuFwTxQrA7IVx7UvUn_RgP4kK8vSG4H6GPKCL68Hdr8L7U2ySVDdQyGuENzKYA-8J1lWbA9304uMnAcCX298gsKdXy7iol34Hrbd-viDpfeU9W7e6jze4T5a_2vYP_JAR2PrBbta_OdueWuXzjP6TNCTrXpYVBg7f7Z8VGpBYK_RJtnTSwWLnFlhHavNV0f8QUokx2sE7tl216sNfaN6f4CbVLX8h4oyM7NaWiKJxMSJjEGxmqTyyi0sUNku9wUtEY0_1C1_c_EFumoO3XazLl1j7_cRjd2v34NcduiY971SkFene0tDW0pFAme4dn6K9cen76PjBw-xkwVevpFfVv9LmrgIfKPpe6FjrBLlMyhVeuQ
--->
-
 ![](./img/alignments_sort_by_base.png)
 Illustrating the pileup re-ordering that happens when turning on the
 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each
 read underlies the current center line position (the center line is 1bp wide,
 so sorted by that exact letter)
 
-There are other sorting options available and more to come. If you have any
-requests please drop us a line via github
-[here](https://github.com/GMOD/jbrowse-components/issues)
+### Sort, color and filter by tag
+
+We can now also do things like
+
+- Sort by tag
+- Filter by tag
+- Color by tag
+
+With these features, we can create very expressive views of alignments tracks
+
+![](./img/alignments/out-fs8.png)
+Figure showing a step-by-step of doing sort and color by HP tag to visualize the HP tagged reads showing haplotype
 
 ## BigWig tracks
 
@@ -281,11 +296,51 @@ signal, can often be done by using BigWig files
 ![](./img/bigwig_xyplot.png)
 This figure shows a BigWig using the XY plot renderer
 
-![](./img/bigwig_line.png)
-Line plot version of a BigWig
+### Viewing whole-genome coverage for profiling CNV
 
-There are many options for controlling the BigWig which can be accessed from
-the UI. See the [bigwig configuration guide](config_guide#wiggle-config)
+The latest jbrowse also allows refining the resolution of BigWig
+tracks, and viewing whole genome coverage. This allows us to get detailed
+global views of CNV for example from whole-genome coverage profiling
+
+Here is a short picture guide to setup a whole-genome view of a BigWig
+for CNV coverage visualization
+
+1. Open your BigWig track
+2. Go to the view menu and select "Show all assembly regions"
+3. Adjust the "Autoscale type" to your liking, the new options for "Local
+   +/- 3sd" allows the autoscaling to avoid outliers
+4. Go to the track menu and select "Turn off histogram fill", which then
+   shows only a dot for each point on the graph
+5. Go to the track menu and select "Resolution->Finer resolution" a
+   couple times until resolution looks nice
+
+Also note: all tracks have a drag handle on the bottom of it which you
+can drag down to make the track taller
+
+![](./img/bigwig/out-fs8.png)
+Figure showing the step-by-step way to make a whole-genome CNV profile of
+a coverage BigWig
+
+## Variant tracks
+
+Visualizing variant tracks from the VCF format alongside the original alignment
+evidence track is a common workflow for validating your results. In JBrowse 2
+we can open a variant track and an alignments track as shown below
+
+![](./img/variant_with_pileup.png)
+Variant track indicating a SNP alongside the alignment track evidence
+
+### Variant widget
+
+The variant features have a specialized widget that contains a table
+indicating all the calls that were made in a multi-sample VCF. Some VCF files,
+like the 1000 genomes VCF, can contain thousands of samples in a single file.
+This table can display the details
+
+![](./img/variant_panel.png)
+Figure showing the variant feature sidebar with a filtered by genotype (with
+alternative allele '1'). Users can also filter by sample name or other
+attributes
 
 ## Linear synteny and dotplot views
 
@@ -339,7 +394,20 @@ See the [linear synteny
 configuration](config_guide#configuring-linear-synteny-views) for more details
 on manually configuring the synteny view
 
-## Long read vs reference plots
+### Opening a synteny view from a dotplot view
+
+We have designed JBrowse 2 to be able to open up a synteny view from a dotplot
+view. This is enabled by "display modes" so that the same track can be
+displayed in different contexts.
+
+Here is a short demo that shows opening a synteny view from a dotplot view
+selection
+
+![](./img/synteny_from_dotplot_view.png)
+Figure showing the click and drag selection over the dotplot view prompts you
+to open up a linear synteny view from the selected region
+
+### Long read vs reference plots
 
 One can also launch a dotplot view that compares a long read to the reference
 genome by
@@ -361,17 +429,7 @@ juicebox/igv.js team to visualize it in jbrowse.
 
 Currently configuration options are basic for Hi-C tracks, see
 [configuration](config_guide#hictrack-config) for info about configuring Hi-C
-
 tracks
-
-<!--
-image info:
-window.innerWidth
-1378
-window.innerHeight
-513
-https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=test_data%2Fconfig_demo.json&session=eJztVctu2kAU_RU0q1Yixjbh5V0e5NFSioA2UqsKje2LPYk9tmYGSIL8770zJsYkRF1U6qoLFtzXOXN8Zu6WcJoC8cgYNo0ZSMky3nBt1z6xeyd2d-7aXsf17IFlO70fpElSKiLGiWc3SSjoBsQdC1VMvHb_tEnWDDaSeD-3hIU48u75Sn1yJ_c-9oVM5gl9GpdgceQMMKiecv1vxDhQcQ08S-E7jsBMtlxKUJNH4jnt027X6nR7_U7HcQY9u9Mkfj4BYZLVYAinECH3El7Acofk4DCpqFCGMnDk5Z4O3I7ddbFZwBqEBAwuaSKhSaiUkPrJAc_iFzIVNHioHe2b0x9GjjMc7U9xlrCIp8CVnOtiTMTAohiB3QFqE2R8yaKVoApZYjmP0kRg0YQlsMrLFq8SbhEl12rUH-7H1-v2ox3bfjN6e7zFHOE2fIFe5CaLiZ0BZp_Pp-1GTgOfZY0P4-svo-nHRlVUF0brUEqDygRUQZSJJx0zI3SQhjRXIGpczml6tgvi96PpKAsquivBtNZK5dJrtWTboil9zjjdSCvI0ta9L7KNBCsTUSsyJpEtjd4SQEO5wKPIB1-0rSVdmJOd2JZrtRcpzXMILcQiRZMwHsKjBkv-ITD-GCmKQhsN8QV6TcOW32W6C735YFUC-2br6AqoWgk4Un4kWRi02XhykaGzaQSHxkqSYJjOzmTK98Z6U7x316D_vrmOtL12mOR5sCv5g80OK__WazVqe8_Jlf_flQeufG3LmmzHzHYka2ZISCBQ-v3VUcYjLNZnk3G2eekgnhIrKGOlycuIflpjFsINUtdou1d4H_qK_XqrVCnjsZmBzMS8pBYzBBFBzAKakBLEWHJEfUhkHfsCn2cQet_sBmoC1R6LQBkh6vPmdbzqHr1fUV2rm_dKLmtwRN-vJKG52UFbVG3JEmQ4h0elZSxX6sEq1ZLTQLE1XL7iXZjLyhEEjXTLcevxAEyi-A3q17Nj
--->
 
 ![](./img/hic_track.png)
 Screenshot showing a Hi-C track
@@ -389,15 +447,15 @@ We can start the SV inspector by launching it from the App level menu bar
 The SV inspector can be launched from the main menu bar
 
 This will bring up an "import form" that asks you for your SV evidence. This
-can be provided using a URL in these formats:
+can be provided opening a file locally or using a URL for files in the
+following formats:
 
-- VCF (plain text VCF, not tabix VCF)
+- VCF or VCF.gz (plain text VCF, or (b)gzipped VCF)
 - BEDPE
 - STAR-fusion result file
-- or other formats
 
 ![](./img/sv_inspector_importform.png)
-SV inspector import form
+Figure showing the SV inspector import form
 
 ### Example SV inspector workflow
 
@@ -411,7 +469,7 @@ these published data http://schatz-lab.org/publications/SKBR3/
 Copy this URL and paste it into the import form and select hg19
 
 ![](./img/sv_inspector_importform_after.png)
-SV inspector import form with URL
+Figure showing the SV inspector import form with URL
 
 ### SV inspector results
 
@@ -441,26 +499,8 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-## Variant tracks
-
-Visualizing variant tracks from the VCF format alongside the original alignment
-evidence track is a common workflow for validating your results. In JBrowse 2
-we can open a variant track and an alignments track as shown below
-
-![](./img/variant_with_pileup.png)
-Variant track indicating a SNP alongside the alignment track evidence
-
-### Variant widget
-
-The variant features have a specialized widget that contains a table
-indicating all the calls that were made in a multi-sample VCF. Some VCF files,
-like the 1000 genomes VCF, can contain thousands of samples in a single file.
-This table can display the details
-
-### Future additions
-
-We anticipate adding more features to the variant track in the future including
-
-1. Ability to visualize individual samples in a multi-sample VCF as subtracks
-   of a variant track
-2. Ability to use FILTER the VCF column via the track menu
+![](./img/breakpoint_split_view.png)
+Figure showing "breakpoint split view" which examines the breakpoints of a
+structural variant, e.g. an interchromosomal translocation, and connects
+supporting reads (black splines) and the variant call itself (green thicker
+line, with feet indicating directionality)

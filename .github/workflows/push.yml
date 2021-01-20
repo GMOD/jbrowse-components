@@ -12,7 +12,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      - name: Install deps and build (with cache)
+      - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Test codebase
         run: yarn test-ci
@@ -30,16 +30,19 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      - name: Install deps and build (with cache)
+      - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
+      - name: Install website deps (with cache)
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: website
       - name: Build website
         run: |
           cd website/
-          yarn
           yarn build
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -50,4 +53,5 @@ jobs:
       - name: Copy branch build to S3
         run: |
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
+          cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)

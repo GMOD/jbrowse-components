@@ -188,10 +188,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
-                    class="makeStyles-fieldName"
+                    class="makeStyles-fieldDescription makeStyles-fieldName"
                     title="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
                   >
                     REF
@@ -205,10 +205,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
-                    class="makeStyles-fieldName"
+                    class="makeStyles-fieldDescription makeStyles-fieldName"
                     title=" alternate base(s): Comma-separated list of alternate non-reference alleles"
                   >
                     ALT
@@ -222,10 +222,10 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
-                    class="makeStyles-fieldName"
+                    class="makeStyles-fieldDescription makeStyles-fieldName"
                     title="quality: Phred-scaled quality score for the assertion made in ALT"
                   >
                     QUAL
@@ -239,12 +239,12 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
                   >
-                    MQ
+                    INFO.MQ
                   </div>
                   <div
                     class="makeStyles-fieldValue"

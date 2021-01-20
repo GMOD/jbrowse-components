@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -35,8 +35,9 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@gmod/tabix": "^1.4.6",
+    "@gmod/tabix": "^1.5.0",
     "@gmod/vcf": "^4.0.1",
+    "@material-ui/data-grid": "^4.0.0-alpha.10",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {

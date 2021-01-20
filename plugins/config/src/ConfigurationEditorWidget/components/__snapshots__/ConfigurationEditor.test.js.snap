@@ -1003,8 +1003,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
               >
                 function(feature) {
-  var s = feature.get('strand');
-  return s === -1 ? '#8F8FD8': '#EC8B8B'
+  return '#c8c8c8'
 }
               </textarea>
               <pre
@@ -1051,51 +1050,15 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     <span
                       style="color: rgb(121, 40, 161);"
                     >
-                      var
-                    </span>
-                    <span>
-                       s = feature.get(
-                    </span>
-                    <span
-                      style="color: rgb(0, 128, 0);"
-                    >
-                      'strand'
-                    </span>
-                    <span>
-                      );
-
-                    </span>
-                    <span>
-                        
-                    </span>
-                    <span
-                      style="color: rgb(121, 40, 161);"
-                    >
                       return
                     </span>
                     <span>
-                       s === 
-                    </span>
-                    <span
-                      style="color: rgb(170, 93, 0);"
-                    >
-                      -1
-                    </span>
-                    <span>
-                       ? 
+                       
                     </span>
                     <span
                       style="color: rgb(0, 128, 0);"
                     >
-                      '#8F8FD8'
-                    </span>
-                    <span>
-                      : 
-                    </span>
-                    <span
-                      style="color: rgb(0, 128, 0);"
-                    >
-                      '#EC8B8B'
+                      '#c8c8c8'
                     </span>
                     <span>
                       
@@ -1173,6 +1136,60 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             />
           </button>
         </div>
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+          >
+            <label
+              class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+              data-shrink="true"
+            >
+              orientationType
+            </label>
+            <div
+              class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+            >
+              <div
+                aria-haspopup="listbox"
+                class="MuiSelect-root MuiSelect-select MuiSelect-selectMenu MuiInputBase-input MuiInput-input"
+                role="button"
+                tabindex="0"
+              >
+                fr
+              </div>
+              <input
+                aria-hidden="true"
+                class="MuiSelect-nativeInput"
+                tabindex="-1"
+                value="fr"
+              />
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSelect-icon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M7 10l5 5 5-5z"
+                />
+              </svg>
+            </div>
+            <p
+              class="MuiFormHelperText-root MuiFormHelperText-filled"
+            >
+              read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        />
       </div>
       <div
         class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
@@ -1322,7 +1339,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
                 type="number"
-                value="10000"
+                value="0"
               />
             </div>
             <p

@@ -51,11 +51,15 @@ xdescribe('reload tests', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
-    await findAllByText(/HTTP 404/)
+    await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -85,11 +89,15 @@ xdescribe('reload tests', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_snpcoverage'))
-    await findAllByText(/HTTP 404/)
+    await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -116,11 +124,15 @@ xdescribe('reload tests', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_snpcoverage'))
-    await findAllByText(/HTTP 404/)
+    await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -147,11 +159,16 @@ xdescribe('reload tests', () => {
     await findByText('Help')
     state.session.views[0].setNewView(0.5, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_pileup'))
-    await findAllByText(/HTTP 404/)
+    await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+
     const pileupImg = canvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -179,11 +196,15 @@ xdescribe('reload tests', () => {
     await findByText('Help')
     state.session.views[0].setNewView(10, 0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray'))
-    await findAllByText(/HTTP 404/)
+    await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    const canvas = await findAllByTestId('prerendered_canvas')
+    const canvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const bigwigImg = canvas[0].toDataURL()
     const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
     const bigwigBuf = Buffer.from(bigwigData, 'base64')

@@ -1,6 +1,6 @@
 import React from 'react'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
@@ -119,7 +119,7 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    expect(await findByText('Help')).toBeTruthy()
+    await findByText('Help')
   })
 
   it('can use config from a url with shared session ', async () => {
@@ -134,9 +134,11 @@ describe('<Loader />', () => {
         <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>,
     )
-    expect(await findByText('Help')).toBeTruthy()
 
-    expect(sessionStorage.length).toBeGreaterThan(0)
+    await findByText('Help')
+    await waitFor(() => {
+      expect(sessionStorage.length).toBeGreaterThan(0)
+    })
   })
 
   it('can use config from a url with nonexistent share param ', async () => {
@@ -153,6 +155,23 @@ describe('<Loader />', () => {
         </QueryParamProvider>
       </ErrorBoundary>,
     )
-    await findAllByText(/Unable to fetch session/)
+    await findAllByText(/Error/)
+  }, 10000)
+
+  it('can catch error from loading a bad config', async () => {
+    const { findAllByText } = render(
+      <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
+        <QueryParamProvider
+          // @ts-ignore
+          location={{
+            search:
+              '?config=test_data/bad_config_for_testing_error_catcher.json',
+          }}
+        >
+          <Loader initialTimestamp={initialTimestamp} />
+        </QueryParamProvider>
+      </ErrorBoundary>,
+    )
+    await findAllByText(/Failed to load/)
   }, 10000)
 })

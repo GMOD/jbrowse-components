@@ -20,8 +20,8 @@ const useStyles = makeStyles({
     whiteSpace: 'nowrap',
     textAlign: 'left',
     position: 'absolute',
-    display: 'flex',
     minHeight: '100%',
+    display: 'flex',
   },
   heightOverflowed: {
     position: 'absolute',

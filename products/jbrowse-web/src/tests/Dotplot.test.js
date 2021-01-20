@@ -1,5 +1,6 @@
 // library
 import { cleanup, render } from '@testing-library/react'
+import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -11,6 +12,12 @@ import dotplotConfig from '../../test_data/config_dotplot.json'
 
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
+
+dotplotConfig.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+}
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -36,7 +43,11 @@ describe('dotplot view', () => {
     )
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
-    const canvas = await findByTestId('prerendered_canvas', { timeout: 10000 })
+    const canvas = await findByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
 
     const img = canvas.toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
@@ -47,5 +58,5 @@ describe('dotplot view', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  })
-}, 25000)
+  }, 15000)
+})

@@ -1,14 +1,21 @@
 ---
-title: jbrowse-web ${JBROWSE_WEB_VERSION}
+title: ${RELEASE_TAG} Release
 date: ${DATE}
-tags: ['release','jbrowse 2']
+tags: ['release', 'jbrowse 2']
 ---
 
 ${NOTES}
 
-- [${JBROWSE_WEB_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${JBROWSE_WEB_TAG})
+## Downloads
 
-To install, you can download the link above, or you can use the jbrowse CLI
-tool to automatically download the latest version. See the [jbrowse 2
-quick-start guide](https://jbrowse.org/jb2/docs/quickstart_web) for more info
+- [${RELEASE_TAG}](https://github.com/GMOD/jbrowse-components/releases/tag/${RELEASE_TAG})
 
+To install JBrowse 2 for the web, you can download the link above, or you can
+use the JBrowse CLI to automatically download the latest version. See the
+[JBrowse web quick start](https://jbrowse.org/jb2/docs/quickstart_web) for more
+details.
+
+See "Packages in this release" in the changelog for links to packages published
+on NPM.
+
+${CHANGELOG}

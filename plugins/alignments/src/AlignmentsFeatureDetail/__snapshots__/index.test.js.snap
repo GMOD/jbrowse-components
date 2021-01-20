@@ -204,7 +204,7 @@ exports[`open up a widget 1`] = `
                 class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
               >
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -220,7 +220,7 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -236,7 +236,7 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -262,7 +262,7 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -278,7 +278,7 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"
@@ -294,7 +294,39 @@ exports[`open up a widget 1`] = `
                   </div>
                 </div>
                 <div
-                  style="display: flex;"
+                  class="makeStyles-field"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    length_on_ref
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      100
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="makeStyles-field"
+                >
+                  <div
+                    class="makeStyles-fieldName"
+                  >
+                    template_length
+                  </div>
+                  <div
+                    class="makeStyles-fieldValue"
+                  >
+                    <div>
+                      0
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="makeStyles-field"
                 >
                   <div
                     class="makeStyles-fieldName"

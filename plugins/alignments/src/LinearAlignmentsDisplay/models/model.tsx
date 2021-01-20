@@ -142,6 +142,20 @@ const stateModelFactory = (
             ) {
               self.PileupDisplay.setConfig(self.pileupDisplayConfig)
             }
+
+            // propagate the filterBy setting from pileupdisplay to snpcoverage
+            // note: the snpcoverage display is not able to control filterBy
+            // itself
+            if (
+              !deepEqual(
+                getSnapshot(self.PileupDisplay.filterBy),
+                getSnapshot(self.SNPCoverageDisplay.filterBy),
+              )
+            ) {
+              self.SNPCoverageDisplay.setFilterBy(
+                getSnapshot(self.PileupDisplay.filterBy),
+              )
+            }
           }),
         )
       },

@@ -18,9 +18,9 @@ interface built into JBrowse 2. See that guide [here](quickstart_gui).
 
 ## Pre-requisites
 
-- [JBrowse CLI](quickstart_web#install-the-cli-tools)
+- [JBrowse CLI](quickstart_web#installing-the-cli-tools)
 
-- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Adding a genome assembly
 
@@ -190,6 +190,15 @@ rm volvox.vcf
 bcftools index --tbi volvox.vcf.gz
 ```
 
+Note if you get errors about your VCF file not being sorted when using tabix,
+you can use bcftools to sort your VCF.
+
+```sh-session
+bcftools sort file.vcf > file.sorted.vcf
+bgzip file.sorted.vcf
+tabix file.sorted.vcf.gz
+```
+
 For more info about `bgzip`, `tabix`, and `bcftools`, see
 https://www.htslib.org/.
 
@@ -201,6 +210,32 @@ quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the variant track.
 
 ![JBrowse 2 linear genome view with variant track](./img/volvox_variants.png)
+
+### Adding a BigWig/BigBed track
+
+Probably one of the most simple track types to load is a BigWig/BigBed file
+since it does not have any external index file, it is just a single file
+
+An example file is here http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw
+
+```sh-session
+## Download bigwig or bigbed file
+jbrowse add-track volvox-sorted.bam.coverage.bw --load copy
+```
+
+### Adding a GFF3 file with GFF3Tabix
+
+To load a GFF3 file, we can sort and index it with tabix
+
+Sorting a GFF3 can be done with [GenomeTools](http://genometools.org/) (to
+install can use `sudo apt install genometools`)
+
+```
+gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
+bgzip yourfile.sorted.gff
+tabix yourfile.sorted.gff.gz
+jbrowse add-track yourfile.sorted.gff.gz --load copy
+```
 
 ## Conclusion
 

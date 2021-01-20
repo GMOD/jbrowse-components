@@ -1,46 +1,59 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-## Usage scripts/release.sh blogpost.txt <prerelease/patch/minor/major>
-# The first argument blogpost.txt is published to the jbrowse 2 blog. The
-# second argument is a flag for the publishing command for version bump, by
-# default it is none and will prompt
+## Usage scripts/release.sh blogpost.md githubAuthToken <prerelease/patch/minor/major>
+# The first argument blogpost.md is published to the jbrowse 2 blog. The second
+# argument is a personal access token for the GitHub API with `public_repo`
+# scope. You can generate a token at https://github.com/settings/tokens
+# The third optional argument is a flag for the publishing command for version
+# bump. If not provided, it will default to "patch".
 
 ## Precautionary bash tags
 set -e
 set -o pipefail
 
-NOTES=`cat $1`
-DATE=$(date +"%Y-%m-%d")
-FRONTPAGE_FILENAME=website/src/pages/index.js
+[[ -n "$1" ]] || { echo "No blogpost file provided" && exit 1; }
+[[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
+[[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
 
-yarn run lerna-publish $2
+BRANCH=$(git branch --show-current)
+[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+NPMUSER=$(npm whoami)
+[[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
+MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
+[[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
 
-## This pushes only the @jbrowse/web tag first because a flood of tags causes
-## the CI system to skip the build
-git push origin tag "@jbrowse/web*"
-echo "Waiting while the new jbrowse-web tag is processed on github actions before pushing the rest of the tags"
-sleep 30
-## Push the rest of the tags
-git push --follow-tags
+# Get the version before release from lerna.json
+PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
+# Use semver to get the new version from the semver level
+VERSION=$(yarn --silent semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
+RELEASE_TAG=v$VERSION
 
-## Blogpost run after lerna publish, to get the accurate tags
-
-## Have to avoid overlap with @jbrowse/website
-JBROWSE_WEB_TAG=$(git tag --sort=-creatordate -l "@jbrowse/web@*"|head -n1)
-
-JBROWSE_WEB_VERSION=${JBROWSE_WEB_TAG:13}
-BLOGPOST_FILENAME=website/blog/$(date +"%Y-%m-%d")-jbrowse-web-${JBROWSE_WEB_VERSION}-release.md
-
-
-JBROWSE_DESKTOP_TAG=$(git tag --sort=-creatordate -l "@jbrowse/desktop*"|head -n1)
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$JBROWSE_WEB_TAG/index.html
-JBROWSE_WEB_VERSION=$JBROWSE_WEB_VERSION JBROWSE_WEB_TAG=$JBROWSE_WEB_TAG JBROWSE_DESKTOP_TAG=$JBROWSE_DESKTOP_TAG DATE=$DATE NOTES=$NOTES perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' < scripts/blog_template.txt > $BLOGPOST_FILENAME
-
-
-INSTANCE=$INSTANCE node -p "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" > tmp.json
+# Updates the "Browse demo instance" link on the homepage
+INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$RELEASE_TAG/index.html
+INSTANCE=$INSTANCE node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
+# Packages that have changed and will have their version bumped
+CHANGED=$(yarn --silent lerna changed --all --json)
+# Generates a changelog with a section added listing the packages that were
+# included in this release
+CHANGELOG=$(GITHUB_AUTH="$2" node scripts/changelog.js "$CHANGED" "$VERSION")
+# Add the changelog to the top of CHANGELOG.md
+echo "$CHANGELOG" >tmp.md
+echo "" >>tmp.md
+cat CHANGELOG.md >>tmp.md
+mv tmp.md CHANGELOG.md
 
+# Blog post text
+NOTES=$(cat "$1")
+DATE=$(date +"%Y-%m-%d")
+## Blogpost run after lerna version, to get the accurate tags
+BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md
+RELEASE_TAG=$RELEASE_TAG DATE=$DATE NOTES=$NOTES CHANGELOG=$CHANGELOG perl -p -e 's/\$\{([^}]+)\}/defined $ENV{$1} ? $ENV{$1} : $&/eg' <scripts/blog_template.txt >"$BLOGPOST_FILENAME"
+
+yarn format
 git add .
-git commit -m "[update docs] release"
-git push
+git commit --message "Prepare for $RELEASE_TAG release"
+
+# Run lerna version first, publish after changelog and blog post have been created
+yarn lerna publish "$SEMVER_LEVEL" --message "[update docs] %s"

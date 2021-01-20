@@ -1113,6 +1113,66 @@
           "uri": "volvox-sorted.bam.coverage.bw"
         }
       }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny",
+      "name": "volvox_fake_synteny",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny.paf"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-rg",
+      "name": "volvox-rg (read groups, bam)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-rg.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-rg.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox-rg-cram",
+      "name": "volvox-rg (read groups, cram)",
+      "category": ["Alignments"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-rg.cram"
+        },
+        "craiLocation": {
+          "uri": "volvox-rg.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {

@@ -1,11 +1,5 @@
 // library
-import {
-  cleanup,
-  fireEvent,
-  render,
-  within,
-  waitForElement,
-} from '@testing-library/react'
+import { cleanup, fireEvent, render, within } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -47,7 +41,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1('prerendered_canvas')
+    const pileupCanvas = await findAllByTestId1(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -59,7 +57,11 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId2 } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId2('prerendered_canvas')
+    const snpCoverageCanvas = await findAllByTestId2(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
     const snpCoverageData = snpCoverageImg.replace(
       /^data:image\/\w+;base64,/,
@@ -89,7 +91,7 @@ describe('alignments track', () => {
   it('opens the track menu and enables soft clipping', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, getByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
@@ -104,14 +106,13 @@ describe('alignments track', () => {
     )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    // opens the track menu and turns on soft clipping
+    // opens the track menu
     const trackMenu = await findByTestId('track_menu_icon')
     fireEvent.click(trackMenu)
 
-    await waitForElement(() => getByText('Show soft clipping'))
-    fireEvent.click(getByText('Show soft clipping'))
+    fireEvent.click(await findByText('Show soft clipping'))
 
-    // wait for block to rerender after softclipping
+    // wait for block to rerender
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
@@ -139,7 +140,7 @@ describe('alignments track', () => {
     await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-    // opens the track menu and turns on soft clipping
+    // opens the track menu
     const trackMenu = await findByTestId('track_menu_icon')
 
     fireEvent.click(trackMenu)
@@ -147,7 +148,88 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand')
+    await findAllByTestId('pileup-Read strand', {}, { timeout: 10000 })
+
+    // wait for pileup track to render
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[1].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('selects a color, updates object and layout', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.02, 2086500)
+
+    // load track
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+
+    // opens the track menu and turns on soft clipping
+    const trackMenu = await findByTestId('track_menu_icon')
+
+    fireEvent.click(trackMenu)
+    fireEvent.click(await findByText('Color scheme'))
+    fireEvent.click(await findByText('Strand'))
+
+    // wait for pileup track to render with color
+    await findAllByTestId('pileup-strand')
+
+    // wait for pileup track to render
+    const { findAllByTestId: findAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup'),
+    )
+    const canvases = await findAllByTestId1('prerendered_canvas')
+    const img = canvases[1].toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    })
+  }, 10000)
+
+  it('colors by tag, updates object and layout', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText, findAllByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.465, 85055)
+
+    // load track
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
+    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay')
+    expect(state.session.views[0].tracks[0]).toBeTruthy()
+
+    // opens the track menu
+    const trackMenu = await findByTestId('track_menu_icon')
+
+    // colors by HP tag
+    fireEvent.click(trackMenu)
+    fireEvent.click(await findByText('Color scheme'))
+    fireEvent.click(await findByText('Color by tag...'))
+    fireEvent.change(await findByTestId('color-tag-name-input'), {
+      target: { value: 'HP' },
+    })
+    fireEvent.click(await findByText('Submit'))
+
+    // wait for pileup track to render with color
+    await findAllByTestId('pileup-tagHP', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -171,6 +253,53 @@ describe('alignments track', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
-    await findAllByText('Max height reached')
-  })
+
+    await findAllByText('Max height reached', {}, { timeout: 10000 })
+  }, 15000)
+
+  it('test snpcoverage doesnt count snpcoverage', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.03932, 67884.16536402702)
+
+    // load track
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'),
+    )
+
+    const { findAllByTestId } = within(
+      await findByTestId('Blockset-snpcoverage'),
+    )
+    const snpCoverageCanvas = await findAllByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+
+    // this block tests that softclip avoids decrementing the total block
+    // e.g. this line is not called for softclip/hardclip
+    // bin.getNested('reference').decrement(strand, overlap)
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[0]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
+
+    // test that softclip doesn't contibute to coverage
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[1]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
+  }, 15000)
 })

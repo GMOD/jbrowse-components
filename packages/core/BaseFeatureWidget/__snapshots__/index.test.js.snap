@@ -44,9 +44,6 @@ exports[`open up a widget 1`] = `
             />
           </svg>
         </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
       </div>
     </div>
     <div
@@ -146,9 +143,6 @@ exports[`open up a widget 1`] = `
             />
           </svg>
         </span>
-        <span
-          class="MuiTouchRipple-root"
-        />
       </div>
     </div>
     <div
@@ -168,7 +162,7 @@ exports[`open up a widget 1`] = `
               class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
             >
               <div
-                style="display: flex;"
+                class="makeStyles-field"
               >
                 <div
                   class="makeStyles-fieldName"

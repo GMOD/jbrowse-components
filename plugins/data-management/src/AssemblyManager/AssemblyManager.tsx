@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'center',
   },
   dialogContent: {
-    width: 600,
+    width: '100%',
   },
   backButton: {
     color: '#fff',
@@ -118,7 +118,7 @@ const AssemblyManager = observer(
                   setFormOpen(true)
                 }}
               >
-                Add New Assembly
+                Add new assembly
               </Button>
             </>
           ) : null}

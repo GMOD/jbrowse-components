@@ -42,6 +42,7 @@ import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
+import { PileupGetGlobalValueForTag } from './PileupRPC/rpcMethods'
 
 export { MismatchParser }
 
@@ -94,7 +95,10 @@ export default class AlignmentsPlugin extends Plugin {
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
-        stateModel: linearSNPCoverageDisplayModelFactory(configSchema),
+        stateModel: linearSNPCoverageDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,
@@ -170,6 +174,10 @@ export default class AlignmentsPlugin extends Plugin {
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
         }),
+    )
+
+    pluginManager.addRpcMethod(
+      () => new PileupGetGlobalValueForTag(pluginManager),
     )
   }
 }

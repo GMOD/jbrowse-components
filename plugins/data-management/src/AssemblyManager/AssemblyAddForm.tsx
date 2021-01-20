@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import TextField from '@material-ui/core/TextField'
+import FileSelector from '@jbrowse/core/ui/FileSelector'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { Grid, MenuItem, Paper } from '@material-ui/core'
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -19,7 +21,8 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(2),
     },
     createButton: {
-      margin: `5px 0px 5px 200px`,
+      marginTop: '1em',
+      justifyContent: 'center',
     },
     paperContent: {
       flex: 'auto',
@@ -74,13 +77,13 @@ const AdapterInput = observer(
     setTwoBitLocation,
   }: {
     adapterSelection: string
-    fastaLocation: string
+    fastaLocation: FileLocation
     setFastaLocation: Function
-    faiLocation: string
+    faiLocation: FileLocation
     setFaiLocation: Function
-    gziLocation: string
+    gziLocation: FileLocation
     setGziLocation: Function
-    twoBitLocation: string
+    twoBitLocation: FileLocation
     setTwoBitLocation: Function
   }) => {
     if (
@@ -90,31 +93,25 @@ const AdapterInput = observer(
       return (
         <Grid container spacing={2}>
           <Grid item>
-            <TextField
-              id="fasta-location"
-              label="fastaLocation"
-              variant="outlined"
-              value={fastaLocation}
-              onChange={event => setFastaLocation(event.target.value)}
+            <FileSelector
+              name="fastaLocation"
+              location={fastaLocation}
+              setLocation={loc => setFastaLocation(loc)}
             />
           </Grid>
           <Grid item>
-            <TextField
-              id="fai-location"
-              label="faiLocation"
-              variant="outlined"
-              value={faiLocation}
-              onChange={event => setFaiLocation(event.target.value)}
+            <FileSelector
+              name="faiLocation"
+              location={faiLocation}
+              setLocation={loc => setFaiLocation(loc)}
             />
           </Grid>
           {adapterSelection === 'BgzipFastaAdapter' ? (
             <Grid item>
-              <TextField
-                id="gzi-location"
-                label="gziLocation"
-                variant="outlined"
-                value={gziLocation}
-                onChange={event => setGziLocation(event.target.value)}
+              <FileSelector
+                name="gziLocation"
+                location={gziLocation}
+                setLocation={loc => setGziLocation(loc)}
               />
             </Grid>
           ) : null}
@@ -124,12 +121,10 @@ const AdapterInput = observer(
 
     if (adapterSelection === 'TwoBitAdapter') {
       return (
-        <TextField
-          id="twobit-location"
-          label="twoBitLocation"
-          variant="outlined"
-          value={twoBitLocation}
-          onChange={event => setTwoBitLocation(event.target.value)}
+        <FileSelector
+          name="twoBitLocation"
+          location={twoBitLocation}
+          setLocation={loc => setTwoBitLocation(loc)}
         />
       )
     }
@@ -157,10 +152,10 @@ const AssemblyAddForm = observer(
 
     const [assemblyName, setAssemblyName] = useState('')
     const [adapterSelection, setAdapterSelection] = useState(adapterTypes[0])
-    const [fastaLocation, setFastaLocation] = useState('/path/to/seq.fa.gz')
-    const [faiLocation, setFaiLocation] = useState('/path/to/seq.fa.gz.fai')
-    const [gziLocation, setGziLocation] = useState('/path/to/seq.fa.gz.gzi')
-    const [twoBitLocation, setTwoBitLocation] = useState('/path/to/my.2bit')
+    const [fastaLocation, setFastaLocation] = useState({ uri: '' })
+    const [faiLocation, setFaiLocation] = useState({ uri: '' })
+    const [gziLocation, setGziLocation] = useState({ uri: '' })
+    const [twoBitLocation, setTwoBitLocation] = useState({ uri: '' })
 
     function createAssembly() {
       if (assemblyName === '') {
@@ -175,12 +170,8 @@ const AssemblyAddForm = observer(
             sequence: {
               adapter: {
                 type: 'IndexedFastaAdapter',
-                fastaLocation: {
-                  uri: fastaLocation,
-                },
-                faiLocation: {
-                  uri: faiLocation,
-                },
+                fastaLocation,
+                faiLocation,
               },
             },
           }
@@ -190,15 +181,9 @@ const AssemblyAddForm = observer(
             sequence: {
               adapter: {
                 type: 'BgzipFastaAdapter',
-                fastaLocation: {
-                  uri: fastaLocation,
-                },
-                faiLocation: {
-                  uri: faiLocation,
-                },
-                gziLocation: {
-                  uri: gziLocation,
-                },
+                fastaLocation,
+                faiLocation,
+                gziLocation,
               },
             },
           }
@@ -208,9 +193,7 @@ const AssemblyAddForm = observer(
             sequence: {
               adapter: {
                 type: 'TwoBitAdapter',
-                twoBitLocation: {
-                  uri: twoBitLocation,
-                },
+                twoBitLocation,
               },
             },
           }
@@ -253,15 +236,18 @@ const AssemblyAddForm = observer(
             />
           </div>
         </Paper>
-        <Button
-          className={classes.createButton}
-          variant="contained"
-          color="secondary"
-          startIcon={<AddIcon />}
-          onClick={createAssembly}
-        >
-          Create New Assembly
-        </Button>
+        <Grid container className={classes.createButton}>
+          <Grid item>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<AddIcon />}
+              onClick={createAssembly}
+            >
+              Create new assembly
+            </Button>
+          </Grid>
+        </Grid>
       </div>
     )
   },

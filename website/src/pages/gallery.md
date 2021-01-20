@@ -55,3 +55,17 @@ This is a whole-genome overview of CNV data using a BigWig file of
 read-coverage depth. This uses the XYPlot, with fill turned off. The BigWig
 data is binned at this resolution, and the blue shades represent the min, mean,
 and max value in each bin
+
+---
+
+![](./img/breakpoint_split_view.png)
+Image of the "breakpoint split view" which examines the breakpoints of a
+structural variant, e.g. an interchromosomal translocation, and connects
+supporting reads (black splines) and the variant call itself (green thicker
+line, with feet indicating directionality)
+
+---
+
+![](./img/color_by_tag.png)
+Image of coloring and sorting by the HP (haplotype) tag, which can be done for
+BAM and CRAM. Users can color, sort, and filter by tags

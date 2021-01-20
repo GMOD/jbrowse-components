@@ -14,7 +14,8 @@ function heightFromSpecificLevel(
   trackConfigId: string,
   level: number,
 ) {
-  return views[level].trackRefs[trackConfigId].getBoundingClientRect().top
+  const track = views[level].trackRefs[trackConfigId]
+  return track?.getBoundingClientRect().top || 0
 }
 
 export function getPxFromCoordinate(

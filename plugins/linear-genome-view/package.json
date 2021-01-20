@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -38,7 +38,8 @@
     "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
-    "file-saver": "^2.0.2",
+    "copy-to-clipboard": "^3.3.1",
+    "file-saver": "^2.0.0",
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",

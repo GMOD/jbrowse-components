@@ -94,6 +94,7 @@ export default class ServerSideRenderer extends RendererType {
         },
       }
     }
+
     return {
       ...args,
       config: isStateTreeNode(args.config)

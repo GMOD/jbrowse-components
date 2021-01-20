@@ -102,6 +102,14 @@ function LineRendering(props) {
           if (!info || info.base === 'reference' || info.base === 'total') {
             return null
           }
+          if (
+            info.base === 'insertion' ||
+            info.base === 'softclip' ||
+            info.base === 'hardclip' ||
+            info.base === 'deletion'
+          ) {
+            return null
+          }
           const fillStyle = info.base.match(insRegex)
             ? 'darkgrey'
             : colorForBase[info.base]

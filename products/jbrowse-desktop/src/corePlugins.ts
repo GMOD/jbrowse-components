@@ -24,6 +24,7 @@ import HicPlugin from '@jbrowse/plugin-hic'
 
 export default [
   SVG,
+  LinearGenomeView,
   Alignments,
   Bed,
   CircularView,
@@ -33,7 +34,6 @@ export default [
   Filtering,
   Gff3Tabix,
   LegacyJBrowse,
-  LinearGenomeView,
   LinearComparativeView,
   Lollipop,
   Menus,

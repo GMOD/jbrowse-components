@@ -55,7 +55,7 @@ load the source and a `div` that will hold JBrowse. Update your "index.html" so
 matches what's below, then save it, switch over to your browser, and refresh the
 page.
 
-```html {3-6,8} title="index.html"
+```html {2-5,8} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>

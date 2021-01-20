@@ -39,7 +39,7 @@ export default class AddTrack extends JBrowseCommand {
     '$ jbrowse add-track /path/to/my.bam --load copy',
     '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
     '$ jbrowse add-track https://mywebsite.com/my.bam',
-    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
+    `$ jbrowse add-track /path/to/my.bam --trackType AlignmentsTrack --name 'New Track' --load move`,
     `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite`,
     `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
   ]
@@ -53,7 +53,7 @@ export default class AddTrack extends JBrowseCommand {
   ]
 
   static flags = {
-    type: flags.string({
+    trackType: flags.string({
       char: 't',
       description: `Type of track, by default inferred from track file`,
     }),
@@ -143,7 +143,7 @@ export default class AddTrack extends JBrowseCommand {
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    let { type, trackId, name, assemblyNames } = runFlags
+    let { trackType, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
     if (!argsTrack) {
@@ -167,6 +167,11 @@ export default class AddTrack extends JBrowseCommand {
       protocol as 'uri' | 'localPath',
       !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
     )
+
+    if (adapter.type === 'PAFAdapter') {
+      // @ts-ignore
+      adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
+    }
 
     if (isUrl(location) && load) {
       this.error(
@@ -203,18 +208,18 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    type = type || this.guessTrackType(adapter.type)
+    trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
     assemblyNames = assemblyNames || configContents.assemblies[0].name
     this.debug(`Name is: ${name}`)
-    this.debug(`Type is: ${type}`)
+    this.debug(`Type is: ${trackType}`)
     this.debug(`Track is :${trackId}`)
     this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
-      type,
+      type: trackType,
       trackId,
       name,
       category: category ? category.split(',').map(c => c.trim()) : undefined,
@@ -230,7 +235,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // any special track modifications go here
-    switch (type) {
+    switch (trackType) {
       case 'AlignmentsTrack': {
         const assembly = configContents.assemblies.find(
           asm => asm.name === assemblyNames,
@@ -404,14 +409,14 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
         index: index || `${fileName}.fai`,
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.fai`,
@@ -624,7 +629,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.paf/i.test(fileName)) {
       return {
-        type: 'PafAdapter',
+        type: 'PAFAdapter',
         pafLocation: makeLocation(fileName),
       }
     }
@@ -644,7 +649,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
-      PafAdapter: 'LinearSyntenyTrack',
+      PAFAdapter: 'SyntenyTrack',
     }
     return known[adapterType] || 'FeatureTrack'
   }
