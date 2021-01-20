@@ -243,7 +243,10 @@ export default class PileupRenderer extends BoxRendererType {
   // In future when stats are improved, look for average read size in renderArg stats
   // and set that as the maxClippingSize/expand region by average read size
   getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
-    const { config, showSoftClip } = renderArgs
+    const {
+      renderProps: { config },
+      showSoftClip,
+    } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const { start, end } = region

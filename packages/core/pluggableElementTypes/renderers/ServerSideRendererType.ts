@@ -24,7 +24,6 @@ import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 
 interface BaseRenderArgs {
-  blockKey: string
   sessionId: string
   signal?: AbortSignal
   dataAdapter: BaseFeatureDataAdapter
@@ -32,8 +31,8 @@ interface BaseRenderArgs {
     position: number
     by: string
   }
-  bpPerPx: number
   renderProps: {
+    bpPerPx: number
     displayModel: { id: string; selectedFeatureId?: string }
     blockKey: string
   }
@@ -41,18 +40,24 @@ interface BaseRenderArgs {
 }
 
 export interface RenderArgs extends BaseRenderArgs {
-  config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializableFilterChain
+  renderProps: BaseRenderArgs['renderProps'] & {
+    config: SnapshotOrInstance<AnyConfigurationModel>
+    filters: SerializableFilterChain
+  }
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
   statusCallback?: Function
-  config: SnapshotIn<AnyConfigurationModel>
-  filters: SerializedFilterChain
+  renderProps: BaseRenderArgs['renderProps'] & {
+    config: SnapshotIn<AnyConfigurationModel>
+    filters: SerializedFilterChain
+  }
 }
 export interface RenderArgsDeserialized extends BaseRenderArgs {
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
+  renderProps: BaseRenderArgs['renderProps'] & {
+    config: AnyConfigurationModel
+    filters: SerializableFilterChain
+  }
 }
 
 export interface RenderResults {
@@ -87,7 +92,6 @@ export default class ServerSideRenderer extends RendererType {
     if (displayModel) {
       args.renderProps = {
         ...args.renderProps,
-        blockKey: args.blockKey,
         displayModel: {
           id: displayModel.id,
           selectedFeatureId: displayModel.selectedFeatureId,
@@ -97,11 +101,16 @@ export default class ServerSideRenderer extends RendererType {
 
     return {
       ...args,
-      config: isStateTreeNode(args.config)
-        ? getSnapshot(args.config)
-        : args.config,
       regions: JSON.parse(JSON.stringify(args.regions)),
-      filters: args.filters ? args.filters.toJSON().filters : [],
+      renderProps: {
+        ...args.renderProps,
+        config: isStateTreeNode(args.renderProps.config)
+          ? getSnapshot(args.renderProps.config)
+          : args.renderProps.config,
+        filters: args.renderProps.filters
+          ? args.renderProps.filters.toJSON().filters
+          : [],
+      },
     }
   }
 
@@ -117,7 +126,7 @@ export default class ServerSideRenderer extends RendererType {
       featuresMap.set(String(f.id()), f)
     })
     deserialized.features = featuresMap
-    deserialized.blockKey = args.blockKey
+    deserialized.blockKey = args.renderProps.blockKey
     return deserialized
   }
 
@@ -128,10 +137,10 @@ export default class ServerSideRenderer extends RendererType {
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
-    const config = this.configSchema.create(args.config || {})
-    deserialized.config = config
-    deserialized.filters = new SerializableFilterChain({
-      filters: args.filters,
+    const config = this.configSchema.create(args.renderProps.config || {})
+    deserialized.renderProps.config = config
+    deserialized.renderProps.filters = new SerializableFilterChain({
+      filters: args.renderProps.filters,
     })
 
     return deserialized
@@ -238,8 +247,8 @@ export default class ServerSideRenderer extends RendererType {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) return true
-    return renderArgs.filters.passes(feature, renderArgs)
+    if (!renderArgs.renderProps.filters) return true
+    return renderArgs.renderProps.filters.passes(feature, renderArgs)
   }
 
   // render method called on the worker

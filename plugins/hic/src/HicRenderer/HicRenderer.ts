@@ -131,7 +131,7 @@ export default class HicRenderer extends ServerSideRendererType {
   async getFeatures({
     dataAdapter,
     signal,
-    bpPerPx,
+    renderProps: { bpPerPx },
     regions,
   }: RenderArgsDeserialized) {
     const features = await dataAdapter
@@ -159,7 +159,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const featuresMap = new Map<string, SimpleFeature>()
 
     deserialized.features = featuresMap
-    deserialized.blockKey = args.blockKey
+    deserialized.blockKey = args.renderProps.blockKey
     return deserialized
   }
 }

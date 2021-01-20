@@ -113,7 +113,7 @@ export interface RenderArgs {
   sessionId: string
   adapterConfig: {}
   rendererType: string
-  renderProps: RendererTypeRenderArgsSerialized
+  renderProps: RendererTypeRenderArgsSerialized['renderProps']
 }
 
 /**
@@ -136,13 +136,7 @@ export class CoreRender extends RpcMethodType {
 
   async execute(args: RenderArgs & { signal?: RemoteAbortSignal }) {
     const deserializedArgs = await this.deserializeArguments(args)
-    const {
-      sessionId,
-      adapterConfig,
-      rendererType,
-      renderProps,
-      signal,
-    } = deserializedArgs
+    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
@@ -166,7 +160,6 @@ export class CoreRender extends RpcMethodType {
 
     const result = await RendererType.renderInWorker({
       ...deserializedArgs,
-      ...renderProps,
       dataAdapter,
     })
 

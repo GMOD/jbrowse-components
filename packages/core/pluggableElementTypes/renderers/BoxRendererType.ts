@@ -107,19 +107,19 @@ type ResultsSerialized = BaseResultsSerialized & {
 export default class BoxRendererType extends ServerSideRendererType {
   sessions: { [sessionId: string]: LayoutSession } = {}
 
-  getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
+  getWorkerSession(props: RenderArgsDeserialized) {
     const { sessionId } = props
     if (!this.sessions[sessionId])
-      this.sessions[sessionId] = this.createSession(props)
+      this.sessions[sessionId] = this.createSession(props.renderProps)
     const session = this.sessions[sessionId]
-    session.update(props)
+    session.update(props.renderProps)
     return session
   }
 
   // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     if (!region) return region
-    const { bpPerPx, config } = renderArgs
+    const { bpPerPx, config } = renderArgs.renderProps
     const maxFeatureGlyphExpansion =
       config === undefined
         ? 0
@@ -187,7 +187,7 @@ export default class BoxRendererType extends ServerSideRendererType {
     return deserialized
   }
 
-  deserializeLayoutInWorker(args: RenderArgsDeserialized & LayoutSessionProps) {
+  deserializeLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
     const subLayout = session.layout.getSublayout(regions[0].refName)
