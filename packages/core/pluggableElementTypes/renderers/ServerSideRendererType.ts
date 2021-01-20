@@ -2,12 +2,7 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import { renderToString } from 'react-dom/server'
 import React from 'react'
 import { filter, ignoreElements, tap } from 'rxjs/operators'
-import {
-  SnapshotOrInstance,
-  SnapshotIn,
-  getSnapshot,
-  isStateTreeNode,
-} from 'mobx-state-tree'
+import { SnapshotIn, getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { Region } from '../../util/types'
 import { checkAbortSignal, iterMap } from '../../util'
@@ -19,7 +14,10 @@ import RendererType from './RendererType'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '../../configuration/configurationSchema'
 import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 
@@ -41,15 +39,15 @@ interface BaseRenderArgs {
 
 export interface RenderArgs extends BaseRenderArgs {
   renderProps: BaseRenderArgs['renderProps'] & {
-    config: SnapshotOrInstance<AnyConfigurationModel>
-    filters: SerializableFilterChain
+    config: AnyConfigurationModel
+    filters: SerializedFilterChain
   }
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
   statusCallback?: Function
   renderProps: BaseRenderArgs['renderProps'] & {
-    config: SnapshotIn<AnyConfigurationModel>
+    config: SnapshotIn<AnyConfigurationSchemaType>
     filters: SerializedFilterChain
   }
 }
@@ -107,9 +105,6 @@ export default class ServerSideRenderer extends RendererType {
         config: isStateTreeNode(args.renderProps.config)
           ? getSnapshot(args.renderProps.config)
           : args.renderProps.config,
-        filters: args.renderProps.filters
-          ? args.renderProps.filters.toJSON().filters
-          : [],
       },
     }
   }

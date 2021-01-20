@@ -19,22 +19,18 @@ import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import {
+  RenderArgsDeserialized,
+  RenderArgs,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
 import { Mismatch } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 
-export interface PileupRenderProps {
+export interface PileupRenderProps extends RenderArgs {
   features: Map<string, Feature>
   layout: BaseLayout<Feature>
-  config: AnyConfigurationModel
   regions: Region[]
-  bpPerPx: number
-  colorBy: {
-    type: string
-    tag?: string
-  }
-  colorTagMap: { [key: string]: string }
   height: number
   width: number
   highResolutionScaling: number
@@ -45,6 +41,13 @@ export interface PileupRenderProps {
     refName: string
   }
   theme: ThemeOptions
+  renderProps: RenderArgs['renderProps'] & {
+    colorBy: {
+      type: string
+      tag?: string
+    }
+    colorTagMap: { [key: string]: string }
+  }
 }
 
 interface LayoutRecord {
@@ -329,11 +332,8 @@ export default class PileupRenderer extends BoxRendererType {
     props: PileupRenderProps,
   ) {
     const {
-      config,
-      bpPerPx,
+      renderProps: { config, bpPerPx, colorTagMap, colorBy = { type: '' } },
       regions,
-      colorBy = { type: '' },
-      colorTagMap,
     } = props
     const { heightPx, topPx, feature } = feat
     const { type: colorType } = colorBy
@@ -443,7 +443,10 @@ export default class PileupRenderer extends BoxRendererType {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
-    const { config, bpPerPx, regions } = props
+    const {
+      renderProps: { config, bpPerPx },
+      regions,
+    } = props
     const [region] = regions
     const { heightPx, topPx, feature } = feat
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
@@ -524,13 +527,12 @@ export default class PileupRenderer extends BoxRendererType {
     const {
       features,
       layout,
-      config,
       regions,
-      bpPerPx,
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
       theme: configTheme,
+      renderProps: { config, bpPerPx },
     } = props
     const theme = createJBrowseTheme(configTheme)
     const colorForBase: { [key: string]: string } = {
