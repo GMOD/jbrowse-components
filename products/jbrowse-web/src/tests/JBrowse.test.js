@@ -189,7 +189,7 @@ test('export svg', async () => {
 
   fireEvent.click(await findByText(/Export SVG/))
 
-  await wait(async () => {
+  await waitFor(async () => {
     expect(FileSaver.saveAs).toHaveBeenCalled()
   })
   expect(FileSaver.saveAs).toMatchSnapshot()

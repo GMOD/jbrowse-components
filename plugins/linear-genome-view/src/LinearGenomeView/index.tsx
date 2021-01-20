@@ -30,6 +30,7 @@ import {
   addDisposer,
 } from 'mobx-state-tree'
 
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
@@ -39,8 +40,6 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 import { renderToSvg } from './components/LinearGenomeView'
-
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 

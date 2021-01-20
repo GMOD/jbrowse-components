@@ -167,31 +167,47 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             <div
               class="makeStyles-headerBar"
             >
-              <button
-                class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
-                tabindex="0"
-                title="Open track selector"
-                type="button"
-                value="track_select"
-              >
-                <span
-                  class="MuiButton-label"
+              <div>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
+                  tabindex="0"
+                  title="Open track selector"
+                  type="button"
+                  value="track_select"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root makeStyles-buttonSpacer"
-                    focusable="false"
-                    viewBox="0 0 24 24"
+                  <span
+                    class="MuiButton-label"
                   >
-                    <path
-                      d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
-                />
-              </button>
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root makeStyles-buttonSpacer"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    Export SVG
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
               <div
                 class="makeStyles-spacer"
               />
@@ -438,7 +454,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 60px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 80px;"
                 />
                 <div
@@ -478,7 +494,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 260px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 280px;"
                 />
                 <div
@@ -518,7 +534,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 460px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 480px;"
                 />
                 <div
@@ -558,7 +574,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 660px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 680px;"
                 />
                 <div
@@ -598,7 +614,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 860px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 880px;"
                 />
                 <div

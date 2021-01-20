@@ -123,7 +123,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
 
 export default LinearGenomeView
 
-
 export async function renderToSvg(model: LGV) {
   let offset = 20
   const { width } = model
