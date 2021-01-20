@@ -211,16 +211,24 @@ describe('valid file tests', () => {
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
     )
+
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
 
     autocomplete.focus()
     fireEvent.change(inputBox, {
-      target: { value: 'ctgB:1..200' },
+      target: { value: '{volvox2}ctgB:1..200' },
     })
 
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    // specify different valid assembly when navigating via locstring
+    await waitFor(() =>
+      expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+        'volvox2',
+      ),
+    )
     await waitFor(() =>
       expect(state.session.views[0].displayedRegions[0].refName).toEqual(
         'ctgB',
@@ -228,23 +236,6 @@ describe('valid file tests', () => {
     )
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
       expect.stringContaining('ctgB'),
-    )
-
-    const autocomplete2 = await findByTestId('autocomplete')
-    const inputBox2 = await findByPlaceholderText('Search for location')
-
-    autocomplete.focus()
-    fireEvent.change(inputBox2, {
-      target: { value: '{volvox}ctgA:1..200' },
-    })
-
-    fireEvent.keyDown(autocomplete2, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete2, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete2, { key: 'Enter', code: 'Enter' })
-    await waitFor(() =>
-      expect(state.session.views[0].displayedRegions[0].refName).toEqual(
-        'ctgA',
-      ),
     )
   })
 })
