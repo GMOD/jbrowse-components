@@ -39,7 +39,6 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import { assemblyConfigSchemas } from '@jbrowse/core/assemblyManager'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -642,7 +641,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             `Could not find assembly ${displayedRegion.assemblyName}`,
           )
         }
-        const { regions } = assembly
+        let { regions } = assembly
         if (!regions) {
           throw new Error(
             `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
@@ -678,6 +677,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             assembly = newAssembly
             changedAssembly = true
+            const newRegions = newAssembly.regions
+            if (!newRegions) {
+              throw new Error(
+                `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
+              )
+            }
+            regions = newRegions
           }
           const canonicalRefName = assembly.getCanonicalRefName(
             parsedLocString.refName,
@@ -688,8 +694,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )
           }
           if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            // TODO: handle changedAssembly and changing tracks
-            const newDisplayedRegion = assembly.regions.find(
+            console.log('regions', regions)
+            const newDisplayedRegion = regions.find(
               region => region.refName === canonicalRefName,
             )
             if (newDisplayedRegion) {
