@@ -103,8 +103,8 @@ const SessionLoader = types
   })
   .volatile(() => ({
     blankSession: false as any,
-    trustSharedSession: false as any,
-    test: false as any,
+    sessionTriaged: undefined as any,
+    shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
@@ -155,7 +155,6 @@ const SessionLoader = types
     setConfigError(error: Error) {
       self.configError = error
     },
-
     setSessionError(error: Error) {
       self.sessionError = error
     },
@@ -172,11 +171,11 @@ const SessionLoader = types
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setTrustSharedSession(flag: boolean) {
-      self.trustSharedSession = flag
+    setSessionTriaged(snap: unknown) {
+      self.sessionTriaged = snap
     },
-    setTest(flag: boolean) {
-      self.test = flag
+    setShareWarningOpen(flag: boolean) {
+      self.shareWarningOpen = flag
     },
   }))
   .actions(self => ({
@@ -265,23 +264,23 @@ const SessionLoader = types
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
       const hasCallbacks = await scanSharedSessionForCallbacks(session)
       // if something removed warn
-      let confirmedSession = true
-      if (hasCallbacks) {
-        // below is placeholder while working on custom module
-        // eslint-disable-next-line no-alert
-        confirmedSession = window.confirm(
-          'This shared session has custom callbacks. Please confirm if you trust the source',
-        )
-      }
-      confirmedSession
-        ? self.setSessionSnapshot({ ...session, id: shortid() })
-        : self.setBlankSession(true)
-
-      // TODO: working on making module show. remove test volatile when done
-      // if (hasCallbacks) self.setTest(true)
-      // self.trustSharedSession
+      // let confirmedSession = true
+      // if (hasCallbacks) {
+      //   // below is placeholder while working on custom module
+      //   // eslint-disable-next-line no-alert
+      //   confirmedSession = window.confirm(
+      //     'This shared session has custom callbacks. Please confirm if you trust the source',
+      //   )
+      // }
+      // confirmedSession
       //   ? self.setSessionSnapshot({ ...session, id: shortid() })
       //   : self.setBlankSession(true)
+
+      // TODO: working on making module show. remove test volatile when done
+      if (hasCallbacks) {
+        self.setSessionTriaged(session)
+        self.setShareWarningOpen(true)
+      } else self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -382,7 +381,7 @@ const Renderer = observer(
     initialSessionQuery: string | null | undefined
   }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
-    const { sessionError, configError, ready, test } = loader
+    const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
@@ -432,7 +431,7 @@ const Renderer = observer(
                 and pasting their URL`,
                 )
               }
-            } else if (sessionSnapshot) {
+            } else if (sessionSnapshot && !shareWarningOpen) {
               try {
                 rootModel.setSession(loader.sessionSnapshot)
               } catch (err) {
@@ -498,6 +497,7 @@ const Renderer = observer(
       }
     }, [
       loader,
+      shareWarningOpen,
       ready,
       sessionError,
       setPassword,
@@ -544,16 +544,19 @@ const Renderer = observer(
       )
     }
 
+    if (shareWarningOpen) {
+      return (
+        <SessionWarningModal
+          loader={loader}
+          sessionTriaged={loader.sessionTriaged}
+        />
+      )
+    }
     if (pm) {
       if (!pm.rootModel?.session) {
         return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
       }
       return <JBrowse pluginManager={pm} />
-    }
-    if (test) {
-      return (
-        <SessionWarningModal userInputFunction={loader.setTrustSharedSession} />
-      )
     }
     return <Loading />
   },
