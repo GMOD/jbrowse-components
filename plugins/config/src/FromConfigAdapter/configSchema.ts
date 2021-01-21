@@ -15,6 +15,21 @@ export const configSchema = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
+export const regionsConfigSchema = ConfigurationSchema(
+  'FromConfigRegionsAdapter',
+  {
+    features: {
+      type: 'frozen',
+      defaultValue: [],
+    },
+    featureClass: {
+      type: 'string',
+      defaultValue: 'SimpleFeature',
+    },
+  },
+  { explicitlyTyped: true },
+)
+
 export const sequenceConfigSchema = ConfigurationSchema(
   'FromConfigSequenceAdapter',
   {

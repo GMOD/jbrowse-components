@@ -21,7 +21,7 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
 export default class FromConfigAdapter
   extends BaseFeatureDataAdapter
   implements RegionsAdapter {
-  private features: Map<string, Feature[]>
+  protected features: Map<string, Feature[]>
 
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
@@ -31,10 +31,10 @@ export default class FromConfigAdapter
       config,
       'features',
     ) as SimpleFeatureSerialized[]
-    this.features = this.makeFeatures(features || [])
+    this.features = FromConfigAdapter.makeFeatures(features || [])
   }
 
-  private makeFeatures(fdata: SimpleFeatureSerialized[]) {
+  static makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -58,7 +58,7 @@ export default class FromConfigAdapter
     return features
   }
 
-  private makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  static makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
     return new SimpleFeature(data)
   }
 

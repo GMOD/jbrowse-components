@@ -391,7 +391,7 @@ describe('add-assembly', () => {
   setup
     .command([
       'add-assembly',
-      '{"type":"FromConfigAdapter","features":[{"refName":"SEQUENCE_1","uniqueId":"firstId","start":0,"end":233},{"refName":"SEQUENCE_2","uniqueId":"secondId","start":0,"end":120}]}',
+      '{"type":"FromConfigRegionsAdapter","features":[{"refName":"SEQUENCE_1","uniqueId":"firstId","start":0,"end":233},{"refName":"SEQUENCE_2","uniqueId":"secondId","start":0,"end":120}]}',
       '--name',
       'simple',
       '--load',
@@ -411,7 +411,7 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'FromConfigAdapter',
+                type: 'FromConfigRegionsAdapter',
                 features: [
                   {
                     refName: 'SEQUENCE_1',
