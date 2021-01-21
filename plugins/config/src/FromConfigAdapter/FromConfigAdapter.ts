@@ -1,7 +1,4 @@
-import {
-  BaseFeatureDataAdapter,
-  RegionsAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
@@ -18,9 +15,7 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 
-export default class FromConfigAdapter
-  extends BaseFeatureDataAdapter
-  implements RegionsAdapter {
+export default class FromConfigAdapter extends BaseFeatureDataAdapter {
   protected features: Map<string, Feature[]>
 
   constructor(
@@ -89,40 +84,6 @@ export default class FromConfigAdapter
       })
     }
     return Array.from(refNames)
-  }
-
-  /**
-   * Get refName, start, and end for all features after collapsing any overlaps
-   */
-  async getRegions() {
-    const regions = []
-
-    // recall: features are stored in this object sorted by start coordinate
-    for (const [refName, features] of this.features) {
-      let currentRegion
-      for (const feature of features) {
-        if (
-          currentRegion &&
-          currentRegion.end >= feature.get('start') &&
-          currentRegion.start <= feature.get('end')
-        ) {
-          currentRegion.end = feature.get('end')
-        } else {
-          if (currentRegion) regions.push(currentRegion)
-          currentRegion = {
-            refName,
-            start: feature.get('start'),
-            end: feature.get('end'),
-          }
-        }
-      }
-      if (currentRegion) regions.push(currentRegion)
-    }
-
-    // sort the regions by refName
-    regions.sort((a, b) => a.refName.localeCompare(b.refName))
-
-    return regions
   }
 
   async getRefNameAliases() {

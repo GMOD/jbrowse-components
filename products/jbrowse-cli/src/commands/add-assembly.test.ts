@@ -45,7 +45,7 @@ describe('add-assembly', () => {
   setup
     .command([
       'add-assembly',
-      '{"type":"fromConfigAdapter"}',
+      '{"type":"fromConfigSequenceAdapter"}',
       '--name',
       'simple',
       '--refNameAliases',
@@ -91,7 +91,7 @@ describe('add-assembly', () => {
   setup
     .command([
       'add-assembly',
-      '{"type":"fromConfigAdapter"}',
+      '{"type":"fromConfigSequenceAdapter"}',
       '--name',
       'simple',
       '--refNameAliases',
@@ -362,7 +362,7 @@ describe('add-assembly', () => {
             sequence: {
               ...baseSequence,
               adapter: {
-                type: 'FromConfigAdapter',
+                type: 'FromConfigSequenceAdapter',
                 features: [
                   {
                     refName: 'SEQUENCE_1',

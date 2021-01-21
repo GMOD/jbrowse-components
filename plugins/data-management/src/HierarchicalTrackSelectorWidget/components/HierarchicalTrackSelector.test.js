@@ -31,7 +31,7 @@ describe('HierarchicalTrackSelector widget', () => {
         trackId: 'sequenceConfigId',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',
@@ -87,7 +87,7 @@ describe('HierarchicalTrackSelector widget', () => {
         trackId: 'sequenceConfigId',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',

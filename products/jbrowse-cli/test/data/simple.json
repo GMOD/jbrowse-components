@@ -1,5 +1,5 @@
 {
-  "type": "FromConfigAdapter",
+  "type": "FromConfigSequenceAdapter",
   "features": [
     {
       "refName": "SEQUENCE_1",
