@@ -30,12 +30,12 @@ export default function SessionWarningModal({
   sessionTriaged,
 }: {
   loader: Instance<SessionLoader>
-  sessionTriaged: IAnyStateTreeNode
+  sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
 }) {
   const classes = useStyles()
   const [open, setOpen] = useState(true)
 
-  const sharedSession = JSON.parse(JSON.stringify(sessionTriaged))
+  const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
 
   const handleClose = () => {
     loader.setShareWarningOpen(false)
@@ -57,7 +57,7 @@ export default function SessionWarningModal({
           <WarningIcon fontSize="large" />
           <DialogContent>
             <DialogContentText>
-              About to load a shared session.
+              About to load an external session.
             </DialogContentText>
             <DialogContentText>
               Please confirm that you trust the loaded file contents.
@@ -69,10 +69,15 @@ export default function SessionWarningModal({
               variant="contained"
               style={{ marginRight: 5 }}
               onClick={() => {
-                loader.setSessionSnapshot({
-                  ...sharedSession,
-                  id: shortid(),
-                })
+                sessionTriaged.origin === 'share'
+                  ? loader.setSessionSnapshot({
+                      ...session,
+                      id: shortid(),
+                    })
+                  : loader.setConfigSnapshot({
+                      ...session,
+                      id: shortid(),
+                    })
                 handleClose()
               }}
             >

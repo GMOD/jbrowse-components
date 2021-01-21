@@ -171,8 +171,8 @@ const SessionLoader = types
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setSessionTriaged(snap: unknown) {
-      self.sessionTriaged = snap
+    setSessionTriaged(snap: unknown, origin: string) {
+      self.sessionTriaged = { snap, origin }
     },
     setShareWarningOpen(flag: boolean) {
       self.shareWarningOpen = flag
@@ -201,7 +201,11 @@ const SessionLoader = types
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
-        self.setConfigSnapshot(config)
+        // cross origin config check
+        if (configUri.hostname !== window.location.hostname) {
+          self.setSessionTriaged(config, 'config')
+          self.setShareWarningOpen(true)
+        } else self.setConfigSnapshot(config)
       } catch (error) {
         self.setConfigError(error)
       }
@@ -278,7 +282,7 @@ const SessionLoader = types
 
       // TODO: working on making module show. remove test volatile when done
       if (hasCallbacks) {
-        self.setSessionTriaged(session)
+        self.setSessionTriaged(session, 'share')
         self.setShareWarningOpen(true)
       } else self.setSessionSnapshot({ ...session, id: shortid() })
     },
