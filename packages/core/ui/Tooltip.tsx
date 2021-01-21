@@ -2,7 +2,6 @@
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
-import ReactPropTypes from 'prop-types'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
@@ -50,17 +49,4 @@ const Tooltip = ({
   }
   return null
 }
-
-Tooltip.propTypes = {
-  configuration: ReactPropTypes.shape({}).isRequired,
-  offsetX: ReactPropTypes.number.isRequired,
-  offsetY: ReactPropTypes.number.isRequired,
-  feature: ReactPropTypes.shape({}),
-  timeout: ReactPropTypes.number,
-}
-
-Tooltip.defaultProps = {
-  feature: undefined,
-}
-
 export default observer(Tooltip)
