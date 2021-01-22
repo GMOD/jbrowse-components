@@ -8,7 +8,7 @@ function XYPlotRendererPlugin() {
     configSchema,
   })
 }
-xtest('several features', async () => {
+test('several features', async () => {
   const result = await XYPlotRendererPlugin().makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),

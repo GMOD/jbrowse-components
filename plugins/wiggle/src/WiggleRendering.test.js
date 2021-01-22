@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point
-xtest('one', () => {
+test('one', () => {
   const { container } = render(
     <WiggleRendering
       width={500}

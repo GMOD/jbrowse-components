@@ -1,18 +1,19 @@
-import * as d3 from 'd3'
 import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
-import { featureSpanPx } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getScale } from './util'
-import { WiggleBaseRendererProps } from './WiggleBaseRenderer'
 
-interface WiggleRenderingProps extends WiggleBaseRendererProps {
+import { Region } from '@jbrowse/core/util/types'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { PrerenderedCanvas } from '@jbrowse/core/ui'
+
+function WiggleRendering(props: {
+  regions: Region[]
+  features: Map<string, Feature>
+  bpPerPx: number
+  width: number
+  height: number
   onMouseLeave: Function
   onMouseMove: Function
-  forceSvg: boolean
-}
-
-function WiggleRendering(props: WiggleRenderingProps) {
+}) {
   const {
     regions,
     features,
@@ -21,16 +22,12 @@ function WiggleRendering(props: WiggleRenderingProps) {
     height,
     onMouseLeave = () => {},
     onMouseMove = () => {},
-    forceSvg,
   } = props
-  const region = regions[0]
-  const ref = useRef<SVGSVGElement>(null)
+  const [region] = regions
+  const ref = useRef<HTMLDivElement>(null)
 
-  return forceSvg ? (
-    <LineRendering {...props} />
-  ) : (
-    <svg
-      style={{ width: '100%', height }}
+  return (
+    <div
       ref={ref}
       onMouseMove={event => {
         let offset = 0
@@ -59,48 +56,14 @@ function WiggleRendering(props: WiggleRenderingProps) {
       onMouseLeave={event => onMouseLeave(event)}
       role="presentation"
       className="WiggleRendering"
+      style={{
+        overflow: 'visible',
+        position: 'relative',
+        height,
+      }}
     >
-      <LineRendering {...props} />
-    </svg>
-  )
-}
-
-function LineRendering(props: WiggleRenderingProps) {
-  const { features, regions, height, scaleOpts, bpPerPx } = props
-  const [region] = regions
-  const scale = getScale({ ...scaleOpts, range: [height, 0] })
-
-  type D = [number, Feature]
-  const line = d3
-    .line()
-    // @ts-ignore
-    .y((d: D) => scale(d[1].get('score')))
-    .context(null)
-
-  const area = d3
-    .area()
-    // @ts-ignore
-    .y0((d: D) => scale(d[1].get('minScore')))
-    // @ts-ignore
-    .y1((d: D) => scale(d[1].get('maxScore')))
-    // @ts-ignore
-    .defined((d: D) => d[1].get('summary'))
-    .context(null)
-  const data = []
-
-  for (const feature of features.values()) {
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-    data.push([leftPx, feature])
-    data.push([rightPx, feature])
-  }
-
-  return (
-    <>
-      {/* @ts-ignore*/}
-      <path d={line(data)} fill="none" stroke="rgb(0,0,255)" />
-      {/* @ts-ignore*/}
-      <path d={area(data)} fill="rgb(0,0,255,0.5)" stroke="none" />
-    </>
+      <PrerenderedCanvas {...props} />
+    </div>
   )
 }
 
