@@ -41,7 +41,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
 
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
-      const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
+      const w = rightPx - leftPx + 0.7 // fudge factor for subpixel rendering
 
       const c = colorCallback(feature)
       if (summaryScoreMode === 'max') {

@@ -2,6 +2,7 @@
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
 import React from 'react'
+import Path from 'svg-path-generator'
 
 // This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
@@ -190,6 +191,8 @@ export class PonyfillOffscreenCanvas {
 
   getSerializedSvg() {
     let currentFill
+    let currentPath = []
+    let initial
 
     const nodes = []
     this.context.commands.forEach((command, index) => {
@@ -210,6 +213,27 @@ export class PonyfillOffscreenCanvas {
             height={h}
           />,
         )
+      }
+      if (command.type === 'beginPath') {
+        currentPath = []
+      }
+      if (command.type === 'moveTo') {
+        currentPath.push(command.args)
+        initial = [...command.args]
+      }
+      if (command.type === 'lineTo') {
+        currentPath.push(command.args)
+      }
+      if (command.type === 'closePath') {
+        currentPath.push(initial)
+      }
+      if (command.type === 'fill') {
+        let path = Path().moveTo(...currentPath[0])
+        for (let i = 1; i < currentPath.length; i++) {
+          path = path.lineTo(...currentPath[i])
+        }
+        path.end()
+        nodes.push(<path fill={currentFill} d={path} />)
       }
     })
     return <>{[...nodes]}</>
