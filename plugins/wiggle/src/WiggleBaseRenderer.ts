@@ -1,7 +1,10 @@
 import {
   createCanvas,
   createImageBitmap,
+  PonyfillOffscreenContext,
+  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -17,6 +20,7 @@ export interface WiggleBaseRendererProps {
   bpPerPx: number
   height: number
   width: number
+  forceSvg: boolean
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
@@ -29,21 +33,34 @@ export interface WiggleBaseRendererProps {
 
 export default abstract class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
-    const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
+    const {
+      forceSvg,
+      height,
+      regions,
+      bpPerPx,
+      highResolutionScaling = 1,
+    } = props
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    this.draw(ctx, props)
+    if (!forceSvg) {
+      const canvas = createCanvas(
+        Math.ceil(width * highResolutionScaling),
+        height * highResolutionScaling,
+      )
+      const ctx = canvas.getContext('2d')
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+      this.draw(ctx, props)
+      const imageData = await createImageBitmap(canvas)
+      return { imageData, height, width }
+    }
 
-    const imageData = await createImageBitmap(canvas)
+    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+    const fakeCtx = fakeCanvas.getContext('2d')
+    this.draw(fakeCtx, props)
+    const imageData = fakeCanvas.getSerializedSvg()
     return { imageData, height, width }
   }
 
@@ -54,12 +71,27 @@ export default abstract class extends ServerSideRendererType {
   ): void
 
   async render(renderProps: WiggleBaseRendererProps) {
+    const { forceSvg } = renderProps
     const { height, width, imageData } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
-    return { element, imageData, height, width }
+    const element = forceSvg
+      ? imageData
+      : React.createElement(
+          this.ReactComponent,
+          { ...renderProps, height, width, imageData },
+          null,
+        )
+
+    return forceSvg
+      ? {
+          element,
+          height,
+          width,
+        }
+      : {
+          element,
+          imageData,
+          height,
+          width,
+        }
   }
 }

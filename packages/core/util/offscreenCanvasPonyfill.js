@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 /* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
+import React from 'react'
 
 // This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
@@ -18,7 +19,7 @@ const weHave = {
     typeof __webpack_require__ === 'undefined' && typeof process === 'object',
 }
 
-class PonyfillOffscreenContext {
+export class PonyfillOffscreenContext {
   constructor() {
     this.commands = []
     this.currentFont = '12px Courier New, monospace'
@@ -175,7 +176,7 @@ class PonyfillOffscreenContext {
   //   getTransform(...args)
 }
 
-class PonyfillOffscreenCanvas {
+export class PonyfillOffscreenCanvas {
   constructor(width, height) {
     this.width = width
     this.height = height
@@ -185,6 +186,33 @@ class PonyfillOffscreenCanvas {
     if (type !== '2d') throw new Error(`unknown type ${type}`)
     this.context = new PonyfillOffscreenContext()
     return this.context
+  }
+
+  getSerializedSvg() {
+    let currentFill
+
+    const nodes = []
+    this.context.commands.forEach((command, index) => {
+      if (command.type === 'fillStyle') {
+        if (command.style) {
+          currentFill = command.style
+        }
+      }
+      if (command.type === 'fillRect') {
+        const [x, y, w, h] = command.args
+        nodes.push(
+          <rect
+            key={index}
+            fill={currentFill}
+            x={x}
+            y={y}
+            width={w}
+            height={h}
+          />,
+        )
+      }
+    })
+    return <>{[...nodes]}</>
   }
 }
 // Electron serializes everything to JSON through the IPC boundary, so we just

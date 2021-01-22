@@ -153,6 +153,7 @@ export async function renderToSvg(model: LGV) {
             const trackId = getConf(track, 'trackId')
             const display = track.displays[0]
             offset += display.height + 20
+
             return (
               <g key={trackId} transform={`translate(0 ${current})`}>
                 {await display.renderSvg()}
