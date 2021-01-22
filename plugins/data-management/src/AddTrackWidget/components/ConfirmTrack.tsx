@@ -1,18 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  guessAdapter,
-  guessTrackType,
-  UNKNOWN,
-  UNSUPPORTED,
-} from '@jbrowse/core/util/tracks'
+import { getSession } from '@jbrowse/core/util'
+import { guessAdapter, UNKNOWN } from '@jbrowse/core/util/tracks'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React, { useState, useEffect } from 'react'
+import { observer } from 'mobx-react'
+import React, { useEffect } from 'react'
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   spacing: {
@@ -20,95 +16,45 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-/**
- * check if a string looks like an abolute URL, e.g. a
- * full URL e.g. "https://mysite.org/myfile.txt",
- * implicit protocol URL e.g. "//mysite.org/myfile.txt", or
- * implicit domain name URL e.g. "/myfile.txt"
- * @param {String} url URL
- */
-function isAbsoluteUrl(url) {
-  try {
-    // eslint-disable-next-line no-new
-    new URL(url)
-    return true
-  } catch (error) {
-    return url.startsWith('/')
-  }
-}
-
-function ConfirmTrack({
-  trackData,
-  trackName,
-  fileName,
-  indexTrackData,
-  setTrackAdapter,
-  setTrackName,
-  trackType,
-  setTrackType,
-  trackAdapter,
-  assembly,
-  setAssembly,
-  session,
-}) {
+function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
-  const [error, setError] = useState()
+  const session = getSession(model)
+  let error = ''
+  const {
+    trackName,
+    trackData,
+    trackAdapter,
+    trackType,
+    indexTrackData,
+    assembly,
+  } = model
+
   useEffect(() => {
-    if (trackData.uri) {
+    if (trackData?.uri) {
       const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
-      setTrackAdapter(adapter)
-      setTrackType(guessTrackType(adapter.type))
-
-      // check for ftp url inputs
-      if (
-        (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
-        trackData.uri.startsWith('ftp://')
-      ) {
-        setError(`Warning: JBrowse cannot access files using the ftp protocol`)
-      }
-
-      // check for whether the user entered an absolute URL
-      else if (
-        !(
-          (indexTrackData.uri && isAbsoluteUrl(indexTrackData.uri)) ||
-          isAbsoluteUrl(trackData.uri)
-        )
-      ) {
-        setError(
-          `Warning: one or more of your files do not provide the protocol e.g.
-          https://, please provide an absolute URL unless you are sure a
-          relative URL is intended.`,
-        )
-      }
-
-      // check for accessing an http url when we are running on https, which is
-      // disallowed
-      else if (
-        window.location.protocol === 'https:' &&
-        ((indexTrackData.uri && indexTrackData.uri.startsWith('http://')) ||
-          trackData.uri.startsWith('http://'))
-      ) {
-        setError(
-          `Warning: You entered a http:// resources but we cannot access HTTP
-          resources from JBrowse when it is running on https. Please use an
-          https URL for your track, or access the JBrowse app from the http
-          protocol`,
-        )
-      }
+      model.setTrackAdapter(adapter)
     }
+
     if (trackData.localPath) {
       const adapter = guessAdapter(trackData.localPath, 'localPath')
-      setTrackAdapter(adapter)
-      setTrackType(guessTrackType(adapter.type))
+      model.setTrackAdapter(adapter)
     }
-    if (trackData.config) setTrackAdapter({ type: 'FromConfigAdapter' })
-  }, [trackData, setTrackAdapter, indexTrackData, setTrackType])
+  }, [model, trackData, indexTrackData])
 
-  function handleAssemblyChange(event) {
-    setAssembly(event.target.value)
+  if (model.isFtp) {
+    error = `Warning: JBrowse cannot access files using the ftp protocol`
+  } else if (model.isRelativeUrl) {
+    error = `Warning: one or more of your files do not provide the protocol e.g.
+          https://, please provide an absolute URL unless you are sure a
+          relative URL is intended.`
+  } else if (model.wrongProtocol) {
+    error = `Warning: You entered a http:// resources but we cannot access HTTP
+          resources from JBrowse when it is running on https. Please use an
+          https URL for your track, or access the JBrowse app from the http
+          protocol`
   }
 
-  if (trackAdapter.type === UNSUPPORTED)
+  if (model.unsupported) {
     return (
       <Typography className={classes.spacing}>
         This version of JBrowse cannot display data of this type. It is
@@ -132,7 +78,8 @@ function ConfirmTrack({
         and add a feature request for this data type.
       </Typography>
     )
-  if (trackAdapter.type === UNKNOWN)
+  }
+  if (trackAdapter.type === UNKNOWN) {
     return (
       <>
         <Typography className={classes.spacing}>
@@ -157,16 +104,16 @@ function ConfirmTrack({
         </Typography>
         <TextField
           className={classes.spacing}
-          value=""
+          value={trackAdapter}
           label="adapterType"
           helperText="An adapter type"
           select
           fullWidth
           onChange={event => {
-            setTrackAdapter({ type: event.target.value })
-            setTrackType(guessTrackType(event.target.value))
+            model.setTrackAdapter({ type: event.target.value })
           }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
           }}
         >
@@ -185,10 +132,12 @@ function ConfirmTrack({
         </TextField>
       </>
     )
-  if (!trackAdapter.type)
+  }
+  if (!trackAdapter.type) {
     // TODO: if file type is unrecognized, provide some way of specifying
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this data type.</Typography>
+  }
   if (trackData.uri || trackData.localPath || trackData.config) {
     let message = null
     if (trackData.uri || trackData.localPath) {
@@ -225,8 +174,8 @@ function ConfirmTrack({
           label="trackName"
           helperText="A name for this track"
           fullWidth
-          value={trackName || fileName}
-          onChange={event => setTrackName(event.target.value)}
+          value={trackName}
+          onChange={event => model.setTrackName(event.target.value)}
           inputProps={{ 'data-testid': 'trackNameInput' }}
         />
         <TextField
@@ -237,9 +186,10 @@ function ConfirmTrack({
           select
           fullWidth
           onChange={event => {
-            setTrackType(event.target.value)
+            model.setTrackType(event.target.value)
           }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
         >
@@ -260,8 +210,11 @@ function ConfirmTrack({
           helperText="Assembly to which the track will be added"
           select
           fullWidth
-          onChange={handleAssemblyChange}
+          onChange={event => {
+            model.setAssembly(event.target.value)
+          }}
           SelectProps={{
+            // @ts-ignore
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           }}
         >
@@ -278,43 +231,6 @@ function ConfirmTrack({
     )
   }
   return <></>
-}
-
-ConfirmTrack.propTypes = {
-  assembly: PropTypes.oneOfType([
-    PropTypes.string,
-    MobxPropTypes.observableObject,
-  ]),
-  setAssembly: PropTypes.func.isRequired,
-  trackData: PropTypes.shape({
-    uri: PropTypes.string,
-    localPath: PropTypes.string,
-    config: PropTypes.array,
-  }).isRequired,
-  indexTrackData: PropTypes.shape({
-    uri: PropTypes.string,
-    localPath: PropTypes.string,
-    config: PropTypes.array,
-  }).isRequired,
-  trackName: PropTypes.string.isRequired,
-  fileName: PropTypes.string,
-  setTrackName: PropTypes.func.isRequired,
-  trackType: PropTypes.string,
-  setTrackType: PropTypes.func.isRequired,
-  trackAdapter: PropTypes.shape({
-    type: PropTypes.string,
-    subadapter: PropTypes.shape({
-      type: PropTypes.string,
-    }),
-  }).isRequired,
-  setTrackAdapter: PropTypes.func.isRequired,
-  session: MobxPropTypes.observableObject.isRequired,
-}
-
-ConfirmTrack.defaultProps = {
-  assembly: '',
-  trackType: '',
-  fileName: '',
 }
 
 export default observer(ConfirmTrack)
