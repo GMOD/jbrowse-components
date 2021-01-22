@@ -29,6 +29,7 @@ import { getNiceDomain } from '../../util'
 import Tooltip from '../components/Tooltip'
 import { FeatureStats } from '../../statsUtil'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
+import { YScaleBar } from '../components/WiggleDisplayComponent'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -339,6 +340,7 @@ const stateModelFactory = (
     })
     .actions(self => {
       const superReload = self.reload
+      const superRenderSvg = self.renderSvg
 
       async function getStats(opts: {
         headers?: Record<string, string>
@@ -469,6 +471,15 @@ const stateModelFactory = (
               },
               { delay: 1000 },
             ),
+          )
+        },
+        async renderSvg() {
+          return (
+            <>
+              <g id="snpcov">{await superRenderSvg()}</g>
+              {/* @ts-ignore */}
+              {self.needsScalebar ? <YScaleBar model={self} /> : null}
+            </>
           )
         },
       }
