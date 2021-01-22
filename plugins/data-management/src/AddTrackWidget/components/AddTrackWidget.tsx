@@ -11,6 +11,7 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
+import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -33,54 +34,18 @@ const useStyles = makeStyles(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWidget({ model }) {
+function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
-  const [trackSource, setTrackSource] = useState('fromFile')
-  const [trackData, setTrackData] = useState({ uri: '' })
-  const [indexTrackData, setIndexTrackData] = useState({ uri: '' })
-  const [trackName, setTrackName] = useState('')
-  const [trackType, setTrackType] = useState('')
-  const [trackAdapter, setTrackAdapter] = useState({})
-  const [assembly, setAssembly] = useState(
-    model.view.displayedRegions[0].assemblyName || '',
-  )
   const classes = useStyles()
-  const fileName = trackData.uri
-    ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
-    : null
-
   const session = getSession(model)
+  const { assembly, trackAdapter, trackData, trackName, trackType } = model
 
-  function getStepContent(step) {
+  function getStepContent(step: number) {
     switch (step) {
       case 0:
-        return (
-          <TrackSourceSelect
-            trackSource={trackSource}
-            setTrackSource={setTrackSource}
-            trackData={trackData}
-            setTrackData={setTrackData}
-            indexTrackData={indexTrackData}
-            setIndexTrackData={setIndexTrackData}
-          />
-        )
+        return <TrackSourceSelect model={model} />
       case 1:
-        return (
-          <ConfirmTrack
-            fileName={fileName}
-            session={session}
-            indexTrackData={indexTrackData}
-            trackData={trackData}
-            trackName={trackName}
-            setTrackName={setTrackName}
-            trackType={trackType}
-            setTrackType={setTrackType}
-            trackAdapter={trackAdapter}
-            setTrackAdapter={setTrackAdapter}
-            assembly={assembly}
-            setAssembly={setAssembly}
-          />
-        )
+        return <ConfirmTrack model={model} />
       default:
         return <Typography>Unknown step</Typography>
     }
@@ -91,16 +56,17 @@ function AddTrackWidget({ model }) {
       setActiveStep(activeStep + 1)
       return
     }
-    trackAdapter.features = trackData.config
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
 
     const assemblyInstance = session.assemblyManager.get(assembly)
+
+    // @ts-ignore
     session.addTrackConf({
       trackId,
       type: trackType,
-      name: trackName || fileName,
+      name: trackName,
       assemblyNames: [assembly],
       adapter: {
         ...trackAdapter,
@@ -115,6 +81,8 @@ function AddTrackWidget({ model }) {
         'info',
       )
     }
+    model.clearData()
+    // @ts-ignore
     session.hideWidget(model)
   }
 
@@ -125,19 +93,10 @@ function AddTrackWidget({ model }) {
   function isNextDisabled() {
     switch (activeStep) {
       case 0:
-        return !(
-          trackData.uri ||
-          trackData.localPath ||
-          trackData.blob ||
-          trackData.config
-        )
+        // @ts-ignore
+        return !(trackData.uri || trackData.localPath || trackData.blob)
       case 1:
-        return !(
-          (trackName || fileName) &&
-          trackType &&
-          trackAdapter.type &&
-          assembly
-        )
+        return !(trackName && trackType && trackAdapter.type && assembly)
       default:
         return true
     }

@@ -10,10 +10,8 @@ export default class WidgetType extends PluggableElementBase {
 
   HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
 
-  ReactComponent: ComponentType<{
-    model: IAnyStateTreeNode
-    session: IAnyStateTreeNode
-  }>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ReactComponent: React.FC<any>
 
   stateModel: IAnyModelType
 
@@ -23,10 +21,8 @@ export default class WidgetType extends PluggableElementBase {
     HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    ReactComponent: ComponentType<{
-      model: IAnyStateTreeNode
-      session: IAnyStateTreeNode
-    }>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ReactComponent: React.FC<any>
   }) {
     super(stuff)
     this.heading = stuff.heading

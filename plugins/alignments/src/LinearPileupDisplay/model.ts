@@ -186,9 +186,9 @@ const stateModelFactory = (
                     regions: [region],
                     adapterConfig: self.adapterConfig,
                     rendererType: self.rendererType.name,
-                    renderProps,
                     sessionId: getRpcSessionId(self),
                     timeout: 1000000,
+                    ...renderProps,
                   })
                   self.setReady(true)
                   self.setCurrBpPerPx(view.bpPerPx)
