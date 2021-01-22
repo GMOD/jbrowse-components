@@ -70,7 +70,10 @@ function RefNameAutocomplete({
         // @ts-ignore
         onSelect(getSnapshot(newRegion))
       } else {
-        newRegionValue && navTo(newRegionValue)
+        // parse and set possible refName
+        console.log('locstring')
+        onSelect(newRegionValue)
+        // newRegionValue && navTo(newRegionValue)
       }
     }
   }

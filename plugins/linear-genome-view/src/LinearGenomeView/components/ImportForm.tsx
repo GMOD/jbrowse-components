@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -26,7 +25,9 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<Region | undefined>()
+  const [selectedRegion, setSelectedRegion] = useState<
+    Region | String | undefined
+  >()
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
@@ -34,12 +35,11 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   useEffect(() => {
     let done = false
     ;(async () => {
-      if (assemblyName) {
-        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+      const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
-        if (!done && assembly && assembly.regions) {
-          setSelectedRegion(getSnapshot(assembly.regions[0]))
-        }
+      if (!done && assembly && assembly.regions) {
+        // setSelectedRegion(assembly.regions[0].refName)
+        setSelectedRegion(getSnapshot(assembly.regions[0]))
       }
     })()
     return () => {
@@ -54,9 +54,14 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   }
 
   function onOpenClick() {
-    if (selectedRegion) {
+    if (typeof selectedRegion === 'string') {
+      console.log(selectedRegion)
+    } else {
       model.setDisplayedRegions([selectedRegion])
     }
+    // if (selectedRegion) {
+    //   model.setDisplayedRegions([selectedRegion])
+    // }
   }
 
   return (
@@ -83,32 +88,30 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {assemblyName ? (
-            selectedRegion && model.volatileWidth ? (
-              <RefNameAutocomplete
-                model={model}
-                assemblyName={
-                  error ? undefined : assemblyNames[selectedAssemblyIdx]
-                }
-                value={selectedRegion?.refName}
-                onSelect={setSelectedRegion}
-                TextFieldProps={{
-                  margin: 'normal',
-                  variant: 'outlined',
-                  label: 'Sequence',
-                  className: classes.importFormEntry,
-                  helperText: 'Select sequence to view',
-                }}
-              />
-            ) : (
-              <CircularProgress
-                role="progressbar"
-                color="inherit"
-                size={20}
-                disableShrink
-              />
-            )
-          ) : null}
+          {selectedRegion && model.volatileWidth ? (
+            <RefNameAutocomplete
+              model={model}
+              assemblyName={
+                error ? undefined : assemblyNames[selectedAssemblyIdx]
+              }
+              // value={selectedRegion?.refName || selectedRegion}
+              onSelect={setSelectedRegion}
+              TextFieldProps={{
+                margin: 'normal',
+                variant: 'outlined',
+                label: 'Sequence',
+                className: classes.importFormEntry,
+                helperText: 'Select sequence to view',
+              }}
+            />
+          ) : (
+            <CircularProgress
+              role="progressbar"
+              color="inherit"
+              size={20}
+              disableShrink
+            />
+          )}
         </Grid>
         <Grid item>
           <Button
