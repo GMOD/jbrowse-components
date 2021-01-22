@@ -90,10 +90,6 @@ describe('valid file tests', () => {
     fireEvent.click(getSeqMenuItem)
     expect(state.session.views[0].leftOffset).toBeTruthy()
     expect(state.session.views[0].rightOffset).toBeTruthy()
-    const closeButton = await findByTestId('close-seqDialog')
-    fireEvent.click(closeButton)
-    expect(state.session.views[0].leftOffset).toBeFalsy()
-    expect(state.session.views[0].rightOffset).toBeFalsy()
   })
 
   it('click and drag to reorder tracks', async () => {
