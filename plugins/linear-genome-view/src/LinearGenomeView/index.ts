@@ -641,7 +641,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             `Could not find assembly ${displayedRegion.assemblyName}`,
           )
         }
-        const { regions } = assembly
+        let { regions } = assembly
         if (!regions) {
           throw new Error(
             `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
@@ -677,6 +677,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
             assembly = newAssembly
             changedAssembly = true
+            const newRegions = newAssembly.regions
+            if (!newRegions) {
+              throw new Error(
+                `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
+              )
+            }
+            regions = newRegions
           }
           const canonicalRefName = assembly.getCanonicalRefName(
             parsedLocString.refName,
