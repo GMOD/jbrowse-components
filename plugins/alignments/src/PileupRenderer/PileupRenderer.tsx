@@ -507,9 +507,8 @@ export default class PileupRenderer extends BoxRendererType {
           )
         }
       } else if (mismatch.type === 'skip') {
-        // fix to avoid bad rendering
-        // note that this was also related to chrome bug https://bugs.chromium.org/p/chro>
-        // ref #1236
+        // fix to avoid bad rendering note that this was also related to chrome
+        // bug https://bugs.chromium.org/p/chro> ref #1236
         if (mismatchLeftPx + mismatchWidthPx > 0) {
           ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
         }
@@ -562,7 +561,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   makeImageData(
     ctx: CanvasRenderingContext2D,
-    layoutRecords: any,
+    layoutRecords: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     props: PileupRenderProps,
   ) {
     const { config, regions, bpPerPx, showSoftClip, theme: configTheme } = props
@@ -581,7 +580,7 @@ export default class PileupRenderer extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
     const charWidth = ctx.measureText('A').width
     const charHeight = ctx.measureText('M').width
-    layoutRecords.forEach(feat => {
+    layoutRecords.forEach((feat: LayoutRecord) => {
       if (feat === null) {
         return
       }

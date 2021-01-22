@@ -1,7 +1,6 @@
 import {
   createCanvas,
   createImageBitmap,
-  PonyfillOffscreenContext,
   PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
@@ -11,6 +10,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
 export interface WiggleBaseRendererProps {
@@ -29,6 +29,8 @@ export interface WiggleBaseRendererProps {
   sessionId: string
   signal: AbortSignal
   displayModel: unknown
+  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  theme: ThemeOptions
 }
 
 export default abstract class extends ServerSideRendererType {
