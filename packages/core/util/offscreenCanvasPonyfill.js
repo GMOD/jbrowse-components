@@ -191,14 +191,19 @@ export class PonyfillOffscreenCanvas {
 
   getSerializedSvg() {
     let currentFill
+    let currentStroke
     let currentPath = []
-    let initial
 
     const nodes = []
     this.context.commands.forEach((command, index) => {
       if (command.type === 'fillStyle') {
         if (command.style) {
           currentFill = command.style
+        }
+      }
+      if (command.type === 'strokeStyle') {
+        if (command.style) {
+          currentStroke = command.style
         }
       }
       if (command.type === 'fillRect') {
@@ -219,7 +224,6 @@ export class PonyfillOffscreenCanvas {
       }
       if (command.type === 'moveTo') {
         currentPath.push(command.args)
-        initial = [...command.args]
       }
       if (command.type === 'lineTo') {
         currentPath.push(command.args)
@@ -234,6 +238,14 @@ export class PonyfillOffscreenCanvas {
         }
         path.end()
         nodes.push(<path fill={currentFill} d={path} />)
+      }
+      if (command.type === 'stroke') {
+        let path = Path().moveTo(...currentPath[0])
+        for (let i = 1; i < currentPath.length; i++) {
+          path = path.lineTo(...currentPath[i])
+        }
+        path.end()
+        nodes.push(<path fill="none" stroke={currentStroke} d={path} />)
       }
     })
     return <>{[...nodes]}</>
