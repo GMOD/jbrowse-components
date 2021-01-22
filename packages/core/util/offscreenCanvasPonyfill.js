@@ -237,7 +237,7 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        nodes.push(<path fill={currentFill} d={path} />)
+        nodes.push(<path key={index} fill={currentFill} d={path} />)
       }
       if (command.type === 'stroke') {
         let path = Path().moveTo(...currentPath[0])
@@ -245,7 +245,9 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        nodes.push(<path fill="none" stroke={currentStroke} d={path} />)
+        nodes.push(
+          <path key={index} fill="none" stroke={currentStroke} d={path} />,
+        )
       }
     })
     return <>{[...nodes]}</>
