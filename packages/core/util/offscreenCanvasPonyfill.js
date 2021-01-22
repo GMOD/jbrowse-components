@@ -225,7 +225,7 @@ export class PonyfillOffscreenCanvas {
         currentPath.push(command.args)
       }
       if (command.type === 'closePath') {
-        currentPath.push(initial)
+        /* do nothing */
       }
       if (command.type === 'fill') {
         let path = Path().moveTo(...currentPath[0])
