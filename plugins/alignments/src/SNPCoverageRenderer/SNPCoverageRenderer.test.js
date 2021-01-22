@@ -8,7 +8,7 @@ function SNPCoverageRendererPlugin() {
     configSchema,
   })
 }
-xtest('several features', async () => {
+test('several features', async () => {
   const result = await SNPCoverageRendererPlugin().makeImageData({
     features: new Map([
       [

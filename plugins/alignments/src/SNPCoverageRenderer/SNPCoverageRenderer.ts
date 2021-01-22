@@ -88,7 +88,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score') as number
-      ctx.fillRect(leftPx, toY(score), rightPx - leftPx + 0.7, toHeight(score))
+      ctx.fillRect(leftPx, toY(score), rightPx - leftPx + 0.3, toHeight(score))
     }
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
