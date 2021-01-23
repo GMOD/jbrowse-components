@@ -207,16 +207,24 @@ describe('valid file tests', () => {
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
     )
+
     const autocomplete = await findByTestId('autocomplete')
     const inputBox = await findByPlaceholderText('Search for location')
 
     autocomplete.focus()
     fireEvent.change(inputBox, {
-      target: { value: 'ctgB:1..200' },
+      target: { value: '{volvox2}ctgB:1..200' },
     })
 
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    // specify different valid assembly when navigating via locstring
+    await waitFor(() =>
+      expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+        'volvox2',
+      ),
+    )
     await waitFor(() =>
       expect(state.session.views[0].displayedRegions[0].refName).toEqual(
         'ctgB',

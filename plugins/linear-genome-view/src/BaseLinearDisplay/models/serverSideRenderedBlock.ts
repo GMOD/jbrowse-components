@@ -226,7 +226,6 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         regions: [self.region],
         adapterConfig,
         rendererType: rendererType.name,
-        renderProps,
         sessionId,
         blockKey: self.key,
         timeout: 1000000, // 10000,
@@ -254,7 +253,7 @@ interface ErrorProps {
 
 async function renderBlockEffect(
   props: RenderProps | ErrorProps,
-  _: unknown,
+  signal: AbortSignal,
   self: Instance<BlockStateModel>,
 ) {
   const {
@@ -284,7 +283,11 @@ async function renderBlockEffect(
 
   const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
     rpcManager,
-    renderArgs,
+    {
+      ...renderArgs,
+      ...renderProps,
+      signal,
+    },
   )
   return {
     data,

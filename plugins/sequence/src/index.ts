@@ -30,6 +30,7 @@ import {
   AdapterClass as TwoBitAdapterClass,
   configSchema as twoBitAdapterConfigSchema,
 } from './TwoBitAdapter'
+import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
 /* adjust in both directions */
@@ -83,6 +84,13 @@ export default class SequencePlugin extends Plugin {
         }),
     )
 
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'GCContentAdapter',
+          ...pluginManager.load(GCContentAdapterF),
+        }),
+    )
     pluginManager.addTrackType(() => {
       const configSchema = createReferenceSeqTrackConfig(pluginManager)
 

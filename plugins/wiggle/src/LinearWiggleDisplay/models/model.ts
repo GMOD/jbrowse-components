@@ -401,6 +401,7 @@ const stateModelFactory = (
             },
           )) as FeatureStats
           const { scoreMin, scoreMean, scoreStdDev } = results
+
           // localsd uses heuristic to avoid unnecessary scoreMin<0
           // if the scoreMin is never less than 0
           // helps with most coverage bigwigs just being >0

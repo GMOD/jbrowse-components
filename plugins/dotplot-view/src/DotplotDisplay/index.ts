@@ -159,19 +159,18 @@ function renderBlockData(self: DotplotDisplayModel) {
     return {
       rendererType,
       rpcManager,
-      renderProps,
+      renderProps: {
+        ...renderProps,
+        view: getSnapshot(parent),
+        width: viewWidth,
+        height: viewHeight,
+        borderSize,
+        borderX,
+        borderY,
+      },
       renderArgs: {
         adapterConfig,
         rendererType: rendererType.name,
-        renderProps: {
-          ...renderProps,
-          view: getSnapshot(parent),
-          width: viewWidth,
-          height: viewHeight,
-          borderSize,
-          borderX,
-          borderY,
-        },
         sessionId: getRpcSessionId(self),
         timeout: 1000000, // 10000,
       },
@@ -187,11 +186,14 @@ async function renderBlockEffect(
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderArgs } = props
+  const { rendererType, rpcManager, renderArgs, renderProps } = props
 
   const { html, ...data } = await (rendererType as any).renderInClient(
     rpcManager,
-    renderArgs,
+    {
+      ...renderArgs,
+      ...renderProps,
+    },
   )
 
   return { html, data, renderingComponent: rendererType.ReactComponent }

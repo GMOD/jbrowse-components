@@ -151,14 +151,13 @@ function renderBlockData(self: LinearComparativeDisplay) {
   return {
     rendererType,
     rpcManager,
-    renderProps,
+    renderProps: {
+      ...renderProps,
+      view: getSnapshot(parent),
+    },
     renderArgs: {
       adapterConfig,
       rendererType: rendererType.name,
-      renderProps: {
-        ...renderProps,
-        view: getSnapshot(parent),
-      },
       sessionId,
       timeout: 1000000,
     },
@@ -170,12 +169,12 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderArgs } = props
+  const { rendererType, rpcManager, renderProps, renderArgs } = props
 
-  const { html, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    renderArgs,
-  )
+  const { html, ...data } = await rendererType.renderInClient(rpcManager, {
+    ...renderArgs,
+    ...renderProps,
+  })
 
   return { html, data, renderingComponent: rendererType.ReactComponent }
 }
