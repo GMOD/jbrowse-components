@@ -202,7 +202,7 @@ const SessionLoader = types
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
         // cross origin config check
-        if (configUri.hostname !== window.location.hostname) {
+        if (configUri.hostname !== window.location.hostname && !inDevelopment) {
           self.setSessionTriaged(config, 'config')
           self.setShareWarningOpen(true)
         } else self.setConfigSnapshot(config)
@@ -267,20 +267,6 @@ const SessionLoader = types
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
       const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      // if something removed warn
-      // let confirmedSession = true
-      // if (hasCallbacks) {
-      //   // below is placeholder while working on custom module
-      //   // eslint-disable-next-line no-alert
-      //   confirmedSession = window.confirm(
-      //     'This shared session has custom callbacks. Please confirm if you trust the source',
-      //   )
-      // }
-      // confirmedSession
-      //   ? self.setSessionSnapshot({ ...session, id: shortid() })
-      //   : self.setBlankSession(true)
-
-      // TODO: working on making module show. remove test volatile when done
       if (hasCallbacks) {
         self.setSessionTriaged(session, 'share')
         self.setShareWarningOpen(true)
@@ -354,10 +340,6 @@ export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
   const [password] = useQueryParam('password', StringParam)
   const [adminKey] = useQueryParam('adminKey', StringParam)
 
-  // here run urlparser on config to get origin out of it
-  // new URL(url) and get origin, check if it's same as window.location origin
-  // if not pop up warning every time
-  // only in production, production flag is imported from jbrowse-components/packages/core/util/index.ts
   const loader = SessionLoader.create({
     configPath: load(config),
     sessionQuery: load(session),

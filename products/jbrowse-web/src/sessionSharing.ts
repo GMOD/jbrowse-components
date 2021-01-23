@@ -26,7 +26,7 @@ const decrypt = (text: string, password: string) => {
 }
 
 // recusively checks config for callbacks and removes them
-// was used to parse and delete, saved if needed
+// was used to parse and delete, commented out for later if needed
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const deleteCallbacks = (key: any) => {
 //   if (Array.isArray(key)) {
@@ -42,12 +42,11 @@ const decrypt = (text: string, password: string) => {
 //   }
 // }
 
-// potential function regex:  function\s*([A-z0-9]+)?\s*\((?:[^)(]+|\((?:[^)(]+|\([^)(]*\))*\))*\)\s*\{(?:[^}{]+|\{(?:[^}{]+|\{[^}{]*\})*\})*\}
-// use funciton regex imported and scan the whole object
+// use function regex (without ^ so it works anywhere)
+// to check for function syntax in stringified session
 export async function scanSharedSessionForCallbacks(
   session: Record<string, unknown>,
 ) {
-  // see if this works, if so dont need
   const stringedSession = JSON.stringify(session)
   return anywhereFunctionRegexp.test(stringedSession)
 }

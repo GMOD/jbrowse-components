@@ -48,7 +48,7 @@ export default function SessionWarningModal({
         open={open}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
-        data-testid="share-dialog"
+        data-testid="session-warning-modal"
         className={classes.main}
       >
         <DialogTitle id="alert-dialog-title">Warning</DialogTitle>
@@ -57,7 +57,7 @@ export default function SessionWarningModal({
           <WarningIcon fontSize="large" />
           <DialogContent>
             <DialogContentText>
-              About to load an external session.
+              About to load a session from an external source
             </DialogContentText>
             <DialogContentText>
               Please confirm that you trust the loaded file contents.

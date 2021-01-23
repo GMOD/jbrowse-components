@@ -165,40 +165,6 @@ describe('test sharing', () => {
     const url = await findByTestId('share-url-text')
     expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
   })
-
-  // TODO: fix test when solution of asking before loading share is implemented
-  xit('can clear a session of callbacks before sharing', async () => {
-    const sessionWithCustomCallback = {
-      name: 'testSession',
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'function(customCallback)',
-          name: 'testTrack',
-        },
-      ],
-    }
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByTestId, findByText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    state.setSession(sessionWithCustomCallback)
-
-    await findByText('Help')
-    fireEvent.click(await findByText('Share'))
-
-    expect(await findByTestId('share-dialog')).toBeTruthy()
-    const url = await findByTestId('share-url-text')
-    expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
-
-    // since a custom callback is in sessionTracks, should have warning message
-    expect(
-      await findByText(
-        'For security reasons, custom callbacks cannot be shared. They have been set to the default callback',
-      ),
-    ).toBeTruthy()
-  })
 })
 
 test('404 sequence file', async () => {
