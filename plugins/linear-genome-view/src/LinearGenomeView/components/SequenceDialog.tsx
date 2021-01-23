@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
@@ -98,26 +98,56 @@ function SequenceDialog({
   const [error, setError] = useState<Error>()
   const [sequence, setSequence] = useState('')
   const loading = Boolean(!sequence) || Boolean(error)
-  const regionsSelected = model.getSelectedRegions(
-    model.leftOffset,
-    model.rightOffset,
+  const { leftOffset, rightOffset } = model
+
+  // avoid infinite looping of useEffect
+  // random note: the current selected region can't be a computed because it
+  // uses action on base1dview even though it's on the ephemeral base1dview
+  const regionsSelected = useMemo(
+    () => model.getSelectedRegions(leftOffset, rightOffset),
+    [model, leftOffset, rightOffset],
   )
 
   useEffect(() => {
     let active = true
+
+    function formatSequence(seqChunks: Feature[]) {
+      const sequenceChunks: SeqChunk[] = []
+      const incompleteSeqErrs: string[] = []
+      seqChunks.forEach((chunk: Feature) => {
+        const chunkSeq = chunk.get('seq')
+        const chunkRefName = chunk.get('refName')
+        const chunkStart = chunk.get('start') + 1
+        const chunkEnd = chunk.get('end')
+        const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+        if (chunkSeq) {
+          sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
+          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
+            incompleteSeqErrs.push(
+              `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                chunkEnd - chunkStart
+              ).toLocaleString()}`,
+            )
+          }
+        }
+      })
+      if (incompleteSeqErrs.length > 0) {
+        session.notify(
+          `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
+        )
+      }
+      setSequence(formatSeqFasta(sequenceChunks))
+    }
+
     ;(async () => {
       try {
-        if (regionsSelected && regionsSelected.length > 0 && active) {
+        if (regionsSelected.length > 0) {
           const chunks = await fetchSequence(model, regionsSelected)
-          if (chunks.length > 0) {
+          if (active) {
             formatSequence(chunks)
           }
-        } else if (
-          active &&
-          error === undefined &&
-          regionsSelected.length === 0
-        ) {
-          setError(new Error('Selected region is out of bounds'))
+        } else {
+          throw new Error('Selected region is out of bounds')
         }
       } catch (e) {
         console.error(e)
@@ -130,35 +160,8 @@ function SequenceDialog({
     return () => {
       active = false
     }
-  })
+  }, [model, session, regionsSelected, setSequence])
 
-  function formatSequence(seqChunks: Feature[]) {
-    const sequenceChunks: SeqChunk[] = []
-    const incompleteSeqErrs: string[] = []
-    seqChunks.forEach((chunk: Feature) => {
-      const chunkSeq = chunk.get('seq')
-      const chunkRefName = chunk.get('refName')
-      const chunkStart = chunk.get('start') + 1
-      const chunkEnd = chunk.get('end')
-      const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-      if (chunkSeq) {
-        sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-        if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
-          incompleteSeqErrs.push(
-            `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-              chunkEnd - chunkStart
-            ).toLocaleString()}`,
-          )
-        }
-      }
-    })
-    if (incompleteSeqErrs.length > 0) {
-      session.notify(
-        `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
-      )
-    }
-    setSequence(formatSeqFasta(sequenceChunks))
-  }
   const sequenceTooLarge = sequence.length > 1_000_000
 
   return (
