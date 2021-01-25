@@ -27,7 +27,6 @@ const decrypt = (text: string, password: string) => {
 
 // recusively checks config for callbacks and removes them
 // was used to parse and delete, commented out for later if needed
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const deleteCallbacks = (key: any) => {
 //   if (Array.isArray(key)) {
 //     key.forEach(a => {
