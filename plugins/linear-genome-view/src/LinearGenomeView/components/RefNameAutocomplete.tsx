@@ -63,33 +63,34 @@ function RefNameAutocomplete({
       if (typeof newRegionName === 'string') {
         newRegionValue = newRegionName
       }
+      onSelect(newRegionValue)
+      console.log('onChange', newRegionValue)
       const newRegion: Region | undefined = regions.find(
         region => newRegionValue === region.refName,
       )
       if (newRegion) {
         // @ts-ignore
-        onSelect(getSnapshot(newRegion))
-      } else {
-        // parse and set possible refName
-        console.log('locstring')
-        onSelect(newRegionValue)
-        // newRegionValue && navTo(newRegionValue)
+        console.log(newRegion)
+        console.log(typeof newRegion)
       }
+      // else {
+      //   newRegionValue && navTo(newRegionValue)
+      // }
     }
   }
 
-  function navTo(locString: string) {
-    try {
-      if (model.displayedRegions.length !== 0) {
-        model.navToLocString(locString)
-      } else {
-        throw new Error(`Unknown reference sequence "${locString}"`)
-      }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
-    }
-  }
+  // function navTo(locString: string) {
+  //   try {
+  //     if (model.displayedRegions.length !== 0) {
+  //       model.navToLocString(locString)
+  //     } else {
+  //       throw new Error(`Unknown reference sequence "${locString}"`)
+  //     }
+  //   } catch (e) {
+  //     console.warn(e)
+  //     session.notify(`${e}`, 'warning')
+  //   }
+  // }
 
   return (
     <Autocomplete

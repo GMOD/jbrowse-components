@@ -24,22 +24,25 @@ const useStyles = makeStyles(theme => ({
 
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
+  const session = getSession(model)
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<
     Region | String | undefined
   >()
+  const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
+
   useEffect(() => {
     let done = false
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
       if (!done && assembly && assembly.regions) {
-        // setSelectedRegion(assembly.regions[0].refName)
         setSelectedRegion(getSnapshot(assembly.regions[0]))
+        setAssemblyRegions(assembly.regions)
       }
     })()
     return () => {
@@ -53,16 +56,54 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  function onOpenClick() {
-    if (typeof selectedRegion === 'string') {
-      console.log(selectedRegion)
-    } else {
-      model.setDisplayedRegions([selectedRegion])
+  function handleSelectedRegion(newRegionValue: string | undefined) {
+    console.log('importForm', newRegionValue)
+    if (newRegionValue) {
+      const newRegion: Region | undefined = assemblyRegions.find(
+        region => newRegionValue === region.refName,
+      )
+      if (newRegion) {
+        setSelectedRegion(getSnapshot(newRegion))
+      } else {
+        setSelectedRegion(newRegionValue)
+      }
     }
-    // if (selectedRegion) {
-    //   model.setDisplayedRegions([selectedRegion])
-    // }
   }
+
+  function onOpenClick() {
+    // if (selectedRegion) {
+    //   // handles user input
+    //   if (typeof selectedRegion === 'string') {
+    //     model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
+    //     model.navToLocString(selectedRegion)
+    //   } else {
+    //     console.log(selectedRegion)
+    //     model.setDisplayedRegions([selectedRegion])
+    //   }
+    // }
+    if (selectedRegion) {
+      console.log(typeof selectedRegion)
+      if (typeof selectedRegion === 'string') {
+        console.log('locstring', selectedRegion)
+        try {
+          // set default region and then navigate to specified locstring
+          model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
+          model.navToLocString(selectedRegion)
+        } catch (e) {
+          console.warn(e)
+          session.notify(`${e}`, 'warning')
+        }
+      } else {
+        console.log('I am a region', selectedRegion)
+        model.setDisplayedRegions([selectedRegion])
+      }
+    }
+  }
+  // function onOpenClick() {
+  //   if (selectedRegion) {
+  //     model.setDisplayedRegions([selectedRegion])
+  //   }
+  // }
 
   return (
     <Container className={classes.importFormContainer}>
@@ -94,8 +135,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
               assemblyName={
                 error ? undefined : assemblyNames[selectedAssemblyIdx]
               }
-              // value={selectedRegion?.refName || selectedRegion}
-              onSelect={setSelectedRegion}
+              value={selectedRegion?.refName || selectedRegion || ''}
+              onSelect={handleSelectedRegion}
               TextFieldProps={{
                 margin: 'normal',
                 variant: 'outlined',

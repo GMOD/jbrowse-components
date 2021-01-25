@@ -1,4 +1,5 @@
 import { Region } from '@jbrowse/core/util/types'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -97,12 +98,25 @@ export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
+  const session = getSession(model)
 
   const setDisplayedRegion = useCallback(
-    (region: Region | undefined) => {
-      if (region) {
-        model.setDisplayedRegions([region])
-        model.showAllRegions()
+    (newRegionValue: string | Region | undefined) => {
+      if (newRegionValue) {
+        const newRegion: Region | undefined = displayedRegions.find(
+          region => newRegionValue === region.refName,
+        )
+        if (newRegion) {
+          model.setDisplayedRegions([newRegion])
+          model.showAllRegions()
+        } else {
+          try {
+            newRegionValue && model.navToLocString(newRegionValue)
+          } catch (e) {
+            console.warn(e)
+            session.notify(`${e}`, 'warning')
+          }
+        }
       }
     },
     [model],
