@@ -101,7 +101,7 @@ export default observer(({ model }: { model: LGV }) => {
   const session = getSession(model)
 
   const setDisplayedRegion = useCallback(
-    (newRegionValue: string | Region | undefined) => {
+    (newRegionValue: string | undefined) => {
       if (newRegionValue) {
         const newRegion: Region | undefined = displayedRegions.find(
           region => newRegionValue === region.refName,

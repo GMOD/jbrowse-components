@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
+import { getSession } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
+// material ui
 import { makeStyles } from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
-import { Region } from '@jbrowse/core/util/types'
+// other
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { LinearGenomeViewModel } from '..'
 
@@ -57,7 +59,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   }
 
   function handleSelectedRegion(newRegionValue: string | undefined) {
-    console.log('importForm', newRegionValue)
     if (newRegionValue) {
       const newRegion: Region | undefined = assemblyRegions.find(
         region => newRegionValue === region.refName,
@@ -71,20 +72,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   }
 
   function onOpenClick() {
-    // if (selectedRegion) {
-    //   // handles user input
-    //   if (typeof selectedRegion === 'string') {
-    //     model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
-    //     model.navToLocString(selectedRegion)
-    //   } else {
-    //     console.log(selectedRegion)
-    //     model.setDisplayedRegions([selectedRegion])
-    //   }
-    // }
     if (selectedRegion) {
-      console.log(typeof selectedRegion)
       if (typeof selectedRegion === 'string') {
-        console.log('locstring', selectedRegion)
         try {
           // set default region and then navigate to specified locstring
           model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
@@ -94,16 +83,10 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           session.notify(`${e}`, 'warning')
         }
       } else {
-        console.log('I am a region', selectedRegion)
         model.setDisplayedRegions([selectedRegion])
       }
     }
   }
-  // function onOpenClick() {
-  //   if (selectedRegion) {
-  //     model.setDisplayedRegions([selectedRegion])
-  //   }
-  // }
 
   return (
     <Container className={classes.importFormContainer}>
