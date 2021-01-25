@@ -20,7 +20,7 @@ published on their own: products and plugins.
 ![](./img/products_and_plugins.png)
 Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g.
 LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack,
-etc.), data adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
+etc.), adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
 mobx state tree autoruns that add logic to other parts of the app (e.g. adding
 context menus)
 
@@ -70,14 +70,14 @@ JBrowse 2 plugins
 
 The pluggable types that we have in JBrowse 2 are
 
-- Data adapters
+- Adapters
 - Track types
 - Renderer types
 - Widgets
 - RPC calls
 - View types
 
-In additional to creating plugins that create new data adapters, track types,
+In additional to creating plugins that create new adapters, track types,
 etc. note that you can also wrap the behavior of another track so these
 elements are composable
 
@@ -86,14 +86,14 @@ another adapter, views that contains other subviews, and tracks that contain
 other tracks, leading to a lot of interesting behavior. Details and examples
 below
 
-### Data adapters
+### Adapters
 
-Data adapters basically are parsers for a given data format. We will review
-what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](developer_guide#creating-data-adapters))
+Adapters basically are parsers for a given data format. We will review
+what adapters the alignments plugin has (to write your own adapter,
+see [creating adapters](developer_guide#creating-adapters))
 
-Example data adapters: the `@jbrowse/plugin-alignments` plugin creates
-multiple data adapter types
+Example adapters: the `@jbrowse/plugin-alignments` plugin creates
+multiple adapter types
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
   for use by the browser.
@@ -713,20 +713,20 @@ Reading the sub-config schema is as follows
 const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
-## Creating data adapters
+## Creating adapters
 
-### What is a data adapter
+### What is an adapter
 
-A data adapter is essentially a class that parses your data type and returns
+An adapter is essentially a class that parses your data type and returns
 features that jbrowse will draw
 
-Sometimes, a data adapter can be implemented by itself, e.g. if you are
+Sometimes, an adapter can be implemented by itself, e.g. if you are
 adapting a storeclass that returns genes, then you can use our standard track
-types for that. If you are making a data adapter for some custom type of data
+types for that. If you are making an adapter for some custom type of data
 that also needs a custom type of drawing, you may need to implement a data
 adapter along with a track type and/or renderer
 
-### Skeleton of a data adapter
+### Skeleton of an adapter
 
 So we see basically something like this, this is stripped down for simplicity
 
@@ -736,10 +736,10 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // config
   }
   async getRefNames() {
-    // return ref names used in your data adapter, used for refname renaming
+    // return ref names used in your adapter, used for refname renaming
   }
   getFeatures(region) {
-    // return features from your data adapter, using rxjs observable
+    // return features from your adapter, using rxjs observable
   }
   freeResources(region) {
     // can be empty
@@ -747,11 +747,11 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-So to make a data adapter, you implement the getRefNames function (optional),
+So to make an adapter, you implement the getRefNames function (optional),
 the getFeatures function (returns an rxjs observable stream of features,
 discussed below) and freeResources (optional)
 
-### Example data adapter
+### Example adapter
 
 To take this a little slow let's look at each function individually
 
@@ -813,7 +813,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-### What is needed from a data adapter
+### What is needed from an adapter
 
 #### getRefNames
 
@@ -875,9 +875,9 @@ observable calls
 
 #### freeResources
 
-This is uncommonly used, so most data adapters make this an empty function
+This is uncommonly used, so most adapters make this an empty function
 
-Most data adapters in fact use an LRU cache to make resources go away over time
+Most adapters in fact use an LRU cache to make resources go away over time
 instead of manually cleaning up resources
 
 ## Creating a new plugin
@@ -903,7 +903,7 @@ may be found by looking at the above plugins source code directly.
 ### Intro to plugins
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
-data adapters, etc), and to modify behavior of the application by adding code
+adapters, etc), and to modify behavior of the application by adding code
 that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
 elements](developer_guide#pluggable-elements) page.
@@ -1424,8 +1424,8 @@ If you want to drastically modify the feature fetching behavior, you can modify
 the renderer's getFeatures call
 
 The base ServerSideRendererType class has a built-in getFeatures function that,
-in turn, calls your data adapter's getFeatures function, but if you need
-tighter control over how your data adapter's getFeatures method is called then
+in turn, calls your adapter's getFeatures function, but if you need
+tighter control over how your adapter's getFeatures method is called then
 your renderer. The Hi-C renderer type does not operate on conventional
 features and instead works with contact matrices, so the Hi-C renderer has a
 custom getFeatures function
