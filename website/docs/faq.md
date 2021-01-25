@@ -65,7 +65,7 @@ You can use `PORT=8080 yarn start` to manually specify a different port
 Note that this is a development server that gets started up. To install jbrowse
 2 in production on your webserver, see below
 
-### Do you have any tips for learning React and mobx-state-tree
+#### Do you have any tips for learning React and mobx-state-tree
 
 Here is a short guide to React and mobx-state-tree that could help get you oriented
 
@@ -137,7 +137,7 @@ with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
 
-### Why do some of my reads not display soft clipping?
+#### Why do some of my reads not display soft clipping?
 
 Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.

@@ -7,7 +7,7 @@ title: Creating the view
 
 We're now ready to add the JBrowse Linear View constructor to "index.html".
 
-```html {13-18} title="index.html"
+```html {12-17} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>
@@ -48,7 +48,7 @@ page that navigate to the locations of a couple of genes.
 
 Modify "index.html" so that it looks like the following:
 
-```html {9-14,25-34} title="index.html"
+```html {8-13,24-33} title="index.html"
 <html>
   <head>
     <script src="//s3.amazonaws.com/jbrowse.org/jb2_releases/jbrowse-linear-view/jbrowse-linear-view@v0.0.1-beta.0/umd/jbrowse-linear-view.js"></script>

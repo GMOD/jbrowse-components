@@ -67,3 +67,9 @@ Image of the "breakpoint split view" which examines the breakpoints of a
 structural variant, e.g. an interchromosomal translocation, and connects
 supporting reads (black splines) and the variant call itself (green thicker
 line, with feet indicating directionality)
+
+---
+
+![](./img/color_by_tag.png)
+Image of coloring and sorting by the HP (haplotype) tag, which can be done for
+BAM and CRAM. Users can color, sort, and filter by tags

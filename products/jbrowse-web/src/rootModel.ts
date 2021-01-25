@@ -16,6 +16,17 @@ import {
   getParent,
   SnapshotIn,
   types,
+  IAnyStateTreeNode,
+  Instance,
+  getType,
+  isArrayType,
+  isModelType,
+  isReferenceType,
+  isValidReference,
+  getPropertyMembers,
+  isMapType,
+  getChildType,
+  IAnyType,
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
 import { UndoManager } from 'mst-middlewares'
@@ -24,6 +35,58 @@ import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
 import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
+
+// attempts to remove undefined references from the given MST model. can only actually
+// remove them from arrays and maps. throws MST undefined ref error if it encounters
+// undefined refs in model properties
+function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
+  type MSTArray = Instance<ReturnType<typeof types.array>>
+  type MSTMap = Instance<ReturnType<typeof types.map>>
+
+  // makes it work with session sharing
+  if (node === undefined) {
+    return
+  }
+  if (isArrayType(nodeType)) {
+    const array = node as MSTArray
+    const childType = getChildType(node)
+    if (isReferenceType(childType)) {
+      // filter array elements
+      for (let i = 0; i < array.length; ) {
+        if (!isValidReference(() => array[i])) {
+          array.splice(i, 1)
+        } else {
+          i += 1
+        }
+      }
+    }
+    array.forEach(el => {
+      filterSessionInPlace(el, childType)
+    })
+  } else if (isMapType(nodeType)) {
+    const map = node as MSTMap
+    const childType = getChildType(map)
+    if (isReferenceType(childType)) {
+      // filter the map members
+      for (const key in map.keys()) {
+        if (!isValidReference(() => map.get(key))) {
+          map.delete(key)
+        }
+      }
+    }
+    map.forEach(child => {
+      filterSessionInPlace(child, childType)
+    })
+  } else if (isModelType(nodeType)) {
+    // iterate over children
+    const { properties } = getPropertyMembers(node)
+
+    Object.entries(properties).forEach(([pname, ptype]) => {
+      // @ts-ignore
+      filterSessionInPlace(node[pname], ptype)
+    })
+  }
+}
 
 interface Menu {
   label: string
@@ -151,7 +214,18 @@ export default function RootModel(
         )
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
+        const oldSession = self.session
         self.session = cast(sessionSnapshot)
+        if (self.session) {
+          // validate all references in the session snapshot
+          try {
+            filterSessionInPlace(self.session, getType(self.session))
+          } catch (error) {
+            // throws error if session filtering failed
+            self.session = oldSession
+            throw error
+          }
+        }
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -229,7 +303,7 @@ export default function RootModel(
         this.setSession(autosavedSession)
       },
 
-      setError(error: Error) {
+      setError(error?: Error) {
         self.error = error
       },
     }))

@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
     textAlign: 'center',
   },
   dialogContent: {
-    width: 600,
+    width: '100%',
   },
   backButton: {
     color: '#fff',

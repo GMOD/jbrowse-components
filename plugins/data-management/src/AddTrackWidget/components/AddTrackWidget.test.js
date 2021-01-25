@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  render,
-  cleanup,
-  fireEvent,
-  waitForElement,
-} from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddTrackWidget from './AddTrackWidget'
 
@@ -105,7 +100,7 @@ describe('<AddTrackWidget />', () => {
   })
 
   xit('adds a track', async () => {
-    const { getByTestId, getByText } = render(<AddTrackWidget model={model} />)
+    const { getByTestId, findByText } = render(<AddTrackWidget model={model} />)
     expect(session.sessionTracks.length).toBe(1)
     fireEvent.click(getByTestId('addTrackNextButton'))
     fireEvent.change(getByTestId('trackNameInput'), {
@@ -113,11 +108,11 @@ describe('<AddTrackWidget />', () => {
     })
     const trackTypeSelect = getByTestId('trackTypeSelect')
     fireEvent.mouseDown(trackTypeSelect)
-    const featureTrack = await waitForElement(() => getByText('FeatureTrack'))
+    const featureTrack = await findByText('FeatureTrack')
     fireEvent.click(featureTrack)
     const assemblyNameSelect = getByTestId('assemblyNameSelect')
     fireEvent.mouseDown(assemblyNameSelect)
-    const volMyt1 = await waitForElement(() => getByText('volMyt1'))
+    const volMyt1 = await findByText('volMyt1')
     fireEvent.click(volMyt1)
     fireEvent.click(getByTestId('addTrackNextButton'))
     expect(session.sessionTracks.length).toBe(2)

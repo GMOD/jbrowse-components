@@ -18,6 +18,7 @@ import {
   TypeTestedByPredicate,
   isSessionModel,
   isViewModel,
+  isTrackModel,
   Region,
   AssemblyManager,
 } from './types'
@@ -244,6 +245,15 @@ export function getContainingView(node: IAnyStateTreeNode) {
     return findParentThatIs(node, isViewModel)
   } catch (e) {
     throw new Error('no containing view found')
+  }
+}
+
+/** get the state model of the view in the state tree that contains the given node */
+export function getContainingTrack(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isTrackModel)
+  } catch (e) {
+    throw new Error('no containing track found')
   }
 }
 
@@ -771,8 +781,18 @@ export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
 
-export function stringify(offset: { coord: number; refName: string }) {
-  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
+export function stringify({
+  refName,
+  coord,
+  oob,
+}: {
+  coord: number
+  refName: string
+  oob?: boolean
+}) {
+  return `${refName}:${coord.toLocaleString('en-US')}${
+    oob ? ' (out of bounds)' : ''
+  }`
 }
 
 export const isElectron =

@@ -146,7 +146,9 @@ export default function calculateDynamicBlocks(
               offsetPx: blockData.offsetPx + blockData.widthPx,
             }),
           )
+          displayedRegionLeftPx += interRegionPaddingWidth
         }
+
         if (
           regionNumber === displayedRegions.length - 1 &&
           blockData.isRightEndOfDisplayedRegion
@@ -163,7 +165,6 @@ export default function calculateDynamicBlocks(
         }
       }
     }
-    displayedRegionLeftPx += interRegionPaddingWidth
     displayedRegionLeftPx += (regionEnd - regionStart) / bpPerPx
   })
   return blocks

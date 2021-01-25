@@ -1,3 +1,4 @@
+import { toArray } from 'rxjs/operators'
 import {
   freeAdapterResources,
   getAdapter,
@@ -54,6 +55,31 @@ export class CoreGetFileInfo extends RpcMethodType {
     return !isRefNameAliasAdapter(dataAdapter)
       ? dataAdapter.getHeader(deserializedArgs)
       : null
+  }
+}
+
+export class CoreGetFeatures extends RpcMethodType {
+  name = 'CoreGetFeatures'
+
+  async execute(args: {
+    sessionId: string
+    signal: RemoteAbortSignal
+    region: Region
+    adapterConfig: {}
+  }) {
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig, region } = deserializedArgs
+    const { dataAdapter } = getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      const ret = dataAdapter.getFeatures(region)
+      const feats = await ret.pipe(toArray()).toPromise()
+      return JSON.parse(JSON.stringify(feats))
+    }
+    return []
   }
 }
 
@@ -138,11 +164,14 @@ export class CoreRender extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    const result = await RendererType.renderInWorker({
+    const renderArgs = {
       ...deserializedArgs,
       ...renderProps,
       dataAdapter,
-    })
+    }
+    delete renderArgs.renderProps
+
+    const result = await RendererType.renderInWorker(renderArgs)
 
     checkAbortSignal(signal)
     return result

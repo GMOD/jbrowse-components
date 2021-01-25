@@ -26,8 +26,6 @@ const baseSequence = {
   adapter: {},
 }
 
-jest.setTimeout(10000)
-
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])

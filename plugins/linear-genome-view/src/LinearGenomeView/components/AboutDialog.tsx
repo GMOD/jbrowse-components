@@ -76,7 +76,7 @@ export const BaseCard: React.FunctionComponent<BaseCardProps> = props => {
   )
 }
 
-const omit = ['refNames', 'displays']
+const omit = ['refNames', 'displays', 'baseUri']
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]

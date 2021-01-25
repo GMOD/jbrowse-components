@@ -10,7 +10,7 @@ pdf: copymd $(SRC_FILES)
 	@for f in $(SRC_FILES); do cat $${f} | node tex_parser.js; done > pdfcombined.md
 
 realpdf: pdf
-	pandoc titlemod.md pdfcombined.md --listings -H listings.tex  --toc -o jbrowse2.pdf
+	pandoc  -H disable_float.tex titlemod.md pdfcombined.md --listings -H listings.tex  --toc -o jbrowse2.pdf
 
 copymd:
 	cp ../../products/jbrowse-cli/README.md cli.md

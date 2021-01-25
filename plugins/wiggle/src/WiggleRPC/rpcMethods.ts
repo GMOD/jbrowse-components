@@ -5,6 +5,7 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   FeatureStats,
   blankStats,
@@ -14,6 +15,19 @@ import {
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async execute(args: {
     adapterConfig: {}
@@ -40,6 +54,19 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },

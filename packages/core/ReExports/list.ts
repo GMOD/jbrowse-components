@@ -7,7 +7,7 @@ export default [
   'prop-types',
 
   '@material-ui/core',
-  '@material-ui/core/styles',
+  '@material-ui/core/SvgIcon',
   '@material-ui/lab',
 
   '@jbrowse/core/Plugin',

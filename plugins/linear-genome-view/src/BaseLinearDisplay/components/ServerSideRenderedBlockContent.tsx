@@ -115,12 +115,11 @@ function BlockError({
   reload,
   displayHeight,
 }: {
-  error: Error | string
+  error: Error
   reload: () => void
   displayHeight: number
 }) {
   const classes = useStyles()
-  const errorMessage = typeof error === 'string' ? error : error.message
   return (
     <div className={classes.blockError} style={{ height: displayHeight }}>
       {reload ? (
@@ -132,11 +131,11 @@ function BlockError({
           >
             Reload
           </Button>
-          {errorMessage}
+          {`${error}`}
         </>
       ) : (
         <Typography color="error" variant="body2">
-          {errorMessage}
+          {`${error}`}
         </Typography>
       )}
     </div>
