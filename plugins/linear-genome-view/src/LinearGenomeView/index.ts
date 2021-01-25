@@ -625,7 +625,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       navToLocString(locString: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
-        console.log(assemblyManager)
         const locStrings = locString.split(';')
         if (self.displayedRegions.length > 1) {
           const locations = locStrings.map(ls =>

@@ -129,30 +129,32 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           </TextField>
         </Grid>
         <Grid item>
-          {selectedRegion && model.volatileWidth ? (
-            <RefNameAutocomplete
-              model={model}
-              assemblyName={
-                error ? undefined : assemblyNames[selectedAssemblyIdx]
-              }
-              value={selectedRegion?.refName || selectedRegion || ''}
-              onSelect={handleSelectedRegion}
-              TextFieldProps={{
-                margin: 'normal',
-                variant: 'outlined',
-                label: 'Sequence',
-                className: classes.importFormEntry,
-                helperText: 'Select sequence to view',
-              }}
-            />
-          ) : (
-            <CircularProgress
-              role="progressbar"
-              color="inherit"
-              size={20}
-              disableShrink
-            />
-          )}
+          {assemblyName ? (
+            selectedRegion && model.volatileWidth ? (
+              <RefNameAutocomplete
+                model={model}
+                assemblyName={
+                  error ? undefined : assemblyNames[selectedAssemblyIdx]
+                }
+                value={selectedRegion?.refName || selectedRegion || ''}
+                onSelect={handleSelectedRegion}
+                TextFieldProps={{
+                  margin: 'normal',
+                  variant: 'outlined',
+                  label: 'Sequence',
+                  className: classes.importFormEntry,
+                  helperText: 'Select sequence to view',
+                }}
+              />
+            ) : (
+              <CircularProgress
+                role="progressbar"
+                color="inherit"
+                size={20}
+                disableShrink
+              />
+            )
+          ) : null}
         </Grid>
         <Grid item>
           <Button
