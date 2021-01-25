@@ -224,7 +224,7 @@ const ShareDialog = observer(
       return () => {
         cancelled = true
       }
-    }, [currentSetting, url, snap, session])
+    }, [currentSetting, url, snap])
 
     // generate long URL
     const sess = `${toUrlSafeB64(JSON.stringify(getSnapshot(session)))}`

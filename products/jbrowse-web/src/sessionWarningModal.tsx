@@ -57,10 +57,10 @@ export default function SessionWarningModal({
           <WarningIcon fontSize="large" />
           <DialogContent>
             <DialogContentText>
-              About to load a session from an external source
+              External sessions can contain code that runs.
             </DialogContentText>
             <DialogContentText>
-              Please confirm that you trust the loaded file contents.
+              Please ensure and confirm you trust the source of this session.
             </DialogContentText>
           </DialogContent>
           <div className={classes.buttons}>

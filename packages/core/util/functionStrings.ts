@@ -1,5 +1,4 @@
 export const functionRegexp = /^\s*function\s*\w*\s*\(([^)]*)\)\s*{([\w\W]*)/
-export const anywhereFunctionRegexp = /\s*function\s*\w*\s*\(([^)]*)\)\s*{([\w\W]*)/
 
 const compilationCache: Record<string, Function> = {}
 
