@@ -10,7 +10,7 @@ import ServerSideRendererType, {
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
   BaseFeatureDataAdapter,
-  isRefNameAliasAdapter,
+  isFeatureAdapter,
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
@@ -52,7 +52,7 @@ export class CoreGetFileInfo extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    return !isRefNameAliasAdapter(dataAdapter)
+    return isFeatureAdapter(dataAdapter)
       ? dataAdapter.getHeader(deserializedArgs)
       : null
   }
@@ -74,7 +74,7 @@ export class CoreGetFeatures extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+    if (isFeatureAdapter(dataAdapter)) {
       const ret = dataAdapter.getFeatures(region)
       const feats = await ret.pipe(toArray()).toPromise()
       return JSON.parse(JSON.stringify(feats))

@@ -22,17 +22,58 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
         .toPromise()
       // return ObservableCreate<Feature>(async observer => {
       //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
-      const feat = feats[0]
-      observer.next(
-        new SimpleFeature({
-          ...feat.toJSON(),
-          seq: feat.get('seq').slice(start, end),
-          end,
-          start,
-        }),
-      )
+      feats.forEach(feat => {
+        const featStart = feat.get('start')
+        const seqStart = start - featStart
+        const seqEnd = seqStart + (end - start)
+        const seq = feat
+          .get('seq')
+          .slice(Math.max(seqStart, 0), Math.max(seqEnd, 0))
+        observer.next(
+          new SimpleFeature({
+            ...feat.toJSON(),
+            seq,
+            end: featStart + seq.length,
+            start: featStart,
+          }),
+        )
+      })
       observer.complete()
     })
+  }
+
+  /**
+   * Get refName, start, and end for all features after collapsing any overlaps
+   */
+  async getRegions() {
+    const regions = []
+
+    // recall: features are stored in this object sorted by start coordinate
+    for (const [refName, features] of this.features) {
+      let currentRegion
+      for (const feature of features) {
+        if (
+          currentRegion &&
+          currentRegion.end >= feature.get('start') &&
+          currentRegion.start <= feature.get('end')
+        ) {
+          currentRegion.end = feature.get('end')
+        } else {
+          if (currentRegion) regions.push(currentRegion)
+          currentRegion = {
+            refName,
+            start: feature.get('start'),
+            end: feature.get('end'),
+          }
+        }
+      }
+      if (currentRegion) regions.push(currentRegion)
+    }
+
+    // sort the regions by refName
+    regions.sort((a, b) => a.refName.localeCompare(b.refName))
+
+    return regions
   }
 
   /**

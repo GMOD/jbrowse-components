@@ -24,7 +24,12 @@ export interface AdapterConstructor {
   ): AnyDataAdapter
 }
 
-export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
+export type AnyDataAdapter =
+  | BaseAdapter
+  | BaseFeatureDataAdapter
+  | BaseRefNameAliasAdapter
+  | RegionsAdapter
+  | SequenceAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props up to an ID of length 100
@@ -45,11 +50,7 @@ function idMaker(args: any, id = '') {
   return id.slice(0, 100)
 }
 
-/**
- * Base class for feature adapters to extend. Defines some methods that
- * subclasses must implement.
- */
-export abstract class BaseFeatureDataAdapter {
+export abstract class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
@@ -65,6 +66,19 @@ export abstract class BaseFeatureDataAdapter {
     }
   }
 
+  /**
+   * Called to provide a hint that data tied to a certain region will not be
+   * needed for the forseeable future and can be purged from caches, etc
+   * @param region - Region
+   */
+  public abstract freeResources(region: Region): void
+}
+
+/**
+ * Base class for feature adapters to extend. Defines some methods that
+ * subclasses must implement.
+ */
+export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   /**
    * Get all reference sequence names used in the data source
    *
@@ -103,20 +117,13 @@ export abstract class BaseFeatureDataAdapter {
   // }
 
   /**
-   * Called to provide a hint that data tied to a certain region will not be
-   * needed for the forseeable future and can be purged from caches, etc
-   * @param region - Region
-   */
-  public abstract freeResources(region: Region): void
-
-  /**
    * Return "header info" that is fetched from the data file, or other info
    * that would not simply be in the config of the file. The return value can
    * be `{tag:string, data: any}[]` e.g. list of tags with their values which
    * is how VCF,BAM,CRAM return values for getInfo or it can be a nested JSON
    * object
    */
-  public async getHeader(_?: BaseOptions): Promise<unknown> {
+  public async getHeader(_opts?: BaseOptions): Promise<unknown> {
     return null
   }
 
@@ -124,7 +131,7 @@ export abstract class BaseFeatureDataAdapter {
    * Return info that is primarily used for interpreting the data that is there,
    * primarily in reference to being used for augmenting feature details panels
    */
-  public async getMetadata(_?: BaseOptions): Promise<unknown> {
+  public async getMetadata(_opts?: BaseOptions): Promise<unknown> {
     return null
   }
 
@@ -198,24 +205,38 @@ export abstract class BaseFeatureDataAdapter {
   }
 }
 
-export interface RegionsAdapter extends BaseFeatureDataAdapter {
+export interface RegionsAdapter extends BaseAdapter {
   getRegions(opts: { signal?: AbortSignal }): Promise<NoAssemblyRegion[]>
 }
 
+export interface SequenceAdapter
+  extends BaseFeatureDataAdapter,
+    RegionsAdapter {}
+
+export function isSequenceAdapter(
+  thing: AnyDataAdapter,
+): thing is SequenceAdapter {
+  return 'getRegions' in thing && 'getFeatures' in thing
+}
+
 export function isRegionsAdapter(
-  thing: BaseFeatureDataAdapter,
+  thing: AnyDataAdapter,
 ): thing is RegionsAdapter {
   return 'getRegions' in thing
+}
+
+export function isFeatureAdapter(
+  thing: AnyDataAdapter,
+): thing is BaseFeatureDataAdapter {
+  return 'getFeatures' in thing
 }
 
 export interface Alias {
   refName: string
   aliases: string[]
 }
-export interface BaseRefNameAliasAdapter {
+export interface BaseRefNameAliasAdapter extends BaseAdapter {
   getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
-
-  freeResources(): Promise<void>
 }
 export function isRefNameAliasAdapter(
   thing: object,
