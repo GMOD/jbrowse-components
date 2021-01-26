@@ -22,7 +22,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
-    const toY = (rawscore: number) => height - scale(rawscore)
+    const toY = (rawscore: number) => Math.max(0, height - scale(rawscore))
     const toHeight = (rawscore: number) => toY(originY) - toY(rawscore)
     let colorCallback
     if (readConfObject(config, 'color') === '#f0f') {

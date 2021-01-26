@@ -14,7 +14,7 @@ export default class extends WiggleBaseRenderer {
     const highlightColor = readConfObject(config, 'highlightColor')
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => height - scale(rawscore)
+    const toY = rawscore => Math.max(0, height - scale(rawscore))
     let colorCallback
     if (readConfObject(config, 'color') === '#f0f') {
       colorCallback = feature =>
