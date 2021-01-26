@@ -28,10 +28,10 @@ const useStyles = makeStyles(theme => ({
 const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
+  const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
-  const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
@@ -40,7 +40,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     let done = false
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
-
       if (!done && assembly && assembly.regions) {
         setSelectedRegion(assembly.regions[0].refName)
         setAssemblyRegions(assembly.regions)

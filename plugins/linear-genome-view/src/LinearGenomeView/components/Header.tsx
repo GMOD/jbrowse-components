@@ -97,8 +97,8 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
-  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
   const session = getSession(model)
+  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   const setDisplayedRegion = useCallback(
     (newRegionValue: string | undefined) => {
