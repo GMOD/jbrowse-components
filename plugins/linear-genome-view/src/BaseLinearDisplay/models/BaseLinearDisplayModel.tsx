@@ -305,18 +305,12 @@ export const BaseLinearDisplay = types
           })
 
           const ret = renderBlockData(blockState, self)
-          const {
-            rpcManager,
-            renderArgs = { renderProps: {} },
-            rendererType,
-          } = ret
+          const { rpcManager, renderArgs, renderProps, rendererType } = ret
 
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,
-            renderProps: {
-              ...renderArgs.renderProps,
-              forceSvg: true,
-            },
+            ...renderProps,
+            forceSvg: true,
           })
         }),
       )
