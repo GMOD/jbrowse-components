@@ -24,7 +24,6 @@ import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 
 interface BaseRenderArgs {
-  blockKey: string
   sessionId: string
   signal?: AbortSignal
   dataAdapter: BaseFeatureDataAdapter
@@ -33,16 +32,14 @@ interface BaseRenderArgs {
     by: string
   }
   bpPerPx: number
-  renderProps: {
-    displayModel: { id: string; selectedFeatureId?: string }
-    blockKey: string
-  }
+  displayModel: { id: string; selectedFeatureId?: string }
+  blockKey: string
   regions: Region[]
 }
 
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializableFilterChain
+  filters: SerializedFilterChain
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
@@ -73,7 +70,7 @@ export default class ServerSideRenderer extends RendererType {
    * directly modifies the render arguments to prepare
    * them to be serialized and sent to the worker.
    *
-   * the base class replaces the `renderProps.displayModel` param
+   * the base class replaces the `displayModel` param
    * (which on the client is a MST model) with a stub
    * that only contains the `selectedFeature`, since
    * this is the only part of the track model that most
@@ -83,11 +80,10 @@ export default class ServerSideRenderer extends RendererType {
    * @returns the same object
    */
   serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
-    const { displayModel } = args.renderProps
+    const { displayModel } = args
     if (displayModel) {
-      args.renderProps = {
-        ...args.renderProps,
-        blockKey: args.blockKey,
+      args = {
+        ...args,
         displayModel: {
           id: displayModel.id,
           selectedFeatureId: displayModel.selectedFeatureId,
@@ -101,7 +97,6 @@ export default class ServerSideRenderer extends RendererType {
         ? getSnapshot(args.config)
         : args.config,
       regions: JSON.parse(JSON.stringify(args.regions)),
-      filters: args.filters ? args.filters.toJSON().filters : [],
     }
   }
 

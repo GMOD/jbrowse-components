@@ -18,7 +18,6 @@ export default ({ jbrequire }) => {
         assemblyName: view.displayedRegions[0]?.assemblyName,
         adapterConfig: JSON.parse(JSON.stringify(display.adapterConfig)),
         rendererType: rendererType.name,
-        renderProps,
         regions: JSON.parse(JSON.stringify(view.displayedRegions)),
         blockDefinitions: view.blockDefinitions,
         sessionId: getRpcSessionId(display),
@@ -38,6 +37,7 @@ export default ({ jbrequire }) => {
       rpcManager,
       cannotBeRenderedReason,
       renderArgs,
+      renderProps,
     } = props
 
     if (cannotBeRenderedReason) {
@@ -61,6 +61,7 @@ export default ({ jbrequire }) => {
 
     const { html, ...data } = await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
+      ...renderProps,
       signal,
     })
 

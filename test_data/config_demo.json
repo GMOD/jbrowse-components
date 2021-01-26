@@ -743,6 +743,28 @@
       }
     },
     {
+      "type": "QuantitativeTrack",
+      "trackId": "gccontent_hg19",
+      "name": "GCContent",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+
+    {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
