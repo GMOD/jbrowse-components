@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, Instance } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
+import { Region } from '@jbrowse/core/util/types/mst'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
@@ -31,7 +31,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
-  const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
+  const [assemblyRegions, setAssemblyRegions] = useState<
+    Instance<typeof Region>[]
+  >([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
@@ -41,8 +43,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!done && assembly && assembly.regions) {
-        setSelectedRegion(assembly.regions[0].refName)
         setAssemblyRegions(assembly.regions)
+        setSelectedRegion(assembly.regions[0].refName)
       }
     })()
     return () => {
@@ -58,7 +60,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
 
   function onOpenClick() {
     if (selectedRegion) {
-      const newRegion: Region | undefined = assemblyRegions.find(
+      const newRegion:
+        | Instance<typeof Region>
+        | undefined = assemblyRegions.find(
         region => selectedRegion === region.refName,
       )
       if (newRegion) {
