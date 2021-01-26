@@ -86,7 +86,7 @@ function Home() {
             </ul>
             <h3>Desktop</h3>
             <ul>
-              <li>Coming summer 2021</li>
+              <li>Coming soon</li>
             </ul>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>

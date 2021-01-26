@@ -81,4 +81,4 @@ Here is a short list of data formats supported in core JBrowse 2. Plugins are av
 
 ## Integration and embedding
 
-The JBrowse 2 platform and plugins are designed from the ground up to be modular and reusable.
+The JBrowse 2 platform and plugins are designed from the ground up to be modular and reusable. For example, individual JBrowse 2 views (e.g. linear, circular, tabular, etc) can be packaged to be embeddable in other web applications (as demonstrated by the [JB2 Linear genome view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view).
