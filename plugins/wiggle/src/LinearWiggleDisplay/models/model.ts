@@ -24,10 +24,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { FeatureStats } from '@jbrowse/core/util/stats'
 import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import { FeatureStats } from '../../statsUtil'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
 
 // using a map because it preserves order

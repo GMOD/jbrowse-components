@@ -6,13 +6,11 @@ import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray, filter } from 'rxjs/operators'
-import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
-import { Instance, getSnapshot } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
-
-import MyConfigSchemaF from './configSchema'
 
 interface Mismatch {
   start: number
@@ -31,35 +29,32 @@ export interface StatsRegion {
   bpPerPx?: number
 }
 
-export default (pluginManager: PluginManager) => {
-  const MyConfigSchema = MyConfigSchemaF(pluginManager)
+function generateInfoList(table: NestedFrequencyTable) {
+  const infoList = Object.entries(table.categories).map(([base, strand]) => {
+    const strands = strand.categories as {
+      [key: string]: number
+    }
+    const score = Object.values(strands).reduce((a, b) => a + b, 0)
+    return {
+      base,
+      score,
+      strands,
+    }
+  })
 
-  function generateInfoList(table: NestedFrequencyTable) {
-    const infoList = Object.entries(table.categories).map(([base, strand]) => {
-      const strands = strand.categories as {
-        [key: string]: number
-      }
-      const score = Object.values(strands).reduce((a, b) => a + b, 0)
-      return {
-        base,
-        score,
-        strands,
-      }
-    })
+  // sort so higher scores get drawn last, reference always first
+  infoList.sort((a, b) =>
+    a.score < b.score || b.base === 'reference' ? 1 : -1,
+  )
 
-    // sort so higher scores get drawn last, reference always first
-    infoList.sort((a, b) =>
-      a.score < b.score || b.base === 'reference' ? 1 : -1,
-    )
-
-    return [...infoList, { base: 'total', score: table.total() }]
-  }
-
+  return [...infoList, { base: 'total', score: table.total() }]
+}
+export default (_: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
 
     public constructor(
-      config: Instance<typeof MyConfigSchema>,
+      config: AnyConfigurationModel,
       getSubAdapter?: getSubAdapterType,
     ) {
       super(config)
@@ -72,50 +67,6 @@ export default (pluginManager: PluginManager) => {
       } else {
         throw new Error(`invalid subadapter type '${config.subadapter.type}'`)
       }
-    }
-
-    public getRegionStats(region: Region, opts: BaseOptions = {}) {
-      const feats = this.getFeatures(region, opts)
-      return scoresToStats(region, feats)
-    }
-
-    public async getMultiRegionStats(
-      regions: Region[] = [],
-      opts: BaseOptions = {},
-    ) {
-      if (!regions.length) {
-        return blankStats()
-      }
-
-      const feats = await Promise.all(
-        regions.map(region => this.getRegionStats(region, opts)),
-      )
-
-      const scoreMax = feats
-        .map(s => s.scoreMax)
-        .reduce((acc, curr) => Math.max(acc, curr))
-      const scoreMin = feats
-        .map(s => s.scoreMin)
-        .reduce((acc, curr) => Math.min(acc, curr))
-      const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-      const scoreSumSquares = feats
-        .map(s => s.scoreSumSquares)
-        .reduce((a, b) => a + b, 0)
-      const featureCount = feats
-        .map(s => s.featureCount)
-        .reduce((a, b) => a + b, 0)
-      const basesCovered = feats
-        .map(s => s.basesCovered)
-        .reduce((a, b) => a + b, 0)
-
-      return rectifyStats({
-        scoreMin,
-        scoreMax,
-        featureCount,
-        basesCovered,
-        scoreSumSquares,
-        scoreSum,
-      })
     }
 
     getFeatures(region: Region, opts: BaseOptions = {}) {

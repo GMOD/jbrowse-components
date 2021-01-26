@@ -6,12 +6,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import {
-  FeatureStats,
-  blankStats,
-  dataAdapterSupportsMultiRegionStats,
-  dataAdapterSupportsGlobalStats,
-} from '../statsUtil'
+import { FeatureStats, blankStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
@@ -44,8 +39,10 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     )
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsGlobalStats(dataAdapter)
+      // @ts-ignore
+      dataAdapter.capabilities.includes('hasGlobalStats')
     ) {
+      // @ts-ignore
       return dataAdapter.getGlobalStats(deserializedArgs)
     }
     return blankStats()
@@ -96,10 +93,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       adapterConfig,
     )
 
-    if (
-      dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsMultiRegionStats(dataAdapter)
-    ) {
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
     }
     return blankStats()
