@@ -717,18 +717,43 @@ const indexType = readConfObject(config, ['index', 'indexType'])
 
 ### What is an adapter
 
-An adapter is essentially a class that parses your data type and returns
-features that jbrowse will draw
+An adapter is essentially a class that fetches and parses your data and returns
+it in a format JBrowse understands.
 
-Sometimes, an adapter can be implemented by itself, e.g. if you are
-adapting a storeclass that returns genes, then you can use our standard track
-types for that. If you are making an adapter for some custom type of data
-that also needs a custom type of drawing, you may need to implement a data
-adapter along with a track type and/or renderer
+For example, if you have some data source that contains genes, and you want to
+display those genes using JBrowse's existing gene displays, you can write a
+custom adapter to do so. If you want to do a custom display of your data,
+though, you'll probably need to create a custom display and/or renderer along
+with your adapter.
 
-### Skeleton of an adapter
+### What types of adapters are there
 
-So we see basically something like this, this is stripped down for simplicity
+- **Feature adapter** - This is the most common type of adapter. Essentially,
+  it takes a request for a _region_ (a chromosome, starting position, and ending
+  position) and returns the _features_ (e.g. genes, reads, variants, etc.) that
+  are in that region. Examples of this in JBrowse include adapters for
+  [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) and
+  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) file formats.
+- **Regions adapter** - This type of adapter is used to define what regions are
+  in an assembly. It returns a list of chromosomes/contigs/scaffolds and their
+  sizes. An example of this in JBrowse is an adapter for a
+  [chrome.sizes](https://software.broadinstitute.org/software/igv/chromSizes)
+  file.
+- **Sequence adapter** - This is basically a combination of a regions adapter
+  and a feature adapter. It can give the list of regions in an assembly, and
+  can also return the sequence of a queried region. Examples of this in JBrowse
+  include adapters for
+  [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
+  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
+- **RefName alias adapter** - This type of adapter is used to return data about
+  aliases for reference sequence names, for example to define that "chr1" is an
+  alias for "1". An example of this in JBrowse is an adapter for
+  (alias files)[http://software.broadinstitute.org/software/igv/LoadData/#aliasfile]
+
+### Skeleton of a feature adapter
+
+A basic feature adapter might look like this (with implementation omitted for
+simplicity):
 
 ```js
 class MyAdapter extends BaseFeatureDataAdapter {
@@ -736,7 +761,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // config
   }
   async getRefNames() {
-    // return ref names used in your adapter, used for refname renaming
+    // return refNames used in your adapter, used for refName renaming
   }
   getFeatures(region) {
     // return features from your adapter, using rxjs observable
@@ -747,11 +772,11 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-So to make an adapter, you implement the getRefNames function (optional),
+So to make a feature adapter, you implement the getRefNames function (optional),
 the getFeatures function (returns an rxjs observable stream of features,
 discussed below) and freeResources (optional)
 
-### Example adapter
+### Example feature adapter
 
 To take this a little slow let's look at each function individually
 
@@ -813,7 +838,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-### What is needed from an adapter
+### What is needed from a feature adapter
 
 #### getRefNames
 
