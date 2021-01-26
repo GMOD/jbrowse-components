@@ -240,6 +240,7 @@ const ShareDialog = observer(
           onClose={handleClose}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
+          data-testid="share-dialog"
         >
           <DialogTitle id="alert-dialog-title">
             JBrowse Shareable Link
@@ -274,12 +275,15 @@ const ShareDialog = observer(
                     InputProps={{
                       readOnly: true,
                     }}
+                    // eslint-disable-next-line react/jsx-no-duplicate-props
+                    inputProps={{ 'data-testid': 'share-url-text' }}
                     variant="filled"
                     style={{ width: '100%' }}
                     onClick={event => {
                       const target = event.target as HTMLTextAreaElement
                       target.select()
                     }}
+                    data-testid="share-url-field"
                   />
                 )
               ) : (
