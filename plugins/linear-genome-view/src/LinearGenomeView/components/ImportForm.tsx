@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+/* eslint-disable no-nested-ternary */
+import React, { useState, useEffect, useCallback } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
@@ -29,7 +30,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const session = getSession(model)
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<
-    Region | String | undefined
+    string | Region | undefined
   >()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const { assemblyNames, assemblyManager } = getSession(model)
@@ -43,7 +44,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
       if (!done && assembly && assembly.regions) {
-        setSelectedRegion(getSnapshot(assembly.regions[0]))
+        setSelectedRegion(assembly.regions[0])
         setAssemblyRegions(assembly.regions)
       }
     })()
@@ -58,18 +59,21 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  function handleSelectedRegion(newRegionValue: string | undefined) {
-    if (newRegionValue) {
-      const newRegion: Region | undefined = assemblyRegions.find(
-        region => newRegionValue === region.refName,
-      )
-      if (newRegion) {
-        setSelectedRegion(getSnapshot(newRegion))
-      } else {
-        setSelectedRegion(newRegionValue)
+  const handleSelectedRegion = useCallback(
+    (newRegionValue: string | undefined) => {
+      if (newRegionValue) {
+        const newRegion: Region | undefined = assemblyRegions.find(
+          region => newRegionValue === region.refName,
+        )
+        if (newRegion) {
+          setSelectedRegion(newRegion)
+        } else {
+          setSelectedRegion(newRegionValue)
+        }
       }
-    }
-  }
+    },
+    [assemblyRegions],
+  )
 
   function onOpenClick() {
     if (selectedRegion) {
@@ -83,7 +87,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           session.notify(`${e}`, 'warning')
         }
       } else {
-        model.setDisplayedRegions([selectedRegion])
+        model.setDisplayedRegions([getSnapshot(selectedRegion)])
       }
     }
   }

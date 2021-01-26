@@ -103,7 +103,7 @@ export default observer(({ model }: { model: LGV }) => {
   const setDisplayedRegion = useCallback(
     (newRegionValue: string | undefined) => {
       if (newRegionValue) {
-        const newRegion: Region | undefined = displayedRegions.find(
+        const newRegion: Region | undefined = model.displayedRegions.find(
           region => newRegionValue === region.refName,
         )
         if (newRegion) {
@@ -119,7 +119,7 @@ export default observer(({ model }: { model: LGV }) => {
         }
       }
     },
-    [model],
+    [model, session],
   )
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }

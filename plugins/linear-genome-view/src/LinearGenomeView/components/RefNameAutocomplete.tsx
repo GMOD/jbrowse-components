@@ -4,7 +4,6 @@
  */
 import React, { useMemo } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
 // material ui
@@ -43,7 +42,6 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const session = getSession(model)
   const { assemblyManager } = getSession(model)
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
