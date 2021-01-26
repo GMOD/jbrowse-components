@@ -63,6 +63,7 @@ function RefNameAutocomplete({
       if (typeof newRegionName === 'string') {
         newRegionValue = newRegionName
       }
+      // set selected region string
       onSelect(newRegionValue)
     }
   }

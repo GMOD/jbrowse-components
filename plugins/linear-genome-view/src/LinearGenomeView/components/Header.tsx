@@ -106,6 +106,7 @@ export default observer(({ model }: { model: LGV }) => {
         const newRegion: Region | undefined = model.displayedRegions.find(
           region => newRegionValue === region.refName,
         )
+        // navigate to region or if region not found try navigating to locstring
         if (newRegion) {
           model.setDisplayedRegions([newRegion])
           model.showAllRegions()

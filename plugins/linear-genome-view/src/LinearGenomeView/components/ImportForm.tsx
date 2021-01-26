@@ -31,6 +31,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
+  //
   const [assemblyRegions, setAssemblyRegions] = useState<
     Instance<typeof Region>[]
   >([])
@@ -44,6 +45,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!done && assembly && assembly.regions) {
         setAssemblyRegions(assembly.regions)
+        // default selectedRegion
         setSelectedRegion(assembly.regions[0].refName)
       }
     })()
@@ -60,6 +62,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
 
   function onOpenClick() {
     if (selectedRegion) {
+      // check if selected region is found in selected assembly regions
       const newRegion:
         | Instance<typeof Region>
         | undefined = assemblyRegions.find(
