@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
@@ -29,9 +29,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const classes = useStyles()
   const session = getSession(model)
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<
-    string | Region | undefined
-  >()
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const { assemblyNames, assemblyManager } = getSession(model)
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
@@ -44,7 +42,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
 
       if (!done && assembly && assembly.regions) {
-        setSelectedRegion(assembly.regions[0])
+        setSelectedRegion(assembly.regions[0].refName)
         setAssemblyRegions(assembly.regions)
       }
     })()
@@ -59,25 +57,14 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  const handleSelectedRegion = useCallback(
-    (newRegionValue: string | undefined) => {
-      if (newRegionValue) {
-        const newRegion: Region | undefined = assemblyRegions.find(
-          region => newRegionValue === region.refName,
-        )
-        if (newRegion) {
-          setSelectedRegion(newRegion)
-        } else {
-          setSelectedRegion(newRegionValue)
-        }
-      }
-    },
-    [assemblyRegions],
-  )
-
   function onOpenClick() {
     if (selectedRegion) {
-      if (typeof selectedRegion === 'string') {
+      const newRegion: Region | undefined = assemblyRegions.find(
+        region => selectedRegion === region.refName,
+      )
+      if (newRegion) {
+        model.setDisplayedRegions([getSnapshot(newRegion)])
+      } else {
         try {
           // set default region and then navigate to specified locstring
           model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
@@ -86,8 +73,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           console.warn(e)
           session.notify(`${e}`, 'warning')
         }
-      } else {
-        model.setDisplayedRegions([getSnapshot(selectedRegion)])
       }
     }
   }
@@ -123,8 +108,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 assemblyName={
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }
-                value={selectedRegion?.refName || selectedRegion || ''}
-                onSelect={handleSelectedRegion}
+                value={selectedRegion || ''}
+                onSelect={setSelectedRegion}
                 TextFieldProps={{
                   margin: 'normal',
                   variant: 'outlined',
