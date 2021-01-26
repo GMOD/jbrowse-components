@@ -113,7 +113,6 @@ export default class extends Plugin {
   }
 }
 
-export * from './statsUtil'
 export * from './util'
 
 export { default as WiggleRendering } from './WiggleRendering'
