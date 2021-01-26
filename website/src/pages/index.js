@@ -52,7 +52,7 @@ function Home() {
               biological data.
             </p>
             <p>
-              Includes as a full-featured web application, embeddable components
+              Includes a full-featured web application, embeddable components
               for developers, and soon a desktop application.
             </p>
             <h3>Web</h3>
