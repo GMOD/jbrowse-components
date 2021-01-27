@@ -12,7 +12,7 @@ const assemblyConf = {
     trackId: 'sequenceConfigId',
     type: 'ReferenceSequenceTrack',
     adapter: {
-      type: 'FromConfigAdapter',
+      type: 'FromConfigSequenceAdapter',
       features: [
         {
           refName: 'ctgA',

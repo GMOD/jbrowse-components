@@ -6,13 +6,17 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
+import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import * as sessionSharing from '../sessionSharing'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
+
+window.TextEncoder = TextEncoder
 
 expect.extend({ toMatchImageSnapshot })
 
@@ -139,6 +143,29 @@ describe('test configuration editor', () => {
 function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }
+
+describe('test sharing', () => {
+  sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
+    encryptedSession: 'A',
+    json: {
+      sessionId: 'abc',
+    },
+    password: '123',
+  })
+  it('can click and share a session', async () => {
+    const pluginManager = getPluginManager()
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    fireEvent.click(await findByText('Share'))
+
+    // check the share dialog has the above session shared
+    expect(await findByTestId('share-dialog')).toBeTruthy()
+    const url = await findByTestId('share-url-text')
+    expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
+  })
+})
 
 test('404 sequence file', async () => {
   console.error = jest.fn()

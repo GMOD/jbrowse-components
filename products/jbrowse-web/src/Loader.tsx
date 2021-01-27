@@ -24,7 +24,10 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { readSessionFromDynamo } from './sessionSharing'
+import {
+  readSessionFromDynamo,
+  scanSharedSessionForCallbacks,
+} from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -32,6 +35,7 @@ import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
+import SessionWarningModal from './sessionWarningModal'
 
 function NoConfigMessage() {
   const s = window.location.search
@@ -99,6 +103,8 @@ const SessionLoader = types
   })
   .volatile(() => ({
     blankSession: false as any,
+    sessionTriaged: undefined as any,
+    shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     plugins: [] as PluginConstructor[],
@@ -149,7 +155,6 @@ const SessionLoader = types
     setConfigError(error: Error) {
       self.configError = error
     },
-
     setSessionError(error: Error) {
       self.sessionError = error
     },
@@ -165,6 +170,12 @@ const SessionLoader = types
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
+    },
+    setSessionTriaged(snap: unknown, origin: string) {
+      self.sessionTriaged = { snap, origin }
+    },
+    setShareWarningOpen(flag: boolean) {
+      self.shareWarningOpen = flag
     },
   }))
   .actions(self => ({
@@ -190,7 +201,11 @@ const SessionLoader = types
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
         await this.fetchPlugins(config)
-        self.setConfigSnapshot(config)
+        // cross origin config check
+        if (configUri.hostname !== window.location.hostname && !inDevelopment) {
+          self.setSessionTriaged(config, 'config')
+          self.setShareWarningOpen(true)
+        } else self.setConfigSnapshot(config)
       } catch (error) {
         self.setConfigError(error)
       }
@@ -251,7 +266,11 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      const hasCallbacks = await scanSharedSessionForCallbacks(session)
+      if (hasCallbacks) {
+        self.setSessionTriaged(session, 'share')
+        self.setShareWarningOpen(true)
+      } else self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -348,7 +367,7 @@ const Renderer = observer(
     initialSessionQuery: string | null | undefined
   }) => {
     const [, setPassword] = useQueryParam('password', StringParam)
-    const { sessionError, configError, ready } = loader
+    const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
     const [error, setError] = useState('')
     const [snapshotError, setSnapshotError] = useState('')
@@ -398,7 +417,7 @@ const Renderer = observer(
                 and pasting their URL`,
                 )
               }
-            } else if (sessionSnapshot) {
+            } else if (sessionSnapshot && !shareWarningOpen) {
               try {
                 rootModel.setSession(loader.sessionSnapshot)
               } catch (err) {
@@ -464,6 +483,7 @@ const Renderer = observer(
       }
     }, [
       loader,
+      shareWarningOpen,
       ready,
       sessionError,
       setPassword,
@@ -510,6 +530,14 @@ const Renderer = observer(
       )
     }
 
+    if (shareWarningOpen) {
+      return (
+        <SessionWarningModal
+          loader={loader}
+          sessionTriaged={loader.sessionTriaged}
+        />
+      )
+    }
     if (pm) {
       if (!pm.rootModel?.session) {
         return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
@@ -550,3 +578,5 @@ export default ({ initialTimestamp }: { initialTimestamp: number }) => {
     </ErrorBoundary>
   )
 }
+
+export type SessionLoader = Instance<typeof SessionLoader>

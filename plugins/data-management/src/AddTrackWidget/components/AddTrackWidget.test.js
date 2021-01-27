@@ -15,7 +15,7 @@ describe('<AddTrackWidget />', () => {
         trackId: 'ref0',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',
