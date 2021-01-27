@@ -4,6 +4,7 @@ import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 
 const toP = (s: number) => parseFloat(s.toPrecision(6))
 
@@ -80,7 +81,7 @@ const Tooltip = observer(
             style={{
               position: 'absolute',
               left: mouseCoord[0],
-              top: 0,
+              top: 5,
             }}
           >
             {' '}
@@ -88,7 +89,10 @@ const Tooltip = observer(
         </MUITooltip>
         <div
           className={classes.hoverVertical}
-          style={{ left: mouseCoord[0], height }}
+          style={{
+            left: mouseCoord[0],
+            height: height - YSCALEBAR_LABEL_OFFSET * 2,
+          }}
         />
       </>
     ) : null

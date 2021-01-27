@@ -30,6 +30,9 @@ import { getNiceDomain } from '../../util'
 import Tooltip from '../components/Tooltip'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
 
+// fudge factor for making all labels on the YScalebar visible
+export const YSCALEBAR_LABEL_OFFSET = 5
+
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'XYPlotRenderer'],
@@ -241,7 +244,7 @@ const stateModelFactory = (
             config: self.rendererConfig,
             scaleOpts: this.scaleOpts,
             resolution: self.resolution,
-            height: self.height,
+            height: self.height - YSCALEBAR_LABEL_OFFSET * 2,
           }
         },
 
