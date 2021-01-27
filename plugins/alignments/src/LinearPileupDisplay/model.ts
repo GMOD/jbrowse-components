@@ -33,6 +33,7 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
+import SetMaxHeightDlg from './components/SetMaxHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -54,6 +55,7 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
+        trackMaxHeight: types.maybe(types.number),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -94,7 +96,9 @@ const stateModelFactory = (
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
-
+      setMaxHeight(n: number) {
+        self.trackMaxHeight = n
+      },
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
@@ -359,14 +363,24 @@ const stateModelFactory = (
           return filters
         },
 
+        get maxHeight() {
+          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+          return self.trackMaxHeight !== undefined
+            ? self.trackMaxHeight
+            : conf.maxHeight
+        },
+
         get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.rendererType.configSchema.create(configBlob)
+          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+          return self.rendererType.configSchema.create({
+            ...conf,
+            maxHeight: this.maxHeight,
+          })
         },
 
         get renderProps() {
           const view = getContainingView(self) as LGV
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -489,6 +503,15 @@ const stateModelFactory = (
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(
                   FilterByTagDlg,
+                  self,
+                )
+              },
+            },
+            {
+              label: 'Set max height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetMaxHeightDlg,
                   self,
                 )
               },
