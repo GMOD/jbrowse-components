@@ -39,12 +39,9 @@ const Tooltip = observer(
   },
 )
 
-// I think I need to register the display's react component the same way a view's
-// or renderer's component gets registered
-
 type Coord = [number, number]
 const BaseLinearDisplay = observer(
-  (props: { model: BaseLinearDisplayModel; children: React.ReactNode }) => {
+  (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
 

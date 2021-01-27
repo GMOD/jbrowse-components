@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import React from 'react'
 import { Axis, axisPropsFromTickScale, RIGHT } from 'react-d3-axis'
 import { getScale } from '../../util'
-import { WiggleDisplayModel } from '../models/model'
+import { WiggleDisplayModel, YSCALEBAR_LABEL_OFFSET } from '../models/model'
 
 export const YScaleBar = observer(
   ({ model }: { model: WiggleDisplayModel }) => {
@@ -12,7 +12,7 @@ export const YScaleBar = observer(
     const scale = getScale({
       scaleType,
       domain,
-      range: [height, 0],
+      range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
       inverted: getConf(model, 'inverted'),
     })
     const ticks = height < 50 ? 2 : 4
@@ -30,6 +30,7 @@ export const YScaleBar = observer(
           width: 50,
         }}
       >
+        <g transform="translate(0,5)" />
         <Axis
           {...axisProps}
           values={values}
@@ -45,8 +46,11 @@ export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, needsScalebar } = model
   return (
-    <BaseLinearDisplayComponent {...props}>
+    <div
+      style={{ padding: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined }}
+    >
+      <BaseLinearDisplayComponent {...props} />
       {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
-    </BaseLinearDisplayComponent>
+    </div>
   )
 })
