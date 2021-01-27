@@ -177,7 +177,6 @@ const stateModelFactory = (
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
       let oldDomain: [number, number] = [0, 0]
       return {
         get domain() {
@@ -234,7 +233,11 @@ const stateModelFactory = (
         get autoscaleType() {
           return self.autoscale || getConf(self, 'autoscale')
         },
-
+      }
+    })
+    .views(self => {
+      const { trackMenuItems } = self
+      return {
         get renderProps() {
           return {
             ...self.composedRenderProps,
@@ -242,9 +245,11 @@ const stateModelFactory = (
             notReady: !self.ready,
             displayModel: self,
             config: self.rendererConfig,
-            scaleOpts: this.scaleOpts,
+            scaleOpts: self.scaleOpts,
             resolution: self.resolution,
-            height: self.height - YSCALEBAR_LABEL_OFFSET * 2,
+            height:
+              self.height -
+              (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
           }
         },
 
@@ -287,7 +292,7 @@ const stateModelFactory = (
                   },
                 ]
               : []),
-            ...(this.canHaveFill
+            ...(self.canHaveFill
               ? [
                   {
                     label: self.filled
