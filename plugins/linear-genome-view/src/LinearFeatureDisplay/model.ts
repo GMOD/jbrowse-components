@@ -1,10 +1,12 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { types, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
+import SetMaxHeightDlg from './components/SetMaxHeight'
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -15,6 +17,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         type: types.literal('LinearFeatureDisplay'),
         trackShowLabels: types.maybe(types.boolean),
         trackDisplayMode: types.maybe(types.string),
+        trackMaxHeight: types.maybe(types.number),
         configuration: ConfigurationReference(configSchema),
       }),
     )
@@ -28,6 +31,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         return self.trackShowLabels !== undefined
           ? self.trackShowLabels
           : showLabels
+      },
+
+      get maxHeight() {
+        const maxHeight = getConf(self, ['renderer', 'maxHeight'])
+        return self.trackMaxHeight !== undefined
+          ? self.trackMaxHeight
+          : maxHeight
       },
 
       get displayMode() {
@@ -44,6 +54,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
           ...configBlob,
           showLabels: this.showLabels,
           displayMode: this.displayMode,
+          maxHeight: this.maxHeight,
         })
       },
     }))
@@ -55,16 +66,16 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
       },
+      setMaxHeight(val: number) {
+        self.trackMaxHeight = val
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
       return {
         get renderProps() {
-          const config = self.rendererType.configSchema.create({
-            ...getConf(self, 'renderer'),
-            displayMode: self.displayMode,
-            showLabels: self.showLabels,
-          })
+          const config = self.rendererConfig
+
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -98,6 +109,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
                   self.setDisplayMode(val)
                 },
               })),
+            },
+            {
+              label: 'Set max height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetMaxHeightDlg,
+                  self,
+                )
+              },
             },
           ]
         },
