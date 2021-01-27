@@ -31,7 +31,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
-  //
   const [assemblyRegions, setAssemblyRegions] = useState<
     Instance<typeof Region>[]
   >([])
@@ -108,7 +107,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
         </Grid>
         <Grid item>
           {assemblyName ? (
-            selectedRegion && model.volatileWidth ? (
+            model.volatileWidth ? (
               <RefNameAutocomplete
                 model={model}
                 assemblyName={
@@ -119,9 +118,8 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 TextFieldProps={{
                   margin: 'normal',
                   variant: 'outlined',
-                  label: 'Sequence',
                   className: classes.importFormEntry,
-                  helperText: 'Select sequence to view',
+                  helperText: 'Enter a sequence or locstring',
                 }}
               />
             ) : (
