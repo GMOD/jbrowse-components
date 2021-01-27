@@ -30,7 +30,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<string | undefined>()
   const [assemblyRegions, setAssemblyRegions] = useState<
     Instance<typeof Region>[]
   >([])
@@ -45,7 +44,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       if (!done && assembly && assembly.regions) {
         setAssemblyRegions(assembly.regions)
         // default selectedRegion
-        setSelectedRegion(assembly.regions[0].refName)
+        // setSelectedRegion(assembly.regions[0].refName)
       }
     })()
     return () => {
@@ -59,7 +58,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  function onOpenClick() {
+  function setSelectedRegion(selectedRegion: string | undefined) {
     if (selectedRegion) {
       // check if selected region is found in selected assembly regions
       const newRegion:
@@ -113,7 +112,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 assemblyName={
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }
-                value={selectedRegion || ''}
+                value={assemblyRegions[0] ? assemblyRegions[0].refName : ''}
                 onSelect={setSelectedRegion}
                 TextFieldProps={{
                   margin: 'normal',
@@ -132,7 +131,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
             )
           ) : null}
         </Grid>
-        <Grid item>
+        {/* <Grid item>
           <Button
             disabled={!selectedRegion}
             onClick={onOpenClick}
@@ -141,7 +140,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           >
             Open
           </Button>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Container>
   )
