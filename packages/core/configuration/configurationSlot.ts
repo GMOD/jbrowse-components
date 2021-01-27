@@ -191,6 +191,9 @@ export default function ConfigSlot(
     .views(self => ({
       get isCallback() {
         return functionRegexp.test(String(self.value))
+      }, // something like STring(self.value).startsWith('jexl:')
+      get isJexlCallback() {
+        return String(self.value).startsWith('jexl:')
       },
     }))
     .views(self => ({

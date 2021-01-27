@@ -1,6 +1,10 @@
+import jexl from './jexl'
+
 export const functionRegexp = /^\s*function\s*\w*\s*\(([^)]*)\)\s*{([\w\W]*)/
 
 const compilationCache: Record<string, Function> = {}
+
+// TODO HERE IS WHERE FUNCITONS GET EVALED
 
 /**
  * compile a function to a string
@@ -48,14 +52,27 @@ export function stringToFunction(
     }
 
     // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const compiled = new Function(...paramList, `"use strict"; ${code}`)
-    compilationCache[cacheKey] = compiled
+    const compiled = new Function(...paramList, `"use strict"; ${code}`) // replace this with jexl.createExpression with string that they typed, strip off the jexl: part
+    const compiledJexl = jexl.createExpression(`${code.substring(5)}`) // jexl: takes up 5 characters
+    const useJexl = true // toggle for testing only, remove when final
+
+    compilationCache[cacheKey] = useJexl ? compiledJexl : compiled
   }
 
   let func = compilationCache[cacheKey]
+  // dont need this when using jexl
   if (options.bind) {
     const [thisArg, ...rest] = options.bind
     func = func.bind(thisArg, ...rest)
   }
   return func
 }
+
+// jexl.eval(getFeatureData(feature, 'strand') == "+" ? 'blue' : 'red', {feature})
+// they will write everything inside the parenthesis except context
+// so when jexl is added, called a set of utility functions
+// jexl.addFunction('getFeatureData', {feature, data} => feature.get('data))
+// in config callbacks, use expression.eval({{}} [context])
+
+// have util file called jexl, imports jexl and adds utility functions, then export jexl
+// put it in jbrowse/core

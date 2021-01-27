@@ -62,10 +62,10 @@ function CallbackEditor({ slot }) {
         value={code}
         onValueChange={newCode => {
           setCode(newCode)
-        }}
+      }}
         highlight={newCode => (
           <SyntaxHighlighter
-            language="javascript"
+            language="javascript" // maybe get rid of this
             style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
             className={classes.syntaxHighlighter}
             // override some inline style stuff that's higher specificity
