@@ -33,6 +33,11 @@ import {
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
 
+import {
+  configSchema as featuresTrackConfigSchema,
+  modelFactory as featuresTrackModelFactory,
+} from './LinearFeatureDisplay'
+
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
 
@@ -90,6 +95,18 @@ export default class LinearGenomeViewPlugin extends Plugin {
         configSchema,
         stateModel: LinearBasicDisplayStateModelFactory(configSchema),
         trackType: 'BasicTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = featuresTrackConfigSchema(pluginManager)
+      return new DisplayType({
+        name: 'LinearFeatureDisplay',
+        configSchema,
+        stateModel: featuresTrackModelFactory(configSchema),
+        trackType: 'FeatureTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
       })

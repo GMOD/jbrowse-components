@@ -1,11 +1,10 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { MenuItem } from '@jbrowse/core/ui'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-
 import { types, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -14,26 +13,52 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       BaseLinearDisplay,
       types.model({
         type: types.literal('LinearFeatureDisplay'),
-        showLabels: types.optional(types.boolean, true),
-        displayMode: types.optional(types.string, 'normal'),
+        trackShowLabels: types.maybe(types.boolean),
+        trackDisplayMode: types.maybe(types.string),
         configuration: ConfigurationReference(configSchema),
       }),
     )
+    .views(self => ({
+      get rendererTypeName() {
+        return getConf(self, ['renderer', 'type'])
+      },
+
+      get showLabels() {
+        const showLabels = getConf(self, ['renderer', 'showLabels'])
+        return self.trackShowLabels !== undefined
+          ? self.trackShowLabels
+          : showLabels
+      },
+
+      get displayMode() {
+        const displayMode = getConf(self, ['renderer', 'displayMode'])
+        return self.trackDisplayMode !== undefined
+          ? self.trackDisplayMode
+          : displayMode
+      },
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', this.rendererTypeName]) || {}
+
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          showLabels: this.showLabels,
+          displayMode: this.displayMode,
+        })
+      },
+    }))
+
     .actions(self => ({
       toggleShowLabels() {
-        self.showLabels = !self.showLabels
+        self.trackShowLabels = !self.showLabels
       },
       setDisplayMode(val: string) {
-        self.displayMode = val
+        self.trackDisplayMode = val
       },
     }))
     .views(self => {
       const { trackMenuItems } = self
       return {
-        get rendererTypeName() {
-          const renderer = getConf(self, 'renderer')
-          return renderer.type
-        },
         get renderProps() {
           const config = self.rendererType.configSchema.create({
             ...getConf(self, 'renderer'),

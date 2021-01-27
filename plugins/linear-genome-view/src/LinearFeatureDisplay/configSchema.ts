@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
-
 import PluginManager from '@jbrowse/core/PluginManager'
+import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
