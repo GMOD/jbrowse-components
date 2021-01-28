@@ -34,7 +34,7 @@ describe('<LinearGenomeView />', () => {
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
     const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Open')
+    await findByText('Select assembly to view')
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders one track, one region', async () => {
