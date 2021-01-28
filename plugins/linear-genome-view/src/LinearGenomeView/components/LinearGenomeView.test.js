@@ -42,7 +42,6 @@ describe('<LinearGenomeView />', () => {
     } = render(<LinearGenomeView model={model} />)
     await findByText('Select assembly to view')
     const autocomplete = await findByTestId('autocomplete')
-    const inputBox = await findByPlaceholderText('Search for location')
     expect(container.firstChild).toMatchSnapshot()
 
     autocomplete.focus()

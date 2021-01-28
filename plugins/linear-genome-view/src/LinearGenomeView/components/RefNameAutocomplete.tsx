@@ -127,7 +127,7 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             onKeyPress={event => {
               if (event.key === 'Enter') {
-                onSelect(event.target.value)
+                onSelect((event.target as HTMLInputElement).value)
               }
             }}
             InputProps={TextFieldInputProps}
