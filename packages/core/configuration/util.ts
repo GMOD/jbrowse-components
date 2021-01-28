@@ -63,7 +63,13 @@ export function readConfObject(
       // )
     }
     if (slot.func) {
-      const appliedFunc = slot.func.apply(null, args) // slot.func.eval(args)
+      if (typeof slot.func === 'object') {
+        console.log(args)
+      }
+      const appliedFunc =
+        typeof slot.func === 'function'
+          ? slot.func.apply(null, args)
+          : slot.func.eval({ feature: args, data: 'name' })
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }

@@ -206,6 +206,13 @@ export default function ConfigSlot(
               : undefined,
           })
         }
+        if (self.isJexlCallback) {
+          return stringToFunction(String(self.value), {
+            verifyFunctionSignature: inDevelopment
+              ? functionSignature
+              : undefined,
+          })
+        }
         return () => self.value
       },
 

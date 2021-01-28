@@ -34,12 +34,15 @@ export function stringToFunction(
   }|${str}`
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
-    if (!match) {
+    const jexlMatch = str.startsWith('jexl:')
+    if (!match && !jexlMatch) {
       throw new Error('string does not appear to be a function declaration')
     }
-    const paramList = match[1].split(',').map(s => s.trim())
-    let code = match[2].replace(/}\s*$/, '')
-    if (verifyFunctionSignature) {
+    const paramList = match
+      ? match[1].split(',').map(s => s.trim())
+      : str.split('jexl:')[0]
+    let code = match ? match[2].replace(/}\s*$/, '') : str.split('jexl:')[1]
+    if (verifyFunctionSignature && match) {
       // check number of arguments passed by calling code at runtime.
       // NOTE: we don't check the number of arguments in the callback code itself,
       // callback authors are free to ignore the arguments if they want
@@ -51,12 +54,12 @@ export function stringToFunction(
       )}) but "+arguments.length+" arguments were passed");\n${code}`
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-    const compiled = new Function(...paramList, `"use strict"; ${code}`) // replace this with jexl.createExpression with string that they typed, strip off the jexl: part
-    const compiledJexl = jexl.createExpression(`${code.substring(5)}`) // jexl: takes up 5 characters
-    const useJexl = true // toggle for testing only, remove when final
+    const compiled = match
+      ? // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+        new Function(...paramList, `"use strict"; ${code}`)
+      : jexl.createExpression(`${code}`) // replace this with jexl.createExpression with string that they typed, strip off the jexl: part
 
-    compilationCache[cacheKey] = useJexl ? compiledJexl : compiled
+    compilationCache[cacheKey] = compiled
   }
 
   let func = compilationCache[cacheKey]
