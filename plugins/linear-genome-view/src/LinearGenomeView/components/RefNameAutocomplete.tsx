@@ -124,6 +124,12 @@ function RefNameAutocomplete({
             {...params}
             {...TextFieldProps}
             helperText={helperText}
+            value={coarseVisibleLocStrings || value || ''}
+            onKeyPress={event => {
+              if (event.key === 'Enter') {
+                onSelect(event.target.value)
+              }
+            }}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
           />
