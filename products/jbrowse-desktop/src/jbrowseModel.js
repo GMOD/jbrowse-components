@@ -19,7 +19,7 @@ export default function JBrowseDesktop(
   Session,
   assemblyConfigSchemasType,
 ) {
-  return types
+  const JBrowseModel = types
     .model('JBrowseDesktop', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
@@ -148,4 +148,29 @@ export default function JBrowseDesktop(
         return getParent(self).rpcManager
       },
     }))
+
+  return types.snapshotProcessor(JBrowseModel, {
+    postProcessor(snapshot) {
+      function removeEphemeral(obj) {
+        if (Array.isArray(obj)) {
+          obj = obj.filter(value => !value.ephemeral)
+          obj.forEach(value => {
+            if (typeof value === 'object') {
+              removeEphemeral(value)
+            }
+          })
+        } else {
+          for (const prop in obj) {
+            if (prop.ephemeral) {
+              delete obj[prop]
+            } else if (typeof obj[prop] === 'object') {
+              removeEphemeral(obj[prop])
+            }
+          }
+        }
+      }
+      removeEphemeral(snapshot)
+      return snapshot
+    },
+  })
 }

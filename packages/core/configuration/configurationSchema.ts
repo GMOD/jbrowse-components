@@ -87,6 +87,7 @@ function makeConfigurationSchemaModel<
   // now assemble the MST model of the configuration schema
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const modelDefinition: Record<string, any> = {}
+  modelDefinition.ephemeral = false
   let identifier
 
   if (options.explicitlyTyped) {
@@ -203,6 +204,9 @@ function makeConfigurationSchemaModel<
         newSnap[key] = value
       }
     })
+    if (!newSnap.ephemeral) {
+      delete newSnap.ephemeral
+    }
     return newSnap
   })
 
