@@ -1,5 +1,5 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import sizeMe from 'react-sizeme'
 import 'requestidlecallback-polyfill'
@@ -33,9 +33,24 @@ describe('<LinearGenomeView />', () => {
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    model.setWidth(800)
+    const {
+      container,
+      findByText,
+      findByTestId,
+      findByPlaceholderText,
+    } = render(<LinearGenomeView model={model} />)
     await findByText('Select assembly to view')
+    const autocomplete = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
     expect(container.firstChild).toMatchSnapshot()
+
+    autocomplete.focus()
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgA'),
+    )
   })
   it('renders one track, one region', async () => {
     const session = createTestSession()
