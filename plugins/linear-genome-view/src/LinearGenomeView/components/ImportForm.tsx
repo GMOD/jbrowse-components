@@ -7,7 +7,6 @@ import { Region } from '@jbrowse/core/util/types/mst'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
@@ -43,8 +42,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!done && assembly && assembly.regions) {
         setAssemblyRegions(assembly.regions)
-        // default selectedRegion
-        // setSelectedRegion(assembly.regions[0].refName)
       }
     })()
     return () => {
@@ -59,6 +56,10 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   }
 
   function setSelectedRegion(selectedRegion: string | undefined) {
+    /*
+    eventually handle more functionality to a search for generic feature
+    refseq names, locstrings, gene features
+    */
     if (selectedRegion) {
       // check if selected region is found in selected assembly regions
       const newRegion:
@@ -70,9 +71,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
         model.setDisplayedRegions([getSnapshot(newRegion)])
       } else {
         try {
-          // set default region and then navigate to specified locstring
-          model.setDisplayedRegions([getSnapshot(assemblyRegions[0])])
-          model.navToLocString(selectedRegion)
+          model.navToLocString(selectedRegion, assemblyName)
         } catch (e) {
           console.warn(e)
           session.notify(`${e}`, 'warning')
@@ -131,16 +130,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
             )
           ) : null}
         </Grid>
-        {/* <Grid item>
-          <Button
-            disabled={!selectedRegion}
-            onClick={onOpenClick}
-            variant="contained"
-            color="primary"
-          >
-            Open
-          </Button>
-        </Grid> */}
       </Grid>
     </Container>
   )
