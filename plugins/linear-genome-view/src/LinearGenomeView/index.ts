@@ -19,7 +19,7 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 // misc
-import { transaction, autorun } from 'mobx'
+import { transaction, autorun, when } from 'mobx'
 import {
   getSnapshot,
   types,
@@ -603,7 +603,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
-        self.zoomTo(self.bpPerPx)
+        when(
+          () => self.initialized,
+          () => self.zoomTo(self.bpPerPx),
+        )
       },
 
       activateTrackSelector() {
