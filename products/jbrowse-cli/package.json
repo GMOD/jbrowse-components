@@ -60,7 +60,7 @@
     "plugins": [
       "@oclif/plugin-help"
     ],
-    "repositoryPrefix": "<%- repo %>/blob/%40jbrowse%2Fcli%40<%- version %>/products/jbrowse-cli/<%- commandPath %>"
+    "repositoryPrefix": "<%- repo %>/blob/v<%- version %>/products/jbrowse-cli/<%- commandPath %>"
   },
   "publishConfig": {
     "access": "public"
