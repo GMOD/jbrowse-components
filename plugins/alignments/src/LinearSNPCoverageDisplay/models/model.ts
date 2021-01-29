@@ -129,7 +129,7 @@ const stateModelFactory = (
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           notReady: !self.ready,
-          height: self.height,
+          height: self.height - 5, // - (self.needsScalebar ? 5 * 2 : 0),
           displayModel: self,
           scaleOpts: this.scaleOpts,
           filters: self.filters,
