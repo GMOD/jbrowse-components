@@ -6,9 +6,11 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
     mouseover: {
       type: 'string',
       description: 'what to display in a given mouseover',
-      defaultValue: `function(feature) {
-  return feature.get('name')
-}`,
+      //       defaultValue: `function(feature) {
+      //   return feature.get('name')
+      // }`,
+      defaultValue: `jexl:getFeatureData(feature, 'name')`,
+
       functionSignature: ['feature'],
     },
     maxDisplayedBpPerPx: {

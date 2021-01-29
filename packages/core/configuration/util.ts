@@ -69,7 +69,7 @@ export function readConfObject(
       const appliedFunc =
         typeof slot.func === 'function'
           ? slot.func.apply(null, args)
-          : slot.func.eval({ feature: args, data: 'name' })
+          : slot.func.evalSync({ feature: args, data: 'name' })
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }
