@@ -46,7 +46,12 @@ export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, needsScalebar } = model
   return (
-    <div>
+    <div
+      style={{
+        paddingTop: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
+        paddingBottom: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
+      }}
+    >
       <BaseLinearDisplayComponent {...props} />
       {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
     </div>

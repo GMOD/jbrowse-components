@@ -2,19 +2,14 @@ import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import React, { useEffect } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { AlignmentsDisplayModel } from '../models/model'
 
-function AlignmentsDisplayComponent({
-  model,
-}: {
-  model: AlignmentsDisplayModel
-}) {
+export default observer(({ model }: { model: AlignmentsDisplayModel }) => {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
 
   // determine height of the model when toggling pileupdisplay
   useEffect(() => {
-    SNPCoverageDisplay.setHeight(!showPileup ? model.height : 40)
+    SNPCoverageDisplay.setHeight(!showPileup ? model.height : 45)
   }, [SNPCoverageDisplay, model, showPileup])
 
   return (
@@ -22,13 +17,7 @@ function AlignmentsDisplayComponent({
       data-testid={`display-${getConf(model, 'displayId')}`}
       style={{ position: 'relative' }}
     >
-      <div
-        data-testid="Blockset-snpcoverage"
-        style={{
-          paddingTop: YSCALEBAR_LABEL_OFFSET,
-          paddingBottom: YSCALEBAR_LABEL_OFFSET,
-        }}
-      >
+      <div data-testid="Blockset-snpcoverage">
         {showCoverage ? (
           <SNPCoverageDisplay.RenderingComponent model={SNPCoverageDisplay} />
         ) : null}
@@ -62,6 +51,4 @@ function AlignmentsDisplayComponent({
       </div>
     </div>
   )
-}
-
-export default observer(AlignmentsDisplayComponent)
+})

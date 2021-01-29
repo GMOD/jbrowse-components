@@ -60,8 +60,6 @@ function WiggleRendering(props: {
         overflow: 'visible',
         position: 'relative',
         height,
-        // paddingTop: 5, // needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
-        // paddingBottom: 5, // needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
       }}
     >
       <PrerenderedCanvas {...props} />
