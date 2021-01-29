@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import React, { useEffect } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/plugin-wiggle'
 import { AlignmentsDisplayModel } from '../models/model'
 
 function AlignmentsDisplayComponent({
@@ -21,7 +22,13 @@ function AlignmentsDisplayComponent({
       data-testid={`display-${getConf(model, 'displayId')}`}
       style={{ position: 'relative' }}
     >
-      <div data-testid="Blockset-snpcoverage">
+      <div
+        data-testid="Blockset-snpcoverage"
+        style={{
+          paddingTop: YSCALEBAR_LABEL_OFFSET,
+          paddingBottom: YSCALEBAR_LABEL_OFFSET,
+        }}
+      >
         {showCoverage ? (
           <SNPCoverageDisplay.RenderingComponent model={SNPCoverageDisplay} />
         ) : null}

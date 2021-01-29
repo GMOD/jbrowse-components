@@ -162,7 +162,7 @@ const stateModelFactory = (
         self.SNPCoverageDisplay = {
           type: 'LinearSNPCoverageDisplay',
           configuration: displayConfig,
-          height: 40,
+          height: 50,
         }
       },
       setPileupDisplay(displayConfig: AnyConfigurationModel) {

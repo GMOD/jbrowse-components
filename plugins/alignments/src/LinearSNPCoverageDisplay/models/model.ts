@@ -1,7 +1,10 @@
 import { types, cast } from 'mobx-state-tree'
 import { getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import {
+  linearWiggleDisplayModelFactory,
+  YSCALEBAR_LABEL_OFFSET,
+} from '@jbrowse/plugin-wiggle'
 import {
   AnyConfigurationSchemaType,
   AnyConfigurationModel,
@@ -125,11 +128,13 @@ const stateModelFactory = (
         const config = self.rendererType.configSchema.create(
           getConf(self, ['renderers', self.rendererTypeName]) || {},
         )
+
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           notReady: !self.ready,
-          height: self.height - 5, // - (self.needsScalebar ? 5 * 2 : 0),
+          height:
+            self.height - (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
           displayModel: self,
           scaleOpts: this.scaleOpts,
           filters: self.filters,

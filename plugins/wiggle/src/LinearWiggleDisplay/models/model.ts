@@ -239,6 +239,10 @@ const stateModelFactory = (
       const { trackMenuItems } = self
       return {
         get renderProps() {
+          console.log(
+            'here2',
+            self.height - (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
+          )
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
