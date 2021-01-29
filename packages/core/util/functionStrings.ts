@@ -28,6 +28,7 @@ export function stringToFunction(
   } = {},
 ) {
   const { verifyFunctionSignature } = options
+  const jexlParamFind = /\(([^)]+)\)/
 
   const cacheKey = `${
     verifyFunctionSignature ? verifyFunctionSignature.join(',') : 'nosig'
@@ -35,12 +36,17 @@ export function stringToFunction(
   if (!compilationCache[cacheKey]) {
     const match = functionRegexp.exec(str)
     const jexlMatch = str.startsWith('jexl:')
+    const jexlParam = jexlParamFind.exec(str)
     if (!match && !jexlMatch) {
       throw new Error('string does not appear to be a function declaration')
     }
+    // remove when transition to just jexl
+    // eslint-disable-next-line no-nested-ternary
     const paramList = match
       ? match[1].split(',').map(s => s.trim())
-      : str.split('jexl:')[0]
+      : jexlParam
+      ? jexlParam[1].split(',').map(s => s.trim())
+      : null
     let code = match ? match[2].replace(/}\s*$/, '') : str.split('jexl:')[1]
     if (verifyFunctionSignature && match) {
       // check number of arguments passed by calling code at runtime.

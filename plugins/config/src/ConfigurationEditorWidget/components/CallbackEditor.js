@@ -62,7 +62,7 @@ function CallbackEditor({ slot }) {
         value={code}
         onValueChange={newCode => {
           setCode(newCode)
-      }}
+        }}
         highlight={newCode => (
           <SyntaxHighlighter
             language="javascript" // maybe get rid of this

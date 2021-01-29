@@ -64,7 +64,7 @@ export function readConfObject(
     }
     if (slot.func) {
       if (typeof slot.func === 'object') {
-        console.log(args)
+        // console.log(args)
       }
       const appliedFunc =
         typeof slot.func === 'function'
