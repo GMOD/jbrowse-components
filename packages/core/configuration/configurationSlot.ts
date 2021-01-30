@@ -191,7 +191,7 @@ export default function ConfigSlot(
     .views(self => ({
       get isCallback() {
         return functionRegexp.test(String(self.value))
-      }, // something like STring(self.value).startsWith('jexl:')
+      },
       get isJexlCallback() {
         return String(self.value).startsWith('jexl:')
       },
@@ -267,6 +267,12 @@ export default function ConfigSlot(
   return ${self.valueJSON}
 }
 `
+      },
+      convertToJexlCallback() {
+        if (self.isJexlCallback) return
+        self.value = `jexl(${self.functionSignature.join(', ')}) { return ${
+          self.valueJSON
+        }}`
       },
       convertToValue() {
         if (!self.isCallback) return

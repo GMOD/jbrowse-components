@@ -393,7 +393,7 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'normal':
       default:
-        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        ctx.fillStyle = readConfObject(config, 'color', [{ feature }])
         break
     }
 
@@ -584,7 +584,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       const { feature, topPx, heightPx } = feat
 
-      ctx.fillStyle = readConfObject(config, 'color', [feature])
+      ctx.fillStyle = readConfObject(config, 'color', [{ feature }])
       this.drawRect(ctx, { feature, topPx, heightPx }, props)
       const mismatches: Mismatch[] = feature.get('mismatches')
       const seq = feature.get('seq')

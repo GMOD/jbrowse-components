@@ -19,7 +19,10 @@ import { Feature } from './simpleFeature'
 // 5. in utils.js is where readConfig is called. When the function is passed there, jexl.eval(args) will be called, where args is the created jexl expression from above
 
 // helper functions
-jexl.addFunction('getFeatureData', (feature: Feature[], data: string) => {
-  return feature[0].get(data)
+jexl.addFunction('getFeatureData', (feature: Feature, data: string) => {
+  return feature.get(data)
+})
+jexl.addFunction('getColor', (feature: Feature, color: string) => {
+  return color || '#c8c8c8'
 })
 export default jexl
