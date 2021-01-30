@@ -4,16 +4,12 @@ import React, { useEffect } from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { AlignmentsDisplayModel } from '../models/model'
 
-function AlignmentsDisplayComponent({
-  model,
-}: {
-  model: AlignmentsDisplayModel
-}) {
+export default observer(({ model }: { model: AlignmentsDisplayModel }) => {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
 
   // determine height of the model when toggling pileupdisplay
   useEffect(() => {
-    SNPCoverageDisplay.setHeight(!showPileup ? model.height : 40)
+    SNPCoverageDisplay.setHeight(!showPileup ? model.height : 45)
   }, [SNPCoverageDisplay, model, showPileup])
 
   return (
@@ -55,6 +51,4 @@ function AlignmentsDisplayComponent({
       </div>
     </div>
   )
-}
-
-export default observer(AlignmentsDisplayComponent)
+})

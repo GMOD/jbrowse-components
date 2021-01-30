@@ -89,7 +89,7 @@
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "9.3.1",
+    "electronVersion": "9.4.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },
