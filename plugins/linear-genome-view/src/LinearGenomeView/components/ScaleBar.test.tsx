@@ -32,7 +32,7 @@ describe('ScaleBar genome view component', () => {
         trackId: 'ref0',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',
@@ -74,7 +74,7 @@ describe('ScaleBar genome view component', () => {
         trackId: 'ref0',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',
@@ -119,7 +119,7 @@ describe('ScaleBar genome view component', () => {
         trackId: 'ref0',
         type: 'ReferenceSequenceTrack',
         adapter: {
-          type: 'FromConfigAdapter',
+          type: 'FromConfigSequenceAdapter',
           features: [
             {
               refName: 'ctgA',

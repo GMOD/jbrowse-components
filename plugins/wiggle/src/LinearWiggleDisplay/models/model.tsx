@@ -24,12 +24,15 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import { FeatureStats } from '@jbrowse/core/util/stats'
 import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import { FeatureStats } from '../../statsUtil'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
+
+// fudge factor for making all labels on the YScalebar visible
+export const YSCALEBAR_LABEL_OFFSET = 5
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -175,7 +178,6 @@ const stateModelFactory = (
       },
     }))
     .views(self => {
-      const { trackMenuItems } = self
       let oldDomain: [number, number] = [0, 0]
       return {
         get domain() {
@@ -232,7 +234,11 @@ const stateModelFactory = (
         get autoscaleType() {
           return self.autoscale || getConf(self, 'autoscale')
         },
-
+      }
+    })
+    .views(self => {
+      const { trackMenuItems } = self
+      return {
         get renderProps() {
           return {
             ...self.composedRenderProps,
@@ -240,9 +246,11 @@ const stateModelFactory = (
             notReady: !self.ready,
             displayModel: self,
             config: self.rendererConfig,
-            scaleOpts: this.scaleOpts,
+            scaleOpts: self.scaleOpts,
             resolution: self.resolution,
-            height: self.height,
+            height:
+              self.height -
+              (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
           }
         },
 
@@ -285,7 +293,7 @@ const stateModelFactory = (
                   },
                 ]
               : []),
-            ...(this.canHaveFill
+            ...(self.canHaveFill
               ? [
                   {
                     label: self.filled

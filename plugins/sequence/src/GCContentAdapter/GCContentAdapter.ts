@@ -11,8 +11,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
 
-import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
-
 export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   private sequenceAdapter: BaseFeatureDataAdapter
 
@@ -54,48 +52,6 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
   public async getRegions(): Promise<NoAssemblyRegion[]> {
     // @ts-ignore
     return this.sequenceAdapter.getRegions()
-  }
-
-  // Taken from bigwigadapter
-  public getRegionStats(region: Region, opts: BaseOptions) {
-    const feats = this.getFeatures(region, opts)
-    return scoresToStats(region, feats)
-  }
-
-  // Taken from bigwigadapter
-  public async getMultiRegionStats(regions: Region[] = [], opts: BaseOptions) {
-    if (!regions.length) {
-      return blankStats()
-    }
-    const feats = await Promise.all(
-      regions.map(region => this.getRegionStats(region, opts)),
-    )
-
-    const scoreMax = feats
-      .map(s => s.scoreMax)
-      .reduce((acc, curr) => Math.max(acc, curr))
-    const scoreMin = feats
-      .map(s => s.scoreMin)
-      .reduce((acc, curr) => Math.min(acc, curr))
-    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-    const scoreSumSquares = feats
-      .map(s => s.scoreSumSquares)
-      .reduce((a, b) => a + b, 0)
-    const featureCount = feats
-      .map(s => s.featureCount)
-      .reduce((a, b) => a + b, 0)
-    const basesCovered = feats
-      .map(s => s.basesCovered)
-      .reduce((a, b) => a + b, 0)
-
-    return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
-      basesCovered,
-      scoreSumSquares,
-      scoreSum,
-    })
   }
 
   /**

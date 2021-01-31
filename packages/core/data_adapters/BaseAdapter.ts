@@ -7,6 +7,7 @@ import { Feature } from '../util/simpleFeature'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
+import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -24,7 +25,12 @@ export interface AdapterConstructor {
   ): AnyDataAdapter
 }
 
-export type AnyDataAdapter = BaseFeatureDataAdapter | BaseRefNameAliasAdapter
+export type AnyDataAdapter =
+  | BaseAdapter
+  | BaseFeatureDataAdapter
+  | BaseRefNameAliasAdapter
+  | RegionsAdapter
+  | SequenceAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props up to an ID of length 100
@@ -45,11 +51,7 @@ function idMaker(args: any, id = '') {
   return id.slice(0, 100)
 }
 
-/**
- * Base class for feature adapters to extend. Defines some methods that
- * subclasses must implement.
- */
-export abstract class BaseFeatureDataAdapter {
+export abstract class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
@@ -65,6 +67,19 @@ export abstract class BaseFeatureDataAdapter {
     }
   }
 
+  /**
+   * Called to provide a hint that data tied to a certain region will not be
+   * needed for the forseeable future and can be purged from caches, etc
+   * @param region - Region
+   */
+  public abstract freeResources(region: Region): void
+}
+
+/**
+ * Base class for feature adapters to extend. Defines some methods that
+ * subclasses must implement.
+ */
+export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   /**
    * Get all reference sequence names used in the data source
    *
@@ -103,20 +118,13 @@ export abstract class BaseFeatureDataAdapter {
   // }
 
   /**
-   * Called to provide a hint that data tied to a certain region will not be
-   * needed for the forseeable future and can be purged from caches, etc
-   * @param region - Region
-   */
-  public abstract freeResources(region: Region): void
-
-  /**
    * Return "header info" that is fetched from the data file, or other info
    * that would not simply be in the config of the file. The return value can
    * be `{tag:string, data: any}[]` e.g. list of tags with their values which
    * is how VCF,BAM,CRAM return values for getInfo or it can be a nested JSON
    * object
    */
-  public async getHeader(_?: BaseOptions): Promise<unknown> {
+  public async getHeader(_opts?: BaseOptions): Promise<unknown> {
     return null
   }
 
@@ -124,7 +132,7 @@ export abstract class BaseFeatureDataAdapter {
    * Return info that is primarily used for interpreting the data that is there,
    * primarily in reference to being used for augmenting feature details panels
    */
-  public async getMetadata(_?: BaseOptions): Promise<unknown> {
+  public async getMetadata(_opts?: BaseOptions): Promise<unknown> {
     return null
   }
 
@@ -196,26 +204,80 @@ export abstract class BaseFeatureDataAdapter {
     const refNames = await this.getRefNames(opts)
     return refNames.includes(refName)
   }
+
+  public getRegionStats(region: Region, opts?: BaseOptions) {
+    const feats = this.getFeatures(region, opts)
+    return scoresToStats(region, feats)
+  }
+
+  public async getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
+    if (!regions.length) {
+      return blankStats()
+    }
+    const feats = await Promise.all(
+      regions.map(region => this.getRegionStats(region, opts)),
+    )
+
+    const scoreMax = feats
+      .map(s => s.scoreMax)
+      .reduce((acc, curr) => Math.max(acc, curr))
+    const scoreMin = feats
+      .map(s => s.scoreMin)
+      .reduce((acc, curr) => Math.min(acc, curr))
+    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
+    const scoreSumSquares = feats
+      .map(s => s.scoreSumSquares)
+      .reduce((a, b) => a + b, 0)
+    const featureCount = feats
+      .map(s => s.featureCount)
+      .reduce((a, b) => a + b, 0)
+    const basesCovered = feats
+      .map(s => s.basesCovered)
+      .reduce((a, b) => a + b, 0)
+
+    return rectifyStats({
+      scoreMin,
+      scoreMax,
+      featureCount,
+      basesCovered,
+      scoreSumSquares,
+      scoreSum,
+    })
+  }
 }
 
-export interface RegionsAdapter extends BaseFeatureDataAdapter {
+export interface RegionsAdapter extends BaseAdapter {
   getRegions(opts: { signal?: AbortSignal }): Promise<NoAssemblyRegion[]>
 }
 
+export interface SequenceAdapter
+  extends BaseFeatureDataAdapter,
+    RegionsAdapter {}
+
+export function isSequenceAdapter(
+  thing: AnyDataAdapter,
+): thing is SequenceAdapter {
+  return 'getRegions' in thing && 'getFeatures' in thing
+}
+
 export function isRegionsAdapter(
-  thing: BaseFeatureDataAdapter,
+  thing: AnyDataAdapter,
 ): thing is RegionsAdapter {
   return 'getRegions' in thing
+}
+
+export function isFeatureAdapter(
+  thing: AnyDataAdapter,
+): thing is BaseFeatureDataAdapter {
+  return 'getFeatures' in thing
 }
 
 export interface Alias {
   refName: string
   aliases: string[]
 }
-export interface BaseRefNameAliasAdapter {
+export interface BaseRefNameAliasAdapter extends BaseAdapter {
   getRefNameAliases(opts: BaseOptions): Promise<Alias[]>
-
-  freeResources(): Promise<void>
 }
 export function isRefNameAliasAdapter(
   thing: object,

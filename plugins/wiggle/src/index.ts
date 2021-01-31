@@ -20,6 +20,7 @@ import {
   configSchemaFactory as linearWiggleDisplayConfigSchemaFactory,
   modelFactory as linearWiggleDisplayModelFactory,
   ReactComponent as LinearWiggleDisplayReactComponent,
+  YSCALEBAR_LABEL_OFFSET,
 } from './LinearWiggleDisplay'
 import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
@@ -113,9 +114,9 @@ export default class extends Plugin {
   }
 }
 
-export * from './statsUtil'
 export * from './util'
 
 export { default as WiggleRendering } from './WiggleRendering'
 export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
 export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
+export { YSCALEBAR_LABEL_OFFSET }

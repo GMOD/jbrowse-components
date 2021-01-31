@@ -1,4 +1,3 @@
-import { toArray } from 'rxjs/operators'
 import Adapter from './ChromSizesAdapter'
 import configSchema from './configSchema'
 
@@ -11,11 +10,17 @@ test('adapter can fetch sequence from volvox.chrom.sizes', async () => {
     }),
   )
 
-  const names = await adapter.getRefNames()
-  expect(names).toEqual(['ctgA', 'ctgB'])
-
-  const features = adapter.getFeatures()
-
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray.length).toBe(0)
+  const regions = await adapter.getRegions()
+  expect(regions).toEqual([
+    {
+      refName: 'ctgA',
+      start: 0,
+      end: 50001,
+    },
+    {
+      refName: 'ctgB',
+      start: 0,
+      end: 6079,
+    },
+  ])
 })
