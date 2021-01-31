@@ -294,10 +294,7 @@ export const BaseLinearDisplay = types
       self.contextMenuFeature = feature
     },
     async renderSvg(overrideHeight?: number) {
-      const {
-        height,
-        configuration: { displayId },
-      } = self
+      const { height, id } = self
       const view = getContainingView(self) as LinearGenomeViewModel
       const {
         offsetPx: viewOffsetPx,
@@ -334,7 +331,7 @@ export const BaseLinearDisplay = types
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>
-                  <clipPath id={`clip-${displayId}-${index}`}>
+                  <clipPath id={`clip-${id}-${index}`}>
                     <rect
                       x="0"
                       y="0"
@@ -347,7 +344,7 @@ export const BaseLinearDisplay = types
                   key={key}
                   transform={`translate(${offset} 0)`}
                   dangerouslySetInnerHTML={{ __html: rendering.html }}
-                  clipPath={`url(#clip-${displayId}-${index})`}
+                  clipPath={`url(#clip-${id}-${index})`}
                 />
               </React.Fragment>
             )

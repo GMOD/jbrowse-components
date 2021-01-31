@@ -19,12 +19,9 @@ import { setup, getPluginManager, generateReadBuffer } from './util'
 
 window.TextEncoder = TextEncoder
 
-
 // mock from https://stackoverflow.com/questions/44686077
 jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
 global.Blob = (content, options) => ({ content, options })
-
-
 
 expect.extend({ toMatchImageSnapshot })
 
