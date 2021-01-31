@@ -7,7 +7,12 @@ export default ConfigurationSchema(
     color1: {
       type: 'color',
       description: 'the main color of each feature',
-      defaultValue: 'goldenrod',
+      defaultValue: `function(f) {
+  const parent = f.parent();
+  const itemRgb = parent?parent.get("itemRgb"):f.get("itemRgb");
+  const reserved = parent?parent.get("reserved"):f.get("reserved");
+  const rgb = itemRgb||reserved;
+  return rgb?"rgb("+rgb+")":"goldenrod"; }`,
       functionSignature: ['feature'],
     },
     color2: {
