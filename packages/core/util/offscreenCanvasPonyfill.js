@@ -3,6 +3,7 @@
 /* eslint-disable no-restricted-globals */
 import React from 'react'
 import Path from 'svg-path-generator'
+import Color from 'color'
 
 // This is a ponyfill for the HTML5 OffscreenCanvas API.
 export let createCanvas
@@ -237,7 +238,8 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        nodes.push(<path key={index} fill={currentFill} d={path} />)
+        const fill = Color(currentFill).string()
+        nodes.push(<path key={index} fill={fill} d={path} />)
       }
       if (command.type === 'stroke') {
         let path = Path().moveTo(...currentPath[0])
@@ -245,9 +247,8 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        nodes.push(
-          <path key={index} fill="none" stroke={currentStroke} d={path} />,
-        )
+        const stroke = Color(currentStroke).string()
+        nodes.push(<path key={index} fill="none" stroke={stroke} d={path} />)
       }
     })
     return <>{[...nodes]}</>
