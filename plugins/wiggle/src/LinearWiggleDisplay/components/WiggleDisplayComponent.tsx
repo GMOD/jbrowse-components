@@ -9,10 +9,11 @@ import { WiggleDisplayModel, YSCALEBAR_LABEL_OFFSET } from '../models/model'
 export const YScaleBar = observer(
   ({ model }: { model: WiggleDisplayModel }) => {
     const { domain, height, scaleType } = model
+    const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
     const scale = getScale({
       scaleType,
       domain,
-      range: [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET],
+      range,
       inverted: getConf(model, 'inverted'),
     })
     const ticks = height < 50 ? 2 : 4
@@ -20,40 +21,42 @@ export const YScaleBar = observer(
     const { values } = axisProps
 
     return (
-      <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 300,
-          pointerEvents: 'none',
-          height,
-          width: 50,
-        }}
-      >
-        <g transform="translate(0,5)" />
-        <Axis
-          {...axisProps}
-          values={values}
-          format={(n: number) => n}
-          style={{ orient: RIGHT }}
-        />
-      </svg>
+      <Axis
+        {...axisProps}
+        values={values}
+        format={(n: number) => n}
+        style={{ orient: RIGHT }}
+      />
     )
   },
 )
 
 export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
-  const { ready, stats, needsScalebar } = model
+  const { ready, stats, height, needsScalebar } = model
   return (
     <div
       style={{
         paddingTop: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
         paddingBottom: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
+        position: 'relative',
       }}
     >
       <BaseLinearDisplayComponent {...props} />
-      {ready && stats && needsScalebar ? <YScaleBar model={model} /> : null}
+      {ready && stats && needsScalebar ? (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 300,
+            pointerEvents: 'none',
+            height,
+            width: 50,
+          }}
+        >
+          <YScaleBar model={model} />
+        </svg>
+      ) : null}
     </div>
   )
 })
