@@ -183,14 +183,12 @@ const stateModelFactory = (
         return newHeight - oldHeight
       },
       async renderSvg() {
+        const pileupHeight = self.height - self.SNPCoverageDisplay.height
         return (
           <>
-            <g id="snpcov">{await self.SNPCoverageDisplay.renderSvg()}</g>
-            <g
-              id="pileup"
-              transform={`translate(0 ${self.SNPCoverageDisplay.height})`}
-            >
-              {await self.PileupDisplay.renderSvg()}
+            <g>{await self.SNPCoverageDisplay.renderSvg()}</g>
+            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
+              {await self.PileupDisplay.renderSvg(pileupHeight)}
             </g>
           </>
         )

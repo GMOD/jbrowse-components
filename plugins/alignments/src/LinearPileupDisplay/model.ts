@@ -160,7 +160,8 @@ const stateModelFactory = (
                 const { sortedBy, colorBy, renderProps } = self
                 const view = getContainingView(self) as LGV
 
-                // continually generate the vc pairing, set and rerender if any new values seen
+                // continually generate the vc pairing, set and rerender if any
+                // new values seen
                 if (colorBy?.tag) {
                   const uniqueTagSet = await self.getUniqueTagValues(
                     colorBy,

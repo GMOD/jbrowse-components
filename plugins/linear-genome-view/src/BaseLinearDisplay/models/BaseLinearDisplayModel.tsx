@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/no-danger */
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -293,10 +293,18 @@ export const BaseLinearDisplay = types
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature
     },
-    async renderSvg() {
+    async renderSvg(overrideHeight?: number) {
+      const {
+        height,
+        configuration: { displayId },
+      } = self
       const view = getContainingView(self) as LinearGenomeViewModel
-      const viewOffset = view.offsetPx
-      const { roundedDynamicBlocks: dynamicBlocks } = view
+      const {
+        offsetPx: viewOffsetPx,
+        width,
+        roundedDynamicBlocks: dynamicBlocks,
+      } = view
+
       const renderings = await Promise.all(
         dynamicBlocks.map(block => {
           const blockState = BlockState.create({
@@ -304,8 +312,12 @@ export const BaseLinearDisplay = types
             region: block,
           })
 
-          const ret = renderBlockData(blockState, self)
-          const { rpcManager, renderArgs, renderProps, rendererType } = ret
+          const {
+            rpcManager,
+            renderArgs,
+            renderProps,
+            rendererType,
+          } = renderBlockData(blockState, self)
 
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,
@@ -318,13 +330,26 @@ export const BaseLinearDisplay = types
         <>
           {renderings.map((rendering, index) => {
             const { offsetPx, key } = dynamicBlocks[index]
+            const offset = offsetPx - viewOffsetPx
             return (
-              <g
-                key={key}
-                transform={`translate(${offsetPx - viewOffset} 0)`}
-                // eslint-disable-next-line react/no-danger
-                dangerouslySetInnerHTML={{ __html: rendering.html }}
-              />
+              <React.Fragment key={`frag-${index}`}>
+                <defs>
+                  <clipPath id={`clip-${displayId}-${index}`}>
+                    <rect
+                      x="0"
+                      y="0"
+                      width={width}
+                      height={overrideHeight || height}
+                    />
+                  </clipPath>
+                </defs>
+                <g
+                  key={key}
+                  transform={`translate(${offset} 0)`}
+                  dangerouslySetInnerHTML={{ __html: rendering.html }}
+                  clipPath={`url(#clip-${displayId}-${index})`}
+                />
+              </React.Fragment>
             )
           })}
         </>
