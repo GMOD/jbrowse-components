@@ -194,6 +194,7 @@ export class PonyfillOffscreenCanvas {
     let currentFill
     let currentStroke
     let currentPath = []
+    let rotation
 
     const nodes = []
     this.context.commands.forEach((command, index) => {
@@ -250,8 +251,15 @@ export class PonyfillOffscreenCanvas {
         const stroke = Color(currentStroke).string()
         nodes.push(<path key={index} fill="none" stroke={stroke} d={path} />)
       }
+      if (command.type === 'rotate') {
+        rotation = (command.args[0] * 180) / Math.PI
+      }
     })
-    return <>{[...nodes]}</>
+    return rotation ? (
+      <g transform={`rotate(${rotation})`}>{[...nodes]}</g>
+    ) : (
+      <>{[...nodes]}</>
+    )
   }
 }
 // Electron serializes everything to JSON through the IPC boundary, so we just

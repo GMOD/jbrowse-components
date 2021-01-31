@@ -11,6 +11,7 @@ import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
+  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
@@ -32,6 +33,7 @@ export interface PileupRenderProps {
   dataAdapter: HicDataAdapter
   config: AnyConfigurationModel
   regions: Region[]
+  forceSvg?: boolean
   bpPerPx: number
   height: number
   width: number
@@ -43,31 +45,10 @@ export interface PileupRenderProps {
 }
 
 export default class HicRenderer extends ServerSideRendererType {
-  async makeImageData(props: PileupRenderProps) {
-    const {
-      features,
-      config,
-      regions,
-      bpPerPx,
-      highResolutionScaling = 1,
-      dataAdapter,
-    } = props
-    const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    const height = readConfObject(config, 'maxHeight')
+  async makeImageData(ctx: CanvasRenderingContext2D, props: PileupRenderProps) {
+    const { features, config, bpPerPx, dataAdapter } = props
     const res = await dataAdapter.getResolution(bpPerPx)
-
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0, maxHeightReached: false }
-    }
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
     const w = res / (bpPerPx * Math.sqrt(2))
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
     const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
@@ -91,41 +72,59 @@ export default class HicRenderer extends ServerSideRendererType {
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }
     }
-
-    const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-    }
   }
 
   async render(renderProps: PileupRenderProps) {
     const {
-      height,
-      width,
-      imageData,
-      maxHeightReached,
-    } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      {
-        ...renderProps,
-        region: renderProps.regions[0],
-        height,
-        width,
-        imageData,
-      },
-      null,
+      forceSvg,
+      regions,
+      bpPerPx,
+      highResolutionScaling,
+      config,
+    } = renderProps
+    const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
+    const height = readConfObject(config, 'maxHeight')
+
+    if (!(width > 0) || !(height > 0)) {
+      return { height: 0, width: 0, maxHeightReached: false }
+    }
+
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
     )
 
-    return {
-      element,
-      imageData,
-      height,
-      width,
-      maxHeightReached,
+    const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    if (!forceSvg) {
+      await this.makeImageData(ctx, renderProps)
+      const imageData = await createImageBitmap(canvas)
+      const element = React.createElement(
+        this.ReactComponent,
+        {
+          ...renderProps,
+          region: renderProps.regions[0],
+          height,
+          width,
+          imageData,
+        },
+        null,
+      )
+
+      return {
+        element,
+        imageData,
+        height,
+        width,
+      }
     }
+
+    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+    const fakeCtx = fakeCanvas.getContext('2d')
+    await this.makeImageData(fakeCtx, renderProps)
+    const imageData = fakeCanvas.getSerializedSvg()
+    return { element: imageData, height, width }
   }
 
   async getFeatures({
@@ -138,9 +137,9 @@ export default class HicRenderer extends ServerSideRendererType {
       .getFeatures(regions[0], { signal, bpPerPx })
       .pipe(toArray())
       .toPromise()
-    // cast to any to avoid return-type conflict, because the
-    // types of features returned by our getFeatures are quite
-    // different from the base interface
+    // cast to any to avoid return-type conflict, because the types of features
+    // returned by our getFeatures are quite different from the base interface
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return features as any
   }
