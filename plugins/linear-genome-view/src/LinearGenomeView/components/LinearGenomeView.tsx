@@ -37,14 +37,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const LinearGenomeView = observer((props: { model: LGV }) => {
-  const { model } = props
+const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized } = model
   const classes = useStyles()
 
-  // the AboutDialog is shown at this level because if it is
-  // rendered as a child of the TracksContainer, then clicking on
-  // the dialog scrolls the LGV
+  // the AboutDialog is shown at this level because if it is rendered as a
+  // child of the TracksContainer, then clicking on the dialog scrolls the LGV
   const aboutTrack = model.tracks.find(track => track.showAbout)
   const dialogTrack = model.tracks.find(track => track.DialogComponent)
 
@@ -185,24 +183,7 @@ export async function renderToSvg(model: LGV) {
             // https://stackoverflow.com/questions/15500894/
             return (
               <g key={trackId} transform={`translate(0 ${current})`}>
-                <defs>
-                  <filter
-                    x="0"
-                    y="0"
-                    width="1"
-                    height="1"
-                    id={`fill-${trackId}`}
-                  >
-                    <feFlood floodColor="rgb(200,200,200)" result="bg" />
-                    <feMerge>
-                      <feMergeNode in="bg" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                <text filter={`url(#fill-${trackId})`} fontSize={fontSize}>
-                  {trackName}
-                </text>
+                <text fontSize={fontSize}>{trackName}</text>
                 <g transform={`translate(0 ${textHeight})`}>
                   {await display.renderSvg()}
                 </g>

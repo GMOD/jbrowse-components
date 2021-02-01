@@ -178,6 +178,12 @@ export class PonyfillOffscreenContext {
   //   getTransform(...args)
 }
 
+function rgba(color) {
+  const fill = Color(color)
+  const [r, g, b] = fill.rgb().array()
+  const a = fill.alpha()
+  return `rgba(${r},${g},${b},${a.toPrecision(3)})`
+}
 export class PonyfillOffscreenCanvas {
   constructor(width, height) {
     this.width = width
@@ -213,7 +219,7 @@ export class PonyfillOffscreenCanvas {
         nodes.push(
           <rect
             key={index}
-            fill={currentFill}
+            fill={rgba(currentFill)}
             x={x}
             y={y}
             width={w}
@@ -239,8 +245,7 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        const fill = Color(currentFill).string()
-        nodes.push(<path key={index} fill={fill} d={path} />)
+        nodes.push(<path key={index} fill={rgba(currentFill)} d={path} />)
       }
       if (command.type === 'stroke') {
         let path = Path().moveTo(...currentPath[0])
@@ -248,8 +253,14 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        const stroke = Color(currentStroke).string()
-        nodes.push(<path key={index} fill="none" stroke={stroke} d={path} />)
+        nodes.push(
+          <path
+            key={index}
+            fill="none"
+            stroke={rgba(currentStroke)}
+            d={path}
+          />,
+        )
       }
       if (command.type === 'rotate') {
         rotation = (command.args[0] * 180) / Math.PI
