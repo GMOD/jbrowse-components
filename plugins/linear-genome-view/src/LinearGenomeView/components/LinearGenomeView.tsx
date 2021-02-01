@@ -124,14 +124,18 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
 export default LinearGenomeView
 
 export async function renderToSvg(model: LGV) {
-  let offset = 40
-  const fontSize = 20
+  const fontSize = 15
+  const textHeight = fontSize + 5
+  const paddingHeight = 20
+  const headerHeight = textHeight + 20
+  let offset = headerHeight + 20
   const height =
     model.tracks.reduce((accum, track) => {
       const display = track.displays[0]
-      return accum + display.height + 20 + fontSize
+      return accum + display.height + 20 + textHeight
     }, 0) + offset
-  const { width } = model
+  const { width, offsetPx: viewOffsetPx, bpPerPx } = model
+  const renderRuler = model.dynamicBlocks.contentBlocks.length < 5
   return renderToStaticMarkup(
     <svg
       width={width}
@@ -139,16 +143,32 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width, height].toString()}
     >
-      {model.dynamicBlocks.map(block => {
-        const offsetLeft = block.offsetPx - model.offsetPx
+      {model.dynamicBlocks.contentBlocks.map(block => {
+        const offsetLeft = block.offsetPx - viewOffsetPx
         return (
           <g key={block.key} transform={`translate(${offsetLeft} 0)`}>
-            <Ruler
-              start={block.start}
-              end={block.end}
-              bpPerPx={model.bpPerPx}
-              reversed={block.reversed}
-            />
+            <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
+              {block.refName}
+            </text>
+            {renderRuler ? (
+              <g transform="translate(0 20)">
+                <Ruler
+                  start={block.start}
+                  end={block.end}
+                  bpPerPx={model.bpPerPx}
+                  reversed={block.reversed}
+                />
+              </g>
+            ) : (
+              <line
+                strokeWidth={1}
+                stroke="black"
+                x1={block.start / bpPerPx}
+                x2={block.end / bpPerPx}
+                y1={20}
+                y2={20}
+              />
+            )}
           </g>
         )
       })}
@@ -159,9 +179,10 @@ export async function renderToSvg(model: LGV) {
             const trackId = getConf(track, 'trackId')
             const trackName = getConf(track, 'name')
             const display = track.displays[0]
-            offset += display.height + 20 + fontSize
+            offset += display.height + paddingHeight + textHeight
 
-            // uses svg text background from https://stackoverflow.com/questions/15500894/
+            // uses svg text background from
+            // https://stackoverflow.com/questions/15500894/
             return (
               <g key={trackId} transform={`translate(0 ${current})`}>
                 <defs>
@@ -170,7 +191,7 @@ export async function renderToSvg(model: LGV) {
                     y="0"
                     width="1"
                     height="1"
-                    id={`solid-${trackId}`}
+                    id={`fill-${trackId}`}
                   >
                     <feFlood floodColor="rgb(200,200,200)" result="bg" />
                     <feMerge>
@@ -179,10 +200,12 @@ export async function renderToSvg(model: LGV) {
                     </feMerge>
                   </filter>
                 </defs>
-                <text filter={`url(#solid-${trackId})`} fontSize={fontSize - 5}>
+                <text filter={`url(#fill-${trackId})`} fontSize={fontSize}>
                   {trackName}
                 </text>
-                <g transform="translate(0 20)">{await display.renderSvg()}</g>
+                <g transform={`translate(0 ${textHeight})`}>
+                  {await display.renderSvg()}
+                </g>
               </g>
             )
           }),
