@@ -11,6 +11,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
     const { features, bpPerPx, regions, scaleOpts, height, config } = props
     const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
 
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -32,6 +33,10 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       colorCallback = (feature: Feature) =>
         readConfObject(config, 'color', [feature])
     }
+    ctx.strokeStyle = 'grey'
+    ctx.moveTo(0, toY(0))
+    ctx.lineTo(width, toY(0))
+    ctx.stroke()
 
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)

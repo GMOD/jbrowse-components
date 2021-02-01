@@ -19,7 +19,6 @@ interface SNPCoverageRendererProps {
   regions: Region[]
   bpPerPx: number
   height: number
-  width: number
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter

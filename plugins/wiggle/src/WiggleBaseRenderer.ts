@@ -19,7 +19,6 @@ export interface WiggleBaseRendererProps {
   regions: Region[]
   bpPerPx: number
   height: number
-  width: number
   forceSvg: boolean
   highResolutionScaling: number
   blockKey: string

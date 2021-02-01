@@ -7,6 +7,7 @@ export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
     const { features, regions, bpPerPx, scaleOpts, height, config } = props
     const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
     const posColor = readConfObject(config, 'posColor')
@@ -23,6 +24,10 @@ export default class extends WiggleBaseRenderer {
       colorCallback = feature => readConfObject(config, 'color', [feature])
     }
     let lastVal
+    ctx.strokeStyle = 'grey'
+    ctx.moveTo(0, toY(0))
+    ctx.lineTo(width, toY(0))
+    ctx.stroke()
 
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
