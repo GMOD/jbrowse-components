@@ -178,11 +178,9 @@ export class PonyfillOffscreenContext {
   //   getTransform(...args)
 }
 
-function rgba(color) {
+function splitColor(color) {
   const fill = Color(color)
-  const [r, g, b] = fill.rgb().array()
-  const a = fill.alpha()
-  return `rgba(${r},${g},${b},${a.toPrecision(3)})`
+  return { hex: fill.hex(), opacity: fill.alpha() }
 }
 export class PonyfillOffscreenCanvas {
   constructor(width, height) {
@@ -216,10 +214,12 @@ export class PonyfillOffscreenCanvas {
       }
       if (command.type === 'fillRect') {
         const [x, y, w, h] = command.args
+        const { hex, opacity } = splitColor(currentFill)
         nodes.push(
           <rect
             key={index}
-            fill={rgba(currentFill)}
+            fill={hex}
+            fillOpacity={opacity !== 1 ? opacity : undefined}
             x={x}
             y={y}
             width={w}
@@ -245,7 +245,15 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
-        nodes.push(<path key={index} fill={rgba(currentFill)} d={path} />)
+        const { hex, opacity } = splitColor(currentFill)
+        nodes.push(
+          <path
+            key={index}
+            fill={hex}
+            d={path}
+            fillOpacity={opacity !== 1 ? opacity : undefined}
+          />,
+        )
       }
       if (command.type === 'stroke') {
         let path = Path().moveTo(...currentPath[0])
@@ -253,11 +261,13 @@ export class PonyfillOffscreenCanvas {
           path = path.lineTo(...currentPath[i])
         }
         path.end()
+        const { hex, opacity } = splitColor(currentStroke)
         nodes.push(
           <path
             key={index}
             fill="none"
-            stroke={rgba(currentStroke)}
+            stroke={hex}
+            fillOpacity={opacity !== 1 ? opacity : undefined}
             d={path}
           />,
         )
