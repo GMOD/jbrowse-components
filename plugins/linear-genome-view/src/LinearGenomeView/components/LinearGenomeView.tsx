@@ -124,14 +124,20 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
 export default LinearGenomeView
 
 export async function renderToSvg(model: LGV) {
-  let offset = 20
+  let offset = 40
+  const fontSize = 20
+  const height =
+    model.tracks.reduce((accum, track) => {
+      const display = track.displays[0]
+      return accum + display.height + 20 + fontSize
+    }, 0) + offset
   const { width } = model
   return renderToStaticMarkup(
     <svg
       width={width}
-      height={1000}
+      height={height}
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={[0, 0, width, 1000].toString()}
+      viewBox={[0, 0, width, height].toString()}
     >
       {model.dynamicBlocks.map(block => {
         const offsetLeft = block.offsetPx - model.offsetPx
@@ -151,12 +157,32 @@ export async function renderToSvg(model: LGV) {
           model.tracks.map(async track => {
             const current = offset
             const trackId = getConf(track, 'trackId')
+            const trackName = getConf(track, 'name')
             const display = track.displays[0]
-            offset += display.height + 20
+            offset += display.height + 20 + fontSize
 
+            // uses svg text background from https://stackoverflow.com/questions/15500894/
             return (
               <g key={trackId} transform={`translate(0 ${current})`}>
-                {await display.renderSvg()}
+                <defs>
+                  <filter
+                    x="0"
+                    y="0"
+                    width="1"
+                    height="1"
+                    id={`solid-${trackId}`}
+                  >
+                    <feFlood floodColor="rgb(200,200,200)" result="bg" />
+                    <feMerge>
+                      <feMergeNode in="bg" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <text filter={`url(#solid-${trackId})`} fontSize={fontSize - 5}>
+                  {trackName}
+                </text>
+                <g transform="translate(0 20)">{await display.renderSvg()}</g>
               </g>
             )
           }),
