@@ -6,6 +6,7 @@ import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types/mst'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
+import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField from '@material-ui/core/TextField'
 import Container from '@material-ui/core/Container'
@@ -29,6 +30,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
+  const [selectedRegion, setSelectedRegion] = useState<String>()
   const [assemblyRegions, setAssemblyRegions] = useState<
     Instance<typeof Region>[]
   >([])
@@ -41,6 +43,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     ;(async () => {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!done && assembly && assembly.regions) {
+        setSelectedRegion(assembly.regions[0].refName)
         setAssemblyRegions(assembly.regions)
       }
     })()
@@ -55,7 +58,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  function setSelectedRegion(selectedRegion: string | undefined) {
+  function handleSelectedRegion(selectedRegion: string | undefined) {
     /*
     eventually handle more functionality to a search for generic feature
     refseq names, locstrings, gene features
@@ -77,6 +80,12 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
           session.notify(`${e}`, 'warning')
         }
       }
+    }
+  }
+  function onOpenClick() {
+    if (selectedRegion) {
+      // model.setDisplayedRegions([selectedRegion])
+      handleSelectedRegion(selectedRegion)
     }
   }
 
@@ -111,7 +120,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                 assemblyName={
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }
-                value={assemblyRegions[0] ? assemblyRegions[0].refName : ''}
+                value={selectedRegion}
                 onSelect={setSelectedRegion}
                 TextFieldProps={{
                   margin: 'normal',
@@ -129,6 +138,16 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
               />
             )
           ) : null}
+        </Grid>
+        <Grid item>
+          <Button
+            disabled={!selectedRegion}
+            onClick={onOpenClick}
+            variant="contained"
+            color="primary"
+          >
+            Open
+          </Button>
         </Grid>
       </Grid>
     </Container>

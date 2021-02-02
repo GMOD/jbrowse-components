@@ -42,7 +42,8 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-  const { assemblyManager } = getSession(model)
+  const session = getSession(model)
+  const { assemblyManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   const { coarseVisibleLocStrings } = model
@@ -98,7 +99,7 @@ function RefNameAutocomplete({
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(e, newRegion) => {
-        e.preventDefault()
+        // e.preventDefault()
         onChange(newRegion)
       }}
       renderInput={params => {
@@ -127,7 +128,27 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             onKeyPress={event => {
               if (event.key === 'Enter') {
-                onSelect((event.target as HTMLInputElement).value)
+                const inputValue = (event.target as HTMLInputElement).value
+                onSelect(inputValue)
+                if (inputValue) {
+                  const newRegion:
+                    | Region
+                    | undefined = model.displayedRegions.find(
+                    region => inputValue === region.refName,
+                  )
+                  // navigate to region or if region not found try navigating to locstring
+                  if (newRegion) {
+                    model.setDisplayedRegions([newRegion])
+                  } else {
+                    try {
+                      inputValue &&
+                        model.navToLocString(inputValue, assemblyName)
+                    } catch (e) {
+                      console.warn(e)
+                      session.notify(`${e}`, 'warning')
+                    }
+                  }
+                }
               }
             }}
             InputProps={TextFieldInputProps}
