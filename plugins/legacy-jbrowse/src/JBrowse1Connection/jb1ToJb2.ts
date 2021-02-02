@@ -33,6 +33,8 @@ interface Jb2Adapter {
   bigWigLocation?: Jb2Location
   bigBedLocation?: Jb2Location
   vcfGzLocation?: Jb2Location
+  gffGzLocation?: Jb2Location
+  bedGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
   rootUrlTemplate?: Jb2Location
   sequenceAdapter?: Jb2Adapter
@@ -210,11 +212,25 @@ export function convertTrackConfig(
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/GFF3Tabix') {
-      return generateUnsupportedTrackConf(
-        jb2TrackConfig.name,
-        `GFF3Tabix (${urlTemplate})`,
-        jb2TrackConfig.category,
-      )
+      const adapter: Jb2Adapter = {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.tbiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+        }
+      else if (jb1TrackConfig.csiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          indexType: 'CSI',
+        }
+      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      return {
+        ...jb2TrackConfig,
+        type: 'FeatureTrack',
+        adapter,
+      }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/BED') {
       return generateUnsupportedTrackConf(
@@ -224,11 +240,25 @@ export function convertTrackConfig(
       )
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/BEDTabix') {
-      return generateUnsupportedTrackConf(
-        jb2TrackConfig.name,
-        `BEDTabix (${urlTemplate})`,
-        jb2TrackConfig.category,
-      )
+      const adapter: Jb2Adapter = {
+        type: 'BedTabixAdapter',
+        bedGzLocation: { uri: urlTemplate },
+      }
+      if (jb1TrackConfig.tbiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
+        }
+      else if (jb1TrackConfig.csiUrlTemplate)
+        adapter.index = {
+          location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
+          indexType: 'CSI',
+        }
+      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      return {
+        ...jb2TrackConfig,
+        type: 'FeatureTrack',
+        adapter,
+      }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/GTF') {
       return generateUnsupportedTrackConf(
