@@ -10,6 +10,11 @@ export default ConfigurationSchema(
       description:
         'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
     },
+    assemblyName: {
+      description: 'name of the assembly the connection belongs to',
+      type: 'string',
+      defaultValue: 'assemblyName',
+    },
   },
   { baseConfiguration: baseConnectionConfig },
 )

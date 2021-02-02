@@ -103,14 +103,31 @@ export default pluginManager =>
         return self.view ? self.view.assemblyNames : []
       },
 
-      connectionTrackConfigurations(connection) {
+      connectionTrackConfigurations(assemblyName, connection) {
         if (!self.view) {
           return []
         }
         const trackConfigurations = connection.tracks
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!(assembly && assembly.initialized)) {
+          return []
+        }
 
         const relevantTrackConfigurations = trackConfigurations.filter(
           trackConf => {
+            const trackConfAssemblies = readConfObject(
+              trackConf,
+              'assemblyNames',
+            )
+            const { name, aliases } = assembly
+            const overlappingRefNames = [name, ...aliases].filter(refName =>
+              trackConfAssemblies.includes(refName),
+            )
+            if (!overlappingRefNames.length) {
+              return false
+            }
             const viewType = pluginManager.getViewType(self.view.type)
             const compatibleDisplays = viewType.displayTypes.map(
               displayType => displayType.name,
@@ -133,14 +150,16 @@ export default pluginManager =>
         )
       },
 
-      connectionHierarchy(connection) {
-        return generateHierarchy(self.connectionTrackConfigurations(connection))
+      connectionHierarchy(assemblyName, connection) {
+        return generateHierarchy(
+          self.connectionTrackConfigurations(assemblyName, connection),
+        )
       },
 
       // This recursively gets tracks from lower paths
       allTracksInCategoryPath(path, connection, assemblyName) {
         let currentHier = connection
-          ? self.connectionHierarchy(connection)
+          ? self.connectionHierarchy(assemblyName, connection)
           : self.hierarchy(assemblyName)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()

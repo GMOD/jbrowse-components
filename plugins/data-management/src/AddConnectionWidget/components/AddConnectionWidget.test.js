@@ -72,14 +72,13 @@ type bigWig
       getByTestId,
       getAllByTestId,
       getAllByRole,
-      findByText,
+      findAllByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    fireEvent.click(await findByText('volMyt1'))
-    fireEvent.mouseDown(getAllByRole('button')[1])
-    fireEvent.click(await findByText('UCSC Track Hub'))
+    const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
+    fireEvent.click(ucscTrackHubSelection[ucscTrackHubSelection.length - 1])
     fireEvent.click(getByTestId('addConnectionNext'))
     fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
       target: { value: 'Test UCSC connection name' },
@@ -112,8 +111,6 @@ type bigWig
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    fireEvent.click(await findByText('volMyt1'))
-    fireEvent.mouseDown(getAllByRole('button')[1])
     fireEvent.click(await findByText('JBrowse 1 Data'))
     fireEvent.click(getByTestId('addConnectionNext'))
     fireEvent.change(getAllByDisplayValue('nameOfConnection')[1], {
@@ -125,6 +122,9 @@ type bigWig
         target: { value: 'http://test.com/jbrowse/data/' },
       },
     )
+    fireEvent.change(getAllByDisplayValue('assemblyName')[1], {
+      target: { value: 'volMyt1' },
+    })
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
     expect(session.sessionConnections.length).toBe(1)
   })
