@@ -189,7 +189,11 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       let matchFound = false
       assemblyNames.forEach((assemblyName: string) => {
         const assembly = assemblyManager.get(assemblyName)
-        if (assembly && assembly.aliases.includes(self.region.assemblyName))
+        if (
+          assembly &&
+          (assembly.name === self.region.assemblyName ||
+            assembly.aliases.includes(self.region.assemblyName))
+        )
           matchFound = true
       })
       if (!matchFound) {

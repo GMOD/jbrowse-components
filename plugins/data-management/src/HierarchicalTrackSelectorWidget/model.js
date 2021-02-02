@@ -56,13 +56,23 @@ export default pluginManager =>
           return []
         }
 
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!assembly) {
+          return []
+        }
         const relevantTrackConfigurations = trackConfigurations.filter(
           trackConf => {
             const trackConfAssemblies = readConfObject(
               trackConf,
               'assemblyNames',
             )
-            if (!trackConfAssemblies.includes(assemblyName)) {
+            const { name, aliases } = assembly
+            const overlappingRefNames = [name, ...aliases].filter(refName =>
+              trackConfAssemblies.includes(refName),
+            )
+            if (!overlappingRefNames.length) {
               return false
             }
             const viewType = pluginManager.getViewType(self.view.type)
