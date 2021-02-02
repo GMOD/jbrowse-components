@@ -3,6 +3,7 @@ import React from 'react'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
 
@@ -78,7 +79,7 @@ import ReExportsList from './list'
 
 const libs = {
   mobx,
-  'mobx-state-tree': mst,
+  'mobx-state-tree': { ...mst, types },
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
