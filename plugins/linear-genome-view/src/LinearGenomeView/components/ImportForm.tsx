@@ -30,7 +30,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<String>()
+  const [selectedRegion, setSelectedRegion] = useState<string>()
   const [assemblyRegions, setAssemblyRegions] = useState<
     Instance<typeof Region>[]
   >([])
@@ -58,33 +58,24 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     setSelectedAssemblyIdx(Number(event.target.value))
   }
 
-  function handleSelectedRegion(selectedRegion: string | undefined) {
-    /*
-    eventually handle more functionality to a search for generic feature
-    refseq names, locstrings, gene features
-    */
-    if (selectedRegion) {
-      // check if selected region is found in selected assembly regions
-      const newRegion:
-        | Instance<typeof Region>
-        | undefined = assemblyRegions.find(
-        region => selectedRegion === region.refName,
-      )
-      if (newRegion) {
-        model.setDisplayedRegions([getSnapshot(newRegion)])
-      } else {
-        try {
-          model.navToLocString(selectedRegion, assemblyName)
-        } catch (e) {
-          console.warn(e)
-          session.notify(`${e}`, 'warning')
-        }
+  function handleSelectedRegion(input: string) {
+    const newRegion: Instance<typeof Region> | undefined = assemblyRegions.find(
+      region => selectedRegion === region.refName,
+    )
+    if (newRegion) {
+      model.setDisplayedRegions([getSnapshot(newRegion)])
+    } else {
+      try {
+        input && model.navToLocString(input, assemblyName)
+      } catch (e) {
+        console.warn(e)
+        session.notify(`${e}`, 'warning')
       }
     }
   }
+
   function onOpenClick() {
     if (selectedRegion) {
-      // model.setDisplayedRegions([selectedRegion])
       handleSelectedRegion(selectedRegion)
     }
   }
@@ -114,7 +105,7 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
         </Grid>
         <Grid item>
           {assemblyName ? (
-            model.volatileWidth ? (
+            selectedRegion && model.volatileWidth ? (
               <RefNameAutocomplete
                 model={model}
                 assemblyName={
@@ -127,6 +118,12 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                   variant: 'outlined',
                   className: classes.importFormEntry,
                   helperText: 'Enter a sequence or locstring',
+                  onKeyPress: event => {
+                    const inputValue = (event.target as HTMLInputElement).value
+                    if (event.key === 'Enter') {
+                      handleSelectedRegion(inputValue)
+                    }
+                  },
                 }}
               />
             ) : (

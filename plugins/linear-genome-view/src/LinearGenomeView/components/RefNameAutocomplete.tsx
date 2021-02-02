@@ -64,7 +64,6 @@ function RefNameAutocomplete({
       if (typeof newRegionName === 'string') {
         newRegionValue = newRegionName
       }
-      // set selected region string
       onSelect(newRegionValue)
     }
   }
@@ -78,6 +77,7 @@ function RefNameAutocomplete({
       disableClearable
       freeSolo
       includeInputInList
+      clearOnBlur
       loading={loaded}
       selectOnFocus
       style={style}
@@ -98,8 +98,7 @@ function RefNameAutocomplete({
         return filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
-      onChange={(e, newRegion) => {
-        // e.preventDefault()
+      onChange={(_, newRegion) => {
         onChange(newRegion)
       }}
       renderInput={params => {
@@ -126,31 +125,6 @@ function RefNameAutocomplete({
             {...TextFieldProps}
             helperText={helperText}
             value={coarseVisibleLocStrings || value || ''}
-            onKeyPress={event => {
-              if (event.key === 'Enter') {
-                const inputValue = (event.target as HTMLInputElement).value
-                onSelect(inputValue)
-                if (inputValue) {
-                  const newRegion:
-                    | Region
-                    | undefined = model.displayedRegions.find(
-                    region => inputValue === region.refName,
-                  )
-                  // navigate to region or if region not found try navigating to locstring
-                  if (newRegion) {
-                    model.setDisplayedRegions([newRegion])
-                  } else {
-                    try {
-                      inputValue &&
-                        model.navToLocString(inputValue, assemblyName)
-                    } catch (e) {
-                      console.warn(e)
-                      session.notify(`${e}`, 'warning')
-                    }
-                  }
-                }
-              }
-            }}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
           />
