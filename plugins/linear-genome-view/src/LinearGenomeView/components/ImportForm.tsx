@@ -118,6 +118,9 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
                   variant: 'outlined',
                   className: classes.importFormEntry,
                   helperText: 'Enter a sequence or locstring',
+                  onBlur: event => {
+                    setSelectedRegion((event.target as HTMLInputElement).value)
+                  },
                   onKeyPress: event => {
                     const inputValue = (event.target as HTMLInputElement).value
                     if (event.key === 'Enter') {
