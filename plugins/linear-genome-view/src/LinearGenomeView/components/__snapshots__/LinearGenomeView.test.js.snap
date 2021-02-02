@@ -705,6 +705,24 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
         </div>
       </div>
     </div>
+    <div
+      class="MuiGrid-root MuiGrid-item"
+    >
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+    </div>
   </div>
 </div>
 `;

@@ -34,27 +34,11 @@ describe('<LinearGenomeView />', () => {
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
     model.setWidth(800)
-    const {
-      container,
-      findByText,
-      findByTestId,
-      findByPlaceholderText,
-    } = render(<LinearGenomeView model={model} />)
-    await findByText('Select assembly to view')
-    await findByText('Enter a sequence or locstring')
-
-    const autocomplete = await findByTestId('autocomplete')
-    const inputBox = await findByPlaceholderText('Search for location')
-
+    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    const openButton = await findByText('Open')
     expect(container.firstChild).toMatchSnapshot()
     expect(model.displayedRegions.length).toEqual(0)
-    autocomplete.focus()
-    fireEvent.change(inputBox, {
-      target: { value: 'ctgA:1..5' },
-    })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    openButton.click()
     expect(model.displayedRegions.length).toEqual(1)
   })
   it('renders one track, one region', async () => {
