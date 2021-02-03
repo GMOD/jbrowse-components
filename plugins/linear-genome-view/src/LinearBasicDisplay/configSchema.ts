@@ -5,7 +5,17 @@ import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
-    { renderer: pluginManager.pluggableConfigSchemaType('renderer') },
+    {
+      mouseover: {
+        type: 'string',
+        description: 'what to display in a given mouseover',
+        defaultValue: `function(feature) {
+  return feature.get('name')
+}`,
+        functionSignature: ['feature'],
+      },
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+    },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
