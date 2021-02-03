@@ -66,13 +66,12 @@ export default function SessionWarningModal({
             variant="contained"
             style={{ marginRight: 5 }}
             onClick={() => {
-              console.log(sessionTriaged)
               sessionTriaged.origin === 'share'
                 ? loader.setSessionSnapshot({
                     ...session,
                     id: shortid(),
                   })
-                : loader.setSessionSnapshot({
+                : loader.setConfigSnapshot({
                     ...session,
                     id: shortid(),
                   })

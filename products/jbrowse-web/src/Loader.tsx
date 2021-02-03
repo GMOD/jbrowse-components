@@ -175,9 +175,6 @@ const SessionLoader = types
     setSessionTriaged(args?: { snap: unknown; origin: string }) {
       self.sessionTriaged = args
     },
-    setShareWarningOpen(flag: boolean) {
-      self.shareWarningOpen = flag
-    },
   }))
   .actions(self => ({
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
@@ -206,7 +203,6 @@ const SessionLoader = types
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
-          self.setShareWarningOpen(true)
         } else {
           self.setConfigSnapshot(config)
         }
@@ -274,7 +270,6 @@ const SessionLoader = types
       const hasCallbacks = await scanSharedSessionForCallbacks(session)
       if (hasCallbacks) {
         self.setSessionTriaged({ snap: session, origin: 'share' })
-        self.setShareWarningOpen(true)
       } else {
         self.setSessionSnapshot({ ...session, id: shortid() })
       }
@@ -546,7 +541,7 @@ const Renderer = observer(
       )
     }
 
-    if (shareWarningOpen) {
+    if (loader.sessionTriaged) {
       return (
         <SessionWarningModal
           loader={loader}
