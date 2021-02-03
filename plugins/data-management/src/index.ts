@@ -8,6 +8,7 @@ import InputIcon from '@material-ui/icons/Input'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
+  getAssemblies as ucscGetAssemblies,
 } from './ucsc-trackhub'
 import {
   ReactComponent as AddTrackReactComponent,
@@ -42,6 +43,7 @@ export default class extends Plugin {
           name: 'UCSCTrackHubConnection',
           configSchema: ucscConfigSchema,
           stateModel: ucscModelFactory(pluginManager),
+          getAssemblies: ucscGetAssemblies,
           displayName: 'UCSC Track Hub',
           description: 'A track or assembly hub in the Track Hub format',
           url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
