@@ -1073,7 +1073,14 @@
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "wiggle_global_autoscale-LinearWiggleDisplay",
+          "autoscale": "global"
+        }
+      ]
     },
     {
       "type": "QuantitativeTrack",
