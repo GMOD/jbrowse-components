@@ -1,7 +1,10 @@
 /* eslint-disable react/static-property-placement */
-import { IAnyModelType } from 'mobx-state-tree'
+import { IAnyModelType, SnapshotIn } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationSchemaType,
+  AnyConfigurationModel,
+} from '../configuration/configurationSchema'
 import { AnyReactComponentType } from '../util'
 
 export default class ConnectionType extends PluggableElementBase {
@@ -15,6 +18,10 @@ export default class ConnectionType extends PluggableElementBase {
 
   url: string
 
+  getAssemblies: (
+    connectionConfig: AnyConfigurationModel,
+  ) => Promise<SnapshotIn<AnyConfigurationSchemaType>[]>
+
   configEditorComponent?: AnyReactComponentType
 
   constructor(stuff: {
@@ -23,6 +30,9 @@ export default class ConnectionType extends PluggableElementBase {
     configSchema: AnyConfigurationSchemaType
     displayName: string
     description: string
+    getAssemblies?(
+      connectionConfig: AnyConfigurationModel,
+    ): Promise<SnapshotIn<AnyConfigurationSchemaType>[]>
     configEditorComponent?: AnyReactComponentType
     url: string
   }) {
@@ -32,6 +42,8 @@ export default class ConnectionType extends PluggableElementBase {
     this.displayName = stuff.displayName
     this.description = stuff.description
     this.url = stuff.url
+    this.getAssemblies = stuff.getAssemblies || (() => Promise.resolve([]))
+
     this.configEditorComponent = stuff.configEditorComponent
     if (!this.stateModel)
       throw new Error(`no stateModel defined for connection ${this.name}`)

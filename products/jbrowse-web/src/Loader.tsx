@@ -452,6 +452,15 @@ const Renderer = observer(
               )
             }
 
+            // TODO use UndoManager
+            // rootModel.setHistory(
+            //   UndoManager.create({}, { targetStore: rootModel.session }),
+            // )
+            pluginManager.setRootModel(rootModel)
+            // configure before we set session so plugins can e.g. add
+            // ephemeral connection configs that the session might reference
+            pluginManager.configure()
+
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default
             // session
@@ -509,12 +518,6 @@ const Renderer = observer(
               writeGAAnalytics(rootModel, initialTimestamp)
             }
 
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
-            pluginManager.setRootModel(rootModel)
-            pluginManager.configure()
             setPluginManager(pluginManager)
 
             // automatically clear password field once loaded
