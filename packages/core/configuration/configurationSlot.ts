@@ -129,7 +129,7 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
 const FunctionStringType = types.refinement(
   'FunctionString',
   types.string,
-  str => functionRegexp.test(str),
+  str => functionRegexp.test(str) || str.startsWith('jexl:'), // TODOJEXL remove first part
 )
 
 export interface ConfigSlotDefinition {
