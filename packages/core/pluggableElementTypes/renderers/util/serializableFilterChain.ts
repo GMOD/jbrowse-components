@@ -16,7 +16,7 @@ export default class SerializableFilterChain {
   constructor({ filters = [] }: { filters: SerializedFilterChain }) {
     this.filterChain = filters.map(inputFilter => {
       if (typeof inputFilter === 'string') {
-        const func = stringToFunction(inputFilter) as FilterFunction
+        const func = stringToFunction(inputFilter) as FilterFunction //TODOJEXL make sure this works
         return { func, string: inputFilter }
       }
       throw new Error(`invalid inputFilter string "${inputFilter}"`)

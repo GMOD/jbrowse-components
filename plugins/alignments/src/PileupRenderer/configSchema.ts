@@ -10,7 +10,7 @@ export default ConfigurationSchema(
       // defaultValue: `function(feature) {
       //   return '#c8c8c8'
       // }`,
-      defaultValue: `jexl:getColor(feature, color)`,
+      defaultValue: `#c8c8c8`,
       functionSignature: ['feature'],
     },
 

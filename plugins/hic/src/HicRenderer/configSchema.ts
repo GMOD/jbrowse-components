@@ -11,8 +11,8 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
-      defaultValue: `function(counts, maxScore, baseColor) {
-      return baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string()
+      // might need context below
+      defaultValue: `jexl:baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string() 
 }`,
       functionSignature: ['count', 'maxScore', 'baseColor'],
     },

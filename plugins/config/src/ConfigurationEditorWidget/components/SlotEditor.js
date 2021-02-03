@@ -387,7 +387,10 @@ export const useSlotEditorStyles = makeStyles(theme => ({
 const SlotEditor = observer(({ slot, slotSchema }) => {
   const classes = useSlotEditorStyles()
   const { type } = slot
-  let ValueComponent = slot.isCallback ? CallbackEditor : valueComponents[type]
+  let ValueComponent =
+    slot.isCallback || slot.isJexlCallback
+      ? CallbackEditor
+      : valueComponents[type]
   if (!ValueComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
     ValueComponent = StringEditor
@@ -404,10 +407,14 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
           <IconButton
             className={classes.slotModeIcon}
             onClick={() =>
-              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
+              slot.isCallback || slot.isJexlCallback
+                ? slot.convertToValue()
+                : slot.convertToCallback()
             }
             title={`convert to ${
-              slot.isCallback ? 'regular value' : 'callback'
+              slot.isCallback || slot.isJexlCallback
+                ? 'regular value'
+                : 'callback'
             }`}
             color="secondary"
           >

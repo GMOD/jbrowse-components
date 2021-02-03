@@ -23,6 +23,8 @@ test('can convert a numeric slot to and from a callback', () => {
   expect(instance.value).toBe(12)
   expect(instance.func()).toBe(12)
   instance.convertToCallback()
+  // TODOJEXL: change this, it will not contain function, probably will contian jexl: at start
+  // something like expect(instance.value).toContain (or toStartWith if possible).('jexl:')
   expect(instance.value).toContain('function(something)')
   expect(instance.func()).toBe(12)
 })

@@ -45,13 +45,15 @@ function CallbackEditor({ slot }) {
   useEffect(() => {
     try {
       stringToFunction(debouncedCode)
-      slot.set(debouncedCode)
+      slot.set(debouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
     } catch (e) {
       setCodeError(e)
     }
   }, [debouncedCode, slot])
 
+  // if default value is a callback, will have to remove jexl:
+  // do this last
   return (
     <FormControl>
       <InputLabel shrink htmlFor="callback-editor">

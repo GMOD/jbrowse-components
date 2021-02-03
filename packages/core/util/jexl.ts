@@ -18,11 +18,16 @@ import { Feature } from './simpleFeature'
 //    make sure that the string is supposed to be a jexl function
 // 5. in utils.js is where readConfig is called. When the function is passed there, jexl.eval(args) will be called, where args is the created jexl expression from above
 
+// Still left TODO:
+// rename StringToFunction 
+// transition everything from hybrid jexl/functions to just jexl and remove any hybrid code
+// fix the ui, make sure that jexl: does not appear in callback view unless it is a defaultValue
+// and that when swithcing to callback viwe jexl: gets appended in the slot but not shown
+// add the jexl to serializablfilterchain
+// remove all popup custom callback warnings (from loader and import form)
 // helper functions
 jexl.addFunction('getFeatureData', (feature: Feature, data: string) => {
+  console.log(data)
   return feature.get(data)
-})
-jexl.addFunction('getColor', (feature: Feature, color: string) => {
-  return color || '#c8c8c8'
 })
 export default jexl

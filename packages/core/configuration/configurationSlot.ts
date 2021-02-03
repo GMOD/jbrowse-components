@@ -261,21 +261,16 @@ export default function ConfigSlot(
       reset() {
         self.value = defaultValue
       },
+      // TODOJEXL: this is for both right now
       convertToCallback() {
-        if (self.isCallback) return
+        if (self.isCallback || self.isJexlCallback) return
         self.value = `function(${self.functionSignature.join(', ')}) {
   return ${self.valueJSON}
 }
 `
       },
-      convertToJexlCallback() {
-        if (self.isJexlCallback) return
-        self.value = `jexl(${self.functionSignature.join(', ')}) { return ${
-          self.valueJSON
-        }}`
-      },
       convertToValue() {
-        if (!self.isCallback) return
+        if (!self.isCallback && !self.isJexlCallback) return
         // try calling it with no arguments
         try {
           const funcResult = self.func()
