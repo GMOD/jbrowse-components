@@ -1,16 +1,27 @@
 import { types, SnapshotOrInstance, cast } from 'mobx-state-tree'
 import PluginManager from '../../PluginManager'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  ConfigurationReference,
+} from '../../configuration/configurationSchema'
+import baseConnectionConfig from './baseConnectionConfig'
 
 export default (pluginManager: PluginManager) => {
   return types
     .model('Connection', {
       name: types.identifier,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      configuration: ConfigurationReference(baseConnectionConfig),
     })
     .actions(self => ({
+      connect(_configuration: SnapshotOrInstance<typeof self.configuration>) {
+        throw new Error(
+          '"connect" is abstract, please implement it in your connection',
+        )
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
-        // @ts-ignore
         self.connect(self.configuration)
       },
       addTrackConf(trackConf: AnyConfigurationModel) {

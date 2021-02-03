@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { when } from 'mobx'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -373,114 +374,118 @@ const Renderer = observer(
     const [snapshotError, setSnapshotError] = useState('')
     // only create the pluginManager/rootModel "on mount"
     useEffect(() => {
-      try {
-        const {
-          plugins,
-          adminKey,
-          configSnapshot,
-          sessionSnapshot,
-          configPath,
-        } = loader
+      async function load() {
+        try {
+          const {
+            plugins,
+            adminKey,
+            configSnapshot,
+            sessionSnapshot,
+            configPath,
+          } = loader
 
-        if (ready) {
-          // it is ready when a session has loaded and when there is no config error
-          // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
-          const pluginManager = new PluginManager(plugins.map(P => new P()))
+          if (ready) {
+            // it is ready when a session has loaded and when there is no config error
+            // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
+            const pluginManager = new PluginManager(plugins.map(P => new P()))
 
-          pluginManager.createPluggableElements()
+            pluginManager.createPluggableElements()
 
-          const JBrowseRootModel = JBrowseRootModelFactory(
-            pluginManager,
-            !!adminKey,
-          )
+            const JBrowseRootModel = JBrowseRootModelFactory(
+              pluginManager,
+              !!adminKey,
+            )
 
-          if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            if (loader.configSnapshot) {
+              const rootModel = JBrowseRootModel.create({
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              })
 
-            // in order: saves the previous autosave for recovery, tries to load
-            // the local session if session in query, or loads the default
-            // session
-            if (sessionError) {
-              rootModel.setDefaultSession()
-              // make typescript happy by checking for session after
-              // setDefaultSession, even though we know this exists now
-              if (rootModel.session) {
-                rootModel.session.notify(
-                  `Error loading session: ${sessionError.message}. If you
-                received this URL from another user, request that they send you
-                a session generated with the "Share" button instead of copying
-                and pasting their URL`,
-                )
-              }
-            } else if (sessionSnapshot && !shareWarningOpen) {
-              try {
-                rootModel.setSession(loader.sessionSnapshot)
-              } catch (err) {
-                console.error(err)
+              // in order: saves the previous autosave for recovery, tries to load
+              // the local session if session in query, or loads the default
+              // session
+              if (sessionError) {
                 rootModel.setDefaultSession()
-                const errorMessage = (err.message || '')
-                  .replace('[mobx-state-tree] ', '')
-                  .replace(/\(.+/, '')
-                rootModel.session?.notify(
-                  `Session could not be loaded. ${errorMessage}`,
-                )
-              }
-            } else {
-              const defaultJBrowseSession = rootModel.jbrowse.defaultSession
-              if (defaultJBrowseSession?.views) {
-                if (defaultJBrowseSession.views.length > 0) {
+                // make typescript happy by checking for session after
+                // setDefaultSession, even though we know this exists now
+                if (rootModel.session) {
+                  rootModel.session.notify(
+                    `Error loading session: ${sessionError.message}. If you
+                  received this URL from another user, request that they send you
+                  a session generated with the "Share" button instead of copying
+                  and pasting their URL`,
+                  )
+                }
+              } else if (sessionSnapshot && !shareWarningOpen) {
+                await when(() => rootModel.assemblyManager.ready)
+                try {
+                  rootModel.setSession(loader.sessionSnapshot)
+                } catch (err) {
+                  console.error(err)
                   rootModel.setDefaultSession()
+                  const errorMessage = (err.message || '')
+                    .replace('[mobx-state-tree] ', '')
+                    .replace(/\(.+/, '')
+                  rootModel.session?.notify(
+                    `Session could not be loaded. ${errorMessage}`,
+                  )
+                }
+              } else {
+                const defaultJBrowseSession = rootModel.jbrowse.defaultSession
+                if (defaultJBrowseSession?.views) {
+                  if (defaultJBrowseSession.views.length > 0) {
+                    rootModel.setDefaultSession()
+                  }
                 }
               }
+
+              // send analytics
+              if (
+                rootModel &&
+                !readConfObject(
+                  rootModel.jbrowse.configuration,
+                  'disableAnalytics',
+                )
+              ) {
+                writeAWSAnalytics(
+                  rootModel,
+                  initialTimestamp,
+                  initialSessionQuery,
+                )
+                writeGAAnalytics(rootModel, initialTimestamp)
+              }
+
+              // TODO use UndoManager
+              // rootModel.setHistory(
+              //   UndoManager.create({}, { targetStore: rootModel.session }),
+              // )
+              pluginManager.setRootModel(rootModel)
+              pluginManager.configure()
+              setPluginManager(pluginManager)
+
+              // automatically clear password field once loaded
+              setPassword(undefined)
             }
-
-            // send analytics
-            if (
-              rootModel &&
-              !readConfObject(
-                rootModel.jbrowse.configuration,
-                'disableAnalytics',
-              )
-            ) {
-              writeAWSAnalytics(
-                rootModel,
-                initialTimestamp,
-                initialSessionQuery,
-              )
-              writeGAAnalytics(rootModel, initialTimestamp)
-            }
-
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
-            pluginManager.setRootModel(rootModel)
-            pluginManager.configure()
-            setPluginManager(pluginManager)
-
-            // automatically clear password field once loaded
-            setPassword(undefined)
           }
+        } catch (e) {
+          const match = e.message.match(
+            /.*at path "(.*)" snapshot `(.*)` is not assignable/,
+          )
+          // best effort to make a better error message than the default
+          // mobx-state-tree
+          if (match) {
+            setError(`Failed to load element at ${match[1]}`)
+            setSnapshotError(match[2])
+          } else {
+            setError(e.message.slice(0, 10000))
+          }
+          console.error(e)
         }
-      } catch (e) {
-        const match = e.message.match(
-          /.*at path "(.*)" snapshot `(.*)` is not assignable/,
-        )
-        // best effort to make a better error message than the default
-        // mobx-state-tree
-        if (match) {
-          setError(`Failed to load element at ${match[1]}`)
-          setSnapshotError(match[2])
-        } else {
-          setError(e.message.slice(0, 10000))
-        }
-        console.error(e)
       }
+      load()
     }, [
       loader,
       shareWarningOpen,

@@ -1,4 +1,4 @@
-import { reaction } from 'mobx'
+import { reaction, runInAction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -24,6 +24,9 @@ export default function assemblyManagerFactory(
     .model({
       assemblies: types.array(Assembly),
     })
+    .volatile(() => ({
+      ready: false,
+    }))
     .views(self => ({
       get(assemblyName: string) {
         const canonicalName = this.aliasMap.get(assemblyName)
@@ -34,6 +37,9 @@ export default function assemblyManagerFactory(
 
       get assemblyList() {
         return getParent(self).jbrowse.assemblies.slice()
+      },
+      get connectionConfigs() {
+        return getParent(self).jbrowse.connections.slice()
       },
 
       get aliasMap() {
@@ -132,6 +138,9 @@ export default function assemblyManagerFactory(
       },
     }))
     .actions(self => ({
+      setReady(isReady: boolean) {
+        self.ready = isReady
+      },
       removeAssembly(asm: Instance<typeof Assembly>) {
         self.assemblies.remove(asm)
       },
@@ -140,11 +149,19 @@ export default function assemblyManagerFactory(
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => self.assemblyList,
-            (
+            () => ({
+              assemblyConfigs: self.assemblyList,
+              connectionConfigs: self.connectionConfigs,
+            }),
+            ({
+              assemblyConfigs,
+              connectionConfigs,
+            }: {
               assemblyConfigs: Instance<typeof Assembly> &
-                AnyConfigurationModel[],
-            ) => {
+                AnyConfigurationModel[]
+              connectionConfigs: AnyConfigurationModel[]
+            }) => {
+              this.setReady(false)
               self.assemblies.forEach(asm => {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
@@ -158,6 +175,41 @@ export default function assemblyManagerFactory(
                 if (existingAssemblyIdx === -1) {
                   this.addAssembly(assemblyConfig)
                 }
+              })
+              const connectionPromises = connectionConfigs.map(
+                connectionConfig => {
+                  const connectionType = pluginManager.getConnectionType(
+                    connectionConfig.type,
+                  )
+                  if (!connectionType) {
+                    throw new Error(
+                      `unknown connection type ${connectionConfig.type}`,
+                    )
+                  }
+                  return connectionType
+                    .getAssemblies(connectionConfig)
+                    .then(connectionAssemblyConfigs => {
+                      runInAction(() => {
+                        connectionAssemblyConfigs.forEach(assemblyConfig => {
+                          const existingAssemblyIdx = self.assemblies.findIndex(
+                            assembly => assembly.name === assemblyConfig?.name,
+                          )
+                          if (existingAssemblyIdx === -1) {
+                            const conf = getParent(
+                              self,
+                            ).jbrowse.addAssemblyConf({
+                              ...assemblyConfig,
+                              ephemeral: true,
+                            })
+                            this.addAssembly(conf)
+                          }
+                        })
+                      })
+                    })
+                },
+              )
+              Promise.all(connectionPromises).then(() => {
+                this.setReady(true)
               })
             },
             { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
