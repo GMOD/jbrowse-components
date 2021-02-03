@@ -10,14 +10,14 @@
 
 const http = require('http')
 
-const downloadsPageUrl = 'http://hgdownload.soe.ucsc.edu/downloads.html'
+const listGenomesEndpoint = 'http://api.genome.ucsc.edu/list/ucscGenomes'
 
 http
-  .get(downloadsPageUrl, res => {
+  .get(listGenomesEndpoint, res => {
     const { statusCode } = res
     if (statusCode !== 200)
       throw new Error(
-        `Could not get downloads page, status code ${statusCode}: ${downloadsPageUrl}`,
+        `Could not list genomes from API, status code ${statusCode}: ${listGenomesEndpoint}`,
       )
     res.setEncoding('utf8')
     let pageContent = ''
@@ -25,15 +25,16 @@ http
       pageContent += chunk
     })
     res.on('end', () => {
-      parseDownloadsPageContent(pageContent)
+      parseGenomes(pageContent)
     })
   })
   .on('error', e => {
     console.error(`problem with request: ${e.message}`)
   })
 
-function parseDownloadsPageContent(pageContent) {
-  const assemblyNames = pageContent.match(/(?<=goldenPath\/)\w+(?=\/bigZips)/g)
+function parseGenomes(pageContent) {
+  const response = JSON.parse(pageContent)
+  const assemblyNames = Array.from(Object.keys(response.ucscGenomes))
   checkAssembliesFor2bit(assemblyNames, [])
 }
 
@@ -46,7 +47,7 @@ function checkAssembliesFor2bit(uncheckedAssemblies, checkedAssemblies) {
   const [assemblyName] = uncheckedAssemblies
   http
     .request(
-      `http://hgdownload.soe.ucsc.edu/goldenPath/${assemblyName}/bigZips/${assemblyName}.2bit`,
+      `http://hgdownload.soe.ucsc.edu/gbdb/${assemblyName}/${assemblyName}.2bit`,
       { method: 'HEAD' },
       res => {
         const { statusCode } = res
