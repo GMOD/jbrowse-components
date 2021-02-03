@@ -122,9 +122,10 @@ const DeleteConnectionDlg = observer(props => {
     >
       <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
       <DialogContent>
-        {dereferenceTypeCount ? (
+        {dereferenceTypeCount &&
+        Object.keys(dereferenceTypeCount).length > 0 ? (
           <>
-            Closing this connection will close
+            Deleting this connection will close
             <List>
               {Object.entries(dereferenceTypeCount).map(([key, value]) => (
                 <ListItem key={key}>{`${value} ${key}`}</ListItem>
@@ -213,13 +214,10 @@ function HierarchicalTrackSelector({ model }) {
   }
 
   function handleConnectionToggle(connectionConf) {
-    const assemblyConnections = session.connectionInstances.get(assemblyName)
-    const existingConnection =
-      assemblyConnections &&
-      !!assemblyConnections.find(
-        connection =>
-          connection.name === readConfObject(connectionConf, 'name'),
-      )
+    const connections = session.connectionInstances
+    const existingConnection = !!connections.find(
+      connection => connection.name === readConfObject(connectionConf, 'name'),
+    )
     if (existingConnection) {
       breakConnection(connectionConf)
     } else {
@@ -303,46 +301,40 @@ function HierarchicalTrackSelector({ model }) {
         top
       />
       <FormGroup>
-        {session.connections
-          .filter(
-            connectionConf =>
-              readConfObject(connectionConf, 'assemblyName') === assemblyName,
+        {session.connections.map(connectionConf => {
+          const name = readConfObject(connectionConf, 'name')
+          const id = connectionConf.connectionId
+          return (
+            <FormGroup row key={id}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={
+                      !!session.connectionInstances.find(
+                        connection => connection.name === name,
+                      )
+                    }
+                    onChange={() => handleConnectionToggle(connectionConf)}
+                  />
+                }
+                label={name}
+              />
+              <IconButton
+                data-testid="delete-connection"
+                onClick={() => {
+                  breakConnection(connectionConf, true)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </FormGroup>
           )
-          .map(connectionConf => {
-            const name = readConfObject(connectionConf, 'name')
-            const id = connectionConf.connectionId
-            return (
-              <FormGroup row key={id}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        session.connectionInstances.has(assemblyName) &&
-                        !!session.connectionInstances
-                          .get(assemblyName)
-                          .find(connection => connection.name === name)
-                      }
-                      onChange={() => handleConnectionToggle(connectionConf)}
-                    />
-                  }
-                  label={name}
-                />
-                <IconButton
-                  data-testid="delete-connection"
-                  onClick={() => {
-                    breakConnection(connectionConf, true)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </FormGroup>
-            )
-          })}
+        })}
       </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
+      {session.connectionInstances.length ? (
         <>
           <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.get(assemblyName).map(connection => (
+          {session.connectionInstances.map(connection => (
             <Paper
               key={connection.name}
               className={classes.connectionsPaper}

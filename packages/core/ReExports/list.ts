@@ -8,6 +8,7 @@ export default [
 
   '@material-ui/core',
   '@material-ui/core/SvgIcon',
+  '@material-ui/core/utils',
   '@material-ui/lab',
 
   '@jbrowse/core/Plugin',
