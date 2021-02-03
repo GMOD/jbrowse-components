@@ -21,6 +21,7 @@ export default function (pluginManager) {
         connect(connectionConf) {
           self.clear()
           const trackDbId = readConfObject(connectionConf, 'trackDbId')
+          const session = getSession(self)
           fetch(
             `https://www.trackhubregistry.org/api/search/trackdb/${trackDbId}`,
           )
@@ -28,8 +29,10 @@ export default function (pluginManager) {
             .then(trackDb => {
               // eslint-disable-next-line no-underscore-dangle
               const assemblyName = trackDb._source.assembly.name
-              const session = getSession(self)
               const assembly = session.assemblyManager.get(assemblyName)
+              if (!assembly) {
+                throw new Error(`No assembly "${assemblyName}" found`)
+              }
               const assemblyConf = assembly.configuration
               const sequenceAdapter = readConfObject(assemblyConf, [
                 'sequence',
@@ -41,6 +44,11 @@ export default function (pluginManager) {
             })
             .catch(error => {
               console.error(error)
+              session.notify(
+                `There was a problem connecting to the Track Hub Registry hub "${self.name}": ${error}`,
+                'error',
+              )
+              session.breakConnection(self.configuration)
             })
         },
       })),
