@@ -72,15 +72,18 @@ test('copy and delete track to session tracks', async () => {
 })
 
 test('delete connection', async () => {
-  const pluginManager = getPluginManager(masterConfig, true)
-  const { findAllByTestId, findByText } = render(
+  const pluginManager = getPluginManager(
+    { ...masterConfig, connections: [masterConfig.connections[0]] },
+    true,
+  )
+  const { findAllByTestId, findByText, queryByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
 
   const deleteButtons = await findAllByTestId('delete-connection')
-  expect(deleteButtons.length).toBe(3)
+  expect(deleteButtons.length).toBe(1)
   fireEvent.click(deleteButtons[0])
   fireEvent.click(await findByText('OK'))
-  expect((await findAllByTestId('delete-connection')).length).toBe(2)
+  expect(queryByTestId('delete-connection')).toBeFalsy()
 })
