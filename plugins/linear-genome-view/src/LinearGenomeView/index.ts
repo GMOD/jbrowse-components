@@ -153,11 +153,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return true
         })
 
-        return (
-          self.volatileWidth !== undefined &&
-          self.displayedRegions.length > 0 &&
-          assembliesInitialized
-        )
+        return self.volatileWidth !== undefined && assembliesInitialized
+      },
+      get hasDisplayedRegions() {
+        return self.displayedRegions.length > 0
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset

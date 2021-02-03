@@ -35,7 +35,7 @@ const useStyles = makeStyles(theme => ({
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, error, hideHeader, initialized } = model
+  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
   // the AboutDialog is shown at this level because if it is
@@ -44,7 +44,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const aboutTrack = model.tracks.find(track => track.showAbout)
   const dialogTrack = model.tracks.find(track => track.DialogComponent)
 
-  return !initialized ? (
+  return !(initialized && hasDisplayedRegions) ? (
     <ImportForm model={model} />
   ) : (
     <div style={{ position: 'relative' }}>
