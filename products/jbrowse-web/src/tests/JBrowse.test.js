@@ -130,8 +130,10 @@ describe('test configuration editor', () => {
     fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
     fireEvent.click(await findByText('Settings'))
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
-    const input = await findByDisplayValue('goldenrod')
-    fireEvent.change(input, { target: { value: 'green' } })
+    const input = await findByDisplayValue(/goldenrod/)
+    fireEvent.change(input, {
+      target: { value: 'function(f) { return "green" }' },
+    })
     await waitFor(async () => {
       const feats = await findAllByTestId('box-test-vcf-604452')
       expect(feats[0]).toHaveAttribute('fill', 'green')
