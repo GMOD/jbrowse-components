@@ -44,9 +44,13 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const aboutTrack = model.tracks.find(track => track.showAbout)
   const dialogTrack = model.tracks.find(track => track.DialogComponent)
 
-  return !(initialized && hasDisplayedRegions) ? (
-    <ImportForm model={model} />
-  ) : (
+  if (!initialized) {
+    return null
+  }
+  if (!hasDisplayedRegions) {
+    return <ImportForm model={model} />
+  }
+  return (
     <div style={{ position: 'relative' }}>
       {aboutTrack ? (
         <AboutDialog
