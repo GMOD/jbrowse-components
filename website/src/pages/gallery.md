@@ -1,4 +1,8 @@
-# JBrowse 2 gallery
+# JBrowse 2 visualizations gallery
+
+Below are some examples of the visualizations JBrowse 2 has to offer. For live demos, have a look at the [demos page](demos).
+
+---
 
 ![](./img/dotplot.png)
 A genome vs genome dotplot displayed in the DotplotView. This displays grape vs
@@ -25,7 +29,7 @@ Shows rendering of a .hic file type in the HicTrack
 
 ![](./img/sv_inspector_importform_loaded.png)
 Screenshot of the SV inspector displaying inter-chromosomal translocations in
-the SKBR3 cell line. The SV inspector is a spreadsheet view plus whole-genome
+the SKBR3 cell line. The SV inspector is a tabular view plus whole-genome
 circular overview of the SVs
 
 ---

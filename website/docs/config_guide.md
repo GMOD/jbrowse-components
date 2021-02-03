@@ -147,7 +147,7 @@ See our CLI docs for the add-assembly for more details here --
 [add-assembly](cli#jbrowse-add-assembly-sequence)
 
 Note: assemblies can also be added graphically using the assembly manager when
-you are using the so-called admin-server. See the [quickstart
+you are using the admin-server. See the [quickstart
 guide](quickstart_gui#adding-an-assembly) for more details.
 
 ## Assembly config

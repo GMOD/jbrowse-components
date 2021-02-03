@@ -122,7 +122,7 @@ After you have copied the track, you can edit the track settings
 Figure showing the settings button is now enabled on the session track, and you
 have full control over your session tracks
 
-Your new track is a so-called "session track" and can be shared with other
+Your new track is a "session track" and can be shared with other
 users with the "Share" button
 
 #### Rubberband selection
@@ -473,7 +473,7 @@ Figure showing the SV inspector import form with URL
 
 ### SV inspector results
 
-After loading the user's requested file, you will have a spreadsheet with each
+After loading the user's requested file, you will have a tabular view with each
 row representing a row of the file you opened, along with a whole-genome
 overview of the SVs on the right
 
@@ -482,17 +482,16 @@ SV inspector with loaded results
 
 Now here is where things can become interesting
 
-We can perform searching and filtering on the table, which can filter down the
-number of rows being displayed, and then this dynamically filters the circos
-view on the right also.
+We can search and filter the table, with filtering and searching being reflected
+in the circular view as well.
 
 ![](./img/sv_inspector_importform_filtered.png)
 SV inspector with filter applied
 
 ### Launching breakpoint split view
 
-By clicking on the features in the Circos, or clicking on the triangle
-drop-down on the leftmost column of the spreadsheet, we can dynamically launch
+By clicking on the features in the circular view, or clicking on the triangle
+drop-down on the leftmost column of the table, we can dynamically launch
 a new view of the data that is called the "split view" or the "breakpoint split
 view"
 

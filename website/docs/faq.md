@@ -37,7 +37,7 @@ that can be built on.
 - Has ability to show soft clipped bases on reads
 - Interactively edit the configuration using the GUI
 - Circular, dotplot, stacked synteny views
-- SV inspector, that gives spreadsheet and circos overview of data in a single view
+- SV inspector, that gives tabular and circular overview of data in a single view
 - Linear genome view can be reverse complemented
 
 #### Can the linear genome view be reverse complemented
