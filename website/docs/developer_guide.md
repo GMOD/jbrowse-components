@@ -290,7 +290,7 @@ In the above screenshot, the `File` menu has several items and an `Add`
 sub-menu, which has more items. You can have arbitrarily deep sub-menus.
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
-will have to-level menus, though. JBrowse Web and JBrowse Desktop have them, but
+will have top-level menus, though. JBrowse Web and JBrowse Desktop have them, but
 something like JBrowse Linear View (which is an just a single view designed to
 be embedded in another page) does not. This means you need to check whether or
 not menus are supported using `isAbstractMenuManager` in the `configure` method.
