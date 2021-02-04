@@ -33,7 +33,7 @@ export default (pluginManager: PluginManager) => {
       get func() {
         if (self.isDerived) {
           // compile this as a function
-          return stringToFunction(String(self.derivationFunctionText))
+          return stringToFunction(String(self.derivationFunctionText)) // TODOJEXL make sure this works too
         }
         return undefined
       },

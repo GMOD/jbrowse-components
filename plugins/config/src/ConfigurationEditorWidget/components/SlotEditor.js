@@ -407,14 +407,10 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
           <IconButton
             className={classes.slotModeIcon}
             onClick={() =>
-              slot.isCallback || slot.isJexlCallback
-                ? slot.convertToValue()
-                : slot.convertToCallback()
+              slot.isCallback ? slot.convertToValue() : slot.convertToCallback()
             }
             title={`convert to ${
-              slot.isCallback || slot.isJexlCallback
-                ? 'regular value'
-                : 'callback'
+              slot.isCallback ? 'regular value' : 'callback'
             }`}
             color="secondary"
           >

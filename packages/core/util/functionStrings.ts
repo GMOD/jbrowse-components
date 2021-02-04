@@ -28,52 +28,40 @@ export function stringToFunction(
   } = {},
 ) {
   const { verifyFunctionSignature } = options
-  const jexlParamFind = /\(([^)]+)\)/
 
   const cacheKey = `${
     verifyFunctionSignature ? verifyFunctionSignature.join(',') : 'nosig'
   }|${str}`
   if (!compilationCache[cacheKey]) {
-    const match = functionRegexp.exec(str)
-    const jexlMatch = str.startsWith('jexl:')
-    const jexlParam = jexlParamFind.exec(str)
-    if (!match && !jexlMatch) {
+    const match = str.startsWith('jexl:')
+    if (!match) {
       throw new Error('string does not appear to be a function declaration')
     }
     // remove when transition to just jexl
-    // eslint-disable-next-line no-nested-ternary
-    const paramList = match
-      ? match[1].split(',').map(s => s.trim())
-      : jexlParam
-      ? jexlParam[1].split(',').map(s => s.trim())
-      : null
-    let code = match ? match[2].replace(/}\s*$/, '') : str.split('jexl:')[1]
-    if (verifyFunctionSignature && match) {
-      // check number of arguments passed by calling code at runtime.
-      // NOTE: we don't check the number of arguments in the callback code itself,
-      // callback authors are free to ignore the arguments if they want
+    const code = str.split('jexl:')[1]
+    // if (verifyFunctionSignature && match) {
+    //   // check number of arguments passed by calling code at runtime.
+    //   // NOTE: we don't check the number of arguments in the callback code itself,
+    //   // callback authors are free to ignore the arguments if they want
 
-      code = `if (arguments.length !== ${
-        verifyFunctionSignature.length
-      }) throw new Error("incorrect number of arguments provided to callback.  function signature is (${verifyFunctionSignature.join(
-        ', ',
-      )}) but "+arguments.length+" arguments were passed");\n${code}`
-    }
+    //   code = `if (arguments.length !== ${
+    //     verifyFunctionSignature.length
+    //   }) throw new Error("incorrect number of arguments provided to callback.  function signature is (${verifyFunctionSignature.join(
+    //     ', ',
+    //   )}) but "+arguments.length+" arguments were passed");\n${code}`
+    // }
 
-    const compiled = match
-      ? // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
-        new Function(...paramList, `"use strict"; ${code}`)
-      : jexl.createExpression(`${code}`) // replace this with jexl.createExpression with string that they typed, strip off the jexl: part
+    const compiled = jexl.createExpression(`${code}`) // replace this with jexl.createExpression with string that they typed, strip off the jexl: part
 
     compilationCache[cacheKey] = compiled
   }
 
-  let func = compilationCache[cacheKey]
+  const func = compilationCache[cacheKey]
   // dont need this when using jexl
-  if (options.bind) {
-    const [thisArg, ...rest] = options.bind
-    func = func.bind(thisArg, ...rest)
-  }
+  // if (options.bind) {
+  //   const [thisArg, ...rest] = options.bind
+  //   func = func.bind(thisArg, ...rest)
+  // }
   return func
 }
 

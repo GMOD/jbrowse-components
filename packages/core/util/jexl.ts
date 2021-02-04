@@ -27,7 +27,7 @@ import { Feature } from './simpleFeature'
 // remove all popup custom callback warnings (from loader and import form)
 // helper functions
 jexl.addFunction('getFeatureData', (feature: Feature, data: string) => {
-  console.log(data)
+  console.log(feature, data)
   return feature.get(data)
 })
 export default jexl

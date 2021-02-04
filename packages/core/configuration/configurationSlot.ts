@@ -144,6 +144,10 @@ export interface ConfigSlotDefinition {
   functionSignature?: string[]
 }
 
+interface JexlExpression extends Function {
+  _exprStr?: string
+}
+
 /**
  * builds a MST model for a configuration slot
  *
@@ -190,23 +194,13 @@ export default function ConfigSlot(
     }))
     .views(self => ({
       get isCallback() {
-        return functionRegexp.test(String(self.value))
-      },
-      get isJexlCallback() {
         return String(self.value).startsWith('jexl:')
       },
     }))
     .views(self => ({
       get func() {
         if (self.isCallback) {
-          // compile this as a function
-          return stringToFunction(String(self.value), {
-            verifyFunctionSignature: inDevelopment
-              ? functionSignature
-              : undefined,
-          })
-        }
-        if (self.isJexlCallback) {
+          // compile as jexl function
           return stringToFunction(String(self.value), {
             verifyFunctionSignature: inDevelopment
               ? functionSignature
@@ -225,7 +219,7 @@ export default function ConfigSlot(
           if (value && value.toJSON) {
             return value.toJSON()
           }
-          return `'${value}'`
+          return `${value}`
         }
         return json(self.value)
       },
@@ -263,22 +257,23 @@ export default function ConfigSlot(
       },
       // TODOJEXL: this is for both right now
       convertToCallback() {
-        if (self.isCallback || self.isJexlCallback) return
-        self.value = `function(${self.functionSignature.join(', ')}) {
-  return ${self.valueJSON}
-}
-`
+        if (self.isCallback) return
+        self.value = `jexl:${self.valueJSON}`
       },
       convertToValue() {
-        if (!self.isCallback && !self.isJexlCallback) return
+        if (!self.isCallback) return
         // try calling it with no arguments
         try {
-          const funcResult = self.func()
-          if (funcResult !== undefined) {
-            self.value = funcResult
+          const funcResult: JexlExpression = self.func
+          // TODOJEXL fix this, find better way to access expression stirng
+          // eslint-disable-next-line no-underscore-dangle
+          const funcResultStr = funcResult._exprStr
+          if (funcResultStr !== undefined) {
+            self.value = funcResultStr
             return
           }
         } catch (e) {
+          console.log(e)
           /* ignore */
         }
         self.value = defaultValue

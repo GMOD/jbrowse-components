@@ -45,7 +45,7 @@ export const BaseChordDisplayModel = types
     const { pluginManager } = getSession(self)
     return {
       onChordClick(feature: Feature) {
-        getConf(self, 'onChordClick', [feature, self, pluginManager])
+        getConf(self, 'onChordClick', [{ feature, self, pluginManager }])
       },
     }
   })
