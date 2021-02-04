@@ -22,6 +22,7 @@ function WiggleRendering(props: {
     height,
     onMouseLeave = () => {},
     onMouseMove = () => {},
+    onFeatureClick = () => {},
   } = props
   const [region] = regions
   const ref = useRef<HTMLDivElement>(null)
@@ -49,6 +50,29 @@ function WiggleRendering(props: {
         }
 
         onMouseMove(
+          event,
+          featureUnderMouse ? featureUnderMouse.id() : undefined,
+        )
+      }}
+      onClick={event => {
+        let offset = 0
+        if (ref.current) {
+          offset = ref.current.getBoundingClientRect().left
+        }
+        const offsetX = event.clientX - offset
+        const px = region.reversed ? width - offsetX : offsetX
+        const clientBp = region.start + bpPerPx * px
+        let featureUnderMouse
+        for (const feature of features.values()) {
+          if (
+            clientBp <= feature.get('end') &&
+            clientBp >= feature.get('start')
+          ) {
+            featureUnderMouse = feature
+            break
+          }
+        }
+        onFeatureClick(
           event,
           featureUnderMouse ? featureUnderMouse.id() : undefined,
         )
