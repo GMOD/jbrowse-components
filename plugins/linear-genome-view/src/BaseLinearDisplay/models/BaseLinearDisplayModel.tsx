@@ -373,6 +373,7 @@ export const BaseLinearDisplay = types
           } else {
             const feature = self.features.get(f)
             self.selectFeature(feature as Feature)
+            getConf(self, 'onClick', [feature])
           }
         },
         onClick() {
