@@ -1,4 +1,4 @@
-import { stringToFunction } from '../../../util/functionStrings'
+import { stringToJexlExpression } from '../../../util/functionStrings'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FilterFunction = (...args: Record<string, any>[] | any[]) => boolean
@@ -16,7 +16,7 @@ export default class SerializableFilterChain {
   constructor({ filters = [] }: { filters: SerializedFilterChain }) {
     this.filterChain = filters.map(inputFilter => {
       if (typeof inputFilter === 'string') {
-        const func = stringToFunction(inputFilter) as FilterFunction // TODOJEXL make sure this works
+        const func = stringToJexlExpression(inputFilter) as FilterFunction // TODOJEXL make sure this works
         return { func, string: inputFilter }
       }
       throw new Error(`invalid inputFilter string "${inputFilter}"`)
@@ -26,13 +26,11 @@ export default class SerializableFilterChain {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   passes(...args: any[]) {
     for (let i = 0; i < this.filterChain.length; i += 1) {
-      console.log(this.filterChain[i].func)
-
       if (
         typeof this.filterChain[i].func === 'function'
           ? !this.filterChain[i].func.apply(this, args)
           : // @ts-ignore
-            !this.filterChain[i].func.evalSync(...args) // TODOJEXL: at some point feature becomes undefined when passed
+            !this.filterChain[i].func.evalSync({ feature: args[0] }) // TODOJEXL: at some point feature becomes undefined when passed
       )
         return false
     }

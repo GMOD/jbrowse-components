@@ -387,10 +387,7 @@ export const useSlotEditorStyles = makeStyles(theme => ({
 const SlotEditor = observer(({ slot, slotSchema }) => {
   const classes = useSlotEditorStyles()
   const { type } = slot
-  let ValueComponent =
-    slot.isCallback || slot.isJexlCallback
-      ? CallbackEditor
-      : valueComponents[type]
+  let ValueComponent = slot.isCallback ? CallbackEditor : valueComponents[type]
   if (!ValueComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
     ValueComponent = StringEditor

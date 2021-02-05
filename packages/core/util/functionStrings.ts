@@ -12,7 +12,7 @@ const compilationCache: Record<string, Function> = {}
  * @param str - string of code like `function() { ... }`
  * @param options -
  */
-export function stringToFunction(
+export function stringToJexlExpression(
   str: string,
   options: {
     /**

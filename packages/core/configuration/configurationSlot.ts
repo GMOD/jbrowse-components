@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
-import { stringToFunction, functionRegexp } from '../util/functionStrings'
+import { stringToJexlExpression, functionRegexp } from '../util/functionStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../util/types/mst'
 
@@ -201,7 +201,7 @@ export default function ConfigSlot(
       get func() {
         if (self.isCallback) {
           // compile as jexl function
-          return stringToFunction(String(self.value), {
+          return stringToJexlExpression(String(self.value), {
             verifyFunctionSignature: inDevelopment
               ? functionSignature
               : undefined,
@@ -255,7 +255,6 @@ export default function ConfigSlot(
       reset() {
         self.value = defaultValue
       },
-      // TODOJEXL: this is for both right now
       convertToCallback() {
         if (self.isCallback) return
         self.value = `jexl:${self.valueJSON}`

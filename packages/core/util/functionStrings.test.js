@@ -1,4 +1,4 @@
-import { stringToFunction, functionRegexp } from './functionStrings'
+import { stringToJexlExpression, functionRegexp } from './functionStrings'
 
 describe('function string parsing', () => {
   it('has working regex', () => {
@@ -46,7 +46,7 @@ describe('function string parsing', () => {
     ' function dweeble_Zo12 ( a, b,c){\nreturn a+b+c+5; \n ;\n}',
   ].forEach(funcStr => {
     it(`can parse '${funcStr}'`, () => {
-      const func = stringToFunction(funcStr, {
+      const func = stringToJexlExpression(funcStr, {
         verifyFunctionSignature: ['a', 'b', 'c'],
       })
       expect(func(5, 10, 15)).toBe(35)

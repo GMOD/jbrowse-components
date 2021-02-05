@@ -339,7 +339,7 @@ const stateModelFactory = (
               //   const flags = f.get('flags');
               //   return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
               // }`,
-              `jexl:((getFeatureData(f, 'flags')&&${flagInclude})==${flagInclude}) && !(getFeatureData(f, 'flags')&&${flagExclude})`,
+              `jexl:(bitwiseAnd(getFeatureData(feature, 'flags'),${flagInclude})==${flagInclude}) && !(bitwiseAnd(getFeatureData(feature, 'flags'),${flagExclude}))`,
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
@@ -350,9 +350,7 @@ const stateModelFactory = (
               // return "${value}"==='*'?val !== undefined:val == "${value}";
               // }`)
               filters.push(
-                `jexl:const tags = getFeatureData(f, 'tags);
-                const val = tags ? tags["${tag}"] : getFeatureData(f, "${tag}");
-                "${value}" =='*'?val != undefined:val == "${value}")`,
+                `jexl:"${value}" =='*'?(getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) != undefined:(getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) == "${value}")`,
               )
             }
             if (self.filterBy.readName) {
@@ -360,7 +358,9 @@ const stateModelFactory = (
               // filters.push(`function(f) {
               // return f.get('name') === "${readName}";
               // }`)
-              filters.push(`jexl:getFeatureData(f, 'name') == "${readName}`)
+              filters.push(
+                `jexl:getFeatureData(feature, 'name') == "${readName}"`,
+              )
             }
           }
           return filters

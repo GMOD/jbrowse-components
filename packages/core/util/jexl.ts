@@ -19,15 +19,33 @@ import { Feature } from './simpleFeature'
 // 5. in utils.js is where readConfig is called. When the function is passed there, jexl.eval(args) will be called, where args is the created jexl expression from above
 
 // Still left TODO:
-// rename StringToFunction 
-// transition everything from hybrid jexl/functions to just jexl and remove any hybrid code
-// fix the ui, make sure that jexl: does not appear in callback view unless it is a defaultValue
-// and that when swithcing to callback viwe jexl: gets appended in the slot but not shown
-// add the jexl to serializablfilterchain
-// remove all popup custom callback warnings (from loader and import form)
+// fix syntax in chord track callback (i think)
+// remove all popup custom callback warnings (from loader)
+// cross origin configs leave warning message but on any cross origin, not just ones that have custom callbacks
 // helper functions
+// make special function editing area that is not applied or saved to sessions, these are solely for adding to jexl, maybe have a GUI editor so they can manage functions
+// create jexl function that adds core + adds config functions and returns new jexl
+// for slot editor, when the slot can be a callback, have a  ? info icon that can be clicked which links to the Jexl repo, maybe on mousehover have explaination of why jexl
+
+// below are core functions
 jexl.addFunction('getFeatureData', (feature: Feature, data: string) => {
-  console.log(feature, data)
   return feature.get(data)
 })
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+jexl.addFunction('bitwiseAnd', (a: any, b: any) => {
+  // eslint-disable-next-line no-bitwise
+  return a & b
+})
+
+// add a function that can perform bitwise & for model.ts, params would be two numbers
+// something like jexl.addFunction('bitwiseAnd',(a,b) => { return a&b })
+
+// dynamically add any functions needed in the jbrowse namespace
+// something like the following:
+// if window.JBrowseFunctions && isObject(window.JBrowseFunctions) foreach Object.entries(window.JBrowseFunctions) jexl.addFuntion(...)
+// { functionName: "function()...", ... }
+
+// export default a function that takes config and adds core functions, then adds the config functions and returns new jexl.Jexl() so they are isolated from each other
+// A reference to the Jexl constructor. To maintain separate instances of Jexl with each maintaining its own set of transforms, simply re-instantiate with new jexl.Jexl().
 export default jexl

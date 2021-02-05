@@ -64,16 +64,13 @@ export function readConfObject(
       // )
     }
     if (slot.func) {
-      if (typeof slot.func === 'object') {
-        // console.log('jexl', args)
-      }
       // console.log('nonjexl', args)
       const appliedFunc =
         typeof slot.func === 'function'
           ? slot.func.apply(null, args)
           : slot.func.evalSync(...args)
-      if (typeof slot.func === 'object')
-        console.log('appliedfunc', slot.func, appliedFunc)
+      // if (typeof slot.func === 'object')
+      //   console.log('appliedfunc', slot.func, appliedFunc)
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }

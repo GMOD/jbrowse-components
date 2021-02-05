@@ -1,5 +1,5 @@
 import { useDebounce } from '@jbrowse/core/util'
-import { stringToFunction } from '@jbrowse/core/util/functionStrings'
+import { stringToJexlExpression } from '@jbrowse/core/util/functionStrings'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'
@@ -44,8 +44,11 @@ function CallbackEditor({ slot }) {
 
   useEffect(() => {
     try {
-      stringToFunction(debouncedCode)
-      slot.set(debouncedCode) // slot.set `jexl:${debouncedCode}`
+      const jexlDebouncedCode = debouncedCode.startsWith('jexl:')
+        ? debouncedCode
+        : `jexl:${debouncedCode}`
+      stringToJexlExpression(jexlDebouncedCode)
+      slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
     } catch (e) {
       setCodeError(e)
@@ -61,13 +64,13 @@ function CallbackEditor({ slot }) {
       </InputLabel>
       <Editor
         className={classes.callbackEditor}
-        value={code}
+        value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
         onValueChange={newCode => {
           setCode(newCode)
         }}
         highlight={newCode => (
           <SyntaxHighlighter
-            language="javascript" // maybe get rid of this
+            language="html" // maybe get rid of this
             style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
             className={classes.syntaxHighlighter}
             // override some inline style stuff that's higher specificity
