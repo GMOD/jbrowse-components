@@ -16,7 +16,8 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       type: 'string',
       description: 'what to do when clicked',
       defaultValue: `function(feature) {
-      alert(feature.get('score'))
+      alert(feature.get('score'));
+      return false;
 }`,
       functionSignature: ['feature'],
     },
