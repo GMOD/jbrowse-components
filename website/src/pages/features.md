@@ -1,4 +1,4 @@
-# JBrowse 2 features
+# JBrowse 2 feature overview
 
 One of the biggest features of JBrowse 2 is the ability to have multiple views
 on the same screen, or to compose multiple views together (e.g. a synteny view
@@ -13,11 +13,11 @@ For more screenshots see the [gallery](./gallery)
 ## New view types
 
 JBrowse 2 supports creating new "view types" that can be shown alongside other
-views in the app. Importantly, plugins can also add new views, allowing for
-extensibility by third party devs. By default, JBrowse 2 includes these
-view types
+views in the app. Importantly, these can be added by third-party plugins.
 
-- Circos view - Used to show whole genome overview of chromosomal
+The view types available by default with JBrowse 2 web include
+
+- Circular view - Used to show whole genome overview of chromosomal
   translocations. The VCF breakend `<BND>` and `<TRA>` type features can be
   rendered as arcs across the view
 
@@ -31,10 +31,10 @@ view types
 - Linear synteny view - Another option for exploration of syntenic alignments
   using stacked linear genome views
 
-- Spreadsheet-like view - Open formats like BED, VCF, CSV, TSV, or even bespoke
-  formats like STAR-fusion in the spreadsheet view
+- Tabular view - Open formats like BED, VCF, CSV, TSV, or even bespoke
+  formats like STAR-fusion in the tabular view
 
-## Feature comparison of JBrowse 2 vs JBrowse 1
+## Feature comparison
 
 | Feature                                                             | JBrowse 2               | JBrowse 1          |
 | ------------------------------------------------------------------- | ----------------------- | ------------------ |
@@ -47,51 +47,38 @@ view types
 | Can display multiple chromosomes in a single view                   | :heavy_check_mark:      | :x:                |
 | Sort read pileup in alignments tracks                               | :heavy_check_mark:      | :x:                |
 | Show soft clipping in alignments tracks                             | :heavy_check_mark:      | :x:                |
-| Built-in spreadsheet-like view for datasets                         | :heavy_check_mark:      | :x:                |
-| Can connect to UCSC track hubs                                      | :heavy_check_mark: [^1] | :x:                |
-| Can load plugins at run-time instead of build time                  | :heavy_check_mark: [^2] | :x:                |
-| Non-admin users can open tracks and share them with others          | :heavy_check_mark: [^3] | :x:                |
-| Re-usable NPM package                                               | :heavy_check_mark:      | :x:                |
+| Built-in tabular view for datasets                                  | :heavy_check_mark:      | :x:                |
+| Can open UCSC track hubs                                            | :heavy_check_mark: [^1] | :x:                |
+| Add and remove plugins without running scripts                      | :heavy_check_mark:      | :x:                |
+| Non-administrator users can open tracks and share them with others  | :heavy_check_mark:      | :x:                |
+| Embeddable in JavaScript projects using NPM                         | :heavy_check_mark: [^2] | :x:                |
+| Embeddable directly in React applications                           | :heavy_check_mark: [^2] | :x:                |
 | Name searching e.g. ability to type a gene name/ID to search for it | :x:                     | :heavy_check_mark: |
-| URL query params API e.g. specifying ?loc=chr1:1-100 in URL bar     | :x:                     | :heavy_check_mark: |
+| URL query API e.g. specifying ?loc=chr1:1-100 in URL bar            | :x:                     | :heavy_check_mark: |
 
-[^1] Requires that the trackhub host support CORS for the jbrowse-web, jbrowse-desktop does not require this however
+[^1] If using with JBrowse 2 web, requires that trackhub server be configured to allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
-[^2] This means using plugins does not require a rebuild of the app. Our config_demo.json exemplifies loading several plugins
+[^2] See [`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 
-[^3] These are so-called "session tracks" and can be shared via our URL sharing mechanism. Users can currently open tracks only from URLs and not local files on their computer as of writing.
+## Supported data formats
 
-## Data format support
+Here is a short list of data formats supported in core JBrowse 2. Plugins are available for additional data formats.
 
-Here is a short list of current data format support
-
-- CRAM/BAM
-- htsget protocol for BAM files
-- VCF (tabixed)
-- GFF3 (tabixed)
-- BED (tabixed)
+- CRAM
+- BAM
+- htsget
+- VCF (Tabix-indexed)
+- GFF3 (Tabix-indexed)
+- BED (Tabix-indexed)
 - BigBed
 - BigWig
-- JBrowse 1 NCList (backcompat)
-- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (spreadsheet formats)
+- JBrowse 1 nested containment lists (NCLists)
+- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
 - PAF (synteny/dotplot)
 - Indexed FASTA/BGZip indexed FASTA
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-## Embeddability
+## Integration and embedding
 
-JBrowse 1 has some notion of being embeddable but it is not ideal and it
-doesn't have very optimal routes for being packaged and re-used on NPM
-
-With JBrowse 2 we have some new concepts for embeddability. For example, we can
-install just the linear-genome-view and use it as a react component.
-
-The @jbrowse/react-linear-genome-view is specialized for certain use cases and
-is not hooked up to session sharing, URL params, or anything but instead is a
-simple React component
-
-See here for more details https://www.npmjs.com/package/@jbrowse/react-linear-genome-view
-
-Note that the entire jbrowse-web app that contains multiple views can't
-currently be installed via NPM though
+The JBrowse 2 platform and plugins are designed from the ground up to be modular and reusable. For example, individual JBrowse 2 views (e.g. linear, circular, tabular, etc) can be packaged to be embeddable in other web applications (as demonstrated by the [JB2 Linear genome view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view).

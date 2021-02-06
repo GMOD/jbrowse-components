@@ -10,6 +10,7 @@ import * as MUIStyles from '@material-ui/core/styles'
 
 // @material-ui components
 import * as MUICore from '@material-ui/core'
+import * as MUIUtils from '@material-ui/core/utils'
 import MUISvgIcon from '@material-ui/core/SvgIcon'
 import * as MUILab from '@material-ui/lab'
 import MUIBox from '@material-ui/core/Box'
@@ -88,6 +89,8 @@ const libs = {
   '@material-ui/core': MUICore,
   // special case so plugins can easily use @material-ui/icons; don't remove
   '@material-ui/core/SvgIcon': MUISvgIcon,
+  '@material-ui/core/utils': MUIUtils,
+  // end special case
   '@material-ui/lab': MUILab,
 
   // material-ui subcomponents, should get rid of these
