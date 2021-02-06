@@ -1,7 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 // material ui
@@ -32,7 +31,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState('')
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
   const hasError = Boolean(error)
