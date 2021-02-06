@@ -366,13 +366,14 @@ export const BaseLinearDisplay = types
         ...getParentRenderProps(self),
         displayModel: self,
         onFeatureClick(_: unknown, featureId: string | undefined) {
-          console.log('Here')
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
           } else {
             const feature = self.features.get(f)
-            const result = getConf(self, 'onClick', [feature])
+            const view = getContainingView(self) as LinearGenomeViewModel
+            console.log('Here', view)
+            const result = getConf(self, 'onClick2', [feature, view])
             if (result !== false) {
               self.selectFeature(feature as Feature)
             }
