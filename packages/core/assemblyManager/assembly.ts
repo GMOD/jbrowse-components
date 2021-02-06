@@ -155,8 +155,13 @@ export default function assemblyFactory(
       get name(): string {
         return readConfObject(self.configuration, 'name')
       },
+
       get aliases(): string[] {
         return readConfObject(self.configuration, 'aliases')
+      },
+
+      get allAliases() {
+        return [this.name, ...this.aliases]
       },
       get refNames() {
         return self.regions && self.regions.map(region => region.refName)

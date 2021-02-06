@@ -2,6 +2,7 @@ import { types } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import intersect from 'array-intersection'
 
 export function generateHierarchy(trackConfigurations) {
   const hierarchy = new Map()
@@ -62,32 +63,21 @@ export default pluginManager =>
         if (!assembly) {
           return []
         }
-        const relevantTrackConfigurations = trackConfigurations.filter(
-          trackConf => {
-            const trackConfAssemblies = readConfObject(
-              trackConf,
-              'assemblyNames',
-            )
-            const { name, aliases } = assembly
-            const overlappingRefNames = [name, ...aliases].filter(refName =>
-              trackConfAssemblies.includes(refName),
-            )
-            if (!overlappingRefNames.length) {
-              return false
-            }
-            const viewType = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = viewType.displayTypes.map(
-              displayType => displayType.name,
-            )
-            for (const display of trackConf.displays) {
-              if (compatibleDisplays.includes(display.type)) {
-                return true
-              }
-            }
-            return false
-          },
-        )
-        return relevantTrackConfigurations
+
+        // filter out tracks that don't match the current assembly (check all
+        // assembly aliases) and display types
+        return trackConfigurations
+          .filter(conf => {
+            const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+            const { allAliases } = assembly
+            return intersect(allAliases, trackConfAssemblies).length > 0
+          })
+          .filter(conf => {
+            const { displayTypes } = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = displayTypes.map(display => display.name)
+            const trackDisplays = conf.displays.map(display => display.type)
+            return intersect(compatibleDisplays, trackDisplays).length > 0
+          })
       },
 
       getRefSeqTrackConf(assemblyName) {
