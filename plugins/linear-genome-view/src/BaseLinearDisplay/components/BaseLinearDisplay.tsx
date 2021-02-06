@@ -21,7 +21,7 @@ const Tooltip = observer(
     const { model, mouseCoord } = props
     const { featureUnderMouse } = model
     const mouseover = featureUnderMouse
-      ? getConf(model, 'mouseover', [{ feature: featureUnderMouse }])
+      ? getConf(model, 'mouseover', [featureUnderMouse])
       : undefined
     return mouseover ? (
       <MUITooltip title={mouseover} open placement="right">

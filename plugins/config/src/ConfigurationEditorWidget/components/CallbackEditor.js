@@ -3,14 +3,12 @@ import { stringToJexlExpression } from '@jbrowse/core/util/functionStrings'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import javascript from 'react-syntax-highlighter/dist/cjs/languages/hljs/javascript'
-import a11yDark from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-dark'
-import a11yLight from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-light'
 
 SyntaxHighlighter.registerLanguage('javascript', javascript)
 
@@ -36,7 +34,6 @@ const useStyles = makeStyles(theme => ({
 
 function CallbackEditor({ slot }) {
   const classes = useStyles()
-  const theme = useTheme()
 
   const [code, setCode] = useState(slot.value)
   const [error, setCodeError] = useState()
@@ -68,18 +65,19 @@ function CallbackEditor({ slot }) {
         onValueChange={newCode => {
           setCode(newCode)
         }}
-        highlight={newCode => (
-          <SyntaxHighlighter
-            language="html" // maybe get rid of this
-            style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
-            className={classes.syntaxHighlighter}
-            // override some inline style stuff that's higher specificity
-            // than className
-            customStyle={{ background: 'none', padding: 0 }}
-          >
-            {newCode}
-          </SyntaxHighlighter>
-        )}
+        highlight={newCode =>
+          // <SyntaxHighlighter
+          //   language="html"
+          //   style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
+          //   className={classes.syntaxHighlighter}
+          //   // override some inline style stuff that's higher specificity
+          //   // than className
+          //   customStyle={{ background: 'none', padding: 0 }}
+          // >
+          //   {newCode}
+          // </SyntaxHighlighter>
+          newCode
+        }
         padding={10}
         style={{ background: error ? '#fdd' : undefined }}
       />

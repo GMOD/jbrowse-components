@@ -25,10 +25,7 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  readSessionFromDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -267,12 +264,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {

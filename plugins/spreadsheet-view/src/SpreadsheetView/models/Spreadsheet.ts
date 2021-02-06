@@ -32,8 +32,8 @@ export default (pluginManager: PluginManager) => {
     .views(self => ({
       get func() {
         if (self.isDerived) {
-          // compile this as a function
-          return stringToJexlExpression(String(self.derivationFunctionText)) // TODOJEXL make sure this works too
+          // compile this as a jexl expression
+          return stringToJexlExpression(String(self.derivationFunctionText))
         }
         return undefined
       },

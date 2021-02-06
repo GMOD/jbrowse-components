@@ -38,9 +38,7 @@ const Tooltip = ({
     return () => clearTimeout(handle)
   })
   if (feature && shown) {
-    const text = readConfObject(configuration, 'mouseover', [
-      { feature, data: 'name' },
-    ])
+    const text = readConfObject(configuration, 'mouseover', [feature])
     return (
       <div
         className={classes.hoverLabel}

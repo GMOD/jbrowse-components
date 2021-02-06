@@ -36,8 +36,6 @@ export default ConfigurationSchema(
         type: 'string',
         description:
           'the primary name of the feature to show, if space is available',
-        // defaultValue:
-        //   "function(feature) { return feature.get('name') || feature.get('id') }",
         defaultValue: `jexl:getFeatureData(feature, 'name') || getFeatureData(feature, 'id')`,
         functionSignature: ['feature'],
       },
@@ -50,8 +48,6 @@ export default ConfigurationSchema(
       description: {
         type: 'string',
         description: 'the text description to show, if space is available',
-        // defaultValue:
-        //   "function(feature) { return feature.get('note') || feature.get('description') }",
         defaultValue: `jexl:getFeatureData(feature, 'note') || getFeatureData(feature, 'description')`,
         functionSignature: ['feature'],
       },

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
-import { stringToJexlExpression, functionRegexp } from '../util/functionStrings'
+import { stringToJexlExpression } from '../util/functionStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../util/types/mst'
 
@@ -126,10 +126,14 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
   }),
 }
 
-const FunctionStringType = types.refinement(
-  'FunctionString',
-  types.string,
-  str => functionRegexp.test(str) || str.startsWith('jexl:'), // TODOJEXL remove first part
+// const FunctionStringType = types.refinement(
+//   'FunctionString',
+//   types.string,
+//   str => functionRegexp.test(str),
+// )
+
+const JexlStringType = types.refinement('JexlString', types.string, str =>
+  str.startsWith('jexl:'),
 )
 
 export interface ConfigSlotDefinition {
@@ -142,10 +146,6 @@ export interface ConfigSlotDefinition {
   defaultValue: any
   /** parameter names of the function callback */
   functionSignature?: string[]
-}
-
-interface JexlExpression extends Function {
-  _exprStr?: string
 }
 
 /**
@@ -184,10 +184,7 @@ export default function ConfigSlot(
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
-      value: types.optional(
-        types.union(FunctionStringType, model),
-        defaultValue,
-      ),
+      value: types.optional(types.union(JexlStringType, model), defaultValue),
     })
     .volatile(() => ({
       functionSignature,
@@ -201,12 +198,22 @@ export default function ConfigSlot(
       get func() {
         if (self.isCallback) {
           // compile as jexl function
-          return stringToJexlExpression(String(self.value), {
+          const jexlExpr = stringToJexlExpression(String(self.value), {
             verifyFunctionSignature: inDevelopment
               ? functionSignature
               : undefined,
           })
+          return (...args: any[]) => {
+            const evalContext: Record<string, any> = {}
+            self.functionSignature.forEach(
+              (signature: string, index: number) => {
+                evalContext[signature] = args[index]
+              },
+            )
+            return jexlExpr.evalSync(evalContext)
+          }
         }
+
         return () => self.value
       },
 
@@ -263,21 +270,19 @@ export default function ConfigSlot(
         if (!self.isCallback) return
         // try calling it with no arguments
         try {
-          const funcResult: JexlExpression = self.func
-          // TODOJEXL fix this, find better way to access expression stirng
-          // eslint-disable-next-line no-underscore-dangle
-          const funcResultStr = funcResult._exprStr
-          if (funcResultStr !== undefined) {
-            self.value = funcResultStr
+          const funcResult = self.func()
+          if (funcResult !== undefined) {
+            self.value = funcResult
             return
           }
         } catch (e) {
-          console.log(e)
           /* ignore */
         }
         self.value = defaultValue
         // if it is still a callback (happens if the defaultValue is a callback),
         // then use the last-resort fallback default
+
+        // if defaultValue has jexl: string, run this part
         if (self.isCallback) {
           if (!(type in fallbackDefaults)) {
             throw new Error(`no fallbackDefault defined for type ${type}`)

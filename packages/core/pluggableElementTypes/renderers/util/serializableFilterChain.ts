@@ -16,7 +16,7 @@ export default class SerializableFilterChain {
   constructor({ filters = [] }: { filters: SerializedFilterChain }) {
     this.filterChain = filters.map(inputFilter => {
       if (typeof inputFilter === 'string') {
-        const func = stringToJexlExpression(inputFilter) as FilterFunction // TODOJEXL make sure this works
+        const func = stringToJexlExpression(inputFilter) as FilterFunction
         return { func, string: inputFilter }
       }
       throw new Error(`invalid inputFilter string "${inputFilter}"`)
@@ -27,10 +27,8 @@ export default class SerializableFilterChain {
   passes(...args: any[]) {
     for (let i = 0; i < this.filterChain.length; i += 1) {
       if (
-        typeof this.filterChain[i].func === 'function'
-          ? !this.filterChain[i].func.apply(this, args)
-          : // @ts-ignore
-            !this.filterChain[i].func.evalSync({ feature: args[0] }) // TODOJEXL: at some point feature becomes undefined when passed
+        // @ts-ignore
+        !this.filterChain[i].func.evalSync({ feature: args[0] })
       )
         return false
     }

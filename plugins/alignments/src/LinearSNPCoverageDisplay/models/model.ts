@@ -84,35 +84,17 @@ const stateModelFactory = (
         if (self.filterBy) {
           const { flagInclude, flagExclude } = self.filterBy
           filters = [
-            // `function(f) {
-            //     const flags = f.get('');
-            //     if(f.get('snpinfo')) return true
-            //     return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
-            //   }`,
-            `jexl:getFeatureData(feature, 'snpinfo') != undefined ? true : (bitwiseAnd(getFeatureData(feature, 'flags'),${flagInclude})==${flagInclude}) && !(bitwiseAnd(getFeatureData(feature, 'flags'),${flagExclude}))`,
+            `jexl:getFeatureData(feature, 'snpinfo') != undefined ? true : ((getFeatureData(feature, 'flags')&${flagInclude})==${flagInclude}) && !(getFeatureData(feature, 'flags')&${flagExclude})`,
           ]
 
           if (self.filterBy.tagFilter) {
             const { tag, value } = self.filterBy.tagFilter
-            // use eqeq instead of eqeqeq for number vs string comparison
-            // filters.push(`function(f) {
-            //   const tags = f.get('tags');
-            //   if(f.get('snpinfo')) return true
-            //   const val = tags ? tags["${tag}"]:f.get("${tag}")
-            //   return "${value}"==='*'? val !== undefined :val == "${value}";
-            //   }`)
             filters.push(
-              `jexl:getFeatureData(feature, 'snpinfo') ? true : "${value}" =='*'?(getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) != undefined:(getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) == "${value}")`,
+              `jexl:getFeatureData(feature, 'snpinfo') ? true : "${value}" =='*' ? (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) != undefined : (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) == "${value}")`,
             )
           }
           if (self.filterBy.readName) {
             const { readName } = self.filterBy
-
-            // filters.push(`function(f) {
-            //   const name = f.get('name')
-            //   if(f.get('snpinfo')) return true
-            //   return name == "${readName}"
-            //   }`)
             filters.push(
               `jexl:getFeatureData(feature, 'snpinfo') ? true : getFeatureData(feature, 'name') == "${readName}"`,
             )

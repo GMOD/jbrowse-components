@@ -22,7 +22,9 @@ import { makeStyles } from '@material-ui/core/styles'
 import SvgIcon from '@material-ui/core/SvgIcon'
 import TextField from '@material-ui/core/TextField'
 import DeleteIcon from '@material-ui/icons/Delete'
+import HelpIcon from '@material-ui/icons/Help'
 import AddIcon from '@material-ui/icons/Add'
+import Tooltip from '@material-ui/core/Tooltip'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import { observer } from 'mobx-react'
 import { getPropertyMembers } from 'mobx-state-tree'
@@ -398,6 +400,27 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
         <ValueComponent slot={slot} slotSchema={slotSchema} />
+        {slot.isCallback && (
+          <Tooltip
+            title="Callbacks are written in Jexl format. Click to learn more"
+            arrow
+            placement="right"
+          >
+            <IconButton
+              color="primary"
+              onClick={() => {
+                const newWindow = window.open(
+                  'https://github.com/TomFrost/Jexl',
+                  '_blank',
+                  'noopener,noreferrer',
+                )
+                if (newWindow) newWindow.opener = null
+              }}
+            >
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
+        )}
       </div>
       <div className={classes.slotModeSwitch}>
         {slot.functionSignature.length ? (

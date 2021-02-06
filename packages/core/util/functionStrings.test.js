@@ -1,5 +1,6 @@
 import { stringToJexlExpression, functionRegexp } from './functionStrings'
 
+// TODOJEXL fix this test
 describe('function string parsing', () => {
   it('has working regex', () => {
     const result = functionRegexp.exec('function(a,b,c) { return a+b+c+5}')

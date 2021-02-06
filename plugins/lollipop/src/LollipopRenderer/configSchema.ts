@@ -24,16 +24,6 @@ export default ConfigurationSchema(
     radius: {
       type: 'number',
       description: 'radius in pixels of each lollipop body',
-      //       defaultValue: `
-      // function(feature) {
-      //   // this default function makes the
-      //   // area of each head be 10 times
-      //   // the feature score
-      //   const area = feature.get('score')*10
-      //   const radius = Math.sqrt(area/3.14)
-      //   return Math.max(3,radius)
-      // }
-      // `,
       defaultValue: `jexl:Math.max(3, Math.sqrt((getFeatureData(feature, 'score')*10)/3.14))`,
       functionSignature: ['feature'],
     },
@@ -41,11 +31,6 @@ export default ConfigurationSchema(
       type: 'string',
       description:
         'the tooltip caption displayed when the mouse hovers over a lollipop',
-      //       defaultValue: `
-      // function(feature) {
-      //   return feature.get('name')
-      // }
-      //       `,
       defaultValue: `jexl:getFeatureData(feature, 'name')`,
       functionSignature: ['feature'],
     },
@@ -70,11 +55,6 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'the "score" of each lollipop, displayed as a number in the center of the circle',
-      //       defaultValue: `
-      // function(feature) {
-      //   return feature.get('score')
-      // }
-      //       `,
       defaultValue: `jexl:getFeatureData(feature, 'score')`,
       functionSignature: ['feature'],
     },
