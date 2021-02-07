@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
+import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 // material ui
@@ -43,9 +44,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     ;(async () => {
       if (assemblyName) {
         const assembly = await assemblyManager.waitForAssembly(assemblyName)
-        if (!done && assembly && assembly.regions) {
-          setSelectedRegion(assembly.regions[0].refName)
-          setAssemblyRegions(assembly.regions)
+        if (assembly && assembly.regions) {
+          const regions = getSnapshot(assembly.regions)
+          if (!done && regions) {
+            setSelectedRegion(regions[0].refName)
+            setAssemblyRegions(regions)
+          }
         }
       }
     })()
