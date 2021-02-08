@@ -160,6 +160,10 @@ export default function assemblyFactory(
         return readConfObject(self.configuration, 'aliases')
       },
 
+      hasName(name: string) {
+        return this.name === name || this.aliases.includes(name)
+      },
+
       get allAliases() {
         return [this.name, ...this.aliases]
       },
