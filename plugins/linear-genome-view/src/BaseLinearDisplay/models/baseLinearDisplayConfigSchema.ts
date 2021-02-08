@@ -12,14 +12,13 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       functionSignature: ['feature'],
     },
 
-    onClick2: {
+    onClick: {
       type: 'string',
       description: 'what to do when clicked',
-      defaultValue: `function(feature, view) {
-      view.navToLocString('ctgA:1-19')
-      return false;
+      defaultValue: `function(feature) {
+      return feature;
 }`,
-      functionSignature: ['feature', 'view'],
+      functionSignature: ['feature'],
     },
     maxDisplayedBpPerPx: {
       type: 'number',

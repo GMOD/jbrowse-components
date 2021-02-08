@@ -372,8 +372,7 @@ export const BaseLinearDisplay = types
           } else {
             const feature = self.features.get(f)
             const view = getContainingView(self) as LinearGenomeViewModel
-            console.log('Here', view)
-            const result = getConf(self, 'onClick2', [feature, view])
+            const result = getConf(self, 'onFeatureClick', [feature])
             if (result !== false) {
               self.selectFeature(feature as Feature)
             }
