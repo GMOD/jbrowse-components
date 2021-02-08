@@ -12,7 +12,7 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       functionSignature: ['feature'],
     },
 
-    onClick: {
+    onFeatureClick: {
       type: 'string',
       description: 'what to do when clicked',
       defaultValue: `function(feature) {
