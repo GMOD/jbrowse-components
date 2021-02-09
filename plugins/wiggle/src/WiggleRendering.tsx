@@ -13,6 +13,7 @@ function WiggleRendering(props: {
   height: number
   onMouseLeave: Function
   onMouseMove: Function
+  onFeatureClick: Function
 }) {
   const {
     regions,
