@@ -504,16 +504,16 @@ Example VcfTabixAdapter adapter config
 }
 ```
 
-### WiggleTrack config
+### QuantitativeTrack config
 
-Example WiggleTrack config
+Example QuantitativeTrack config
 
 ```json
 {
   "trackId": "my_wiggle_track",
   "name": "My Wiggle Track",
   "assemblyNames": ["hg19"],
-  "type": "WiggleTrack",
+  "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWig",
     "bigWigLocation": { "uri": "http://yourhost/file.bw" }
@@ -521,12 +521,12 @@ Example WiggleTrack config
 }
 ```
 
-#### General WiggleTrack options
+#### General QuantitativeTrack options
 
 - scaleType - options: linear, log, to display the coverage data. default: linear
 - adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
 
-#### Autoscale options for WiggleTrack
+#### Autoscale options for QuantitativeTrack
 
 Options for autoscale
 
@@ -535,7 +535,7 @@ Options for autoscale
 - localsd - mean value +- N stddevs of what is visible on screen
 - globalsd - mean value +/- N stddevs of everything in the dataset
 
-#### Score min/max for WiggleTrack
+#### Score min/max for QuantitativeTrack
 
 These options overrides the autoscale options and provides a minimum or maximum
 value for the autoscale bar
@@ -543,13 +543,13 @@ value for the autoscale bar
 - minScore
 - maxScore
 
-#### WiggleTrack drawing options
+#### QuantitativeTrack drawing options
 
 - inverted - draws upside down
 - defaultRendering - can be density, xyplot, or line
 - summaryScoreMode - options: min, max, whiskers
 
-#### WiggleTrack renderer options
+#### QuantitativeTrack renderer options
 
 - filled - fills in the XYPlot histogram
 - bicolorPivot - options: numeric, mean, none. default: numeric
