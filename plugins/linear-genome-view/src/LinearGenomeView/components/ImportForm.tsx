@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot, Instance } from 'mobx-state-tree'
+import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types/mst'
+import { Region } from '@jbrowse/core/util/types'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -25,26 +25,32 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
+type LGV = LinearGenomeViewModel
+
+const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
-  const [selectedRegion, setSelectedRegion] = useState<string>()
-  const [assemblyRegions, setAssemblyRegions] = useState<
-    Instance<typeof Region>[]
-  >([])
+  const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
+  const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
   const error = !assemblyNames.length ? 'No configured assemblies' : ''
+  const hasError = Boolean(error)
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
 
   useEffect(() => {
     let done = false
     ;(async () => {
-      const assembly = await assemblyManager.waitForAssembly(assemblyName)
-      if (!done && assembly && assembly.regions) {
-        setSelectedRegion(assembly.regions[0].refName)
-        setAssemblyRegions(assembly.regions)
+      if (assemblyName) {
+        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+        if (assembly && assembly.regions) {
+          const regions = getSnapshot(assembly.regions)
+          if (!done && regions) {
+            setSelectedRegion(regions[0].refName)
+            setAssemblyRegions(regions)
+          }
+        }
       }
     })()
     return () => {
@@ -52,18 +58,10 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
     }
   }, [assemblyManager, assemblyName])
 
-  function onAssemblyChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) {
-    setSelectedAssemblyIdx(Number(event.target.value))
-  }
-
   function handleSelectedRegion(input: string) {
-    const newRegion: Instance<typeof Region> | undefined = assemblyRegions.find(
-      region => selectedRegion === region.refName,
-    )
+    const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
-      model.setDisplayedRegions([getSnapshot(newRegion)])
+      model.setDisplayedRegions([newRegion])
     } else {
       try {
         input && model.navToLocString(input, assemblyName)
@@ -71,12 +69,6 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
         console.warn(e)
         session.notify(`${e}`, 'warning')
       }
-    }
-  }
-
-  function onOpenClick() {
-    if (selectedRegion) {
-      handleSelectedRegion(selectedRegion)
     }
   }
 
@@ -88,11 +80,13 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
             select
             variant="outlined"
             value={displayName}
-            onChange={onAssemblyChange}
+            onChange={event => {
+              setSelectedAssemblyIdx(Number(event.target.value))
+            }}
             label="Assembly"
             helperText={error || 'Select assembly to view'}
-            error={!!error}
-            disabled={!!error}
+            error={hasError}
+            disabled={hasError}
             margin="normal"
             className={classes.importFormEntry}
           >
@@ -142,7 +136,11 @@ const ImportForm = observer(({ model }: { model: LinearGenomeViewModel }) => {
         <Grid item>
           <Button
             disabled={!selectedRegion}
-            onClick={onOpenClick}
+            onClick={() => {
+              if (selectedRegion) {
+                handleSelectedRegion(selectedRegion)
+              }
+            }}
             variant="contained"
             color="primary"
           >
