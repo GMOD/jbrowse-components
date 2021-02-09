@@ -220,10 +220,10 @@ export class PonyfillOffscreenCanvas {
             key={index}
             fill={hex}
             fillOpacity={opacity !== 1 ? opacity : undefined}
-            x={x}
-            y={y}
-            width={w}
-            height={h}
+            x={x.toFixed(3)}
+            y={y.toFixed(3)}
+            width={w.toFixed(3)}
+            height={h.toFixed(3)}
           />,
         )
       }
