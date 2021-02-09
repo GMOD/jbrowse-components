@@ -107,9 +107,7 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get assembly() {
-        return (
-          self.altAssemblyName || self.view.displayedRegions[0].assemblyName
-        )
+        return self.altAssemblyName
       },
 
       get trackType() {

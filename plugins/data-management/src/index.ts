@@ -88,12 +88,12 @@ export default class extends Plugin {
           if (session.views.length === 0) {
             session.notify('Please open a view to add a track first')
           } else if (session.views.length >= 1) {
-            const assemblyInitialized =
-              session.views[0]?.assemblyNames ||
-              session.views[0]?.displayedRegions ||
-              session.views[0]?.assemblyName ||
-              []
-            if (assemblyInitialized.length > 0) {
+            // TODO: universal way of knowing wether view is initialized or not
+            const assemblyInitialized = session.views[0]?.displayedRegions || []
+            if (
+              assemblyInitialized.length > 0 ||
+              session.views[0].initialized
+            ) {
               const widget = session.addWidget(
                 'AddTrackWidget',
                 'addTrackWidget',
