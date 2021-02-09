@@ -5,7 +5,7 @@ import {
   JBrowseLinearGenomeView,
   ThemeProvider,
 } from '../src'
-import nextstrainConfig from '../public/test_data/nextstrain_covid.json'
+import nextstrainConfig from '../public/nextstrain_covid.json'
 
 export default {
   title: 'Nextstrain View',
