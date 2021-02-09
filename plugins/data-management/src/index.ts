@@ -88,25 +88,16 @@ export default class extends Plugin {
           if (session.views.length === 0) {
             session.notify('Please open a view to add a track first')
           } else if (session.views.length >= 1) {
-            // TODO: universal way of knowing wether view is initialized or not
-            const assemblyInitialized = session.views[0]?.displayedRegions || []
-            if (
-              assemblyInitialized.length > 0 ||
-              session.views[0].initialized
-            ) {
-              const widget = session.addWidget(
-                'AddTrackWidget',
-                'addTrackWidget',
-                { view: session.views[0].id },
+            const widget = session.addWidget(
+              'AddTrackWidget',
+              'addTrackWidget',
+              { view: session.views[0].id },
+            )
+            session.showWidget(widget)
+            if (session.views.length > 1) {
+              session.notify(
+                `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
               )
-              session.showWidget(widget)
-              if (session.views.length > 1) {
-                session.notify(
-                  `This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right`,
-                )
-              }
-            } else {
-              session.notify(`Please open a view to add a track first`)
             }
           }
         },

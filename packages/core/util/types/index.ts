@@ -117,8 +117,6 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
-  displayedRegions?: Region[]
-  initialized?: boolean
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (
