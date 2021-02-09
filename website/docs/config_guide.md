@@ -601,7 +601,7 @@ jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
     grape,peach --load copy --out /var/www/html/jbrowse2
 ```
 
-### Advanced Adapters
+### Advanced adapters
 
 There are two useful adapter types that can be used for more advanced use cases, such as generating configuration for data returned by an API. These are the FromConfigAdapter and FromConfigSequenceAdapter. They can be used as the `adapter` value for any track type.
 
