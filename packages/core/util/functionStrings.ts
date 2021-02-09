@@ -34,7 +34,7 @@ export function stringToJexlExpression(
   if (!compilationCache[cacheKey]) {
     const match = str.startsWith('jexl:')
     if (!match) {
-      throw new Error('string does not appear to be a function declaration')
+      throw new Error('string does not appear to be in jexl format')
     }
     const code = str.split('jexl:')[1]
     const compiled = createJexlInstance().createExpression(`${code}`)

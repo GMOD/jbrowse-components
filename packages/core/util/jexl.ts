@@ -27,6 +27,22 @@ import { Feature } from './simpleFeature'
 jexl.addFunction('getFeatureData', (feature: Feature, data: string) => {
   return feature.get(data)
 })
+// ask if feature.get(id) is same as feature.id()
+jexl.addFunction('getFeatureId', (feature: Feature) => {
+  return feature.id()
+})
+jexl.addFunction(
+  'switchCase',
+  (cases: string[], toReturn: string[], matchingCase: string) => {
+    // cases.forEach((case, idx) => {
+    //   if(case === matchingCase) return toReturn[index]
+    // })
+    for (let i = 0; i < cases.length; i++) {
+      if (cases[i] === matchingCase) return toReturn[i]
+    }
+    return toReturn[toReturn.length - 1]
+  },
+)
 // eslint-disable-next-line no-bitwise
 jexl.addBinaryOp('&', 15, (a: number, b: number) => a & b)
 

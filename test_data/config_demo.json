@@ -155,7 +155,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:getFeatureData(feature, 'gene_name')"
             }
           }
         }
@@ -256,9 +256,9 @@
           "type": "LinearGDCDisplay",
           "displayId": "gdc_plugin_track_linear",
           "renderer": {
-            "color1": "function(feature) { const filteredConsequences = feature.get('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical); const impact = filteredConsequences[0].node.transcript.annotation.vep_impact; switch(impact) {case 'LOW': return 'blue'; break;case 'MODIFIER': return 'goldenrod'; break;case 'MODERATE': return 'orange'; break;case 'HIGH': return 'red'; break;case '': return 'lightgrey'; break;}}",
+            "color1": "jexl:switchCase(['LOW', 'MODIFIER', 'MODERATE', 'HIGH', ''], ['blue', 'goldenrod', 'orange', 'red', 'lightgrey'], getFeatureData('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical)[0].node.transcript.annotation.vep_impact",
             "labels": {
-              "name": "function(feature) { return feature.get('genomicDnaChange') }"
+              "name": "jexl:getFeatureData(feature, 'genomicDnaChange')"
             },
             "type": "SvgFeatureRenderer"
           }
@@ -374,7 +374,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:getFeatureData(feature, 'gene_name')"
             }
           }
         }
@@ -425,7 +425,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('geneName2') }"
+              "description": "jexl:getFeatureData(feature, 'geneName2')"
             }
           }
         }
