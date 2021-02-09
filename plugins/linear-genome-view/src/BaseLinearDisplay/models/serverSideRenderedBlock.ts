@@ -189,8 +189,9 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       let matchFound = false
       assemblyNames.forEach((assemblyName: string) => {
         const assembly = assemblyManager.get(assemblyName)
-        if (assembly && assembly.aliases.includes(self.region.assemblyName))
+        if (assembly && assembly.hasName(assemblyName)) {
           matchFound = true
+        }
       })
       if (!matchFound) {
         cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
