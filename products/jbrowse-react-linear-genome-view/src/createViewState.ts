@@ -58,29 +58,41 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    autorun(reaction => {
-      if (
-        stateTree.assemblyManager.allPossibleRefNames &&
-        stateTree.assemblyManager.allPossibleRefNames.length
-      ) {
-        if (stateTree.session.view.initialized) {
-          if (!stateTree.session.view.displayedRegions.length) {
-            const assemblyState = stateTree.assemblyManager.assemblies[0]
-            const region =
-              assemblyState && assemblyState.regions && assemblyState.regions[0]
-            if (region) {
-              stateTree.session.view.setDisplayedRegions([getSnapshot(region)])
+    autorun(
+      reaction => {
+        if (
+          stateTree.assemblyManager.allPossibleRefNames &&
+          stateTree.assemblyManager.allPossibleRefNames.length
+        ) {
+          if (stateTree.session.view.initialized) {
+            if (!stateTree.session.view.displayedRegions.length) {
+              const assemblyState = stateTree.assemblyManager.assemblies[0]
+              const region =
+                assemblyState &&
+                assemblyState.regions &&
+                assemblyState.regions[0]
+              if (region) {
+                stateTree.session.view.setDisplayedRegions([
+                  getSnapshot(region),
+                ])
+              }
             }
+            if (typeof location === 'string') {
+              stateTree.session.view.navToLocString(location)
+            } else {
+              stateTree.session.view.navTo(location)
+            }
+            reaction.dispose()
           }
-          if (typeof location === 'string') {
-            stateTree.session.view.navToLocString(location)
-          } else {
-            stateTree.session.view.navTo(location)
-          }
-          reaction.dispose()
         }
-      }
-    })
+      },
+      {
+        onError: error => {
+          console.error(error)
+          stateTree.session.view.setError(error)
+        },
+      },
+    )
   }
   if (onChange) {
     onPatch(stateTree, onChange)
