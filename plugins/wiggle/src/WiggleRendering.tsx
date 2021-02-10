@@ -31,6 +31,7 @@ function WiggleRendering(props: {
   return (
     <div
       ref={ref}
+      data-testid="wiggle-rendering-test"
       onMouseMove={event => {
         let offset = 0
         if (ref.current) {

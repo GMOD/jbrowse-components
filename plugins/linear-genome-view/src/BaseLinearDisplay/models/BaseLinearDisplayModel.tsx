@@ -371,7 +371,6 @@ export const BaseLinearDisplay = types
             self.clearFeatureSelection()
           } else {
             const feature = self.features.get(f)
-            const view = getContainingView(self) as LinearGenomeViewModel
             const result = getConf(self, 'onFeatureClick', [feature])
             if (result !== false) {
               self.selectFeature(feature as Feature)
