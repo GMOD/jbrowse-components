@@ -2,7 +2,6 @@
 import { stringToJexlExpression } from './functionStrings'
 import SimpleFeature from './simpleFeature'
 
-// TODOJEXL fix this test
 describe('function string parsing', () => {
   it('can detect a jexl expression', () => {
     const str = 'jexl:a+b+c+5'

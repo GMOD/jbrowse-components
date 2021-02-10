@@ -86,7 +86,7 @@ export class ProteinWidget {
             renderer: {
               type: 'SvgFeatureRenderer',
               color1: `
-              jexl:['red','green','blue','cyan','magenta','black'][getFeatureData(feature, 'type').split('').map(c => c.charCodeAt(0)).reduct((a,b) => a+b, 0) % 6]`,
+              jexl:['red','green','blue','cyan','magenta','black'][getFeatureData(feature, 'type').split('').map(c => c.charCodeAt(0)).reduce((a,b) => a+b, 0) % 6]`,
               labels: {
                 description: "jexl:getFeatureData(feature, 'type')",
               },

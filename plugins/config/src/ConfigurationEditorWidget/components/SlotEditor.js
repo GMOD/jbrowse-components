@@ -404,7 +404,6 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
           <Tooltip
             title="Callbacks are written in Jexl format. Click to learn more"
             arrow
-            placement="right"
           >
             <IconButton
               color="primary"

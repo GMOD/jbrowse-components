@@ -256,7 +256,7 @@
           "type": "LinearGDCDisplay",
           "displayId": "gdc_plugin_track_linear",
           "renderer": {
-            "color1": "jexl:switchCase(['LOW', 'MODIFIER', 'MODERATE', 'HIGH', ''], ['blue', 'goldenrod', 'orange', 'red', 'lightgrey'], getFeatureData('consequence').hits.edges.filter(cons => cons.node.transcript.is_canonical)[0].node.transcript.annotation.vep_impact",
+            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[getFeatureData(feature, 'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
             "labels": {
               "name": "jexl:getFeatureData(feature, 'genomicDnaChange')"
             },

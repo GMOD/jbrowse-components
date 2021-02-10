@@ -264,7 +264,7 @@ export default function ConfigSlot(
       },
       convertToCallback() {
         if (self.isCallback) return
-        self.value = `jexl:${self.valueJSON}`
+        self.value = `jexl:${self.valueJSON || "''"}`
       },
       convertToValue() {
         if (!self.isCallback) return
