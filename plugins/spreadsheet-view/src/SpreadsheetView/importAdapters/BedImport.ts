@@ -2,6 +2,7 @@ import { ParseOptions, parseTsvBuffer } from './ImportUtils'
 
 const browserBytes = 'browser '.split('').map(c => c.charCodeAt(0))
 const trackBytes = 'track '.split('').map(c => c.charCodeAt(0))
+const commentBytes = '#'.split('').map(c => c.charCodeAt(0))
 
 function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
   let i = 0
@@ -11,12 +12,14 @@ function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
   return true
 }
 export function removeBedHeaders(buffer: Buffer) {
-  // slice off the first lines of the buffer if it starts with one or more header lines
+  // slice off the first lines of the buffer if it starts with one or more
+  // header lines
   let i = 0
   for (; i < buffer.length; i += 1) {
     if (
       bytesAreFoundAt(i, buffer, browserBytes) ||
-      bytesAreFoundAt(i, buffer, trackBytes)
+      bytesAreFoundAt(i, buffer, trackBytes) ||
+      bytesAreFoundAt(i, buffer, commentBytes)
     ) {
       // consume up to the next newline
       do {
@@ -68,7 +71,8 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
 }
 
 export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
-  const data = await parseTsvBuffer(buffer)
+  const b = removeBedHeaders(buffer)
+  const data = await parseTsvBuffer(b)
   interface BedColumn {
     name: string
     dataType: {
