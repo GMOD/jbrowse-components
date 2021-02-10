@@ -26,27 +26,13 @@ export default function assemblyManagerFactory(
     })
     .views(self => ({
       get(assemblyName: string) {
-        const canonicalName = this.aliasMap.get(assemblyName)
-        return self.assemblies.find(
-          assembly => assembly.name === (canonicalName || assemblyName),
-        )
+        return self.assemblies.find(assembly => assembly.hasName(assemblyName))
       },
 
       get assemblyList() {
         return getParent(self).jbrowse.assemblies.slice()
       },
 
-      get aliasMap() {
-        const aliases: Map<string, string> = new Map()
-        self.assemblies.forEach(assembly => {
-          if (assembly.aliases.length) {
-            assembly.aliases.forEach(assemblyAlias => {
-              aliases.set(assemblyAlias, assembly.name)
-            })
-          }
-        })
-        return aliases
-      },
       get rpcManager() {
         return getParent(self).rpcManager
       },
@@ -71,10 +57,7 @@ export default function assemblyManagerFactory(
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
-        const canonicalName = self.aliasMap.get(assemblyName)
-        const assembly = self.assemblies.find(
-          asm => asm.name === (canonicalName || assemblyName),
-        )
+        const assembly = self.get(assemblyName)
         if (assembly) {
           await when(() => Boolean(assembly.regions && assembly.refNameAliases))
           return assembly
