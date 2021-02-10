@@ -620,8 +620,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
-
-      navToLocString(locString: string) {
+      navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const locStrings = locString.split(';')
@@ -632,80 +631,71 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.navToMultiple(locations)
           return
         }
-        const displayedRegion = self.displayedRegions[0]
-        const { assemblyName } = displayedRegion
-        let assembly = assemblyManager.get(assemblyName)
+        let assemblyName = optAssemblyName
+        let defaultRefName = ''
+        if (self.displayedRegions.length !== 0) {
+          // defaults
+          assemblyName = self.displayedRegions[0].assemblyName
+          defaultRefName = self.displayedRegions[0].refName
+        }
+        let assembly = assemblyName && assemblyManager.get(assemblyName)
         if (!assembly) {
-          throw new Error(
-            `Could not find assembly ${displayedRegion.assemblyName}`,
-          )
+          throw new Error(`Could not find assembly ${assemblyName}`)
         }
         let { regions } = assembly
         if (!regions) {
+          throw new Error(`Regions for assembly ${assemblyName} not yet loaded`)
+        }
+        if (locStrings.length > 1) {
           throw new Error(
-            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+            'Navigating to multiple locations is not allowed when viewing a whole chromosome',
           )
         }
-        const matchedRegion = regions.find(
-          region =>
-            region.refName === displayedRegion.refName &&
-            region.start === displayedRegion.start &&
-            region.end === displayedRegion.end,
+        const parsedLocString = parseLocString(locStrings[0], refName =>
+          isValidRefName(refName, assemblyName),
         )
-        if (matchedRegion) {
-          if (locStrings.length > 1) {
+        let changedAssembly = false
+        if (
+          parsedLocString.assemblyName &&
+          parsedLocString.assemblyName !== assemblyName
+        ) {
+          const newAssembly = assemblyManager.get(parsedLocString.assemblyName)
+          if (!newAssembly) {
             throw new Error(
-              'Navigating to multiple locations is not allowed when viewing a whole chromosome',
+              `Could not find assembly ${parsedLocString.assemblyName}`,
             )
           }
-          const parsedLocString = parseLocString(locStrings[0], refName =>
-            isValidRefName(refName, assemblyName),
-          )
-          let changedAssembly = false
-          if (
-            parsedLocString.assemblyName &&
-            parsedLocString.assemblyName !== displayedRegion.assemblyName
-          ) {
-            const newAssembly = assemblyManager.get(
-              parsedLocString.assemblyName,
+          assembly = newAssembly
+          changedAssembly = true
+          const newRegions = newAssembly.regions
+          if (!newRegions) {
+            throw new Error(
+              `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
             )
-            if (!newAssembly) {
-              throw new Error(
-                `Could not find assembly ${parsedLocString.assemblyName}`,
-              )
-            }
-            assembly = newAssembly
-            changedAssembly = true
-            const newRegions = newAssembly.regions
-            if (!newRegions) {
-              throw new Error(
-                `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
-              )
-            }
-            regions = newRegions
           }
-          const canonicalRefName = assembly.getCanonicalRefName(
-            parsedLocString.refName,
+          regions = newRegions
+        }
+        const canonicalRefName = assembly.getCanonicalRefName(
+          parsedLocString.refName,
+        )
+        if (!canonicalRefName) {
+          throw new Error(
+            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
           )
-          if (!canonicalRefName) {
+        }
+        if (changedAssembly || canonicalRefName !== defaultRefName) {
+          const newDisplayedRegion = regions.find(
+            region => region.refName === canonicalRefName,
+          )
+          if (newDisplayedRegion) {
+            this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+          } else {
             throw new Error(
               `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
             )
           }
-          if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            const newDisplayedRegion = regions.find(
-              region => region.refName === canonicalRefName,
-            )
-            if (newDisplayedRegion) {
-              this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
-            } else {
-              throw new Error(
-                `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-              )
-            }
-          }
-          this.navTo(parsedLocString)
         }
+        this.navTo(parsedLocString)
       },
 
       /**

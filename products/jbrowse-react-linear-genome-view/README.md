@@ -16,7 +16,7 @@ import {
   createJBrowseTheme,
   JBrowseLinearGenomeView,
   ThemeProvider,
-} from '@jbrowse/react-linear-view'
+} from '@jbrowse/react-linear-genome-view'
 
 const theme = createJBrowseTheme()
 

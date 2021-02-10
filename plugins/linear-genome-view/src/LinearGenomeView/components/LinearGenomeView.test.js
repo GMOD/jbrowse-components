@@ -35,8 +35,11 @@ describe('<LinearGenomeView />', () => {
     const model = session.views[0]
     model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Open')
+    const openButton = await findByText('Open')
     expect(container.firstChild).toMatchSnapshot()
+    expect(model.displayedRegions.length).toEqual(0)
+    openButton.click()
+    expect(model.displayedRegions.length).toEqual(1)
   })
   it('renders one track, one region', async () => {
     const session = createTestSession()

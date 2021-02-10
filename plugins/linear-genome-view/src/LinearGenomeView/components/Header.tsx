@@ -1,4 +1,5 @@
 import { Region } from '@jbrowse/core/util/types'
+import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -96,16 +97,29 @@ function PanControls({ model }: { model: LGV }) {
 export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
+  const session = getSession(model)
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   const setDisplayedRegion = useCallback(
-    (region: Region | undefined) => {
-      if (region) {
-        model.setDisplayedRegions([region])
-        model.showAllRegions()
+    (newRegionValue: string | undefined) => {
+      if (newRegionValue) {
+        const newRegion: Region | undefined = model.displayedRegions.find(
+          region => newRegionValue === region.refName,
+        )
+        // navigate to region or if region not found try navigating to locstring
+        if (newRegion) {
+          model.setDisplayedRegions([newRegion])
+        } else {
+          try {
+            newRegionValue && model.navToLocString(newRegionValue)
+          } catch (e) {
+            console.warn(e)
+            session.notify(`${e}`, 'warning')
+          }
+        }
       }
     },
-    [model],
+    [model, session],
   )
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
