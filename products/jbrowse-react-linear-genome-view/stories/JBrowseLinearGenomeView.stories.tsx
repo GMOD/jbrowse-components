@@ -75,7 +75,7 @@ export const TwoLinearGenomeViews = () => {
     assembly,
     tracks,
     defaultSession,
-    location: 'ctgA:1105..1221',
+    location: { refName: 'ctgA', start: 1104, end: 1221 },
   })
   const state2 = createViewState({
     assembly,
