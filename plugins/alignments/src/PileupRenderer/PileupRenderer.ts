@@ -449,6 +449,8 @@ export default class PileupRenderer extends BoxRendererType {
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
 
+    // two pass rendering: first pass, draw all the mismatches except wide
+    // insertion markers
     for (let i = 0; i < mismatches.length; i += 1) {
       const mismatch = mismatches[i]
       const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
@@ -495,18 +497,6 @@ export default class PileupRenderer extends BoxRendererType {
               topPx + heightPx,
             )
           }
-        } else {
-          const txt = `${len}`
-          const rect = ctx.measureText(txt)
-          const padding = 5
-          ctx.fillRect(
-            mismatchLeftPx - rect.width / 2 - padding,
-            topPx,
-            rect.width + 2 * padding,
-            heightPx,
-          )
-          ctx.fillStyle = 'white'
-          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
@@ -530,6 +520,32 @@ export default class PileupRenderer extends BoxRendererType {
         }
         ctx.fillStyle = '#333'
         ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
+      }
+    }
+
+    // second pass, draw wide insertion markers on top
+    for (let i = 0; i < mismatches.length; i += 1) {
+      const mismatch = mismatches[i]
+      const [mismatchLeftPx] = bpSpanPx(
+        feature.get('start') + mismatch.start,
+        feature.get('start') + mismatch.start + mismatch.length,
+        region,
+        bpPerPx,
+      )
+      const len = +mismatch.base || mismatch.length
+      const txt = `${len}`
+      if (mismatch.type === 'insertion' && len >= 10) {
+        const rect = ctx.measureText(txt)
+        const padding = 5
+        ctx.fillStyle = 'purple'
+        ctx.fillRect(
+          mismatchLeftPx - rect.width / 2 - padding,
+          topPx,
+          rect.width + 2 * padding,
+          heightPx,
+        )
+        ctx.fillStyle = 'white'
+        ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
       }
     }
   }
