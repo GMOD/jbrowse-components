@@ -51,15 +51,7 @@ const stateModelFactory = (
         self.filterBy = cast(filter)
       },
     }))
-    .views(self => {
-      const selfDomain = self.domain
-      return {
-        get domain() {
-          const [min, max] = selfDomain
-          return [min, max + (max - min) / 10]
-        },
-      }
-    })
+
     .views(self => ({
       get TooltipComponent() {
         return Tooltip

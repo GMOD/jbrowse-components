@@ -12,7 +12,7 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'the proportion of reads containing a insertion/clip indicator',
-      defaultValue: 0.15,
+      defaultValue: 0.3,
     },
     drawInterbaseFuzz: {
       type: 'boolean',
