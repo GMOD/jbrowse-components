@@ -481,15 +481,26 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (mismatch.type === 'insertion') {
         ctx.fillStyle = 'purple'
         const pos = mismatchLeftPx - 1
-        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-        ctx.fillRect(pos - w, topPx, w * 3, 1)
-        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
-          ctx.fillText(
-            `(${mismatch.base})`,
-            mismatchLeftPx + 2,
-            topPx + heightPx,
-          )
+
+        const len = +mismatch.base || mismatch.length
+
+        if (len < 10) {
+          ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+          ctx.fillRect(pos - w, topPx, w * 3, 1)
+          ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+          if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
+            ctx.fillText(
+              `(${mismatch.base})`,
+              mismatchLeftPx + 2,
+              topPx + heightPx,
+            )
+          }
+        } else {
+          const txt = `(${len})`
+          const rect = ctx.measureText(txt)
+          ctx.fillRect(mismatchLeftPx - 2, topPx, rect.width + 4, heightPx)
+          ctx.fillStyle = 'white'
+          ctx.fillText(txt, mismatchLeftPx, topPx + heightPx)
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
