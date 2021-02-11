@@ -496,11 +496,17 @@ export default class PileupRenderer extends BoxRendererType {
             )
           }
         } else {
-          const txt = `(${len})`
+          const txt = `${len}`
           const rect = ctx.measureText(txt)
-          ctx.fillRect(mismatchLeftPx - 2, topPx, rect.width + 4, heightPx)
+          const padding = 5
+          ctx.fillRect(
+            mismatchLeftPx - rect.width / 2 - padding,
+            topPx,
+            rect.width + 2 * padding,
+            heightPx,
+          )
           ctx.fillStyle = 'white'
-          ctx.fillText(txt, mismatchLeftPx, topPx + heightPx)
+          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
