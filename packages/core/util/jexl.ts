@@ -110,8 +110,6 @@ jexl.addTransform('hashcode', (str: string) => {
 
 // eslint-disable-next-line no-bitwise
 jexl.addBinaryOp('&', 15, (a: number, b: number) => a & b)
-// eslint-disable-next-line no-bitwise
-jexl.addBinaryOp('|', 15, (a: number, b: number) => a | b)
 
 function createJexlInstance(/* config?: any*/) {
   // someday will make sure all of configs callbacks are added in, including ones passed in
