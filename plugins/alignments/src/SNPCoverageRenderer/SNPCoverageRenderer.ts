@@ -104,17 +104,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const infoArray: BaseInfo[] = feature.get('snpinfo') || []
-      const total = infoArray.find(info => info.base === 'total')?.score || 0
-      const softclip =
-        infoArray.find(info => info.base === 'softclip')?.score || 0
-      const hardclip =
-        infoArray.find(info => info.base === 'hardclip')?.score || 0
-      const insertion =
-        infoArray.find(info => info.base === 'insertion')?.score || 0
-      const deletion =
-        infoArray.find(info => info.base === 'deletion')?.score || 0
+      const totalScore =
+        infoArray.find(info => info.base === 'total')?.score || 0
 
-      const totalScore = total - softclip - hardclip - insertion - deletion
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       infoArray
         .filter(
