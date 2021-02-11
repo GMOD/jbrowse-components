@@ -1590,12 +1590,6 @@ Array [
 exports[`adapter can fetch features from volvox-bed12.bed.gz 1`] = `
 Array [
   Object {
-    "blockStarts": Array [
-      0,
-      1950,
-      3950,
-      5950,
-    ],
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.1",
@@ -1657,11 +1651,6 @@ Array [
     "uniqueId": "bed-45689",
   },
   Object {
-    "blockStarts": Array [
-      0,
-      3950,
-      5950,
-    ],
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.2",
@@ -1715,12 +1704,6 @@ Array [
     "uniqueId": "bed-45786",
   },
   Object {
-    "blockStarts": Array [
-      0,
-      1700,
-      3700,
-      5700,
-    ],
     "end": 9000,
     "itemRgb": "0,0,0",
     "name": "EDEN.3",
@@ -1782,11 +1765,6 @@ Array [
     "uniqueId": "bed-45874",
   },
   Object {
-    "blockStarts": Array [
-      0,
-      1600,
-      3600,
-    ],
     "end": 23000,
     "itemRgb": "0,0,0",
     "name": "rna-Apple3",

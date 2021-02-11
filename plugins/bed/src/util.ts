@@ -109,6 +109,7 @@ export function ucscProcessedTranscript(feature: Feature) {
   delete newData.chromStart
   delete newData.chromEnd
   delete newData.chrom
+  delete newData.blockStarts
   delete newData.blockSizes
   delete newData.blockCount
   delete newData.thickStart
