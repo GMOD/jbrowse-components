@@ -27,7 +27,6 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
     expect(getConf(model, 'someInteger')).toBe(12)
 
-    // TODOJEXL: ask about function signatures, will have to be added for test to work
     model.configuration.backgroundColor.set(`jexl:'#'+a`)
     expect(getConf(model, 'backgroundColor', ['zonk'])).toBe('#zonk')
     expect(getConf(model, 'backgroundColor', ['bar'])).toBe('#bar')

@@ -4,6 +4,9 @@ import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'
 import { makeStyles } from '@material-ui/core/styles'
+import Tooltip from '@material-ui/core/Tooltip'
+import IconButton from '@material-ui/core/IconButton'
+import HelpIcon from '@material-ui/icons/Help'
 import { observer, PropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
@@ -55,34 +58,59 @@ function CallbackEditor({ slot }) {
   // if default value is a callback, will have to remove jexl:
   // do this last
   return (
-    <FormControl>
-      <InputLabel shrink htmlFor="callback-editor">
-        {slot.name}
-      </InputLabel>
-      <Editor
-        className={classes.callbackEditor}
-        value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-        onValueChange={newCode => {
-          setCode(newCode)
-        }}
-        highlight={newCode =>
-          // <SyntaxHighlighter
-          //   language="html"
-          //   style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
-          //   className={classes.syntaxHighlighter}
-          //   // override some inline style stuff that's higher specificity
-          //   // than className
-          //   customStyle={{ background: 'none', padding: 0 }}
-          // >
-          //   {newCode}
-          // </SyntaxHighlighter>
-          newCode
+    <>
+      <FormControl>
+        <InputLabel shrink htmlFor="callback-editor">
+          {slot.name}
+        </InputLabel>
+        <Editor
+          className={classes.callbackEditor}
+          value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
+          onValueChange={newCode => {
+            setCode(newCode)
+          }}
+          highlight={newCode =>
+            // <SyntaxHighlighter
+            //   language="html"
+            //   style={theme.palette.type === 'dark' ? a11yDark : a11yLight}
+            //   className={classes.syntaxHighlighter}
+            //   // override some inline style stuff that's higher specificity
+            //   // than className
+            //   customStyle={{ background: 'none', padding: 0 }}
+            // >
+            //   {newCode}
+            // </SyntaxHighlighter>
+            newCode
+          }
+          padding={10}
+          style={{ background: error ? '#fdd' : undefined }}
+        />
+        <FormHelperText>{slot.description}</FormHelperText>
+      </FormControl>
+      <Tooltip
+        title={
+          <div>
+            Callbacks are written in Jexl format. Click to learn more.
+            <br /> Names of available context items: {slot.functionSignature}
+          </div>
         }
-        padding={10}
-        style={{ background: error ? '#fdd' : undefined }}
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </FormControl>
+        arrow
+      >
+        <IconButton
+          color="primary"
+          onClick={() => {
+            const newWindow = window.open(
+              'https://github.com/TomFrost/Jexl',
+              '_blank',
+              'noopener,noreferrer',
+            )
+            if (newWindow) newWindow.opener = null
+          }}
+        >
+          <HelpIcon />
+        </IconButton>
+      </Tooltip>
+    </>
   )
 }
 CallbackEditor.propTypes = {

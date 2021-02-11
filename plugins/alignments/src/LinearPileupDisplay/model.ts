@@ -335,19 +335,17 @@ const stateModelFactory = (
           if (self.filterBy) {
             const { flagInclude, flagExclude } = self.filterBy
             filters = [
-              `jexl:((getFeatureData(feature, 'flags')&${flagInclude})==${flagInclude}) && !(getFeatureData(feature, 'flags')&${flagExclude})`,
+              `jexl:((feature|getData('flags')&${flagInclude})==${flagInclude}) && !(feature|getData('flags')&${flagExclude})`,
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
               filters.push(
-                `jexl:"${value}" =='*' ? (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) != undefined : (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) == "${value}")`,
+                `jexl:"${value}" =='*' ? (feature|getData('tags) ? feature|getData('tags)["${tag}"] : feature|getData("${tag}")) != undefined : feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
               )
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
-              filters.push(
-                `jexl:getFeatureData(feature, 'name') == "${readName}"`,
-              )
+              filters.push(`jexl:feature|getData('name') == "${readName}"`)
             }
           }
           return filters

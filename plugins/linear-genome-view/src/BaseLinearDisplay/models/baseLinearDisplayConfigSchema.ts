@@ -6,7 +6,7 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
     mouseover: {
       type: 'string',
       description: 'what to display in a given mouseover',
-      defaultValue: `jexl:getFeatureData(feature, 'name')`,
+      defaultValue: `jexl:feature|getData('name')`,
 
       functionSignature: ['feature'],
     },

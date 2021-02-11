@@ -84,19 +84,19 @@ const stateModelFactory = (
         if (self.filterBy) {
           const { flagInclude, flagExclude } = self.filterBy
           filters = [
-            `jexl:getFeatureData(feature, 'snpinfo') != undefined ? true : ((getFeatureData(feature, 'flags')&${flagInclude})==${flagInclude}) && !(getFeatureData(feature, 'flags')&${flagExclude})`,
+            `jexl:feature|getData('snpinfo') != undefined ? true : ((feature|getData('flags')&${flagInclude})==${flagInclude}) && !(feature|getData('flags')&${flagExclude})`,
           ]
 
           if (self.filterBy.tagFilter) {
             const { tag, value } = self.filterBy.tagFilter
             filters.push(
-              `jexl:getFeatureData(feature, 'snpinfo') ? true : "${value}" =='*' ? (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) != undefined : (getFeatureData(feature, 'tags) ? getFeatureData(feature, 'tags)["${tag}"] : getFeatureData(feature, "${tag}")) == "${value}")`,
+              `jexl:feature|getData('snpinfo') ? true : "${value}" =='*' ? (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) != undefined : (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
             )
           }
           if (self.filterBy.readName) {
             const { readName } = self.filterBy
             filters.push(
-              `jexl:getFeatureData(feature, 'snpinfo') ? true : getFeatureData(feature, 'name') == "${readName}"`,
+              `jexl:feature|getData('snpinfo') ? true : feature|getData('name') == "${readName}"`,
             )
           }
         }

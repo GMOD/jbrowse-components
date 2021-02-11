@@ -155,7 +155,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:getFeatureData(feature, 'gene_name')"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -256,9 +256,9 @@
           "type": "LinearGDCDisplay",
           "displayId": "gdc_plugin_track_linear",
           "renderer": {
-            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[getFeatureData(feature, 'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
+            "color1": "jexl:{LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'}|cast[feature|getData('consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
             "labels": {
-              "name": "jexl:getFeatureData(feature, 'genomicDnaChange')"
+              "name": "jexl:feature|getData('genomicDnaChange')"
             },
             "type": "SvgFeatureRenderer"
           }
@@ -374,7 +374,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:getFeatureData(feature, 'gene_name')"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -425,7 +425,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:getFeatureData(feature, 'geneName2')"
+              "description": "jexl:feature|getData('geneName2')"
             }
           }
         }

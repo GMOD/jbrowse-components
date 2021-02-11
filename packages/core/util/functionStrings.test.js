@@ -31,18 +31,18 @@ describe('function string parsing', () => {
       end: 9,
     })
     expect(
-      stringToJexlExpression(`jexl:getFeatureData(feature, 'score')`).evalSync({
+      stringToJexlExpression(`jexl:feature|getData('score')`).evalSync({
         feature,
       }),
     ).toEqual(10)
     expect(
-      stringToJexlExpression(
-        `jexl:getFeatureData(feature, 'uniqueId')`,
-      ).evalSync({ feature }),
+      stringToJexlExpression(`jexl:feature|getData('uniqueId')`).evalSync({
+        feature,
+      }),
     ).toBe('jexlFeature')
     expect(
       stringToJexlExpression(
-        `jexl:getFeatureData(feature, 'end') - getFeatureData(feature, 'start') == 8`,
+        `jexl:feature|getData('end') - feature|getData('start') == 8`,
       ).evalSync({ feature }),
     ).toBe(true)
   })

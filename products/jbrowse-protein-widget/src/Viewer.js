@@ -86,9 +86,9 @@ export class ProteinWidget {
             renderer: {
               type: 'SvgFeatureRenderer',
               color1: `
-              jexl:['red','green','blue','cyan','magenta','black'][getFeatureData(feature, 'type').split('').map(c => c.charCodeAt(0)).reduce((a,b) => a+b, 0) % 6]`,
+              jexl:['red','green','blue','cyan','magenta','black']|cast[feature|getData('type')|hashcode % 6]`,
               labels: {
-                description: "jexl:getFeatureData(feature, 'type')",
+                description: "jexl:feature|getData('type')",
               },
             },
             adapter: { type: 'FromConfigAdapter', features: [] },
@@ -99,8 +99,7 @@ export class ProteinWidget {
             trackId: 'variants_track',
             renderer: {
               type: 'LollipopRenderer',
-              caption:
-                "jexl:getFeatureId(feature) + ': ' + getFeatureData(feature, 'note')",
+              caption: "jexl:feature|getId + ': ' + feature|getData('note')",
             },
             adapter: { type: 'FromConfigAdapter', features: [] },
           },

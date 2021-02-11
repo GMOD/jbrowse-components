@@ -36,7 +36,7 @@ export default ConfigurationSchema(
         type: 'string',
         description:
           'the primary name of the feature to show, if space is available',
-        defaultValue: `jexl:getFeatureData(feature, 'name') || getFeatureData(feature, 'id')`,
+        defaultValue: `jexl:feature|getData('name') || feature|getData('id')`,
         functionSignature: ['feature'],
       },
       nameColor: {
@@ -48,7 +48,7 @@ export default ConfigurationSchema(
       description: {
         type: 'string',
         description: 'the text description to show, if space is available',
-        defaultValue: `jexl:getFeatureData(feature, 'note') || getFeatureData(feature, 'description')`,
+        defaultValue: `jexl:feature|getData('note') || feature|getData('description')`,
         functionSignature: ['feature'],
       },
       descriptionColor: {

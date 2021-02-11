@@ -24,14 +24,14 @@ export default ConfigurationSchema(
     radius: {
       type: 'number',
       description: 'radius in pixels of each lollipop body',
-      defaultValue: `jexl:Math.max(3, Math.sqrt((getFeatureData(feature, 'score')*10)/3.14))`,
+      defaultValue: `jexl:max(3, (feature|getData('score')*10)/3.14)|sqrt`,
       functionSignature: ['feature'],
     },
     caption: {
       type: 'string',
       description:
         'the tooltip caption displayed when the mouse hovers over a lollipop',
-      defaultValue: `jexl:getFeatureData(feature, 'name')`,
+      defaultValue: `jexl:feature|getData('name')`,
       functionSignature: ['feature'],
     },
     minStickLength: {
@@ -55,7 +55,7 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'the "score" of each lollipop, displayed as a number in the center of the circle',
-      defaultValue: `jexl:getFeatureData(feature, 'score')`,
+      defaultValue: `jexl:feature|getData('score')`,
       functionSignature: ['feature'],
     },
   },
