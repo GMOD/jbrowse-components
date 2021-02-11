@@ -124,6 +124,10 @@ const SessionLoader = types
       return self.sessionQuery?.startsWith('encoded-')
     },
 
+    get jsonSession() {
+      return self.sessionQuery?.startsWith('json-')
+    },
+
     get localSession() {
       return self.sessionQuery?.startsWith('local-')
     },
@@ -274,8 +278,21 @@ const SessionLoader = types
       )
       self.setSessionSnapshot({ ...session, id: shortid() })
     },
+
+    async decodeJsonUrlSession() {
+      // @ts-ignore
+      const session = JSON.parse(self.sessionQuery.replace('json-', ''))
+      self.setSessionSnapshot({ ...session, id: shortid() })
+    },
+
     async afterCreate() {
-      const { localSession, encodedSession, sharedSession, configPath } = self
+      const {
+        localSession,
+        encodedSession,
+        sharedSession,
+        jsonSession,
+        configPath,
+      } = self
 
       // rename autosave to previousAutosave
       const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
@@ -300,6 +317,8 @@ const SessionLoader = types
                 await this.fetchSharedSession()
               } else if (encodedSession) {
                 await this.decodeEncodedUrlSession()
+              } else if (jsonSession) {
+                await this.decodeJsonUrlSession()
               } else if (localSession) {
                 await this.fetchSessionStorageSession()
               } else if (self.sessionQuery) {
