@@ -62,7 +62,10 @@ export default pluginManager =>
               trackConf,
               'assemblyNames',
             )
-            if (!trackConfAssemblies.includes(assemblyName)) {
+            if (
+              trackConfAssemblies &&
+              !trackConfAssemblies.includes(assemblyName)
+            ) {
               return false
             }
             const viewType = pluginManager.getViewType(self.view.type)
