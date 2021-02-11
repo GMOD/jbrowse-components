@@ -233,6 +233,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
       },
     }
   } catch (error) {
+    console.error(error)
     return {
       displayError: error,
     }
