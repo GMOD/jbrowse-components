@@ -548,7 +548,7 @@ export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue:  `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
     functionSignature: ['feature'],
   },
   displayMode: {

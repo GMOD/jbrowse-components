@@ -34,8 +34,7 @@ import {
 export function readConfObject(
   confObject: AnyConfigurationModel,
   slotPath: string[] | string | undefined = undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: unknown[] = [], // args: Record<string, any>
+  args: unknown[] = [],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (!confObject) throw new TypeError('must provide conf object to read')
