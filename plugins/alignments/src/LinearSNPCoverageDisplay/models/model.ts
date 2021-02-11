@@ -51,6 +51,15 @@ const stateModelFactory = (
         self.filterBy = cast(filter)
       },
     }))
+    .views(self => {
+      const selfDomain = self.domain
+      return {
+        get domain() {
+          const [min, max] = selfDomain
+          return [min, max + (max - min) / 10]
+        },
+      }
+    })
     .views(self => ({
       get TooltipComponent() {
         return Tooltip
@@ -116,6 +125,8 @@ const stateModelFactory = (
 
       get scaleOpts() {
         return {
+          // add a little extra headroom on snpcov tracks
+          // helps drawing interbase fuzz
           domain: self.domain,
           stats: self.stats,
           autoscaleType: getConf(self, 'autoscale'),
