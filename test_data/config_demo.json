@@ -2524,6 +2524,25 @@
           }
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "nstd175.GRCh37.variant_call.vcf",
+      "name": "nstd175.GRCh37.variant_call.vcf",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "connections": [],
