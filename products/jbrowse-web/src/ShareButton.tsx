@@ -195,6 +195,7 @@ const ShareDialog = observer(
             setLoading(true)
             const locationUrl = new URL(window.location.href)
             const result = await shareSessionToDynamo(
+              // @ts-ignore
               snap,
               url,
               locationUrl.href,

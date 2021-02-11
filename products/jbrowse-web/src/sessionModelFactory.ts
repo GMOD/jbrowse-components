@@ -54,22 +54,28 @@ export default function sessionModelFactory(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
+      // @ts-ignore
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
       widgets: types.map(
+        // @ts-ignore
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
       activeWidgets: types.map(
         types.safeReference(
+          // @ts-ignore
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
       connectionInstances: types.map(
+        // @ts-ignore
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
       sessionTracks: types.array(
+        // @ts-ignore
         pluginManager.pluggableConfigSchemaType('track'),
       ),
       sessionConnections: types.array(
+        // @ts-ignore
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
@@ -90,52 +96,66 @@ export default function sessionModelFactory(
     }))
     .views(self => ({
       get shareURL() {
-        return getConf(getParent(self).jbrowse, 'shareURL')
+        // @ts-ignore
+        return getConf(getParent<any>(self).jbrowse, 'shareURL')
       },
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager as RpcManager
+        // @ts-ignore
+        return getParent<any>(self).jbrowse.rpcManager as RpcManager
       },
       get configuration() {
-        return getParent(self).jbrowse.configuration
+        // @ts-ignore
+        return getParent<any>(self).jbrowse.configuration
       },
       get assemblies() {
-        return getParent(self).jbrowse.assemblies
+        // @ts-ignore
+        return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent(self).jbrowse.assemblyNames
+        // @ts-ignore
+        return getParent<any>(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
+        // @ts-ignore
+        return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
       get connections() {
         return [
           ...self.sessionConnections,
-          ...getParent(self).jbrowse.connections,
+          // @ts-ignore
+          ...getParent<any>(self).jbrowse.connections,
         ]
       },
       get adminMode() {
-        return getParent(self).adminMode
+        // @ts-ignore
+        return getParent<any>(self).adminMode
       },
       get savedSessions() {
-        return getParent(self).savedSessions
+        // @ts-ignore
+        return getParent<any>(self).savedSessions
       },
       get previousAutosaveId() {
-        return getParent(self).previousAutosaveId
+        // @ts-ignore
+        return getParent<any>(self).previousAutosaveId
       },
       get savedSessionNames() {
-        return getParent(self).savedSessionNames
+        // @ts-ignore
+        return getParent<any>(self).savedSessionNames
       },
       get history() {
-        return getParent(self).history
+        // @ts-ignore
+        return getParent<any>(self).history
       },
       get menus() {
-        return getParent(self).menus
+        // @ts-ignore
+        return getParent<any>(self).menus
       },
       get assemblyManager() {
-        return getParent(self).assemblyManager
+        // @ts-ignore
+        return getParent<any>(self).assemblyManager
       },
       get version() {
-        return getParent(self).version
+        return getParent<any>(self).version
       },
       get renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
@@ -157,7 +177,7 @@ export default function sessionModelFactory(
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -294,7 +314,7 @@ export default function sessionModelFactory(
       deleteConnection(configuration: AnyConfigurationModel) {
         let deletedConn
         if (self.adminMode) {
-          deletedConn = getParent(self).jbrowse.deleteConnectionConf(
+          deletedConn = getParent<any>(self).jbrowse.deleteConnectionConf(
             configuration,
           )
         }
@@ -339,6 +359,7 @@ export default function sessionModelFactory(
 
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
+          // @ts-ignore
           if (widget.view && widget.view.id === view.id) {
             this.hideWidget(widget)
           }
@@ -347,12 +368,12 @@ export default function sessionModelFactory(
       },
 
       addAssemblyConf(assemblyConf: AnyConfigurationModel) {
-        return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
+        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
       addTrackConf(trackConf: AnyConfigurationModel) {
         if (self.adminMode) {
-          return getParent(self).jbrowse.addTrackConf(trackConf)
+          return getParent<any>(self).jbrowse.addTrackConf(trackConf)
         }
         const { trackId, type } = trackConf
         if (!type) {
@@ -378,7 +399,7 @@ export default function sessionModelFactory(
         )
         callbacksToDereferenceTrack.forEach(cb => cb())
         if (self.adminMode) {
-          return getParent(self).jbrowse.deleteTrackConf(trackConf)
+          return getParent<any>(self).jbrowse.deleteTrackConf(trackConf)
         }
         const { trackId } = trackConf
         const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
@@ -390,7 +411,7 @@ export default function sessionModelFactory(
 
       addConnectionConf(connectionConf: any) {
         if (self.adminMode) {
-          return getParent(self).jbrowse.addConnectionConf(connectionConf)
+          return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
         }
         const { connectionId, type } = connectionConf
         if (!type) {
@@ -502,34 +523,34 @@ export default function sessionModelFactory(
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).addSavedSession(sessionSnapshot)
+        return getParent<any>(self).addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent(self).removeSavedSession(sessionSnapshot)
+        return getParent<any>(self).removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
 
       duplicateCurrentSession() {
-        return getParent(self).duplicateCurrentSession()
+        return getParent<any>(self).duplicateCurrentSession()
       },
       activateSession(sessionName: any) {
-        return getParent(self).activateSession(sessionName)
+        return getParent<any>(self).activateSession(sessionName)
       },
       setDefaultSession() {
-        return getParent(self).setDefaultSession()
+        return getParent<any>(self).setDefaultSession()
       },
       saveSessionToLocalStorage() {
-        return getParent(self).saveSessionToLocalStorage()
+        return getParent<any>(self).saveSessionToLocalStorage()
       },
       loadAutosaveSession() {
-        return getParent(self).loadAutosaveSession()
+        return getParent<any>(self).loadAutosaveSession()
       },
       setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).setSession(sessionSnapshot)
+        return getParent<any>(self).setSession(sessionSnapshot)
       },
     }))
     .extend(() => {
