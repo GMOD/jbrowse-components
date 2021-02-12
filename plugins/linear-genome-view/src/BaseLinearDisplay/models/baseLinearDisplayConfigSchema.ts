@@ -11,15 +11,6 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
 }`,
       functionSignature: ['feature'],
     },
-
-    onFeatureClick: {
-      type: 'string',
-      description: 'what to do when clicked',
-      defaultValue: `function(feature) {
-      return feature;
-}`,
-      functionSignature: ['feature'],
-    },
     maxDisplayedBpPerPx: {
       type: 'number',
       description: 'maximum bpPerPx that is displayed in the view',
