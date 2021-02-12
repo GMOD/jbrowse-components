@@ -32,12 +32,14 @@ export default (pluginManager: PluginManager) => {
     }))
     .views(self => ({
       get cellsWithDerived() {
-        const { columns } = getParent(self, 3)
+        const { rowSet, columns } = getParent(self, 3)
         let i = 0
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return columns.map((column: { isDerived: boolean; func: any }) => {
           if (column.isDerived) {
-            return column.func.evalSync()
+            return column.func.evalSync({
+              row: rowSet.rows[parseInt(self.id, 10) - 1],
+            }) // need to somehow pass rows in here for context
           }
           return self.cells[i++]
         })

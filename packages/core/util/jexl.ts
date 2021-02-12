@@ -17,6 +17,7 @@ function createJexlInstance(/* config?: any*/) {
   // let user cast a jexl type into a javascript type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexlInstance.addTransform('cast', (arg: any) => {
+    console.log(arg)
     return arg
   })
 
