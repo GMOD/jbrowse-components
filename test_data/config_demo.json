@@ -2480,7 +2480,19 @@
           },
           "indexType": "TBI"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg37_lift_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -2499,7 +2511,19 @@
           },
           "indexType": "TBI"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        }
+      ]
     }
   ],
   "connections": [],
