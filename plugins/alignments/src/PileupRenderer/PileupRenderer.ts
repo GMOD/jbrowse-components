@@ -449,6 +449,8 @@ export default class PileupRenderer extends BoxRendererType {
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
 
+    // two pass rendering: first pass, draw all the mismatches except wide
+    // insertion markers
     for (let i = 0; i < mismatches.length; i += 1) {
       const mismatch = mismatches[i]
       const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
@@ -481,15 +483,20 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (mismatch.type === 'insertion') {
         ctx.fillStyle = 'purple'
         const pos = mismatchLeftPx - 1
-        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-        ctx.fillRect(pos - w, topPx, w * 3, 1)
-        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
-          ctx.fillText(
-            `(${mismatch.base})`,
-            mismatchLeftPx + 2,
-            topPx + heightPx,
-          )
+
+        const len = +mismatch.base || mismatch.length
+
+        if (len < 10) {
+          ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
+          ctx.fillRect(pos - w, topPx, w * 3, 1)
+          ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+          if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
+            ctx.fillText(
+              `(${mismatch.base})`,
+              mismatchLeftPx + 2,
+              topPx + heightPx,
+            )
+          }
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
@@ -513,6 +520,32 @@ export default class PileupRenderer extends BoxRendererType {
         }
         ctx.fillStyle = '#333'
         ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
+      }
+    }
+
+    // second pass, draw wide insertion markers on top
+    for (let i = 0; i < mismatches.length; i += 1) {
+      const mismatch = mismatches[i]
+      const [mismatchLeftPx] = bpSpanPx(
+        feature.get('start') + mismatch.start,
+        feature.get('start') + mismatch.start + mismatch.length,
+        region,
+        bpPerPx,
+      )
+      const len = +mismatch.base || mismatch.length
+      const txt = `${len}`
+      if (mismatch.type === 'insertion' && len >= 10) {
+        const rect = ctx.measureText(txt)
+        const padding = 5
+        ctx.fillStyle = 'purple'
+        ctx.fillRect(
+          mismatchLeftPx - rect.width / 2 - padding,
+          topPx,
+          rect.width + 2 * padding,
+          heightPx,
+        )
+        ctx.fillStyle = 'white'
+        ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
       }
     }
   }
