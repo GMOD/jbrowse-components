@@ -1,17 +1,14 @@
-import createJexlInstance from './jexl'
-
 export const functionRegexp = /^\s*function\s*\w*\s*\(([^)]*)\)\s*{([\w\W]*)/
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const compilationCache: Record<string, any> = {}
+const compilationCache: Record<string, Function> = {}
 
 /**
- * compile a jexlExpression to a string
+ * compile a function to a string
  *
- * @param str - string of code like `jexl:...`
+ * @param str - string of code like `function() { ... }`
  * @param options -
  */
-export function stringToJexlExpression(
+export function stringToFunction(
   str: string,
   options: {
     /**
@@ -23,7 +20,7 @@ export function stringToJexlExpression(
      * if passed, the compiled function will be bound (by calling bind on it)
      * with the given context and arguments
      */
-    // bind?: any[]
+    bind?: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
   } = {},
 ) {
   const { verifyFunctionSignature } = options
@@ -32,15 +29,33 @@ export function stringToJexlExpression(
     verifyFunctionSignature ? verifyFunctionSignature.join(',') : 'nosig'
   }|${str}`
   if (!compilationCache[cacheKey]) {
-    const match = str.startsWith('jexl:')
+    const match = functionRegexp.exec(str)
     if (!match) {
-      throw new Error('string does not appear to be in jexl format')
+      throw new Error('string does not appear to be a function declaration')
     }
-    const code = str.split('jexl:')[1]
-    const compiled = createJexlInstance().createExpression(`${code}`)
+    const paramList = match[1].split(',').map(s => s.trim())
+    let code = match[2].replace(/}\s*$/, '')
+    if (verifyFunctionSignature) {
+      // check number of arguments passed by calling code at runtime.
+      // NOTE: we don't check the number of arguments in the callback code itself,
+      // callback authors are free to ignore the arguments if they want
+
+      code = `if (arguments.length !== ${
+        verifyFunctionSignature.length
+      }) throw new Error("incorrect number of arguments provided to callback.  function signature is (${verifyFunctionSignature.join(
+        ', ',
+      )}) but "+arguments.length+" arguments were passed");\n${code}`
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const compiled = new Function(...paramList, `"use strict"; ${code}`)
     compilationCache[cacheKey] = compiled
   }
 
-  const func = compilationCache[cacheKey]
+  let func = compilationCache[cacheKey]
+  if (options.bind) {
+    const [thisArg, ...rest] = options.bind
+    func = func.bind(thisArg, ...rest)
+  }
   return func
 }

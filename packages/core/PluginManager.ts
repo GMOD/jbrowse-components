@@ -31,6 +31,7 @@ import {
 import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
 import CorePlugin from './CorePlugin'
+import createJexlInstance from './util/jexl'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
@@ -119,6 +120,9 @@ type AnyFunction = (...args: any) => any
 
 export default class PluginManager {
   plugins: Plugin[] = []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jexl: any = createJexlInstance()
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',

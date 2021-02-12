@@ -1,4 +1,4 @@
-import { stringToJexlExpression } from '@jbrowse/core/util/functionStrings'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
 import { SnapshotIn, Instance, addDisposer } from 'mobx-state-tree'

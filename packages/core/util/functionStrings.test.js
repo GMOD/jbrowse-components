@@ -1,49 +1,57 @@
-/* eslint-disable no-underscore-dangle */
-import { stringToJexlExpression } from './functionStrings'
-import SimpleFeature from './simpleFeature'
+import { stringToFunction, functionRegexp } from './functionStrings'
 
 describe('function string parsing', () => {
-  it('can detect a jexl expression', () => {
-    const str = 'jexl:a+b+c+5'
-    expect(str.startsWith('jexl:')).toBeTruthy()
+  it('has working regex', () => {
+    const result = functionRegexp.exec('function(a,b,c) { return a+b+c+5}')
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual('a,b,c')
+    expect(remainder).toEqual(' return a+b+c+5}')
   })
-  // it('will fail with no jexl tag', () => {
-  //   const str = 'a+b+c+5'
-  //   expect(stringToJexlExpression(str)).toThrow()
-  // })
-  it('can create a jexl expression', () => {
-    const str = 'jexl:a+b+c+5'
-    const func = stringToJexlExpression(str)
-    expect(func._exprStr).toEqual('a+b+c+5')
+  it('has working regex 2', () => {
+    const result = functionRegexp.exec('function( a, b,c){\nreturn a+b+c+5 }')
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual(' a, b,c')
+    expect(remainder).toEqual('\nreturn a+b+c+5 }')
   })
-  it('can create a jexl expression 2', () => {
-    const str = 'jexl:\na+b+c+5'
-    const func = stringToJexlExpression(str)
-    expect(func._exprStr).toEqual('\na+b+c+5')
-    const result = func.evalSync({ a: 5, b: 10, c: 15 })
-    expect(result).toEqual(35)
+  it('has working regex 3', () => {
+    const result = functionRegexp.exec(`function() {
+  return 'volvox-sorted red/blue'
+}
+    `)
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual('')
+    expect(remainder).toContain('volvox-sorted red/blue')
   })
-  it('can use the loaded core helper functions to access feature info', () => {
-    const feature = new SimpleFeature({
-      uniqueId: 'jexlFeature',
-      score: 10,
-      start: 1,
-      end: 9,
+  it('has working regex 4', () => {
+    const result = functionRegexp.exec(`function zonker() {
+  return 'volvox-sorted red/blue'
+}
+    `)
+    expect(result).toBeTruthy()
+    const [, paramList, remainder] = result
+    expect(paramList).toEqual('')
+    expect(remainder).toContain('volvox-sorted red/blue')
+  })
+  ;[
+    'function(a,b,c) { return a+b+c+5}',
+    'function(a, b,c){return a+b+c+5 }',
+    'function( a, b,c){\nreturn a+b+c+5 }',
+    '  function( a, b,c){\nreturn a+b+c+5 } ',
+    '  function( a, b,c){\nreturn a+b+c+5; ;}',
+    '  function( a, b,c){\nreturn a+b+c+5; \n ;\n}',
+    ' function zonker( a, b,c){\nreturn a+b+c+5; \n ;\n}',
+    ' function dweeble_Zo12 ( a, b,c){\nreturn a+b+c+5; \n ;\n}',
+  ].forEach(funcStr => {
+    it(`can parse '${funcStr}'`, () => {
+      const func = stringToFunction(funcStr, {
+        verifyFunctionSignature: ['a', 'b', 'c'],
+      })
+      expect(func(5, 10, 15)).toBe(35)
+      // should throw an exception if the signature verification failed
+      expect(() => func(42)).toThrow()
     })
-    expect(
-      stringToJexlExpression(`jexl:feature|getData('score')`).evalSync({
-        feature,
-      }),
-    ).toEqual(10)
-    expect(
-      stringToJexlExpression(`jexl:feature|getData('uniqueId')`).evalSync({
-        feature,
-      }),
-    ).toBe('jexlFeature')
-    expect(
-      stringToJexlExpression(
-        `jexl:feature|getData('end') - feature|getData('start') == 8`,
-      ).evalSync({ feature }),
-    ).toBe(true)
   })
 })

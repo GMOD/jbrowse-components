@@ -1,119 +1,172 @@
 import jexl from 'jexl'
 import { Feature } from './simpleFeature'
 
-// below are core functions
-jexl.addTransform('getData', (feature: Feature, data: string) => {
-  return feature.get(data)
-})
-
-jexl.addTransform('getId', (feature: Feature) => {
-  return feature.id()
-})
-
-// let user cast a jexl type into a javascript type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-jexl.addTransform('cast', (arg: any) => {
-  return arg
-})
-
-// math
-jexl.addFunction('max', Math.max)
-jexl.addFunction('min', Math.min)
-jexl.addTransform('sqrt', Math.sqrt)
-jexl.addTransform('ceil', Math.ceil)
-jexl.addTransform('floor', Math.floor)
-jexl.addTransform('round', Math.round)
-jexl.addTransform('abs', Math.abs)
-
-// string
-jexl.addTransform('split', (str: string, char: string) => str.split(char))
-jexl.addTransform('charAt', (str: string, index: number) => str.charAt(index))
-jexl.addTransform('charCodeAt', (str: string, index: number) =>
-  str.charCodeAt(index),
-)
-jexl.addTransform('codePointAt', (str: string, pos: number) =>
-  str.codePointAt(pos),
-)
-jexl.addTransform(
-  'endsWith',
-  (str: string, searchStr: string, length?: number | undefined) => {
-    str.endsWith(searchStr, length)
-  },
-)
-jexl.addTransform(
-  'padEnd',
-  (str: string, targetLength: number, padString?: string | undefined) => {
-    str.padEnd(targetLength, padString)
-  },
-)
-jexl.addTransform(
-  'padStart',
-  (str: string, targetLength: number, fillString?: string | undefined) => {
-    str.padStart(targetLength, fillString)
-  },
-)
-jexl.addTransform('repeat', (str: string, count: number) => {
-  str.repeat(count)
-})
-jexl.addTransform(
-  'replace',
-  (str: string, match: string, newSubStr: string) => {
-    str.replace(match, newSubStr)
-  },
-)
-jexl.addTransform(
-  'replaceAll',
-  (str: string, match: string, newSubStr: string) => {
-    str.replaceAll(match, newSubStr)
-  },
-)
-jexl.addTransform(
-  'slice',
-  (str: string, start: number, end?: number | undefined) => {
-    str.slice(start, end)
-  },
-)
-jexl.addTransform(
-  'startsWith',
-  (str: string, searchStr: string, position?: number | undefined) => {
-    str.startsWith(searchStr, position)
-  },
-)
-jexl.addTransform(
-  'substring',
-  (str: string, start: number, end?: number | undefined) => {
-    str.substring(start, end)
-  },
-)
-jexl.addTransform('toLowerCase', (str: string) => {
-  str.toLowerCase()
-})
-jexl.addTransform('toUpperCase', (str: string) => {
-  str.toUpperCase()
-})
-jexl.addTransform('trim', (str: string) => {
-  str.trim()
-})
-jexl.addTransform('trimEnd', (str: string) => {
-  str.trimEnd()
-})
-jexl.addTransform('trimStart', (str: string) => {
-  str.trimStart()
-})
-
-jexl.addTransform('hashcode', (str: string) => {
-  return str
-    .split('')
-    .map(c => c.charCodeAt(0))
-    .reduce((a, b) => a + b, 0)
-})
-
-// eslint-disable-next-line no-bitwise
-jexl.addBinaryOp('&', 15, (a: number, b: number) => a & b)
-
 function createJexlInstance(/* config?: any*/) {
+  const jexlInstance = new jexl.Jexl()
   // someday will make sure all of configs callbacks are added in, including ones passed in
-  return jexl
+
+  // below are core functions
+  jexlInstance.addTransform('getData', (feature: Feature, data: string) => {
+    return feature.get(data)
+  })
+
+  jexlInstance.addTransform('getId', (feature: Feature) => {
+    return feature.id()
+  })
+
+  // let user cast a jexl type into a javascript type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jexlInstance.addTransform('cast', (arg: any) => {
+    return arg
+  })
+
+  // math
+  jexlInstance.addFunction('max', Math.max)
+  jexlInstance.addFunction('min', Math.min)
+  jexlInstance.addTransform('sqrt', Math.sqrt)
+  jexlInstance.addTransform('ceil', Math.ceil)
+  jexlInstance.addTransform('floor', Math.floor)
+  jexlInstance.addTransform('round', Math.round)
+  jexlInstance.addTransform('abs', Math.abs)
+
+  // string
+  jexlInstance.addTransform('split', (str: string, char: string) =>
+    str.split(char),
+  )
+  jexlInstance.addTransform('charAt', (str: string, index: number) =>
+    str.charAt(index),
+  )
+  jexlInstance.addTransform('charCodeAt', (str: string, index: number) =>
+    str.charCodeAt(index),
+  )
+  jexlInstance.addTransform('codePointAt', (str: string, pos: number) =>
+    str.codePointAt(pos),
+  )
+  jexlInstance.addTransform(
+    'endsWith',
+    (str: string, searchStr: string, length?: number | undefined) => {
+      str.endsWith(searchStr, length)
+    },
+  )
+  jexlInstance.addTransform(
+    'padEnd',
+    (str: string, targetLength: number, padString?: string | undefined) => {
+      str.padEnd(targetLength, padString)
+    },
+  )
+  jexlInstance.addTransform(
+    'padStart',
+    (str: string, targetLength: number, fillString?: string | undefined) => {
+      str.padStart(targetLength, fillString)
+    },
+  )
+  jexlInstance.addTransform('repeat', (str: string, count: number) => {
+    str.repeat(count)
+  })
+  jexlInstance.addTransform(
+    'replace',
+    (str: string, match: string, newSubStr: string) => {
+      str.replace(match, newSubStr)
+    },
+  )
+  jexlInstance.addTransform(
+    'replaceAll',
+    (str: string, match: string, newSubStr: string) => {
+      str.replaceAll(match, newSubStr)
+    },
+  )
+  jexlInstance.addTransform(
+    'slice',
+    (str: string, start: number, end?: number | undefined) => {
+      str.slice(start, end)
+    },
+  )
+  jexlInstance.addTransform(
+    'startsWith',
+    (str: string, searchStr: string, position?: number | undefined) => {
+      str.startsWith(searchStr, position)
+    },
+  )
+  jexlInstance.addTransform(
+    'substring',
+    (str: string, start: number, end?: number | undefined) => {
+      str.substring(start, end)
+    },
+  )
+  jexlInstance.addTransform('toLowerCase', (str: string) => {
+    str.toLowerCase()
+  })
+  jexlInstance.addTransform('toUpperCase', (str: string) => {
+    str.toUpperCase()
+  })
+  jexlInstance.addTransform('trim', (str: string) => {
+    str.trim()
+  })
+  jexlInstance.addTransform('trimEnd', (str: string) => {
+    str.trimEnd()
+  })
+  jexlInstance.addTransform('trimStart', (str: string) => {
+    str.trimStart()
+  })
+
+  jexlInstance.addTransform('hashcode', (str: string) => {
+    return str
+      .split('')
+      .map(c => c.charCodeAt(0))
+      .reduce((a, b) => a + b, 0)
+  })
+
+  // eslint-disable-next-line no-bitwise
+  jexlInstance.addBinaryOp('&', 15, (a: number, b: number) => a & b)
+
+  // TEMP
+  jexlInstance.addFunction(
+    'defaultOnChordClick',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (feature: Feature, track: any, pluginManager: any) => {
+      const { jbrequire } = pluginManager
+      // const { getConf } = jbrequire('@jbrowse/core/configuration')
+      const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
+      // const { resolveIdentifier } = jbrequire('mobx-state-tree')
+
+      const session = getSession(track)
+      session.setSelection(feature)
+      const view = getContainingView(track)
+      const viewType = pluginManager.getViewType('BreakpointSplitView')
+      const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
+
+      // disabling this for now since there isn't a way to set configRelationships
+      // on the generated chord display from the SV inspector
+
+      // // open any evidence tracks defined in configRelationships for this track
+      // const tracks = getConf(chordTrack, 'configRelationships')
+      //   .map(entry => {
+      //     const type = pluginManager.pluggableConfigSchemaType('track')
+      //     const trackConfig = resolveIdentifier(type, session, entry.target)
+      //     return trackConfig
+      //       ? {
+      //           type: trackConfig.type,
+      //           height: 100,
+      //           configuration: trackConfig.trackId,
+      //           selectedRendering: '',
+      //         }
+      //       : null
+      //   })
+      //   .filter(f => !!f)
+      // viewSnapshot.views[0].tracks = tracks
+      // viewSnapshot.views[1].tracks = tracks
+
+      // try to center the offsetPx
+      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+      // @ts-ignore TEMP
+      viewSnapshot.featureData = feature.data
+
+      session.addView('BreakpointSplitView', viewSnapshot)
+    },
+  )
+
+  return jexlInstance
 }
 
 export default createJexlInstance

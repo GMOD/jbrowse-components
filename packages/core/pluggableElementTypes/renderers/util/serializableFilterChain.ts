@@ -1,4 +1,4 @@
-import { stringToJexlExpression } from '../../../util/functionStrings'
+import { stringToJexlExpression } from '../../../util/jexlStrings'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FilterFunction = (...args: Record<string, any>[] | any[]) => boolean

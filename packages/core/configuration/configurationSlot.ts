@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
-import { stringToJexlExpression } from '../util/functionStrings'
+import { stringToJexlExpression } from '../util/jexlStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../util/types/mst'
 

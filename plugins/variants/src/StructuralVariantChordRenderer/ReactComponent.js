@@ -171,7 +171,7 @@ export default ({ jbrequire }) => {
     radius: PropTypes.number.isRequired,
     bezierRadius: PropTypes.number.isRequired,
     selectedFeatureId: PropTypes.string,
-    onChordClick: PropTypes.func,
+    onChordClick: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   }
 
   StructuralVariantChords.defaultProps = {

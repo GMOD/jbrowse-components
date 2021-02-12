@@ -1,5 +1,5 @@
 import { useDebounce } from '@jbrowse/core/util'
-import { stringToJexlExpression } from '@jbrowse/core/util/functionStrings'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import FormControl from '@material-ui/core/FormControl'
 import FormHelperText from '@material-ui/core/FormHelperText'
 import InputLabel from '@material-ui/core/InputLabel'
