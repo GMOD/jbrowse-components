@@ -17,7 +17,6 @@ function createJexlInstance(/* config?: any*/) {
   // let user cast a jexl type into a javascript type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexlInstance.addTransform('cast', (arg: any) => {
-    console.log(arg)
     return arg
   })
 
@@ -119,53 +118,6 @@ function createJexlInstance(/* config?: any*/) {
 
   // eslint-disable-next-line no-bitwise
   jexlInstance.addBinaryOp('&', 15, (a: number, b: number) => a & b)
-
-  // TEMP
-  jexlInstance.addFunction(
-    'defaultOnChordClick',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (feature: Feature, track: any, pluginManager: any) => {
-      const { jbrequire } = pluginManager
-      // const { getConf } = jbrequire('@jbrowse/core/configuration')
-      const { getContainingView, getSession } = jbrequire('@jbrowse/core/util')
-      // const { resolveIdentifier } = jbrequire('mobx-state-tree')
-
-      const session = getSession(track)
-      session.setSelection(feature)
-      const view = getContainingView(track)
-      const viewType = pluginManager.getViewType('BreakpointSplitView')
-      const viewSnapshot = viewType.snapshotFromBreakendFeature(feature, view)
-
-      // disabling this for now since there isn't a way to set configRelationships
-      // on the generated chord display from the SV inspector
-
-      // // open any evidence tracks defined in configRelationships for this track
-      // const tracks = getConf(chordTrack, 'configRelationships')
-      //   .map(entry => {
-      //     const type = pluginManager.pluggableConfigSchemaType('track')
-      //     const trackConfig = resolveIdentifier(type, session, entry.target)
-      //     return trackConfig
-      //       ? {
-      //           type: trackConfig.type,
-      //           height: 100,
-      //           configuration: trackConfig.trackId,
-      //           selectedRendering: '',
-      //         }
-      //       : null
-      //   })
-      //   .filter(f => !!f)
-      // viewSnapshot.views[0].tracks = tracks
-      // viewSnapshot.views[1].tracks = tracks
-
-      // try to center the offsetPx
-      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-      // @ts-ignore TEMP
-      viewSnapshot.featureData = feature.data
-
-      session.addView('BreakpointSplitView', viewSnapshot)
-    },
-  )
 
   return jexlInstance
 }

@@ -21,7 +21,8 @@ export function stringToJexlExpression(
      */
     verifyFunctionSignature?: string[]
   } = {},
-  // jexl?: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  jexl?: any,
 ) {
   const { verifyFunctionSignature } = options
 
@@ -34,7 +35,9 @@ export function stringToJexlExpression(
       throw new Error('string does not appear to be in jexl format')
     }
     const code = str.split('jexl:')[1]
-    const compiled = createJexlInstance().createExpression(`${code}`)
+    const compiled = jexl
+      ? jexl.createExpression(`${code}`)
+      : createJexlInstance().createExpression(`${code}`)
     compilationCache[cacheKey] = compiled
   }
 

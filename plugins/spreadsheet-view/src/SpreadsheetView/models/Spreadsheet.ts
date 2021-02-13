@@ -33,7 +33,11 @@ export default (pluginManager: PluginManager) => {
       get func() {
         if (self.isDerived) {
           // compile this as a jexl expression
-          return stringToJexlExpression(String(self.derivationFunctionText))
+          return stringToJexlExpression(
+            String(self.derivationFunctionText),
+            undefined,
+            pluginManager.jexl,
+          )
         }
         return undefined
       },

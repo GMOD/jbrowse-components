@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
+import { types, IAnyModelType, IAnyComplexType, getRoot } from 'mobx-state-tree'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { inDevelopment } from '../util'
 import { FileLocation } from '../util/types/mst'
@@ -197,12 +197,17 @@ export default function ConfigSlot(
     .views(self => ({
       get func() {
         if (self.isCallback) {
+          // console.log(getRoot(slot))
           // compile as jexl function
-          const jexlExpr = stringToJexlExpression(String(self.value), {
-            verifyFunctionSignature: inDevelopment
-              ? functionSignature
-              : undefined,
-          })
+          const jexlExpr = stringToJexlExpression(
+            String(self.value),
+            {
+              verifyFunctionSignature: inDevelopment
+                ? functionSignature
+                : undefined,
+            },
+            getRoot(self).pluginManager?.jexl,
+          )
           return (...args: any[]) => {
             const evalContext: Record<string, any> = {}
             self.functionSignature.forEach(

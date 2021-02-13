@@ -42,11 +42,11 @@ export const BaseChordDisplayModel = types
     }
   })
   .actions(self => {
-    const { pluginManager } = getSession(self)
+    const { pluginManager: pm } = getSession(self)
     const track = self
     return {
       onChordClick(feature: Feature) {
-        getConf(self, 'onChordClick', [feature, track, pluginManager])
+        getConf(self, 'onChordClick', [feature, track, pm])
       },
     }
   })

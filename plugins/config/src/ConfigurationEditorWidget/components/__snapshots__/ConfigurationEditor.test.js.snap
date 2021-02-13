@@ -729,7 +729,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
         </label>
         <div
           class="makeStyles-callbackEditor"
-          style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
+          style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden; background: rgb(255, 221, 221);"
         >
           <textarea
             autocapitalize="off"

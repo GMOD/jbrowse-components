@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
 import HelpIcon from '@material-ui/icons/Help'
+import { getRoot } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
@@ -47,7 +48,11 @@ function CallbackEditor({ slot }) {
       const jexlDebouncedCode = debouncedCode.startsWith('jexl:')
         ? debouncedCode
         : `jexl:${debouncedCode}`
-      stringToJexlExpression(jexlDebouncedCode)
+      stringToJexlExpression(
+        jexlDebouncedCode,
+        undefined,
+        getRoot(slot).pluginManager.jexl,
+      )
       slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
     } catch (e) {
