@@ -95,7 +95,7 @@ describe('alignments track', () => {
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
-    state.session.views[0].setNewView(0.5, 5200)
+    state.session.views[0].setNewView(0.02, 142956)
 
     // load track
     fireEvent.click(
