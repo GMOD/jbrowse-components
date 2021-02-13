@@ -250,6 +250,7 @@ function WindowSizeDlg(props: {
       )
 
       const seqTrackId = `${readName}_${Date.now()}`
+      const sequenceTrackConf = getConf(assembly, 'sequence')
 
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
@@ -267,6 +268,23 @@ function WindowSizeDlg(props: {
                 assemblyName: trackAssembly,
               }
             }),
+            tracks: [
+              {
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
+                assemblyNames: [trackAssembly],
+                configuration: sequenceTrackConf.trackId,
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearReferenceSequenceDisplay',
+                    showReverse: false,
+                    showTranslation: false,
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+            ],
           },
           {
             type: 'LinearGenomeView',
