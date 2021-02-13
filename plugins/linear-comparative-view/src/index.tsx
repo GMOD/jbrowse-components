@@ -157,6 +157,7 @@ function WindowSizeDlg(props: {
     handleClose,
   } = props
   const [window, setWindowSize] = useState('0')
+  const [error, setError] = useState<Error>()
   const windowSize = +window
 
   function onSubmit() {
@@ -304,6 +305,7 @@ function WindowSizeDlg(props: {
       handleClose()
     } catch (e) {
       console.error(e)
+      setError(e)
     }
   }
   return (
@@ -323,19 +325,20 @@ function WindowSizeDlg(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ overflowX: 'hidden' }}>
+      <DialogContent>
         <div className={classes.root}>
           <Typography>
-            Show an extra window around each part of the split alignment. Using
-            a larger value can allow you to see more genomic context.
+            Show an extra window size around each part of the split alignment.
+            Using a larger value can allow you to see more genomic context.
           </Typography>
+          {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
           <TextField
             value={window}
             onChange={event => {
               setWindowSize(event.target.value)
             }}
-            placeholder="Set window size"
+            label="Set window size"
           />
           <Button
             variant="contained"
