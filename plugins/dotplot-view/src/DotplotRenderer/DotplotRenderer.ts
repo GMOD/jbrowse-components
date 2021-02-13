@@ -93,7 +93,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevX = currX
               const prevY = currY
 
-              if (op === 'M' || op === '=') {
+              if (op === 'M' || op === '=' || op === 'X') {
                 currX += val / hview.bpPerPx
                 currY += val / vview.bpPerPx
               } else if (op === 'D' || op === 'N') {

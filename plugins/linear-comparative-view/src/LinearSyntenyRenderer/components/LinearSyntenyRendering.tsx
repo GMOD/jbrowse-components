@@ -178,6 +178,10 @@ function LinearSyntenyRendering(props: {
                 ctx.fillStyle = '#f003'
                 currX1 += (val / views[0].bpPerPx) * rev1
                 currX2 += (val / views[1].bpPerPx) * rev2
+              } else if (op === 'X') {
+                ctx.fillStyle = 'brown'
+                currX1 += (val / views[0].bpPerPx) * rev1
+                currX2 += (val / views[1].bpPerPx) * rev2
               } else if (op === 'D') {
                 ctx.fillStyle = '#00f3'
                 currX1 += (val / views[0].bpPerPx) * rev1
