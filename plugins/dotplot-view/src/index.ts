@@ -158,6 +158,8 @@ export default class DotplotPlugin extends Plugin {
     }
 
     const cb = (feature: Feature, display: IAnyStateTreeNode) => {
+      // @ts-ignore
+      const { parentTrack } = display
       return feature
         ? [
             {
@@ -174,11 +176,7 @@ export default class DotplotPlugin extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(
-                  // @ts-ignore
-                  display.parentTrack,
-                  'assemblyNames',
-                )[0]
+                const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
