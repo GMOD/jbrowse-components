@@ -320,6 +320,7 @@ function WindowSizeDlg(props: {
               assemblyNames: [readAssembly],
               adapter: {
                 type: 'FromConfigSequenceAdapter',
+                noAssemblyManager: true,
                 features: [
                   {
                     start: 0,

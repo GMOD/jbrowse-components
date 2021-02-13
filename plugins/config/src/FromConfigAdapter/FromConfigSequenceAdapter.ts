@@ -22,6 +22,7 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
         .toPromise()
       // return ObservableCreate<Feature>(async observer => {
       //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
+
       feats.forEach(feat => {
         const featStart = feat.get('start')
         const seqStart = start - featStart
@@ -32,9 +33,10 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
         observer.next(
           new SimpleFeature({
             ...feat.toJSON(),
-            seq,
             end: region.end,
             start: region.start,
+            seq,
+            uniqueId: `${Math.random()}`,
           }),
         )
       })

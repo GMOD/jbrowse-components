@@ -41,6 +41,14 @@ export const sequenceConfigSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'SimpleFeature',
     },
+
+    // occasionally assemblies may not be associated with the assemblyManager
+    // e.g. in the case of the "read assembly" that is used in read vs ref
+    // visualizations
+    noAssemblyManager: {
+      type: 'boolean',
+      defaultValue: false,
+    },
   },
   { explicitlyTyped: true },
 )

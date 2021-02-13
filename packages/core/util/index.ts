@@ -760,14 +760,19 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: [...(args.regions || [])],
   }
-  if (assemblyName && adapterConfig.type !== 'FromConfigSequenceAdapter') {
+
+  // configs can choose to not be associated with the assemblyManager (as with
+  // the "read assembly" in the read vs ref comparisons) and in this case a
+  // special flag exists (currently set on the FromConfigSequenceAdapter)
+  // called noAssemblyManager
+  // @ts-ignore
+  if (assemblyName && !adapterConfig.noAssemblyManager) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
       assemblyName,
       newArgs,
     )
 
-    // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
     if (refNameMap && regions && newArgs.regions) {
       for (let i = 0; i < regions.length; i += 1) {
         newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
