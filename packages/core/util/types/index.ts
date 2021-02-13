@@ -140,6 +140,19 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   )
 }
 
+export interface AbstractDisplayModel {
+  parentTrack: AbstractTrackModel
+}
+export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    // @ts-ignore
+    thing.configuration.displayId
+  )
+}
+
 export interface TrackViewModel extends AbstractViewModel {
   showTrack(trackId: string): void
   hideTrack(trackId: string): void

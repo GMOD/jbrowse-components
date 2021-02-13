@@ -17,6 +17,7 @@ import { Feature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
+  isDisplayModel,
   isViewModel,
   isTrackModel,
   Region,
@@ -252,6 +253,14 @@ export function getContainingView(node: IAnyStateTreeNode) {
 export function getContainingTrack(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isTrackModel)
+  } catch (e) {
+    throw new Error('no containing track found')
+  }
+}
+
+export function getContainingDisplay(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isDisplayModel)
   } catch (e) {
     throw new Error('no containing track found')
   }

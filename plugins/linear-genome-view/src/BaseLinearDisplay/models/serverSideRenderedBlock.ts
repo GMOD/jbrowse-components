@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { Component } from 'react'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types/mst'
 
 import {
   assembleLocString,
   makeAbortableReaction,
   getSession,
+  getContainingDisplay,
 } from '@jbrowse/core/util'
 import {
   getTrackAssemblyNames,
@@ -183,26 +184,19 @@ export type BlockModel = Instance<BlockStateModel>
 function renderBlockData(self: Instance<BlockStateModel>) {
   const { assemblyManager, rpcManager } = getSession(self)
   let display = getParent(self)
-  while (!(display.configuration && getConf(display, 'displayId'))) {
-    display = getParent(display)
-  }
-  const assemblyNames = getTrackAssemblyNames(display.parentTrack)
-  let cannotBeRenderedReason
-  if (!assemblyNames.includes(self.region.assemblyName)) {
-    let matchFound = false
-    assemblyNames.forEach((assemblyName: string) => {
-      const assembly = assemblyManager.get(assemblyName)
-      if (assembly && assembly.hasName(assemblyName)) {
-        matchFound = true
+  const display = getContainingDisplay(self) as any
+    const assemblyNames = getTrackAssemblyNames(display.parentTrack)
+    const regionAsm = self.region.assemblyName
+    if (
+      !assemblyNames.includes(regionAsm) &&
+      !assemblyNames.find(assemblyName =>
+        assemblyManager.get(assemblyName)?.hasName(regionAsm),
+      )
+    ) {
+      return {
+        displayError: `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
       }
-    })
-    if (!matchFound) {
-      cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
     }
-  }
-  if (!cannotBeRenderedReason) {
-    cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-  }
   const { renderProps } = display
   const { rendererType } = display
   const { config } = renderProps

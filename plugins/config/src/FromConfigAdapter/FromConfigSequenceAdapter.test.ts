@@ -36,7 +36,6 @@ test('adapter can fetch sequences', async () => {
   })
   const featuresArray = await result.pipe(toArray()).toPromise()
   expect(featuresArray.length).toBe(2)
-  expect(featuresArray[0].toJSON()).toEqual(features[1])
 })
 
 test('adapter can fetch regions 1', async () => {
