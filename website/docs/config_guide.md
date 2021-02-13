@@ -502,16 +502,16 @@ Example VcfTabixAdapter adapter config
 }
 ```
 
-### WiggleTrack config
+### QuantitativeTrack config
 
-Example WiggleTrack config
+Example QuantitativeTrack config
 
 ```json
 {
   "trackId": "my_wiggle_track",
   "name": "My Wiggle Track",
   "assemblyNames": ["hg19"],
-  "type": "WiggleTrack",
+  "type": "QuantitativeTrack",
   "adapter": {
     "type": "BigWig",
     "bigWigLocation": { "uri": "http://yourhost/file.bw" }
@@ -519,12 +519,12 @@ Example WiggleTrack config
 }
 ```
 
-#### General WiggleTrack options
+#### General QuantitativeTrack options
 
 - scaleType - options: linear, log, to display the coverage data. default: linear
 - adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
 
-#### Autoscale options for WiggleTrack
+#### Autoscale options for QuantitativeTrack
 
 Options for autoscale
 
@@ -533,7 +533,7 @@ Options for autoscale
 - localsd - mean value +- N stddevs of what is visible on screen
 - globalsd - mean value +/- N stddevs of everything in the dataset
 
-#### Score min/max for WiggleTrack
+#### Score min/max for QuantitativeTrack
 
 These options overrides the autoscale options and provides a minimum or maximum
 value for the autoscale bar
@@ -541,13 +541,13 @@ value for the autoscale bar
 - minScore
 - maxScore
 
-#### WiggleTrack drawing options
+#### QuantitativeTrack drawing options
 
 - inverted - draws upside down
 - defaultRendering - can be density, xyplot, or line
 - summaryScoreMode - options: min, max, whiskers
 
-#### WiggleTrack renderer options
+#### QuantitativeTrack renderer options
 
 - filled - fills in the XYPlot histogram
 - bicolorPivot - options: numeric, mean, none. default: numeric
@@ -597,6 +597,62 @@ We can add a SyntenyTrack from PAF with the CLI e.g. with
 ```sh
 jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
     grape,peach --load copy --out /var/www/html/jbrowse2
+```
+
+### Advanced adapters
+
+There are two useful adapter types that can be used for more advanced use cases, such as generating configuration for data returned by an API. These are the FromConfigAdapter and FromConfigSequenceAdapter. They can be used as the `adapter` value for any track type.
+
+#### FromConfigAdapter
+
+This adapter can be used to generate features directly from values stored in the configuration.
+
+Example FromConfigAdapter
+
+```json
+{
+  "type": "FromConfigAdapter",
+  "features": [
+    {
+      "refName": "ctgA",
+      "uniqueId": "alias1",
+      "aliases": ["A", "contigA"]
+    },
+    {
+      "refName": "ctgB",
+      "uniqueId": "alias2",
+      "aliases": ["B", "contigB"]
+    }
+  ]
+}
+```
+
+#### FromConfigSequenceAdapter
+
+Similar behavior to FromConfigAdapter, with a specific emphasis on performance when the features are sequences.
+
+Example FromConfigSequenceAdapter
+
+```json
+{
+  "type": "FromConfigSequenceAdapter",
+  "features": [
+    {
+      "refName": "SEQUENCE_1",
+      "uniqueId": "firstId",
+      "start": 0,
+      "end": 33,
+      "seq": "CCAAGATCTAAGATGTCAACACCTATCTGCTCA"
+    },
+    {
+      "refName": "SEQUENCE_2",
+      "uniqueId": "secondId",
+      "start": 0,
+      "end": 44,
+      "seq": "CCGAACCACAGGCCTATGTTACCATTGGAAAGCTCACCTTCCCG"
+    }
+  ]
+}
 ```
 
 ## DotplotView config
