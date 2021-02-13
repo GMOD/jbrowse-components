@@ -32,12 +32,14 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       colorCallback = (feature: Feature) =>
         readConfObject(config, 'color', [feature])
     }
+    const crossingOrigin = niceMin < 0 && niceMax > 0
 
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       let score = feature.get('score')
       const maxr = feature.get('maxScore')
       const minr = feature.get('minScore')
+      const summary = feature.get('summary')
 
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
@@ -53,31 +55,71 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillStyle = c
         ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
       } else if (summaryScoreMode === 'whiskers') {
-        // max
-        if (maxr !== undefined) {
-          ctx.fillStyle = Color(c).lighten(0.6).toString()
+        if (crossingOrigin) {
+          if (summary) {
+            ctx.fillStyle = maxr < pivotValue ? negColor : posColor
+            ctx.fillRect(
+              leftPx,
+              toY(maxr),
+              w - 0.1,
+              filled ? toHeight(maxr) - toHeight(0) : 1,
+            )
+
+            // avg
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(
+              leftPx,
+              toY(score),
+              w - 0.1,
+              filled ? toHeight(score) - toHeight(0) : 1,
+            )
+
+            ctx.fillStyle = minr < pivotValue ? negColor : posColor
+            ctx.fillRect(
+              leftPx,
+              filled ? toY(0) : toY(minr),
+              w,
+              filled ? toHeight(-minr) : 1,
+            )
+          } else {
+            // normal
+            ctx.fillStyle = c
+            ctx.fillRect(
+              leftPx,
+              toY(score),
+              w - 0.1,
+              filled
+                ? toHeight(score) - (minr !== undefined ? toHeight(minr) : 0)
+                : 1,
+            )
+          }
+        } else {
+          // max
+          if (maxr !== undefined) {
+            ctx.fillStyle = Color(c).lighten(0.6).toString()
+            ctx.fillRect(
+              leftPx,
+              toY(maxr),
+              w - 0.1,
+              filled ? toHeight(maxr) - toHeight(score) : 1,
+            )
+          }
+
+          // normal
+          ctx.fillStyle = c
           ctx.fillRect(
             leftPx,
-            toY(maxr),
+            toY(score),
             w - 0.1,
-            filled ? toHeight(maxr) - toHeight(score) : 1,
+            filled
+              ? toHeight(score) - (minr !== undefined ? toHeight(minr) : 0)
+              : 1,
           )
-        }
-
-        // normal
-        ctx.fillStyle = c
-        ctx.fillRect(
-          leftPx,
-          toY(score),
-          w - 0.1,
-          filled
-            ? toHeight(score) - (minr !== undefined ? toHeight(minr) : 0)
-            : 1,
-        )
-        // min
-        if (minr !== undefined) {
-          ctx.fillStyle = Color(c).darken(0.6).toString()
-          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
+          // min
+          if (minr !== undefined) {
+            ctx.fillStyle = Color(c).darken(0.6).toString()
+            ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
+          }
         }
       } else {
         ctx.fillStyle = c
