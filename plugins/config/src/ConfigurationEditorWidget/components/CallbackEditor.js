@@ -51,7 +51,7 @@ function CallbackEditor({ slot }) {
       stringToJexlExpression(
         jexlDebouncedCode,
         undefined,
-        getRoot(slot).pluginManager.jexl,
+        getRoot(slot).pluginManager?.jexl,
       )
       slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)
