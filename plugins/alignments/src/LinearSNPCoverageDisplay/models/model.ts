@@ -83,10 +83,10 @@ const stateModelFactory = (
     }))
     .actions(self => ({
       toggleDrawIndicators() {
-        self.drawIndicators = !self.drawIndicators
+        self.drawIndicators = !self.drawIndicatorsSetting
       },
       toggleDrawInterbaseFuzz() {
-        self.drawInterbaseFuzz = !self.drawInterbaseFuzz
+        self.drawInterbaseFuzz = !self.drawInterbaseFuzzSetting
       },
     }))
 
