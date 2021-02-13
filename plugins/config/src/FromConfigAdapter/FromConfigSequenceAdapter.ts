@@ -33,8 +33,8 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
           new SimpleFeature({
             ...feat.toJSON(),
             seq,
-            end: featStart + seq.length,
-            start: featStart,
+            end: region.end,
+            start: region.start,
           }),
         )
       })

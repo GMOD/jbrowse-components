@@ -2,6 +2,9 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@jbrowse/core/assemblyManager'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -27,6 +30,13 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
   const { ElementId } = jbrequire('@jbrowse/core/util/types/mst')
+  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
+    pluginManager,
+  )
+  const assemblyConfigSchemasType = types.union(
+    { dispatcher },
+    ...assemblyConfigSchemas,
+  )
 
   const defaultHeight = 400
   return types
@@ -59,7 +69,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
         // this represents assemblies in the specialized
         // read vs ref dotplot view
-        viewAssemblyConfigs: types.array(types.frozen()),
+        viewAssemblyConfigs: types.array(assemblyConfigSchemasType),
       }),
     )
     .volatile(() => ({

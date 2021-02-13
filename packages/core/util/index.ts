@@ -760,7 +760,7 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: [...(args.regions || [])],
   }
-  if (assemblyName) {
+  if (assemblyName && adapterConfig.type !== 'FromConfigSequenceAdapter') {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
       assemblyName,

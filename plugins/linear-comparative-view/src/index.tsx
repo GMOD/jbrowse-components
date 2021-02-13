@@ -249,6 +249,8 @@ function WindowSizeDlg(props: {
         0,
       )
 
+      const seqTrackId = `${readName}_${Date.now()}`
+
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
         views: [
@@ -279,6 +281,22 @@ function WindowSizeDlg(props: {
                 refName: readName,
               },
             ],
+            tracks: [
+              {
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
+                configuration: seqTrackId,
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearReferenceSequenceDisplay',
+                    showReverse: false,
+                    showTranslation: false,
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+            ],
           },
         ],
         viewTrackConfigs: [
@@ -289,11 +307,31 @@ function WindowSizeDlg(props: {
               type: 'FromConfigAdapter',
               features: configFeatureStore,
             },
-            renderer: {
-              type: 'LinearSyntenyRenderer',
-            },
             trackId,
             name: trackName,
+          },
+        ],
+        viewAssemblyConfigs: [
+          {
+            name: readAssembly,
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: seqTrackId,
+              assemblyNames: [readAssembly],
+              adapter: {
+                type: 'FromConfigSequenceAdapter',
+                features: [
+                  {
+                    start: 0,
+                    end: totalLength,
+                    seq: feat.seq,
+                    refName: readName,
+                    uniqueId: `${Math.random()}`,
+                    id: `${Math.random()}`,
+                  },
+                ],
+              },
+            },
           },
         ],
         tracks: [
