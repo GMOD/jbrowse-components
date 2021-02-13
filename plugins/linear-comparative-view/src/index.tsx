@@ -175,6 +175,13 @@ function WindowSizeDlg(props: {
       const assemblyNames = [trackAssembly, readAssembly]
       const trackId = `track-${Date.now()}`
       const trackName = `${readName}_vs_${trackAssembly}`
+
+      // get the canonical refname for the read because if the
+      // read.get('refName') is chr1 and the actual fasta refName is 1 then no
+      // tracks can be opened on the top panel of the linear read vs ref
+      const { assemblyManager } = session
+      const assembly = assemblyManager.get(trackAssembly)
+
       const supplementaryAlignments = SA.split(';')
         .filter(aln => !!aln)
         .map((aln, index) => {
@@ -223,6 +230,7 @@ function WindowSizeDlg(props: {
       const features = [feat, ...supplementaryAlignments] as ReducedFeature[]
 
       features.forEach((f, index) => {
+        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = index
         f.mate.syntenyId = index
         f.mate.uniqueId = `${f.uniqueId}_mate`
