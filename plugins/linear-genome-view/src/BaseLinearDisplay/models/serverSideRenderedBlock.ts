@@ -158,15 +158,18 @@ const blockState = types
         const { rpcManager } = getSession(self)
         const { rendererType } = display
         const { renderArgs } = renderBlockData(cast(self))
-        rendererType
-          .freeResourcesInClient(
-            rpcManager,
-            JSON.parse(JSON.stringify(renderArgs)),
-          )
-          .catch((e: Error) => {
-            // just console.error if it's something while it's being destroyed
-            console.warn('Error while destroying block', e)
-          })
+        // renderArgs can be undefined if an error occured in this block
+        if (renderArgs) {
+          rendererType
+            .freeResourcesInClient(
+              rpcManager,
+              JSON.parse(JSON.stringify(renderArgs)),
+            )
+            .catch((e: Error) => {
+              // just console.error if it's something while it's being destroyed
+              console.warn('Error while destroying block', e)
+            })
+        }
       },
     }
   })
