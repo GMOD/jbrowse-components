@@ -191,7 +191,7 @@ export default class DotplotPlugin extends Plugin {
                     const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
                     const saClipPos = getClip(saCigar, saStrandNormalized)
-                    const saRealStart = +saStart - 1 + saClipPos
+                    const saRealStart = +saStart - 1
                     return {
                       refName: saRef,
                       start: saRealStart,
@@ -217,9 +217,10 @@ export default class DotplotPlugin extends Plugin {
                   end: clipPos + getLengthSansClipping(cigar),
                 }
 
-                // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
-                // which is the primary alignments. otherwise it is the primary alignment just use
-                // seq.length if primary alignment
+                // if secondary alignment or supplementary, calculate length
+                // from SA[0]'s CIGAR which is the primary alignments.
+                // otherwise it is the primary alignment just use seq.length if
+                // primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
                   flags & 2048
