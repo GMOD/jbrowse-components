@@ -2,9 +2,7 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
+import { assemblyConfigSchemas as AssemblyConfigSchemasFactory } from '@jbrowse/core/assemblyManager'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
