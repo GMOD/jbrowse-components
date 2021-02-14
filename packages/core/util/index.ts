@@ -811,3 +811,53 @@ export function stringify({
 
 export const isElectron =
   typeof window !== 'undefined' && Boolean(window.electron)
+
+export function revcom(seqString: string) {
+  return complement(seqString).split('').reverse().join('')
+}
+
+export const complement = (() => {
+  const complementRegex = /[ACGT]/gi
+
+  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+  // generated with:
+  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+  const complementTable = {
+    S: 'S',
+    w: 'w',
+    T: 'A',
+    r: 'y',
+    a: 't',
+    N: 'N',
+    K: 'M',
+    x: 'x',
+    d: 'h',
+    Y: 'R',
+    V: 'B',
+    y: 'r',
+    M: 'K',
+    h: 'd',
+    k: 'm',
+    C: 'G',
+    g: 'c',
+    t: 'a',
+    A: 'T',
+    n: 'n',
+    W: 'W',
+    X: 'X',
+    m: 'k',
+    v: 'b',
+    B: 'V',
+    s: 's',
+    H: 'D',
+    c: 'g',
+    D: 'H',
+    b: 'v',
+    R: 'Y',
+    G: 'C',
+  } as { [key: string]: string }
+
+  return (seqString: string) => {
+    return seqString.replace(complementRegex, m => complementTable[m] || '')
+  }
+})()

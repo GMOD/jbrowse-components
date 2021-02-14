@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -121,6 +121,7 @@ interface ReducedFeature {
   start: number
   clipPos: number
   end: number
+  strand: number
   seqLength: number
   syntenyId?: number
   uniqueId: string
@@ -164,8 +165,8 @@ function WindowSizeDlg(props: {
     try {
       const session = getSession(track)
       const view = getContainingView(track)
-      const clipPos = feature.get('clipPos')
       const cigar = feature.get('CIGAR')
+      const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
       const SA: string =
         (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
@@ -190,7 +191,7 @@ function WindowSizeDlg(props: {
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
           const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, saStrandNormalized)
+          const saClipPos = getClip(saCigar, 1) // saStrandNormalized)
           const saRealStart = +saStart - 1
           return {
             refName: saRef,
@@ -211,6 +212,7 @@ function WindowSizeDlg(props: {
         })
 
       const feat = feature.toJSON()
+      feat.clipPos = clipPos
 
       feat.mate = {
         refName: readName,
@@ -222,7 +224,6 @@ function WindowSizeDlg(props: {
       // which is the primary alignments. otherwise it is the primary alignment just use
       // seq.length if primary alignment
       const totalLength =
-        // eslint-disable-next-line no-bitwise
         flags & 2048
           ? getLength(supplementaryAlignments[0].CIGAR)
           : getLength(cigar)
@@ -237,6 +238,8 @@ function WindowSizeDlg(props: {
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
 
+      const featSeq = feature.get('seq')
+
       // the config feature store includes synthetic mate features
       // mapped to the read assembly
       const configFeatureStore = features.concat(
@@ -244,13 +247,25 @@ function WindowSizeDlg(props: {
         features.map(f => f.mate),
       )
 
+      const expand = 2 * windowSize
       const refLength = features.reduce(
-        (a, f) => a + f.end - f.start + 2 * windowSize,
+        (a, f) => a + f.end - f.start + expand,
         0,
       )
 
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
+      const lgvRegions = features
+        .map(f => {
+          return {
+            ...f,
+            start: f.start - windowSize,
+            end: f.end + windowSize,
+            refName: f.refName,
+            assemblyName: trackAssembly,
+          }
+        })
+        .sort((a, b) => a.clipPos - b.clipPos)
 
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
@@ -260,14 +275,7 @@ function WindowSizeDlg(props: {
             hideHeader: true,
             offsetPx: 0,
             bpPerPx: refLength / view.width,
-            displayedRegions: features.map(f => {
-              return {
-                start: f.start - windowSize,
-                end: f.end + windowSize,
-                refName: f.refName,
-                assemblyName: trackAssembly,
-              }
-            }),
+            displayedRegions: lgvRegions,
             tracks: [
               {
                 id: `${Math.random()}`,
@@ -345,7 +353,7 @@ function WindowSizeDlg(props: {
                   {
                     start: 0,
                     end: totalLength,
-                    seq: feat.seq,
+                    seq: featSeq,
                     refName: readName,
                     uniqueId: `${Math.random()}`,
                     id: `${Math.random()}`,
