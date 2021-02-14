@@ -1,27 +1,21 @@
-import Paper from '@material-ui/core/Paper'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React, { useState, FunctionComponent } from 'react'
+import { Typography, Link, Paper } from '@material-ui/core'
+import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
+import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
 import {
   BaseFeatureDetails,
   BaseCard,
   useStyles,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-
-interface AlnCardProps {
-  title?: string
-}
-
-interface AlnProps extends AlnCardProps {
-  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-}
+import { parseCigar } from '../BamAdapter/MismatchParser'
 
 const omit = ['clipPos', 'flags']
 
-const AlignmentFlags: FunctionComponent<AlnProps> = props => {
+function AlignmentFlags(props: { feature: any }) {
   const classes = useStyles()
   const { feature } = props
+  const { flags } = feature
   const flagNames = [
     'read paired',
     'read mapped in proper pair',
@@ -36,7 +30,6 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
     'read is PCR or optical duplicate',
     'supplementary alignment',
   ]
-  const { flags } = feature
   return (
     <BaseCard {...props} title="Flags">
       <div style={{ display: 'flex' }}>
@@ -56,13 +49,6 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
       })}
     </BaseCard>
   )
-}
-AlignmentFlags.propTypes = {
-  feature: PropTypes.objectOf(PropTypes.any).isRequired,
-}
-
-interface AlnInputProps {
-  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 function Formatter({ value }: { value: unknown }) {
@@ -84,9 +70,60 @@ function Formatter({ value }: { value: unknown }) {
   return <div>{display}</div>
 }
 
-const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
+// utility function to get length of alignment from cigar
+function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
+}
+
+function SupplementaryAlignments(props: { tag: string; model: any }) {
+  const { tag, model } = props
+  const session = getSession(model)
+  return (
+    <BaseCard {...props} title="Supplementary alignments">
+      <Typography>List of supplementary alignment locations</Typography>
+      <ul>
+        {tag
+          .split(';')
+          .filter(SA => !!SA)
+          .map((SA, index) => {
+            const [saRef, saStart, saStrand, saCigar] = SA.split(',')
+            const saLength = getLengthOnRef(saCigar)
+            const extra = Math.floor(saLength / 5)
+            const start = +saStart
+            const end = +saStart + saLength
+            const locString = `${saRef}:${start - extra}-${end + extra}`
+            const displayString = `${saRef}:${start}-${end} (${saStrand})`
+            return (
+              <li key={`${SA}-${index}`}>
+                <Link
+                  onClick={() => {
+                    session.views[0].navToLocString(locString)
+                  }}
+                  href="#"
+                >
+                  {displayString}
+                </Link>
+              </li>
+            )
+          })}
+      </ul>
+    </BaseCard>
+  )
+}
+
+function AlignmentFeatureDetails(props: { model: any }) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
+  const SA = (feat.tags && feat.tags.SA) || feat.SA
   return (
     <Paper data-testid="alignment-side-drawer">
       <BaseFeatureDetails
@@ -94,12 +131,10 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
         omit={omit}
         formatter={(value: unknown) => <Formatter value={value} />}
       />
+      {SA ? <SupplementaryAlignments model={model} tag={SA} /> : null}
       <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
-}
-AlignmentFeatureDetails.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(AlignmentFeatureDetails)
