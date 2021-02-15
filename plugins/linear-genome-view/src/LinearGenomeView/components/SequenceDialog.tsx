@@ -21,7 +21,7 @@ import GetAppIcon from '@material-ui/icons/GetApp'
 import TextField from '@material-ui/core/TextField'
 
 // core
-import { getSession } from '@jbrowse/core/util'
+import { getSession, findParentThatIs } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 // other
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
@@ -45,6 +45,24 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+// this is a special function to find assembly that is not in the
+// assemblyManager
+function getViewAssemblyConfig(
+  self: LinearGenomeViewModel,
+  assemblyName: string,
+) {
+  const model = findParentThatIs(
+    self,
+    // @ts-ignore
+    (thing: unknown) => 'viewAssemblyConfigs' in thing,
+  )
+
+  // @ts-ignore
+  return model.viewAssemblyConfigs.find(asm => {
+    return asm.name === assemblyName
+  })
+}
+
 /**
  * Fetches and returns a list features for a given list of regions
  * @param selectedRegions - Region[]
@@ -58,15 +76,15 @@ async function fetchSequence(
   const assemblyName =
     self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
   const { rpcManager, assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`Could not find assembly ${assemblyName}`)
+  let assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+  if (!assemblyConfig) {
+    assemblyConfig = getViewAssemblyConfig(self, assemblyName)
+    if (!assemblyConfig) {
+      throw new Error(`Could not find assembly ${assemblyName}`)
+    }
   }
   // assembly configuration
-  const adapterConfig = readConfObject(assembly.configuration, [
-    'sequence',
-    'adapter',
-  ])
+  const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
