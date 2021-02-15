@@ -189,9 +189,7 @@ function renderBlockData(self: Instance<BlockStateModel>) {
     const regionAsm = self.region.assemblyName
     if (
       !assemblyNames.includes(regionAsm) &&
-      !assemblyNames.find(assemblyName =>
-        assemblyManager.get(assemblyName)?.hasName(regionAsm),
-      )
+      !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
     ) {
       throw new Error(
         `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
