@@ -193,9 +193,9 @@ function renderBlockData(self: Instance<BlockStateModel>) {
         assemblyManager.get(assemblyName)?.hasName(regionAsm),
       )
     ) {
-      return {
-        displayError: `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
-      }
+      throw new Error(
+        `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
+      )
     }
   const { renderProps } = display
   const { rendererType } = display
