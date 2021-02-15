@@ -38,17 +38,22 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, hideHeader, initialized } = model
+  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
-  // the AboutDialog is shown at this level because if it is rendered as a
-  // child of the TracksContainer, then clicking on the dialog scrolls the LGV
+  // the AboutDialog is shown at this level because if it is
+  // rendered as a child of the TracksContainer, then clicking on
+  // the dialog scrolls the LGV
   const aboutTrack = model.tracks.find(track => track.showAbout)
   const dialogTrack = model.tracks.find(track => track.DialogComponent)
 
-  return !initialized ? (
-    <ImportForm model={model} />
-  ) : (
+  if (!initialized) {
+    return null
+  }
+  if (!hasDisplayedRegions) {
+    return <ImportForm model={model} />
+  }
+  return (
     <div style={{ position: 'relative' }}>
       {aboutTrack ? (
         <AboutDialog

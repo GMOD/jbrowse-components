@@ -164,10 +164,13 @@ describe('test configuration editor', () => {
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
-    await waitFor(async () => {
-      const feats = await findAllByTestId('box-test-vcf-604452')
-      expect(feats[0]).toHaveAttribute('fill', 'green')
-    })
+    await waitFor(
+      async () => {
+        const feats = await findAllByTestId('box-test-vcf-604452')
+        expect(feats[0]).toHaveAttribute('fill', 'green')
+      },
+      { timeout: 10000 },
+    )
   }, 10000)
 })
 

@@ -581,6 +581,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             return track.trackId === config.trackId
           })
 
+        // disable if it is a reference sequence track
+        const isRefSeqTrack =
+          readConfObject(config, 'type') === 'ReferenceSequenceTrack'
         return [
           {
             label: 'Settings',
@@ -592,7 +595,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Delete track',
-            disabled: !canEdit,
+            disabled: !canEdit || isRefSeqTrack,
             onClick: () => {
               session.deleteTrackConf(config)
             },
@@ -600,6 +603,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Copy track',
+            disabled: isRefSeqTrack,
             onClick: () => {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),

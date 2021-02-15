@@ -44,7 +44,7 @@ export default ConfigurationSchema(
     maxClippingSize: {
       type: 'integer',
       description: 'the max clip size to be used in a pileup rendering',
-      defaultValue: 0,
+      defaultValue: 10000,
     },
     height: {
       type: 'integer',

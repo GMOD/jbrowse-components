@@ -3,15 +3,15 @@
   "plugins": [
     {
       "name": "Biothings",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-biothings-api/v1.0.0/rawgit/jbrowse-plugin-biothings.umd.production.min.js"
+      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
       "name": "GDC",
-      "url": "https://ghcdn.rawgit.org/GMOD/jbrowse-plugin-gdc/v1.0.0/rawgit/jbrowse-plugin-gdc.umd.production.min.js"
+      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
     },
     {
       "name": "UCSC",
-      "url": "https://ghcdn.rawgit.org/cmdcolin/jbrowse-plugin-ucsc-api/v1.0.0/rawgit/jbrowse-plugin-ucsc.umd.production.min.js"
+      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
     }
   ],
   "assemblies": [
@@ -763,7 +763,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
@@ -2480,7 +2479,19 @@
           },
           "indexType": "TBI"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg37_lift_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -2499,6 +2510,63 @@
           },
           "indexType": "TBI"
         }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "function(feature) { return feature.get('gene_name') }"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "nstd175.GRCh37.variant_call.vcf",
+      "name": "nstd175.GRCh37.variant_call.vcf",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way",
+      "name": "hg19.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38.100way.phyloP100way",
+      "name": "hg38.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
+        }
       }
     }
   ],
@@ -2507,3 +2575,4 @@
     "name": "New Session"
   }
 }
+
