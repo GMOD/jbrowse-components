@@ -1,19 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
+import {
+  Button,
+  CircularProgress,
+  TextField,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import AddIcon from '@material-ui/icons/Add'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -28,9 +32,10 @@ import {
   getContainingView,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun } from 'mobx'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
   ReactComponent as LinearComparativeDisplayReactComponent,
@@ -154,15 +159,46 @@ function WindowSizeDlg(props: {
   const classes = useStyles()
   const {
     track,
-    display: { feature },
+    display: { feature: preFeature },
     handleClose,
   } = props
   const [window, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
   const windowSize = +window
+  const [featureDownloaded, setFeatureDownloaded] = useState<Feature>()
+  useEffect(() => {
+    let done = false
+    ;(async () => {
+      if (preFeature.get('flags') & 2048) {
+        const SA: string =
+          (preFeature.get('tags')
+            ? preFeature.get('tags').SA
+            : preFeature.get('SA')) || ''
+        const primaryAln = SA.split(';')[0]
+        const [saRef, saStart] = primaryAln.split(',')
+        const { rpcManager } = getSession(track)
+        const adapterConfig = getConf(track, 'adapter')
+        const sessionId = getRpcSessionId(track)
+        const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          adapterConfig,
+          sessionId,
+          region: { refName: saRef, start: +saStart - 1, end: +saStart },
+        })) as any[]
+        const primaryFeat = feats.find(f => f.name === preFeature.get('name'))
+        if (!done) {
+          setFeatureDownloaded(new SimpleFeature(primaryFeat))
+        }
+      }
+    })()
+
+    return () => {
+      done = true
+    }
+  }, [preFeature, track])
 
   function onSubmit() {
     try {
+      const feature = featureDownloaded || preFeature
       const session = getSession(track)
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR')
@@ -220,9 +256,9 @@ function WindowSizeDlg(props: {
         end: clipPos + getLengthSansClipping(cigar),
       }
 
-      // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
-      // which is the primary alignments. otherwise it is the primary alignment just use
-      // seq.length if primary alignment
+      // if secondary alignment or supplementary, calculate length from SA[0]'s
+      // CIGAR which is the primary alignments. otherwise it is the primary
+      // alignment just use seq.length if primary alignment
       const totalLength =
         flags & 2048
           ? getLength(supplementaryAlignments[0].CIGAR)
@@ -383,6 +419,7 @@ function WindowSizeDlg(props: {
       setError(e)
     }
   }
+
   return (
     <Dialog
       open
@@ -401,29 +438,39 @@ function WindowSizeDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <div className={classes.root}>
-          <Typography>
-            Show an extra window size around each part of the split alignment.
-            Using a larger value can allow you to see more genomic context.
-          </Typography>
-          {error ? <Typography color="error">{`${error}`}</Typography> : null}
+        {!featureDownloaded ? (
+          <div>
+            <Typography>
+              To accurately perform comparison we are fetching the primary
+              alignment. Loading primary feature...
+            </Typography>
+            <CircularProgress />
+          </div>
+        ) : (
+          <div className={classes.root}>
+            <Typography>
+              Show an extra window size around each part of the split alignment.
+              Using a larger value can allow you to see more genomic context.
+            </Typography>
+            {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
-          <TextField
-            value={window}
-            onChange={event => {
-              setWindowSize(event.target.value)
-            }}
-            label="Set window size"
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ marginLeft: 20 }}
-            onClick={onSubmit}
-          >
-            Submit
-          </Button>
-        </div>
+            <TextField
+              value={window}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
+              label="Set window size"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginLeft: 20 }}
+              onClick={onSubmit}
+            >
+              Submit
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
