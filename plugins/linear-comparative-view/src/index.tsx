@@ -184,9 +184,11 @@ function WindowSizeDlg(props: {
           sessionId,
           region: { refName: saRef, start: +saStart - 1, end: +saStart },
         })) as any[]
-        const primaryFeat = feats.find(f => f.name === preFeature.get('name'))
+        const primaryFeat = feats.find(
+          f => f.get('name') === preFeature.get('name'),
+        )
         if (!done) {
-          setFeatureDownloaded(new SimpleFeature(primaryFeat))
+          setFeatureDownloaded(primaryFeat)
         }
       }
     })()
@@ -295,9 +297,8 @@ function WindowSizeDlg(props: {
         .map(f => {
           return {
             ...f,
-            start: f.start - windowSize,
+            start: Math.max(0, f.start - windowSize),
             end: f.end + windowSize,
-            refName: f.refName,
             assemblyName: trackAssembly,
           }
         })
