@@ -78,7 +78,8 @@ interface CachedPileupLayout {
   showSoftClip: boolean
 }
 
-// orientation definitions from igv.js, see also https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
+// orientation definitions from igv.js, see also
+// https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
 const orientationTypes = {
   fr: {
     F1R2: 'LR',
