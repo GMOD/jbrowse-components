@@ -436,7 +436,6 @@ function WindowSizeDlg(props: {
                     seq: featSeq,
                     refName: readName,
                     uniqueId: `${Math.random()}`,
-                    id: `${Math.random()}`,
                   },
                 ],
               },
