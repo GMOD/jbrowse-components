@@ -153,6 +153,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
+}
+
 function WindowSizeDlg(props: {
   display: any
   handleClose: () => void
@@ -176,10 +181,7 @@ function WindowSizeDlg(props: {
     let done = false
     ;(async () => {
       if (preFeature.get('flags') & 2048) {
-        const SA: string =
-          (preFeature.get('tags')
-            ? preFeature.get('tags').SA
-            : preFeature.get('SA')) || ''
+        const SA: string = getTag(preFeature, 'SA') || ''
         const primaryAln = SA.split(';')[0]
         const [saRef, saStart] = primaryAln.split(',')
         const { rpcManager } = getSession(track)
@@ -191,7 +193,9 @@ function WindowSizeDlg(props: {
           region: { refName: saRef, start: +saStart - 1, end: +saStart },
         })) as any[]
         const primaryFeat = feats.find(
-          f => f.get('name') === preFeature.get('name'),
+          f =>
+            f.get('name') === preFeature.get('name') &&
+            !(f.get('flags') & 2048),
         )
         if (!done) {
           setPrimaryFeature(primaryFeat)
@@ -215,8 +219,7 @@ function WindowSizeDlg(props: {
       const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
       const qual = feature.get('qual') as string
-      const SA: string =
-        (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
+      const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
       const readAssembly = `${readName}_assembly`
       const [trackAssembly] = getConf(track, 'assemblyNames')
@@ -238,7 +241,7 @@ function WindowSizeDlg(props: {
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
           const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, 1) // saStrandNormalized)
+          const saClipPos = getClip(saCigar, 1)
           const saRealStart = +saStart - 1
           return {
             refName: saRef,
