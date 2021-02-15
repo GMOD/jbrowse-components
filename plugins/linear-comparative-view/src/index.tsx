@@ -166,6 +166,9 @@ function WindowSizeDlg(props: {
   const [error, setError] = useState<Error>()
   const windowSize = +window
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
+
+  // we need to fetch the primary alignment if the selected feature is 2048.
+  // this should be the first in the list of the SA tag
   useEffect(() => {
     let done = false
     ;(async () => {
@@ -360,6 +363,40 @@ function WindowSizeDlg(props: {
                     showTranslation: false,
                     height: 35,
                     configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+              {
+                id: `${Math.random()}`,
+                type: 'QuantitativeTrack',
+                configuration: {
+                  trackId: 'qualTrack',
+                  assemblyNames: [readAssembly],
+                  name: 'Read quality',
+                  type: 'QuantitativeTrack',
+                  adapter: {
+                    type: 'FromConfigAdapter',
+                    noAssemblyManager: true,
+                    features: primaryFeature
+                      .get('qual')
+                      .split(' ')
+                      .map((qual, index) => {
+                        return {
+                          start: index,
+                          end: index + 1,
+                          refName: readName,
+                          score: +qual,
+                          assemblyName: readAssembly,
+                          uniqueId: `feat_${index}`,
+                        }
+                      }),
+                  },
+                },
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearWiggleDisplay',
+                    height: 100,
                   },
                 ],
               },

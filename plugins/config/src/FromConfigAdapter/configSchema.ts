@@ -11,6 +11,10 @@ export const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'SimpleFeature',
     },
+    noAssemblyManager: {
+      type: 'boolean',
+      defaultValue: false,
+    },
   },
   { explicitlyTyped: true },
 )
