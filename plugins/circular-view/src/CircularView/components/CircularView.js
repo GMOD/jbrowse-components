@@ -178,10 +178,7 @@ export default pluginManager => {
     const classes = useStyles()
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
     const { assemblyNames, assemblyManager } = getSession(model)
-    const [assemblyError, setAssemblyError] = useState('')
-    if (!assemblyNames.length) {
-      setAssemblyError('No configured assemblies')
-    }
+    const assemblyError = assemblyNames.length ? '' : 'No configured assemblies'
     const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
     const regions =
       assembly && assembly.regions ? getSnapshot(assembly.regions) : []
