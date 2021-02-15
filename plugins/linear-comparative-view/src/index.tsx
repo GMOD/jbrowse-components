@@ -17,7 +17,7 @@ import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -165,7 +165,7 @@ function WindowSizeDlg(props: {
   const [window, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
   const windowSize = +window
-  const [featureDownloaded, setFeatureDownloaded] = useState<Feature>()
+  const [primaryFeature, setPrimaryFeature] = useState<Feature>()
   useEffect(() => {
     let done = false
     ;(async () => {
@@ -188,8 +188,10 @@ function WindowSizeDlg(props: {
           f => f.get('name') === preFeature.get('name'),
         )
         if (!done) {
-          setFeatureDownloaded(primaryFeat)
+          setPrimaryFeature(primaryFeat)
         }
+      } else {
+        setPrimaryFeature(preFeature)
       }
     })()
 
@@ -200,7 +202,7 @@ function WindowSizeDlg(props: {
 
   function onSubmit() {
     try {
-      const feature = featureDownloaded || preFeature
+      const feature = primaryFeature || preFeature
       const session = getSession(track)
       const view = getContainingView(track)
       const cigar = feature.get('CIGAR')
@@ -439,7 +441,7 @@ function WindowSizeDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {!featureDownloaded ? (
+        {!primaryFeature ? (
           <div>
             <Typography>
               To accurately perform comparison we are fetching the primary
