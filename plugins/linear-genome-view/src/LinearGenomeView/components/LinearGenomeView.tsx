@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
+import { when } from 'mobx'
 import { observer } from 'mobx-react'
 import { getParent, Instance } from 'mobx-state-tree'
 import React from 'react'
@@ -131,14 +132,30 @@ export async function renderToSvg(model: LGV) {
   const textHeight = fontSize + 5
   const paddingHeight = 20
   const headerHeight = textHeight + 20
-  let offset = headerHeight + 20
+  const rulerHeight = 30
+
+  const {
+    width,
+    offsetPx: viewOffsetPx,
+    bpPerPx,
+    tracks,
+    dynamicBlocks: { totalBp, contentBlocks },
+  } = model
+  const renderRuler = contentBlocks.length < 5
+  let offset = headerHeight + rulerHeight + 20
   const height =
-    model.tracks.reduce((accum, track) => {
+    tracks.reduce((accum, track) => {
       const display = track.displays[0]
       return accum + display.height + 20 + textHeight
     }, 0) + offset
-  const { width, offsetPx: viewOffsetPx, bpPerPx } = model
-  const renderRuler = model.dynamicBlocks.contentBlocks.length < 5
+  let displayBp
+  if (totalBp / 1000000 > 0) {
+    displayBp = `${(totalBp / 1000000).toPrecision(3)}Mbp`
+  } else if (totalBp / 1000 > 0) {
+    displayBp = `${(totalBp / 1000).toPrecision(3)}Kbp`
+  } else {
+    displayBp = `${Math.floor(totalBp)}bp`
+  }
   return renderToStaticMarkup(
     <svg
       width={width}
@@ -146,10 +163,24 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width, height].toString()}
     >
-      {model.dynamicBlocks.contentBlocks.map(block => {
+      <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
+      <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
+      <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
+      <text
+        x={width / 2}
+        y={rulerHeight}
+        textAnchor="middle"
+        fontSize={fontSize}
+      >
+        {displayBp}
+      </text>
+      {contentBlocks.map(block => {
         const offsetLeft = block.offsetPx - viewOffsetPx
         return (
-          <g key={block.key} transform={`translate(${offsetLeft} 0)`}>
+          <g
+            key={block.key}
+            transform={`translate(${offsetLeft} ${rulerHeight})`}
+          >
             <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
               {block.refName}
             </text>
@@ -158,7 +189,7 @@ export async function renderToSvg(model: LGV) {
                 <Ruler
                   start={block.start}
                   end={block.end}
-                  bpPerPx={model.bpPerPx}
+                  bpPerPx={bpPerPx}
                   reversed={block.reversed}
                 />
               </g>
@@ -177,7 +208,7 @@ export async function renderToSvg(model: LGV) {
       })}
       {
         await Promise.all(
-          model.tracks.map(async track => {
+          tracks.map(async track => {
             const current = offset
             const trackId = getConf(track, 'trackId')
             const trackName =
@@ -188,6 +219,9 @@ export async function renderToSvg(model: LGV) {
               )})`
             const display = track.displays[0]
             offset += display.height + paddingHeight + textHeight
+            await when(() =>
+              display.ready !== undefined ? display.ready : true,
+            )
 
             // uses svg text background from
             // https://stackoverflow.com/questions/15500894/
