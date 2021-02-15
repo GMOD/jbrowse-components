@@ -9,6 +9,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -293,67 +294,16 @@ export const BaseLinearDisplay = types
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature
     },
-    async renderSvg(overrideHeight?: number) {
-      const { height, id } = self
-      const view = getContainingView(self) as LinearGenomeViewModel
-      const {
-        offsetPx: viewOffsetPx,
-        width,
-        roundedDynamicBlocks: dynamicBlocks,
-      } = view
-
-      const renderings = await Promise.all(
-        dynamicBlocks.map(block => {
-          const blockState = BlockState.create({
-            key: block.key,
-            region: block,
-          })
-
-          const {
-            rpcManager,
-            renderArgs,
-            renderProps,
-            rendererType,
-          } = renderBlockData(blockState, self)
-
-          return rendererType.renderInClient(rpcManager, {
-            ...renderArgs,
-            ...renderProps,
-            forceSvg: true,
-          })
-        }),
-      )
-      return (
-        <>
-          {renderings.map((rendering, index) => {
-            const { offsetPx, key } = dynamicBlocks[index]
-            const offset = offsetPx - viewOffsetPx
-            return (
-              <React.Fragment key={`frag-${index}`}>
-                <defs>
-                  <clipPath id={`clip-${id}-${index}`}>
-                    <rect
-                      x="0"
-                      y="0"
-                      width={width}
-                      height={overrideHeight || height}
-                    />
-                  </clipPath>
-                </defs>
-                <g
-                  key={key}
-                  transform={`translate(${offset} 0)`}
-                  dangerouslySetInnerHTML={{ __html: rendering.html }}
-                  clipPath={`url(#clip-${id}-${index})`}
-                />
-              </React.Fragment>
-            )
-          })}
-        </>
-      )
-    },
   }))
   .views(self => ({
+    regionCannotBeRenderedText(_region: Region) {
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (view && view.bpPerPx > self.maxViewBpPerPx) {
+        return 'Zoom in to see features'
+      }
+      return ''
+    },
+
     /**
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -361,7 +311,7 @@ export const BaseLinearDisplay = types
      *  string of text describes why it cannot be rendered
      *  react node allows user to force load at current setting
      */
-    regionCannotBeRendered(/* region */) {
+    regionCannotBeRendered(_region: Region) {
       const view = getContainingView(self) as LinearGenomeViewModel
       if (view && view.bpPerPx > self.maxViewBpPerPx) {
         return (
@@ -391,8 +341,8 @@ export const BaseLinearDisplay = types
     get trackMenuItems(): MenuItem[] {
       return []
     },
-    // distinct set of display items that are particular to this display type. for
-    // base, there are none
+    // distinct set of display items that are particular to this display type.
+    // for base, there are none
     //
     // note: this attribute is helpful when composing together multiple
     // subdisplays so that you don't repeat the "about this track" from each
@@ -465,6 +415,89 @@ export const BaseLinearDisplay = types
     },
     get renderProps() {
       return this.composedRenderProps
+    },
+  }))
+  .actions(self => ({
+    async renderSvg(overrideHeight?: number) {
+      const { height, id } = self
+      const view = getContainingView(self) as LinearGenomeViewModel
+      const {
+        offsetPx: viewOffsetPx,
+        width,
+        roundedDynamicBlocks: dynamicBlocks,
+      } = view
+
+      const renderings = await Promise.all(
+        dynamicBlocks.map(block => {
+          const blockState = BlockState.create({
+            key: block.key,
+            region: block,
+          })
+
+          // regionCannotBeRendered can return jsx so look for plaintext
+          // version, or just get the default if none available
+          const cannotBeRenderedReason =
+            self.regionCannotBeRenderedText(block) ||
+            self.regionCannotBeRendered(block)
+          if (cannotBeRenderedReason) {
+            return (
+              <>
+                <rect x={0} y={0} width={width} height={20} fill="#aaa" />
+                <text x={0} y={15}>
+                  {cannotBeRenderedReason}
+                </text>
+              </>
+            )
+          }
+
+          const {
+            rpcManager,
+            renderArgs,
+            renderProps,
+            rendererType,
+          } = renderBlockData(blockState, self)
+
+          return rendererType.renderInClient(rpcManager, {
+            ...renderArgs,
+            ...renderProps,
+            forceSvg: true,
+          })
+        }),
+      )
+      return (
+        <>
+          {renderings.map((rendering, index) => {
+            const { offsetPx, key } = dynamicBlocks[index]
+            const offset = offsetPx - viewOffsetPx
+            return (
+              <React.Fragment key={`frag-${index}`}>
+                <defs>
+                  <clipPath id={`clip-${id}-${index}`}>
+                    <rect
+                      x={0}
+                      y={0}
+                      width={width}
+                      height={overrideHeight || height}
+                    />
+                  </clipPath>
+                </defs>
+                {React.isValidElement(rendering) ? (
+                  <g key={key} transform={`translate(${offset} 0)`}>
+                    {rendering}
+                  </g>
+                ) : (
+                  <g
+                    key={key}
+                    transform={`translate(${offset} 0)`}
+                    dangerouslySetInnerHTML={{ __html: rendering.html }}
+                    clipPath={`url(#clip-${id}-${index})`}
+                  />
+                )}
+              </React.Fragment>
+            )
+          })}
+        </>
+      )
     },
   }))
   .postProcessSnapshot(self => {

@@ -483,10 +483,11 @@ const stateModelFactory = (
           )
         },
         async renderSvg() {
+          const { needsScalebar, ready, stats } = self
           return (
             <>
               <g id="snpcov">{await superRenderSvg()}</g>
-              {self.needsScalebar ? (
+              {needsScalebar && ready && stats ? (
                 <g transform={`translate(0 -${YSCALEBAR_LABEL_OFFSET})`}>
                   <YScaleBar model={self as WiggleDisplayModel} />
                 </g>

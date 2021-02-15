@@ -9,9 +9,9 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { getParent, Instance } from 'mobx-state-tree'
 import React from 'react'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -180,7 +180,12 @@ export async function renderToSvg(model: LGV) {
           model.tracks.map(async track => {
             const current = offset
             const trackId = getConf(track, 'trackId')
-            const trackName = getConf(track, 'name')
+            const trackName =
+              getConf(track, 'name') ||
+              `Reference sequence (${readConfObject(
+                getParent(track.configuration),
+                'name',
+              )})`
             const display = track.displays[0]
             offset += display.height + paddingHeight + textHeight
 
