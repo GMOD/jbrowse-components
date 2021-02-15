@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   CircularProgress,
+  Checkbox,
+  FormControlLabel,
   TextField,
   Typography,
   Dialog,
@@ -166,6 +168,7 @@ function WindowSizeDlg(props: {
   const [error, setError] = useState<Error>()
   const windowSize = +window
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
+  const [qualTrack, setQualTrack] = useState(false)
 
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
@@ -211,6 +214,7 @@ function WindowSizeDlg(props: {
       const cigar = feature.get('CIGAR')
       const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
+      const qual = feature.get('qual') as string
       const SA: string =
         (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
       const readName = feature.get('name')
@@ -366,40 +370,40 @@ function WindowSizeDlg(props: {
                   },
                 ],
               },
-              {
-                id: `${Math.random()}`,
-                type: 'QuantitativeTrack',
-                configuration: {
-                  trackId: 'qualTrack',
-                  assemblyNames: [readAssembly],
-                  name: 'Read quality',
-                  type: 'QuantitativeTrack',
-                  adapter: {
-                    type: 'FromConfigAdapter',
-                    noAssemblyManager: true,
-                    features: primaryFeature
-                      .get('qual')
-                      .split(' ')
-                      .map((qual, index) => {
-                        return {
-                          start: index,
-                          end: index + 1,
-                          refName: readName,
-                          score: +qual,
-                          assemblyName: readAssembly,
-                          uniqueId: `feat_${index}`,
-                        }
-                      }),
-                  },
-                },
-                displays: [
-                  {
-                    id: `${Math.random()}`,
-                    type: 'LinearWiggleDisplay',
-                    height: 100,
-                  },
-                ],
-              },
+              ...(qualTrack
+                ? [
+                    {
+                      id: `${Math.random()}`,
+                      type: 'QuantitativeTrack',
+                      configuration: {
+                        trackId: 'qualTrack',
+                        assemblyNames: [readAssembly],
+                        name: 'Read quality',
+                        type: 'QuantitativeTrack',
+                        adapter: {
+                          type: 'FromConfigAdapter',
+                          noAssemblyManager: true,
+                          features: qual.split(' ').map((score, index) => {
+                            return {
+                              start: index,
+                              end: index + 1,
+                              refName: readName,
+                              score: +score,
+                              uniqueId: `feat_${index}`,
+                            }
+                          }),
+                        },
+                      },
+                      displays: [
+                        {
+                          id: `${Math.random()}`,
+                          type: 'LinearWiggleDisplay',
+                          height: 100,
+                        },
+                      ],
+                    },
+                  ]
+                : []),
             ],
           },
         ],
@@ -500,6 +504,15 @@ function WindowSizeDlg(props: {
                 setWindowSize(event.target.value)
               }}
               label="Set window size"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={qualTrack}
+                  onChange={() => setQualTrack(val => !val)}
+                />
+              }
+              label="Show qual track"
             />
             <Button
               variant="contained"
