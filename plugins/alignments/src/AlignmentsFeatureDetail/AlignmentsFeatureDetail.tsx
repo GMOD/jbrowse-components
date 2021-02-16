@@ -12,6 +12,7 @@ import { parseCigar } from '../BamAdapter/MismatchParser'
 
 const omit = ['clipPos', 'flags']
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AlignmentFlags(props: { feature: any }) {
   const classes = useStyles()
   const { feature } = props
@@ -84,6 +85,7 @@ function getLengthOnRef(cigar: string) {
   return lengthOnRef
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SupplementaryAlignments(props: { tag: string; model: any }) {
   const { tag, model } = props
   const session = getSession(model)
@@ -130,6 +132,7 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AlignmentFeatureDetails(props: { model: any }) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
