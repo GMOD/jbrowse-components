@@ -109,17 +109,20 @@ function VariantSamples(props: any) {
   )
 }
 
-function TranslocationPanel(props: { feature: any; model: any }) {
-  const { model, feature } = props
+function BreakendPanel(props: {
+  locStrings: string[]
+  model: any
+  feature: Feature
+}) {
+  const { model, locStrings } = props
   const session = getSession(model)
   return (
     <BaseCard {...props} title="Breakends">
-      <Typography>List of breakend endpoints</Typography>
+      <Typography>Link to breakend endpoint</Typography>
       <ul>
-        {feature.ALT.map((alt: { MatePosition: string }, index: number) => {
-          const locString = alt.MatePosition
+        {locStrings.map((locString, index) => {
           return (
-            <li key={`${JSON.stringify(alt)}-index`}>
+            <li key={`${JSON.stringify(locString)}-${index}`}>
               <Link
                 href="#"
                 onClick={() => {
@@ -172,7 +175,18 @@ function VariantFeatureDetails(props: any) {
       />
       <Divider />
       {feat.type === 'breakend' ? (
-        <TranslocationPanel feature={feat} model={model} />
+        <BreakendPanel
+          feature={feat}
+          locStrings={feat.ALT.map(alt => alt.MatePosition)}
+          model={model}
+        />
+      ) : null}
+      {feat.type === 'translocation' ? (
+        <BreakendPanel
+          feature={feat}
+          model={model}
+          locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
+        />
       ) : null}
       <VariantSamples feature={feat} {...props} />
     </Paper>

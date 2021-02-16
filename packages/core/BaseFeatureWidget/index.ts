@@ -1,5 +1,5 @@
 import { types } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager from '../PluginManager'
 import { ConfigurationSchema } from '../configuration'
 import { ElementId } from '../util/types/mst'
 
