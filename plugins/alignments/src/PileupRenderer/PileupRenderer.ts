@@ -268,6 +268,56 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
+  colorByMethylation(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    _config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const mm = ((feature.get('tags')
+      ? feature.get('tags').MM
+      : feature.get('MM')) || '') as string
+
+    // adapted from https://github.com/wdecoster/methplotlib/blob/master/LICENSE
+    const [basemod, ...rest] = mm.split(',')
+    const deltas = rest.map(score => +score)
+    const deltaMods = [...deltas]
+    for (let i = 1; i < deltaMods.length; i++) {
+      deltaMods[i] += deltaMods[i - 1]
+    }
+
+    const [base, mod] = basemod.split('+')
+    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const width = 1 / bpPerPx
+    const [leftPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    let counter = 0
+    for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2, k++) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        k += len
+      } else if (op === 'D' || op === 'N') {
+        j += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        ctx.fillStyle = 'red'
+        for (let m = 0; m < len; m++) {
+          if (k + m === deltaMods[counter]) {
+            ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+            counter++
+          }
+        }
+        j += len
+      }
+    }
+  }
+
   drawRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
@@ -396,6 +446,10 @@ export default class PileupRenderer extends BoxRendererType {
     switch (colorType) {
       case 'perBaseQuality':
         this.colorByPerBaseQuality(ctx, feat, config, region, bpPerPx)
+        break
+
+      case 'methylation':
+        this.colorByMethylation(ctx, feat, config, region, bpPerPx)
         break
     }
   }
