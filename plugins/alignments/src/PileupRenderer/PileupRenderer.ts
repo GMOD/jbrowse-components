@@ -294,7 +294,6 @@ export default class PileupRenderer extends BoxRendererType {
     }
     const probabilities = mp.split('').map(score => score.charCodeAt(0) - 33)
     const cigarOps = parseCigar(feature.get('CIGAR'))
-    // console.log({ deltas, deltaMods, probabilities, CIGAR: cigarOps })
     const width = 1 / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
@@ -303,42 +302,29 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
     let counter = 0
-    const n = '72bd0cef-e49e-4929-a98b-7248374ed781'
-    if (feature.get('name') === n)
-      console.log(feature.id(), feature.get('start'), {
-        probabilities,
-        deltas,
-        deltaMods,
-        cigarOps,
-      })
     const interpolate = interpolateLab('blue', 'red')
     for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
-        for (let m = 0; m < len; m++) {
-          if (k + m === deltaMods[counter]) {
-            counter++
-          }
+        while (deltaMods[counter] >= k && deltaMods[counter] < k + len) {
+          counter++
         }
+
         k += len
       } else if (op === 'D' || op === 'N') {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
-        for (let m = 0; m < len; m++) {
-          // if (feature.get('name') === n)
-          //   console.log(
-          //     'here',
-          //     k + m,
-          //     deltaMods[counter],
-          //     leftPx + (j + m) * width,
-          //   )
-          if (k + m === deltaMods[counter]) {
-            ctx.fillStyle = interpolate(probabilities[counter] / 100)
-
-            ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
-            counter++
-          }
+        while (deltaMods[counter] >= k && deltaMods[counter] < k + len) {
+          const current = deltaMods[counter]
+          ctx.fillStyle = interpolate(probabilities[counter] / 100)
+          ctx.fillRect(
+            leftPx + (j + current - k) * width,
+            topPx,
+            width + 0.5,
+            heightPx,
+          )
+          counter++
         }
         j += len
         k += len
