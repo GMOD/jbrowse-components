@@ -17,7 +17,7 @@ import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/rend
 import { ThemeOptions } from '@material-ui/core'
 import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
-import { getColorWGBS, orientationTypes } from './util'
+import { orientationTypes } from './util'
 import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
@@ -251,7 +251,7 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    for (let i = 0, j = 0, k = 0; k < scores.length; i++, k++) {
+    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
@@ -260,7 +260,7 @@ export default class PileupRenderer extends BoxRendererType {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          ctx.fillStyle = `hsl(${scores[k + m] * 2},50%,60%)`
+          ctx.fillStyle = `hsl(${scores[k + m]},55%,50%)`
           ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
         }
         j += len
@@ -336,6 +336,7 @@ export default class PileupRenderer extends BoxRendererType {
       case 'mappingQuality':
         ctx.fillStyle = `hsl(${feature.get('mq')},50%,50%)`
         break
+
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
         break
@@ -407,15 +408,9 @@ export default class PileupRenderer extends BoxRendererType {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
-    const {
-      config,
-      bpPerPx,
-      regions,
-      colorBy: { type: colorType = '' } = {},
-    } = props
+    const { config, bpPerPx, regions } = props
     const [region] = regions
     const { heightPx, topPx, feature } = feat
-    const strand = feature.get('strand')
     const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
@@ -440,11 +435,9 @@ export default class PileupRenderer extends BoxRendererType {
 
       if (mismatch.type === 'mismatch' || mismatch.type === 'deletion') {
         const baseColor =
-          colorType === 'wgbs'
-            ? getColorWGBS(strand, mismatch.base)
-            : colorForBase[
-                mismatch.type === 'deletion' ? 'deletion' : mismatch.base
-              ] || '#888'
+          colorForBase[
+            mismatch.type === 'deletion' ? 'deletion' : mismatch.base
+          ] || '#888'
         ctx.fillStyle = baseColor
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 

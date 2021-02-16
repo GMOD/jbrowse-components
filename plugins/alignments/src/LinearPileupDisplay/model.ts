@@ -459,12 +459,6 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'WGBS methylation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'wgbs' })
-                  },
-                },
-                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })
