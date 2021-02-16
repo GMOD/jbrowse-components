@@ -8,6 +8,7 @@ import {
   getSession,
   getContainingView,
   getContainingTrack,
+  isSelectionContainer,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -94,7 +95,12 @@ const stateModelFactory = (
         }
         self.statsFetchInProgress = aborter
       },
-
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
+      },
       setResolution(res: number) {
         self.resolution = res
       },
