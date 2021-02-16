@@ -210,7 +210,7 @@ const stateModelFactory = (
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
             'alignmentFeature',
-            { featureData: feature.toJSON() },
+            { featureData: feature.toJSON(), view: getContainingView(self) },
           )
           session.showWidget(featureWidget)
         }

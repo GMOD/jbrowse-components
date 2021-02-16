@@ -263,7 +263,7 @@ export const BaseLinearDisplay = types
         const featureWidget = session.addWidget(
           'BaseFeatureWidget',
           'baseFeature',
-          { featureData: feature.toJSON() },
+          { featureData: feature.toJSON(), view: getContainingView(self) },
         )
         session.showWidget(featureWidget)
       }

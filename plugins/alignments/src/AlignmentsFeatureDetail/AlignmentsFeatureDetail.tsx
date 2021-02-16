@@ -100,13 +100,23 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             const extra = Math.floor(saLength / 5)
             const start = +saStart
             const end = +saStart + saLength
-            const locString = `${saRef}:${start - extra}-${end + extra}`
+            const locString = `${saRef}:${Math.max(1, start - extra)}-${
+              end + extra
+            }`
             const displayString = `${saRef}:${start}-${end} (${saStrand})`
             return (
               <li key={`${SA}-${index}`}>
                 <Link
                   onClick={() => {
-                    session.views[0].navToLocString(locString)
+                    const { view } = model
+                    if (view) {
+                      view.navToLocString(locString)
+                    } else {
+                      session.notify(
+                        'No view associated with this feature detail panel anymore',
+                        'warn',
+                      )
+                    }
                   }}
                   href="#"
                 >
