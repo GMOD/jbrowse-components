@@ -2,13 +2,14 @@
 import React, { useState } from 'react'
 import {
   Divider,
+Link,
   Paper,
   FormControlLabel,
   Checkbox,
   TextField,
   Typography,
 } from '@material-ui/core'
-
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import {
@@ -108,6 +109,41 @@ function VariantSamples(props: any) {
   )
 }
 
+function TranslocationPanel(props: { feature: any; model: any }) {
+  const { model, feature } = props
+  const session = getSession(model)
+  return (
+    <BaseCard {...props} title="Breakends">
+      <Typography>List of breakend endpoints</Typography>
+      <ul>
+        {feature.ALT.map((alt: { MatePosition: string }, index: number) => {
+          const locString = alt.MatePosition
+          return (
+            <li key={`${JSON.stringify(alt)}-index`}>
+              <Link
+                href="#"
+                onClick={() => {
+                  const { view } = model
+                  if (view) {
+                    view.navToLocString(locString)
+                  } else {
+                    session.notify(
+                      'No view associated with this feature detail panel anymore',
+                      'warning',
+                    )
+                  }
+                }}
+              >
+                {locString}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </BaseCard>
+  )
+}
+
 function VariantFeatureDetails(props: any) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
@@ -135,6 +171,9 @@ function VariantFeatureDetails(props: any) {
         {...props}
       />
       <Divider />
+      {feat.type === 'breakend' ? (
+        <TranslocationPanel feature={feat} model={model} />
+      ) : null}
       <VariantSamples feature={feat} {...props} />
     </Paper>
   )

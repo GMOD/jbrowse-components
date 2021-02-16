@@ -4,7 +4,7 @@ import { types } from 'mobx-state-tree'
 
 export const configSchema = ConfigurationSchema('VariantFeatureWidget', {})
 
-export default function stateModelFactory(pluginManager) {
+export function stateModelFactory(pluginManager) {
   return types
     .model('VariantFeatureWidget', {
       id: ElementId,

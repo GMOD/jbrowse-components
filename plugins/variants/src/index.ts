@@ -19,7 +19,7 @@ import StructuralVariantChordRendererFactory from './StructuralVariantChordRende
 import {
   configSchema as variantFeatureWidgetConfigSchema,
   ReactComponent as VariantFeatureWidgetReactComponent,
-  stateModel as variantFeatureWidgetStateModel,
+  stateModelFactory as variantFeatureWidgetStateModelFactory,
 } from './VariantFeatureWidget'
 import {
   AdapterClass as VcfTabixAdapterClass,
@@ -83,7 +83,7 @@ export default class VariantsPlugin extends Plugin {
           name: 'VariantFeatureWidget',
           heading: 'Feature Details',
           configSchema: variantFeatureWidgetConfigSchema,
-          stateModel: variantFeatureWidgetStateModel,
+          stateModel: variantFeatureWidgetStateModelFactory(pluginManager),
           ReactComponent: VariantFeatureWidgetReactComponent,
         }),
     )

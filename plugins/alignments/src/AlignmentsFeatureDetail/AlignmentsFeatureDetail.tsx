@@ -116,7 +116,7 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
                     } else {
                       session.notify(
                         'No view associated with this feature detail panel anymore',
-                        'warn',
+                        'warning',
                       )
                     }
                   }}
