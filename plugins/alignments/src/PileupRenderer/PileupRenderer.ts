@@ -5,6 +5,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
+import { interpolateLab } from 'd3-interpolate'
 import {
   createCanvas,
   createImageBitmap,
@@ -81,6 +82,11 @@ interface LayoutFeature {
   heightPx: number
   topPx: number
   feature: Feature
+}
+
+function getTag(feature, tag) {
+  const tags = feature.get('tags')
+  return tags ? tags[tag] : feature.get(tag)
 }
 
 export default class PileupRenderer extends BoxRendererType {
@@ -251,7 +257,7 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
+    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
@@ -276,9 +282,8 @@ export default class PileupRenderer extends BoxRendererType {
     bpPerPx: number,
   ) {
     const { feature, topPx, heightPx } = feat
-    const mm = ((feature.get('tags')
-      ? feature.get('tags').MM
-      : feature.get('MM')) || '') as string
+    const mm = (getTag(feature, 'MM') || '') as string
+    const mp = (getTag(feature, 'MP') || '') as string
 
     // adapted from https://github.com/wdecoster/methplotlib/blob/master/LICENSE
     const [basemod, ...rest] = mm.split(',')
@@ -287,9 +292,9 @@ export default class PileupRenderer extends BoxRendererType {
     for (let i = 1; i < deltaMods.length; i++) {
       deltaMods[i] += deltaMods[i - 1]
     }
-
-    const [base, mod] = basemod.split('+')
+    const probabilities = mp.split('').map(score => score.charCodeAt(0) - 33)
     const cigarOps = parseCigar(feature.get('CIGAR'))
+    // console.log({ deltas, deltaMods, probabilities, CIGAR: cigarOps })
     const width = 1 / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
@@ -298,22 +303,45 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
     let counter = 0
-    for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2, k++) {
+    const n = '72bd0cef-e49e-4929-a98b-7248374ed781'
+    if (feature.get('name') === n)
+      console.log(feature.id(), feature.get('start'), {
+        probabilities,
+        deltas,
+        deltaMods,
+        cigarOps,
+      })
+    const interpolate = interpolateLab('blue', 'red')
+    for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
+        for (let m = 0; m < len; m++) {
+          if (k + m === deltaMods[counter]) {
+            counter++
+          }
+        }
         k += len
       } else if (op === 'D' || op === 'N') {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
-        ctx.fillStyle = 'red'
         for (let m = 0; m < len; m++) {
+          // if (feature.get('name') === n)
+          //   console.log(
+          //     'here',
+          //     k + m,
+          //     deltaMods[counter],
+          //     leftPx + (j + m) * width,
+          //   )
           if (k + m === deltaMods[counter]) {
+            ctx.fillStyle = interpolate(probabilities[counter] / 100)
+
             ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
             counter++
           }
         }
         j += len
+        k += len
       }
     }
   }
@@ -710,7 +738,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(ctx, feat, props, colorForBase, theme)
+      // this.drawMismatches(ctx, feat, props, colorForBase, theme)
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }
