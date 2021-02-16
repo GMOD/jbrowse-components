@@ -16,11 +16,11 @@ class BreakpointSplitViewType extends ViewType {
 
     // TODO: Figure this out for multiple assembly names
     const { assemblyName } = view.displayedRegions[0]
-    const assembly = getSession(view).assemblyManager.get(assemblyName)
+    const { assemblyManager } = getSession(view)
+    const assembly = assemblyManager.get(assemblyName)
     const { getCanonicalRefName } = assembly as Assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
-
-    const topRegion = view.displayedRegions.find(
+    const topRegion = assembly.regions.find(
       f => f.refName === String(featureRefName),
     )
 
@@ -61,7 +61,7 @@ class BreakpointSplitViewType extends ViewType {
       return {}
     }
 
-    const bottomRegion = view.displayedRegions.find(
+    const bottomRegion = assembly.regions.find(
       f => f.refName === String(mateRefName),
     )
 
