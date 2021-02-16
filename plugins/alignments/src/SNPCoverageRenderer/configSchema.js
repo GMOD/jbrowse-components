@@ -14,10 +14,10 @@ export default ConfigurationSchema(
         'the proportion of reads containing a insertion/clip indicator',
       defaultValue: 0.3,
     },
-    drawInterbaseFuzz: {
+    drawInterbaseCounts: {
       type: 'boolean',
       description:
-        'draw fuzzy "upper histogram" of the interbase events that are not normally captured by the lower histogram',
+        'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
       defaultValue: true,
     },
     drawIndicators: {

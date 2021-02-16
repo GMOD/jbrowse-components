@@ -63,7 +63,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
-    const drawInterbaseFuzz = readConfObject(cfg, 'drawInterbaseFuzz')
+    const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
     const width = (region.end - region.start) / bpPerPx
 
@@ -131,7 +131,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       )
 
       const indicatorHeight = 4.5
-      if (drawInterbaseFuzz) {
+      if (drawInterbaseCounts) {
         interbaseEvents.reduce((curr, info) => {
           const { score, base } = info
           ctx.fillStyle = colorForBase[base]

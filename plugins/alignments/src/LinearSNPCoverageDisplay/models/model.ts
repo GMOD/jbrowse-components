@@ -25,7 +25,7 @@ const stateModelFactory = (
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
         type: types.literal('LinearSNPCoverageDisplay'),
-        drawInterbaseFuzz: types.maybe(types.boolean),
+        drawInterbaseCounts: types.maybe(types.boolean),
         drawIndicators: types.maybe(types.boolean),
         filterBy: types.optional(
           types.model({
@@ -60,20 +60,20 @@ const stateModelFactory = (
 
         return self.rendererType.configSchema.create({
           ...configBlob,
-          drawInterbaseFuzz:
-            self.drawInterbaseFuzz === undefined
-              ? configBlob.drawInterbaseFuzz
-              : self.drawInterbaseFuzz,
+          drawInterbaseCounts:
+            self.drawInterbaseCounts === undefined
+              ? configBlob.drawInterbaseCounts
+              : self.drawInterbaseCounts,
           drawIndicators:
             self.drawIndicators === undefined
               ? configBlob.drawIndicators
               : self.drawIndicators,
         })
       },
-      get drawInterbaseFuzzSetting() {
-        return self.drawInterbaseFuzz !== undefined
-          ? self.drawInterbaseFuzz
-          : readConfObject(this.rendererConfig, 'drawInterbaseFuzz')
+      get drawInterbaseCountsSetting() {
+        return self.drawInterbaseCounts !== undefined
+          ? self.drawInterbaseCounts
+          : readConfObject(this.rendererConfig, 'drawInterbaseCounts')
       },
       get drawIndicatorsSetting() {
         return self.drawIndicators !== undefined
@@ -85,8 +85,8 @@ const stateModelFactory = (
       toggleDrawIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
       },
-      toggleDrawInterbaseFuzz() {
-        self.drawInterbaseFuzz = !self.drawInterbaseFuzzSetting
+      toggleDrawInterbaseCounts() {
+        self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
       },
     }))
 
@@ -118,7 +118,7 @@ const stateModelFactory = (
       get composedTrackMenuItems() {
         return [
           {
-            label: 'Draw indicators',
+            label: 'Draw insertion/clipping indicators',
             type: 'checkbox',
             checked: self.drawIndicatorsSetting,
             onClick: () => {
@@ -126,11 +126,11 @@ const stateModelFactory = (
             },
           },
           {
-            label: 'Draw interbase fuzz',
+            label: 'Draw insertion/clipping counts',
             type: 'checkbox',
-            checked: self.drawInterbaseFuzzSetting,
+            checked: self.drawInterbaseCountsSetting,
             onClick: () => {
-              self.toggleDrawInterbaseFuzz()
+              self.toggleDrawInterbaseCounts()
             },
           },
         ]
@@ -176,8 +176,6 @@ const stateModelFactory = (
 
       get scaleOpts() {
         return {
-          // add a little extra headroom on snpcov tracks
-          // helps drawing interbase fuzz
           domain: self.domain,
           stats: self.stats,
           autoscaleType: getConf(self, 'autoscale'),
