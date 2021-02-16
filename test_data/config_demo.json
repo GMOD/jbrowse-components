@@ -2545,6 +2545,26 @@
     },
     {
       "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way_density",
+      "name": "hg19.100way.phyloP100way (density)",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "hg19.100way.phyloP100way_density",
+          "defaultRendering": "density"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
       "trackId": "hg19.100way.phyloP100way",
       "name": "hg19.100way.phyloP100way",
       "category": ["Conservation"],
