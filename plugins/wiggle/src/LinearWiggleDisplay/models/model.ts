@@ -26,6 +26,7 @@ import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'

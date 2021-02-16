@@ -29,6 +29,7 @@ function WiggleRendering(props: {
   const ref = useRef<HTMLDivElement>(null)
 
   function getFeatureUnderMouse(eventClientX: number) {
+    // calculates feature under mouse
     let offset = 0
     if (ref.current) {
       offset = ref.current.getBoundingClientRect().left
