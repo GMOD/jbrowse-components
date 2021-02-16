@@ -1,6 +1,10 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import {
+  getSession,
+  getContainingView,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
@@ -29,7 +33,7 @@ export default (configSchema: LinearVariantDisplayConfigModel) =>
           const featureWidget = session.addWidget(
             'VariantFeatureWidget',
             'variantFeature',
-            { featureData: feature.toJSON() },
+            { featureData: feature.toJSON(), view: getContainingView(self) },
           )
           session.showWidget(featureWidget)
         }
@@ -45,8 +49,9 @@ export default (configSchema: LinearVariantDisplayConfigModel) =>
       get rendererTypeName() {
         const viewName = getConf(self, 'defaultRendering')
         const rendererType = rendererTypes.get(viewName)
-        if (!rendererType)
+        if (!rendererType) {
           throw new Error(`unknown alignments view name ${viewName}`)
+        }
         return rendererType
       },
 
