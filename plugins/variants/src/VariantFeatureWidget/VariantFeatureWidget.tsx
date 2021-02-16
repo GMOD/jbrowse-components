@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import {
   Divider,
-Link,
+  Link,
   Paper,
   FormControlLabel,
   Checkbox,
@@ -112,7 +112,6 @@ function VariantSamples(props: any) {
   )
 }
 
-
 function BreakendPanel(props: {
   locStrings: string[]
   model: any
@@ -120,6 +119,13 @@ function BreakendPanel(props: {
 }) {
   const { model, locStrings, feature } = props
   const session = getSession(model)
+  const { pluginManager } = session
+  let viewType: any
+  try {
+    viewType = pluginManager.getViewType('BreakpointSplitView')
+  } catch (e) {
+    // plugin not added
+  }
   return (
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
@@ -132,7 +138,7 @@ function BreakendPanel(props: {
                 onClick={() => {
                   const { view } = model
                   if (view) {
-                    view.navToLocString(locString)
+                    view.navToLocString?.(locString)
                   } else {
                     session.notify(
                       'No view associated with this feature detail panel anymore',
@@ -147,38 +153,38 @@ function BreakendPanel(props: {
           )
         })}
       </ul>
-      <Typography>
-        Launch split views with breakend source and target
-      </Typography>
-      <ul>
-        {locStrings.map((locString, index) => {
-          return (
-            <li key={`${JSON.stringify(locString)}-${index}`}>
-              <Link
-                href="#"
-                onClick={() => {
-                  const { pluginManager } = session
-                  const viewType = pluginManager.getViewType(
-                    'BreakpointSplitView',
-                  )
-                  const { view } = model
-                  // @ts-ignore
-                  const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                    new SimpleFeature(feature),
-                    view,
-                  )
-                  viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-                  viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-                  viewSnapshot.featureData = feature
-                  session.addView('BreakpointSplitView', viewSnapshot)
-                }}
-              >
-                {`${feature.refName}:${feature.start} // ${locString} (split view)`}
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
+      {viewType ? (
+        <>
+          <Typography>
+            Launch split views with breakend source and target
+          </Typography>
+          <ul>
+            {locStrings.map((locString, index) => {
+              return (
+                <li key={`${JSON.stringify(locString)}-${index}`}>
+                  <Link
+                    href="#"
+                    onClick={() => {
+                      const { view } = model
+                      // @ts-ignore
+                      const viewSnapshot = viewType.snapshotFromBreakendFeature(
+                        new SimpleFeature(feature),
+                        view,
+                      )
+                      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+                      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+                      viewSnapshot.featureData = feature
+                      session.addView('BreakpointSplitView', viewSnapshot)
+                    }}
+                  >
+                    {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      ) : null}
     </BaseCard>
   )
 }
@@ -213,7 +219,7 @@ function VariantFeatureDetails(props: any) {
       {feat.type === 'breakend' ? (
         <BreakendPanel
           feature={feat}
-          locStrings={feat.ALT.map(alt => alt.MatePosition)}
+          locStrings={feat.ALT.map((alt: any) => alt.MatePosition)}
           model={model}
         />
       ) : null}

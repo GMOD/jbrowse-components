@@ -18,6 +18,13 @@ class BreakpointSplitViewType extends ViewType {
     const { assemblyName } = view.displayedRegions[0]
     const { assemblyManager } = getSession(view)
     const assembly = assemblyManager.get(assemblyName)
+
+    if (!assembly) {
+      throw new Error(`assembly ${assemblyName} not found`)
+    }
+    if (!assembly.regions) {
+      throw new Error(`assembly ${assemblyName} regions not loaded`)
+    }
     const { getCanonicalRefName } = assembly as Assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
     const topRegion = assembly.regions.find(
