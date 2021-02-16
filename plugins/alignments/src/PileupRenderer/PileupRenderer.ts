@@ -15,7 +15,7 @@ import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
-import { Mismatch } from '../BamAdapter/MismatchParser'
+import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 import { getColorWGBS, orientationTypes } from './util'
 import {
@@ -240,21 +240,30 @@ export default class PileupRenderer extends BoxRendererType {
     bpPerPx: number,
   ) {
     const { feature, topPx, heightPx } = feat
-    const qual = feature.get('qual')
+    const qual = feature.get('qual') as string
+    const scores = (qual || '').split(' ').map(val => +val)
+    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const width = 1 / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
       region,
       bpPerPx,
     )
-    if (qual) {
-      const scores = qual.split(' ')
-      const len = feature.get('end') - feature.get('start')
 
-      const w = 1 / bpPerPx
-      for (let i = 0; i < len; i++) {
-        ctx.fillStyle = `hsl(${scores[i] * 0.75},50%,60%)`
-        ctx.fillRect(leftPx + i * w, topPx, w + 0.5, heightPx)
+    for (let i = 0, j = 0, k = 0; k < scores.length; i++, k++) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        k += len
+      } else if (op === 'D' || op === 'N') {
+        j += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        for (let m = 0; m < len; m++) {
+          ctx.fillStyle = `hsl(${scores[k + m] * 2},50%,60%)`
+          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+        }
+        j += len
       }
     }
   }
@@ -362,7 +371,8 @@ export default class PileupRenderer extends BoxRendererType {
           ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
         }
 
-        // tag is not one of the autofilled tags, has color-value pairs from fetchValues
+        // tag is not one of the autofilled tags, has color-value pairs from
+        // fetchValues
         else {
           const foundValue = colorTagMap[val]
           ctx.fillStyle = foundValue || 'color_nostrand'
