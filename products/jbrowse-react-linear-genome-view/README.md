@@ -3,8 +3,8 @@
 > JBrowse 2 linear genome view React component
 
 [JBrowse 2](https://jbrowse.org/jb2/) is a pluggable open-source platform for
-visualizing and integrating biological data. This component consists of a single
-linear view of the same type exists in the full JBrowse 2 application.
+visualizing, integrating, and sharing biological data. This component consists of a single
+JBrowse 2 linear view.
 
 ## Usage
 

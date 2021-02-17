@@ -1202,7 +1202,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
                 type="number"
-                value="0"
+                value="10000"
               />
             </div>
             <p

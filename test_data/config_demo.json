@@ -763,7 +763,6 @@
         }
       }
     },
-
     {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
@@ -2541,6 +2540,32 @@
             "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi"
           },
           "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way",
+      "name": "hg19.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38.100way.phyloP100way",
+      "name": "hg38.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
         }
       }
     }

@@ -45,7 +45,7 @@ function Category({
 
   return (
     <Accordion
-      style={{ marginTop: '4px' }}
+      style={{ marginTop: 4, border: '1px solid #444' }}
       expanded={!model.collapsed.get(pathName)}
       onChange={() => model.toggleCategory(pathName)}
     >

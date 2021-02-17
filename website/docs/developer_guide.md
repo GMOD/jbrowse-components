@@ -53,7 +53,7 @@ method and a `configure` method that the application calls. This class is
 distributed as a webpack bundle that exports it to a namespace on the browser's
 `window` object specifically for JBrowse plugins[^1].
 
-It's common for a plugin to use have its `configure` method set up [mobx
+It's common for a plugin to use its `configure` method to set up [mobx
 autoruns or reactions](https://mobx.js.org/refguide/autorun.html) that react to
 changes in the application's state to modify its behavior.
 

@@ -39,6 +39,11 @@ export default function SetMinMaxDlg(props: {
     `${maxScore !== Number.MAX_VALUE ? maxScore : ''}`,
   )
 
+  const ok =
+    min !== '' && max !== '' && !Number.isNaN(+min) && !Number.isNaN(+max)
+      ? +max > +min
+      : true
+
   return (
     <Dialog
       open
@@ -59,6 +64,11 @@ export default function SetMinMaxDlg(props: {
       <DialogContent style={{ overflowX: 'hidden' }}>
         <div className={classes.root}>
           <Typography>Enter min/max score: </Typography>
+          {!ok ? (
+            <Typography color="error">
+              Max is greater than or equal to min
+            </Typography>
+          ) : null}
 
           <TextField
             value={min}
@@ -74,11 +84,13 @@ export default function SetMinMaxDlg(props: {
             }}
             placeholder="Enter max score"
           />
+
           <Button
             variant="contained"
             color="primary"
             type="submit"
             style={{ marginLeft: 20 }}
+            disabled={!ok}
             onClick={() => {
               display.setMinScore(
                 min !== '' && !Number.isNaN(+min) ? +min : undefined,
