@@ -38,7 +38,7 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "location": {
-            "uri": "hg19_aliases.txt"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
           }
         }
       }
