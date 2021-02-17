@@ -62,6 +62,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
+      // we use showAllRegions after setDisplayedRegions to make the entire
+      // region visible, xref #1703
+      model.showAllRegions()
     } else {
       try {
         input && model.navToLocString(input, assemblyName)
