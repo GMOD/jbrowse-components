@@ -23,6 +23,9 @@ const useStyles = makeStyles(theme => ({
   importFormEntry: {
     minWidth: 180,
   },
+  button: {
+    margin: theme.spacing(2),
+  },
 }))
 
 type LGV = LinearGenomeViewModel
@@ -136,9 +139,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             )
           ) : null}
         </Grid>
-        <Grid item>
+        <Grid item spacing={1}>
           <Button
             disabled={!selectedRegion}
+            className={classes.button}
             onClick={() => {
               if (selectedRegion) {
                 handleSelectedRegion(selectedRegion)
@@ -148,6 +152,17 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             color="primary"
           >
             Open
+          </Button>
+          <Button
+            disabled={!selectedRegion}
+            className={classes.button}
+            onClick={() => {
+              model.showAllRegionsInAssembly(assemblyName)
+            }}
+            variant="contained"
+            color="secondary"
+          >
+            Show all regions in assembly
           </Button>
         </Grid>
       </Grid>
