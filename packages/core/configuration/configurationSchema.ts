@@ -115,6 +115,8 @@ function makeConfigurationSchemaModel<
     }
   }
 
+  modelDefinition.pluginManager = types.frozen()
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const volatileConstants: Record<string, any> = {
     isJBrowseConfigurationSchema: true,
@@ -161,6 +163,10 @@ function makeConfigurationSchemaModel<
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
+    .volatile(() => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      pluginManager: undefined as any,
+    }))
     .actions(self => ({
       setSubschema(
         slotName: string,
@@ -174,6 +180,10 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setPluginManager(pluginManager: any) {
+        self.pluginManager = pluginManager
       },
     }))
 
