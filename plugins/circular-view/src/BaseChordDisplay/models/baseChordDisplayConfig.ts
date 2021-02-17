@@ -8,7 +8,7 @@ const baseChordDisplayConfig = ConfigurationSchema(
       description:
         'callback that should be run when a chord in the track is clicked',
       defaultValue: false,
-      functionSignature: ['feature', 'track', 'pm'],
+      functionSignature: ['feature', 'track', 'pluginManager'],
     },
   },
   { explicitIdentifier: 'displayId' },
