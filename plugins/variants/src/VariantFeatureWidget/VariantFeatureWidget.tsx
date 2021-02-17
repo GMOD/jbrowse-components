@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
-import Divider from '@material-ui/core/Divider'
-import Paper from '@material-ui/core/Paper'
+import {
+  Divider,
+  Paper,
+  FormControlLabel,
+  Checkbox,
+  TextField,
+  Typography,
+} from '@material-ui/core'
 
 import { DataGrid } from '@material-ui/data-grid'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import {
   BaseFeatureDetails,
@@ -14,6 +18,7 @@ import {
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
+  const [showFilters, setShowFilters] = useState(true)
   const { feature } = props
 
   const { samples = {} } = feature
@@ -31,17 +36,23 @@ function VariantSamples(props: any) {
   const filters = Object.keys(filter)
 
   // catch some error thrown from regex
+  // note: maps all values into a string, if this is not done rows are not
+  // sortable by the data-grid
   try {
     rows = preFilteredRows
-      .map((row: any) => {
-        return { sample: row[0], ...row[1], id: row[0] }
-      })
+      .map((row: any) => ({
+        ...Object.fromEntries(
+          Object.entries(row[1]).map(entry => [entry[0], String(entry[1])]),
+        ),
+        sample: row[0],
+        id: row[0],
+      }))
       .filter((row: any) => {
         return filters.length
           ? filters.every(key => {
               const val = row[key]
               const currFilter = filter[key]
-              return currFilter ? String(val).match(currFilter) : true
+              return currFilter ? val.match(currFilter) : true
             })
           : true
       })
@@ -53,24 +64,44 @@ function VariantSamples(props: any) {
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
-      {infoFields.map(({ field }) => {
-        return (
-          <TextField
-            key={`filter-${field}`}
-            placeholder={`Filter ${field} (regex)`}
-            value={filter[field] || ''}
-            onChange={event =>
-              setFilter({ ...filter, [field]: event.target.value })
-            }
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showFilters}
+            onChange={() => setShowFilters(f => !f)}
           />
-        )
-      })}
+        }
+        label="Show sample filters"
+      />
+      {showFilters ? (
+        <>
+          <Typography>
+            These filters can use a plain text search or regex style query, e.g.
+            in the genotype field, entering 1 will query for all genotypes that
+            include the first alternate allele e.g. 0|1 or 1|1, entering
+            [1-9]\d* will find any non-zero allele e.g. 0|2 or 2/33
+          </Typography>
+          {infoFields.map(({ field }) => {
+            return (
+              <TextField
+                key={`filter-${field}`}
+                placeholder={`Filter ${field}`}
+                value={filter[field] || ''}
+                onChange={event =>
+                  setFilter({ ...filter, [field]: event.target.value })
+                }
+              />
+            )
+          })}
+        </>
+      ) : null}
       <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
         <DataGrid
           rows={rows}
           columns={infoFields}
           rowHeight={20}
           headerHeight={25}
+          disableColumnMenu
         />
       </div>
     </BaseCard>
