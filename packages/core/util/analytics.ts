@@ -86,7 +86,7 @@ export async function writeGAAnalytics(
     ver: rootModel.version,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     loadTime: Date.now() - initialTimeStamp,
-    plugins: rootModel.jbrowse.plugins,
+    pluginNames: rootModel.jbrowse.plugins.map(plugin => plugin.name),
   }
 
   // create script
@@ -101,7 +101,7 @@ export async function writeGAAnalytics(
   analyticsScript += `ga('create', '${jbrowseUser}', 'auto', 'jbrowseTracker');`
 
   const gaData: AnalyticsObj = {}
-  const googleDimensions = 'tracks-count ver electron loadTime plugins'
+  const googleDimensions = 'tracks-count ver electron loadTime pluginNames'
 
   googleDimensions.split(/\s+/).forEach((key, index) => {
     gaData[`dimension${index + 1}`] = stats[key]
