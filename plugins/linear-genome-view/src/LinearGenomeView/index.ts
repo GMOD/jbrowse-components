@@ -35,6 +35,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
@@ -1132,6 +1133,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return {
         get menuItems(): MenuItem[] {
           const menuItems: MenuItem[] = [
+            {
+              label: 'Return to import form',
+              onClick: () => {
+                self.setDisplayedRegions([])
+              },
+              icon: FolderOpenIcon,
+            },
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,

@@ -139,7 +139,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             )
           ) : null}
         </Grid>
-        <Grid item spacing={1}>
+        <Grid item>
           <Button
             disabled={!selectedRegion}
             className={classes.button}
