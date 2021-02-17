@@ -79,15 +79,22 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const meta = await this.bed.getMetadata()
+      const { columnNumbers } = meta
+      const colRef = columnNumbers.ref - 1
+      const colStart = columnNumbers.start - 1
+      const colEnd = columnNumbers.end - 1
+      // colSame handles special case for tabix where a single column is both
+      // the start and end, this is assumed to be covering the base at this
+      // position (e.g. tabix -s 1 -b 2 -e 2) begin and end are same
+      const colSame = colStart === colEnd ? 1 : 0
       const names = await this.getNames()
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line: string, fileOffset: number) => {
           const l = line.split('\t')
-          const refName = l[meta.columnNumbers.ref - 1]
-          const start = +l[meta.columnNumbers.start - 1]
-          const end =
-            +l[meta.columnNumbers.end - 1] +
-            (meta.columnNumbers.end === meta.columnNumbers.start ? 1 : 0)
+          const refName = l[colRef]
+          const start = +l[colStart]
+
+          const end = +l[colEnd] + colSame
           const uniqueId = `${this.id}-${fileOffset}`
           const data = names
             ? this.defaultParser(names, line)
