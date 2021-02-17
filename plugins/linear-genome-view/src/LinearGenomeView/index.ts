@@ -1137,6 +1137,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
               label: 'Return to import form',
               onClick: () => {
                 self.setDisplayedRegions([])
+                // it is necessary to run these after setting displayed regions
+                // empty or else self.offsetPx gets set to infinity and breaks
+                // mobx-state-tree snapshot
+                self.scrollTo(0)
+                self.zoomTo(10)
               },
               icon: FolderOpenIcon,
             },
