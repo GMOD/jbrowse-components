@@ -21,6 +21,18 @@ export default ConfigurationSchema(
       },
     }),
 
+    columnNames: {
+      type: 'stringArray',
+      description: 'List of column names',
+      defaultValue: [],
+    },
+
+    scoreColumn: {
+      type: 'string',
+      description: 'The column to use as a "score" attribute',
+      defaultValue: '',
+    },
+
     autoSql: {
       type: 'string',
       description: 'The autoSql definition for the data fields in the file',

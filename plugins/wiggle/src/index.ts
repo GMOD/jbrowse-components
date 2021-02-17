@@ -112,6 +112,11 @@ export default class extends Plugin {
       () => new WiggleGetMultiRegionStats(pluginManager),
     )
   }
+
+  exports = {
+    LinearWiggleDisplayReactComponent,
+    XYPlotRendererReactComponent,
+  }
 }
 
 export * from './util'
