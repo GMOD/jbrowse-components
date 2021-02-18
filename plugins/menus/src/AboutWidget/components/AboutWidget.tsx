@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -13,11 +14,30 @@ const useStyles = makeStyles(theme => ({
   subtitle: {
     margin: theme.spacing(),
   },
+  pluginList: {
+    margin: theme.spacing(1),
+  },
 }))
+
+interface BasePlugin {
+  version?: string
+  name: string
+}
 
 function About({ model }: { model: IAnyStateTreeNode }) {
   const classes = useStyles()
-  const session = model ? getSession(model) : { version: '' }
+  const session = model
+    ? getSession(model)
+    : {
+        version: '',
+        pluginManager: {
+          corePlugins: [] as string[],
+          plugins: [] as any[],
+        },
+      }
+  const { pluginManager } = session
+  const { corePlugins, plugins } = pluginManager
+
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center" color="primary">
@@ -37,15 +57,36 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       <Typography align="center">
         © 2019-2021 The Evolutionary Software Foundation
       </Typography>
-      <ul>
-        {session.pluginManager.plugins.map(plugin => {
-          return (
-            <li>
-              {plugin.name} {plugin.version}
-            </li>
-          )
-        })}
-      </ul>
+      <div className={classes.pluginList}>
+        <Typography>External plugins loaded</Typography>
+        <ul>
+          {plugins
+            .filter((plugin: BasePlugin) => {
+              return !corePlugins.includes(plugin.name)
+            })
+            .map((plugin: BasePlugin) => {
+              return (
+                <li key={plugin.name}>
+                  {plugin.name} {plugin.version}
+                </li>
+              )
+            })}
+        </ul>
+        <Typography>Core plugins loaded</Typography>
+        <ul>
+          {plugins
+            .filter((plugin: BasePlugin) => {
+              return corePlugins.includes(plugin.name)
+            })
+            .map((plugin: BasePlugin) => {
+              return (
+                <li key={plugin.name}>
+                  {plugin.name} {plugin.version}
+                </li>
+              )
+            })}
+        </ul>
+      </div>
     </div>
   )
 }

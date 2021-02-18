@@ -32,7 +32,23 @@ exports[`<AboutWidget /> renders 1`] = `
   <p
     class="MuiTypography-root MuiTypography-body1 MuiTypography-alignCenter"
   >
-    © 2019 The Evolutionary Software Foundation
+    © 2019-2021 The Evolutionary Software Foundation
   </p>
+  <div
+    class="makeStyles-pluginList"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body1"
+    >
+      External plugins loaded
+    </p>
+    <ul />
+    <p
+      class="MuiTypography-root MuiTypography-body1"
+    >
+      Core plugins loaded
+    </p>
+    <ul />
+  </div>
 </div>
 `;

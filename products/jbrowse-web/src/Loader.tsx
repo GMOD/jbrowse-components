@@ -416,7 +416,7 @@ const Renderer = observer(
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
           const pluginManager = new PluginManager(plugins.map(P => new P()))
-
+          pluginManager.setCorePlugins(corePlugins.map(P => new P().name))
           pluginManager.createPluggableElements()
 
           const JBrowseRootModel = JBrowseRootModelFactory(

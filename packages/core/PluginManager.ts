@@ -151,6 +151,8 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
+  corePlugins = [] as string[]
+
   constructor(initialPlugins: Plugin[] = []) {
     // add the core plugin
     this.addPlugin(new CorePlugin())
@@ -190,7 +192,11 @@ export default class PluginManager {
   }
 
   setRootModel(rootModel: AbstractRootModel) {
-    this.rootModel = rootModel
+    this.rootModel = rootModel || []
+  }
+
+  setCorePlugins(list: string[]) {
+    this.corePlugins = list.concat('CorePlugin')
   }
 
   configure() {
