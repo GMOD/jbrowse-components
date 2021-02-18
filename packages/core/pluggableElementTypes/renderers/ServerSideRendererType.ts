@@ -65,219 +65,231 @@ export interface ResultsDeserialized {
   features: Map<string, Feature>
 }
 
-export default class ServerSideRenderer extends RendererType {
-  /**
-   * directly modifies the render arguments to prepare
-   * them to be serialized and sent to the worker.
-   *
-   * the base class replaces the `displayModel` param
-   * (which on the client is a MST model) with a stub
-   * that only contains the `selectedFeature`, since
-   * this is the only part of the track model that most
-   * renderers read.
-   *
-   * @param args - the arguments passed to render
-   * @returns the same object
-   */
-  serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
-    const { displayModel } = args
-    if (displayModel) {
-      args = {
+// need to turn this into factory function
+export function rendererFactory(pluginManager: any) {
+  return class ServerSideRenderer extends RendererType {
+    /**
+     * directly modifies the render arguments to prepare
+     * them to be serialized and sent to the worker.
+     *
+     * the base class replaces the `displayModel` param
+     * (which on the client is a MST model) with a stub
+     * that only contains the `selectedFeature`, since
+     * this is the only part of the track model that most
+     * renderers read.
+     *
+     * @param args - the arguments passed to render
+     * @returns the same object
+     */
+    serializeArgsInClient(args: RenderArgs): RenderArgsSerialized {
+      const { displayModel } = args
+      if (displayModel) {
+        args = {
+          ...args,
+          displayModel: {
+            id: displayModel.id,
+            selectedFeatureId: displayModel.selectedFeatureId,
+          },
+        }
+      }
+
+      return {
         ...args,
-        displayModel: {
-          id: displayModel.id,
-          selectedFeatureId: displayModel.selectedFeatureId,
-        },
+        config: isStateTreeNode(args.config)
+          ? getSnapshot(args.config)
+          : args.config,
+        regions: JSON.parse(JSON.stringify(args.regions)),
       }
     }
 
-    return {
-      ...args,
-      config: isStateTreeNode(args.config)
-        ? getSnapshot(args.config)
-        : args.config,
-      regions: JSON.parse(JSON.stringify(args.regions)),
+    deserializeResultsInClient(
+      result: ResultsSerialized,
+      args: RenderArgs,
+    ): ResultsDeserialized {
+      // deserialize some of the results that came back from the worker
+      const deserialized = ({ ...result } as unknown) as ResultsDeserialized
+      const featuresMap = new Map<string, SimpleFeature>()
+      result.features.forEach(j => {
+        const f = SimpleFeature.fromJSON(j)
+        featuresMap.set(String(f.id()), f)
+      })
+      deserialized.features = featuresMap
+      deserialized.blockKey = args.blockKey
+      return deserialized
     }
-  }
 
-  deserializeResultsInClient(
-    result: ResultsSerialized,
-    args: RenderArgs,
-  ): ResultsDeserialized {
-    // deserialize some of the results that came back from the worker
-    const deserialized = ({ ...result } as unknown) as ResultsDeserialized
-    const featuresMap = new Map<string, SimpleFeature>()
-    result.features.forEach(j => {
-      const f = SimpleFeature.fromJSON(j)
-      featuresMap.set(String(f.id()), f)
-    })
-    deserialized.features = featuresMap
-    deserialized.blockKey = args.blockKey
-    return deserialized
-  }
+    /**
+     * modifies the passed arguments object to
+     * inflate arguments as necessary. called in the worker process.
+     * @param args - the converted arguments to modify
+     */
+    deserializeArgsInWorker(
+      args: RenderArgsSerialized,
+    ): RenderArgsDeserialized {
+      const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
+      const config = this.configSchema.create(args.config || {})
+      config.setPluginManager(pluginManager)
+      deserialized.config = config
+      deserialized.filters = new SerializableFilterChain({
+        filters: args.filters,
+      })
 
-  /**
-   * modifies the passed arguments object to
-   * inflate arguments as necessary. called in the worker process.
-   * @param args - the converted arguments to modify
-   */
-  deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
-    const config = this.configSchema.create(args.config || {})
-    deserialized.config = config
-    deserialized.filters = new SerializableFilterChain({
-      filters: args.filters,
-    })
+      return deserialized
+    }
 
-    return deserialized
-  }
+    /**
+     *
+     * @param result - object containing the results of calling the `render` method
+     * @param features - Map of `feature.id() -> feature`
+     * @param args - deserialized render args. unused here, but may be used in
+     * deriving class methods
+     */
+    serializeResultsInWorker(
+      result: { html: string },
+      features: Map<string, Feature>,
+      _args: RenderArgsDeserialized,
+    ): ResultsSerialized {
+      const serialized = ({ ...result } as unknown) as ResultsSerialized
+      serialized.features = iterMap(features.values(), f => f.toJSON())
+      return serialized
+    }
 
-  /**
-   *
-   * @param result - object containing the results of calling the `render` method
-   * @param features - Map of `feature.id() -> feature`
-   * @param args - deserialized render args. unused here, but may be used in
-   * deriving class methods
-   */
-  serializeResultsInWorker(
-    result: { html: string },
-    features: Map<string, Feature>,
-    _args: RenderArgsDeserialized,
-  ): ResultsSerialized {
-    const serialized = ({ ...result } as unknown) as ResultsSerialized
-    serialized.features = iterMap(features.values(), f => f.toJSON())
-    return serialized
-  }
+    /**
+     * Render method called on the client. Serializes args, then
+     * calls `render` with the RPC manager.
+     */
+    async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
+      const serializedArgs = this.serializeArgsInClient(args)
+      const result = await rpcManager.call(
+        args.sessionId,
+        'CoreRender',
+        serializedArgs,
+      )
+      // const result = await renderRegionWithWorker(session, serializedArgs)
 
-  /**
-   * Render method called on the client. Serializes args, then
-   * calls `render` with the RPC manager.
-   */
-  async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const serializedArgs = this.serializeArgsInClient(args)
-    const result = await rpcManager.call(
-      args.sessionId,
-      'CoreRender',
-      serializedArgs,
-    )
-    // const result = await renderRegionWithWorker(session, serializedArgs)
+      // @ts-ignore
+      const deserialized = this.deserializeResultsInClient(result, args)
+      return deserialized
+    }
 
-    // @ts-ignore
-    const deserialized = this.deserializeResultsInClient(result, args)
-    return deserialized
-  }
+    // will expand if soft clipping or feature glyphs are shown
+    getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
+      return region
+    }
 
-  // will expand if soft clipping or feature glyphs are shown
-  getExpandedRegion(region: Region, _renderArgs: RenderArgsDeserialized) {
-    return region
-  }
+    /**
+     * use the dataAdapter to fetch the features to be rendered
+     *
+     * @param renderArgs -
+     * @returns Map of features as `{ id => feature, ... }`
+     */
+    async getFeatures(renderArgs: RenderArgsDeserialized) {
+      const { dataAdapter, signal, regions } = renderArgs
+      const features = new Map()
 
-  /**
-   * use the dataAdapter to fetch the features to be rendered
-   *
-   * @param renderArgs -
-   * @returns Map of features as `{ id => feature, ... }`
-   */
-  async getFeatures(renderArgs: RenderArgsDeserialized) {
-    const { dataAdapter, signal, regions } = renderArgs
-    const features = new Map()
+      if (!regions || regions.length === 0) {
+        return features
+      }
 
-    if (!regions || regions.length === 0) {
+      const requestRegions = regions.map((r: Region) => {
+        // make sure the requested region's start and end are integers, if
+        // there is a region specification.
+        const requestRegion = { ...r }
+        if (requestRegion.start) {
+          requestRegion.start = Math.floor(requestRegion.start)
+        }
+        if (requestRegion.end) {
+          requestRegion.end = Math.ceil(requestRegion.end)
+        }
+        return requestRegion
+      })
+
+      const region = requestRegions[0]
+
+      const featureObservable =
+        requestRegions.length === 1
+          ? dataAdapter.getFeatures(
+              this.getExpandedRegion(region, renderArgs),
+              // @ts-ignore
+              renderArgs,
+            )
+          : // @ts-ignore
+            dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
+
+      await featureObservable
+        .pipe(
+          tap(() => checkAbortSignal(signal)),
+          filter(feature => this.featurePassesFilters(renderArgs, feature)),
+          tap(feature => {
+            const id = feature.id()
+            if (!id) throw new Error(`invalid feature id "${id}"`)
+            features.set(id, feature)
+          }),
+          ignoreElements(),
+        )
+        .toPromise()
+
       return features
     }
 
-    const requestRegions = regions.map((r: Region) => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
-      const requestRegion = { ...r }
-      if (requestRegion.start) {
-        requestRegion.start = Math.floor(requestRegion.start)
-      }
-      if (requestRegion.end) {
-        requestRegion.end = Math.ceil(requestRegion.end)
-      }
-      return requestRegion
-    })
+    /**
+     * @param renderArgs -
+     * @param feature -
+     * @returns true if this feature passes all configured filters
+     */
+    featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
+      if (!renderArgs.filters) return true
+      return renderArgs.filters.passes(feature, renderArgs)
+    }
 
-    const region = requestRegions[0]
+    // render method called on the worker
+    async renderInWorker(
+      args: RenderArgsSerialized,
+    ): Promise<ResultsSerialized> {
+      const { signal, statusCallback = () => {} } = args
+      checkAbortSignal(signal)
+      const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    const featureObservable =
-      requestRegions.length === 1
-        ? dataAdapter.getFeatures(
-            this.getExpandedRegion(region, renderArgs),
-            // @ts-ignore
-            renderArgs,
-          )
-        : // @ts-ignore
-          dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
-
-    await featureObservable
-      .pipe(
-        tap(() => checkAbortSignal(signal)),
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap(feature => {
-          const id = feature.id()
-          if (!id) throw new Error(`invalid feature id "${id}"`)
-          features.set(id, feature)
-        }),
-        ignoreElements(),
+      const features = await this.getFeatures(deserializedArgs)
+      checkAbortSignal(signal)
+      statusCallback('Rendering plot')
+      const results = await this.render({ ...deserializedArgs, features })
+      checkAbortSignal(signal)
+      const html = renderToString(
+        React.createElement(
+          ThemeProvider,
+          // @ts-ignore
+          { theme: createJBrowseTheme(args.theme) },
+          results.element,
+        ),
       )
-      .toPromise()
+      delete results.element
 
-    return features
-  }
+      // serialize the results for passing back to the main thread.
+      // these will be transmitted to the main process, and will come out
+      // as the result of renderRegionWithWorker.
+      statusCallback('Serializing results')
+      const serialized = this.serializeResultsInWorker(
+        { ...results, html },
+        features,
+        deserializedArgs,
+      )
+      statusCallback('')
+      return serialized
+    }
 
-  /**
-   * @param renderArgs -
-   * @param feature -
-   * @returns true if this feature passes all configured filters
-   */
-  featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) return true
-    return renderArgs.filters.passes(feature, renderArgs)
-  }
+    freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
+      const serializedArgs = this.serializeArgsInClient(args)
 
-  // render method called on the worker
-  async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
-    const { signal, statusCallback = () => {} } = args
-    checkAbortSignal(signal)
-    const deserializedArgs = this.deserializeArgsInWorker(args)
+      return rpcManager.call(
+        args.sessionId,
+        'CoreFreeResources',
+        serializedArgs,
+      )
+    }
 
-    const features = await this.getFeatures(deserializedArgs)
-    checkAbortSignal(signal)
-    statusCallback('Rendering plot')
-    const results = await this.render({ ...deserializedArgs, features })
-    checkAbortSignal(signal)
-    const html = renderToString(
-      React.createElement(
-        ThemeProvider,
-        // @ts-ignore
-        { theme: createJBrowseTheme(args.theme) },
-        results.element,
-      ),
-    )
-    delete results.element
-
-    // serialize the results for passing back to the main thread.
-    // these will be transmitted to the main process, and will come out
-    // as the result of renderRegionWithWorker.
-    statusCallback('Serializing results')
-    const serialized = this.serializeResultsInWorker(
-      { ...results, html },
-      features,
-      deserializedArgs,
-    )
-    statusCallback('')
-    return serialized
-  }
-
-  freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const serializedArgs = this.serializeArgsInClient(args)
-
-    return rpcManager.call(args.sessionId, 'CoreFreeResources', serializedArgs)
-  }
-
-  freeResources(/* args: {} */) {
-    return 0
+    freeResources(/* args: {} */) {
+      return 0
+    }
   }
 }
