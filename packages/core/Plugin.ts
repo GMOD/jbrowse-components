@@ -1,4 +1,5 @@
 import PluginManager from './PluginManager'
+import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 
 /**
  * base class for a JBrowse plugin
