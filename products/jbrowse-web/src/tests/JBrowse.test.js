@@ -86,6 +86,7 @@ test('toplevel configuration', () => {
   const state = pluginManager.rootModel
   const { jbrowse } = state
   const { configuration } = jbrowse
+  // test reading top level configurations added by Test Plugin
   const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
   const test2 = readConfObject(configuration, ['TestPlugin', 'topLevelTest'])
   expect(test).toEqual('test works')

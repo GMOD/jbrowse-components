@@ -164,7 +164,6 @@ export default class PluginManager {
   pluginConfigurationSchemas() {
     const configurationSchema: { [key: string]: unknown } = {}
     this.plugins.forEach(plugin => {
-      // console.log(plugin.name)
       if (plugin.configuration) {
         configurationSchema[plugin.name] = plugin.configuration
       }
