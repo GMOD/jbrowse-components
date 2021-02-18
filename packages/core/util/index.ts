@@ -775,7 +775,7 @@ export async function renameRegionsIfNeeded<
   // special flag exists (currently set on the FromConfigSequenceAdapter)
   // called noAssemblyManager
   // @ts-ignore
-  if (assemblyName && !adapterConfig.noAssemblyManager) {
+  if (assemblyName) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
       assemblyName,

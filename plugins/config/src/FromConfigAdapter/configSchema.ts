@@ -11,10 +11,10 @@ export const configSchema = ConfigurationSchema(
       type: 'string',
       defaultValue: 'SimpleFeature',
     },
-    noAssemblyManager: {
-      type: 'boolean',
-      defaultValue: false,
-    },
+    // noAssemblyManager: {
+    //   type: 'boolean',
+    //   defaultValue: false,
+    // },
   },
   { explicitlyTyped: true },
 )
@@ -49,10 +49,10 @@ export const sequenceConfigSchema = ConfigurationSchema(
     // occasionally assemblies may not be associated with the assemblyManager
     // e.g. in the case of the "read assembly" that is used in read vs ref
     // visualizations
-    noAssemblyManager: {
-      type: 'boolean',
-      defaultValue: false,
-    },
+    // noAssemblyManager: {
+    //   type: 'boolean',
+    //   defaultValue: false,
+    // },
   },
   { explicitlyTyped: true },
 )

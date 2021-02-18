@@ -139,6 +139,7 @@ export default function assemblyManagerFactory(
                     assembly.name === readConfObject(assemblyConfig, 'name'),
                 )
                 if (existingAssemblyIdx === -1) {
+                  console.log({ assemblyConfig })
                   this.addAssembly(assemblyConfig)
                 }
               })
@@ -152,6 +153,11 @@ export default function assemblyManagerFactory(
       ) {
         self.assemblies.push({ configuration: assemblyConfig })
       },
+      // addAssemblyConf(
+      //         assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+      //       ) {
+      //         self.assemblies.push({ configuration: assemblyConfig })
+      //       }
       replaceAssembly(
         idx: number,
         assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,

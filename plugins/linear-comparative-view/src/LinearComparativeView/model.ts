@@ -7,7 +7,7 @@ import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { transaction } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -22,6 +22,7 @@ import {
   cast,
   ISerializedActionCall,
   getRoot,
+  getSnapshot,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
@@ -93,6 +94,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       // // Get a composite map of featureId->feature map for a track
       // // across multiple views
+      //
       // getTrackFeatures(trackIds: string[]) {
       //   // @ts-ignore
       //   const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
@@ -118,6 +120,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 this.onSubviewAction(name, path, args)
               }
             }
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const { assemblyManager } = getSession(self)
+            self.viewAssemblyConfigs.forEach(conf => {
+              // const ret = {
+              //   ...JSON.parse(JSON.stringify(getSnapshot(conf))),
+              //   aliases: [],
+              //   name: 'Hello',
+              //   refNameColors: [],
+              //   refNameAliases: {
+              //     adapter: {
+              //       type: 'RefNameAliasAdapter',
+              //       location: {
+              //         uri: 'hg19_aliases.txt',
+              //       },
+              //     },
+              //   },
+              // }
+              // console.log({ ret })
+              assemblyManager.addAssembly(getSnapshot(conf))
+            })
           }),
         )
       },
