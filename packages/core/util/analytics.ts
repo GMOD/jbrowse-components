@@ -31,8 +31,8 @@ export async function writeAWSAnalytics(
   // stats to be recorded in db
   const stats: AnalyticsObj = {
     ver,
-    'plugins-count': plugins.length,
-    'plugin-names': plugins.map((p: any) => p.name).join(','),
+    'plugins-count': plugins?.length || 0,
+    'plugin-names': plugins?.map((p: any) => p.name).join(','),
     'assemblies-count': assemblies.length,
     'tracks-count': tracks.length,
     'session-tracks-count': session?.sessionTracks.length || 0,
@@ -86,7 +86,8 @@ export async function writeGAAnalytics(
     ver: rootModel.version,
     electron: typeof window !== 'undefined' && Boolean(window.electron),
     loadTime: Date.now() - initialTimeStamp,
-    pluginNames: rootModel.jbrowse.plugins.map(plugin => plugin.name),
+    pluginNames:
+      rootModel.jbrowse.plugins?.map((plugin: any) => plugin.name) || '',
   }
 
   // create script
