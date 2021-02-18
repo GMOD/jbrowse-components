@@ -11,11 +11,15 @@ import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import PluginManager from '@jbrowse/core/PluginManager'
+import JBrowseRootModelFactory from '../rootModel'
+import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
+import TestPlugin from './TestPlugin'
 
 window.TextEncoder = TextEncoder
 
@@ -63,6 +67,25 @@ test('lollipop track test', async () => {
 
   await findByTestId('display-lollipop_track_linear')
   await expect(findByTestId('three')).resolves.toBeTruthy()
+})
+
+test('toplevel configuration', () => {
+  const pluginManager = new PluginManager(
+    corePlugins.concat([TestPlugin]).map(P => new P()),
+  )
+  pluginManager.createPluggableElements()
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, true)
+  const rootModel = JBrowseRootModel.create({
+    jbrowse: volvoxConfigSnapshot,
+    assemblyManager: {},
+  })
+  rootModel.setDefaultSession()
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
+  const state = pluginManager.rootModel
+  const { configuration } = state.session
+  expect(configuration.TestPlugin).toBeTruthy()
+  expect(configuration.TestPlugin.topLevelTest).toBeTruthy()
 })
 
 test('variant track test - opens feature detail view', async () => {

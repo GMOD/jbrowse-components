@@ -164,7 +164,7 @@ export default class PluginManager {
   pluginConfigurationSchemas() {
     const configurationSchema = {}
     this.plugins.forEach(plugin => {
-      console.log(plugin.name)
+      // console.log(plugin.name)
       if (plugin.configuration) {
         configurationSchema[plugin.name] = plugin.configuration
       }

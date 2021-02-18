@@ -42,10 +42,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
     baseLinearDisplayConfigSchema,
   }
 
-  configuration = ConfigurationSchema('LinearGenomeViewPlugin', {
-    topLevelExample: 'top-level-config',
-  })
-
   install(pluginManager: PluginManager) {
     pluginManager.addTrackType(() => {
       const configSchema = ConfigurationSchema(
