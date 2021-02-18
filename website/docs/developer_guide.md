@@ -1111,6 +1111,7 @@ export default class ArcRendererPlugin extends Plugin {
           name: 'ArcRenderer',
           ReactComponent: ArcRendererReactComponent,
           configSchema: ArcRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -1387,6 +1388,7 @@ export default class SVGPlugin extends Plugin {
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          pluginManager,
         }),
     )
   }

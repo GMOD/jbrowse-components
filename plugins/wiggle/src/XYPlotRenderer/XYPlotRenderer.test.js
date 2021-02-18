@@ -1,15 +1,15 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import XYPlotRenderer, { configSchema, ReactComponent } from '.'
 
-function XYPlotRendererPlugin() {
-  return new XYPlotRenderer({
+test('several features', async () => {
+  const pluginManager = {}
+  const renderer = new XYPlotRenderer({
     name: 'XYPlotRenderer',
     ReactComponent,
     configSchema,
+    pluginManager,
   })
-}
-test('several features', async () => {
-  const result = await XYPlotRendererPlugin().makeImageData({
+  const result = await renderer.makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),

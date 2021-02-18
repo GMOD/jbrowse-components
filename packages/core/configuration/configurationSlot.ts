@@ -197,7 +197,6 @@ export default function ConfigSlot(
     .views(self => ({
       get func() {
         if (self.isCallback) {
-          // console.log(getRoot(slot))
           // compile as jexl function
           const jexlExpr = stringToJexlExpression(
             String(self.value),

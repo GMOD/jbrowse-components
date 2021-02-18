@@ -165,6 +165,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+          pluginManager,
         }),
     )
     pluginManager.addRendererType(
@@ -173,6 +174,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
+          pluginManager,
         }),
     )
 

@@ -37,6 +37,7 @@ export default class HicPlugin extends Plugin {
           name: 'HicRenderer',
           ReactComponent: HicRendererReactComponent,
           configSchema: hicRendererConfigSchema,
+          pluginManager,
         }),
     )
     pluginManager.addTrackType(() => {

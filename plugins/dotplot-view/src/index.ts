@@ -130,6 +130,7 @@ export default class DotplotPlugin extends Plugin {
           name: 'DotplotRenderer',
           configSchema: dotplotRendererConfigSchema,
           ReactComponent: DotplotRendererReactComponent,
+          pluginManager,
         }),
     )
 
