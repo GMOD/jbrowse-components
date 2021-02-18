@@ -11,6 +11,7 @@ import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
@@ -83,9 +84,12 @@ test('toplevel configuration', () => {
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
   const state = pluginManager.rootModel
-  const { configuration } = state.session
-  expect(configuration.TestPlugin).toBeTruthy()
-  expect(configuration.TestPlugin.topLevelTest).toBeTruthy()
+  const { jbrowse } = state
+  const { configuration } = jbrowse
+  const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
+  const test2 = readConfObject(configuration, ['TestPlugin', 'topLevelTest'])
+  expect(test).toEqual('test works')
+  expect(test2).toEqual('test works')
 })
 
 test('variant track test - opens feature detail view', async () => {
