@@ -43,7 +43,7 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const display = getParent<any>(self, 2)
+        const display = getContainingDisplay(self)
         makeAbortableReaction(
           self as any,
           renderBlockData,
@@ -155,7 +155,7 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const display = getParent(self, 2)
+        const display = getContainingDisplay(self)
         const { rpcManager } = getSession(self)
         const { rendererType } = display
         const { renderArgs } = renderBlockData(cast(self))
@@ -183,35 +183,39 @@ export type BlockModel = Instance<BlockStateModel>
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
   const { assemblyManager, rpcManager } = getSession(self)
-  let display = getParent(self)
   const display = getContainingDisplay(self) as any
-    const assemblyNames = getTrackAssemblyNames(display.parentTrack)
-    const regionAsm = self.region.assemblyName
-    if (
-      !assemblyNames.includes(regionAsm) &&
-      !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
-    ) {
-      throw new Error(
-        `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
-      )
-    }
-  const { renderProps } = display
-  const { rendererType } = display
+  const {
+    adapterConfig,
+    renderProps,
+    rendererType,
+    error: displayError,
+    parentTrack,
+  } = display
+  const assemblyNames = getTrackAssemblyNames(parentTrack)
+  const regionAsm = self.region.assemblyName
+  if (
+    !assemblyNames.includes(regionAsm) &&
+    !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
+  ) {
+    throw new Error(
+      `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
+    )
+  }
+
   const { config } = renderProps
   // This line is to trigger the mobx reaction when the config changes
   // It won't trigger the reaction if it doesn't think we're accessing it
   readConfObject(config)
 
-  const { adapterConfig } = display
-
   const sessionId = getRpcSessionId(display)
+  const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
   return {
     rendererType,
     rpcManager,
     renderProps,
     cannotBeRenderedReason,
-    displayError: display.error,
+    displayError,
     renderArgs: {
       statusCallback: (message: string) => {
         if (isAlive(self)) {
