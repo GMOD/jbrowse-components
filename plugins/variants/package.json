@@ -37,7 +37,7 @@
   "dependencies": {
     "@gmod/tabix": "^1.5.0",
     "@gmod/vcf": "^4.0.1",
-    "@material-ui/data-grid": "^4.0.0-alpha.10",
+    "@material-ui/data-grid": "^4.0.0-alpha.20",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
