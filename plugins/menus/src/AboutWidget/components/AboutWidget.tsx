@@ -17,14 +17,14 @@ const useStyles = makeStyles(theme => ({
 
 function About({ model }: { model: IAnyStateTreeNode }) {
   const classes = useStyles()
-  const root = model ? getSession(model) : { version: '' }
+  const session = model ? getSession(model) : { version: '' }
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center" color="primary">
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
-        {root.version}
+        {session.version}
       </Typography>
       <Typography align="center" variant="body2">
         JBrowse is a{' '}
@@ -35,19 +35,17 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       </Typography>
       <br />
       <Typography align="center">
-        © 2019 The Evolutionary Software Foundation
+        © 2019-2021 The Evolutionary Software Foundation
       </Typography>
-      {/* <br />
-      <Typography align="center">
-        JBrowse is funded by the{' '}
-        <Link
-          href="https://genome.gov/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          NHGRI
-        </Link>
-      </Typography> */}
+      <ul>
+        {session.pluginManager.plugins.map(plugin => {
+          return (
+            <li>
+              {plugin.name} {plugin.version}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
