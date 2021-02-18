@@ -56,6 +56,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       setActiveStep(activeStep + 1)
       return
     }
+
     const trackId = `${trackName
       .toLowerCase()
       .replace(/ /g, '_')}-${Date.now()}`
