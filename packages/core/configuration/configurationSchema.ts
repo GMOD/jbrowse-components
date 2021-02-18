@@ -13,6 +13,7 @@ import { ElementId } from '../util/types/mst'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
+import PluginManager from '../PluginManager'
 
 function isEmptyObject(thing: unknown) {
   return (
@@ -175,8 +176,7 @@ function makeConfigurationSchemaModel<
         self[slotName] = newSchema
         return newSchema
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setPluginManager(pluginManager: any) {
+      setPluginManager(pluginManager: PluginManager) {
         self.pluginManager = pluginManager
       },
     }))
