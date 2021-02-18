@@ -1,5 +1,5 @@
 // library
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -36,11 +36,7 @@ beforeEach(() => {
 
 describe('dotplot view', () => {
   it('open a dotplot view', async () => {
-    const pluginManager = getPluginManager(
-      dotplotConfig,
-      false,
-      'Grape vs Peach (small)',
-    )
+    const pluginManager = getPluginManager(dotplotConfig, false)
     const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
 
     const canvas = await findByTestId(
@@ -59,4 +55,41 @@ describe('dotplot view', () => {
       failureThresholdType: 'percent',
     })
   }, 15000)
+
+  it('open a dotplot view with import form', async () => {
+    const pluginManager = getPluginManager(dotplotConfig, false)
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+
+    fireEvent.click(await findByText('File'))
+    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByText('Dotplot view'))
+    fireEvent.change(findByTestId('assembly-name'), {
+      target: {
+        value: 'peach',
+      },
+    })
+    fireEvent.change(findByTestId('file-selector'), {
+      target: {
+        value: 'test_data/peach_grape_small.paf',
+      },
+    })
+
+    const canvas = await findByTestId(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
+
+    const img = canvas.toDataURL()
+    const data = img.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(data, 'base64')
+    // this is needed to do a fuzzy image comparison because
+    // the travis-ci was 2 pixels different for some reason, see PR #710
+    expect(buf).toMatchImageSnapshot({
+      failureThreshold: 0.01,
+      failureThresholdType: 'percent',
+    })
+  })
 })
