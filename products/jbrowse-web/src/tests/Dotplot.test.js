@@ -58,19 +58,25 @@ describe('dotplot view', () => {
 
   it('open a dotplot view with import form', async () => {
     const pluginManager = getPluginManager(dotplotConfig, false)
-    const { findByTestId, findByText } = render(
+    const { findByTestId, findAllByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
     fireEvent.click(await findByText('Dotplot view'))
-    fireEvent.change(findByTestId('assembly-name'), {
+    const inputBox = await findAllByTestId('dotplot-input')
+    fireEvent.change(inputBox[0], {
       target: {
         value: 'peach',
       },
     })
-    fireEvent.change(findByTestId('file-selector'), {
+    fireEvent.change(await findByTestId('urlInput'), {
+      target: {
+        value: 'test_data/peach_grape_small.paf',
+      },
+    })
+    fireEvent.click(await findByTestId('submitDotplot'), {
       target: {
         value: 'test_data/peach_grape_small.paf',
       },

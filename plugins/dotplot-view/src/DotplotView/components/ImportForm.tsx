@@ -48,6 +48,7 @@ export default () => {
             select
             variant="outlined"
             value={assemblyNames[selected] ? selected : ''}
+            inputProps={{ 'data-testid': 'dotplot-input' }}
             onChange={event => {
               onChange(Number(event.target.value))
             }}
@@ -162,6 +163,7 @@ export default () => {
               </Grid>
               <Grid item>
                 <Button
+                  data-testid="submitDotplot"
                   onClick={onOpenClick}
                   variant="contained"
                   color="primary"

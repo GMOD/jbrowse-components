@@ -116,6 +116,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input"
+                            data-testid="urlInput"
                             type="text"
                             value=""
                           />
@@ -175,6 +176,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiInput-input"
+                            data-testid="urlInput"
                             type="text"
                             value=""
                           />

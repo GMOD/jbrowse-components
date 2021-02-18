@@ -96,6 +96,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               <input
                 aria-invalid="false"
                 class="MuiInputBase-input MuiInput-input"
+                data-testid="urlInput"
                 type="text"
                 value="/path/to/my.file"
               />
