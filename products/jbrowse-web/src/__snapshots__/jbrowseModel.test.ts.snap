@@ -611,6 +611,7 @@ Object {
       },
       "assemblyNames": Array [
         "volvox",
+        "volvox2",
       ],
       "category": Array [
         "Integration test",
