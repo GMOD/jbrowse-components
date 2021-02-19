@@ -56,11 +56,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-
-        // this represents assemblies in the specialized read vs ref dotplot
-        // view. note that this was a types.frozen but is turned into an actual
-        // assembly type because we need to be able to use resolveIdentifier to
-        // resolve the sequence track inside the assembly
       }),
     )
     .volatile(() => ({

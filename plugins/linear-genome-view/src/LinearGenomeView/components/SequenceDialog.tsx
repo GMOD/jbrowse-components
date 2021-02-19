@@ -45,24 +45,6 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-// this is a special function to find assembly that is not in the
-// assemblyManager
-function getViewAssemblyConfig(
-  self: LinearGenomeViewModel,
-  assemblyName: string,
-) {
-  const model = findParentThatIs(
-    self,
-    // @ts-ignore
-    (thing: unknown) => 'viewAssemblyConfigs' in thing,
-  )
-
-  // @ts-ignore
-  return model.viewAssemblyConfigs.find(asm => {
-    return asm.name === assemblyName
-  })
-}
-
 /**
  * Fetches and returns a list features for a given list of regions
  * @param selectedRegions - Region[]
@@ -76,13 +58,8 @@ async function fetchSequence(
   const assemblyName =
     self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
   const { rpcManager, assemblyManager } = session
-  let assemblyConfig = assemblyManager.get(assemblyName)?.configuration
-  if (!assemblyConfig) {
-    assemblyConfig = getViewAssemblyConfig(self, assemblyName)
-    if (!assemblyConfig) {
-      throw new Error(`Could not find assembly ${assemblyName}`)
-    }
-  }
+  const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+
   // assembly configuration
   const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
 
