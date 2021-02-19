@@ -125,11 +125,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       // automatically removes session assemblies associated with this view
       // e.g. read vs ref
-      beforeDetach() {
+      beforeDestroy() {
         const session = getSession(self)
         self.assemblyNames.forEach(name => {
+          console.log(name, 'removing test')
           if (name.endsWith('-temp')) {
-            session.removeAssembly(name)
+            console.log(name, 'removing')
+            setTimeout(() => {
+              session.removeAssembly(name)
+            }, 100)
           }
         })
       },

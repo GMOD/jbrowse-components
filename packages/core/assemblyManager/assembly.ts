@@ -144,7 +144,7 @@ export default function assemblyFactory(
 
   return types
     .model({
-      configuration: ConfigurationReference(assemblyConfigType),
+      configuration: types.safeReference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
       refNameAliases: types.maybe(types.map(types.string)),
     })

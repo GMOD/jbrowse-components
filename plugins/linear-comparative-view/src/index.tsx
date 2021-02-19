@@ -221,7 +221,11 @@ function WindowSizeDlg(props: {
       const qual = feature.get('qual') as string
       const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
-      const readAssembly = `${readName}_assembly`
+
+      // the suffix -temp is used in the beforeDetach handler to
+      // automatically remove itself from the session when this view is
+      // destroyed
+      const readAssembly = `${readName}_assembly-temp`
       const [trackAssembly] = getConf(track, 'assemblyNames')
       const assemblyNames = [trackAssembly, readAssembly]
       const trackId = `track-${Date.now()}`
@@ -317,10 +321,7 @@ function WindowSizeDlg(props: {
         .sort((a, b) => a.clipPos - b.clipPos)
 
       session.addAssembly({
-        // the suffix -temp is used in the beforeDetach handler to
-        // automatically remove itself from the session when this view is
-        // destroyed
-        name: `${readAssembly}-temp`,
+        name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',
           trackId: seqTrackId,
