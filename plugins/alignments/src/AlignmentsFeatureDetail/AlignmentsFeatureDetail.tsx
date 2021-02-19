@@ -107,7 +107,7 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             }`
             const displayString = `${saRef}:${start}-${end} (${saStrand})`
             return (
-              <li key={`${SA}-${index}`}>
+              <li key={`${locString}-${index}`}>
                 <Link
                   onClick={() => {
                     const { view } = model
