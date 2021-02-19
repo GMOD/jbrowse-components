@@ -21,7 +21,7 @@ import GetAppIcon from '@material-ui/icons/GetApp'
 import TextField from '@material-ui/core/TextField'
 
 // core
-import { getSession, findParentThatIs } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 // other
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'

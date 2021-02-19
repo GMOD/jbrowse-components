@@ -9,10 +9,7 @@ import {
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'
-import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '../configuration/configurationSchema'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import assemblyFactory from './assembly'
 import PluginManager from '../PluginManager'
@@ -32,10 +29,12 @@ export default function assemblyManagerFactory(
       },
 
       get assemblyList() {
+        // name is the explicit identifier and can be accessed without getConf,
+        // hence the union with {name:string}
         return [
           ...getParent(self).jbrowse.assemblies,
           ...(getParent(self).session.sessionAssemblies || []),
-        ] as AnyConfigurationModel[]
+        ] as (AnyConfigurationModel & { name: string })[]
       },
 
       get rpcManager() {
