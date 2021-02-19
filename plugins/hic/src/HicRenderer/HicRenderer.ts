@@ -85,9 +85,7 @@ export default class HicRenderer extends ServerSideRendererType {
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = readConfObject(config, 'color', [
-          counts,
-          maxScore,
-          baseColor,
+          { count: counts, maxScore, baseColor },
         ])
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }

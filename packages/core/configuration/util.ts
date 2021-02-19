@@ -34,7 +34,8 @@ import {
 export function readConfObject(
   confObject: AnyConfigurationModel,
   slotPath: string[] | string | undefined = undefined,
-  args: unknown[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: Record<string, any> | unknown[] = [],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (!confObject) throw new TypeError('must provide conf object to read')
@@ -63,7 +64,10 @@ export function readConfObject(
       // )
     }
     if (slot.func) {
-      const appliedFunc = slot.func.apply(null, args)
+      const appliedFunc =
+        typeof slot.func === 'function'
+          ? slot.func.apply(null, args)
+          : slot.func.evalSync(...args)
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }

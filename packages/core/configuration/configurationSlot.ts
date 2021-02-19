@@ -198,7 +198,7 @@ export default function ConfigSlot(
       get func() {
         if (self.isCallback) {
           // compile as jexl function
-          const jexlExpr = stringToJexlExpression(
+          return stringToJexlExpression(
             String(self.value),
             {
               verifyFunctionSignature: inDevelopment
@@ -207,15 +207,15 @@ export default function ConfigSlot(
             },
             getRoot(self).pluginManager?.jexl,
           )
-          return (...args: any[]) => {
-            const evalContext: Record<string, any> = {}
-            self.functionSignature.forEach(
-              (signature: string, index: number) => {
-                evalContext[signature] = args[index]
-              },
-            )
-            return jexlExpr.evalSync(evalContext)
-          }
+          // return (...args: any[]) => {
+          //   const evalContext: Record<string, any> = {}
+          //   self.functionSignature.forEach(
+          //     (signature: string, index: number) => {
+          //       evalContext[signature] = args[index]
+          //     },
+          //   )
+          //   return jexlExpr.evalSync(evalContext)
+          // }
         }
 
         return () => self.value

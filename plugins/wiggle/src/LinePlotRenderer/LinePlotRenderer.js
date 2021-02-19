@@ -20,7 +20,7 @@ export default class extends WiggleBaseRenderer {
       colorCallback = feature =>
         feature.get('score') < pivotValue ? negColor : posColor
     } else {
-      colorCallback = feature => readConfObject(config, 'color', [feature])
+      colorCallback = feature => readConfObject(config, 'color', [{ feature }])
     }
     let lastVal
 

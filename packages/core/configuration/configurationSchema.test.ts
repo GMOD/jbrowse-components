@@ -11,13 +11,11 @@ describe('configuration schemas', () => {
           description: "the track's background color",
           type: 'color',
           defaultValue: '#eee',
-          functionSignature: ['a'],
         },
         someInteger: {
           description: 'an integer slot',
           type: 'integer',
           defaultValue: 12,
-          functionSignature: ['a'],
         },
       }),
     })
@@ -28,15 +26,15 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'someInteger')).toBe(12)
 
     model.configuration.backgroundColor.set(`jexl:'#'+a`)
-    expect(getConf(model, 'backgroundColor', ['zonk'])).toBe('#zonk')
-    expect(getConf(model, 'backgroundColor', ['bar'])).toBe('#bar')
+    expect(getConf(model, 'backgroundColor', [{ a: 'zonk' }])).toBe('#zonk')
+    expect(getConf(model, 'backgroundColor', [{ a: 'bar' }])).toBe('#bar')
     model.configuration.backgroundColor.set('hoog')
-    expect(getConf(model, 'backgroundColor', ['zonk'])).toBe('hoog')
+    expect(getConf(model, 'backgroundColor', [{ a: 'zonk' }])).toBe('hoog')
 
     model.configuration.someInteger.set('jexl:5+a')
-    expect(getConf(model, 'someInteger', [5])).toBe(10)
+    expect(getConf(model, 'someInteger', [{ a: 5 }])).toBe(10)
     model.configuration.someInteger.set(42)
-    expect(getConf(model, 'someInteger', [5])).toBe(42)
+    expect(getConf(model, 'someInteger', [{ a: 5 }])).toBe(42)
   })
 
   test('can nest an array of configuration schemas', () => {

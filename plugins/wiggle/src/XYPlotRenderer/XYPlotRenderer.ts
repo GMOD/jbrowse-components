@@ -30,7 +30,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         feature.get('score') < pivotValue ? negColor : posColor
     } else {
       colorCallback = (feature: Feature) =>
-        readConfObject(config, 'color', [feature])
+        readConfObject(config, 'color', [{ feature }])
     }
 
     for (const feature of features.values()) {

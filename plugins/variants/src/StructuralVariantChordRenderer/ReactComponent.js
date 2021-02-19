@@ -72,9 +72,11 @@ export default ({ jbrequire }) => {
 
       let strokeColor
       if (selected) {
-        strokeColor = readConfObject(config, 'strokeColorSelected', [feature])
+        strokeColor = readConfObject(config, 'strokeColorSelected', [
+          { feature },
+        ])
       } else {
-        strokeColor = readConfObject(config, 'strokeColor', [feature])
+        strokeColor = readConfObject(config, 'strokeColor', [{ feature }])
       }
       const hoverStrokeColor = readConfObject(config, 'strokeColorHover', [
         feature,
