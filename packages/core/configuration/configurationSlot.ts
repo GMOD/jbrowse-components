@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, IAnyModelType, IAnyComplexType, getRoot } from 'mobx-state-tree'
 import { stringToJexlExpression } from '../util/jexlStrings'
-import { inDevelopment } from '../util'
 import { FileLocation } from '../util/types/mst'
 
 function isValidColorString(/* str */) {
@@ -200,11 +199,6 @@ export default function ConfigSlot(
           // compile as jexl function
           return stringToJexlExpression(
             String(self.value),
-            {
-              verifyContextVariable: inDevelopment
-                ? contextVariable
-                : undefined,
-            },
             getRoot(self).pluginManager?.jexl,
           )
         }

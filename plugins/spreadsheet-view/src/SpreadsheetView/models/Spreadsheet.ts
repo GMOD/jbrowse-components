@@ -35,7 +35,6 @@ export default (pluginManager: PluginManager) => {
           // compile this as a jexl expression
           return stringToJexlExpression(
             String(self.derivationFunctionText),
-            undefined,
             pluginManager.jexl,
           )
         }
