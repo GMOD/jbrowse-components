@@ -2,12 +2,11 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import { assemblyConfigSchemas as AssemblyConfigSchemasFactory } from '@jbrowse/core/assemblyManager'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, transaction } from 'mobx'
+import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -22,20 +21,12 @@ import {
   cast,
   ISerializedActionCall,
   getRoot,
-  getSnapshot,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const { jbrequire } = pluginManager
   const { ElementId } = jbrequire('@jbrowse/core/util/types/mst')
-  const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
-    pluginManager,
-  )
-  const assemblyConfigSchemasType = types.union(
-    { dispatcher },
-    ...assemblyConfigSchemas,
-  )
 
   const defaultHeight = 400
   return types

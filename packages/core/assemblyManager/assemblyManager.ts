@@ -126,7 +126,7 @@ export default function assemblyManagerFactory(
           self,
           reaction(
             // have to slice it to be properly reacted to
-            () => self.assemblyList,
+            () => self.assemblyList as any,
             (
               assemblyConfigs: Instance<typeof Assembly> &
                 AnyConfigurationModel[],
