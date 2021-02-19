@@ -9,7 +9,10 @@ import {
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from '../configuration/configurationSchema'
 
 import assemblyFactory from './assembly'
 import PluginManager from '../PluginManager'
@@ -32,7 +35,7 @@ export default function assemblyManagerFactory(
         return [
           ...getParent(self).jbrowse.assemblies,
           ...(getParent(self).session.sessionAssemblies || []),
-        ]
+        ] as AnyConfigurationModel[]
       },
 
       get rpcManager() {
@@ -125,12 +128,8 @@ export default function assemblyManagerFactory(
           self,
           reaction(
             // have to slice it to be properly reacted to
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            () => self.assemblyList as any,
-            (
-              assemblyConfigs: Instance<typeof Assembly> &
-                AnyConfigurationModel[],
-            ) => {
+            () => self.assemblyList,
+            assemblyConfigs => {
               self.assemblies.forEach(asm => {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
