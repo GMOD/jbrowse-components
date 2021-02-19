@@ -179,6 +179,15 @@ export default function sessionModelFactory(
       addAssembly(assemblyConfig: any) {
         self.sessionAssemblies.push(assemblyConfig)
       },
+      removeAssembly(assemblyName: string) {
+        const index = self.sessionAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        console.log({ index, assemblyName })
+        if (index !== -1) {
+          self.sessionAssemblies.splice(index, 1)
+        }
+      },
 
       makeConnection(
         configuration: AnyConfigurationModel,

@@ -123,6 +123,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      // automatically removes session assemblies associated with this view
+      // e.g. read vs ref
+      beforeDetach() {
+        const session = getSession(self)
+        self.assemblyNames.forEach(name => {
+          if (name.endsWith('-temp')) {
+            session.removeAssembly(name)
+          }
+        })
+      },
+
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
         self.views.forEach(view => {
           const ret = getPath(view)

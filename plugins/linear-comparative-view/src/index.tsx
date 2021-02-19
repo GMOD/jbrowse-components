@@ -317,7 +317,10 @@ function WindowSizeDlg(props: {
         .sort((a, b) => a.clipPos - b.clipPos)
 
       session.addAssembly({
-        name: readAssembly,
+        // the suffix -temp is used in the beforeDetach handler to
+        // automatically remove itself from the session when this view is
+        // destroyed
+        name: `${readAssembly}-temp`,
         sequence: {
           type: 'ReferenceSequenceTrack',
           trackId: seqTrackId,
