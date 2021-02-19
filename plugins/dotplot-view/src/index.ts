@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { AbstractDisplayModel } from '@jbrowse/core/util/types'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -157,8 +158,10 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, display: IAnyStateTreeNode) => {
-      // @ts-ignore
+    const cb = (
+      feature: Feature,
+      display: AbstractDisplayModel & IAnyStateTreeNode,
+    ) => {
       const { parentTrack } = display
       return feature
         ? [
