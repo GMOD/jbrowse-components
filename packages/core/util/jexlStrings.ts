@@ -14,10 +14,21 @@ const compilationCache: Record<string, any> = {}
  */
 export function stringToJexlExpression(
   str: string,
+  options: {
+    /**
+     * if passed, the compiled function will check at runtime that the proper
+     * number of arguments were passed to it
+     */
+    verifyContextVariable?: string[]
+  } = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl?: any,
 ) {
-  const cacheKey = `${'nosig'}|${str}`
+  const { verifyContextVariable } = options
+
+  const cacheKey = `${
+    verifyContextVariable ? verifyContextVariable.join(',') : 'nosig'
+  }|${str}`
   if (!compilationCache[cacheKey]) {
     const match = str.startsWith('jexl:')
     if (!match) {
