@@ -128,12 +128,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       beforeDestroy() {
         const session = getSession(self)
         self.assemblyNames.forEach(name => {
-          console.log(name, 'removing test')
           if (name.endsWith('-temp')) {
-            console.log(name, 'removing')
-            setTimeout(() => {
-              session.removeAssembly(name)
-            }, 100)
+            session.removeAssembly?.(name)
           }
         })
       },

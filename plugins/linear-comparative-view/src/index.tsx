@@ -320,7 +320,7 @@ function WindowSizeDlg(props: {
         })
         .sort((a, b) => a.clipPos - b.clipPos)
 
-      session.addAssembly({
+      session.addAssembly?.({
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',
