@@ -1,7 +1,7 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { cast, getParent, IAnyType, types, Instance } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { readConfObject } from '../configuration'
+import { readConfObject, ConfigurationReference } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
@@ -144,7 +144,7 @@ export default function assemblyFactory(
 
   return types
     .model({
-      configuration: types.safeReference(assemblyConfigType),
+      configuration: ConfigurationReference(assemblyConfigType),
       regions: types.maybe(types.array(MSTRegion)),
       refNameAliases: types.maybe(types.map(types.string)),
     })

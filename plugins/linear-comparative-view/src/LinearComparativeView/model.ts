@@ -70,7 +70,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // view. note that this was a types.frozen but is turned into an actual
         // assembly type because we need to be able to use resolveIdentifier to
         // resolve the sequence track inside the assembly
-        viewAssemblyConfigs: types.array(assemblyConfigSchemasType),
+        viewAssemblyConfigs: types.frozen(),
       }),
     )
     .volatile(() => ({
@@ -128,22 +128,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(() => {
             const { assemblyManager } = getSession(self)
             self.viewAssemblyConfigs.forEach(conf => {
-              // const ret = {
-              //   ...JSON.parse(JSON.stringify(getSnapshot(conf))),
-              //   aliases: [],
-              //   name: 'Hello',
-              //   refNameColors: [],
-              //   refNameAliases: {
-              //     adapter: {
-              //       type: 'RefNameAliasAdapter',
-              //       location: {
-              //         uri: 'hg19_aliases.txt',
-              //       },
-              //     },
-              //   },
-              // }
-              // console.log({ ret })
-              assemblyManager.addAssembly(getSnapshot(conf))
+              assemblyManager.addAssembly(conf)
             })
           }),
         )

@@ -139,7 +139,6 @@ export default function assemblyManagerFactory(
                     assembly.name === readConfObject(assemblyConfig, 'name'),
                 )
                 if (existingAssemblyIdx === -1) {
-                  console.log({ assemblyConfig })
                   this.addAssembly(assemblyConfig)
                 }
               })
