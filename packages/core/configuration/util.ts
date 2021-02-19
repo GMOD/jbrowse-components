@@ -35,7 +35,7 @@ export function readConfObject(
   confObject: AnyConfigurationModel,
   slotPath: string[] | string | undefined = undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: Record<string, any> | unknown[] = [],
+  args: Record<string, any> = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   if (!confObject) throw new TypeError('must provide conf object to read')
@@ -63,11 +63,9 @@ export function readConfObject(
       //   })`,
       // )
     }
+
     if (slot.func) {
-      const appliedFunc =
-        typeof slot.func === 'function'
-          ? slot.func.apply(null, args)
-          : slot.func.evalSync(...args)
+      const appliedFunc = slot.func.evalSync(args)
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }
@@ -106,7 +104,8 @@ export function readConfObject(
 export function getConf(
   model: unknown,
   slotPath: string[] | string | undefined = undefined,
-  args: unknown[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: Record<string, any> = {},
 ) {
   if (!model) throw new TypeError('must provide a model object')
   const { configuration } = model as { configuration: unknown }

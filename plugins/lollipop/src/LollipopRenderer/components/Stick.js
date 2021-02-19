@@ -16,7 +16,7 @@ function Stick(props) {
     selectedFeatureId,
   } = props
 
-  const style = { fill: readConfObject(config, 'bodyColor', [{ feature }]) }
+  const style = { fill: readConfObject(config, 'bodyColor', { feature }) }
   if (String(selectedFeatureId) === String(feature.id())) {
     style.fill = 'red'
   }
@@ -26,8 +26,8 @@ function Stick(props) {
       y1={0}
       x2={anchorLocation}
       y2={y + 2 * radiusPx}
-      stroke={readConfObject(config, 'stickColor', [{ feature }])}
-      strokeWidth={readConfObject(config, 'stickWidth', [{ feature }])}
+      stroke={readConfObject(config, 'stickColor', { feature })}
+      strokeWidth={readConfObject(config, 'stickWidth', { feature })}
     />
   )
 }

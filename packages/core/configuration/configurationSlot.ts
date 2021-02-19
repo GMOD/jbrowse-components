@@ -207,6 +207,7 @@ export default function ConfigSlot(
             },
             getRoot(self).pluginManager?.jexl,
           )
+          // if args is any array Array.isArray() // also check for mobx arrays
           // return (...args: any[]) => {
           //   const evalContext: Record<string, any> = {}
           //   self.functionSignature.forEach(
@@ -217,8 +218,8 @@ export default function ConfigSlot(
           //   return jexlExpr.evalSync(evalContext)
           // }
         }
-
-        return () => self.value
+        return { evalSync: () => self.value } // return obj w eval that returns self.value
+        // functionSignature => contextVariables
       },
 
       // JS representation of the value of this slot, suitable

@@ -8,7 +8,7 @@ import React from 'react'
 function Segments(props) {
   const { feature, featureLayout, selected, config, reversed } = props
 
-  const color2 = readConfObject(config, 'color2', [{ feature }])
+  const color2 = readConfObject(config, 'color2', { feature })
   let emphasizedColor2
   try {
     emphasizedColor2 = emphasize(color2, 0.3)

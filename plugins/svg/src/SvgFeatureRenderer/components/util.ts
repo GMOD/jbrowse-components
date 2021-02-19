@@ -88,7 +88,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     x = reversed
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
-  const height = readConfObject(config, 'height', [{ feature }])
+  const height = readConfObject(config, 'height', { feature })
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0

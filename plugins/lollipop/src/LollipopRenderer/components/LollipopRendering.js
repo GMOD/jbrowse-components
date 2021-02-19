@@ -55,7 +55,7 @@ function LollipopRendering(props) {
 
     const centerBp = Math.abs(feature.get('end') + feature.get('start')) / 2
     const centerPx = bpToPx(centerBp, region, bpPerPx)
-    const radiusPx = readConfObject(args.config, 'radius', [{ feature }])
+    const radiusPx = readConfObject(args.config, 'radius', { feature })
 
     if (!radiusPx)
       console.error(
@@ -67,7 +67,7 @@ function LollipopRendering(props) {
       featureId: feature.id(),
       anchorX: centerPx,
       radiusPx,
-      score: readConfObject(args.config, 'score', [{ feature }]),
+      score: readConfObject(args.config, 'score', { feature }),
     })
   }
 

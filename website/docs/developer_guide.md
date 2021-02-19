@@ -1190,7 +1190,7 @@ export default class ArcRenderer extends ServerSideRendererType {
       )
 
       ctx.beginPath()
-      ctx.strokeStyle = readConfObject(config, 'color', [feature])
+      ctx.strokeStyle = readConfObject(config, 'color', { feature })
       ctx.lineWidth = 3
       ctx.moveTo(left, 0)
       ctx.bezierCurveTo(left, 200, right, 200, right, 0)
@@ -1404,7 +1404,7 @@ export default function SvgFeatureRendering(props) {
   const region = regions[0]
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', [feature])
+  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {
