@@ -32,7 +32,7 @@ export default function assemblyManagerFactory(
       get assemblyList() {
         return [
           ...getParent(self).jbrowse.assemblies.slice(),
-          ...getParent(self).session.sessionAssemblies.slice(),
+          ...(getParent(self).session.sessionAssemblies?.slice() || []),
         ]
       },
 

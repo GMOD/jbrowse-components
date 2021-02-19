@@ -42,7 +42,7 @@ declare interface ReferringNode {
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType: any,
+  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
   return types
