@@ -2,19 +2,23 @@
 import React, { useState } from 'react'
 import {
   Divider,
+  Link,
   Paper,
   FormControlLabel,
   Checkbox,
   TextField,
   Typography,
 } from '@material-ui/core'
-
+import SimpleFeature, {
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import {
   BaseFeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { getSession } from '@jbrowse/core/util'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
@@ -108,6 +112,83 @@ function VariantSamples(props: any) {
   )
 }
 
+function BreakendPanel(props: {
+  locStrings: string[]
+  model: any
+  feature: SimpleFeatureSerialized
+}) {
+  const { model, locStrings, feature } = props
+  const session = getSession(model)
+  const { pluginManager } = session
+  let viewType: any
+  try {
+    viewType = pluginManager.getViewType('BreakpointSplitView')
+  } catch (e) {
+    // plugin not added
+  }
+  return (
+    <BaseCard {...props} title="Breakends">
+      <Typography>Link to linear view of breakend endpoints</Typography>
+      <ul>
+        {locStrings.map((locString, index) => {
+          return (
+            <li key={`${JSON.stringify(locString)}-${index}`}>
+              <Link
+                href="#"
+                onClick={() => {
+                  const { view } = model
+                  if (view) {
+                    view.navToLocString?.(locString)
+                  } else {
+                    session.notify(
+                      'No view associated with this feature detail panel anymore',
+                      'warning',
+                    )
+                  }
+                }}
+              >
+                {`LGV - ${locString}`}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      {viewType ? (
+        <>
+          <Typography>
+            Launch split views with breakend source and target
+          </Typography>
+          <ul>
+            {locStrings.map((locString, index) => {
+              return (
+                <li key={`${JSON.stringify(locString)}-${index}`}>
+                  <Link
+                    href="#"
+                    onClick={() => {
+                      const { view } = model
+                      // @ts-ignore
+                      const viewSnapshot = viewType.snapshotFromBreakendFeature(
+                        new SimpleFeature(feature),
+                        view,
+                      )
+                      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
+                      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
+                      viewSnapshot.featureData = feature
+                      session.addView('BreakpointSplitView', viewSnapshot)
+                    }}
+                  >
+                    {`${feature.refName}:${feature.start} // ${locString} (split view)`}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      ) : null}
+    </BaseCard>
+  )
+}
+
 function VariantFeatureDetails(props: any) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
@@ -135,6 +216,20 @@ function VariantFeatureDetails(props: any) {
         {...props}
       />
       <Divider />
+      {feat.type === 'breakend' ? (
+        <BreakendPanel
+          feature={feat}
+          locStrings={feat.ALT.map((alt: any) => alt.MatePosition)}
+          model={model}
+        />
+      ) : null}
+      {feat.type === 'translocation' ? (
+        <BreakendPanel
+          feature={feat}
+          model={model}
+          locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
+        />
+      ) : null}
       <VariantSamples feature={feat} {...props} />
     </Paper>
   )
