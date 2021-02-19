@@ -8,7 +8,7 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
       description: 'what to display in a given mouseover',
       defaultValue: `jexl:feature|getData('name')`,
 
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     maxDisplayedBpPerPx: {
       type: 'number',

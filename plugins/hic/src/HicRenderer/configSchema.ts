@@ -12,7 +12,7 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of each feature in a hic alignment',
       defaultValue: `jexl:baseColor|alpha(min(1,count/(maxScore/20)))|hsl|colorString`,
-      functionSignature: ['count', 'maxScore', 'baseColor'],
+      contextVariable: ['count', 'maxScore', 'baseColor'],
     },
 
     maxHeight: {

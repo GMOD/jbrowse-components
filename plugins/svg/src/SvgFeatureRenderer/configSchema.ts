@@ -8,27 +8,27 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the main color of each feature',
       defaultValue: 'goldenrod',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     color2: {
       type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
       defaultValue: 'black',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     color3: {
       type: 'color',
       description:
         'the tertiary color of each feature, often used for contrasting fills, like on UTRs',
       defaultValue: '#357089',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     height: {
       type: 'number',
       description: 'height in pixels of the main body of each feature',
       defaultValue: 10,
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
 
     labels: ConfigurationSchema('SvgFeatureLabels', {
@@ -37,32 +37,32 @@ export default ConfigurationSchema(
         description:
           'the primary name of the feature to show, if space is available',
         defaultValue: `jexl:feature|getData('name') || feature|getData('id')`,
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       nameColor: {
         type: 'color',
         description: 'the color of the name label, if shown',
         defaultValue: 'black',
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       description: {
         type: 'string',
         description: 'the text description to show, if space is available',
         defaultValue: `jexl:feature|getData('note') || feature|getData('description')`,
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       descriptionColor: {
         type: 'color',
         description: 'the color of the description, if shown',
         defaultValue: 'blue',
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       fontSize: {
         type: 'number',
         description:
           'height in pixels of the text to use for names and descriptions',
         defaultValue: 13,
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
     }),
     displayMode: {

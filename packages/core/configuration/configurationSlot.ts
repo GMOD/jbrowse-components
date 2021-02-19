@@ -145,7 +145,7 @@ export interface ConfigSlotDefinition {
   /** default value of the slot */
   defaultValue: any
   /** parameter names of the function callback */
-  functionSignature?: string[]
+  contextVariable?: string[]
 }
 
 /**
@@ -161,7 +161,7 @@ export default function ConfigSlot(
     model,
     type,
     defaultValue,
-    functionSignature = [],
+    contextVariable = [],
   }: ConfigSlotDefinition,
 ) {
   if (!type) throw new Error('type name required')
@@ -187,7 +187,7 @@ export default function ConfigSlot(
       value: types.optional(types.union(JexlStringType, model), defaultValue),
     })
     .volatile(() => ({
-      functionSignature,
+      contextVariable,
     }))
     .views(self => ({
       get isCallback() {
@@ -201,25 +201,14 @@ export default function ConfigSlot(
           return stringToJexlExpression(
             String(self.value),
             {
-              verifyFunctionSignature: inDevelopment
-                ? functionSignature
+              verifyContextVariable: inDevelopment
+                ? contextVariable
                 : undefined,
             },
             getRoot(self).pluginManager?.jexl,
           )
-          // if args is any array Array.isArray() // also check for mobx arrays
-          // return (...args: any[]) => {
-          //   const evalContext: Record<string, any> = {}
-          //   self.functionSignature.forEach(
-          //     (signature: string, index: number) => {
-          //       evalContext[signature] = args[index]
-          //     },
-          //   )
-          //   return jexlExpr.evalSync(evalContext)
-          // }
         }
-        return { evalSync: () => self.value } // return obj w eval that returns self.value
-        // functionSignature => contextVariables
+        return { evalSync: () => self.value }
       },
 
       // JS representation of the value of this slot, suitable

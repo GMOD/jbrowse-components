@@ -17,7 +17,7 @@ test('can convert a numeric slot to and from a callback', () => {
   const model = ConfigSlot('tester', {
     type: 'number',
     defaultValue: 12,
-    functionSignature: ['something'],
+    contextVariable: ['something'],
   })
   const instance = model.create()
   expect(instance.value).toBe(12)

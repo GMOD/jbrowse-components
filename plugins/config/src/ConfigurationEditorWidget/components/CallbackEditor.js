@@ -96,7 +96,7 @@ function CallbackEditor({ slot }) {
         title={
           <div>
             Callbacks are written in Jexl format. Click to learn more.
-            <br /> Names of available context items: {slot.functionSignature}
+            <br /> Names of available context items: {slot.contextVariable}
           </div>
         }
         arrow

@@ -549,7 +549,7 @@ export default ConfigurationSchema('PileupRenderer', {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
     defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
-    functionSignature: ['feature'],
+    contextVariable: ['feature'],
   },
   displayMode: {
     type: 'stringEnum',
@@ -596,7 +596,7 @@ readConfObject(track.configuration, 'maxHeight')`
 
 Config callbacks allow you to have a dynamic color based on some function logic
 you provide. All config slots can actually become config callback. The
-arguments that are given to the callback are listed by the 'functionSignature'
+arguments that are given to the callback are listed by the 'contextVariable'
 but must be provided by the calling code (the code reading the config slot). To
 pass arguments to the a callback we say
 
