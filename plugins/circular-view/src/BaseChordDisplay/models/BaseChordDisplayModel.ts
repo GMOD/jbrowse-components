@@ -46,7 +46,7 @@ export const BaseChordDisplayModel = types
     const track = self
     return {
       onChordClick(feature: Feature) {
-        getConf(self, 'onChordClick', [feature, track, pluginManager])
+        getConf(self, 'onChordClick', { feature, track, pluginManager })
       },
     }
   })
