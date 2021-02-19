@@ -133,6 +133,29 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function PairLink({ locString, model }: { locString: string; model: any }) {
+  const session = getSession(model)
+  return (
+    <Link
+      onClick={() => {
+        const { view } = model
+        if (view) {
+          view.navToLocString(locString)
+        } else {
+          session.notify(
+            'No view associated with this feature detail panel anymore',
+            'warning',
+          )
+        }
+      }}
+      href="#"
+    >
+      {locString}
+    </Link>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AlignmentFeatureDetails(props: { model: any }) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
@@ -142,7 +165,13 @@ function AlignmentFeatureDetails(props: { model: any }) {
       <BaseFeatureDetails
         {...props}
         omit={omit}
-        formatter={(value: unknown) => <Formatter value={value} />}
+        formatter={(value: unknown, key: string) => {
+          return key === 'next_segment_position' ? (
+            <PairLink model={model} locString={value as string} />
+          ) : (
+            <Formatter value={value} />
+          )
+        }}
       />
       {SA ? <SupplementaryAlignments model={model} tag={SA} /> : null}
       <AlignmentFlags feature={feat} {...props} />
