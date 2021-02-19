@@ -79,11 +79,12 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const [selected, setSelected] = useState([0, 0])
   const [numRows] = useState(2)
   const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
-  const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
+  const session = getSession(model)
+  const { assemblyNames } = session
   const error = assemblyNames.length ? '' : 'No configured assemblies'
 
   async function onOpenClick() {
-    const { assemblyManager } = getSession(model)
+    const { assemblyManager } = session
 
     model.setViews(
       // @ts-ignore
@@ -117,7 +118,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         : null
 
       // @ts-ignore
-      const configuration = getSession(model).addTrackConf({
+      const configuration = session.addTrackConf({
         trackId: `fileName-${Date.now()}`,
         name: fileName,
         assemblyNames: selected.map(selection => assemblyNames[selection]),
@@ -126,9 +127,6 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           type: 'PAFAdapter',
           pafLocation: trackData,
           assemblyNames: selected.map(selection => assemblyNames[selection]),
-        },
-        renderer: {
-          type: 'LinearSyntenyRenderer',
         },
       })
       model.toggleTrack(configuration.trackId)

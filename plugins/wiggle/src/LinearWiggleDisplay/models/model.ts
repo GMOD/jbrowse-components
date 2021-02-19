@@ -8,6 +8,7 @@ import {
   getSession,
   getContainingView,
   getContainingTrack,
+  isSelectionContainer,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -25,6 +26,7 @@ import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getNiceDomain } from '../../util'
 
 import Tooltip from '../components/Tooltip'
@@ -95,6 +97,15 @@ const stateModelFactory = (
         self.statsFetchInProgress = aborter
       },
 
+      // this overrides the BaseLinearDisplayModel to avoid popping up a
+      // feature detail display, but still sets the feature selection on the
+      // model so listeners can detect a click
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
+      },
       setResolution(res: number) {
         self.resolution = res
       },

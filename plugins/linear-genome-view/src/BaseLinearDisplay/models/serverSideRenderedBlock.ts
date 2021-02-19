@@ -122,6 +122,7 @@ const blockState = types
         renderInProgress = undefined
       },
       setError(error: Error) {
+        console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
@@ -177,66 +178,59 @@ export type BlockModel = Instance<BlockStateModel>
 // not using a flow for this, because the flow doesn't
 // work with autorun
 function renderBlockData(self: Instance<BlockStateModel>) {
-  try {
-    const { assemblyManager, rpcManager } = getSession(self)
-    let display = getParent(self)
-    while (!(display.configuration && getConf(display, 'displayId'))) {
-      display = getParent(display)
-    }
-    const assemblyNames = getTrackAssemblyNames(display.parentTrack)
-    let cannotBeRenderedReason
-    if (!assemblyNames.includes(self.region.assemblyName)) {
-      let matchFound = false
-      assemblyNames.forEach((assemblyName: string) => {
-        const assembly = assemblyManager.get(assemblyName)
-        if (assembly && assembly.hasName(assemblyName)) {
-          matchFound = true
-        }
-      })
-      if (!matchFound) {
-        cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
+  const { assemblyManager, rpcManager } = getSession(self)
+  let display = getParent(self)
+  while (!(display.configuration && getConf(display, 'displayId'))) {
+    display = getParent(display)
+  }
+  const assemblyNames = getTrackAssemblyNames(display.parentTrack)
+  let cannotBeRenderedReason
+  if (!assemblyNames.includes(self.region.assemblyName)) {
+    let matchFound = false
+    assemblyNames.forEach((assemblyName: string) => {
+      const assembly = assemblyManager.get(assemblyName)
+      if (assembly && assembly.hasName(assemblyName)) {
+        matchFound = true
       }
+    })
+    if (!matchFound) {
+      cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
     }
-    if (!cannotBeRenderedReason) {
-      cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-    }
-    const { renderProps } = display
-    const { rendererType } = display
-    const { config } = renderProps
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
-    readConfObject(config)
+  }
+  if (!cannotBeRenderedReason) {
+    cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
+  }
+  const { renderProps } = display
+  const { rendererType } = display
+  const { config } = renderProps
+  // This line is to trigger the mobx reaction when the config changes
+  // It won't trigger the reaction if it doesn't think we're accessing it
+  readConfObject(config)
 
-    const { adapterConfig } = display
+  const { adapterConfig } = display
 
-    const sessionId = getRpcSessionId(display)
+  const sessionId = getRpcSessionId(display)
 
-    return {
-      rendererType,
-      rpcManager,
-      renderProps,
-      cannotBeRenderedReason,
-      displayError: display.error,
-      renderArgs: {
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            self.setStatus(message)
-          }
-        },
-        assemblyName: self.region.assemblyName,
-        regions: [self.region],
-        adapterConfig,
-        rendererType: rendererType.name,
-        sessionId,
-        blockKey: self.key,
-        timeout: 1000000, // 10000,
+  return {
+    rendererType,
+    rpcManager,
+    renderProps,
+    cannotBeRenderedReason,
+    displayError: display.error,
+    renderArgs: {
+      statusCallback: (message: string) => {
+        if (isAlive(self)) {
+          self.setStatus(message)
+        }
       },
-    }
-  } catch (error) {
-    console.error(error)
-    return {
-      displayError: error,
-    }
+      assemblyName: self.region.assemblyName,
+      regions: [self.region],
+      adapterConfig,
+      rendererType: rendererType.name,
+      sessionId,
+      blockKey: self.key,
+      timeout: 1000000, // 10000,
+    },
   }
 }
 

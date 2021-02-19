@@ -27,7 +27,7 @@ test('adapter can fetch features from volvox-bed12.bed.gz', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray).toMatchSnapshot()
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
 
 test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () => {
@@ -55,7 +55,7 @@ test('adapter can fetch features from volvox.sort.bed.gz simple bed3', async () 
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray).toMatchSnapshot()
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
 
 test('adapter can fetch features bed with autosql', async () => {
@@ -123,7 +123,7 @@ test('adapter can fetch features bed with autosql', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray).toMatchSnapshot()
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
 
 test('adapter can fetch bed with header', async () => {
@@ -155,5 +155,31 @@ test('adapter can fetch bed with header', async () => {
 
   const featuresArray = await features.pipe(toArray()).toPromise()
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray).toMatchSnapshot()
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
+})
+
+test('adapter can use gwas header', async () => {
+  const adapter = new BedTabixAdapter(
+    MyConfigSchema.create({
+      bedGzLocation: {
+        localPath: require.resolve('./test_data/gwas.bed.gz'),
+      },
+      index: {
+        location: {
+          localPath: require.resolve('./test_data/gwas.bed.gz.tbi'),
+        },
+      },
+    }),
+  )
+
+  const features = adapter.getFeatures({
+    refName: '1',
+    start: 0,
+    end: 100_000,
+    assemblyName: 'hg19',
+  })
+
+  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresJsonArray = featuresArray.map(f => f.toJSON())
+  expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
