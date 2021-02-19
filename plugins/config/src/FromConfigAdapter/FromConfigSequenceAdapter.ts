@@ -31,7 +31,10 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
           start: region.start,
           seq: feat
             .get('seq')
-            .slice(Math.max(region.start, 0), Math.max(region.end, 0)),
+            .slice(
+              Math.max(region.start - feat.get('start'), 0),
+              Math.max(region.end - feat.get('start'), 0),
+            ),
         }),
       )
 
