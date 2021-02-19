@@ -30,7 +30,10 @@ export default function assemblyManagerFactory(
       },
 
       get assemblyList() {
-        return getParent(self).jbrowse.assemblies.slice()
+        return [
+          ...getParent(self).jbrowse.assemblies.slice(),
+          ...getParent(self).session.sessionAssemblies.slice(),
+        ]
       },
 
       get rpcManager() {

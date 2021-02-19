@@ -40,7 +40,10 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  assemblyConfigSchemasType: any,
+) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
@@ -69,6 +72,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       sessionConnections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .volatile((/* self */) => ({
       pluginManager,
@@ -171,6 +175,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setName(str: string) {
         self.name = str
+      },
+      addAssembly(assemblyConfig: any) {
+        self.sessionAssemblies.push(assemblyConfig)
       },
 
       makeConnection(

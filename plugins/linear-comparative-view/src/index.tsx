@@ -316,6 +316,28 @@ function WindowSizeDlg(props: {
         })
         .sort((a, b) => a.clipPos - b.clipPos)
 
+      session.addAssembly({
+        name: readAssembly,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: seqTrackId,
+          assemblyNames: [readAssembly],
+          adapter: {
+            type: 'FromConfigSequenceAdapter',
+            noAssemblyManager: true,
+            features: [
+              {
+                start: 0,
+                end: totalLength,
+                seq: featSeq,
+                refName: readName,
+                uniqueId: `${Math.random()}`,
+              },
+            ],
+          },
+        },
+      })
+
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
         views: [
@@ -420,29 +442,6 @@ function WindowSizeDlg(props: {
             },
             trackId,
             name: trackName,
-          },
-        ],
-        viewAssemblyConfigs: [
-          {
-            name: readAssembly,
-            sequence: {
-              type: 'ReferenceSequenceTrack',
-              trackId: seqTrackId,
-              assemblyNames: [readAssembly],
-              adapter: {
-                type: 'FromConfigSequenceAdapter',
-                noAssemblyManager: true,
-                features: [
-                  {
-                    start: 0,
-                    end: totalLength,
-                    seq: featSeq,
-                    refName: readName,
-                    uniqueId: `${Math.random()}`,
-                  },
-                ],
-              },
-            },
           },
         ],
         tracks: [
