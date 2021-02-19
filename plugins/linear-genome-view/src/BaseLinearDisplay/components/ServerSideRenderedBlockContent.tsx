@@ -1,10 +1,9 @@
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useEffect, useState } from 'react'
 import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { makeStyles } from '@material-ui/core/styles'
+import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
@@ -105,10 +104,6 @@ function BlockMessage({
     <div className={classes.blockReactNodeMessage}>{messageContent}</div>
   )
 }
-BlockMessage.propTypes = {
-  messageContent: PropTypes.oneOfType([PropTypes.string, PropTypes.node])
-    .isRequired,
-}
 
 function BlockError({
   error,
@@ -140,13 +135,6 @@ function BlockError({
       )}
     </div>
   )
-}
-BlockError.propTypes = {
-  error: MobxPropTypes.objectOrObservableObject.isRequired,
-  reload: PropTypes.func,
-}
-BlockError.defaultProps = {
-  reload: undefined,
 }
 
 const ServerSideRenderedBlockContent = observer(

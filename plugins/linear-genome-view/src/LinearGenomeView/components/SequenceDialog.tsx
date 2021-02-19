@@ -22,10 +22,7 @@ import TextField from '@material-ui/core/TextField'
 
 // core
 import { getSession } from '@jbrowse/core/util'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 // other
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
@@ -61,15 +58,10 @@ async function fetchSequence(
   const assemblyName =
     self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
   const { rpcManager, assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`Could not find assembly ${assemblyName}`)
-  }
+  const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+
   // assembly configuration
-  const adapterConfig = readConfObject(assembly.configuration, [
-    'sequence',
-    'adapter',
-  ])
+  const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
@@ -80,10 +72,10 @@ async function fetchSequence(
         sessionId,
       }),
     ),
-  )) as SimpleFeatureSerialized[][]
+  )) as Feature[][]
 
   // assumes that we get whole sequence in a single getFeatures call
-  return chunks.map(chunk => new SimpleFeature(chunk[0]))
+  return chunks.map(chunk => chunk[0])
 }
 
 function SequenceDialog({

@@ -4,9 +4,8 @@ import {
   cast,
   getParent,
   IAnyType,
-  SnapshotOrInstance,
-  types,
   Instance,
+  types,
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'
@@ -30,7 +29,12 @@ export default function assemblyManagerFactory(
       },
 
       get assemblyList() {
-        return getParent(self).jbrowse.assemblies.slice()
+        // name is the explicit identifier and can be accessed without getConf,
+        // hence the union with {name:string}
+        return [
+          ...getParent(self).jbrowse.assemblies,
+          ...(getParent(self).session.sessionAssemblies || []),
+        ] as (AnyConfigurationModel & { name: string })[]
       },
 
       get rpcManager() {
@@ -124,10 +128,7 @@ export default function assemblyManagerFactory(
           reaction(
             // have to slice it to be properly reacted to
             () => self.assemblyList,
-            (
-              assemblyConfigs: Instance<typeof Assembly> &
-                AnyConfigurationModel[],
-            ) => {
+            assemblyConfigs => {
               self.assemblies.forEach(asm => {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
@@ -147,14 +148,19 @@ export default function assemblyManagerFactory(
           ),
         )
       },
+
+      // this can take an active instance of an assembly, in which case it is
+      // referred to, or it can take an identifier e.g. assembly name, which is
+      // used as a reference. snapshots cannot be used
       addAssembly(
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies.push({ configuration: assemblyConfig })
       },
+
       replaceAssembly(
         idx: number,
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies[idx] = cast({
           configuration: assemblyConfig,

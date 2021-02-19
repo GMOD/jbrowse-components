@@ -210,7 +210,7 @@ const stateModelFactory = (
           const featureWidget = session.addWidget(
             'AlignmentsFeatureWidget',
             'alignmentFeature',
-            { featureData: feature.toJSON() },
+            { featureData: feature.toJSON(), view: getContainingView(self) },
           )
           session.showWidget(featureWidget)
         }
@@ -351,12 +351,14 @@ const stateModelFactory = (
           return filters
         },
 
+        get rendererConfig() {
+          const configBlob =
+            getConf(self, ['renderers', self.rendererTypeName]) || {}
+          return self.rendererType.configSchema.create(configBlob)
+        },
+
         get renderProps() {
           const view = getContainingView(self) as LGV
-          const config = self.rendererType.configSchema.create(
-            getConf(self, ['renderers', self.rendererTypeName]) || {},
-          )
-
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -369,7 +371,7 @@ const stateModelFactory = (
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
-            config,
+            config: this.rendererConfig,
           }
         },
 
@@ -442,6 +444,12 @@ const stateModelFactory = (
                   label: 'Pair orientation',
                   onClick: () => {
                     self.setColorScheme({ type: 'pairOrientation' })
+                  },
+                },
+                {
+                  label: 'Per-base quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'perBaseQuality' })
                   },
                 },
                 {

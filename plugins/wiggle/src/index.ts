@@ -3,11 +3,14 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import WiggleBaseRenderer from './WiggleBaseRenderer'
+import WiggleRendering from './WiggleRendering'
 import {
   AdapterClass as BigWigAdapterClass,
   configSchema as bigWigAdapterConfigSchema,
@@ -16,6 +19,7 @@ import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
   ReactComponent as DensityRendererReactComponent,
 } from './DensityRenderer'
+import * as utils from './util'
 import {
   configSchemaFactory as linearWiggleDisplayConfigSchemaFactory,
   modelFactory as linearWiggleDisplayModelFactory,
@@ -115,11 +119,19 @@ export default class extends Plugin {
       () => new WiggleGetMultiRegionStats(pluginManager),
     )
   }
+
+  exports = {
+    LinearWiggleDisplayReactComponent,
+    XYPlotRendererReactComponent,
+    utils,
+    WiggleBaseRenderer,
+    linearWiggleDisplayModelFactory,
+  }
 }
 
 export * from './util'
 
-export { default as WiggleRendering } from './WiggleRendering'
-export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
+export { WiggleRendering }
+export { WiggleBaseRenderer }
 export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
 export { YSCALEBAR_LABEL_OFFSET }

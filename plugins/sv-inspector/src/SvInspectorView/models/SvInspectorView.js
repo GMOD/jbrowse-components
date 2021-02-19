@@ -44,10 +44,10 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
 
 export default pluginManager => {
   const { jbrequire } = pluginManager
-  const { autorun, reaction } = jbrequire('mobx')
-  const { types, getParent, addDisposer, getSnapshot } = jbrequire(
-    'mobx-state-tree',
-  )
+  const { autorun, reaction } = pluginManager.lib.mobx
+  const { types, getParent, addDisposer, getSnapshot } = pluginManager.lib[
+    'mobx-state-tree'
+  ]
   const { BaseViewModel } = jbrequire(
     '@jbrowse/core/pluggableElementTypes/models',
   )
@@ -83,7 +83,8 @@ export default pluginManager => {
 
       onlyDisplayRelevantRegionsInCircularView: false,
 
-      // switch specifying whether we are showing the import wizard or the spreadsheet in our viewing area
+      // switch specifying whether we are showing the import wizard or the
+      // spreadsheet in our viewing area
       mode: types.optional(
         types.enumeration('SvInspectorViewMode', ['import', 'display']),
         'import',

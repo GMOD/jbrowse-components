@@ -57,6 +57,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
+  addAssembly?: Function
+  removeAssembly?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -137,6 +139,23 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     'configuration' in thing &&
     // @ts-ignore
     thing.configuration.trackId
+  )
+}
+
+export interface AbstractDisplayModel {
+  id: string
+  parentTrack: AbstractTrackModel
+  renderDelay: number
+  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  cannotBeRenderedReason?: string
+}
+export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    // @ts-ignore
+    thing.configuration.displayId
   )
 }
 

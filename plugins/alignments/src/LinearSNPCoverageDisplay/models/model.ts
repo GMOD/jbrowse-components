@@ -1,5 +1,5 @@
 import { types, cast } from 'mobx-state-tree'
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import {
   linearWiggleDisplayModelFactory,
@@ -25,6 +25,8 @@ const stateModelFactory = (
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
         type: types.literal('LinearSNPCoverageDisplay'),
+        drawInterbaseCounts: types.maybe(types.boolean),
+        drawIndicators: types.maybe(types.boolean),
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
@@ -52,6 +54,43 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
+
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          drawInterbaseCounts:
+            self.drawInterbaseCounts === undefined
+              ? configBlob.drawInterbaseCounts
+              : self.drawInterbaseCounts,
+          drawIndicators:
+            self.drawIndicators === undefined
+              ? configBlob.drawIndicators
+              : self.drawIndicators,
+        })
+      },
+      get drawInterbaseCountsSetting() {
+        return self.drawInterbaseCounts !== undefined
+          ? self.drawInterbaseCounts
+          : readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+      },
+      get drawIndicatorsSetting() {
+        return self.drawIndicators !== undefined
+          ? self.drawIndicators
+          : readConfObject(this.rendererConfig, 'drawIndicators')
+      },
+    }))
+    .actions(self => ({
+      toggleDrawIndicators() {
+        self.drawIndicators = !self.drawIndicatorsSetting
+      },
+      toggleDrawInterbaseCounts() {
+        self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
+      },
+    }))
+
+    .views(self => ({
       get TooltipComponent() {
         return Tooltip
       },
@@ -74,6 +113,33 @@ const stateModelFactory = (
 
       get contextMenuItems() {
         return []
+      },
+
+      get composedTrackMenuItems() {
+        return [
+          {
+            type: 'subMenu',
+            label: 'SNPCoverageTrack settings',
+            subMenu: [
+              {
+                label: 'Draw insertion/clipping indicators',
+                type: 'checkbox',
+                checked: self.drawIndicatorsSetting,
+                onClick: () => {
+                  self.toggleDrawIndicators()
+                },
+              },
+              {
+                label: 'Draw insertion/clipping counts',
+                type: 'checkbox',
+                checked: self.drawInterbaseCountsSetting,
+                onClick: () => {
+                  self.toggleDrawInterbaseCounts()
+                },
+              },
+            ],
+          },
+        ]
       },
 
       // The SNPCoverage filters are called twice because the BAM/CRAM features
@@ -114,10 +180,6 @@ const stateModelFactory = (
       },
 
       get renderProps() {
-        const config = self.rendererType.configSchema.create(
-          getConf(self, ['renderers', self.rendererTypeName]) || {},
-        )
-
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
@@ -127,7 +189,7 @@ const stateModelFactory = (
           displayModel: self,
           scaleOpts: this.scaleOpts,
           filters: self.filters,
-          config,
+          config: self.rendererConfig,
         }
       },
     }))
