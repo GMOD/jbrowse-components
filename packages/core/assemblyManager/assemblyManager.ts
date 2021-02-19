@@ -4,9 +4,8 @@ import {
   cast,
   getParent,
   IAnyType,
-  SnapshotOrInstance,
-  types,
   Instance,
+  types,
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'
@@ -151,19 +150,19 @@ export default function assemblyManagerFactory(
           ),
         )
       },
+
+      // this can take an active instance of an assembly, in which case it is
+      // referred to, or it can take an identifier e.g. assembly name, which is
+      // used as a reference. snapshots cannot be used
       addAssembly(
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies.push({ configuration: assemblyConfig })
       },
-      // addAssemblyConf(
-      //         assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
-      //       ) {
-      //         self.assemblies.push({ configuration: assemblyConfig })
-      //       }
+
       replaceAssembly(
         idx: number,
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies[idx] = cast({
           configuration: assemblyConfig,
