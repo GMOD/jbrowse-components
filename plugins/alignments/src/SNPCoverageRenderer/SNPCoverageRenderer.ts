@@ -2,6 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   getOrigin,
@@ -14,7 +15,6 @@ import { ThemeOptions } from '@material-ui/core'
 
 interface SNPCoverageRendererProps {
   features: Map<string, Feature>
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
@@ -50,6 +50,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       scaleOpts,
       height,
       theme: configTheme,
+      config: cfg,
     } = props
     const theme = createJBrowseTheme(configTheme)
 
@@ -61,15 +62,16 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
+    const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
+    const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
+    const drawIndicators = readConfObject(cfg, 'drawIndicators')
+    const width = (region.end - region.start) / bpPerPx
 
-    const toY = (rawscore: number, curr = 0) =>
-      height - viewScale(rawscore) - curr
-    const snpToY = (rawscore: number, curr = 0) =>
-      height - snpViewScale(rawscore) - curr
-    const toHeight = (rawscore: number, curr = 0) =>
-      toY(originY) - toY(rawscore, curr)
-    const snpToHeight = (rawscore: number, curr = 0) =>
-      snpToY(snpOriginY) - snpToY(rawscore, curr)
+    const toY = (n: number, curr = 0) => height - viewScale(n) - curr
+    const snpToY = (n: number, curr = 0) => height - snpViewScale(n) - curr
+    const toHeight = (n: number, curr = 0) => toY(originY) - toY(n, curr)
+    const snpToHeight = (n: number, curr = 0) =>
+      snpToY(snpOriginY) - snpToY(n, curr)
 
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -90,6 +92,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const score = feature.get('score') as number
       ctx.fillRect(leftPx, toY(score), rightPx - leftPx + 0.3, toHeight(score))
     }
+    ctx.fillStyle = 'grey'
+    ctx.beginPath()
+    ctx.lineTo(0, 0)
+    ctx.moveTo(0, width)
+    ctx.stroke()
 
     // Second pass: draw the SNP data, and add a minimum feature width of 1px
     // which can be wider than the actual bpPerPx This reduces overdrawing of
@@ -97,32 +104,54 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const infoArray: BaseInfo[] = feature.get('snpinfo') || []
-      let curr = 0
-      infoArray.forEach(info => {
-        if (!info || info.base === 'reference' || info.base === 'total') {
-          return
-        }
-        ctx.fillStyle = colorForBase[info.base]
-        if (
-          info.base === 'insertion' ||
-          info.base === 'softclip' ||
-          info.base === 'hardclip'
-        ) {
-          ctx.beginPath()
-          ctx.moveTo(leftPx - 3, 0)
-          ctx.lineTo(leftPx + 3, 0)
-          ctx.lineTo(leftPx, 4.5)
-          ctx.fill()
-        } else if (info.base !== 'deletion') {
-          ctx.fillRect(
-            leftPx,
-            snpToY(info.score + curr),
-            Math.max(rightPx - leftPx + 0.3, 1),
-            snpToHeight(info.score),
-          )
-          curr += info.score
-        }
-      })
+      const totalScore =
+        infoArray.find(info => info.base === 'total')?.score || 0
+
+      const w = Math.max(rightPx - leftPx + 0.3, 1)
+      infoArray
+        .filter(
+          ({ base }) =>
+            base !== 'reference' &&
+            base !== 'total' &&
+            base !== 'deletion' &&
+            base !== 'insertion' &&
+            base !== 'softclip' &&
+            base !== 'hardclip',
+        )
+        .reduce((curr, info) => {
+          const { base, score } = info
+          ctx.fillStyle = colorForBase[base]
+          ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
+          return curr + info.score
+        }, 0)
+
+      const interbaseEvents = infoArray.filter(
+        ({ base }) =>
+          base === 'insertion' || base === 'softclip' || base === 'hardclip',
+      )
+
+      const indicatorHeight = 4.5
+      if (drawInterbaseCounts) {
+        interbaseEvents.reduce((curr, info) => {
+          const { score, base } = info
+          ctx.fillStyle = colorForBase[base]
+          ctx.fillRect(leftPx, indicatorHeight + curr, 2, snpToHeight(score))
+          return curr + info.score
+        }, 0)
+      }
+
+      if (drawIndicators) {
+        interbaseEvents.forEach(({ score, base }) => {
+          if (score > totalScore * indicatorThreshold && totalScore > 10) {
+            ctx.fillStyle = colorForBase[base]
+            ctx.beginPath()
+            ctx.moveTo(leftPx - 3, 0)
+            ctx.lineTo(leftPx + 3, 0)
+            ctx.lineTo(leftPx, indicatorHeight)
+            ctx.fill()
+          }
+        })
+      }
     }
   }
 }
