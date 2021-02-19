@@ -770,11 +770,6 @@ export async function renameRegionsIfNeeded<
     regions: [...(args.regions || [])],
   }
 
-  // configs can choose to not be associated with the assemblyManager (as with
-  // the "read assembly" in the read vs ref comparisons) and in this case a
-  // special flag exists (currently set on the FromConfigSequenceAdapter)
-  // called noAssemblyManager
-  // @ts-ignore
   if (assemblyName) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
