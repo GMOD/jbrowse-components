@@ -126,6 +126,7 @@ export default function assemblyManagerFactory(
           self,
           reaction(
             // have to slice it to be properly reacted to
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             () => self.assemblyList as any,
             (
               assemblyConfigs: Instance<typeof Assembly> &
