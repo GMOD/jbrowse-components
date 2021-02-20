@@ -614,7 +614,7 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
-      colorBy = {},
+      colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
