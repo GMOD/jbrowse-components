@@ -97,5 +97,5 @@ describe('dotplot view', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  })
+  }, 15000)
 })
