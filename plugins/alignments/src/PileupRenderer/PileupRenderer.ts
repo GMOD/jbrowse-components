@@ -4,6 +4,7 @@ import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRe
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
@@ -244,6 +245,7 @@ export default class PileupRenderer extends BoxRendererType {
     const scores = (qual || '').split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
+    const regionWidth = (feature.get('end') - feature.get('start')) / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
@@ -260,8 +262,13 @@ export default class PileupRenderer extends BoxRendererType {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          ctx.fillStyle = `hsl(${scores[k + m]},55%,50%)`
-          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+          if (
+            leftPx + (j + m) * width >= 0 &&
+            leftPx + (j + m) * width < regionWidth
+          ) {
+            ctx.fillStyle = `hsl(${scores[k + m] * 1.5},55%,50%)`
+            ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+          }
         }
         j += len
       }
@@ -409,11 +416,11 @@ export default class PileupRenderer extends BoxRendererType {
     theme: any,
   ) {
     const { config, bpPerPx, regions } = props
-    const [region] = regions
     const { heightPx, topPx, feature } = feat
+    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const [region] = regions
     const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
@@ -438,7 +445,11 @@ export default class PileupRenderer extends BoxRendererType {
           colorForBase[
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
-        ctx.fillStyle = baseColor
+
+        ctx.fillStyle = Color(baseColor)
+          .alpha((mismatch.qual || 1) / 90)
+          .hsl()
+          .string()
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {

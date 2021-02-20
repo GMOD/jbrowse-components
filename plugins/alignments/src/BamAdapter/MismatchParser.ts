@@ -1,4 +1,5 @@
 export interface Mismatch {
+  qual?: number
   start: number
   length: number
   type: string
@@ -11,7 +12,11 @@ export interface Mismatch {
 export function parseCigar(cigar: string) {
   return (cigar || '').split(/([MIDNSHPX=])/)
 }
-export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
+export function cigarToMismatches(
+  ops: string[],
+  seq: string,
+  qual?: number[],
+): Mismatch[] {
   let currOffset = 0
   let seqOffset = 0
   const mismatches: Mismatch[] = []
@@ -45,11 +50,14 @@ export function cigarToMismatches(ops: string[], seq: string): Mismatch[] {
       })
     } else if (op === 'X') {
       const r = seq.slice(seqOffset, seqOffset + len)
+      const q = qual?.slice(seqOffset, seqOffset + len) || []
+
       for (let j = 0; j < len; j++) {
         mismatches.push({
           start: currOffset + j,
           type: 'mismatch',
           base: r[j],
+          qual: q[j],
           length: 1,
         })
       }
@@ -89,6 +97,7 @@ export function mdToMismatches(
   cigarOps: string[],
   cigarMismatches: Mismatch[],
   seq: string,
+  qual?: number[],
 ): Mismatch[] {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
@@ -165,12 +174,9 @@ export function mdToMismatches(
             break
           }
         }
-        curr.base = seq
-          ? seq.substr(
-              cigarOps ? getTemplateCoordLocal(curr.start) : curr.start,
-              1,
-            )
-          : 'X'
+        const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
+        curr.base = seq ? seq.substr(s, 1) : 'X'
+        curr.qual = qual ? qual.slice(s, s + 1)[0] : 'X'
         curr.altbase = token
         nextRecord()
       }
@@ -201,6 +207,7 @@ export function getMismatches(
   cigarString: string,
   mdString: string,
   seq: string,
+  qual?: number[],
 ): Mismatch[] {
   let mismatches: Mismatch[] = []
   let cigarOps: string[] = []
@@ -208,13 +215,13 @@ export function getMismatches(
   // parse the CIGAR tag if it has one
   if (cigarString) {
     cigarOps = parseCigar(cigarString)
-    mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq))
+    mismatches = mismatches.concat(cigarToMismatches(cigarOps, seq, qual))
   }
 
   // now let's look for CRAM or MD mismatches
   if (mdString) {
     mismatches = mismatches.concat(
-      mdToMismatches(mdString, cigarOps, mismatches, seq),
+      mdToMismatches(mdString, cigarOps, mismatches, seq, qual),
     )
   }
 

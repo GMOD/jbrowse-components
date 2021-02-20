@@ -10,6 +10,7 @@ import CramAdapterF from './CramAdapter'
 type CramAdapter = ClassReturnedBy<typeof CramAdapterF>
 
 export interface Mismatch {
+  qual?: number
   start: number
   length: number
   type: string
@@ -69,9 +70,11 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_qual() {
-    return (this.record.qualityScores || [])
-      .map((q: number) => q + 33)
-      .join(' ')
+    return (this.record.qualityScores || []).join(' ')
+  }
+
+  qualRaw() {
+    return this.record.qualityScores
   }
 
   _get_seq_id() {
@@ -288,17 +291,12 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   _get_mismatches(): Mismatch[] {
     const readFeatures = this.get('cram_read_features')
+    const qual = this.qualRaw()
     if (!readFeatures) return []
     const start = this.get('start')
     const mismatches: Mismatch[] = []
     readFeatures.forEach(
-      ({
-        code,
-        refPos,
-        data,
-        sub,
-        ref,
-      }: {
+      (args: {
         code: string
         refPos: number
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -306,13 +304,15 @@ export default class CramSlightlyLazyFeature implements Feature {
         sub: string
         ref: string
       }) => {
-        refPos = refPos - 1 - start
+        const { code, pos, data, sub, ref } = args
+        const refPos = args.refPos - 1 - start
         if (code === 'X') {
           // substitution
           mismatches.push({
             start: refPos,
             length: 1,
             base: sub,
+            qual: qual?.[pos],
             altbase: ref,
             type: 'mismatch',
           })
