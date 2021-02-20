@@ -411,6 +411,7 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: PileupRenderProps,
+    mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
@@ -446,10 +447,12 @@ export default class PileupRenderer extends BoxRendererType {
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
 
-        ctx.fillStyle = Color(baseColor)
-          .alpha((mismatch.qual || 1) / 90)
-          .hsl()
-          .string()
+        ctx.fillStyle = mismatchQuality
+          ? Color(baseColor)
+              .alpha((mismatch.qual || 1) / 90)
+              .hsl()
+              .string()
+          : baseColor
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
@@ -611,6 +614,7 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      colorBy = {},
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
@@ -667,7 +671,14 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(ctx, feat, props, colorForBase, theme)
+      this.drawMismatches(
+        ctx,
+        feat,
+        props,
+        colorBy.type === 'mismatchQuality',
+        colorForBase,
+        theme,
+      )
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }
