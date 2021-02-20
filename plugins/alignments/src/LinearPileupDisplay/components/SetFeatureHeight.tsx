@@ -31,6 +31,10 @@ export default function SetMinMaxDlg(props: {
     maxScore: number
     setMinScore: Function
     setMaxScore: Function
+    setFeatureHeight: Function
+    setNoSpacing: Function
+    featureHeightSetting: number
+    noSpacing: boolean
   }
   handleClose: () => void
 }) {

@@ -52,10 +52,10 @@ export default ConfigurationSchema(
       defaultValue: 7,
       functionSignature: ['feature'],
     },
-    pitchY: {
-      type: 'integer',
-      description: 'pitchY',
-      defaultValue: 3,
+    noSpacing: {
+      type: 'boolean',
+      description: 'remove spacing between features',
+      defaultValue: false,
     },
   },
   { explicitlyTyped: true },

@@ -302,7 +302,7 @@ const stateModelFactory = (
         return self.rendererType.configSchema.create({
           ...configBlob,
           height: self.featureHeight,
-          pitchY: self.noSpacing ? 1 : 3,
+          noSpacing: self.noSpacing,
         })
       },
       get featureHeightSetting() {
