@@ -107,6 +107,13 @@ const stateModelFactory = (
         return rendererTypes.get('snpcoverage')
       },
 
+      // adjustment for YSCALEBAR_LABEL_OFFSET that allows it to use the top
+      // space above inside the offset. SNPCov uses this to draw indicators,
+      // wiggle does not
+      get usingTopSpace() {
+        return true
+      },
+
       get needsScalebar() {
         return true
       },

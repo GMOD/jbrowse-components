@@ -44,10 +44,12 @@ export const YScaleBar = observer(
 
 export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
-  const { ready, stats, needsScalebar } = model
+  const { ready, stats, needsScalebar, usingTopSpace } = model
   return (
     <div
       style={{
+        paddingTop:
+          needsScalebar && !usingTopSpace ? YSCALEBAR_LABEL_OFFSET : undefined,
         paddingBottom: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
       }}
     >

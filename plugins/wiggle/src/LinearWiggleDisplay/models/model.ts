@@ -171,6 +171,10 @@ const stateModelFactory = (
         return max !== undefined ? max : getConf(self, 'maxScore')
       },
 
+      get usingTopSpace() {
+        return false
+      },
+
       get minScore() {
         const { min } = self.constraints
         return min !== undefined ? min : getConf(self, 'minScore')
