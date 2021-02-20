@@ -23,18 +23,26 @@ const weHave = {
 }
 
 export class PonyfillOffscreenContext {
-  constructor() {
+  constructor(width, height) {
+    this.width = width
+    this.height = height
     this.commands = []
     this.currentFont = '12px Courier New, monospace'
   }
 
   // setters (no getters working)
   set strokeStyle(style) {
-    this.commands.push({ type: 'strokeStyle', style })
+    if (style !== this.currentStrokeStyle) {
+      this.commands.push({ type: 'strokeStyle', style })
+      this.currentStrokeStyle = style
+    }
   }
 
   set fillStyle(style) {
-    this.commands.push({ type: 'fillStyle', style })
+    if (style !== this.currentFillStyle) {
+      this.commands.push({ type: 'fillStyle', style })
+      this.currentFillStyle = style
+    }
   }
 
   set font(style) {
@@ -96,10 +104,19 @@ export class PonyfillOffscreenContext {
   }
 
   fillRect(...args) {
-    this.commands.push({ type: 'fillRect', args })
+    const [x, y, w, h] = args
+    if (x > this.width || x + w < 0) {
+      return
+    }
+    const nx = Math.max(x, 0)
+    const nw = nx + w > this.width ? this.width - nx : w
+    this.commands.push({ type: 'fillRect', args: [nx, y, nw, h] })
   }
 
   fillText(...args) {
+    // if (x > this.width || x + 1000 < 0) {
+    //   return
+    // }
     this.commands.push({ type: 'fillText', args })
   }
 
@@ -255,7 +272,7 @@ export class PonyfillOffscreenCanvas {
 
   getContext(type) {
     if (type !== '2d') throw new Error(`unknown type ${type}`)
-    this.context = new PonyfillOffscreenContext()
+    this.context = new PonyfillOffscreenContext(this.width, this.height)
     return this.context
   }
 

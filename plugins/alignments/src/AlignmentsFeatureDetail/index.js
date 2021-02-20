@@ -4,20 +4,25 @@ import { types } from 'mobx-state-tree'
 
 const configSchema = ConfigurationSchema('AlignmentsFeatureWidget', {})
 
-const stateModel = types
-  .model('AlignmentsFeatureWidget', {
-    id: ElementId,
-    type: types.literal('AlignmentsFeatureWidget'),
-    featureData: types.frozen(),
-  })
-  .actions(self => ({
-    setFeatureData(data) {
-      self.featureData = data
-    },
-    clearFeatureData() {
-      self.featureData = undefined
-    },
-  }))
+export default function stateModelFactory(pluginManager) {
+  return types
+    .model('AlignmentsFeatureWidget', {
+      id: ElementId,
+      type: types.literal('AlignmentsFeatureWidget'),
+      featureData: types.frozen(),
+      view: types.safeReference(
+        pluginManager.pluggableMstType('view', 'stateModel'),
+      ),
+    })
+    .actions(self => ({
+      setFeatureData(data) {
+        self.featureData = data
+      },
+      clearFeatureData() {
+        self.featureData = undefined
+      },
+    }))
+}
 
-export { configSchema, stateModel }
+export { configSchema, stateModelFactory }
 export { default as ReactComponent } from './AlignmentsFeatureDetail'

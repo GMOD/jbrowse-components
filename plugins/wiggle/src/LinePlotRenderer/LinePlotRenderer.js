@@ -7,28 +7,24 @@ export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
     const { features, regions, bpPerPx, scaleOpts, height, config } = props
     const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => Math.max(0, height - scale(rawscore))
-    let colorCallback
-    if (readConfObject(config, 'color') === '#f0f') {
-      colorCallback = feature =>
-        feature.get('score') < pivotValue ? negColor : posColor
-    } else {
-      colorCallback = feature => readConfObject(config, 'color', [feature])
-    }
-    let lastVal
+    const toY = rawscore => height - scale(rawscore)
+    const width = (region.end - region.start) / bpPerPx
+    const colorCallback =
+      readConfObject(config, 'color') === '#f0f'
+        ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          feature => 'grey'
+        : feature => readConfObject(config, 'color', [feature])
+
     ctx.strokeStyle = 'grey'
     ctx.moveTo(0, toY(0))
     ctx.lineTo(width, toY(0))
     ctx.stroke()
 
+    let lastVal
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')

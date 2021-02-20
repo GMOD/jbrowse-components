@@ -48,6 +48,7 @@ export default () => {
             select
             variant="outlined"
             value={assemblyNames[selected] ? selected : ''}
+            inputProps={{ 'data-testid': 'dotplot-input' }}
             onChange={event => {
               onChange(Number(event.target.value))
             }}
@@ -70,7 +71,8 @@ export default () => {
     const [numRows] = useState(2)
     const [selected, setSelected] = useState([0, 0])
     const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
-    const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
+    const session = getSession(model)
+    const { assemblyNames } = session
     const error = assemblyNames.length ? '' : 'No configured assemblies'
 
     function onOpenClick() {
@@ -89,18 +91,15 @@ export default () => {
           : null
 
         // @ts-ignore
-        const configuration = getSession(model).addTrackConf({
+        const configuration = session.addTrackConf({
           trackId: `fileName-${Date.now()}`,
           name: fileName,
           assemblyNames: selected.map(selection => assemblyNames[selection]),
-          type: 'DotplotTrack',
+          type: 'SyntenyTrack',
           adapter: {
             type: 'PAFAdapter',
             pafLocation: trackData,
             assemblyNames: selected.map(selection => assemblyNames[selection]),
-          },
-          renderer: {
-            type: 'DotplotRenderer',
           },
         })
         model.toggleTrack(configuration.trackId)
@@ -164,6 +163,7 @@ export default () => {
               </Grid>
               <Grid item>
                 <Button
+                  data-testid="submitDotplot"
                   onClick={onOpenClick}
                   variant="contained"
                   color="primary"

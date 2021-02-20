@@ -120,6 +120,9 @@ export default observer(({ model }: { model: LGV }) => {
         // navigate to region or if region not found try navigating to locstring
         if (newRegion) {
           model.setDisplayedRegions([newRegion])
+          // we use showAllRegions after setDisplayedRegions to make the entire
+          // region visible, xref #1703
+          model.showAllRegions()
         } else {
           try {
             newRegionValue && model.navToLocString(newRegionValue)

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { Component } from 'react'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types/mst'
 
 import {
   assembleLocString,
   makeAbortableReaction,
   getSession,
+  getContainingDisplay,
 } from '@jbrowse/core/util'
 import {
   getTrackAssemblyNames,
@@ -42,7 +43,7 @@ const blockState = types
     let renderInProgress: undefined | AbortController
     return {
       afterAttach() {
-        const display = getParent<any>(self, 2)
+        const display = getContainingDisplay(self)
         makeAbortableReaction(
           self as any,
           renderBlockData,
@@ -122,6 +123,7 @@ const blockState = types
         renderInProgress = undefined
       },
       setError(error: Error) {
+        console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
@@ -153,19 +155,22 @@ const blockState = types
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
         }
-        const display = getParent(self, 2)
+        const display = getContainingDisplay(self)
         const { rpcManager } = getSession(self)
         const { rendererType } = display
         const { renderArgs } = renderBlockData(cast(self))
-        rendererType
-          .freeResourcesInClient(
-            rpcManager,
-            JSON.parse(JSON.stringify(renderArgs)),
-          )
-          .catch((e: Error) => {
-            // just console.error if it's something while it's being destroyed
-            console.warn('Error while destroying block', e)
-          })
+        // renderArgs can be undefined if an error occured in this block
+        if (renderArgs) {
+          rendererType
+            .freeResourcesInClient(
+              rpcManager,
+              JSON.parse(JSON.stringify(renderArgs)),
+            )
+            .catch((e: Error) => {
+              // just console.error if it's something while it's being destroyed
+              console.warn('Error while destroying block', e)
+            })
+        }
       },
     }
   })
@@ -173,72 +178,61 @@ const blockState = types
 export default blockState
 export type BlockStateModel = typeof blockState
 export type BlockModel = Instance<BlockStateModel>
-// calls the render worker to render the block content
-// not using a flow for this, because the flow doesn't
-// work with autorun
+
+// calls the render worker to render the block content not using a flow for
+// this, because the flow doesn't work with autorun
 export function renderBlockData(
   self: Instance<BlockStateModel>,
   optDisplay?: any,
 ) {
-  try {
-    let display = optDisplay || getParent(self)
-    const { assemblyManager, rpcManager } = getSession(display)
-    while (!(display.configuration && getConf(display, 'displayId'))) {
-      display = getParent(display)
-    }
-    const assemblyNames = getTrackAssemblyNames(display.parentTrack)
-    let cannotBeRenderedReason
-    if (!assemblyNames.includes(self.region.assemblyName)) {
-      let matchFound = false
-      assemblyNames.forEach((assemblyName: string) => {
-        const assembly = assemblyManager.get(assemblyName)
-        if (assembly && assembly.hasName(assemblyName)) {
-          matchFound = true
+  const display = optDisplay || (getContainingDisplay(self) as any)
+  const { assemblyManager, rpcManager } = getSession(display)
+  const {
+    adapterConfig,
+    renderProps,
+    rendererType,
+    error: displayError,
+    parentTrack,
+  } = display
+  const assemblyNames = getTrackAssemblyNames(parentTrack)
+  const regionAsm = self.region.assemblyName
+  if (
+    !assemblyNames.includes(regionAsm) &&
+    !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
+  ) {
+    throw new Error(
+      `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
+    )
+  }
+
+  const { config } = renderProps
+  // This line is to trigger the mobx reaction when the config changes
+  // It won't trigger the reaction if it doesn't think we're accessing it
+  readConfObject(config)
+
+  const sessionId = getRpcSessionId(display)
+  const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
+
+  return {
+    rendererType,
+    rpcManager,
+    renderProps,
+    cannotBeRenderedReason,
+    displayError,
+    renderArgs: {
+      statusCallback: (message: string) => {
+        if (isAlive(self)) {
+          self.setStatus(message)
         }
-      })
-      if (!matchFound) {
-        cannotBeRenderedReason = `region assembly (${self.region.assemblyName}) does not match track assemblies (${assemblyNames})`
-      }
-    }
-    if (!cannotBeRenderedReason) {
-      cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-    }
-    const { renderProps } = display
-    const { rendererType } = display
-    const { config } = renderProps
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
-    readConfObject(config)
-
-    const { adapterConfig } = display
-
-    const sessionId = getRpcSessionId(display)
-
-    return {
-      rendererType,
-      rpcManager,
-      renderProps,
-      cannotBeRenderedReason,
-      displayError: display.error,
-      renderArgs: {
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            self.setStatus(message)
-          }
-        },
-        assemblyName: self.region.assemblyName,
-        regions: [self.region],
-        adapterConfig,
-        rendererType: rendererType.name,
-        sessionId,
-        blockKey: self.key,
-        timeout: 1000000, // 10000,
       },
-    }
-  } catch (error) {
-    return {
-      displayError: error,
-    }
+      assemblyName: self.region.assemblyName,
+      regions: [self.region],
+      adapterConfig,
+      rendererType: rendererType.name,
+      sessionId,
+      blockKey: self.key,
+      timeout: 1000000, // 10000,
+    },
   }
 }
 

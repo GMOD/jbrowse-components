@@ -1,10 +1,15 @@
 import { render } from '@testing-library/react'
 import React from 'react'
-import { stateModel } from '.'
+import PluginManager from '../PluginManager'
+import { stateModelFactory } from '.'
 import { BaseFeatureDetails as ReactComponent } from './BaseFeatureDetail'
 
 test('open up a widget', () => {
-  const model = stateModel.create({ type: 'BaseFeatureWidget' })
+  console.warn = jest.fn()
+  const pluginManager = new PluginManager([])
+  const model = stateModelFactory(pluginManager).create({
+    type: 'BaseFeatureWidget',
+  })
   const { container, getByText } = render(<ReactComponent model={model} />)
   model.setFeatureData({
     start: 2,

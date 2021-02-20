@@ -149,9 +149,9 @@ export async function renderToSvg(model: LGV) {
       return accum + display.height + 20 + textHeight
     }, 0) + offset
   let displayBp
-  if (totalBp / 1000000 > 0) {
+  if (Math.floor(totalBp / 1000000) > 0) {
     displayBp = `${(totalBp / 1000000).toPrecision(3)}Mbp`
-  } else if (totalBp / 1000 > 0) {
+  } else if (Math.floor(totalBp / 1000) > 0) {
     displayBp = `${(totalBp / 1000).toPrecision(3)}Kbp`
   } else {
     displayBp = `${Math.floor(totalBp)}bp`

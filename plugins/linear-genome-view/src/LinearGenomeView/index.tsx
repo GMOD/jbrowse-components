@@ -36,6 +36,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
@@ -146,7 +147,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
           if (
             assemblyManager.assemblyList
-              ?.map((asm: { name: string }) => asm.name)
+              ?.map(asm => asm.name)
               .includes(assemblyName)
           ) {
             return (assemblyManager.get(assemblyName) || {}).initialized
@@ -1133,6 +1134,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return {
         get menuItems(): MenuItem[] {
           const menuItems: MenuItem[] = [
+            {
+              label: 'Return to import form',
+              onClick: () => {
+                self.setDisplayedRegions([])
+                // it is necessary to run these after setting displayed regions
+                // empty or else self.offsetPx gets set to infinity and breaks
+                // mobx-state-tree snapshot
+                self.scrollTo(0)
+                self.zoomTo(10)
+              },
+              icon: FolderOpenIcon,
+            },
             {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
