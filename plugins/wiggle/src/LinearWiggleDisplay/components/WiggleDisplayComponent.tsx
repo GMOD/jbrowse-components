@@ -48,7 +48,6 @@ export default observer((props: { model: WiggleDisplayModel }) => {
   return (
     <div
       style={{
-        paddingTop: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
         paddingBottom: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
       }}
     >

@@ -196,7 +196,7 @@ const stateModelFactory = (
           ...getParentRenderProps(self),
           notReady: !self.ready,
           height:
-            self.height - (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
+            self.height - (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET : 0),
           displayModel: self,
           scaleOpts: this.scaleOpts,
           filters: self.filters,

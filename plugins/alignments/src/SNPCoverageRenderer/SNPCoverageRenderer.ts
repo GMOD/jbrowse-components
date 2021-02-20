@@ -9,6 +9,7 @@ import {
   getScale,
   ScaleOpts,
   WiggleBaseRenderer,
+  YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ThemeOptions } from '@material-ui/core'
@@ -55,7 +56,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const theme = createJBrowseTheme(configTheme)
 
     const [region] = regions
-    const opts = { ...scaleOpts, range: [0, height] }
+    const newHeight = height - YSCALEBAR_LABEL_OFFSET
+    const opts = { ...scaleOpts, range: [0, newHeight] }
 
     const viewScale = getScale(opts)
     const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
@@ -67,8 +69,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
     const width = (region.end - region.start) / bpPerPx
 
-    const toY = (n: number, curr = 0) => height - viewScale(n) - curr
-    const snpToY = (n: number, curr = 0) => height - snpViewScale(n) - curr
+    const toY = (n: number, curr = 0) =>
+      newHeight - viewScale(n) - curr + YSCALEBAR_LABEL_OFFSET
+    const snpToY = (n: number, curr = 0) =>
+      newHeight - snpViewScale(n) - curr + YSCALEBAR_LABEL_OFFSET
     const toHeight = (n: number, curr = 0) => toY(originY) - toY(n, curr)
     const snpToHeight = (n: number, curr = 0) =>
       snpToY(snpOriginY) - snpToY(n, curr)
