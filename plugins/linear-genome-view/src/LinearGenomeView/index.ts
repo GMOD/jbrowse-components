@@ -690,11 +690,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
           if (newDisplayedRegion) {
             this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
-          } else {
-            throw new Error(
-              `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-            )
+
+            this.navTo({
+              ...parsedLocString,
+              start: Math.min(
+                parsedLocString?.start || 0,
+                newDisplayedRegion.end,
+              ),
+              end: Math.min(parsedLocString?.end || 1, newDisplayedRegion.end),
+            })
+            return
           }
+          throw new Error(
+            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
+          )
         }
         this.navTo(parsedLocString)
       },
