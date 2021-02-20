@@ -145,8 +145,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       }
 
       if (drawIndicators) {
+        let accum = 0
         interbaseEvents.forEach(({ score, base }) => {
-          if (score > totalScore * indicatorThreshold && totalScore > 10) {
+          accum += score
+          if (accum > totalScore * indicatorThreshold && totalScore > 10) {
             ctx.fillStyle = colorForBase[base]
             ctx.beginPath()
             ctx.moveTo(leftPx - 3, 0)
