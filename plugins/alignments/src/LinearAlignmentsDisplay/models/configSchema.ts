@@ -43,7 +43,7 @@ const configModelFactory = (pluginManager: PluginManager) => {
         type: 'number',
         description:
           'round the upper value of the SNP coverage domain scale to the nearest N',
-        defaultValue: 5,
+        defaultValue: 0,
       },
       defaultRendering: {
         type: 'stringEnum',
