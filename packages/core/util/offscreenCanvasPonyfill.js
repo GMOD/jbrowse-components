@@ -288,7 +288,9 @@ export class PonyfillOffscreenCanvas {
       if (command.type === 'font') {
         if (command.style) {
           // stackoverflow.com/questions/5618676
-          font = parseFont(command.style)
+          // skip lineHeight in the final usage
+          const { fontStyle, fontFamily, fontSize } = parseFont(command.style)
+          font = { fontStyle, fontFamily, fontSize }
         }
       }
       if (command.type === 'fillStyle') {
