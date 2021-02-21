@@ -304,15 +304,17 @@ export class PonyfillOffscreenCanvas {
       if (command.type === 'fillRect') {
         const [x, y, w, h] = command.args
         const { hex, opacity } = splitColor(currentFill)
+        const ny = Math.min(y, y + h)
+        const nh = Math.abs(h)
         nodes.push(
           <rect
             key={index}
             fill={hex}
             fillOpacity={opacity !== 1 ? opacity : undefined}
             x={x.toFixed(3)}
-            y={y.toFixed(3)}
+            y={ny.toFixed(3)}
             width={w.toFixed(3)}
-            height={h.toFixed(3)}
+            height={nh.toFixed(3)}
           />,
         )
       }
