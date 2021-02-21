@@ -19,7 +19,7 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, when } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import React from 'react'
@@ -495,11 +495,12 @@ const stateModelFactory = (
           )
         },
         async renderSvg() {
-          const { needsScalebar, ready, stats } = self
+          await when(() => self.ready)
+          const { needsScalebar, stats } = self
           return (
             <>
               <g id="snpcov">{await superRenderSvg()}</g>
-              {needsScalebar && ready && stats ? (
+              {needsScalebar && stats ? (
                 <g transform={`translate(0 -${YSCALEBAR_LABEL_OFFSET})`}>
                   <YScaleBar model={self as WiggleDisplayModel} />
                 </g>
