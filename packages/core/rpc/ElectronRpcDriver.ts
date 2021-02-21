@@ -12,7 +12,8 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electronBetterIpc = {}, electron } = window
+const { electronBetterIpc = {}, electron } =
+  typeof window !== 'undefined' ? window : ({} as any)
 
 async function wait(ms: number) {
   return new Promise(resolve => {

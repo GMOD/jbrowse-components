@@ -5,7 +5,7 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electron } = window
+const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 type PathLike = import('fs').PathLike
 type Stats = import('fs').Stats

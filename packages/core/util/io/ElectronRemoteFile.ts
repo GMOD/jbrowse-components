@@ -15,7 +15,7 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electron } = window
+const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 class ElectronRemoteFileError extends Error {
   public status: number | undefined
