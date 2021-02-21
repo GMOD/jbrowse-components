@@ -75,6 +75,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     })
   }
 
+
+  public async getHeader() {
+    const ret = await this.hic.getMetaData()
+    const {chromosomes,...rest}=ret
+    return rest
+  }
+
   async getRefNames() {
     const metadata = await this.hic.getMetaData()
     return metadata.chromosomes.map(chr => chr.name)
@@ -87,7 +94,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
     for (let i = resolutions.length - 1; i >= 0; i -= 1) {
       const r = resolutions[i]
-      if (r <= 2 * bpPerPx) {
+      if (r <= 5 * bpPerPx) {
         chosenResolution = r
       }
     }
