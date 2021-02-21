@@ -31,6 +31,7 @@ import {
   LinearGenomeViewStateModel,
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  renderToSvg,
 } from './LinearGenomeView'
 
 export default class LinearGenomeViewPlugin extends Plugin {
@@ -113,6 +114,7 @@ export {
   BaseLinearDisplay,
   baseLinearDisplayConfigSchema,
   linearBasicDisplayConfigSchemaFactory,
+  renderToSvg,
 }
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
 export type { BaseLinearDisplayModel } from './BaseLinearDisplay'

@@ -1290,5 +1290,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
   return types.compose(BaseViewModel, model)
 }
+
+export { renderToSvg }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
