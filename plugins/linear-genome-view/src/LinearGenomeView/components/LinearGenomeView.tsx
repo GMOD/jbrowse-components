@@ -133,7 +133,7 @@ export async function renderToSvg(model: LGV) {
   const paddingHeight = 20
   const headerHeight = textHeight + 20
   const rulerHeight = 30
-
+  await when(() => model.initialized)
   const {
     width,
     offsetPx: viewOffsetPx,
@@ -163,6 +163,7 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width, height].toString()}
     >
+      <rect width="100%" height="100%" fill="white" />
       <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
       <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
       <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
