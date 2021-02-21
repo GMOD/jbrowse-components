@@ -54,21 +54,24 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       config: cfg,
     } = props
     const theme = createJBrowseTheme(configTheme)
-
-    const offset = YSCALEBAR_LABEL_OFFSET
     const [region] = regions
-    const height = unadjustedHeight - offset
-    const opts = { ...scaleOpts, range: [0, height] }
+    const width = (region.end - region.start) / bpPerPx
 
+    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+    // wiggle display, and makes the height of the actual drawn area add
+    // "padding" to the top and bottom of the display
+    const offset = YSCALEBAR_LABEL_OFFSET
+    const height = unadjustedHeight - offset * 2
+
+    const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
     const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
-
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
+
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
-    const width = (region.end - region.start) / bpPerPx
 
     // get the y coordinate that we are plotting at, this can be log scale
     const toY = (n: number) => height - viewScale(n) + offset
@@ -141,9 +144,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const { score, base } = info
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
-            leftPx - 0.75,
+            leftPx - 0.9,
             indicatorHeight + snpToHeight(curr),
-            1.5,
+            1.8,
             snpToHeight(score),
           )
           return curr + info.score
@@ -161,7 +164,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
             maxBase = base
           }
         })
-        if (accum > totalScore * indicatorThreshold && totalScore > 10) {
+
+        // avoid drawing a bunch of indicators if coverage is very low e.g.
+        // less than 7
+        if (accum > totalScore * indicatorThreshold && totalScore > 7) {
           ctx.fillStyle = colorForBase[maxBase]
           ctx.beginPath()
           ctx.moveTo(leftPx - 3, 0)

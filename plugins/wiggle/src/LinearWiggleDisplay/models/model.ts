@@ -171,10 +171,6 @@ const stateModelFactory = (
         return max !== undefined ? max : getConf(self, 'maxScore')
       },
 
-      get usingTopSpace() {
-        return false
-      },
-
       get minScore() {
         const { min } = self.constraints
         return min !== undefined ? min : getConf(self, 'minScore')
@@ -263,9 +259,7 @@ const stateModelFactory = (
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
-            height:
-              self.height -
-              (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
+            height: self.height,
           }
         },
 
