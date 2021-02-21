@@ -163,80 +163,80 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width, height].toString()}
     >
-      <rect width="100%" height="100%" fill="white" />
-      <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
-      <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
-      <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
-      <text
-        x={width / 2}
-        y={rulerHeight}
-        textAnchor="middle"
-        fontSize={fontSize}
-      >
-        {displayBp}
-      </text>
-      {contentBlocks.map(block => {
-        const offsetLeft = block.offsetPx - viewOffsetPx
-        return (
-          <g
-            key={block.key}
-            transform={`translate(${offsetLeft} ${rulerHeight})`}
-          >
-            <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
-              {block.refName}
-            </text>
-            {renderRuler ? (
-              <g transform="translate(0 20)">
-                <Ruler
-                  start={block.start}
-                  end={block.end}
-                  bpPerPx={bpPerPx}
-                  reversed={block.reversed}
-                />
-              </g>
-            ) : (
-              <line
-                strokeWidth={1}
-                stroke="black"
-                x1={block.start / bpPerPx}
-                x2={block.end / bpPerPx}
-                y1={20}
-                y2={20}
-              />
-            )}
-          </g>
-        )
-      })}
-      {
-        await Promise.all(
-          tracks.map(async track => {
-            const current = offset
-            const trackId = getConf(track, 'trackId')
-            const trackName =
-              getConf(track, 'name') ||
-              `Reference sequence (${readConfObject(
-                getParent(track.configuration),
-                'name',
-              )})`
-            const display = track.displays[0]
-            offset += display.height + paddingHeight + textHeight
-            await when(() =>
-              display.ready !== undefined ? display.ready : true,
-            )
-
-            // uses svg text background from
-            // https://stackoverflow.com/questions/15500894/
-            return (
-              <g key={trackId} transform={`translate(0 ${current})`}>
-                <text fontSize={fontSize}>{trackName}</text>
-                <g transform={`translate(0 ${textHeight})`}>
-                  {await display.renderSvg()}
+      <g stroke="none">
+        <rect width="100%" height="100%" fill="white" />
+        <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
+        <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
+        <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
+        <text
+          x={width / 2}
+          y={rulerHeight}
+          textAnchor="middle"
+          fontSize={fontSize}
+        >
+          {displayBp}
+        </text>
+        {contentBlocks.map(block => {
+          const offsetLeft = block.offsetPx - viewOffsetPx
+          return (
+            <g
+              key={block.key}
+              transform={`translate(${offsetLeft} ${rulerHeight})`}
+            >
+              <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
+                {block.refName}
+              </text>
+              {renderRuler ? (
+                <g transform="translate(0 20)">
+                  <Ruler
+                    start={block.start}
+                    end={block.end}
+                    bpPerPx={bpPerPx}
+                    reversed={block.reversed}
+                  />
                 </g>
-              </g>
-            )
-          }),
-        )
-      }
+              ) : (
+                <line
+                  strokeWidth={1}
+                  stroke="black"
+                  x1={block.start / bpPerPx}
+                  x2={block.end / bpPerPx}
+                  y1={20}
+                  y2={20}
+                />
+              )}
+            </g>
+          )
+        })}
+        {
+          await Promise.all(
+            tracks.map(async track => {
+              const current = offset
+              const trackId = getConf(track, 'trackId')
+              const trackName =
+                getConf(track, 'name') ||
+                `Reference sequence (${readConfObject(
+                  getParent(track.configuration),
+                  'name',
+                )})`
+              const display = track.displays[0]
+              offset += display.height + paddingHeight + textHeight
+              await when(() =>
+                display.ready !== undefined ? display.ready : true,
+              )
+
+              return (
+                <g key={trackId} transform={`translate(0 ${current})`}>
+                  <text fontSize={fontSize}>{trackName}</text>
+                  <g transform={`translate(0 ${textHeight})`}>
+                    {await display.renderSvg()}
+                  </g>
+                </g>
+              )
+            }),
+          )
+        }
+      </g>
     </svg>,
   )
 }
