@@ -144,14 +144,11 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async getFeatures({
-    dataAdapter,
-    signal,
-    bpPerPx,
-    regions,
-  }: RenderArgsDeserialized) {
+  async getFeatures(args: RenderArgsDeserialized) {
+    const { dataAdapter, regions } = args
     const features = await dataAdapter
-      .getFeatures(regions[0], { signal, bpPerPx })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .getFeatures(regions[0], args as any)
       .pipe(toArray())
       .toPromise()
     // cast to any to avoid return-type conflict, because the

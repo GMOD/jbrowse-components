@@ -75,20 +75,27 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     })
   }
 
+  private async setup(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    statusCallback('Downloading .hic header')
+    const result = await this.hic.getMetaData()
+    statusCallback('')
+    return result
+  }
 
-  public async getHeader() {
-    const ret = await this.hic.getMetaData()
-    const {chromosomes,...rest}=ret
+  public async getHeader(opts?: BaseOptions) {
+    const ret = await this.setup(opts)
+    const { chromosomes, ...rest } = ret
     return rest
   }
 
-  async getRefNames() {
-    const metadata = await this.hic.getMetaData()
+  async getRefNames(opts?: BaseOptions) {
+    const metadata = await this.setup(opts)
     return metadata.chromosomes.map(chr => chr.name)
   }
 
-  async getResolution(bpPerPx: number) {
-    const metadata = await this.hic.getMetaData()
+  async getResolution(bpPerPx: number, opts?: BaseOptions) {
+    const metadata = await this.setup(opts)
     const { resolutions } = metadata
     let chosenResolution = resolutions[resolutions.length - 1]
 
@@ -104,8 +111,9 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<ContactRecord>(async observer => {
       const { refName: chr, start, end } = region
-      const { bpPerPx } = opts
-      const res = await this.getResolution(bpPerPx || 1000)
+      const { bpPerPx, statusCallback = () => {} } = opts
+      const res = await this.getResolution(bpPerPx || 1000, opts)
+      statusCallback('Downloading .hic data')
 
       const records = await this.hic.getContactRecords(
         'KR',
@@ -117,6 +125,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       records.forEach(record => {
         observer.next(record)
       })
+      statusCallback('')
       observer.complete()
     }, opts.signal) as any // eslint-disable-line @typescript-eslint/no-explicit-any
   }
