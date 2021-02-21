@@ -144,9 +144,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           const { score, base } = info
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
-            leftPx - 0.9,
+            leftPx - 0.6,
             indicatorHeight + snpToHeight(curr),
-            1.8,
+            1.2,
             snpToHeight(score),
           )
           return curr + info.score

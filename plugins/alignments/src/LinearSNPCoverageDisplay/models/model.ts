@@ -1,10 +1,7 @@
 import { types, cast } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import {
-  linearWiggleDisplayModelFactory,
-  YSCALEBAR_LABEL_OFFSET,
-} from '@jbrowse/plugin-wiggle'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
   AnyConfigurationSchemaType,
   AnyConfigurationModel,
