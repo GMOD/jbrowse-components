@@ -770,7 +770,6 @@ export async function renameRegionsIfNeeded<
     regions: [...(args.regions || [])],
   }
 
-
   // if (assemblyName) {
   //   console.error('renaming wait for refnamemap')
   //   const refNameMap = await assemblyManager.getRefNameMapForAdapter(
@@ -781,12 +780,21 @@ export async function renameRegionsIfNeeded<
   //   console.error('renaming resolved')
 
   //   if (refNameMap && regions && newArgs.regions) {
-  //     for (let i = 0; i < regions.length; i += 1) {
-  //       newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
-  //     }
-  //   }
-  // }
-  return newArgs
+  //   @ts-ignore
+  if (adapterConfig.type !== 'BgzipFastaAdapter') {
+    //   @ts-ignore
+    for (let i = 0; i < regions?.length; i += 1) {
+      //   @ts-ignore
+      newArgs.regions[i] = {
+        //   @ts-ignore
+        ...regions[i],
+        //   @ts-ignore
+        refName: `chr${regions[i].refName}`,
+      }
+    }
+    return newArgs
+  }
+  return args
 }
 
 export function minmax(a: number, b: number) {
