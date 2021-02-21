@@ -49,15 +49,16 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       scaleOpts,
-      height,
+      height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
     } = props
     const theme = createJBrowseTheme(configTheme)
 
+    const offset = YSCALEBAR_LABEL_OFFSET
     const [region] = regions
-    const newHeight = height - YSCALEBAR_LABEL_OFFSET
-    const opts = { ...scaleOpts, range: [0, newHeight] }
+    const height = unadjustedHeight - offset
+    const opts = { ...scaleOpts, range: [0, height] }
 
     const viewScale = getScale(opts)
     const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
@@ -69,13 +70,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
     const width = (region.end - region.start) / bpPerPx
 
-    const toY = (n: number, curr = 0) =>
-      newHeight - viewScale(n) - curr + YSCALEBAR_LABEL_OFFSET
-    const snpToY = (n: number, curr = 0) =>
-      newHeight - snpViewScale(n) - curr + YSCALEBAR_LABEL_OFFSET
-    const toHeight = (n: number, curr = 0) => toY(originY) - toY(n, curr)
-    const snpToHeight = (n: number, curr = 0) =>
-      snpToY(snpOriginY) - snpToY(n, curr)
+    // get the y coordinate that we are plotting at, this can be log scale
+    const toY = (n: number) => height - viewScale(n) + offset
+    const toHeight = (n: number) => toY(originY) - toY(n)
+
+    // this is always linear scale, even when plotted on top of log scale
+    const snpToY = (n: number) => height - snpViewScale(n) + offset
+    const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
 
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
