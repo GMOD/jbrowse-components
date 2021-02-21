@@ -111,8 +111,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<ContactRecord>(async observer => {
       const { refName: chr, start, end } = region
-      const { bpPerPx, statusCallback = () => {} } = opts
-      const res = await this.getResolution(bpPerPx || 1000, opts)
+      const { resolution, bpPerPx, statusCallback = () => {} } = opts
+      const res = await this.getResolution(bpPerPx / resolution || 1000, opts)
       statusCallback('Downloading .hic data')
 
       const records = await this.hic.getContactRecords(

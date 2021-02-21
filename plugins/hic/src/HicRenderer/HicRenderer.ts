@@ -60,12 +60,14 @@ export default class HicRenderer extends ServerSideRendererType {
       highResolutionScaling = 1,
       dataAdapter,
       signal,
+      resolution
     } = props
 
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
-    const res = await dataAdapter.getResolution(bpPerPx)
+    const res = await dataAdapter.getResolution(bpPerPx / resolution)
+
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0, maxHeightReached: false }
     }
