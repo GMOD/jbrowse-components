@@ -3921,10 +3921,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.5.tgz#565bcf86105f6a26f8633dde2cbac8866896193f"
-  integrity sha512-/3eu0D+xYE0kXnNdO6ZqD6fk9uuxL9vGhSadau2cuZZ6dognNHDo4z8pBvlj4SJXdFwgkG9qVvR5DabRXq212Q==
+"@gmod/bam@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.6.tgz#53a1fd64c2630d6b8a8aa6ca2e4db236e80b5d8a"
+  integrity sha512-8E47E1C6ud7G806NFKsu2dt+tNY0Ob5en4mXjlMjNEMOtQhWWORhNVgCQDXsiDakg+0WUGboa05yfuUBGSCaJQ==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
