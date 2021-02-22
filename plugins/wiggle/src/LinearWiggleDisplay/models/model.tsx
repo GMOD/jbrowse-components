@@ -499,9 +499,7 @@ const stateModelFactory = (
             <>
               <g id="snpcov">{await superRenderSvg()}</g>
               {needsScalebar && stats ? (
-                <g transform={`translate(0 -${YSCALEBAR_LABEL_OFFSET})`}>
-                  <YScaleBar model={self as WiggleDisplayModel} />
-                </g>
+                <YScaleBar model={self as WiggleDisplayModel} />
               ) : null}
             </>
           )

@@ -301,6 +301,7 @@ export default class CramSlightlyLazyFeature implements Feature {
         refPos: number
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any
+        pos: number
         sub: string
         ref: string
       }) => {

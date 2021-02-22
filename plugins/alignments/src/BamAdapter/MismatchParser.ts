@@ -15,7 +15,7 @@ export function parseCigar(cigar: string) {
 export function cigarToMismatches(
   ops: string[],
   seq: string,
-  qual?: number[],
+  qual?: Buffer,
 ): Mismatch[] {
   let currOffset = 0
   let seqOffset = 0
@@ -97,7 +97,7 @@ export function mdToMismatches(
   cigarOps: string[],
   cigarMismatches: Mismatch[],
   seq: string,
-  qual?: number[],
+  qual?: Buffer,
 ): Mismatch[] {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
@@ -176,7 +176,7 @@ export function mdToMismatches(
         }
         const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
         curr.base = seq ? seq.substr(s, 1) : 'X'
-        curr.qual = qual ? qual.slice(s, s + 1)[0] : 'X'
+        curr.qual = qual?.slice(s, s + 1)[0]
         curr.altbase = token
         nextRecord()
       }
@@ -207,7 +207,7 @@ export function getMismatches(
   cigarString: string,
   mdString: string,
   seq: string,
-  qual?: number[],
+  qual?: Buffer,
 ): Mismatch[] {
   let mismatches: Mismatch[] = []
   let cigarOps: string[] = []

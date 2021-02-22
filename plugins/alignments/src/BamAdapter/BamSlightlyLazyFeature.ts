@@ -91,7 +91,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return md
   }
 
-  qualRaw(): number[] {
+  qualRaw(): Buffer | undefined {
     return this.record.qualRaw()
   }
 
