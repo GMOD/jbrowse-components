@@ -6,11 +6,25 @@ import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   WiggleBaseRendererProps,
 } from '../WiggleBaseRenderer'
+import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
-    const { features, bpPerPx, regions, scaleOpts, height, config } = props
+    const {
+      features,
+      bpPerPx,
+      regions,
+      scaleOpts,
+      height: unadjustedHeight,
+      config,
+    } = props
     const [region] = regions
+
+    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+    // wiggle display, and makes the height of the actual drawn area add
+    // "padding" to the top and bottom of the display
+    const offset = YSCALEBAR_LABEL_OFFSET
+    const height = unadjustedHeight - offset * 2
 
     const pivotValue = readConfObject(config, 'bicolorPivotValue')
     const negColor = readConfObject(config, 'negColor')
@@ -24,7 +38,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
 
-    const toY = (n: number) => height - scale(n)
+    const toY = (n: number) => height - scale(n) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     const colorCallback =

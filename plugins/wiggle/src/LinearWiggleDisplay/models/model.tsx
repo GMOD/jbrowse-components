@@ -260,9 +260,7 @@ const stateModelFactory = (
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
-            height:
-              self.height -
-              (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
+            height: self.height,
           }
         },
 

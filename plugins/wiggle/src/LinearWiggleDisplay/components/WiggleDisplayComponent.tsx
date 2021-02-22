@@ -35,13 +35,7 @@ export default observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, height, needsScalebar } = model
   return (
-    <div
-      style={{
-        paddingTop: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
-        paddingBottom: needsScalebar ? YSCALEBAR_LABEL_OFFSET : undefined,
-        position: 'relative',
-      }}
-    >
+    <div>
       <BaseLinearDisplayComponent {...props} />
       {ready && stats && needsScalebar ? (
         <svg
