@@ -245,7 +245,6 @@ export default class PileupRenderer extends BoxRendererType {
     const scores = (qual || '').split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
-    const regionWidth = (feature.get('end') - feature.get('start')) / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
@@ -262,13 +261,9 @@ export default class PileupRenderer extends BoxRendererType {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          if (
-            leftPx + (j + m) * width >= 0 &&
-            leftPx + (j + m) * width < regionWidth
-          ) {
-            ctx.fillStyle = `hsl(${scores[k + m] * 1.5},55%,50%)`
-            ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
-          }
+          const score = scores[k + m]
+          ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
+          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
         }
         j += len
       }
@@ -447,12 +442,15 @@ export default class PileupRenderer extends BoxRendererType {
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
 
-        ctx.fillStyle = mismatchQuality
-          ? Color(baseColor)
-              .alpha((mismatch.qual || 1) / 90)
-              .hsl()
-              .string()
-          : baseColor
+        let color = baseColor
+        if (mismatchQuality && mismatch.qual !== undefined) {
+          color = Color(baseColor)
+            .alpha(mismatch.qual / 90)
+            .hsl()
+            .string()
+        }
+        ctx.fillStyle = color
+
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {

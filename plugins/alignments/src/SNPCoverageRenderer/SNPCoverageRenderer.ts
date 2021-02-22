@@ -135,7 +135,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         interbaseEvents.reduce((curr, info) => {
           const { score, base } = info
           ctx.fillStyle = colorForBase[base]
-          ctx.fillRect(leftPx, indicatorHeight + curr, 1, snpToHeight(score))
+          ctx.fillRect(leftPx, indicatorHeight + curr, 2, snpToHeight(score))
           return curr + info.score
         }, 0)
       }
