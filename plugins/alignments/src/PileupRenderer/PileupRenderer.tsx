@@ -624,6 +624,7 @@ export default class PileupRenderer extends BoxRendererType {
       throw new Error('invalid layout object')
     }
     ctx.font = 'bold 10px Courier New,monospace'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layoutRecords.forEach((feat: any) => {
       if (feat === null) {
         return

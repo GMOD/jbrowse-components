@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-underscore-dangle */
 import uri2path from 'file-uri-to-path'
 import {
   Fetcher,
@@ -36,7 +36,6 @@ export default class ElectronRemoteFile implements GenericFilehandle {
 
   protected fetch?: Fetcher
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected baseOverrides: any = {}
 
   private nodeFetchFallback = false

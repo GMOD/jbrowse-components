@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GenericFilehandle, FilehandleOptions } from 'generic-filehandle'
 
 declare global {
