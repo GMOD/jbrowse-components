@@ -132,7 +132,7 @@ function ScaleBar({
   width,
   fontSize,
 }: {
-  model: any
+  model: LGV
   width: number
   fontSize: number
 }) {
@@ -163,58 +163,40 @@ function ScaleBar({
   )
 }
 
-export async function renderToSvg(model: LGV) {
-  const fontSize = 15
-  const textHeight = fontSize + 5
-  const paddingHeight = 20
-  const headerHeight = textHeight + 20
-  const rulerHeight = 50
-  await when(() => model.initialized)
+function SVGRuler({
+  model,
+  fontSize,
+  rulerHeight,
+  width,
+}: {
+  model: LGV
+  rulerHeight: number
+  fontSize: number
+  width: number
+}) {
   const {
-    width,
+    dynamicBlocks: { contentBlocks },
     offsetPx: viewOffsetPx,
     bpPerPx,
-    tracks,
-    dynamicBlocks: { contentBlocks },
-    assemblyNames,
   } = model
   const renderRuler = contentBlocks.length < 5
-  let offset = headerHeight + rulerHeight + 20
-  const height =
-    tracks.reduce((accum, track) => {
-      const display = track.displays[0]
-      return accum + display.height + 20 + textHeight
-    }, 0) + offset
-
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
-  return renderToStaticMarkup(
-    <svg
-      width={width}
-      height={height}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox={[0, 0, width, height].toString()}
-    >
-      <rect width="100%" height="100%" fill="white" />
-      <g stroke="none">
-        <text x={0} y={fontSize} fontSize={fontSize}>
-          {assemblyName}
-        </text>
-        <g transform={`translate(0 ${fontSize})`}>
-          <ScaleBar model={model} fontSize={fontSize} width={width} />
-        </g>
-
+  return (
+    <g transform={`translate(0 ${rulerHeight})`}>
+      <defs>
+        <clipPath id="clip-ruler">
+          <rect x={0} y={0} width={width} height={20} />
+        </clipPath>
+      </defs>
+      <>
         {contentBlocks.map(block => {
           const offsetLeft = block.offsetPx - viewOffsetPx
           return (
-            <g
-              key={block.key}
-              transform={`translate(${offsetLeft} ${rulerHeight})`}
-            >
+            <g key={`${block.key}`} transform={`translate(${offsetLeft} 0)`}>
               <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
                 {block.refName}
               </text>
               {renderRuler ? (
-                <g transform="translate(0 20)">
+                <g transform="translate(0 20)" clipPath="url(#clip-ruler)">
                   <Ruler
                     start={block.start}
                     end={block.end}
@@ -235,6 +217,50 @@ export async function renderToSvg(model: LGV) {
             </g>
           )
         })}
+      </>
+    </g>
+  )
+}
+
+export async function renderToSvg(model: LGV) {
+  const fontSize = 15
+  const textHeight = fontSize + 5
+  const paddingHeight = 20
+  const headerHeight = textHeight + 20
+  const rulerHeight = 50
+  await when(() => model.initialized)
+  const { width, tracks, assemblyNames } = model
+  let offset = headerHeight + rulerHeight + 20
+  const height =
+    tracks.reduce((accum, track) => {
+      const display = track.displays[0]
+      return accum + display.height + 20 + textHeight
+    }, 0) + offset
+
+  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
+  const shift = 50
+  return renderToStaticMarkup(
+    <svg
+      width={width}
+      height={height}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox={[0, 0, width + shift * 2, height].toString()}
+    >
+      <rect width="100%" height="100%" fill="white" />
+      <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+        <text x={0} y={fontSize} fontSize={fontSize}>
+          {assemblyName}
+        </text>
+        <g transform={`translate(0 ${fontSize})`}>
+          <ScaleBar model={model} fontSize={fontSize} width={width} />
+        </g>
+        <SVGRuler
+          model={model}
+          fontSize={fontSize}
+          rulerHeight={rulerHeight}
+          width={width}
+        />
+
         {
           await Promise.all(
             tracks.map(async track => {
