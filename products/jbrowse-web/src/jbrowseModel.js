@@ -15,6 +15,21 @@ import { toJS } from 'mobx'
 window.getSnapshot = getSnapshot
 window.resolveIdentifier = resolveIdentifier
 
+const ApolloConfigurationSchema = ConfigurationSchema(
+  'Apollo',
+  {
+    name: {
+      type: 'string',
+      defaultValue: '',
+    },
+    location: {
+      type: 'fileLocation',
+      defaultValue: { uri: '' },
+    },
+  },
+  { explicitIdentifier: 'apolloId' },
+)
+
 export default function JBrowseWeb(
   pluginManager,
   Session,
@@ -39,6 +54,8 @@ export default function JBrowseWeb(
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        ...pluginManager.pluginConfigSchemas,
+        Apollo: types.array(ApolloConfigurationSchema),
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),
