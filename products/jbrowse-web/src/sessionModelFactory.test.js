@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSnapshot } from 'mobx-state-tree'
+import { types, getSnapshot } from 'mobx-state-tree'
 import { configure } from 'mobx'
 import { createTestSession } from './rootModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -36,16 +36,8 @@ describe('JBrowseWebSessionModel', () => {
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)
-    const session = sessionModel.create(
-      { name: 'testSession' },
-      { pluginManager },
-    )
-
-    jest
-      .spyOn(session, 'adminMode', 'get')
-      .mockImplementationOnce(() => {})
-      .mockReturnValueOnce(false)
-
+    const rootModel = types.model({ adminMode: false, session: sessionModel })
+    const { session } = rootModel.create({ session: { name: 'testSession' } })
     session.addConnectionConf({
       assemblyName: 'test1',
       connectionId: 'TestConnection-test1-1',
