@@ -34,7 +34,8 @@ export default function createConfigModel(
         return readConfObject(self.assembly, 'name')
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).rpcManager
       },
     }))
 }
