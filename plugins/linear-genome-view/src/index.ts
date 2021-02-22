@@ -1,7 +1,7 @@
 import {
   configSchema as baseFeatureWidgetConfigSchema,
   ReactComponent as BaseFeatureWidgetReactComponent,
-  stateModel as baseFeatureWidgetStateModel,
+  stateModelFactory as baseFeatureWidgetStateModelFactory,
 } from '@jbrowse/core/BaseFeatureWidget'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
@@ -89,7 +89,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
           name: 'BaseFeatureWidget',
           heading: 'Feature Details',
           configSchema: baseFeatureWidgetConfigSchema,
-          stateModel: baseFeatureWidgetStateModel,
+          stateModel: baseFeatureWidgetStateModelFactory(pluginManager),
           ReactComponent: BaseFeatureWidgetReactComponent,
         }),
     )

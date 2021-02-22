@@ -639,30 +639,77 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
       class="MuiGrid-root MuiGrid-item"
     >
       <div
-        class="MuiCircularProgress-root MuiCircularProgress-indeterminate"
-        role="progressbar"
-        style="width: 20px; height: 20px;"
+        aria-expanded="false"
+        class="MuiAutocomplete-root"
+        data-testid="autocomplete"
+        role="combobox"
       >
-        <svg
-          class="MuiCircularProgress-svg"
-          viewBox="22 22 44 44"
+        <div
+          class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
         >
-          <circle
-            class="MuiCircularProgress-circle MuiCircularProgress-circleDisableShrink MuiCircularProgress-circleIndeterminate"
-            cx="44"
-            cy="44"
-            fill="none"
-            r="20.2"
-            stroke-width="3.6"
-          />
-        </svg>
+          <div
+            class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
+          >
+            <input
+              aria-autocomplete="list"
+              aria-describedby="refNameAutocomplete-lgv-helper-text"
+              aria-invalid="false"
+              autocapitalize="none"
+              autocomplete="off"
+              class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
+              id="refNameAutocomplete-lgv"
+              placeholder="Search for location"
+              spellcheck="false"
+              type="text"
+              value="ctgA"
+            />
+            <div
+              class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+              style="margin-right: 7px;"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                />
+              </svg>
+            </div>
+            <div
+              class="MuiAutocomplete-endAdornment"
+            />
+            <fieldset
+              aria-hidden="true"
+              class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+              style="padding-left: 8px;"
+            >
+              <legend
+                class="PrivateNotchedOutline-legend"
+                style="width: 0.01px;"
+              >
+                <span>
+                  ​
+                </span>
+              </legend>
+            </fieldset>
+          </div>
+          <p
+            class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
+            id="refNameAutocomplete-lgv-helper-text"
+          >
+            Enter a sequence or locstring
+          </p>
+        </div>
       </div>
     </div>
     <div
       class="MuiGrid-root MuiGrid-item"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
         tabindex="0"
         type="button"
       >
@@ -670,6 +717,20 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
           class="MuiButton-label"
         >
           Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Show all regions in assembly
         </span>
         <span
           class="MuiTouchRipple-root"

@@ -10,7 +10,7 @@ import TextField from '@material-ui/core/TextField'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { makeStyles } from '@material-ui/core/styles'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper } from '@material-ui/core'
+import { Paper, Typography } from '@material-ui/core'
 import { LinearSyntenyViewModel } from '../model'
 
 // the below importsused for multi-way synteny, not implemented yet
@@ -77,16 +77,14 @@ const FormRow = observer(
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const [selected, setSelected] = useState([0, 0])
-  const [error, setError] = useState('')
   const [numRows] = useState(2)
   const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
-  const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
-  if (!assemblyNames.length) {
-    setError('No configured assemblies')
-  }
+  const session = getSession(model)
+  const { assemblyNames } = session
+  const error = assemblyNames.length ? '' : 'No configured assemblies'
 
   async function onOpenClick() {
-    const { assemblyManager } = getSession(model)
+    const { assemblyManager } = session
 
     model.setViews(
       // @ts-ignore
@@ -120,7 +118,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
         : null
 
       // @ts-ignore
-      const configuration = getSession(model).addTrackConf({
+      const configuration = session.addTrackConf({
         trackId: `fileName-${Date.now()}`,
         name: fileName,
         assemblyNames: selected.map(selection => assemblyNames[selection]),
@@ -130,9 +128,6 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
           pafLocation: trackData,
           assemblyNames: selected.map(selection => assemblyNames[selection]),
         },
-        renderer: {
-          type: 'LinearSyntenyRenderer',
-        },
       })
       model.toggleTrack(configuration.trackId)
     }
@@ -140,57 +135,69 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
   return (
     <Container className={classes.importFormContainer}>
-      <Paper className={classes.formPaper}>
-        <Grid container item justify="center" spacing={4} alignItems="center">
-          <Grid item>
-            <p style={{ textAlign: 'center' }}>
-              Select assemblies for synteny view
-            </p>
-            {[...new Array(numRows)].map((_, index) => (
-              <FormRow
-                key={`row_${index}_${selected[index]}`}
-                error={error}
-                selected={selected[index]}
-                onChange={val => {
-                  const copy = selected.slice(0)
-                  copy[index] = val
-                  setSelected(copy)
-                }}
-                model={model}
-              />
-            ))}
-          </Grid>
-        </Grid>
-      </Paper>
+      {error ? (
+        <Typography color="error">{error}</Typography>
+      ) : (
+        <>
+          <Paper className={classes.formPaper}>
+            <Grid
+              container
+              item
+              justify="center"
+              spacing={4}
+              alignItems="center"
+            >
+              <Grid item>
+                <p style={{ textAlign: 'center' }}>
+                  Select assemblies for synteny view
+                </p>
+                {[...new Array(numRows)].map((_, index) => (
+                  <FormRow
+                    key={`row_${index}_${selected[index]}`}
+                    error={error}
+                    selected={selected[index]}
+                    onChange={val => {
+                      const copy = selected.slice(0)
+                      copy[index] = val
+                      setSelected(copy)
+                    }}
+                    model={model}
+                  />
+                ))}
+              </Grid>
+            </Grid>
+          </Paper>
 
-      <Paper className={classes.formPaper}>
-        <Grid container justify="center">
-          <p style={{ textAlign: 'center' }}>
-            <b>Optional</b>: Add a PAF{' '}
-            <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-              (pairwise mapping format)
-            </a>{' '}
-            file for the linear synteny view. Note that the first assembly
-            should be the left column of the PAF and the second assembly should
-            be the right column
-          </p>
-          <Grid item>
-            <FileSelector
-              name="URL"
-              description=""
-              location={trackData}
-              setLocation={loc => setTrackData(loc)}
-            />
+          <Paper className={classes.formPaper}>
+            <Grid container justify="center">
+              <p style={{ textAlign: 'center' }}>
+                <b>Optional</b>: Add a PAF{' '}
+                <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+                  (pairwise mapping format)
+                </a>{' '}
+                file for the linear synteny view. Note that the first assembly
+                should be the left column of the PAF and the second assembly
+                should be the right column
+              </p>
+              <Grid item>
+                <FileSelector
+                  name="URL"
+                  description=""
+                  location={trackData}
+                  setLocation={loc => setTrackData(loc)}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+          <Grid container justify="center">
+            <Grid item>
+              <Button onClick={onOpenClick} variant="contained" color="primary">
+                Open
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
-      </Paper>
-      <Grid container justify="center">
-        <Grid item>
-          <Button onClick={onOpenClick} variant="contained" color="primary">
-            Open
-          </Button>
-        </Grid>
-      </Grid>
+        </>
+      )}
     </Container>
   )
 })

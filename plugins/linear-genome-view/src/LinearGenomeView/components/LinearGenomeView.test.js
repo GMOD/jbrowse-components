@@ -33,9 +33,13 @@ describe('<LinearGenomeView />', () => {
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
+    model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Open')
+    const openButton = await findByText('Open')
     expect(container.firstChild).toMatchSnapshot()
+    expect(model.displayedRegions.length).toEqual(0)
+    openButton.click()
+    expect(model.displayedRegions.length).toEqual(1)
   })
   it('renders one track, one region', async () => {
     const session = createTestSession()
@@ -69,7 +73,6 @@ describe('<LinearGenomeView />', () => {
       displayedRegions: [
         { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
       ],
-      configuration: {},
     })
     const model = session.views[0]
     model.setWidth(800)
@@ -136,12 +139,12 @@ describe('<LinearGenomeView />', () => {
           ],
         },
       ],
-      configuration: {},
     })
     const model = session.views[0]
     model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
+    await findByText('798 bp')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

@@ -14,7 +14,7 @@ import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
-  stateModel as alignmentsFeatureDetailStateModel,
+  stateModelFactory as alignmentsFeatureDetailStateModelFactory,
 } from './AlignmentsFeatureDetail'
 import BamAdapterF from './BamAdapter'
 import * as MismatchParser from './BamAdapter/MismatchParser'
@@ -126,7 +126,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'AlignmentsFeatureWidget',
           heading: 'Feature Details',
           configSchema: alignmentsFeatureDetailConfigSchema,
-          stateModel: alignmentsFeatureDetailStateModel,
+          stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
           ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )

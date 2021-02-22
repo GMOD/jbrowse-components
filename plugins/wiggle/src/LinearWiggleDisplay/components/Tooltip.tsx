@@ -6,13 +6,18 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 
-const toP = (s: number) => parseFloat(s.toPrecision(6))
+const toP = (s = 0) => parseFloat(s.toPrecision(6))
 
 const useStyles = makeStyles(theme => ({
   popper: {
     fontSize: '0.8em',
-    zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
-    pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
+
+    // important to have a zIndex directly on the popper itself
+    // @material-ui/Tooltip uses popper and has similar thing
+    zIndex: theme.zIndex.tooltip,
+
+    // needed to avoid rapid mouseLeave/mouseEnter on popper
+    pointerEvents: 'none',
   },
 
   hoverVertical: {

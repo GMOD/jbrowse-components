@@ -7,6 +7,7 @@ Object {
   "drawerWidth": 384,
   "margin": 0,
   "name": "testSession",
+  "sessionAssemblies": Array [],
   "sessionConnections": Array [],
   "sessionTracks": Array [],
   "views": Array [],

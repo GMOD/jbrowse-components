@@ -1,19 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
+import {
+  Button,
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import AddIcon from '@material-ui/icons/Add'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
@@ -28,9 +34,10 @@ import {
   getContainingView,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { autorun } from 'mobx'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   configSchemaFactory as linearComparativeDisplayConfigSchemaFactory,
   ReactComponent as LinearComparativeDisplayReactComponent,
@@ -121,6 +128,7 @@ interface ReducedFeature {
   start: number
   clipPos: number
   end: number
+  strand: number
   seqLength: number
   syntenyId?: number
   uniqueId: string
@@ -145,6 +153,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
+}
+
 function WindowSizeDlg(props: {
   display: any
   handleClose: () => void
@@ -153,27 +166,77 @@ function WindowSizeDlg(props: {
   const classes = useStyles()
   const {
     track,
-    display: { feature },
+    display: { feature: preFeature },
     handleClose,
   } = props
   const [window, setWindowSize] = useState('0')
+  const [error, setError] = useState<Error>()
   const windowSize = +window
+  const [primaryFeature, setPrimaryFeature] = useState<Feature>()
+  const [qualTrack, setQualTrack] = useState(false)
+
+  // we need to fetch the primary alignment if the selected feature is 2048.
+  // this should be the first in the list of the SA tag
+  useEffect(() => {
+    let done = false
+    ;(async () => {
+      if (preFeature.get('flags') & 2048) {
+        const SA: string = getTag(preFeature, 'SA') || ''
+        const primaryAln = SA.split(';')[0]
+        const [saRef, saStart] = primaryAln.split(',')
+        const { rpcManager } = getSession(track)
+        const adapterConfig = getConf(track, 'adapter')
+        const sessionId = getRpcSessionId(track)
+        const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          adapterConfig,
+          sessionId,
+          region: { refName: saRef, start: +saStart - 1, end: +saStart },
+        })) as any[]
+        const primaryFeat = feats.find(
+          f =>
+            f.get('name') === preFeature.get('name') &&
+            !(f.get('flags') & 2048),
+        )
+        if (!done) {
+          setPrimaryFeature(primaryFeat)
+        }
+      } else {
+        setPrimaryFeature(preFeature)
+      }
+    })()
+
+    return () => {
+      done = true
+    }
+  }, [preFeature, track])
 
   function onSubmit() {
     try {
+      const feature = primaryFeature || preFeature
       const session = getSession(track)
       const view = getContainingView(track)
-      const clipPos = feature.get('clipPos')
       const cigar = feature.get('CIGAR')
+      const clipPos = getClip(cigar, 1)
       const flags = feature.get('flags')
-      const SA: string =
-        (feature.get('tags') ? feature.get('tags').SA : feature.get('SA')) || ''
+      const qual = feature.get('qual') as string
+      const SA: string = getTag(feature, 'SA') || ''
       const readName = feature.get('name')
-      const readAssembly = `${readName}_assembly`
+
+      // the suffix -temp is used in the beforeDetach handler to
+      // automatically remove itself from the session when this view is
+      // destroyed
+      const readAssembly = `${readName}_assembly-temp`
       const [trackAssembly] = getConf(track, 'assemblyNames')
       const assemblyNames = [trackAssembly, readAssembly]
       const trackId = `track-${Date.now()}`
       const trackName = `${readName}_vs_${trackAssembly}`
+
+      // get the canonical refname for the read because if the
+      // read.get('refName') is chr1 and the actual fasta refName is 1 then no
+      // tracks can be opened on the top panel of the linear read vs ref
+      const { assemblyManager } = session
+      const assembly = assemblyManager.get(trackAssembly)
+
       const supplementaryAlignments = SA.split(';')
         .filter(aln => !!aln)
         .map((aln, index) => {
@@ -182,8 +245,8 @@ function WindowSizeDlg(props: {
           const saLength = getLength(saCigar)
           const saLengthSansClipping = getLengthSansClipping(saCigar)
           const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, saStrandNormalized)
-          const saRealStart = +saStart - 1 + saClipPos
+          const saClipPos = getClip(saCigar, 1)
+          const saRealStart = +saStart - 1
           return {
             refName: saRef,
             start: saRealStart,
@@ -203,6 +266,7 @@ function WindowSizeDlg(props: {
         })
 
       const feat = feature.toJSON()
+      feat.clipPos = clipPos
 
       feat.mate = {
         refName: readName,
@@ -210,11 +274,10 @@ function WindowSizeDlg(props: {
         end: clipPos + getLengthSansClipping(cigar),
       }
 
-      // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
-      // which is the primary alignments. otherwise it is the primary alignment just use
-      // seq.length if primary alignment
+      // if secondary alignment or supplementary, calculate length from SA[0]'s
+      // CIGAR which is the primary alignments. otherwise it is the primary
+      // alignment just use seq.length if primary alignment
       const totalLength =
-        // eslint-disable-next-line no-bitwise
         flags & 2048
           ? getLength(supplementaryAlignments[0].CIGAR)
           : getLength(cigar)
@@ -222,11 +285,14 @@ function WindowSizeDlg(props: {
       const features = [feat, ...supplementaryAlignments] as ReducedFeature[]
 
       features.forEach((f, index) => {
+        f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
         f.syntenyId = index
         f.mate.syntenyId = index
         f.mate.uniqueId = `${f.uniqueId}_mate`
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
+
+      const featSeq = feature.get('seq')
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly
@@ -235,10 +301,46 @@ function WindowSizeDlg(props: {
         features.map(f => f.mate),
       )
 
+      const expand = 2 * windowSize
       const refLength = features.reduce(
-        (a, f) => a + f.end - f.start + 2 * windowSize,
+        (a, f) => a + f.end - f.start + expand,
         0,
       )
+
+      const seqTrackId = `${readName}_${Date.now()}`
+      const sequenceTrackConf = getConf(assembly, 'sequence')
+      const lgvRegions = features
+        .map(f => {
+          return {
+            ...f,
+            start: Math.max(0, f.start - windowSize),
+            end: f.end + windowSize,
+            assemblyName: trackAssembly,
+          }
+        })
+        .sort((a, b) => a.clipPos - b.clipPos)
+
+      session.addAssembly?.({
+        name: `${readAssembly}`,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: seqTrackId,
+          assemblyNames: [readAssembly],
+          adapter: {
+            type: 'FromConfigSequenceAdapter',
+            noAssemblyManager: true,
+            features: [
+              {
+                start: 0,
+                end: totalLength,
+                seq: featSeq,
+                refName: readName,
+                uniqueId: `${Math.random()}`,
+              },
+            ],
+          },
+        },
+      })
 
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
@@ -248,14 +350,25 @@ function WindowSizeDlg(props: {
             hideHeader: true,
             offsetPx: 0,
             bpPerPx: refLength / view.width,
-            displayedRegions: features.map(f => {
-              return {
-                start: f.start - windowSize,
-                end: f.end + windowSize,
-                refName: f.refName,
-                assemblyName: trackAssembly,
-              }
-            }),
+            displayedRegions: lgvRegions,
+            tracks: [
+              {
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
+                assemblyNames: [trackAssembly],
+                configuration: sequenceTrackConf.trackId,
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearReferenceSequenceDisplay',
+                    showReverse: false,
+                    showTranslation: false,
+                    height: 35,
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+            ],
           },
           {
             type: 'LinearGenomeView',
@@ -270,6 +383,57 @@ function WindowSizeDlg(props: {
                 refName: readName,
               },
             ],
+            tracks: [
+              {
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
+                configuration: seqTrackId,
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearReferenceSequenceDisplay',
+                    showReverse: false,
+                    showTranslation: false,
+                    height: 35,
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+              ...(qualTrack
+                ? [
+                    {
+                      id: `${Math.random()}`,
+                      type: 'QuantitativeTrack',
+                      configuration: {
+                        trackId: 'qualTrack',
+                        assemblyNames: [readAssembly],
+                        name: 'Read quality',
+                        type: 'QuantitativeTrack',
+                        adapter: {
+                          type: 'FromConfigAdapter',
+                          noAssemblyManager: true,
+                          features: qual.split(' ').map((score, index) => {
+                            return {
+                              start: index,
+                              end: index + 1,
+                              refName: readName,
+                              score: +score,
+                              uniqueId: `feat_${index}`,
+                            }
+                          }),
+                        },
+                      },
+                      displays: [
+                        {
+                          id: `${Math.random()}`,
+                          type: 'LinearWiggleDisplay',
+                          height: 100,
+                        },
+                      ],
+                    },
+                  ]
+                : []),
+            ],
           },
         ],
         viewTrackConfigs: [
@@ -279,9 +443,6 @@ function WindowSizeDlg(props: {
             adapter: {
               type: 'FromConfigAdapter',
               features: configFeatureStore,
-            },
-            renderer: {
-              type: 'LinearSyntenyRenderer',
             },
             trackId,
             name: trackName,
@@ -304,8 +465,10 @@ function WindowSizeDlg(props: {
       handleClose()
     } catch (e) {
       console.error(e)
+      setError(e)
     }
   }
+
   return (
     <Dialog
       open
@@ -323,29 +486,49 @@ function WindowSizeDlg(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ overflowX: 'hidden' }}>
-        <div className={classes.root}>
-          <Typography>
-            Show an extra window around each part of the split alignment. Using
-            a larger value can allow you to see more genomic context.
-          </Typography>
+      <DialogContent>
+        {!primaryFeature ? (
+          <div>
+            <Typography>
+              To accurately perform comparison we are fetching the primary
+              alignment. Loading primary feature...
+            </Typography>
+            <CircularProgress />
+          </div>
+        ) : (
+          <div className={classes.root}>
+            <Typography>
+              Show an extra window size around each part of the split alignment.
+              Using a larger value can allow you to see more genomic context.
+            </Typography>
+            {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
-          <TextField
-            value={window}
-            onChange={event => {
-              setWindowSize(event.target.value)
-            }}
-            placeholder="Set window size"
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ marginLeft: 20 }}
-            onClick={onSubmit}
-          >
-            Submit
-          </Button>
-        </div>
+            <TextField
+              value={window}
+              onChange={event => {
+                setWindowSize(event.target.value)
+              }}
+              label="Set window size"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={qualTrack}
+                  onChange={() => setQualTrack(val => !val)}
+                />
+              }
+              label="Show qual track"
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginLeft: 20 }}
+              onClick={onSubmit}
+            >
+              Submit
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

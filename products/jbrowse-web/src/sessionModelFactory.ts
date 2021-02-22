@@ -40,7 +40,10 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
@@ -69,6 +72,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       sessionConnections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .volatile((/* self */) => ({
       pluginManager,
@@ -171,6 +175,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setName(str: string) {
         self.name = str
+      },
+      addAssembly(assemblyConfig: any) {
+        self.sessionAssemblies.push(assemblyConfig)
+      },
+      removeAssembly(assemblyName: string) {
+        const index = self.sessionAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.sessionAssemblies.splice(index, 1)
+        }
       },
 
       makeConnection(
@@ -567,6 +582,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             return track.trackId === config.trackId
           })
 
+        // disable if it is a reference sequence track
+        const isRefSeqTrack =
+          readConfObject(config, 'type') === 'ReferenceSequenceTrack'
         return [
           {
             label: 'Settings',
@@ -578,7 +596,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Delete track',
-            disabled: !canEdit,
+            disabled: !canEdit || isRefSeqTrack,
             onClick: () => {
               session.deleteTrackConf(config)
             },
@@ -586,6 +604,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Copy track',
+            disabled: isRefSeqTrack,
             onClick: () => {
               const trackSnapshot = JSON.parse(
                 JSON.stringify(getSnapshot(config)),

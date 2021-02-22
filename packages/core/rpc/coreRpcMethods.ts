@@ -14,6 +14,7 @@ import {
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
+import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -61,6 +62,12 @@ export class CoreGetFileInfo extends RpcMethodType {
 export class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
 
+  async deserializeReturn(feats: SimpleFeatureSerialized[]) {
+    return feats.map(feat => {
+      return new SimpleFeature(feat)
+    })
+  }
+
   async execute(args: {
     sessionId: string
     signal: RemoteAbortSignal
@@ -76,8 +83,8 @@ export class CoreGetFeatures extends RpcMethodType {
     )
     if (isFeatureAdapter(dataAdapter)) {
       const ret = dataAdapter.getFeatures(region)
-      const feats = await ret.pipe(toArray()).toPromise()
-      return JSON.parse(JSON.stringify(feats))
+      const r = await ret.pipe(toArray()).toPromise()
+      return r.map(f => f.toJSON())
     }
     return []
   }

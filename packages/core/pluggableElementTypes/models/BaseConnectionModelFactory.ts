@@ -22,7 +22,9 @@ export default (pluginManager: PluginManager) => {
     }))
     .actions(self => ({
       afterAttach() {
-        self.connect(self.configuration)
+        if (!self.tracks.length) {
+          self.connect(self.configuration)
+        }
       },
       addTrackConf(trackConf: AnyConfigurationModel) {
         const length = self.tracks.push(trackConf)

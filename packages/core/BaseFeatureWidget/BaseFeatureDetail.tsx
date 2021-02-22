@@ -245,7 +245,7 @@ function measureText(str: string, fontSize = 10) {
       .map(c =>
         c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
       )
-      .reduce((cur, acc) => acc + cur) * fontSize
+      .reduce((cur, acc) => acc + cur, 0) * fontSize
   )
 }
 
@@ -260,7 +260,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
   prefix?: string
 }
@@ -384,7 +384,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             <SimpleValue
               key={key}
               name={key}
-              value={formatter(value)}
+              value={formatter(value, key)}
               description={description}
               prefix={prefix}
             />
@@ -407,7 +407,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
 }
 
 const Subfeature = (props: BaseProps) => {
