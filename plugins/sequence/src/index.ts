@@ -33,6 +33,12 @@ import {
 import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
+export {
+  linearReferenceSequenceDisplayConfigSchema,
+  linearReferenceSequenceDisplayModelFactory,
+  createReferenceSeqTrackConfig,
+}
+
 /* adjust in both directions */
 class DivSequenceRenderer extends ServerSideRendererType {
   getExpandedRegion(region: Region) {
@@ -46,6 +52,12 @@ class DivSequenceRenderer extends ServerSideRendererType {
 
 export default class SequencePlugin extends Plugin {
   name = 'SequencePlugin'
+
+  exports = {
+    linearReferenceSequenceDisplayConfigSchema,
+    linearReferenceSequenceDisplayModelFactory,
+    createReferenceSeqTrackConfig,
+  }
 
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
