@@ -156,7 +156,8 @@ const stateModelFactory = (
           if (self.filterBy.tagFilter) {
             const { tag, value } = self.filterBy.tagFilter
             filters.push(
-              `jexl:feature|getData('snpinfo') ? true : "${value}" =='*' ? (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) != undefined : (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
+              `jexl:feature|getData('snpinfo') ? true : "${value}" =='*' ? (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) != undefined\n
+              : (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
             )
           }
           if (self.filterBy.readName) {

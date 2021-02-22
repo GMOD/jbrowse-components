@@ -91,7 +91,9 @@ export function parseVcfBuffer(
     name: 'Location',
     dataType: { type: 'LocString' },
     isDerived: true,
-    derivationFunctionText: `jexl:{text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end, extendedData: {refName:row.extendedData.vcfFeature.refName,start:row.extendedData.vcfFeature.start,end:row.extendedData.vcfFeature.end}}`,
+    derivationFunctionText: `jexl:{text:row.extendedData.vcfFeature.refName+':'\n
+    +row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end, extendedData:\n
+    {refName:row.extendedData.vcfFeature.refName,start:row.extendedData.vcfFeature.start,end:row.extendedData.vcfFeature.end}}`,
   })
 
   return {

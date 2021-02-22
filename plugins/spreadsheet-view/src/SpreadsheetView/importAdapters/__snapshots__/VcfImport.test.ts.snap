@@ -21,7 +21,11 @@ Object {
       "dataType": Object {
         "type": "LocString",
       },
-      "derivationFunctionText": "jexl:{text:row.extendedData.vcfFeature.refName+':'+row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end, extendedData: {refName:row.extendedData.vcfFeature.refName,start:row.extendedData.vcfFeature.start,end:row.extendedData.vcfFeature.end}}",
+      "derivationFunctionText": "jexl:{text:row.extendedData.vcfFeature.refName+':'
+
+    +row.extendedData.vcfFeature.start+'..'+row.extendedData.vcfFeature.end, extendedData:
+
+    {refName:row.extendedData.vcfFeature.refName,start:row.extendedData.vcfFeature.start,end:row.extendedData.vcfFeature.end}}",
       "isDerived": true,
       "name": "Location",
     },
