@@ -30,7 +30,7 @@ export default (pluginManager: PluginManager) => {
       derivationFunctionText: types.maybe(types.string),
     })
     .views(self => ({
-      get func() {
+      get expr() {
         if (self.isDerived) {
           // compile this as a jexl expression
           return stringToJexlExpression(

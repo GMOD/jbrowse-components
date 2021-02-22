@@ -1,11 +1,11 @@
 import { stringToJexlExpression } from '../../../util/jexlStrings'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FilterFunction = (...args: Record<string, any>[] | any[]) => boolean
+type FilterExpression = (...args: Record<string, any>[] | any[]) => boolean
 
 interface Filter {
   string: string
-  func: FilterFunction
+  expr: FilterExpression
 }
 
 export type SerializedFilterChain = string[]
@@ -16,8 +16,8 @@ export default class SerializableFilterChain {
   constructor({ filters = [] }: { filters: SerializedFilterChain }) {
     this.filterChain = filters.map(inputFilter => {
       if (typeof inputFilter === 'string') {
-        const func = stringToJexlExpression(inputFilter) as FilterFunction
-        return { func, string: inputFilter }
+        const expr = stringToJexlExpression(inputFilter) as FilterExpression
+        return { expr, string: inputFilter }
       }
       throw new Error(`invalid inputFilter string "${inputFilter}"`)
     })
@@ -28,7 +28,7 @@ export default class SerializableFilterChain {
     for (let i = 0; i < this.filterChain.length; i += 1) {
       if (
         // @ts-ignore
-        !this.filterChain[i].func.evalSync({ feature: args[0] })
+        !this.filterChain[i].expr.evalSync({ feature: args[0] })
       )
         return false
     }

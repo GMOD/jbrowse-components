@@ -30,6 +30,6 @@ export function stringToJexlExpression(
     compilationCache[cacheKey] = compiled
   }
 
-  const func = compilationCache[cacheKey]
-  return func
+  const expr = compilationCache[cacheKey]
+  return expr
 }

@@ -64,8 +64,8 @@ export function readConfObject(
       // )
     }
 
-    if (slot.func) {
-      const appliedFunc = slot.func.evalSync(args)
+    if (slot.expr) {
+      const appliedFunc = slot.expr.evalSync(args)
       if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
       return appliedFunc
     }

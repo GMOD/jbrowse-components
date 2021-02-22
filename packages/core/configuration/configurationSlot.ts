@@ -194,7 +194,7 @@ export default function ConfigSlot(
       },
     }))
     .views(self => ({
-      get func() {
+      get expr() {
         if (self.isCallback) {
           // compile as jexl function
           return stringToJexlExpression(
@@ -258,7 +258,7 @@ export default function ConfigSlot(
         if (!self.isCallback) return
         // try calling it with no arguments
         try {
-          const funcResult = self.func()
+          const funcResult = self.expr.evalSync()
           if (funcResult !== undefined) {
             self.value = funcResult
             return

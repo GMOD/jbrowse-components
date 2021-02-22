@@ -13,14 +13,14 @@ describe('function string parsing', () => {
   // })
   it('can create a jexl expression', () => {
     const str = 'jexl:a+b+c+5'
-    const func = stringToJexlExpression(str)
-    expect(func._exprStr).toEqual('a+b+c+5')
+    const expr = stringToJexlExpression(str)
+    expect(expr._exprStr).toEqual('a+b+c+5')
   })
   it('can create a jexl expression 2', () => {
     const str = 'jexl:\na+b+c+5'
-    const func = stringToJexlExpression(str)
-    expect(func._exprStr).toEqual('\na+b+c+5')
-    const result = func.evalSync({ a: 5, b: 10, c: 15 })
+    const expr = stringToJexlExpression(str)
+    expect(expr._exprStr).toEqual('\na+b+c+5')
+    const result = expr.evalSync({ a: 5, b: 10, c: 15 })
     expect(result).toEqual(35)
   })
   it('can use the loaded core helper functions to access feature info', () => {

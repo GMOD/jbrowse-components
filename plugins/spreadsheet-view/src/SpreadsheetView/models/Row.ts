@@ -35,9 +35,9 @@ export default (pluginManager: PluginManager) => {
         const { columns } = getParent(self, 3)
         let i = 0
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return columns.map((column: { isDerived: boolean; func: any }) => {
+        return columns.map((column: { isDerived: boolean; expr: any }) => {
           if (column.isDerived) {
-            return column.func.evalSync({
+            return column.expr.evalSync({
               row: self,
             })
           }
