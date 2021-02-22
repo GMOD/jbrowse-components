@@ -290,7 +290,7 @@ const SessionLoader = types
     async decodeEncodedUrlSession() {
       const session = JSON.parse(
         // @ts-ignore
-        fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
+        fromUrlSafeB64(self.sessionQuery?.replace('encoded-', '')),
       )
       self.setSessionSnapshot({ ...session, id: shortid() })
     },
@@ -512,10 +512,6 @@ const Renderer = observer(
               writeGAAnalytics(rootModel, initialTimestamp)
             }
 
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
             pluginManager.setRootModel(rootModel)
             pluginManager.configure()
             setPluginManager(pluginManager)
