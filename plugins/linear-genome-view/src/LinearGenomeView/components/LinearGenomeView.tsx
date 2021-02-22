@@ -127,27 +127,16 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
 
 export default LinearGenomeView
 
-export async function renderToSvg(model: LGV) {
-  const fontSize = 15
-  const textHeight = fontSize + 5
-  const paddingHeight = 20
-  const headerHeight = textHeight + 20
-  const rulerHeight = 30
-  await when(() => model.initialized)
-  const {
-    width,
-    offsetPx: viewOffsetPx,
-    bpPerPx,
-    tracks,
-    dynamicBlocks: { totalBp, contentBlocks },
-  } = model
-  const renderRuler = contentBlocks.length < 5
-  let offset = headerHeight + rulerHeight + 20
-  const height =
-    tracks.reduce((accum, track) => {
-      const display = track.displays[0]
-      return accum + display.height + 20 + textHeight
-    }, 0) + offset
+function ScaleBar({
+  model,
+  width,
+  fontSize,
+}: {
+  model: any
+  width: number
+  fontSize: number
+}) {
+  const { totalBp } = model
   let displayBp
   if (Math.floor(totalBp / 1000000) > 0) {
     displayBp = `${(totalBp / 1000000).toPrecision(3)}Mbp`
@@ -156,6 +145,48 @@ export async function renderToSvg(model: LGV) {
   } else {
     displayBp = `${Math.floor(totalBp)}bp`
   }
+  return (
+    <>
+      {' '}
+      <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
+      <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
+      <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
+      <text
+        x={width / 2}
+        y={fontSize * 2}
+        textAnchor="middle"
+        fontSize={fontSize}
+      >
+        {displayBp}
+      </text>
+    </>
+  )
+}
+
+export async function renderToSvg(model: LGV) {
+  const fontSize = 15
+  const textHeight = fontSize + 5
+  const paddingHeight = 20
+  const headerHeight = textHeight + 20
+  const rulerHeight = 50
+  await when(() => model.initialized)
+  const {
+    width,
+    offsetPx: viewOffsetPx,
+    bpPerPx,
+    tracks,
+    dynamicBlocks: { contentBlocks },
+    assemblyNames,
+  } = model
+  const renderRuler = contentBlocks.length < 5
+  let offset = headerHeight + rulerHeight + 20
+  const height =
+    tracks.reduce((accum, track) => {
+      const display = track.displays[0]
+      return accum + display.height + 20 + textHeight
+    }, 0) + offset
+
+  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
   return renderToStaticMarkup(
     <svg
       width={width}
@@ -163,19 +194,15 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width, height].toString()}
     >
+      <rect width="100%" height="100%" fill="white" />
       <g stroke="none">
-        <rect width="100%" height="100%" fill="white" />
-        <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
-        <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
-        <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
-        <text
-          x={width / 2}
-          y={rulerHeight}
-          textAnchor="middle"
-          fontSize={fontSize}
-        >
-          {displayBp}
+        <text x={0} y={fontSize} fontSize={fontSize}>
+          {assemblyName}
         </text>
+        <g transform={`translate(0 ${fontSize})`}>
+          <ScaleBar model={model} fontSize={fontSize} width={width} />
+        </g>
+
         {contentBlocks.map(block => {
           const offsetLeft = block.offsetPx - viewOffsetPx
           return (
