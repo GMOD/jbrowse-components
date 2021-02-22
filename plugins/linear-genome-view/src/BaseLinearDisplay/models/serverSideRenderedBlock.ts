@@ -149,7 +149,7 @@ const blockState = types
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderingComponent = undefined
         self.renderProps = undefined
-        getParent(self, 2).reload()
+        getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {

@@ -7,6 +7,7 @@ import {
   resolveIdentifier,
   types,
   getEnv,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import {
@@ -125,7 +126,7 @@ export function createBaseTrackModel(
           'display',
         )
         const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
+          displayTypeConfigSchema as IAnyModelType,
           getRoot(self),
           displayId,
         )
@@ -146,7 +147,7 @@ export function createBaseTrackModel(
           'display',
         )
         const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
+          displayTypeConfigSchema as IAnyModelType,
           getRoot(self),
           displayId,
         )
@@ -174,7 +175,7 @@ export function createBaseTrackModel(
           'display',
         )
         const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
+          displayTypeConfigSchema as IAnyModelType,
           getRoot(self),
           newDisplayId,
         )

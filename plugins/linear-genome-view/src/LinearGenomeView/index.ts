@@ -28,6 +28,7 @@ import {
   getRoot,
   resolveIdentifier,
   addDisposer,
+  IAnyModelType,
 } from 'mobx-state-tree'
 
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -521,7 +522,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )
@@ -555,7 +556,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )

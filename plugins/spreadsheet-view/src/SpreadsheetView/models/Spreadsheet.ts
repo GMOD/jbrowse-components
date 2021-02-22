@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
@@ -84,7 +85,7 @@ export default (pluginManager: PluginManager) => {
       },
       get hideRowSelection() {
         // just delegates to parent
-        return getParent(self).hideRowSelection
+        return getParent<any>(self).hideRowSelection
       },
 
       // list of data type names to be made available in the column

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { SnapshotOrInstance, Instance } from 'mobx-state-tree'
+import { SnapshotOrInstance, Instance, IAnyModelType } from 'mobx-state-tree'
 import { calculateStaticSlices, sliceIsVisible } from './slices'
 
 import { viewportVisibleSection } from './viewportVisibleRegion'
@@ -142,7 +143,6 @@ export default function CircularView(pluginManager: PluginManager) {
       // this is displayedRegions, post-processed to
       // elide regions that are too small to see reasonably
       get elidedRegions() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visible: any[] = []
         self.displayedRegions.forEach(region => {
           const widthBp = region.end - region.start
@@ -246,7 +246,7 @@ export default function CircularView(pluginManager: PluginManager) {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
@@ -291,7 +291,7 @@ export default function CircularView(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )
@@ -344,7 +344,7 @@ export default function CircularView(pluginManager: PluginManager) {
           'track',
         )
         const configuration = resolveIdentifier(
-          trackConfigSchema,
+          trackConfigSchema as IAnyModelType,
           getRoot(self),
           trackId,
         )

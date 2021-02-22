@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import PluginManager from '@jbrowse/core/PluginManager'
 import { SnapshotIn } from 'mobx-state-tree'
 import ColumnDataTypes from './ColumnDataTypes'
@@ -82,7 +83,9 @@ export default (pluginManager: PluginManager) => {
     }))
     .actions(self => ({
       addBlankColumnFilter(columnNumber: number) {
-        const { dataType } = getParent(self).spreadsheet.columns[columnNumber]
+        const { dataType } = getParent<any>(self).spreadsheet.columns[
+          columnNumber
+        ]
         self.columnFilters.push({
           type: dataType.type,
           columnNumber,

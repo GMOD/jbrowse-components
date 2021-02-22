@@ -529,3 +529,5 @@ export function createTestSession(snapshot = {}) {
   pluginManager.configure()
   return root.session as AbstractSessionModel
 }
+
+export type RootModelInstance = Instance<ReturnType<typeof RootModel>>

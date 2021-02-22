@@ -177,7 +177,8 @@ export default function assemblyFactory(
         return Array.from(self.refNameAliases.keys())
       },
       get rpcManager() {
-        return getParent(self, 2).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self, 2).rpcManager
       },
       get refNameColors() {
         const colors = readConfObject(
@@ -227,8 +228,10 @@ export default function assemblyFactory(
         this.setRefNameAliases(refNameAliases)
       },
       setError(error: Error) {
-        if (!getParent(self, 3).isAssemblyEditing) {
-          getParent(self, 3).setError(error)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rootModel = getParent<any>(self, 3)
+        if (!rootModel.isAssemblyEditing) {
+          rootModel.setError(error)
         }
       },
       setRegions(regions: Region[]) {

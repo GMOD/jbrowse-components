@@ -6,13 +6,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
-import {
-  cast,
-  getParent,
-  getSnapshot,
-  SnapshotIn,
-  types,
-} from 'mobx-state-tree'
+import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -118,10 +112,8 @@ export default function RootModel(pluginManager: PluginManager) {
             {
               label: 'Open assembly manager',
               icon: SettingsIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
-                const rootModel = getParent(session)
-                rootModel.setAssemblyEditing(true)
+              onClick: () => {
+                self.setAssemblyEditing(true)
               },
             },
           ],

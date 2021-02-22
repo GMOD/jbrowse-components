@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
   Instance,
   SnapshotIn,
@@ -8,6 +10,7 @@ import {
   addDisposer,
   resolveIdentifier,
   getRoot,
+  IAnyModelType,
 } from 'mobx-state-tree'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -58,7 +61,7 @@ export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent(self).viewWidth
+      return getParent<any>(self).viewWidth
     },
   },
 }))
@@ -66,7 +69,7 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent(self).viewHeight
+      return getParent<any>(self).viewHeight
     },
   },
 }))
@@ -242,7 +245,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
 
         closeView() {
-          getParent(self, 2).removeView(self)
+          getParent<any>(self, 2).removeView(self)
         },
 
         setHeaderHeight(height: number) {
@@ -259,8 +262,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         activateTrackSelector() {
           if (self.trackSelectorType === 'hierarchical') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const session: any = getSession(self)
+            const session = getSession(self)
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
@@ -279,7 +281,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             'track',
           )
           const configuration = resolveIdentifier(
-            trackConfigSchema,
+            trackConfigSchema as IAnyModelType,
             getRoot(self),
             trackId,
           )
@@ -319,7 +321,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             'track',
           )
           const configuration = resolveIdentifier(
-            trackConfigSchema,
+            trackConfigSchema as IAnyModelType,
             getRoot(self),
             trackId,
           )

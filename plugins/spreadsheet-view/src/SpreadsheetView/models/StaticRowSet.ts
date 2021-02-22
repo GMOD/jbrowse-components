@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import PluginManager from '@jbrowse/core/PluginManager'
 import Row from './Row'
 
@@ -29,7 +30,7 @@ export default (pluginManager: PluginManager) => {
       },
 
       get sortedRows() {
-        const parent = getParent(self)
+        const parent = getParent<any>(self)
         return self.rows.slice().sort(parent.rowSortingComparisonFunction)
       },
 
@@ -38,8 +39,8 @@ export default (pluginManager: PluginManager) => {
       },
 
       get selectedFilteredRows() {
-        const sheet = getParent(self)
-        const view = getParent(sheet)
+        const sheet = getParent<any>(self)
+        const view = getParent<any>(sheet)
         const { filterControls } = view
         return this.selectedRows.filter(row =>
           filterControls.rowPassesFilters(sheet, row),
@@ -48,8 +49,8 @@ export default (pluginManager: PluginManager) => {
 
       // the set of all rows that pass the filters, sorted
       get sortedFilteredRows() {
-        const sheet = getParent(self)
-        const view = getParent(sheet)
+        const sheet = getParent<any>(self)
+        const view = getParent<any>(sheet)
         const { filterControls } = view
         return self.rows
           .filter(row => filterControls.rowPassesFilters(sheet, row))
