@@ -296,13 +296,9 @@ export default function assemblyFactory(
 function makeLoadAssemblyData(pluginManager: PluginManager) {
   return (self: Assembly) => {
     if (self.configuration) {
-      const sequenceAdapterConfig = readConfObject(self.configuration, [
-        'sequence',
-        'adapter',
-      ])
+      const sequenceAdapterConfig = self.configuration.sequence.adapter
       const refNameAliasesAdapterConfig =
-        self.configuration.refNameAliases &&
-        readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+        self.configuration.refNameAliases?.adapter
       return {
         sequenceAdapterConfig,
         assemblyName: self.name,
