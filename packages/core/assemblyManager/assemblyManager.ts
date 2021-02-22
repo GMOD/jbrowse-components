@@ -144,8 +144,7 @@ export default function assemblyManagerFactory(
               assemblyConfigs,
               connectionConfigs,
             }: {
-              assemblyConfigs: Instance<typeof Assembly> &
-                AnyConfigurationModel[]
+              assemblyConfigs: (AnyConfigurationModel & { name: string })[]
               connectionConfigs: AnyConfigurationModel[]
             }) => {
               this.setReady(false)
