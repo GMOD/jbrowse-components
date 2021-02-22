@@ -55,7 +55,6 @@
     "mobx": "^6.1.6",
     "mobx-react": "^7.1.0",
     "mobx-state-tree": "^5.0.1",
-    "mst-middlewares": "^3.10.2",
     "prop-types": "^15.7.2",
     "query-string": "^6.9.0",
     "raf": "^3.4.1",

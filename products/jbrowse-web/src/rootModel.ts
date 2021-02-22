@@ -13,7 +13,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getParent,
   SnapshotIn,
   types,
   IAnyStateTreeNode,
@@ -29,7 +28,6 @@ import {
   IAnyType,
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
-import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -342,19 +340,15 @@ export default function RootModel(
                   {
                     label: 'Open assembly manager',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setAssemblyEditing(true)
+                    onClick: () => {
+                      self.setAssemblyEditing(true)
                     },
                   },
                   {
                     label: 'Set default session',
                     icon: SettingsIcon,
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    onClick: (session: any) => {
-                      const rootModel = getParent(session)
-                      rootModel.setDefaultSessionEditing(true)
+                    onClick: () => {
+                      self.setDefaultSessionEditing(true)
                     },
                   },
                 ],
@@ -528,7 +522,6 @@ export function createTestSession(snapshot = {}) {
     name: 'testSession',
     ...snapshot,
   })
-  root.setHistory(UndoManager.create({}, { targetStore: root.session }))
   // @ts-ignore
   root.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(root)

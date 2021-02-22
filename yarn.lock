@@ -18268,11 +18268,6 @@ ms@2.1.2, ms@^2.0.0, ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-mst-middlewares@^3.10.2:
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/mst-middlewares/-/mst-middlewares-3.16.0.tgz#5db0787d7c95354b4caa969068225c42192439a9"
-  integrity sha512-r1oXXA4ymXiFKK5e1D85Z2VCSdXwD6VvfpIcRGfcG7848AlzX1TVP1lGSdEufQVUEGJ/mh+U8DJtn0PjvpYflg==
-
 multicast-dns-service-types@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/multicast-dns-service-types/-/multicast-dns-service-types-1.1.0.tgz#899f11d9686e5e05cb91b35d5f0e63b773cfc901"
