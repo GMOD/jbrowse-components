@@ -4,7 +4,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 export default class TestPlugin extends Plugin {
   name = 'TestPlugin'
 
-  configuration = ConfigurationSchema('TestPlugin', {
+  configurationSchema = ConfigurationSchema('TestPlugin', {
     topLevelTest: {
       description: 'Test for top level configuration',
       type: 'string',
