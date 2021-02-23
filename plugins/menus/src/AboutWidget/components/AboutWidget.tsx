@@ -11,12 +11,14 @@ import { PluginMetaData } from '@jbrowse/core/PluginManager'
 const useStyles = makeStyles(theme => ({
   root: {
     margin: theme.spacing(2),
+    paddingTop: theme.spacing(2),
   },
   subtitle: {
     margin: theme.spacing(),
   },
   pluginList: {
     margin: theme.spacing(1),
+    marginTop: theme.spacing(5),
   },
 }))
 
@@ -43,6 +45,30 @@ function About({ model }: { model: IAnyStateTreeNode }) {
     .filter(p => Boolean(pluginManager.pluginMetaData[p.name]?.isCore))
     .map(p => p.name)
 
+  const corePluginsRender = plugins
+    .filter((plugin: BasePlugin) => {
+      return corePlugins.includes(plugin.name)
+    })
+    .map((plugin: BasePlugin) => {
+      return (
+        <li key={plugin.name}>
+          {plugin.name} {plugin.version}
+        </li>
+      )
+    })
+
+  const externalPluginsRender = plugins
+    .filter((plugin: BasePlugin) => {
+      return !corePlugins.includes(plugin.name)
+    })
+    .map((plugin: BasePlugin) => {
+      return (
+        <li key={plugin.name}>
+          {plugin.name} {plugin.version}
+        </li>
+      )
+    })
+
   return (
     <div className={classes.root}>
       <Typography variant="h4" align="center" color="primary">
@@ -63,34 +89,18 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         © 2019-2021 The Evolutionary Software Foundation
       </Typography>
       <div className={classes.pluginList}>
-        <Typography>External plugins loaded</Typography>
-        <ul>
-          {plugins
-            .filter((plugin: BasePlugin) => {
-              return !corePlugins.includes(plugin.name)
-            })
-            .map((plugin: BasePlugin) => {
-              return (
-                <li key={plugin.name}>
-                  {plugin.name} {plugin.version}
-                </li>
-              )
-            })}
-        </ul>
-        <Typography>Core plugins loaded</Typography>
-        <ul>
-          {plugins
-            .filter((plugin: BasePlugin) => {
-              return corePlugins.includes(plugin.name)
-            })
-            .map((plugin: BasePlugin) => {
-              return (
-                <li key={plugin.name}>
-                  {plugin.name} {plugin.version}
-                </li>
-              )
-            })}
-        </ul>
+        {!externalPluginsRender.length ? null : (
+          <>
+            <Typography variant="h6">External plugins loaded</Typography>
+            <ul>{externalPluginsRender}</ul>
+          </>
+        )}
+        {!corePluginsRender.length ? null : (
+          <>
+            <Typography variant="h6">Core plugins loaded</Typography>
+            <ul>{corePluginsRender}</ul>
+          </>
+        )}
       </div>
     </div>
   )
