@@ -42,7 +42,7 @@
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "mobx-state-tree": "3.14.1",
+    "mobx-state-tree": "^5.0.1",
     "rxjs": "^6.0.0"
   },
   "private": true
