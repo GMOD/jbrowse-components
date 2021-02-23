@@ -117,8 +117,24 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyFunction = (...args: any) => any
 
+/**
+ * free-form string-to-unknown mapping of metadata related to the instance
+ * of this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
+ * loaded as part of the "core" set of plugins for this application.
+ * Can also use this metadata to stash other things about why the plugin is
+ * loaded, such as where it came from, what plugin depends on it, etc.
+ */
+export type PluginMetaData = Record<string, unknown>
+
+export type PluginLoadRecord = {
+  metadata: PluginMetaData
+  plugin: Plugin
+}
+
 export default class PluginManager {
   plugins: Plugin[] = []
+
+  pluginMetaData: Record<string, PluginMetaData> = {}
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
@@ -151,9 +167,9 @@ export default class PluginManager {
 
   rootModel?: AbstractRootModel
 
-  constructor(initialPlugins: Plugin[] = []) {
+  constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
-    this.addPlugin(new CorePlugin())
+    this.addPlugin({ plugin: new CorePlugin(), metadata: { isCore: true } })
 
     // add all the initial plugins
     initialPlugins.forEach(plugin => {
@@ -171,13 +187,17 @@ export default class PluginManager {
     return configurationSchemas
   }
 
-  addPlugin(plugin: Plugin) {
+  addPlugin(load: Plugin | PluginLoadRecord) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
+    const [plugin, metadata] =
+      load instanceof Plugin ? [load, {}] : [load.plugin, load.metadata]
+
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
     }
+    this.pluginMetaData[plugin.name] = metadata
     plugin.install(this)
     this.plugins.push(plugin)
     return this
