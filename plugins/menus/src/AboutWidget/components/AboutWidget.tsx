@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
