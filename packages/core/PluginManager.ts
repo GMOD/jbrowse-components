@@ -165,6 +165,16 @@ export default class PluginManager {
     })
   }
 
+  pluginConfigurationSchemas() {
+    const configurationSchemas: { [key: string]: unknown } = {}
+    this.plugins.forEach(plugin => {
+      if (plugin.configurationSchema) {
+        configurationSchemas[plugin.name] = plugin.configurationSchema
+      }
+    })
+    return configurationSchemas
+  }
+
   addPlugin(plugin: Plugin) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')

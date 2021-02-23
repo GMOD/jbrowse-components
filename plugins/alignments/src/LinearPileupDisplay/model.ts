@@ -454,6 +454,12 @@ const stateModelFactory = (
                   },
                 },
                 {
+                  label: 'Adjust mismatch visibility by quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'mismatchQuality' })
+                  },
+                },
+                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })

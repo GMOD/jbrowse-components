@@ -51,7 +51,7 @@ function RenderedFeatureGlyph(props) {
     let nameWidth = 0
     if (shouldShowName) {
       nameWidth = Math.round(
-        Math.min(name.length * fontWidth, rootLayout.width + expansion),
+        Math.min(String(name).length * fontWidth, rootLayout.width + expansion),
       )
       rootLayout.addChild(
         'nameLabel',
@@ -68,7 +68,10 @@ function RenderedFeatureGlyph(props) {
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
       descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, rootLayout.width + expansion),
+        Math.min(
+          String(description).length * fontWidth,
+          rootLayout.width + expansion,
+        ),
       )
       rootLayout.addChild(
         'descriptionLabel',
@@ -99,9 +102,9 @@ function RenderedFeatureGlyph(props) {
       rootLayout={rootLayout}
       bpPerPx={bpPerPx}
       config={config}
-      name={name}
+      name={String(name)}
       shouldShowName={shouldShowName}
-      description={description}
+      description={String(description)}
       shouldShowDescription={shouldShowDescription}
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}
