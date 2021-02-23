@@ -1,6 +1,10 @@
 import jexl from 'jexl'
 import { Feature } from './simpleFeature'
 
+type JexlWithAddFunction = typeof jexl & {
+  addFunction(name: string, func: Function): void
+}
+
 function createJexlInstance(/* config?: any*/) {
   const jexlInstance = new jexl.Jexl()
   // someday will make sure all of configs callbacks are added in, including ones passed in
@@ -21,8 +25,9 @@ function createJexlInstance(/* config?: any*/) {
   })
 
   // math
-  jexlInstance.addFunction('max', Math.max)
-  jexlInstance.addFunction('min', Math.min)
+  // addfunction added in jexl 2.3 but types/jexl still on 2.2
+  ;(jexlInstance as JexlWithAddFunction).addFunction('max', Math.max)
+  ;(jexlInstance as JexlWithAddFunction).addFunction('min', Math.min)
   jexlInstance.addTransform('sqrt', Math.sqrt)
   jexlInstance.addTransform('ceil', Math.ceil)
   jexlInstance.addTransform('floor', Math.floor)
