@@ -36,19 +36,6 @@ exports[`<AboutWidget /> renders 1`] = `
   </p>
   <div
     class="makeStyles-pluginList"
-  >
-    <p
-      class="MuiTypography-root MuiTypography-body1"
-    >
-      External plugins loaded
-    </p>
-    <ul />
-    <p
-      class="MuiTypography-root MuiTypography-body1"
-    >
-      Core plugins loaded
-    </p>
-    <ul />
-  </div>
+  />
 </div>
 `;
