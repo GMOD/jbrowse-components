@@ -54,28 +54,22 @@ export default function sessionModelFactory(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
-      // @ts-ignore
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
       widgets: types.map(
-        // @ts-ignore
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
       activeWidgets: types.map(
         types.safeReference(
-          // @ts-ignore
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
       connectionInstances: types.map(
-        // @ts-ignore
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
       sessionTracks: types.array(
-        // @ts-ignore
         pluginManager.pluggableConfigSchemaType('track'),
       ),
       sessionConnections: types.array(
-        // @ts-ignore
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
@@ -96,62 +90,48 @@ export default function sessionModelFactory(
     }))
     .views(self => ({
       get shareURL() {
-        // @ts-ignore
         return getConf(getParent<any>(self).jbrowse, 'shareURL')
       },
       get rpcManager() {
-        // @ts-ignore
         return getParent<any>(self).jbrowse.rpcManager as RpcManager
       },
       get configuration() {
-        // @ts-ignore
         return getParent<any>(self).jbrowse.configuration
       },
       get assemblies() {
-        // @ts-ignore
         return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        // @ts-ignore
         return getParent<any>(self).jbrowse.assemblyNames
       },
       get tracks() {
-        // @ts-ignore
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
       get connections() {
         return [
           ...self.sessionConnections,
-          // @ts-ignore
           ...getParent<any>(self).jbrowse.connections,
         ]
       },
       get adminMode() {
-        // @ts-ignore
         return getParent<any>(self).adminMode
       },
       get savedSessions() {
-        // @ts-ignore
         return getParent<any>(self).savedSessions
       },
       get previousAutosaveId() {
-        // @ts-ignore
         return getParent<any>(self).previousAutosaveId
       },
       get savedSessionNames() {
-        // @ts-ignore
         return getParent<any>(self).savedSessionNames
       },
       get history() {
-        // @ts-ignore
         return getParent<any>(self).history
       },
       get menus() {
-        // @ts-ignore
         return getParent<any>(self).menus
       },
       get assemblyManager() {
-        // @ts-ignore
         return getParent<any>(self).assemblyManager
       },
       get version() {
@@ -181,7 +161,6 @@ export default function sessionModelFactory(
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
-              // @ts-ignore
               if (isReferenceType(value) && node[key] === object) {
                 refs.push({ node, key })
               }
@@ -359,7 +338,6 @@ export default function sessionModelFactory(
 
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
-          // @ts-ignore
           if (widget.view && widget.view.id === view.id) {
             this.hideWidget(widget)
           }

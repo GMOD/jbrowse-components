@@ -1,7 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
