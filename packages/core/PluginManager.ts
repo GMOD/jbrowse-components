@@ -187,8 +187,7 @@ export default class PluginManager {
     return configurationSchemas
   }
 
-  addPlugin(plugin: Plugin | PluginLoadRecord) {
-
+  addPlugin(load: Plugin | PluginLoadRecord) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
