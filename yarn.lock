@@ -3975,10 +3975,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.5.7":
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.7.tgz#f8922081ea37f77fe5f2d167b4e400c22d63799c"
-  integrity sha512-ivGfFSJf/orKeWhLUl2WfiD14ZCW3TaFbEgxSeaOmFr0sLe8sFWAx5V5xAXXhMgFvvou28vd2pXhZcqvEBXiAw==
+"@gmod/cram@^1.5.8":
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.8.tgz#b174798d8f99e779366535873561755e0684991a"
+  integrity sha512-jC0EfPBAQWChE9PLvkriakbVfO4ShgDeydBF7eDg0Y3wsXSA3pg1UKmXTgNvN1rFf1HgRBnhJuOVIvYDPr05TA==
   dependencies:
     "@babel/runtime-corejs3" "^7.4.5"
     "@gmod/binary-parser" "^1.3.5"
