@@ -6,6 +6,7 @@ import { getSession } from '@jbrowse/core/util'
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
 import Link from '@material-ui/core/Link'
+import { PluginMetaData } from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,14 +30,18 @@ function About({ model }: { model: IAnyStateTreeNode }) {
   const session = model
     ? getSession(model)
     : {
+        // this is a slot definition
         version: '',
         pluginManager: {
-          corePlugins: [] as string[],
-          plugins: [] as any[],
+          plugins: [],
+          pluginMetaData: {} as Record<string, PluginMetaData>,
         },
       }
   const { pluginManager } = session
-  const { corePlugins, plugins } = pluginManager
+  const { plugins } = pluginManager
+  const corePlugins = plugins
+    .filter(p => Boolean(pluginManager.pluginMetaData[p.name]?.isCore))
+    .map(p => p.name)
 
   return (
     <div className={classes.root}>
