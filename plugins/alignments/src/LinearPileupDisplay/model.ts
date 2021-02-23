@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+  getConf,
+} from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -33,6 +37,7 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
+import SetFeatureHeightDlg from './components/SetFeatureHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -54,6 +59,8 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
+        featureHeight: types.maybe(types.number),
+        noSpacing: types.maybe(types.boolean),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -93,6 +100,12 @@ const stateModelFactory = (
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
+      },
+      setFeatureHeight(n: number) {
+        self.featureHeight = n
+      },
+      setNoSpacing(flag: boolean) {
+        self.noSpacing = flag
       },
 
       setColorScheme(colorScheme: { type: string; tag?: string }) {
@@ -160,7 +173,8 @@ const stateModelFactory = (
                 const { sortedBy, colorBy, renderProps } = self
                 const view = getContainingView(self) as LGV
 
-                // continually generate the vc pairing, set and rerender if any new values seen
+                // continually generate the vc pairing, set and rerender if any
+                // new values seen
                 if (colorBy?.tag) {
                   const uniqueTagSet = await self.getUniqueTagValues(
                     colorBy,
@@ -280,6 +294,21 @@ const stateModelFactory = (
         },
       }
     })
+
+    .views(self => ({
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          height: self.featureHeight,
+          noSpacing: self.noSpacing,
+        })
+      },
+      get featureHeightSetting() {
+        return self.featureHeight
+      },
+    }))
     .views(self => {
       const { trackMenuItems } = self
       return {
@@ -359,10 +388,10 @@ const stateModelFactory = (
           return filters
         },
 
-        get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.rendererType.configSchema.create(configBlob)
+        get featureHeightSetting() {
+          return (
+            self.featureHeight || readConfObject(self.rendererConfig, 'height')
+          )
         },
 
         get renderProps() {
@@ -379,7 +408,7 @@ const stateModelFactory = (
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
-            config: this.rendererConfig,
+            config: self.rendererConfig,
           }
         },
 
@@ -488,6 +517,15 @@ const stateModelFactory = (
                   },
                 },
               ],
+            },
+            {
+              label: 'Set feature height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetFeatureHeightDlg,
+                  self,
+                )
+              },
             },
             {
               label: 'Filter by',

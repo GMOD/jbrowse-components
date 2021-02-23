@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function ColorByTagDlg(props: {
+export default function SortByTagDlg(props: {
   display: { setSortedBy: Function }
   handleClose: () => void
 }) {
@@ -50,6 +50,9 @@ export default function ColorByTagDlg(props: {
       <DialogContent>
         <div>
           <Typography>Set the tag to sort by</Typography>
+          <Typography color="textSecondary">
+            Examples: HP for haplotype, RG for read group, etc.
+          </Typography>
           <TextField
             value={tag}
             onChange={event => {

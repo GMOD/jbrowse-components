@@ -526,8 +526,10 @@ export default class PileupRenderer extends BoxRendererType {
           rect.width + 2 * padding,
           heightPx,
         )
-        ctx.fillStyle = 'white'
-        ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        if (heightPx > charHeight) {
+          ctx.fillStyle = 'white'
+          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        }
       }
     }
   }
