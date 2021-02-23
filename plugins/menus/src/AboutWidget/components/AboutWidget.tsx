@@ -24,6 +24,7 @@ const useStyles = makeStyles(theme => ({
 interface BasePlugin {
   version?: string
   name: string
+  url?: string
 }
 
 function About({ model }: { model: IAnyStateTreeNode }) {
@@ -61,9 +62,16 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       return !corePlugins.includes(plugin.name)
     })
     .map((plugin: BasePlugin) => {
+      const text = `${plugin.name} ${plugin.version}`
       return (
         <li key={plugin.name}>
-          {plugin.name} {plugin.version}
+          {plugin.url ? (
+            <Link target="_blank" rel="noopener noreferrer" href={plugin.url}>
+              {text}
+            </Link>
+          ) : (
+            text
+          )}
         </li>
       )
     })
