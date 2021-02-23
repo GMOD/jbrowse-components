@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import React from 'react'
 import Drawer from './Drawer'
 
@@ -38,12 +39,10 @@ const useStyles = makeStyles(theme => ({
 }))
 const DrawerWidget = observer(props => {
   const { session } = props
-  const { visibleWidget, pluginManager } = session
-  const {
-    ReactComponent,
-    HeadingComponent,
-    heading,
-  } = pluginManager.getWidgetType(visibleWidget.type)
+  const { visibleWidget } = session
+  const { ReactComponent, HeadingComponent, heading } = getEnv(
+    session,
+  ).pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
 
   return (

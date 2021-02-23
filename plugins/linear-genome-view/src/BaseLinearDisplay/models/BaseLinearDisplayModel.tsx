@@ -16,7 +16,7 @@ import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import { autorun } from 'mobx'
-import { addDisposer, Instance, isAlive, types } from 'mobx-state-tree'
+import { addDisposer, Instance, isAlive, types, getEnv } from 'mobx-state-tree'
 import RBush from 'rbush'
 import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
@@ -340,7 +340,7 @@ export const BaseLinearDisplay = types
       return []
     },
     get contextMenuItems() {
-      const { pluginManager } = getSession(self)
+      const { pluginManager } = getEnv(self)
       const contextMenuItems = self.contextMenuFeature
         ? [
             {

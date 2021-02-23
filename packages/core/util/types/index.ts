@@ -5,7 +5,6 @@ import {
   SnapshotIn,
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
-import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
@@ -47,7 +46,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
-  pluginManager: PluginManager
   rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
@@ -61,12 +59,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeAssembly?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
-  return (
-    typeof thing === 'object' &&
-    thing !== null &&
-    'pluginManager' in thing &&
-    'configuration' in thing
-  )
+  return typeof thing === 'object' && thing !== null && 'configuration' in thing
 }
 
 /** abstract interface for a session allows editing configurations */

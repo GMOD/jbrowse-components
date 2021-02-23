@@ -7,6 +7,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import React, { useEffect } from 'react'
 import { AddTrackModel } from '../model'
 
@@ -117,18 +118,21 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
             SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
           }}
         >
-          {session.pluginManager.getElementTypesInGroup('adapter').map(
-            installedAdapterType =>
-              // Exclude SNPCoverageAdapter from primary adapter user selection
-              installedAdapterType.name !== 'SNPCoverageAdapter' && (
-                <MenuItem
-                  key={installedAdapterType.name}
-                  value={installedAdapterType.name}
-                >
-                  {installedAdapterType.name}
-                </MenuItem>
-              ),
-          )}
+          {getEnv(session)
+            .pluginManager.getElementTypesInGroup('adapter')
+            .map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (installedAdapterType: any) =>
+                // Exclude SNPCoverageAdapter from primary adapter user selection
+                installedAdapterType.name !== 'SNPCoverageAdapter' && (
+                  <MenuItem
+                    key={installedAdapterType.name}
+                    value={installedAdapterType.name}
+                  >
+                    {installedAdapterType.name}
+                  </MenuItem>
+                ),
+            )}
         </TextField>
       </>
     )
@@ -193,9 +197,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
         >
-          {session.pluginManager
-            .getElementTypesInGroup('track')
-            .map(installedTrackType => (
+          {getEnv(session)
+            .pluginManager.getElementTypesInGroup('track')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((installedTrackType: any) => (
               <MenuItem
                 key={installedTrackType.name}
                 value={installedTrackType.name}

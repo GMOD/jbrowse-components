@@ -1,7 +1,8 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { getEnv } from 'mobx-state-tree'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const { pluginManager } = createTestSession() as any
+const { pluginManager } = getEnv(createTestSession() as any)
 
 describe('dotplot state model', () => {
   test('can instantiate from an empty object', () => {

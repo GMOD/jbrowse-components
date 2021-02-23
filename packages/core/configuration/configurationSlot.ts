@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType, IAnyComplexType, getRoot } from 'mobx-state-tree'
+import { types, IAnyModelType, IAnyComplexType, getEnv } from 'mobx-state-tree'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
 
@@ -199,7 +199,7 @@ export default function ConfigSlot(
           // compile as jexl function
           return stringToJexlExpression(
             String(self.value),
-            getRoot(self).pluginManager?.jexl,
+            getEnv(self).pluginManager?.jexl,
           )
         }
         return { evalSync: () => self.value }

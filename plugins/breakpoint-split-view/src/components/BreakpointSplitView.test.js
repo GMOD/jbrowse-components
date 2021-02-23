@@ -1,6 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { getEnv } from 'mobx-state-tree'
 import sizeMe from 'react-sizeme'
 import BreakpointSplitView from './BreakpointSplitView'
 
@@ -63,7 +64,7 @@ describe('BreakpointSplitView genome view component', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const SplitView = new BreakpointSplitView(session.pluginManager)
+    const SplitView = new BreakpointSplitView(getEnv(session).pluginManager)
     const { findAllByText } = render(<SplitView model={model} />)
     await findAllByText('No tracks active.')
   })
