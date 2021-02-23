@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -120,7 +121,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // which is basically like an onLoad
       afterDisplayedRegionsSetCallbacks: [] as Function[],
       scaleFactor: 1,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       trackRefs: {} as { [key: string]: any },
       coarseDynamicBlocks: [] as BaseBlock[],
       coarseTotalBp: 0,
@@ -329,7 +329,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            ...getSnapshot(region),
+            // cast to any to avoid Return type of exported function has or is using name '$nonEmptyObject'
+            ...(getSnapshot(region) as any),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -348,7 +349,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              ...getSnapshot(region),
+              // cast to any to avoid Return type of exported function has or is using name '$nonEmptyObject'
+              ...(getSnapshot(region) as any),
               oob: false,
               offset,
               coord: region.reversed

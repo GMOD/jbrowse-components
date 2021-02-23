@@ -407,7 +407,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .postProcessSnapshot(self => {
-    const { blockState, ...rest } = self
+    // cast to type `any` to avoid error
+    // Public property 'exports' of exported class has or is using name '$nonEmptyObject' from external module "/home/cdiesh/src/jbrowse-components/node_modules/mobx-state-tree/dist/types/complex-types/model"
+    const { blockState, ...rest } = self as any
     return rest
   })
 

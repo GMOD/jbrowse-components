@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
 import { clamp } from './index'
 import { Feature } from './simpleFeature'
@@ -108,7 +109,9 @@ const Base1DView = types
         const region = self.displayedRegions[0]
         const offset = bp
         return {
-          ...getSnapshot(region),
+          // has to be as type `any` or get error
+          // Exported variable 'Base1DView' has or is using name '$nonEmptyObject' from external module "/home/cdiesh/src/jbrowse-components/node_modules/mobx-state-tree/dist/types/complex-types/model" but cannot be named.
+          ...(getSnapshot(region) as any),
           oob: true,
           coord: region.reversed
             ? Math.floor(region.end - offset) + 1
