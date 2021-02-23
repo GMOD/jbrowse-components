@@ -260,7 +260,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
   prefix?: string
 }
@@ -384,7 +384,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             <SimpleValue
               key={key}
               name={key}
-              value={formatter(value)}
+              value={formatter(value, key)}
               description={description}
               prefix={prefix}
             />
@@ -407,7 +407,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
 }
 
 const Subfeature = (props: BaseProps) => {

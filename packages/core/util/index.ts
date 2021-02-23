@@ -17,6 +17,7 @@ import { Feature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
+  isDisplayModel,
   isViewModel,
   isTrackModel,
   Region,
@@ -252,6 +253,14 @@ export function getContainingView(node: IAnyStateTreeNode) {
 export function getContainingTrack(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isTrackModel)
+  } catch (e) {
+    throw new Error('no containing track found')
+  }
+}
+
+export function getContainingDisplay(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isDisplayModel)
   } catch (e) {
     throw new Error('no containing track found')
   }
@@ -760,6 +769,7 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: [...(args.regions || [])],
   }
+
   if (assemblyName) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
@@ -767,7 +777,6 @@ export async function renameRegionsIfNeeded<
       newArgs,
     )
 
-    // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
     if (refNameMap && regions && newArgs.regions) {
       for (let i = 0; i < regions.length; i += 1) {
         newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
@@ -797,3 +806,53 @@ export function stringify({
 
 export const isElectron =
   typeof window !== 'undefined' && Boolean(window.electron)
+
+export function revcom(seqString: string) {
+  return complement(seqString).split('').reverse().join('')
+}
+
+export const complement = (() => {
+  const complementRegex = /[ACGT]/gi
+
+  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+  // generated with:
+  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+  const complementTable = {
+    S: 'S',
+    w: 'w',
+    T: 'A',
+    r: 'y',
+    a: 't',
+    N: 'N',
+    K: 'M',
+    x: 'x',
+    d: 'h',
+    Y: 'R',
+    V: 'B',
+    y: 'r',
+    M: 'K',
+    h: 'd',
+    k: 'm',
+    C: 'G',
+    g: 'c',
+    t: 'a',
+    A: 'T',
+    n: 'n',
+    W: 'W',
+    X: 'X',
+    m: 'k',
+    v: 'b',
+    B: 'V',
+    s: 's',
+    H: 'D',
+    c: 'g',
+    D: 'H',
+    b: 'v',
+    R: 'Y',
+    G: 'C',
+  } as { [key: string]: string }
+
+  return (seqString: string) => {
+    return seqString.replace(complementRegex, m => complementTable[m] || '')
+  }
+})()

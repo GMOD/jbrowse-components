@@ -1,10 +1,15 @@
 import { render } from '@testing-library/react'
 import React from 'react'
-import { stateModel } from '.'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { stateModelFactory } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
-  const model = stateModel.create({ type: 'AlignmentsFeatureWidget' })
+  console.warn = jest.fn()
+  const pluginManager = new PluginManager([])
+  const model = stateModelFactory(pluginManager).create({
+    type: 'AlignmentsFeatureWidget',
+  })
   model.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',

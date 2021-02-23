@@ -709,7 +709,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
       class="MuiGrid-root MuiGrid-item"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
         tabindex="0"
         type="button"
       >
@@ -717,6 +717,20 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
           class="MuiButton-label"
         >
           Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Show all regions in assembly
         </span>
         <span
           class="MuiTouchRipple-root"

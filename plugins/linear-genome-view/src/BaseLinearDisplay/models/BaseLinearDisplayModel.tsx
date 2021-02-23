@@ -48,6 +48,7 @@ export const BaseLinearDisplay = types
         defaultDisplayHeight,
       ),
       blockState: types.map(BlockState),
+      userBpPerPxLimit: types.maybe(types.number),
     }),
   )
   .volatile(() => ({
@@ -56,7 +57,6 @@ export const BaseLinearDisplay = types
     contextMenuFeature: undefined as undefined | Feature,
     additionalContextMenuItemCallbacks: [] as Function[],
     scrollTop: 0,
-    userBpPerPxLimit: undefined as undefined | number,
   }))
   .views(self => ({
     /**
@@ -263,7 +263,7 @@ export const BaseLinearDisplay = types
         const featureWidget = session.addWidget(
           'BaseFeatureWidget',
           'baseFeature',
-          { featureData: feature.toJSON() },
+          { featureData: feature.toJSON(), view: getContainingView(self) },
         )
         session.showWidget(featureWidget)
       }

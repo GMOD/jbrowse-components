@@ -249,7 +249,7 @@
       "trackId": "volvox_alignments",
       "name": "volvox-sorted.bam (ctgA, svg)",
       "category": ["Integration test"],
-      "assemblyNames": ["volvox"],
+      "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {

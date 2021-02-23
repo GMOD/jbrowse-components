@@ -195,7 +195,6 @@ export default class extends BaseFeatureDataAdapter {
 
   private featureData(data: FeatureLoc) {
     const f: Record<string, unknown> = { ...data }
-
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
     f.phase = Number(data.phase)
