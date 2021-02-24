@@ -97,11 +97,14 @@ export default function Loader({
       const JBrowseRootModel = JBrowseRootModelFactory(pm)
       try {
         if (configSnapshot) {
-          const rootModel = JBrowseRootModel.create({
-            jbrowse: configSnapshot,
-            assemblyManager: {},
-            version: packagedef.version,
-          })
+          const rootModel = JBrowseRootModel.create(
+            {
+              jbrowse: configSnapshot,
+              assemblyManager: {},
+              version: packagedef.version,
+            },
+            { pluginManager },
+          )
           // make some things available globally for testing
           // e.g. window.MODEL.views[0] in devtools
           // @ts-ignore
@@ -139,7 +142,7 @@ export default function Loader({
         console.error(e)
       }
     }
-  }, [plugins, configSnapshot, initialTimestamp])
+  }, [plugins, configSnapshot, initialTimestamp, pluginManager])
 
   if (!(configSnapshot && plugins && pluginManager) && !error) {
     return (

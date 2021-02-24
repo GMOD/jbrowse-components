@@ -13,7 +13,6 @@ import { ElementId } from '../util/types/mst'
 
 import ConfigSlot, { ConfigSlotDefinition } from './configurationSlot'
 import { isConfigurationSchemaType } from './util'
-import PluginManager from '../PluginManager'
 
 function isEmptyObject(thing: unknown) {
   return (
@@ -175,9 +174,6 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
-      },
-      setPluginManager(pluginManager: PluginManager) {
-        self.pluginManager = pluginManager
       },
     }))
 

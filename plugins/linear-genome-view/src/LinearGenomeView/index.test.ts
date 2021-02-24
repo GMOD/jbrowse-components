@@ -65,7 +65,7 @@ const Assembly = types
 const Session = types
   .model({
     name: 'testSession',
-    pluginManager: 'pluginManagerExists',
+    rpcManager: 'rpcManagerExists',
     view: types.maybe(LinearGenomeModel),
     configuration: types.map(types.string),
   })

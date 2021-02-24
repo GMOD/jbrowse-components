@@ -123,8 +123,9 @@ export default class ServerSideRenderer extends RendererType {
    */
   deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = ({ ...args } as unknown) as RenderArgsDeserialized
-    const config = this.configSchema.create(args.config || {})
-    config.setPluginManager(this.pluginManager)
+    const config = this.configSchema.create(args.config || {}, {
+      pluginManager: this.pluginManager,
+    })
     deserialized.config = config
     deserialized.filters = new SerializableFilterChain({
       filters: args.filters,

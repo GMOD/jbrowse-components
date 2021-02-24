@@ -417,12 +417,15 @@ const Renderer = observer(
           )
 
           if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            const rootModel = JBrowseRootModel.create(
+              {
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              },
+              { pluginManager },
+            )
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default

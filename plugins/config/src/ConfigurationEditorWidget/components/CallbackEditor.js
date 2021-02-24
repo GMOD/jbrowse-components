@@ -7,7 +7,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Tooltip from '@material-ui/core/Tooltip'
 import IconButton from '@material-ui/core/IconButton'
 import HelpIcon from '@material-ui/icons/Help'
-import { getRoot } from 'mobx-state-tree'
+import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import Editor from 'react-simple-code-editor'
@@ -50,7 +50,7 @@ function CallbackEditor({ slot }) {
         : `jexl:${debouncedCode}`
       stringToJexlExpression(
         jexlDebouncedCode,
-        getRoot(slot).pluginManager?.jexl,
+        getEnv(slot).pluginManager?.jexl,
       )
       slot.set(jexlDebouncedCode) // slot.set `jexl:${debouncedCode}`
       setCodeError(null)

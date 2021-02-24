@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { Instance, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import createSessionModel from '../createModel/createSessionModel'
 import ModalWidget from './ModalWidget'
@@ -13,8 +13,8 @@ function JBrowseLinearGenomeView({
   viewState: { session: Session }
 }) {
   const { session } = viewState
-  const { view, pluginManager } = session
-  const viewType = pluginManager.getViewType(view.type)
+  const { view } = session
+  const viewType = getEnv(session).pluginManager.getViewType(view.type)
   if (!viewType) {
     throw new Error(`unknown view type ${view.type}`)
   }
