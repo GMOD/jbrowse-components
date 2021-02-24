@@ -39,11 +39,13 @@ function About({ model }: { model: IAnyStateTreeNode }) {
           pluginMetaData: {} as Record<string, PluginMetaData>,
         },
       }
-  const { pluginManager } = getEnv(session)
+  const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager
   const corePlugins = plugins
-    .filter(p => Boolean(pluginManager.pluginMetaData[p.name]?.isCore))
-    .map(p => p.name)
+    .filter((p: BasePlugin) =>
+      Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
+    )
+    .map((p: BasePlugin) => p.name)
 
   const corePluginsRender = plugins
     .filter((plugin: BasePlugin) => {
