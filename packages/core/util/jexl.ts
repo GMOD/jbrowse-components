@@ -4,8 +4,9 @@ import { Feature } from './simpleFeature'
 type JexlWithAddFunction = typeof jexl & {
   addFunction(name: string, func: Function): void
 }
+type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 
-function createJexlInstance(/* config?: any*/) {
+function createJexlInstance(/* config?: any*/): JexlNonBuildable {
   const jexlInstance = new jexl.Jexl()
   // someday will make sure all of configs callbacks are added in, including ones passed in
 

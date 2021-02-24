@@ -9,9 +9,7 @@ function makeFilters(displayModel) {
   for (const attrName of filterOut.keys()) {
     for (const value of filterOut.get(attrName).keys()) {
       if (filterOut.get(attrName).get(value)) {
-        filters.push(
-          `jexl:String(feature|getData('${attrName}')) !== '${value}'`,
-        )
+        filters.push(`jexl:feature|getData('${attrName}') != '${value}'`)
       }
     }
   }
