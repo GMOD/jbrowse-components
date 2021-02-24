@@ -29,17 +29,14 @@ interface BasePlugin {
 
 function About({ model }: { model: IAnyStateTreeNode }) {
   const classes = useStyles()
-  const session = model
-    ? getSession(model)
-    : {
-        // this is a slot definition
-        version: '',
-        pluginManager: {
-          plugins: [],
-          pluginMetaData: {} as Record<string, PluginMetaData>,
-        },
-      }
-  const { pluginManager } = getEnv(model)
+  const slotDefinition = {
+    version: '',
+    pluginManager: {
+      plugins: [],
+      pluginMetaData: {} as Record<string, PluginMetaData>,
+    },
+  }
+  const { pluginManager } = model ? getEnv(model) : slotDefinition
   const { plugins } = pluginManager
   const corePlugins = plugins
     .filter((p: BasePlugin) =>
@@ -84,7 +81,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
-        {session.version}
+        {model ? getSession(model).version : slotDefinition.version}
       </Typography>
       <Typography align="center" variant="body2">
         JBrowse is a{' '}
