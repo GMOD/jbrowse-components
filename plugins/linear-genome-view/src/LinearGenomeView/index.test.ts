@@ -18,7 +18,7 @@ import hg38DisplayedRegions from './hg38DisplayedRegions.json'
 const stubManager = new PluginManager()
 stubManager.addTrackType(() => {
   const configSchema = ConfigurationSchema(
-    'FeatureTrack',
+    'BasicTrack',
     {},
     {
       baseConfiguration: createBaseTrackConfig(stubManager),
@@ -26,9 +26,9 @@ stubManager.addTrackType(() => {
     },
   )
   return new TrackType({
-    name: 'FeatureTrack',
+    name: 'BasicTrack',
     configSchema,
-    stateModel: createBaseTrackModel(stubManager, 'FeatureTrack', configSchema),
+    stateModel: createBaseTrackModel(stubManager, 'BasicTrack', configSchema),
   })
 })
 stubManager.addDisplayType(() => {
@@ -41,7 +41,7 @@ stubManager.addDisplayType(() => {
     name: 'LinearBasicDisplay',
     configSchema,
     stateModel: LinearBasicDisplayStateModelFactory(configSchema),
-    trackType: 'FeatureTrack',
+    trackType: 'BasicTrack',
     viewType: 'LinearGenomeView',
     ReactComponent: BaseLinearDisplayComponent,
   })
@@ -107,7 +107,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
 
@@ -123,7 +123,7 @@ test('can instantiate a model that lets you navigate', () => {
     LinearGenomeModel.create({
       id: 'test1',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(800)
@@ -169,7 +169,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
     LinearGenomeModel.create({
       id: 'test2',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(800)
@@ -196,7 +196,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     LinearGenomeModel.create({
       id: 'test3',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -516,7 +516,7 @@ test('can instantiate a model that >2 regions', () => {
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -571,7 +571,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
     LinearGenomeModel.create({
       id: 'test5',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -628,7 +628,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
     LinearGenomeModel.create({
       id: 'test6',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   const width = 800
@@ -652,7 +652,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
     LinearGenomeModel.create({
       id: 'test6',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   const width = 800
@@ -686,7 +686,7 @@ test('can showAllRegionsInAssembly', async () => {
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)

@@ -66,8 +66,11 @@ Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
       })
       subSubLayout.move(0, topOffset)
       topOffset +=
-        (displayMode === 'compact' ? subfeatureHeight / 3 : subfeatureHeight) +
-        2
+        displayMode === 'collapse'
+          ? 0
+          : (displayMode === 'compact'
+              ? subfeatureHeight / 3
+              : subfeatureHeight) + 2
     })
   }
   return subLayout

@@ -1,8 +1,4 @@
-import {
-  ConfigurationReference,
-  readConfObject,
-  getConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -38,6 +34,7 @@ import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
 import SetFeatureHeightDlg from './components/SetFeatureHeight'
+import SetMaxHeightDlg from './components/SetMaxHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -61,6 +58,7 @@ const stateModelFactory = (
         showSoftClipping: false,
         featureHeight: types.maybe(types.number),
         noSpacing: types.maybe(types.boolean),
+        trackMaxHeight: types.maybe(types.number),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -100,6 +98,9 @@ const stateModelFactory = (
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
+      },
+      setMaxHeight(n: number) {
+        self.trackMaxHeight = n
       },
       setFeatureHeight(n: number) {
         self.featureHeight = n
@@ -296,6 +297,12 @@ const stateModelFactory = (
     })
 
     .views(self => ({
+      get maxHeight() {
+        const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.trackMaxHeight !== undefined
+          ? self.trackMaxHeight
+          : conf.maxHeight
+      },
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -303,6 +310,7 @@ const stateModelFactory = (
           ...configBlob,
           height: self.featureHeight,
           noSpacing: self.noSpacing,
+          maxHeight: this.maxHeight,
         })
       },
       get featureHeightSetting() {
@@ -386,12 +394,6 @@ const stateModelFactory = (
             }
           }
           return filters
-        },
-
-        get featureHeightSetting() {
-          return (
-            self.featureHeight || readConfObject(self.rendererConfig, 'height')
-          )
         },
 
         get renderProps() {
@@ -533,6 +535,15 @@ const stateModelFactory = (
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(
                   FilterByTagDlg,
+                  self,
+                )
+              },
+            },
+            {
+              label: 'Set max height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetMaxHeightDlg,
                   self,
                 )
               },
