@@ -126,7 +126,6 @@ export default class ServerSideRenderer extends RendererType {
     const config = this.configSchema.create(args.config || {}, {
       pluginManager: this.pluginManager,
     })
-    console.log(config)
     deserialized.config = config
     deserialized.filters = new SerializableFilterChain({
       filters: args.filters,

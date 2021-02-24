@@ -259,7 +259,6 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     displayError,
   } = props as RenderProps
-  console.log(props)
   if (!isAlive(self)) {
     return undefined
   }

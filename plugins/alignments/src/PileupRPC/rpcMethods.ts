@@ -13,7 +13,6 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
   ) {
-    console.log(this)
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     if (!assemblyManager) {

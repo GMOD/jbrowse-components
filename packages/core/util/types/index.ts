@@ -59,7 +59,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeAssembly?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
-  return typeof thing === 'object' && thing !== null && 'configuration' in thing
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'rpcManager' in thing &&
+    'configuration' in thing
+  )
 }
 
 /** abstract interface for a session allows editing configurations */

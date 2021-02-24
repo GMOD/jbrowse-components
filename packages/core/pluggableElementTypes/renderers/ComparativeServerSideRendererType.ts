@@ -64,7 +64,9 @@ export default class ComparativeServerSideRenderer extends RendererType {
    */
   deserializeArgsInWorker(args: RenderArgsSerialized) {
     if (this.configSchema) {
-      const config = this.configSchema.create(args.config || {})
+      const config = this.configSchema.create(args.config || {}, {
+        pluginManager: this.pluginManager,
+      })
       args.config = config
     }
   }
