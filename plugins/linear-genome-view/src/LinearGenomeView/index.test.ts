@@ -919,3 +919,66 @@ describe('Get Sequence for selected displayed regions', () => {
     expect(hfRegion[0].end).toEqual(50000)
   })
 })
+
+test('navToLocString with human assembly', () => {
+  const HumanAssembly = types
+    .model({
+      regions: types.array(Region),
+    })
+    .views(() => ({
+      getCanonicalRefName(refName: string) {
+        return refName.replace('chr', '')
+      },
+    }))
+  const AssemblyManager = types
+    .model({
+      assemblies: types.map(HumanAssembly),
+    })
+    .actions(self => ({
+      isValidRefName(str: string) {
+        return !str.includes(':')
+      },
+      get(str: string) {
+        return self.assemblies.get(str)
+      },
+    }))
+
+  const HumanSession = types.model({
+    name: 'testSession',
+    pluginManager: 'pluginManagerExists',
+    configuration: types.map(types.string),
+    assemblyManager: AssemblyManager,
+    view: LinearGenomeModel,
+  })
+
+  const model = HumanSession.create({
+    configuration: {},
+    assemblyManager: {
+      assemblies: {
+        hg38: {
+          regions: hg38DisplayedRegions,
+        },
+      },
+    },
+    view: {
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+    },
+  })
+
+  model.view.setWidth(800)
+  model.view.setDisplayedRegions(hg38DisplayedRegions.slice(0, 1))
+  model.view.navToLocString('2')
+  expect(model.view.bpPerPx).toBe(
+    hg38DisplayedRegions[1].end / model.view.width,
+  )
+  model.view.navToLocString('chr3')
+  expect(model.view.bpPerPx).toBe(
+    hg38DisplayedRegions[2].end / model.view.width,
+  )
+  model.view.navToLocString('chr3:1,000,000,000-1,100,000,000')
+
+  expect(model.view.bpPerPx).toBe(0.02)
+  expect(model.view.offsetPx).toBe(9914777550)
+  model.view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
+})
