@@ -63,7 +63,7 @@ export default observer(
               onChange={event => {
                 setMax(event.target.value)
               }}
-              placeholder="Enter max score"
+              placeholder="Enter max height for layout"
             />
             <Button
               variant="contained"
