@@ -106,7 +106,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
     const trimmed: string[] = []
     seqChunks
-      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+      .sort((a, b) => a.get('start') - b.get('start'))
       .forEach((chunk: Feature) => {
         const chunkStart = chunk.get('start')
         const chunkEnd = chunk.get('end')
