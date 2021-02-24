@@ -1,8 +1,4 @@
-import {
-  ConfigurationReference,
-  readConfObject,
-  getConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -38,6 +34,7 @@ import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
 import SetFeatureHeightDlg from './components/SetFeatureHeight'
+import SetMaxHeightDlg from './components/SetMaxHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -300,12 +297,12 @@ const stateModelFactory = (
     })
 
     .views(self => ({
-        get maxHeight() {
-          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.trackMaxHeight !== undefined
-            ? self.trackMaxHeight
-            : conf.maxHeight
-        },
+      get maxHeight() {
+        const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.trackMaxHeight !== undefined
+          ? self.trackMaxHeight
+          : conf.maxHeight
+      },
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -313,7 +310,7 @@ const stateModelFactory = (
           ...configBlob,
           height: self.featureHeight,
           noSpacing: self.noSpacing,
-            maxHeight: this.maxHeight,
+          maxHeight: this.maxHeight,
         })
       },
       get featureHeightSetting() {
@@ -398,7 +395,6 @@ const stateModelFactory = (
           }
           return filters
         },
-
 
         get renderProps() {
           const view = getContainingView(self) as LGV
