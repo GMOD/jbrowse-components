@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
@@ -105,7 +105,7 @@ const SessionLoader = types
     shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
-    plugins: [] as PluginConstructor[],
+    runtimePlugins: [] as PluginConstructor[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -160,8 +160,8 @@ const SessionLoader = types
     setSessionError(error: Error) {
       self.sessionError = error
     },
-    setPlugins(plugins: PluginConstructor[]) {
-      self.plugins = plugins
+    setRuntimePlugins(plugins: PluginConstructor[]) {
+      self.runtimePlugins = plugins
     },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
@@ -183,7 +183,7 @@ const SessionLoader = types
         const pluginLoader = new PluginLoader(config.plugins)
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
-        self.setPlugins([...corePlugins, ...runtimePlugins])
+        self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -396,7 +396,7 @@ const Renderer = observer(
     useEffect(() => {
       try {
         const {
-          plugins,
+          runtimePlugins,
           adminKey,
           configSnapshot,
           sessionSnapshot,
@@ -407,8 +407,15 @@ const Renderer = observer(
           // it is ready when a session has loaded and when there is no config
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
-          const pluginManager = new PluginManager(plugins.map(P => new P()))
-
+          const pluginManager = new PluginManager([
+            ...corePlugins.map(P => {
+              return {
+                plugin: new P(),
+                metadata: { isCore: true },
+              } as PluginLoadRecord
+            }),
+            ...runtimePlugins.map(P => new P()),
+          ])
           pluginManager.createPluggableElements()
 
           const JBrowseRootModel = JBrowseRootModelFactory(
