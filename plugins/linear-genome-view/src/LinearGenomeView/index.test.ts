@@ -962,7 +962,6 @@ test('navToLocString with human assembly', () => {
     },
     view: {
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
     },
   })
 
