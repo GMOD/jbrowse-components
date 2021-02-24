@@ -17,6 +17,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
+    textAlign: 'center',
   },
   blockMessage: {
     width: '100%',

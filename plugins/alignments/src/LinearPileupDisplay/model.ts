@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+  getConf,
+} from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -33,7 +37,7 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+import SetFeatureHeightDlg from './components/SetFeatureHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -55,6 +59,8 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
+        featureHeight: types.maybe(types.number),
+        noSpacing: types.maybe(types.boolean),
         trackMaxHeight: types.maybe(types.number),
         sortedBy: types.maybe(
           types.model({
@@ -99,6 +105,13 @@ const stateModelFactory = (
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
+      setFeatureHeight(n: number) {
+        self.featureHeight = n
+      },
+      setNoSpacing(flag: boolean) {
+        self.noSpacing = flag
+      },
+
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
@@ -164,7 +177,8 @@ const stateModelFactory = (
                 const { sortedBy, colorBy, renderProps } = self
                 const view = getContainingView(self) as LGV
 
-                // continually generate the vc pairing, set and rerender if any new values seen
+                // continually generate the vc pairing, set and rerender if any
+                // new values seen
                 if (colorBy?.tag) {
                   const uniqueTagSet = await self.getUniqueTagValues(
                     colorBy,
@@ -284,6 +298,28 @@ const stateModelFactory = (
         },
       }
     })
+
+    .views(self => ({
+        get maxHeight() {
+          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+          return self.trackMaxHeight !== undefined
+            ? self.trackMaxHeight
+            : conf.maxHeight
+        },
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          height: self.featureHeight,
+          noSpacing: self.noSpacing,
+            maxHeight: this.maxHeight,
+        })
+      },
+      get featureHeightSetting() {
+        return self.featureHeight
+      },
+    }))
     .views(self => {
       const { trackMenuItems } = self
       return {
@@ -363,24 +399,9 @@ const stateModelFactory = (
           return filters
         },
 
-        get maxHeight() {
-          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.trackMaxHeight !== undefined
-            ? self.trackMaxHeight
-            : conf.maxHeight
-        },
-
-        get rendererConfig() {
-          const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.rendererType.configSchema.create({
-            ...conf,
-            maxHeight: this.maxHeight,
-          })
-        },
 
         get renderProps() {
           const view = getContainingView(self) as LGV
-
           return {
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
@@ -393,7 +414,7 @@ const stateModelFactory = (
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
-            config: this.rendererConfig,
+            config: self.rendererConfig,
           }
         },
 
@@ -475,6 +496,12 @@ const stateModelFactory = (
                   },
                 },
                 {
+                  label: 'Adjust mismatch visibility by quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'mismatchQuality' })
+                  },
+                },
+                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })
@@ -496,6 +523,15 @@ const stateModelFactory = (
                   },
                 },
               ],
+            },
+            {
+              label: 'Set feature height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetFeatureHeightDlg,
+                  self,
+                )
+              },
             },
             {
               label: 'Filter by',

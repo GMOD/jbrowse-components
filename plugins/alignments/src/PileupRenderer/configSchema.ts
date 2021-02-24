@@ -52,6 +52,11 @@ export default ConfigurationSchema(
       defaultValue: 7,
       functionSignature: ['feature'],
     },
+    noSpacing: {
+      type: 'boolean',
+      description: 'remove spacing between features',
+      defaultValue: false,
+    },
   },
   { explicitlyTyped: true },
 )
