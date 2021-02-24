@@ -137,7 +137,7 @@ export default class PluginManager {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl: any = createJexlInstance()
-  
+
   pluginMetaData: Record<string, PluginMetaData> = {}
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
