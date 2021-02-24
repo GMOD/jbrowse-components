@@ -1,6 +1,6 @@
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import React from 'react'
 import { makeStyles } from '@material-ui/core'
@@ -39,7 +39,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
           pluginMetaData: {} as Record<string, PluginMetaData>,
         },
       }
-  const { pluginManager } = session
+  const { pluginManager } = getEnv(session)
   const { plugins } = pluginManager
   const corePlugins = plugins
     .filter(p => Boolean(pluginManager.pluginMetaData[p.name]?.isCore))
