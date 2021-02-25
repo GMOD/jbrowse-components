@@ -8,6 +8,7 @@ import {
   ThemeProvider,
 } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
+import volvoxSession from '../public/volvox-session.json'
 
 export default {
   title: 'Linear View',
@@ -51,12 +52,34 @@ const defaultSession = {
   name: 'Storybook',
   view: volvoxConfig.defaultSession.views[0],
 }
+const longReadsSession = {
+  ...defaultSession,
+  view: volvoxSession.session.views[0],
+}
 
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
     tracks,
     defaultSession,
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
+export const LinearViewWithLongReads = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession: longReadsSession,
     location: 'ctgA:1105..1221',
     onChange: patch => {
       // eslint-disable-next-line no-console
