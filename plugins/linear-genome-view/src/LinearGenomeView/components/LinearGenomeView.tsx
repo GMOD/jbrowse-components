@@ -135,9 +135,9 @@ function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
   } = model
   let displayBp
   if (Math.floor(totalBp / 1000000) > 0) {
-    displayBp = `${(totalBp / 1000000).toPrecision(3)}Mbp`
+    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
   } else if (Math.floor(totalBp / 1000) > 0) {
-    displayBp = `${(totalBp / 1000).toPrecision(3)}Kbp`
+    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
   } else {
     displayBp = `${Math.floor(totalBp)}bp`
   }
@@ -226,8 +226,9 @@ export async function renderToSvg(model: LGV) {
   const headerHeight = textHeight + 20
   const rulerHeight = 50
   await when(() => model.initialized)
-  const { width, tracks, assemblyNames } = model
+  const { width, tracks, assemblyNames, dynamicBlocks } = model
   let offset = headerHeight + rulerHeight + 20
+  const initialOffset = headerHeight + rulerHeight + 20
   const height =
     tracks.reduce((accum, track) => {
       const display = track.displays[0]
@@ -286,6 +287,19 @@ export async function renderToSvg(model: LGV) {
             }),
           )
         }
+        {dynamicBlocks.contentBlocks.map(block => {
+          return (
+            <line
+              key={block.key}
+              x1={block.offsetPx - model.offsetPx}
+              x2={block.offsetPx - model.offsetPx}
+              y1={initialOffset}
+              y2={height}
+              stroke="black"
+              strokeOpacity={0.3}
+            />
+          )
+        })}
       </g>
     </svg>,
   )

@@ -119,7 +119,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillRect(leftPx, 0, w, 4)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
         ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, height - 4, w, height)
+        ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
       }
       if (feature.get('highlighted')) {
         ctx.fillStyle = highlightColor
