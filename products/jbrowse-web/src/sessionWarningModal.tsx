@@ -8,7 +8,8 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import WarningIcon from '@material-ui/icons/Warning'
 import shortid from 'shortid'
-import { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
+import { Instance } from 'mobx-state-tree'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { SessionLoader } from './Loader'
 
 const useStyles = makeStyles(theme => ({
@@ -30,7 +31,7 @@ export default function SessionWarningModal({
   sessionTriaged,
 }: {
   loader: Instance<SessionLoader>
-  sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
+  sessionTriaged: { snap: { plugins?: PluginDefinition[] }; origin: string }
 }) {
   const classes = useStyles()
 
@@ -65,16 +66,19 @@ export default function SessionWarningModal({
             color="primary"
             variant="contained"
             style={{ marginRight: 5 }}
-            onClick={() => {
-              sessionTriaged.origin === 'share'
-                ? loader.setSessionSnapshot({
-                    ...session,
-                    id: shortid(),
-                  })
-                : loader.setConfigSnapshot({
-                    ...session,
-                    id: shortid(),
-                  })
+            onClick={async () => {
+              if (sessionTriaged.origin === 'config') {
+                await loader.fetchPlugins(session)
+                loader.setConfigSnapshot({
+                  ...session,
+                  id: shortid(),
+                })
+              } else {
+                loader.setSessionSnapshot({
+                  ...session,
+                  id: shortid(),
+                })
+              }
               handleClose()
             }}
           >
@@ -83,6 +87,13 @@ export default function SessionWarningModal({
           <Button
             variant="contained"
             onClick={() => {
+              // skips fetch plugins so externals are never loaded
+              /// need to figure out flow for when load external like msa -> open an msa view -> refresh -> reject loading. currently crashes
+              if (sessionTriaged.origin === 'config')
+                loader.setConfigSnapshot({
+                  ...session, // ask if this should still be session or something else
+                  id: shortid(),
+                })
               loader.setBlankSession(true)
               handleClose()
             }}
