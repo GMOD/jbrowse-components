@@ -12,9 +12,12 @@ export default class extends WiggleBaseRenderer {
       bpPerPx,
       scaleOpts,
       height: unadjustedHeight,
+      ticks: { values },
+      displayCrossHatches,
       config,
     } = props
     const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
     const offset = YSCALEBAR_LABEL_OFFSET
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
@@ -73,6 +76,17 @@ export default class extends WiggleBaseRenderer {
         ctx.fillStyle = highlightColor
         ctx.fillRect(leftPx, 0, w, height)
       }
+    }
+
+    if (displayCrossHatches) {
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+      values.forEach(tick => {
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(toY(tick)))
+        ctx.lineTo(width, Math.round(toY(tick)))
+        ctx.stroke()
+      })
     }
   }
 }

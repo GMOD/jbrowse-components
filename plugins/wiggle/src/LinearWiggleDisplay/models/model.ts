@@ -27,7 +27,8 @@ import React from 'react'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getNiceDomain } from '../../util'
+import { axisPropsFromTickScale } from 'react-d3-axis'
+import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
@@ -65,8 +66,10 @@ const stateModelFactory = (
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
+        rendererTypeNameState: types.maybe(types.string),
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
+        displayCrossHatches: types.maybe(types.boolean),
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -130,8 +133,16 @@ const stateModelFactory = (
         self.constraints.max = val
       },
 
+      setRendererType(val: string) {
+        self.rendererTypeNameState = val
+      },
+
       setMinScore(val?: number) {
         self.constraints.min = val
+      },
+
+      toggleCrossHatches() {
+        self.displayCrossHatches = !self.displayCrossHatches
       },
     }))
     .views(self => ({
@@ -144,7 +155,8 @@ const stateModelFactory = (
       },
 
       get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
+        const viewName =
+          self.rendererTypeNameState || getConf(self, 'defaultRendering')
         const rendererType = rendererTypes.get(viewName)
         if (!rendererType) {
           throw new Error(`unknown alignments view name ${viewName}`)
@@ -184,6 +196,7 @@ const stateModelFactory = (
           ...configBlob,
           filled: self.fill,
           scaleType: this.scaleType,
+          displayCrossHatches: self.displayCrossHatches,
         })
       },
     }))
@@ -245,11 +258,33 @@ const stateModelFactory = (
         get autoscaleType() {
           return self.autoscale || getConf(self, 'autoscale')
         },
+
+        get displayCrossHatchesSetting() {
+          return (
+            self.displayCrossHatches ||
+            readConfObject(self.rendererConfig, 'displayCrossHatches')
+          )
+        },
       }
     })
     .views(self => {
       const { trackMenuItems } = self
       return {
+        get ticks() {
+          const { scaleType, domain, height } = self
+          const range = [
+            height - YSCALEBAR_LABEL_OFFSET,
+            YSCALEBAR_LABEL_OFFSET,
+          ]
+          const scale = getScale({
+            scaleType,
+            domain,
+            range,
+            inverted: getConf(self, 'inverted'),
+          })
+          const ticks = height < 50 ? 2 : 4
+          return axisPropsFromTickScale(scale, ticks)
+        },
         get renderProps() {
           return {
             ...self.composedRenderProps,
@@ -260,6 +295,8 @@ const stateModelFactory = (
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
             height: self.height,
+            ticks: this.ticks,
+            displayCrossHatches: self.displayCrossHatches,
           }
         },
 
@@ -320,6 +357,21 @@ const stateModelFactory = (
               onClick: () => {
                 self.toggleLogScale()
               },
+            },
+            {
+              type: 'checkbox',
+              label: 'Draw cross hatches',
+              checked: self.displayCrossHatchesSetting,
+              onClick: () => {
+                self.toggleCrossHatches()
+              },
+            },
+            {
+              label: 'Renderer type',
+              subMenu: [...rendererTypes.keys()].map(key => ({
+                label: key,
+                onClick: () => self.setRendererType(key),
+              })),
             },
             {
               label: 'Autoscale type',

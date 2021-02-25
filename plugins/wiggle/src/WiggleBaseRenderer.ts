@@ -16,15 +16,14 @@ export interface WiggleBaseRendererProps {
   regions: Region[]
   bpPerPx: number
   height: number
-  width: number
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  displayModel: unknown
+  displayCrossHatches: boolean
+  ticks: { values: number[] }
 }
 
 export default abstract class extends ServerSideRendererType {
