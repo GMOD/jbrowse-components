@@ -5,7 +5,7 @@ tags: ['jbrowse 2', 'JBrowseR']
 ---
 
 We are excited to announce a new JBrowse 2 product:
-[JBrowseR](https://elliothershberg.github.io/JBrowseR/).
+[JBrowseR](https://gmod.github.io/JBrowseR/).
 JBrowseR builds on top of the
 [React component](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 that we recently released.
@@ -28,8 +28,8 @@ With this functionality, you can deploy a first-class genome browser with your d
 
 For more information on getting started, check out the following resources:
 
-- [Package reference](https://elliothershberg.github.io/JBrowseR/reference/index.html)
-- [Introduction](https://elliothershberg.github.io/JBrowseR/articles/JBrowseR.html)
-- [Custom browser tutorial](https://elliothershberg.github.io/JBrowseR/articles/custom-browser-tutorial.html)
-- [JSON configuration tutorial](https://elliothershberg.github.io/JBrowseR/articles/json-tutorial.html)
-- [Creating URLS](https://elliothershberg.github.io/JBrowseR/articles/creating-urls.html)
+- [Package reference](https://gmod.github.io/JBrowseR/reference/index.html)
+- [Introduction](https://gmod.github.io/JBrowseR/articles/JBrowseR.html)
+- [Custom browser tutorial](https://gmod.github.io/JBrowseR/articles/custom-browser-tutorial.html)
+- [JSON configuration tutorial](https://gmod.github.io/JBrowseR/articles/json-tutorial.html)
+- [Creating URLS](https://gmod.github.io/JBrowseR/articles/creating-urls.html)
