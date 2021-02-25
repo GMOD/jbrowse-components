@@ -114,12 +114,14 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(_sessionId: string, _functionName: string, _args: unknown) {
-    // TODO: add logic here so different sessions can have
-    // different RPC backends configured
-
-    // otherwise, if there is no specific backend for that session, use the default one
-    const driverName = readConfObject(this.mainConfiguration, 'defaultDriver')
+  getDriverForCall(
+    _sessionId: string,
+    _functionName: string,
+    args: { rpcDriverName?: string },
+  ) {
+    const driverName =
+      args.rpcDriverName ||
+      readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(driverName)
   }
