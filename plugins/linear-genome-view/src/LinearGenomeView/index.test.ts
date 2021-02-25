@@ -945,7 +945,7 @@ test('navToLocString with human assembly', () => {
 
   const HumanSession = types.model({
     name: 'testSession',
-    pluginManager: 'pluginManagerExists',
+    rpcManager: 'rpcManagerExists',
     configuration: types.map(types.string),
     assemblyManager: AssemblyManager,
     view: LinearGenomeModel,
