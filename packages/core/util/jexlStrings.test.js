@@ -7,10 +7,6 @@ describe('function string parsing', () => {
     const str = 'jexl:a+b+c+5'
     expect(str.startsWith('jexl:')).toBeTruthy()
   })
-  // it('will fail with no jexl tag', () => {
-  //   const str = 'a+b+c+5'
-  //   expect(stringToJexlExpression(str)).toThrow()
-  // })
   it('can create a jexl expression', () => {
     const str = 'jexl:a+b+c+5'
     const expr = stringToJexlExpression(str)

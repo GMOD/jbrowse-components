@@ -214,7 +214,7 @@ export default function ConfigSlot(
           if (value && value.toJSON) {
             return value.toJSON()
           }
-          return `${value}`
+          return `"${value}"`
         }
         return json(self.value)
       },

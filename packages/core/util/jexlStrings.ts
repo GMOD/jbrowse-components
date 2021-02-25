@@ -25,8 +25,8 @@ export function stringToJexlExpression(
     }
     const code = str.split('jexl:')[1]
     const compiled = jexl
-      ? jexl.createExpression(`${code}`)
-      : createJexlInstance().createExpression(`${code}`)
+      ? jexl.compile(`${code}`)
+      : createJexlInstance().compile(`${code}`)
     compilationCache[cacheKey] = compiled
   }
 
