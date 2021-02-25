@@ -47,8 +47,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
           : displayMode
       },
       get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', this.rendererTypeName]) || {}
+        const configBlob = getConf(self, ['renderer']) || {}
 
         return self.rendererType.configSchema.create({
           ...configBlob,
