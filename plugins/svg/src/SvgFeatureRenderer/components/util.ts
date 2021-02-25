@@ -97,7 +97,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     x,
     displayMode === 'collapse' ? 0 : top,
     width,
-    displayMode === 'compact' ? height / 3 : height,
+    displayMode === 'compact' ? height / 2 : height,
     { GlyphComponent },
   )
   return subLayout

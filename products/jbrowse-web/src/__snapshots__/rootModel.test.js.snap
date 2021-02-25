@@ -147,25 +147,11 @@ Object {
   },
   "displays": Array [
     Object {
-      "displayId": "trackId0-LinearBasicDisplay",
+      "displayId": "trackId0-LinearFeatureDisplay",
       "renderer": Object {
         "type": "SvgFeatureRenderer",
       },
-      "type": "LinearBasicDisplay",
-    },
-    Object {
-      "displayId": "trackId0-LinearFilteringDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
-      "type": "LinearFilteringDisplay",
-    },
-    Object {
-      "displayId": "trackId0-LinearLollipopDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
-      "type": "LinearLollipopDisplay",
+      "type": "LinearFeatureDisplay",
     },
   ],
   "trackId": "trackId0",

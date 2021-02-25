@@ -18,7 +18,7 @@ import hg38DisplayedRegions from './hg38DisplayedRegions.json'
 const stubManager = new PluginManager()
 stubManager.addTrackType(() => {
   const configSchema = ConfigurationSchema(
-    'FeatureTrack',
+    'BasicTrack',
     {},
     {
       baseConfiguration: createBaseTrackConfig(stubManager),
@@ -26,9 +26,9 @@ stubManager.addTrackType(() => {
     },
   )
   return new TrackType({
-    name: 'FeatureTrack',
+    name: 'BasicTrack',
     configSchema,
-    stateModel: createBaseTrackModel(stubManager, 'FeatureTrack', configSchema),
+    stateModel: createBaseTrackModel(stubManager, 'BasicTrack', configSchema),
   })
 })
 stubManager.addDisplayType(() => {
@@ -41,7 +41,7 @@ stubManager.addDisplayType(() => {
     name: 'LinearBasicDisplay',
     configSchema,
     stateModel: LinearBasicDisplayStateModelFactory(configSchema),
-    trackType: 'FeatureTrack',
+    trackType: 'BasicTrack',
     viewType: 'LinearGenomeView',
     ReactComponent: BaseLinearDisplayComponent,
   })
@@ -107,7 +107,7 @@ test('can instantiate a mostly empty model and read a default configuration valu
   }).setView(
     LinearGenomeModel.create({
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
 
@@ -123,7 +123,7 @@ test('can instantiate a model that lets you navigate', () => {
     LinearGenomeModel.create({
       id: 'test1',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(800)
@@ -169,7 +169,7 @@ test('can instantiate a model that has multiple displayed regions', () => {
     LinearGenomeModel.create({
       id: 'test2',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(800)
@@ -196,7 +196,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     LinearGenomeModel.create({
       id: 'test3',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -516,7 +516,7 @@ test('can instantiate a model that >2 regions', () => {
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -571,7 +571,7 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
     LinearGenomeModel.create({
       id: 'test5',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -628,7 +628,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed in)'
     LinearGenomeModel.create({
       id: 'test6',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   const width = 800
@@ -652,7 +652,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
     LinearGenomeModel.create({
       id: 'test6',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   const width = 800
@@ -686,7 +686,7 @@ test('can showAllRegionsInAssembly', async () => {
     LinearGenomeModel.create({
       id: 'test4',
       type: 'LinearGenomeView',
-      tracks: [{ name: 'foo track', type: 'FeatureTrack' }],
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
     }),
   )
   model.setWidth(width)
@@ -918,4 +918,66 @@ describe('Get Sequence for selected displayed regions', () => {
     expect(hfRegion[0].start).toEqual(49997)
     expect(hfRegion[0].end).toEqual(50000)
   })
+})
+
+test('navToLocString with human assembly', () => {
+  const HumanAssembly = types
+    .model({
+      regions: types.array(Region),
+    })
+    .views(() => ({
+      getCanonicalRefName(refName: string) {
+        return refName.replace('chr', '')
+      },
+    }))
+  const AssemblyManager = types
+    .model({
+      assemblies: types.map(HumanAssembly),
+    })
+    .actions(self => ({
+      isValidRefName(str: string) {
+        return !str.includes(':')
+      },
+      get(str: string) {
+        return self.assemblies.get(str)
+      },
+    }))
+
+  const HumanSession = types.model({
+    name: 'testSession',
+    pluginManager: 'pluginManagerExists',
+    configuration: types.map(types.string),
+    assemblyManager: AssemblyManager,
+    view: LinearGenomeModel,
+  })
+
+  const model = HumanSession.create({
+    configuration: {},
+    assemblyManager: {
+      assemblies: {
+        hg38: {
+          regions: hg38DisplayedRegions,
+        },
+      },
+    },
+    view: {
+      type: 'LinearGenomeView',
+    },
+  })
+
+  model.view.setWidth(800)
+  model.view.setDisplayedRegions(hg38DisplayedRegions.slice(0, 1))
+  model.view.navToLocString('2')
+  expect(model.view.bpPerPx).toBe(
+    hg38DisplayedRegions[1].end / model.view.width,
+  )
+  model.view.navToLocString('chr3')
+  expect(model.view.bpPerPx).toBe(
+    hg38DisplayedRegions[2].end / model.view.width,
+  )
+  model.view.navToLocString('chr3:1,000,000,000-1,100,000,000')
+
+  expect(model.view.bpPerPx).toBe(0.02)
+  expect(model.view.offsetPx).toBe(9914777550)
+  model.view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })

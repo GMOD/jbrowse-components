@@ -34,7 +34,7 @@ export default class extends Plugin {
         name: 'LinearLollipopDisplay',
         configSchema,
         stateModel: LinearLollipopDisplayStateModelFactory(configSchema),
-        trackType: 'FeatureTrack',
+        trackType: 'LollipopTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
       })
