@@ -43,10 +43,7 @@ export default function createViewState(opts: ViewStateOptions) {
   }
   const stateSnapshot = {
     config: {
-      configuration: {
-        ...configuration,
-        rpc: { defaultDriver: 'MainThreadRpcDriver' },
-      },
+      configuration,
       assembly,
       tracks,
       defaultSession,

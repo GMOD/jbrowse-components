@@ -2,6 +2,7 @@ import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { objectFromEntries } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 interface WorkerHandle {
   status?: string
@@ -10,6 +11,10 @@ interface WorkerHandle {
   off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
   call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
+}
+
+export interface RpcDriverConstructorArgs {
+  config: AnyConfigurationModel
 }
 
 function isClonable(thing: unknown): boolean {
@@ -95,6 +100,12 @@ export default abstract class BaseRpcDriver {
   maxPingTime = 30000
 
   workerCheckFrequency = 5000
+
+  config: AnyConfigurationModel
+
+  constructor(args: RpcDriverConstructorArgs) {
+    this.config = args.config
+  }
 
   // filter the given object and just remove any non-clonable things from it
   filterArgs<THING_TYPE>(

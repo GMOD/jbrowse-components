@@ -1,6 +1,6 @@
 import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 import { iterMap, objectFromEntries } from '../util'
-import BaseRpcDriver from './BaseRpcDriver'
+import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,8 +74,8 @@ class DummyHandle {
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   makeWorker: () => DummyHandle
 
-  constructor(_args: {}) {
-    super()
+  constructor(args: RpcDriverConstructorArgs) {
+    super(args)
     this.makeWorker = (): DummyHandle => new DummyHandle()
   }
 

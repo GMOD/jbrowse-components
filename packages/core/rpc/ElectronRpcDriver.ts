@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import shortid from 'shortid'
-import BaseRpcDriver from './BaseRpcDriver'
+import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
 import { PluginDefinition } from '../PluginLoader'
 
@@ -14,13 +14,16 @@ declare global {
 }
 const { electronBetterIpc = {}, electron } = window
 
+interface ElectronRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
+  workerCreationChannel: string
+}
+
 async function wait(ms: number) {
   return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
 }
 
-type BackendConfig = { workerCreationChannel: string }
 type WorkerBootConfig = { plugins: PluginDefinition[] }
 
 class WindowWorkerHandle {
@@ -98,17 +101,18 @@ class WindowWorkerHandle {
 }
 
 export default class ElectronRpcDriver extends BaseRpcDriver {
-  config: WorkerBootConfig
+  bootConfig: WorkerBootConfig
 
   channel: string
 
   constructor(
-    { workerCreationChannel }: BackendConfig,
-    config: WorkerBootConfig,
+    args: ElectronRpcDriverConstructorArgs,
+    bootConfig: WorkerBootConfig,
   ) {
-    super()
+    super(args)
+    const { workerCreationChannel } = args
 
-    this.config = config
+    this.bootConfig = bootConfig
     this.channel = workerCreationChannel
   }
 
@@ -127,7 +131,7 @@ export default class ElectronRpcDriver extends BaseRpcDriver {
     const electronRemote = electron.remote
     const workerId = ipcRenderer.sendSync(this.channel)
     const window = electronRemote.BrowserWindow.fromId(workerId)
-    const worker = new WindowWorkerHandle(ipcRenderer, window, this.config)
+    const worker = new WindowWorkerHandle(ipcRenderer, window, this.bootConfig)
     return worker
   }
 

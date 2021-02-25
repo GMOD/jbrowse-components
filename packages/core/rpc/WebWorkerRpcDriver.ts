@@ -1,11 +1,15 @@
 import Rpc from '@librpc/web'
 import shortid from 'shortid'
-import BaseRpcDriver from './BaseRpcDriver'
+import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
 interface WebpackWorker {
   new (): Worker
   prototype: Worker
+}
+
+interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
+  WorkerClass: WebpackWorker
 }
 
 class WebWorkerHandle extends Rpc.Client {
@@ -39,11 +43,11 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   workerBootConfiguration: { plugins: PluginDefinition[] }
 
   constructor(
-    { WorkerClass }: { WorkerClass: WebpackWorker },
+    args: WebWorkerRpcDriverConstructorArgs,
     workerBootConfiguration: { plugins: PluginDefinition[] },
   ) {
-    super()
-    this.WorkerClass = WorkerClass
+    super(args)
+    this.WorkerClass = args.WorkerClass
     this.workerBootConfiguration = workerBootConfiguration
   }
 

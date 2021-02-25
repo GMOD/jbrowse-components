@@ -10,9 +10,18 @@ import { PluginDefinition } from '../PluginLoader'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
-  WebWorkerRpcDriver?: ConstructorParameters<typeof WebWorkerRpcDriver>[0]
-  MainThreadRpcDriver?: ConstructorParameters<typeof MainThreadRpcDriver>[0]
-  ElectronRpcDriver?: ConstructorParameters<typeof ElectronRpcDriver>[0]
+  WebWorkerRpcDriver?: Omit<
+    ConstructorParameters<typeof WebWorkerRpcDriver>[0],
+    'config'
+  >
+  MainThreadRpcDriver?: Omit<
+    ConstructorParameters<typeof MainThreadRpcDriver>[0],
+    'config'
+  >
+  ElectronRpcDriver?: Omit<
+    ConstructorParameters<typeof ElectronRpcDriver>[0],
+    'config'
+  >
 }
 const DriverClasses = {
   WebWorkerRpcDriver,
@@ -49,23 +58,59 @@ export default class RpcManager {
     this.driverObjects = new Map()
   }
 
-  getDriver(backendName: keyof typeof DriverClasses): DriverClass {
-    const driver = this.driverObjects.get(backendName)
+  getDriver(driverName: string): DriverClass {
+    const driverConfig = this.mainConfiguration.drivers.get(driverName)
+    if (!driverConfig) {
+      throw new Error(`could not find driver config for "${driverName}"`)
+    }
+    const driver = this.driverObjects.get(driverName)
     if (driver) return driver
 
-    const backendConfiguration = this.backendConfigurations[backendName]
-    const DriverClassImpl = DriverClasses[backendName]
-
-    if (!DriverClassImpl) {
+    // a bit verbose, but it keeps TypeScript happy
+    let newDriver
+    const backendName = driverConfig.type as keyof typeof DriverClasses
+    if (backendName === 'MainThreadRpcDriver') {
+      const backendConfiguration = this.backendConfigurations
+        .MainThreadRpcDriver
+      if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
+      }
+      const DriverClass = DriverClasses[backendName]
+      newDriver = new DriverClass({
+        ...backendConfiguration,
+        config: driverConfig,
+      })
+    } else if (backendName === 'ElectronRpcDriver') {
+      const backendConfiguration = this.backendConfigurations.ElectronRpcDriver
+      if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
+      }
+      const DriverClass = DriverClasses[backendName]
+      newDriver = new DriverClass(
+        { ...backendConfiguration, config: driverConfig },
+        { plugins: this.runtimePluginDefinitions },
+      )
+    } else if (backendName === 'WebWorkerRpcDriver') {
+      const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
+      if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
+      }
+      const DriverClass = DriverClasses[backendName]
+      newDriver = new DriverClass(
+        { ...backendConfiguration, config: driverConfig },
+        { plugins: this.runtimePluginDefinitions },
+      )
+    } else {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
-    } else if (!backendConfiguration) {
-      throw new Error(`requested RPC driver "${backendName}" is missing config`)
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newDriver = new DriverClassImpl(backendConfiguration as any, {
-      plugins: this.runtimePluginDefinitions,
-    })
-    this.driverObjects.set(backendName, newDriver)
+
+    this.driverObjects.set(driverName, newDriver)
     return newDriver
   }
 
@@ -74,9 +119,9 @@ export default class RpcManager {
     // different RPC backends configured
 
     // otherwise, if there is no specific backend for that session, use the default one
-    const backendName = readConfObject(this.mainConfiguration, 'defaultDriver')
+    const driverName = readConfObject(this.mainConfiguration, 'defaultDriver')
 
-    return this.getDriver(backendName)
+    return this.getDriver(driverName)
   }
 
   async call(sessionId: string, functionName: string, args: {}, opts = {}) {

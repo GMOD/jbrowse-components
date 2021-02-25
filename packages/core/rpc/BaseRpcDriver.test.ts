@@ -1,6 +1,7 @@
 import PluginManager from '../PluginManager'
 import BaseRpcDriver, { watchWorker } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
+import { ConfigurationSchema } from '../configuration'
 
 function timeout(ms: number) {
   return new Promise(resolve => {
@@ -107,7 +108,8 @@ export class MockRendererShort extends RpcMethodType {
 test('test RPC driver operation timeout and worker replace', async () => {
   console.warn = jest.fn()
   expect.assertions(1)
-  const driver = new MockRpcDriver()
+  const config = ConfigurationSchema('Mock', {}).create()
+  const driver = new MockRpcDriver({ config })
   const pluginManager = new PluginManager()
 
   pluginManager.addRpcMethod(() => new MockRendererTimeout(pluginManager))
