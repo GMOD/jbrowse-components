@@ -8,7 +8,7 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import WarningIcon from '@material-ui/icons/Warning'
 import shortid from 'shortid'
-import { Instance } from 'mobx-state-tree'
+import { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { SessionLoader } from './Loader'
 
@@ -31,7 +31,7 @@ export default function SessionWarningModal({
   sessionTriaged,
 }: {
   loader: Instance<SessionLoader>
-  sessionTriaged: { snap: { plugins?: PluginDefinition[] }; origin: string }
+  sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
 }) {
   const classes = useStyles()
 
@@ -68,7 +68,9 @@ export default function SessionWarningModal({
             style={{ marginRight: 5 }}
             onClick={async () => {
               if (sessionTriaged.origin === 'config') {
-                await loader.fetchPlugins(session)
+                await loader.fetchPlugins(
+                  session as { plugins: PluginDefinition[] },
+                )
                 loader.setConfigSnapshot({
                   ...session,
                   id: shortid(),
