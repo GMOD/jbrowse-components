@@ -176,7 +176,8 @@ export function mdToMismatches(
         }
         const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
         curr.base = seq ? seq.substr(s, 1) : 'X'
-        curr.qual = qual?.slice(s, s + 1)[0]
+        const qualScore = qual?.slice(s, s + 1)[0]
+        if (qualScore) curr.qual = qualScore
         curr.altbase = token
         nextRecord()
       }

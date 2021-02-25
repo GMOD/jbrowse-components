@@ -13,6 +13,7 @@ import {
   Instance,
   types,
 } from 'mobx-state-tree'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
 
 const minDisplayHeight = 20
@@ -31,6 +32,7 @@ const stateModelFactory = (
         SNPCoverageDisplay: types.maybe(
           pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
         ),
+        snpCovHeight: 45,
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
         height: 250,
@@ -51,12 +53,16 @@ const stateModelFactory = (
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
       },
+      setSNPCoverageHeight(n: number) {
+        self.snpCovHeight = n
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
       return {
         get pileupDisplayConfig() {
           const conf = getConf(self)
+          const track = getContainingTrack(self)
           const { SNPCoverageRenderer, ...rest } = conf.renderers
           return {
             ...conf,
@@ -64,7 +70,7 @@ const stateModelFactory = (
               ...rest,
             },
             type: 'LinearPileupDisplay',
-            name: `${getConf(getParent(self, 2), 'name')} pileup`,
+            name: `${getConf(track, 'name')} pileup`,
             displayId: `${self.configuration.displayId}_pileup_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
           }
         },
@@ -115,12 +121,36 @@ const stateModelFactory = (
       }
     })
     .actions(self => ({
+      setSNPCoverageDisplay(displayConfig: AnyConfigurationModel) {
+        self.SNPCoverageDisplay = {
+          type: 'LinearSNPCoverageDisplay',
+          configuration: displayConfig,
+          height: self.snpCovHeight,
+        }
+      },
+      setPileupDisplay(displayConfig: AnyConfigurationModel) {
+        self.PileupDisplay = {
+          type: 'LinearPileupDisplay',
+          configuration: displayConfig,
+        }
+      },
+      setHeight(displayHeight: number) {
+        if (displayHeight > minDisplayHeight) self.height = displayHeight
+        else self.height = minDisplayHeight
+        return self.height
+      },
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = this.setHeight(self.height + distance)
+        return newHeight - oldHeight
+      },
+    }))
+    .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
           autorun(() => {
             if (!self.SNPCoverageDisplay) {
-              // @ts-ignore
               self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
             } else if (
               !deepEqual(
@@ -128,11 +158,11 @@ const stateModelFactory = (
                 getSnapshot(self.SNPCoverageDisplay.configuration),
               )
             ) {
+              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
               self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
             }
 
             if (!self.PileupDisplay) {
-              // @ts-ignore
               self.setPileupDisplay(self.pileupDisplayConfig)
             } else if (
               !deepEqual(
@@ -158,29 +188,12 @@ const stateModelFactory = (
             }
           }),
         )
-      },
-      setSNPCoverageDisplay(displayConfig: AnyConfigurationModel) {
-        self.SNPCoverageDisplay = {
-          type: 'LinearSNPCoverageDisplay',
-          configuration: displayConfig,
-          height: 45,
-        }
-      },
-      setPileupDisplay(displayConfig: AnyConfigurationModel) {
-        self.PileupDisplay = {
-          type: 'LinearPileupDisplay',
-          configuration: displayConfig,
-        }
-      },
-      setHeight(displayHeight: number) {
-        if (displayHeight > minDisplayHeight) self.height = displayHeight
-        else self.height = minDisplayHeight
-        return self.height
-      },
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
+        addDisposer(
+          self,
+          autorun(() => {
+            self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+          }),
+        )
       },
       async renderSvg() {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height

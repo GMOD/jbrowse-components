@@ -34,6 +34,11 @@ import {
   renderToSvg,
 } from './LinearGenomeView'
 
+import {
+  configSchema as featuresTrackConfigSchema,
+  modelFactory as featuresTrackModelFactory,
+} from './LinearFeatureDisplay'
+
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
 
@@ -64,12 +69,44 @@ export default class LinearGenomeViewPlugin extends Plugin {
       })
     })
 
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'BasicTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'BasicTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'BasicTrack',
+          configSchema,
+        ),
+      })
+    })
+
     pluginManager.addDisplayType(() => {
       const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearBasicDisplay',
         configSchema,
         stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        trackType: 'BasicTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = featuresTrackConfigSchema(pluginManager)
+      return new DisplayType({
+        name: 'LinearFeatureDisplay',
+        configSchema,
+        stateModel: featuresTrackModelFactory(configSchema),
         trackType: 'FeatureTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
@@ -116,5 +153,7 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   renderToSvg,
 }
+
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
+
 export type { BaseLinearDisplayModel } from './BaseLinearDisplay'

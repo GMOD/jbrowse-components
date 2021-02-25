@@ -33,6 +33,8 @@ import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
 import FilterByTagDlg from './components/FilterByTag'
 import SortByTagDlg from './components/SortByTag'
+import SetFeatureHeightDlg from './components/SetFeatureHeight'
+import SetMaxHeightDlg from './components/SetMaxHeight'
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -54,6 +56,9 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
+        featureHeight: types.maybe(types.number),
+        noSpacing: types.maybe(types.boolean),
+        trackMaxHeight: types.maybe(types.number),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -93,6 +98,15 @@ const stateModelFactory = (
       },
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
+      },
+      setMaxHeight(n: number) {
+        self.trackMaxHeight = n
+      },
+      setFeatureHeight(n: number) {
+        self.featureHeight = n
+      },
+      setNoSpacing(flag: boolean) {
+        self.noSpacing = flag
       },
 
       setColorScheme(colorScheme: { type: string; tag?: string }) {
@@ -281,6 +295,28 @@ const stateModelFactory = (
         },
       }
     })
+
+    .views(self => ({
+      get maxHeight() {
+        const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.trackMaxHeight !== undefined
+          ? self.trackMaxHeight
+          : conf.maxHeight
+      },
+      get rendererConfig() {
+        const configBlob =
+          getConf(self, ['renderers', self.rendererTypeName]) || {}
+        return self.rendererType.configSchema.create({
+          ...configBlob,
+          height: self.featureHeight,
+          noSpacing: self.noSpacing,
+          maxHeight: this.maxHeight,
+        })
+      },
+      get featureHeightSetting() {
+        return self.featureHeight
+      },
+    }))
     .views(self => {
       const { trackMenuItems } = self
       return {
@@ -360,12 +396,6 @@ const stateModelFactory = (
           return filters
         },
 
-        get rendererConfig() {
-          const configBlob =
-            getConf(self, ['renderers', self.rendererTypeName]) || {}
-          return self.rendererType.configSchema.create(configBlob)
-        },
-
         get renderProps() {
           const view = getContainingView(self) as LGV
           return {
@@ -380,7 +410,7 @@ const stateModelFactory = (
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
-            config: this.rendererConfig,
+            config: self.rendererConfig,
           }
         },
 
@@ -462,6 +492,12 @@ const stateModelFactory = (
                   },
                 },
                 {
+                  label: 'Adjust mismatch visibility by quality',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'mismatchQuality' })
+                  },
+                },
+                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })
@@ -485,11 +521,29 @@ const stateModelFactory = (
               ],
             },
             {
+              label: 'Set feature height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetFeatureHeightDlg,
+                  self,
+                )
+              },
+            },
+            {
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(
                   FilterByTagDlg,
+                  self,
+                )
+              },
+            },
+            {
+              label: 'Set max height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetMaxHeightDlg,
                   self,
                 )
               },

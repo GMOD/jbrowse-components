@@ -48,7 +48,7 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       assemblyNames: ['volMyt1'],
       name: 'Foo Track',
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -59,7 +59,7 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
@@ -90,14 +90,14 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       name: 'Foo Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -116,7 +116,7 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
@@ -128,7 +128,7 @@ describe('<LinearGenomeView />', () => {
         },
         {
           id: 'bar',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig2',
           displays: [

@@ -4,12 +4,12 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prestart": "npm run make",
+    "prestart": "npm run make combined.md",
     "start": "docusaurus start",
     "prebuild": "npm run make combined.md",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "predeploy": "npm run build && npm run make jbrowse2.pdf",
+    "predeploy": "npm run build && npm run make",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
     "make": "make -C docs"

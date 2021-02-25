@@ -247,7 +247,6 @@ export default class PileupRenderer extends BoxRendererType {
     const scores = (qual || '').split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
-    const regionWidth = (feature.get('end') - feature.get('start')) / bpPerPx
     const [leftPx] = bpSpanPx(
       feature.get('start'),
       feature.get('end'),
@@ -264,13 +263,9 @@ export default class PileupRenderer extends BoxRendererType {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          if (
-            leftPx + (j + m) * width >= 0 &&
-            leftPx + (j + m) * width < regionWidth
-          ) {
-            ctx.fillStyle = `hsl(${scores[k + m] * 1.5},55%,50%)`
-            ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
-          }
+          const score = scores[k + m]
+          ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
+          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
         }
         j += len
       }
@@ -413,6 +408,7 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: PileupRenderProps,
+    mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
@@ -448,10 +444,15 @@ export default class PileupRenderer extends BoxRendererType {
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
 
-        ctx.fillStyle = Color(baseColor)
-          .alpha((mismatch.qual || 1) / 90)
-          .hsl()
-          .string()
+        let color = baseColor
+        if (mismatchQuality && mismatch.qual !== undefined) {
+          color = Color(baseColor)
+            .alpha(mismatch.qual / 90)
+            .hsl()
+            .string()
+        }
+        ctx.fillStyle = color
+
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
@@ -527,8 +528,10 @@ export default class PileupRenderer extends BoxRendererType {
           rect.width + 2 * padding,
           heightPx,
         )
-        ctx.fillStyle = 'white'
-        ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        if (heightPx > charHeight) {
+          ctx.fillStyle = 'white'
+          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        }
       }
     }
   }
@@ -608,7 +611,13 @@ export default class PileupRenderer extends BoxRendererType {
     layoutRecords: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     props: PileupRenderProps,
   ) {
-    const { layout, config, showSoftClip, theme: configTheme } = props
+    const {
+      layout,
+      config,
+      showSoftClip,
+      colorBy = {} as { type?: string },
+      theme: configTheme,
+    } = props
     const theme = createJBrowseTheme(configTheme)
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -634,7 +643,14 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', [feature])
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(ctx, feat, props, colorForBase, theme)
+      this.drawMismatches(
+        ctx,
+        feat,
+        props,
+        colorBy.type === 'mismatchQuality',
+        colorForBase,
+        theme,
+      )
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }

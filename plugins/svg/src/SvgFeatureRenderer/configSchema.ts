@@ -30,7 +30,10 @@ export default ConfigurationSchema(
       defaultValue: 10,
       functionSignature: ['feature'],
     },
-
+    showLabels: {
+      type: 'boolean',
+      defaultValue: true,
+    },
     labels: ConfigurationSchema('SvgFeatureLabels', {
       name: {
         type: 'string',
