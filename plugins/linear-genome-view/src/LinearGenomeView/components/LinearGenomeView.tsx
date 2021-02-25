@@ -127,16 +127,12 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
 
 export default LinearGenomeView
 
-function ScaleBar({
-  model,
-  width,
-  fontSize,
-}: {
-  model: LGV
-  width: number
-  fontSize: number
-}) {
-  const { totalBp } = model
+function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
+  const {
+    totalBp,
+    offsetPx,
+    dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx },
+  } = model
   let displayBp
   if (Math.floor(totalBp / 1000000) > 0) {
     displayBp = `${(totalBp / 1000000).toPrecision(3)}Mbp`
@@ -145,14 +141,15 @@ function ScaleBar({
   } else {
     displayBp = `${Math.floor(totalBp)}bp`
   }
+  const x0 = Math.max(-offsetPx, 0)
+  const x1 = x0 + totalWidthPx
   return (
     <>
-      {' '}
-      <line x1={0} y1={10} y2={10} x2={width} stroke="black" />
-      <line x1={0} x2={0} y1={5} y2={15} stroke="black" />
-      <line x1={width} x2={width} y1={5} y2={15} stroke="black" />
+      <line x1={x0} x2={x1} y1={10} y2={10} stroke="black" />
+      <line x1={x0} x2={x0} y1={5} y2={15} stroke="black" />
+      <line x1={x1} x2={x1} y1={5} y2={15} stroke="black" />
       <text
-        x={width / 2}
+        x={(x1 - x0) / 2}
         y={fontSize * 2}
         textAnchor="middle"
         fontSize={fontSize}
@@ -252,7 +249,7 @@ export async function renderToSvg(model: LGV) {
           {assemblyName}
         </text>
         <g transform={`translate(0 ${fontSize})`}>
-          <ScaleBar model={model} fontSize={fontSize} width={width} />
+          <ScaleBar model={model} fontSize={fontSize} />
         </g>
         <SVGRuler
           model={model}
