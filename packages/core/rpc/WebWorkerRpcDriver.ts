@@ -28,10 +28,8 @@ class WebWorkerHandle extends Rpc.Client {
         opts.statusCallback(message)
       }
     }
-    // @ts-ignore
     this.on(channel, listener)
     const result = await super.call(functionName, { ...args, channel }, opts)
-    // @ts-ignore
     this.off(channel, listener)
     return result
   }
