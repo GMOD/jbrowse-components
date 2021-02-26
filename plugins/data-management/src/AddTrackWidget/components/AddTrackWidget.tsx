@@ -94,7 +94,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   function isNextDisabled() {
     switch (activeStep) {
       case 0:
-        // @ts-ignore
         return !(trackData.uri || trackData.localPath || trackData.blob)
       case 1:
         return !(trackName && trackType && trackAdapter.type && assembly)

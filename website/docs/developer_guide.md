@@ -1109,7 +1109,6 @@ export default class ArcRendererPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
-        // @ts-ignore error "expected 0 arguments, but got 1"?
         new ArcRenderer({
           name: 'ArcRenderer',
           ReactComponent: ArcRendererReactComponent,

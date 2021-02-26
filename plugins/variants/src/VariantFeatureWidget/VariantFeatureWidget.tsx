@@ -166,7 +166,6 @@ function BreakendPanel(props: {
                     href="#"
                     onClick={() => {
                       const { view } = model
-                      // @ts-ignore
                       const viewSnapshot = viewType.snapshotFromBreakendFeature(
                         new SimpleFeature(feature),
                         view,
