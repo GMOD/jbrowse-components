@@ -37,6 +37,7 @@ import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
 import SessionWarningModal from './sessionWarningModal'
+import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
   const s = window.location.search
@@ -148,7 +149,6 @@ const SessionLoader = types
         !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
       )
     },
-
     get configLoaded() {
       return !!self.configError || !!self.configSnapshot
     },
@@ -172,6 +172,10 @@ const SessionLoader = types
     setSessionSnapshot(snap: unknown) {
       self.sessionSnapshot = snap
       sessionStorage.setItem('current', JSON.stringify(snap))
+    },
+    setDefaultConfig() {
+      // when decline loading cross origin config, set to undefined to fetch the default config.json
+      self.configPath = undefined
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
@@ -204,6 +208,9 @@ const SessionLoader = types
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
         // cross origin config check
+        // warning this link contains a cross origin config, this loads a configuration from an external site, please ensure you trust the source of this link
+        // button text should be: Yes I trust it, and cancel
+        // make another cross origin config dialog, with config specfic messages
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
         } else {
@@ -457,6 +464,7 @@ const Renderer = observer(
               try {
                 rootModel.setSession(loader.sessionSnapshot)
               } catch (err) {
+                // for the edge case, it should fall into this catch
                 console.error(err)
                 rootModel.setDefaultSession()
                 const errorMessage = (err.message || '')
@@ -567,8 +575,13 @@ const Renderer = observer(
     }
 
     if (loader.sessionTriaged) {
-      return (
+      return loader.sessionTriaged.origin === 'session' ? (
         <SessionWarningModal
+          loader={loader}
+          sessionTriaged={loader.sessionTriaged}
+        />
+      ) : (
+        <ConfigWarningModal
           loader={loader}
           sessionTriaged={loader.sessionTriaged}
         />

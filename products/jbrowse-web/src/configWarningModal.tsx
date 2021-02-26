@@ -9,6 +9,7 @@ import Divider from '@material-ui/core/Divider'
 import WarningIcon from '@material-ui/icons/Warning'
 import shortid from 'shortid'
 import { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { SessionLoader } from './Loader'
 
 const useStyles = makeStyles(theme => ({
@@ -54,11 +55,11 @@ export default function SessionWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            This link contains an external sessions, which may contain dangerous
-            code.
+            This link contains a cross origin config that loads a configuration
+            from an external site.
           </DialogContentText>
           <DialogContentText>
-            Please ensure you trust the source of this session.
+            Please ensure you trust the source of this link.
           </DialogContentText>
         </DialogContent>
         <div className={classes.buttons}>
@@ -67,7 +68,10 @@ export default function SessionWarningModal({
             variant="contained"
             style={{ marginRight: 5 }}
             onClick={async () => {
-              loader.setSessionSnapshot({
+              await loader.fetchPlugins(
+                session as { plugins: PluginDefinition[] },
+              )
+              loader.setConfigSnapshot({
                 ...session,
                 id: shortid(),
               })
@@ -78,8 +82,9 @@ export default function SessionWarningModal({
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              loader.setBlankSession(true)
+            onClick={async () => {
+              loader.setDefaultConfig()
+              await loader.fetchConfig()
               handleClose()
             }}
           >
