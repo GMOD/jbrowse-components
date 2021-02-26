@@ -701,6 +701,7 @@ export default class PileupRenderer extends BoxRendererType {
   async render(props: PileupRenderProps) {
     const {
       forceSvg,
+      forcePng,
       highResolutionScaling = 1,
       regions,
       layout,
@@ -737,11 +738,23 @@ export default class PileupRenderer extends BoxRendererType {
       }
     }
 
-    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-    const fakeCtx = fakeCanvas.getContext('2d')
-    this.makeImageData(fakeCtx, layoutRecords, props)
-    const imageData = fakeCanvas.getSerializedSvg()
-    return { element: imageData, height, width }
+    if (forceSvg) {
+      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+      const fakeCtx = fakeCanvas.getContext('2d')
+      this.makeImageData(fakeCtx, layoutRecords, props)
+      const imageData = fakeCanvas.getSerializedSvg()
+      return { element: imageData, height, width }
+    }
+    if (forcePng) {
+      const canvas = createCanvas(
+        Math.ceil(width * highResolutionScaling),
+        height * highResolutionScaling,
+      )
+      const ctx = canvas.getContext('2d')
+      this.makeImageData(ctx, layoutRecords, props)
+      const imageData = canvas.toDataURL()
+      return { element: imageData, height, width }
+    }
   }
 
   createSession(args: PileupLayoutSessionProps) {
