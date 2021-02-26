@@ -262,7 +262,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isDisplayModel)
   } catch (e) {
-    throw new Error('no containing track found')
+    throw new Error('no containing display found')
   }
 }
 
