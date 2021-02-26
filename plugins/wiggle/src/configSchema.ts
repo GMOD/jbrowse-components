@@ -63,6 +63,11 @@ export default ConfigurationSchema(
         'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
       defaultValue: 'whiskers',
     },
+    displayCrossHatches: {
+      type: 'boolean',
+      description: 'choose to draw cross hatches (sideways lines)',
+      defaultValue: false,
+    },
   },
   { explicitlyTyped: true },
 )
