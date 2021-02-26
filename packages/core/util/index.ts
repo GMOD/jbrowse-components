@@ -856,3 +856,17 @@ export const complement = (() => {
     return seqString.replace(complementRegex, m => complementTable[m] || '')
   }
 })()
+
+export function blobToDataURL(blob: Blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}

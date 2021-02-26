@@ -1,9 +1,9 @@
 import {
   createCanvas,
   createImageBitmap,
-  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
+import { blobToDataURL } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -45,6 +45,7 @@ export default abstract class extends ServerSideRendererType {
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
+    let ret
     if (!forceSvg) {
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
@@ -54,14 +55,25 @@ export default abstract class extends ServerSideRendererType {
       ctx.scale(highResolutionScaling, highResolutionScaling)
       this.draw(ctx, props)
       const imageData = await createImageBitmap(canvas)
-      return { imageData, height, width }
+      ret = { imageData, height, width }
+    } else {
+      const canvas = createCanvas(
+        Math.ceil(width * highResolutionScaling),
+        height * highResolutionScaling,
+      )
+      const ctx = canvas.getContext('2d')
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+      this.draw(ctx, props)
+      const imageBlob = await canvas.convertToBlob({
+        type: 'image/png',
+      })
+      const imageData = await blobToDataURL(imageBlob)
+      const element = (
+        <image width={width} height={height} xlinkHref={imageData} />
+      )
+      ret = { imageData: element, height, width }
     }
-
-    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-    const fakeCtx = fakeCanvas.getContext('2d')
-    this.draw(fakeCtx, props)
-    const imageData = fakeCanvas.getSerializedSvg()
-    return { imageData, height, width }
+    return ret
   }
 
   /** draw features to context given props */
@@ -73,25 +85,20 @@ export default abstract class extends ServerSideRendererType {
   async render(renderProps: WiggleBaseRendererProps) {
     const { forceSvg } = renderProps
     const { height, width, imageData } = await this.makeImageData(renderProps)
-    const element = forceSvg
-      ? imageData
-      : React.createElement(
-          this.ReactComponent,
-          { ...renderProps, height, width, imageData },
-          null,
-        )
 
-    return forceSvg
-      ? {
-          element,
-          height,
-          width,
-        }
-      : {
-          element,
-          imageData,
-          height,
-          width,
-        }
+    if (forceSvg) {
+      return { element: imageData, width, height }
+    }
+    const element = React.createElement(
+      this.ReactComponent,
+      { ...renderProps, height, width, imageData },
+      null,
+    )
+    return {
+      element,
+      imageData,
+      height,
+      width,
+    }
   }
 }

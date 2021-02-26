@@ -3,13 +3,12 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import { bpSpanPx, iterMap, blobToDataURL } from '@jbrowse/core/util'
 import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
-  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
@@ -59,20 +58,6 @@ interface LayoutRecord {
 
 interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
-}
-
-function blobToDataURL(blob) {
-  const a = new FileReader()
-  return new Promise((resolve, reject) => {
-    a.onload = e => {
-      if (e.target) {
-        resolve(e.target.result)
-      } else {
-        reject(new Error('unknown result reading blob from canvas'))
-      }
-    }
-    a.readAsDataURL(blob)
-  })
 }
 
 const alignmentColoring: { [key: string]: string } = {
