@@ -129,9 +129,8 @@ export default LinearGenomeView
 
 function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
   const {
-    totalBp,
     offsetPx,
-    dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx },
+    dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx, totalBp },
   } = model
   let displayBp
   if (Math.floor(totalBp / 1000000) > 0) {
@@ -244,7 +243,7 @@ export async function renderToSvg(model: LGV) {
       xmlns="http://www.w3.org/2000/svg"
       viewBox={[0, 0, width + shift * 2, height].toString()}
     >
-      <rect width="100%" height="100%" fill="white" />
+      <rect width={width + shift * 2} height={height} fill="white" />
       <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
         <text x={0} y={fontSize} fontSize={fontSize}>
           {assemblyName}
@@ -263,7 +262,6 @@ export async function renderToSvg(model: LGV) {
           await Promise.all(
             tracks.map(async track => {
               const current = offset
-              const trackId = getConf(track, 'trackId')
               const trackName =
                 getConf(track, 'name') ||
                 `Reference sequence (${readConfObject(
@@ -277,7 +275,7 @@ export async function renderToSvg(model: LGV) {
               )
 
               return (
-                <g key={trackId} transform={`translate(0 ${current})`}>
+                <g key={track.trackId} transform={`translate(0 ${current})`}>
                   <text fontSize={fontSize}>{trackName}</text>
                   <g transform={`translate(0 ${textHeight})`}>
                     {await display.renderSvg()}
