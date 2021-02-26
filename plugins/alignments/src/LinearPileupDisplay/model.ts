@@ -410,6 +410,7 @@ const stateModelFactory = (
             notReady:
               !self.ready ||
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,

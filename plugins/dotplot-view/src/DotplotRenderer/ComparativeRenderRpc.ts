@@ -35,8 +35,11 @@ export default class ComparativeRender extends RpcMethodType {
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 
-  async execute(args: ComparativeRenderArgs) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(args: ComparativeRenderArgs, rpcDriverClassName: string) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const {
       sessionId,
       adapterConfig,

@@ -20,22 +20,32 @@ class WebWorkerHandle extends Rpc.Client {
   async call(
     functionName: string,
     args: Record<string, unknown>,
-    opts: { statusCallback?: (arg0: string) => void },
+    opts: {
+      statusCallback?: (arg0: string) => void
+      rpcDriverClassName: string
+    },
   ) {
+    const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${shortid.generate()}`
     const listener = (message: string) => {
-      if (opts.statusCallback) {
-        opts.statusCallback(message)
+      if (statusCallback) {
+        statusCallback(message)
       }
     }
     this.on(channel, listener)
-    const result = await super.call(functionName, { ...args, channel }, opts)
+    const result = await super.call(
+      functionName,
+      { ...args, channel, rpcDriverClassName },
+      opts,
+    )
     this.off(channel, listener)
     return result
   }
 }
 
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
+  name = 'WebWorkerRpcDriver'
+
   WorkerClass: WebpackWorker
 
   workerBootConfiguration: { plugins: PluginDefinition[] }

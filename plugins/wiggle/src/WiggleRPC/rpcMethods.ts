@@ -12,8 +12,8 @@ export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any) {
-    const l = await super.deserializeArguments(args)
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
       filters: args.filters
@@ -24,13 +24,19 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     }
   }
 
-  async execute(args: {
-    adapterConfig: {}
-    signal?: RemoteAbortSignal
-    headers?: Record<string, string>
-    sessionId: string
-  }): Promise<FeatureStats> {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      sessionId: string
+    },
+    rpcDriverClassName: string,
+  ): Promise<FeatureStats> {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
@@ -53,8 +59,8 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async deserializeArguments(args: any) {
-    const l = await super.deserializeArguments(args)
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
     return {
       ...l,
       filters: args.filters
@@ -77,15 +83,21 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 
-  async execute(args: {
-    adapterConfig: {}
-    signal?: RemoteAbortSignal
-    sessionId: string
-    headers?: Record<string, string>
-    regions: Region[]
-    bpPerPx: number
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      sessionId: string
+      headers?: Record<string, string>
+      regions: Region[]
+      bpPerPx: number
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { regions, adapterConfig, sessionId } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,

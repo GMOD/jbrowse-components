@@ -1,5 +1,5 @@
 import PluginManager from '../PluginManager'
-import BaseRpcDriver, { watchWorker } from './BaseRpcDriver'
+import BaseRpcDriver, { watchWorker, WorkerHandle } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import { ConfigurationSchema } from '../configuration'
 
@@ -11,7 +11,7 @@ function timeout(ms: number) {
   })
 }
 
-class MockWorkerHandle {
+class MockWorkerHandle implements WorkerHandle {
   busy = false
 
   destroy() {}
@@ -19,7 +19,10 @@ class MockWorkerHandle {
   async call(
     name: string,
     _args = [],
-    opts: { timeout: number } = { timeout: 3000 },
+    opts: { timeout: number; rpcDriverClassName: string } = {
+      timeout: 3000,
+      rpcDriverClassName: 'MockRpcDriver',
+    },
   ) {
     const start = Date.now()
     if (name === 'ping') {
@@ -72,7 +75,7 @@ test('watch worker with long ping, generates timeout', async () => {
   const worker = new MockWorkerHandle()
 
   try {
-    const workerWatcher = watchWorker(worker, 200)
+    const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
     const result = worker.call('doWorkLongPingTime')
     await Promise.race([result, workerWatcher])
   } catch (e) {
@@ -82,17 +85,19 @@ test('watch worker with long ping, generates timeout', async () => {
 
 test('watch worker generates multiple pings', async () => {
   const worker = new MockWorkerHandle()
-  const workerWatcher = watchWorker(worker, 200)
+  const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
   const result = worker.call('doWorkShortPingTime')
   await Promise.race([result, workerWatcher])
 })
 
 class MockRpcDriver extends BaseRpcDriver {
+  name = 'MockRpcDriver'
+
   maxPingTime = 1000
 
   workerCheckFrequency = 500
 
-  makeWorker() {
+  makeWorker(_pluginManager: PluginManager) {
     return new MockWorkerHandle()
   }
 }

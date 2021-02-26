@@ -4,13 +4,21 @@ import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
-interface WorkerHandle {
+export interface WorkerHandle {
   status?: string
   error?: Error
   on?: (channel: string, callback: (message: string) => void) => void
   off?: (channel: string, callback: (message: string) => void) => void
   destroy(): void
-  call(functionName: string, args?: unknown, options?: {}): Promise<unknown>
+  call(
+    functionName: string,
+    args?: unknown,
+    options?: {
+      statusCallback?(message: string): void
+      timeout?: number
+      rpcDriverClassName: string
+    },
+  ): Promise<unknown>
 }
 
 export interface RpcDriverConstructorArgs {
@@ -29,16 +37,23 @@ function isClonable(thing: unknown): boolean {
 
 // watches the given worker object, returns a promise that will be rejected if
 // the worker times out
-export async function watchWorker(worker: WorkerHandle, pingTime: number) {
+export async function watchWorker(
+  worker: WorkerHandle,
+  pingTime: number,
+  rpcDriverClassName: string,
+) {
   // first ping call has no timeout, wait for worker download
-  await worker.call('ping', [], { timeout: 100000000 })
+  await worker.call('ping', [], { timeout: 100000000, rpcDriverClassName })
 
   // after first ping succeeds, apply wait for timeout
   return new Promise((_resolve, reject) => {
     function delay() {
       setTimeout(async () => {
         try {
-          await worker.call('ping', [], { timeout: pingTime * 2 })
+          await worker.call('ping', [], {
+            timeout: pingTime * 2,
+            rpcDriverClassName,
+          })
           delay()
         } catch (e) {
           reject(e)
@@ -66,20 +81,22 @@ class LazyWorker {
     this.driver = driver
   }
 
-  getWorker(pluginManager: PluginManager) {
+  getWorker(pluginManager: PluginManager, rpcDriverClassName: string) {
     if (!this.worker) {
       const worker = this.driver.makeWorker(pluginManager)
-      watchWorker(worker, this.driver.maxPingTime).catch(error => {
-        if (this.worker) {
-          console.warn(
-            `worker did not respond, killing and generating new one ${error}`,
-          )
-          this.worker.destroy()
-          this.worker.status = 'killed'
-          this.worker.error = error
-          this.worker = undefined
-        }
-      })
+      watchWorker(worker, this.driver.maxPingTime, rpcDriverClassName).catch(
+        error => {
+          if (this.worker) {
+            console.warn(
+              `worker did not respond, killing and generating new one ${error}`,
+            )
+            this.worker.destroy()
+            this.worker.status = 'killed'
+            this.worker.error = error
+            this.worker = undefined
+          }
+        },
+      )
       this.worker = worker
     }
     return this.worker
@@ -87,6 +104,8 @@ class LazyWorker {
 }
 
 export default abstract class BaseRpcDriver {
+  abstract name: string
+
   private lastWorkerAssignment = -1
 
   private workerAssignments = new Map<string, number>() // sessionId -> worker number
@@ -149,7 +168,10 @@ export default abstract class BaseRpcDriver {
     signalId: number,
   ) {
     const worker = this.getWorker(sessionId, pluginManager)
-    worker.call(functionName, signalId, { timeout: 1000000 })
+    worker.call(functionName, signalId, {
+      timeout: 1000000,
+      rpcDriverClassName: this.name,
+    })
   }
 
   createWorkerPool(): LazyWorker[] {
@@ -181,7 +203,7 @@ export default abstract class BaseRpcDriver {
     }
 
     // console.log(`${sessionId} -> worker ${workerNumber}`)
-    const worker = workers[workerNumber].getWorker(pluginManager)
+    const worker = workers[workerNumber].getWorker(pluginManager, this.name)
     if (!worker) {
       throw new Error('no web workers registered for RPC')
     }
@@ -192,7 +214,7 @@ export default abstract class BaseRpcDriver {
     pluginManager: PluginManager,
     sessionId: string,
     functionName: string,
-    args: { statusCallback?: Function },
+    args: { statusCallback?: (message: string) => void },
     options = {},
   ) {
     if (!sessionId) {
@@ -200,7 +222,7 @@ export default abstract class BaseRpcDriver {
     }
     const worker = this.getWorker(sessionId, pluginManager)
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = await rpcMethod.serializeArguments(args)
+    const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(
       serializedArgs,
       pluginManager,
@@ -211,6 +233,7 @@ export default abstract class BaseRpcDriver {
     const callP = worker.call(functionName, filteredAndSerializedArgs, {
       timeout: 5 * 60 * 1000, // 5 minutes
       statusCallback: args.statusCallback,
+      rpcDriverClassName: this.name,
       ...options,
     })
 
@@ -237,6 +260,6 @@ export default abstract class BaseRpcDriver {
     // killed before the call could return
     const resultP = Promise.race([callP, killedP])
 
-    return rpcMethod.deserializeReturn(await resultP)
+    return rpcMethod.deserializeReturn(await resultP, this.name)
   }
 }

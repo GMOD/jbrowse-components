@@ -72,6 +72,8 @@ class DummyHandle {
  * @param rpcFuncs - object containing runnable rpc functions
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
+  name = 'MainThreadRpcDriver'
+
   makeWorker: () => DummyHandle
 
   constructor(args: RpcDriverConstructorArgs) {
@@ -89,13 +91,13 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
       throw new TypeError('sessionId is required')
     }
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
-    const serializedArgs = await rpcMethod.serializeArguments(args)
+    const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const filteredAndSerializedArgs = this.filterArgs(
       serializedArgs,
       pluginManager,
       sessionId,
     )
-    const result = await rpcMethod.execute(filteredAndSerializedArgs)
-    return rpcMethod.deserializeReturn(result)
+    const result = await rpcMethod.execute(filteredAndSerializedArgs, this.name)
+    return rpcMethod.deserializeReturn(result, this.name)
   }
 }

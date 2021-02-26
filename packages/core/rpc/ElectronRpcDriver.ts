@@ -101,6 +101,8 @@ class WindowWorkerHandle {
 }
 
 export default class ElectronRpcDriver extends BaseRpcDriver {
+  name = 'ElectronRpcDriver'
+
   bootConfig: WorkerBootConfig
 
   channel: string

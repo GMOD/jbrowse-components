@@ -38,6 +38,7 @@ export default configSchema => {
           return {
             ...getParentRenderProps(self),
             ...this.composedRenderProps,
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.configuration.renderer,
             filters,
