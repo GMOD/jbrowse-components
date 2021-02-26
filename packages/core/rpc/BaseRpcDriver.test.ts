@@ -104,10 +104,14 @@ class MockRpcDriver extends BaseRpcDriver {
 
 export class MockRendererTimeout extends RpcMethodType {
   name = 'MockRenderTimeout'
+
+  async execute() {}
 }
 
 export class MockRendererShort extends RpcMethodType {
   name = 'MockRenderShort'
+
+  async execute() {}
 }
 
 test('test RPC driver operation timeout and worker replace', async () => {

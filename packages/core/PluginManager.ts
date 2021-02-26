@@ -79,15 +79,23 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  baseClass: { new (...args: any[]): ElementClass }
+  baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { new (...args: any[]): ElementClass }
+    // covers abstract class case
+    | (Function & {
+        prototype: ElementClass
+      })
 
   typeName: string
 
   constructor(
     typeName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    elementType: { new (...args: any[]): ElementClass },
+    elementType: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | { new (...args: any[]): ElementClass }
+      // covers abstract class case
+      | (Function & {
+          prototype: ElementClass
+        }),
   ) {
     this.typeName = typeName
     this.baseClass = elementType

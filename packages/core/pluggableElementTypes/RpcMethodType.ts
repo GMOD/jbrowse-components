@@ -9,7 +9,7 @@ import {
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
-export default class RpcMethodType extends PluggableElementBase {
+export default abstract class RpcMethodType extends PluggableElementBase {
   pluginManager: PluginManager
 
   name = 'UNKNOWN'
@@ -34,12 +34,10 @@ export default class RpcMethodType extends PluggableElementBase {
     return { ...serializedArgs, signal: undefined }
   }
 
-  async execute(
-    _serializedArgs: unknown,
-    _rpcDriverClassName: string,
-  ): Promise<unknown> {
-    throw new Error('execute method is abstract')
-  }
+  abstract async execute(
+    serializedArgs: unknown,
+    rpcDriverClassName: string,
+  ): Promise<unknown>
 
   async serializeReturn(originalReturn: unknown, _rpcDriverClassName: string) {
     return originalReturn
