@@ -84,7 +84,7 @@ function Home() {
               </li>
               <li>
                 <Link
-                  href="https://elliothershberg.github.io/JBrowseR/"
+                  href="https://gmod.github.io/JBrowseR/"
                   variant="contained"
                 >
                   JBrowseR R package on <tt>CRAN</tt>
