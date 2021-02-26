@@ -61,6 +61,20 @@ interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
 }
 
+function blobToDataURL(blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}
+
 const alignmentColoring: { [key: string]: string } = {
   color_fwd_strand_not_proper: '#ECC8C8',
   color_rev_strand_not_proper: '#BEBED8',
@@ -713,7 +727,29 @@ export default class PileupRenderer extends BoxRendererType {
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
-    if (!forceSvg) {
+    let ret
+
+    // render to SVG <image> tag with data URI, see bottom of this source file
+    // for vestigial code to render to actual SVG
+    if (forceSvg) {
+      const canvas = createCanvas(
+        Math.ceil(width * highResolutionScaling),
+        height * highResolutionScaling,
+      )
+      const ctx = canvas.getContext('2d')
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+      this.makeImageData(ctx, layoutRecords, props)
+      const imageBlob = await canvas.convertToBlob({
+        type: 'image/png',
+      })
+      const imageData = await blobToDataURL(imageBlob)
+      const element = (
+        <image width={width} height={height} xlinkHref={imageData} />
+      )
+      ret = { element, height, width }
+    }
+    // normal SSR
+    else {
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
         height * highResolutionScaling,
@@ -728,7 +764,7 @@ export default class PileupRenderer extends BoxRendererType {
         { ...props, height, width, region, imageData },
         null,
       )
-      return {
+      ret = {
         element,
         imageData,
         height,
@@ -737,27 +773,19 @@ export default class PileupRenderer extends BoxRendererType {
         layout,
       }
     }
-
-    if (forceSvg) {
-      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-      const fakeCtx = fakeCanvas.getContext('2d')
-      this.makeImageData(fakeCtx, layoutRecords, props)
-      const imageData = fakeCanvas.getSerializedSvg()
-      return { element: imageData, height, width }
-    }
-    if (forcePng) {
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
-      const ctx = canvas.getContext('2d')
-      this.makeImageData(ctx, layoutRecords, props)
-      const imageData = canvas.toDataURL()
-      return { element: imageData, height, width }
-    }
+    return ret
   }
 
   createSession(args: PileupLayoutSessionProps) {
     return new PileupLayoutSession(args)
   }
 }
+
+// version to export actual svg, but can often make too large of exports
+// if (forceSvg) {
+//   const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+//   const fakeCtx = fakeCanvas.getContext('2d')
+//   this.makeImageData(fakeCtx, layoutRecords, props)
+//   const imageData = fakeCanvas.getSerializedSvg()
+//   ret = { element: imageData, height, width }
+// }
