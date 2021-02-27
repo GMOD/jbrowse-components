@@ -23,11 +23,9 @@ interface SNPCoverageRendererProps {
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  displayModel: unknown
   theme: ThemeOptions
 }
 

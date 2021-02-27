@@ -1,10 +1,8 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import React from 'react'
-import { Axis, axisPropsFromTickScale, LEFT, RIGHT } from 'react-d3-axis'
-import { getScale } from '../../util'
-import { WiggleDisplayModel, YSCALEBAR_LABEL_OFFSET } from '../models/model'
+import { Axis, LEFT, RIGHT } from 'react-d3-axis'
+import { WiggleDisplayModel } from '../models/model'
 
 export const YScaleBar = observer(
   ({
@@ -14,22 +12,11 @@ export const YScaleBar = observer(
     model: WiggleDisplayModel
     orientation?: string
   }) => {
-    const { domain, height, scaleType } = model
-    const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
-    const scale = getScale({
-      scaleType,
-      domain,
-      range,
-      inverted: getConf(model, 'inverted'),
-    })
-    const ticks = height < 50 ? 2 : 4
-    const axisProps = axisPropsFromTickScale(scale, ticks)
-    const { values } = axisProps
+    const { ticks } = model
 
     return (
       <Axis
-        {...axisProps}
-        values={values}
+        {...ticks}
         format={(n: number) => n}
         style={{ orient: orientation === 'left' ? LEFT : RIGHT }}
       />

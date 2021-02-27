@@ -23,12 +23,11 @@ export interface WiggleBaseRendererProps {
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  displayModel: unknown
-  layout: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  displayCrossHatches: boolean
+  ticks: { values: number[] }
   theme: ThemeOptions
 }
 

@@ -1,4 +1,8 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+  getConf,
+} from '@jbrowse/core/configuration'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -314,7 +318,9 @@ const stateModelFactory = (
         })
       },
       get featureHeightSetting() {
-        return self.featureHeight
+        return (
+          self.featureHeight || readConfObject(this.rendererConfig, 'height')
+        )
       },
     }))
     .views(self => {
