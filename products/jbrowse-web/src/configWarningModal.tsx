@@ -29,9 +29,11 @@ const useStyles = makeStyles(theme => ({
 export default function SessionWarningModal({
   loader,
   sessionTriaged,
+  onFactoryReset,
 }: {
   loader: Instance<SessionLoader>
   sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
+  onFactoryReset: Function
 }) {
   const classes = useStyles()
 
@@ -83,8 +85,7 @@ export default function SessionWarningModal({
           <Button
             variant="contained"
             onClick={async () => {
-              loader.setDefaultConfig()
-              await loader.fetchConfig()
+              onFactoryReset()
               handleClose()
             }}
           >

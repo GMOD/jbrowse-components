@@ -203,7 +203,6 @@ const SessionLoader = types
         }
         const location = openLocation(configLocation)
         const configText = (await location.readFile('utf8')) as string
-
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
@@ -579,6 +578,7 @@ const Renderer = observer(
         <ConfigWarningModal
           loader={loader}
           sessionTriaged={loader.sessionTriaged}
+          onFactoryReset={factoryReset}
         />
       )
     }

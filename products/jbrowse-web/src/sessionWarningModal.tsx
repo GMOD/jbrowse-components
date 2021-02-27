@@ -54,7 +54,7 @@ export default function SessionWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            This link contains an external sessions, which may contain dangerous
+            This link contains an external session, which may contain dangerous
             code.
           </DialogContentText>
           <DialogContentText>
