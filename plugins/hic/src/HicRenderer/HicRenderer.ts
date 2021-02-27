@@ -107,7 +107,7 @@ export default class HicRenderer extends ServerSideRendererType {
       imageData,
       maxHeightReached,
     } = await this.makeImageData(renderProps)
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       {
         ...renderProps,
@@ -120,7 +120,7 @@ export default class HicRenderer extends ServerSideRendererType {
     )
 
     return {
-      element,
+      reactElement,
       imageData,
       height,
       width,

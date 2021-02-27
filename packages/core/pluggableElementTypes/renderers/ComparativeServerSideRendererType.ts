@@ -114,8 +114,8 @@ export default class ComparativeServerSideRenderer extends RendererType {
 
     const results = await this.render(args)
     checkAbortSignal(args.signal)
-    results.html = renderToString(results.element)
-    delete results.element
+    results.html = renderToString(results.reactElement)
+    delete results.reactElement
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out

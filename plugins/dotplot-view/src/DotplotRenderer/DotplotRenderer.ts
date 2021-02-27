@@ -148,14 +148,14 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       views: realizedViews,
     })
 
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
     )
 
     return {
-      element,
+      reactElement,
       imageData,
       height,
       width,

@@ -701,7 +701,7 @@ export default class PileupRenderer extends BoxRendererType {
       imageData,
       maxHeightReached,
     } = await this.makeImageData(renderProps)
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       {
         ...renderProps,
@@ -714,7 +714,7 @@ export default class PileupRenderer extends BoxRendererType {
     )
 
     return {
-      element,
+      reactElement,
       imageData,
       height,
       width,

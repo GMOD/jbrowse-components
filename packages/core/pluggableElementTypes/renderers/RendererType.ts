@@ -30,7 +30,9 @@ export default class RendererType extends PluggableElementBase {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async render(props: Record<string, any>): Promise<Record<string, any>> {
-    return { element: React.createElement(this.ReactComponent, props, null) }
+    return {
+      reactElement: React.createElement(this.ReactComponent, props, null),
+    }
   }
 
   /**

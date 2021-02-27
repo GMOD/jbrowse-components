@@ -56,11 +56,11 @@ export default abstract class extends ServerSideRendererType {
 
   async render(renderProps: WiggleBaseRendererProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
     )
-    return { element, imageData, height, width }
+    return { reactElement, imageData, height, width }
   }
 }

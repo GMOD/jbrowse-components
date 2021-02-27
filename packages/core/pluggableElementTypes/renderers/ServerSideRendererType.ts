@@ -253,10 +253,10 @@ export default class ServerSideRenderer extends RendererType {
         ThemeProvider,
         // @ts-ignore
         { theme: createJBrowseTheme(args.theme) },
-        results.element,
+        results.reactElement,
       ),
     )
-    delete results.element
+    delete results.reactElement
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out

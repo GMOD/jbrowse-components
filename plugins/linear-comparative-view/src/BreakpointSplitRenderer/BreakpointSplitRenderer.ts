@@ -234,14 +234,14 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
   async render(renderProps: BreakpointSplitRenderProps) {
     const { height, width, imageData } = await this.makeImageData(renderProps)
 
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,
     )
 
     return {
-      element,
+      reactElement,
       imageData,
       height,
       width,
