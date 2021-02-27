@@ -464,7 +464,6 @@ const Renderer = observer(
               try {
                 rootModel.setSession(loader.sessionSnapshot)
               } catch (err) {
-                // for the edge case, it should fall into this catch
                 console.error(err)
                 rootModel.setDefaultSession()
                 const errorMessage = (err.message || '')
