@@ -207,10 +207,6 @@ const SessionLoader = types
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
-        // cross origin config check
-        // warning this link contains a cross origin config, this loads a configuration from an external site, please ensure you trust the source of this link
-        // button text should be: Yes I trust it, and cancel
-        // make another cross origin config dialog, with config specfic messages
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
         } else {
