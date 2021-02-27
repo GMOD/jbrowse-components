@@ -173,10 +173,6 @@ const SessionLoader = types
       self.sessionSnapshot = snap
       sessionStorage.setItem('current', JSON.stringify(snap))
     },
-    setDefaultConfig() {
-      // when decline loading cross origin config, set to undefined to fetch the default config.json
-      self.configPath = undefined
-    },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
