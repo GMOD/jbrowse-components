@@ -285,7 +285,7 @@ export async function renderToSvg(model: LGV) {
             }),
           )
         }
-        {dynamicBlocks.contentBlocks.map(block => {
+        {dynamicBlocks.contentBlocks.slice(1).map(block => {
           return (
             <line
               key={block.key}

@@ -550,14 +550,12 @@ const stateModelFactory = (
           return (
             <>
               <g id="snpcov">{await superRenderSvg()}</g>
-              <g transform="translate(-4,0)">
-                {needsScalebar && stats ? (
-                  <YScaleBar
-                    model={self as WiggleDisplayModel}
-                    orientation="left"
-                  />
-                ) : null}
-              </g>
+              {needsScalebar && stats ? (
+                <YScaleBar
+                  model={self as WiggleDisplayModel}
+                  orientation="left"
+                />
+              ) : null}
             </>
           )
         },
