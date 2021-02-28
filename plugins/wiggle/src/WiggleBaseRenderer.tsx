@@ -33,13 +33,8 @@ export interface WiggleBaseRendererProps {
 
 export default abstract class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
-    const {
-      forceSvg,
-      height,
-      regions,
-      bpPerPx,
-      highResolutionScaling = 1,
-    } = props
+    const { forceSvg, height, regions, bpPerPx } = props
+    let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     if (!(width > 0) || !(height > 0)) {
@@ -57,6 +52,8 @@ export default abstract class extends ServerSideRendererType {
       const imageData = await createImageBitmap(canvas)
       ret = { imageData, height, width }
     } else {
+      // for high qual exports use 4 scale factor
+      highResolutionScaling = 6
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
         height * highResolutionScaling,
@@ -64,12 +61,19 @@ export default abstract class extends ServerSideRendererType {
       const ctx = canvas.getContext('2d')
       ctx.scale(highResolutionScaling, highResolutionScaling)
       this.draw(ctx, props)
-      const imageBlob = await canvas.convertToBlob({
-        type: 'image/png',
-      })
-      const imageData = await blobToDataURL(imageBlob)
+      let imageData
+
+      // webworker has no toImageData while node has no convertToBlob
+      if (canvas.convertToBlob) {
+        const imageBlob = await canvas.convertToBlob({
+          type: 'image/png',
+        })
+        imageData = await blobToDataURL(imageBlob)
+      } else {
+        imageData = canvas.toDataURL()
+      }
       const element = (
-        <image width={width} height={height} xlinkHref={imageData} />
+        <image width={width} height={height} href={imageData as string} />
       )
       ret = { imageData: element, height, width }
     }

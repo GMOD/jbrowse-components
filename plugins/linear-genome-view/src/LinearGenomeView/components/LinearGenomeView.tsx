@@ -183,37 +183,35 @@ function SVGRuler({
           <rect x={0} y={0} width={width} height={20} />
         </clipPath>
       </defs>
-      <>
-        {contentBlocks.map(block => {
-          const offsetLeft = block.offsetPx - viewOffsetPx
-          return (
-            <g key={`${block.key}`} transform={`translate(${offsetLeft} 0)`}>
-              <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
-                {block.refName}
-              </text>
-              {renderRuler ? (
-                <g transform="translate(0 20)" clipPath="url(#clip-ruler)">
-                  <Ruler
-                    start={block.start}
-                    end={block.end}
-                    bpPerPx={bpPerPx}
-                    reversed={block.reversed}
-                  />
-                </g>
-              ) : (
-                <line
-                  strokeWidth={1}
-                  stroke="black"
-                  x1={block.start / bpPerPx}
-                  x2={block.end / bpPerPx}
-                  y1={20}
-                  y2={20}
+      {contentBlocks.map(block => {
+        const offsetLeft = block.offsetPx - viewOffsetPx
+        return (
+          <g key={`${block.key}`} transform={`translate(${offsetLeft} 0)`}>
+            <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
+              {block.refName}
+            </text>
+            {renderRuler ? (
+              <g transform="translate(0 20)" clipPath="url(#clip-ruler)">
+                <Ruler
+                  start={block.start}
+                  end={block.end}
+                  bpPerPx={bpPerPx}
+                  reversed={block.reversed}
                 />
-              )}
-            </g>
-          )
-        })}
-      </>
+              </g>
+            ) : (
+              <line
+                strokeWidth={1}
+                stroke="black"
+                x1={block.start / bpPerPx}
+                x2={block.end / bpPerPx}
+                y1={20}
+                y2={20}
+              />
+            )}
+          </g>
+        )
+      })}
     </g>
   )
 }

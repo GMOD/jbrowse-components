@@ -698,14 +698,8 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(props: PileupRenderProps) {
-    const {
-      forceSvg,
-      forcePng,
-      highResolutionScaling = 1,
-      regions,
-      layout,
-      bpPerPx,
-    } = props
+    const { forceSvg, regions, layout, bpPerPx } = props
+    let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
 
     const layoutRecords = this.layoutFeats(props)
@@ -717,6 +711,8 @@ export default class PileupRenderer extends BoxRendererType {
     // render to SVG <image> tag with data URI, see bottom of this source file
     // for vestigial code to render to actual SVG
     if (forceSvg) {
+      // set to a high resolution for svg
+      highResolutionScaling = 6
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
         height * highResolutionScaling,
@@ -724,12 +720,17 @@ export default class PileupRenderer extends BoxRendererType {
       const ctx = canvas.getContext('2d')
       ctx.scale(highResolutionScaling, highResolutionScaling)
       this.makeImageData(ctx, layoutRecords, props)
-      const imageBlob = await canvas.convertToBlob({
-        type: 'image/png',
-      })
-      const imageData = await blobToDataURL(imageBlob)
+      let imageData
+      if (canvas.convertToBlob) {
+        const imageBlob = await canvas.convertToBlob({
+          type: 'image/png',
+        })
+        imageData = await blobToDataURL(imageBlob)
+      } else {
+        imageData = canvas.toDataURL()
+      }
       const element = (
-        <image width={width} height={height} xlinkHref={imageData} />
+        <image width={width} height={height} href={imageData as string} />
       )
       ret = { element, height, width }
     }
