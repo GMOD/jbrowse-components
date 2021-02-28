@@ -1,33 +1,17 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types, Instance } from 'mobx-state-tree'
+import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { featuresTrackConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 export function LinearVariantDisplayConfigFactory(
   pluginManager: PluginManager,
 ) {
-  const PileupRendererConfigSchema = pluginManager.getRendererType(
-    'PileupRenderer',
-  ).configSchema
-  const SvgFeatureRendererConfigSchema = pluginManager.getRendererType(
-    'SvgFeatureRenderer',
-  ).configSchema
+  const configSchema = featuresTrackConfigSchema(pluginManager)
 
   return ConfigurationSchema(
     'LinearVariantDisplay',
-    {
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['pileup', 'svg']),
-        defaultValue: 'svg',
-      },
-
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer: PileupRendererConfigSchema,
-        SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
-      }),
-    },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {},
+    { baseConfiguration: configSchema, explicitlyTyped: true },
   )
 }
 
