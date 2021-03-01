@@ -128,7 +128,7 @@ describe('valid file tests', () => {
     const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findAllByText('ctgA')
+    await findAllByText('ctgA', {}, { timeout: 10000 })
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await waitFor(
