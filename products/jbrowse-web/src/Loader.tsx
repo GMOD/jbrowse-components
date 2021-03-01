@@ -202,9 +202,11 @@ const SessionLoader = types
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
+        // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
         } else {
+          await this.fetchPlugins(config)
           self.setConfigSnapshot(config)
         }
       } catch (e) {
