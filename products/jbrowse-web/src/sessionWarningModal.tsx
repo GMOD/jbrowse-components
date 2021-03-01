@@ -7,9 +7,6 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import WarningIcon from '@material-ui/icons/Warning'
-import shortid from 'shortid'
-import { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
-import { SessionLoader } from './Loader'
 
 const useStyles = makeStyles(theme => ({
   main: {
@@ -26,19 +23,13 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function SessionWarningModal({
-  loader,
-  sessionTriaged,
+  onConfirm,
+  onCancel,
 }: {
-  loader: Instance<SessionLoader>
-  sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
+  onConfirm: () => void
+  onCancel: () => void
 }) {
   const classes = useStyles()
-
-  const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-
-  const handleClose = () => {
-    loader.setSessionTriaged(undefined)
-  }
   return (
     <Dialog
       open
@@ -67,11 +58,7 @@ export default function SessionWarningModal({
             variant="contained"
             style={{ marginRight: 5 }}
             onClick={async () => {
-              loader.setSessionSnapshot({
-                ...session,
-                id: shortid(),
-              })
-              handleClose()
+              onConfirm()
             }}
           >
             Yes, I trust it
@@ -79,8 +66,7 @@ export default function SessionWarningModal({
           <Button
             variant="contained"
             onClick={() => {
-              loader.setBlankSession(true)
-              handleClose()
+              onCancel()
             }}
           >
             Cancel

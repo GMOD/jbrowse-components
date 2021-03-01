@@ -567,16 +567,37 @@ const Renderer = observer(
     }
 
     if (loader.sessionTriaged) {
+      const handleClose = () => {
+        loader.setSessionTriaged(undefined)
+      }
       return loader.sessionTriaged.origin === 'session' ? (
         <SessionWarningModal
-          loader={loader}
-          sessionTriaged={loader.sessionTriaged}
+          onConfirm={() => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            loader.setSessionSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            loader.setBlankSession(true)
+            handleClose()
+          }}
         />
       ) : (
         <ConfigWarningModal
-          loader={loader}
-          sessionTriaged={loader.sessionTriaged}
-          onFactoryReset={factoryReset}
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            await loader.fetchPlugins(session)
+            loader.setConfigSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            factoryReset()
+            handleClose()
+          }}
         />
       )
     }
