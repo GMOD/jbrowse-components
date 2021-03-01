@@ -41,6 +41,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { saveAs } from 'file-saver'
 import { renderToSvg } from './components/LinearGenomeView'
+import ExportSvgDlg from './components/ExportSvgDialog'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -125,6 +126,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      DialogComponent: undefined as
+        | undefined
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        | React.FC<{ view: any; handleClose: Function }>,
     }))
     .views(self => ({
       get width(): number {
@@ -1101,6 +1106,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setScaleFactor(factor: number) {
         self.scaleFactor = factor
       },
+      setDialogComponent(dlg?: React.FC) {
+        self.DialogComponent = dlg
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -1165,6 +1173,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 self.zoomTo(10)
               },
               icon: FolderOpenIcon,
+            },
+            {
+              label: 'Export SVG',
+              onClick: () => {
+                self.setDialogComponent(ExportSvgDlg)
+              },
             },
             {
               label: 'Open track selector',
@@ -1300,9 +1314,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg() {
+      async exportSvg(opts: { fullSvg: boolean }) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any)
+        const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, 'image.svg')
       },

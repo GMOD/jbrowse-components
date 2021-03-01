@@ -195,13 +195,18 @@ const stateModelFactory = (
           }),
         )
       },
-      async renderSvg() {
+      async renderSvg(opts: { fullSvg: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
         return (
           <>
-            <g>{await self.SNPCoverageDisplay.renderSvg()}</g>
+            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
             <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {await self.PileupDisplay.renderSvg(pileupHeight)}
+              {
+                await self.PileupDisplay.renderSvg({
+                  ...opts,
+                  overrideHeight: pileupHeight,
+                })
+              }
             </g>
           </>
         )

@@ -20,6 +20,7 @@ export interface WiggleBaseRendererProps {
   bpPerPx: number
   height: number
   forceSvg: boolean
+  fullSvg: boolean
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
@@ -33,7 +34,7 @@ export interface WiggleBaseRendererProps {
 
 export default abstract class extends ServerSideRendererType {
   async makeImageData(props: WiggleBaseRendererProps) {
-    const { forceSvg, height, regions, bpPerPx } = props
+    const { forceSvg, height, regions, bpPerPx, fullSvg } = props
     let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx

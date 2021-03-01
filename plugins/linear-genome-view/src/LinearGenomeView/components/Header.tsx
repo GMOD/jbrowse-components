@@ -60,26 +60,15 @@ const useStyles = makeStyles(theme => ({
 const Controls = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   return (
-    <div>
-      <Button
-        onClick={model.activateTrackSelector}
-        className={classes.toggleButton}
-        title="Open track selector"
-        value="track_select"
-        color="secondary"
-      >
-        <TrackSelectorIcon className={classes.buttonSpacer} />
-      </Button>
-      <Button
-        onClick={() => {
-          model.exportSvg()
-        }}
-        variant="contained"
-        color="primary"
-      >
-        Export SVG
-      </Button>
-    </div>
+    <Button
+      onClick={model.activateTrackSelector}
+      className={classes.toggleButton}
+      title="Open track selector"
+      value="track_select"
+      color="secondary"
+    >
+      <TrackSelectorIcon className={classes.buttonSpacer} />
+    </Button>
   )
 })
 

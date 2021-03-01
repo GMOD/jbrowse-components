@@ -39,7 +39,14 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
+  const {
+    tracks,
+    error,
+    hideHeader,
+    initialized,
+    hasDisplayedRegions,
+    DialogComponent,
+  } = model
   const classes = useStyles()
 
   // the AboutDialog is shown at this level because if it is
@@ -56,6 +63,14 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   }
   return (
     <div style={{ position: 'relative' }}>
+      {DialogComponent ? (
+        <DialogComponent
+          view={model}
+          handleClose={() => {
+            model.setDialogComponent(undefined)
+          }}
+        />
+      ) : null}
       {aboutTrack ? (
         <AboutDialog
           model={aboutTrack}
@@ -216,7 +231,7 @@ function SVGRuler({
   )
 }
 
-export async function renderToSvg(model: LGV) {
+export async function renderToSvg(model: LGV, opts: { fullSvg: boolean }) {
   const fontSize = 15
   const textHeight = fontSize + 5
   const paddingHeight = 20
@@ -276,7 +291,7 @@ export async function renderToSvg(model: LGV) {
                 <g key={track.trackId} transform={`translate(0 ${current})`}>
                   <text fontSize={fontSize}>{trackName}</text>
                   <g transform={`translate(0 ${textHeight})`}>
-                    {await display.renderSvg()}
+                    {await display.renderSvg(opts)}
                   </g>
                 </g>
               )

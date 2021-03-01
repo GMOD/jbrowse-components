@@ -418,8 +418,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .actions(self => ({
-    async renderSvg(overrideHeight?: number) {
+    async renderSvg(opts: { fullSvg: boolean; overrideHeight?: number }) {
       const { height, id } = self
+      const { fullSvg, overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel
       const {
         offsetPx: viewOffsetPx,
@@ -461,6 +462,7 @@ export const BaseLinearDisplay = types
             ...renderArgs,
             ...renderProps,
             forceSvg: true,
+            fullSvg,
           })
         }),
       )
