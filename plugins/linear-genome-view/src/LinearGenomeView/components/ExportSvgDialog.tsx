@@ -28,7 +28,7 @@ export default function ExportSvgDlg({
   view: LGV
   handleClose: () => void
 }) {
-  const [fullSvg, setFullSVG] = useState(true)
+  const [rasterizeLayers, setRasterizeLayers] = useState(true)
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
@@ -42,8 +42,8 @@ export default function ExportSvgDlg({
         <FormControlLabel
           control={
             <Checkbox
-              checked={fullSvg}
-              onChange={() => setFullSVG(val => !val)}
+              checked={rasterizeLayers}
+              onChange={() => setRasterizeLayers(val => !val)}
             />
           }
           label="Rasterize canvas based tracks or use full SVG based rendering? Note: full SVG based rendering file sizes can be very larger"
@@ -55,7 +55,7 @@ export default function ExportSvgDlg({
           type="submit"
           style={{ marginLeft: 20 }}
           onClick={async () => {
-            await view.exportSvg({ fullSvg })
+            await view.exportSvg({ fullSvg: !rasterizeLayers })
             handleClose()
           }}
         >

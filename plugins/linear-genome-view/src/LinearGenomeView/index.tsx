@@ -129,7 +129,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       DialogComponent: undefined as
         | undefined
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        | React.FC<{ view: any; handleClose: Function }>,
+        | React.FC<any>,
     }))
     .views(self => ({
       get width(): number {
@@ -1106,7 +1106,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setScaleFactor(factor: number) {
         self.scaleFactor = factor
       },
-      setDialogComponent(dlg?: React.FC) {
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setDialogComponent(dlg?: React.FC<any>) {
         self.DialogComponent = dlg
       },
     }))

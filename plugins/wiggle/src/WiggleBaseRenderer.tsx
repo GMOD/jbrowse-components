@@ -1,6 +1,7 @@
 import {
   createCanvas,
   createImageBitmap,
+  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 import { blobToDataURL } from '@jbrowse/core/util'
@@ -51,6 +52,12 @@ export default abstract class extends ServerSideRendererType {
       ctx.scale(highResolutionScaling, highResolutionScaling)
       this.draw(ctx, props)
       const imageData = await createImageBitmap(canvas)
+      ret = { imageData, height, width }
+    } else if (fullSvg) {
+      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+      const fakeCtx = fakeCanvas.getContext('2d')
+      this.draw(fakeCtx, props)
+      const imageData = fakeCanvas.getSerializedSvg()
       ret = { imageData, height, width }
     } else {
       // for high qual exports use 4 scale factor

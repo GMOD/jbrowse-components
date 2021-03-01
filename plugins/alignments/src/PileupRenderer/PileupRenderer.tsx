@@ -9,6 +9,7 @@ import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
+  PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
@@ -46,6 +47,7 @@ export interface PileupRenderProps {
   }
   theme: ThemeOptions
   forceSvg: boolean
+  fullSvg: boolean
 }
 
 interface LayoutRecord {
@@ -698,7 +700,7 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(props: PileupRenderProps) {
-    const { forceSvg, regions, layout, bpPerPx } = props
+    const { forceSvg, fullSvg, regions, layout, bpPerPx } = props
     let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
 
@@ -710,7 +712,13 @@ export default class PileupRenderer extends BoxRendererType {
 
     // render to SVG <image> tag with data URI, see bottom of this source file
     // for vestigial code to render to actual SVG
-    if (forceSvg) {
+    if (fullSvg) {
+      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+      const fakeCtx = fakeCanvas.getContext('2d')
+      this.makeImageData(fakeCtx, layoutRecords, props)
+      const imageData = fakeCanvas.getSerializedSvg()
+      ret = { imageData, height, width }
+    } else if (forceSvg) {
       // set to a high resolution for svg
       highResolutionScaling = 6
       const canvas = createCanvas(
@@ -766,12 +774,3 @@ export default class PileupRenderer extends BoxRendererType {
     return new PileupLayoutSession(args)
   }
 }
-
-// version to export actual svg, but can often make too large of exports
-// if (forceSvg) {
-//   const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-//   const fakeCtx = fakeCanvas.getContext('2d')
-//   this.makeImageData(fakeCtx, layoutRecords, props)
-//   const imageData = fakeCanvas.getSerializedSvg()
-//   ret = { element: imageData, height, width }
-// }

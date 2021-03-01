@@ -8,6 +8,7 @@ import ServerSideRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
+import { blobToDataURL } from '@jbrowse/core/util'
 import {
   createCanvas,
   createImageBitmap,
@@ -34,6 +35,7 @@ export interface PileupRenderProps {
   config: AnyConfigurationModel
   regions: Region[]
   forceSvg?: boolean
+  fullSvg?: boolean
   bpPerPx: number
   height: number
   width: number
@@ -77,6 +79,7 @@ export default class HicRenderer extends ServerSideRendererType {
   async render(renderProps: PileupRenderProps) {
     const {
       forceSvg,
+      fullSvg,
       regions,
       bpPerPx,
       highResolutionScaling,
@@ -90,6 +93,36 @@ export default class HicRenderer extends ServerSideRendererType {
       return { height: 0, width: 0, maxHeightReached: false }
     }
 
+    if (fullSvg) {
+      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+      const fakeCtx = fakeCanvas.getContext('2d')
+      await this.makeImageData(fakeCtx, renderProps)
+      const imageData = fakeCanvas.getSerializedSvg()
+      return { element: imageData, height, width }
+    }
+    if (forceSvg) {
+      const canvas = createCanvas(
+        Math.ceil(width * highResolutionScaling),
+        height * highResolutionScaling,
+      )
+
+      const ctx = canvas.getContext('2d')
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+      await this.makeImageData(ctx, renderProps)
+      let imageData
+      if (canvas.convertToBlob) {
+        const imageBlob = await canvas.convertToBlob({
+          type: 'image/png',
+        })
+        imageData = await blobToDataURL(imageBlob)
+      } else {
+        imageData = canvas.toDataURL()
+      }
+      const element = (
+        <image width={width} height={height} href={imageData as string} />
+      )
+      return { element, height, width }
+    }
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
@@ -97,34 +130,26 @@ export default class HicRenderer extends ServerSideRendererType {
 
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    if (!forceSvg) {
-      await this.makeImageData(ctx, renderProps)
-      const imageData = await createImageBitmap(canvas)
-      const element = React.createElement(
-        this.ReactComponent,
-        {
-          ...renderProps,
-          region: renderProps.regions[0],
-          height,
-          width,
-          imageData,
-        },
-        null,
-      )
-
-      return {
-        element,
-        imageData,
+    await this.makeImageData(ctx, renderProps)
+    const imageData = await createImageBitmap(canvas)
+    const element = React.createElement(
+      this.ReactComponent,
+      {
+        ...renderProps,
+        region: renderProps.regions[0],
         height,
         width,
-      }
-    }
+        imageData,
+      },
+      null,
+    )
 
-    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-    const fakeCtx = fakeCanvas.getContext('2d')
-    await this.makeImageData(fakeCtx, renderProps)
-    const imageData = fakeCanvas.getSerializedSvg()
-    return { element: imageData, height, width }
+    return {
+      element,
+      imageData,
+      height,
+      width,
+    }
   }
 
   async getFeatures({
