@@ -152,13 +152,8 @@ Object {
         },
         Object {
           "displayId": "volvox_sv_test-LinearVariantDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
         },
@@ -195,13 +190,8 @@ Object {
         },
         Object {
           "displayId": "volvox_sv_test_renamed-LinearVariantDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
         },
@@ -989,13 +979,8 @@ Object {
         },
         Object {
           "displayId": "volvox_test_vcf-LinearVariantDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
         },
@@ -2145,13 +2130,8 @@ Object {
         },
         Object {
           "displayId": "volvox_filtered_vcf-LinearVariantDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
         },
