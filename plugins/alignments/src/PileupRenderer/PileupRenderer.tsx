@@ -701,7 +701,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   async render(props: PileupRenderProps) {
     const { forceSvg, fullSvg, regions, layout, bpPerPx } = props
-    let highResolutionScaling = props.highResolutionScaling || 1
+    const highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
 
     const layoutRecords = this.layoutFeats(props)
@@ -710,17 +710,17 @@ export default class PileupRenderer extends BoxRendererType {
 
     let ret
 
-    // render to SVG <image> tag with data URI, see bottom of this source file
-    // for vestigial code to render to actual SVG
+    // render to full SVG
     if (fullSvg) {
       const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
       const fakeCtx = fakeCanvas.getContext('2d')
       this.makeImageData(fakeCtx, layoutRecords, props)
       const imageData = fakeCanvas.getSerializedSvg()
-      ret = { imageData, height, width }
-    } else if (forceSvg) {
-      // set to a high resolution for svg
-      highResolutionScaling = 6
+      ret = { element: imageData, height, width }
+    }
+
+    // render to <image> tag in svg, e.g. rasterized layer
+    else if (forceSvg) {
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
         height * highResolutionScaling,
@@ -742,6 +742,7 @@ export default class PileupRenderer extends BoxRendererType {
       )
       ret = { element, height, width }
     }
+
     // normal SSR
     else {
       const canvas = createCanvas(

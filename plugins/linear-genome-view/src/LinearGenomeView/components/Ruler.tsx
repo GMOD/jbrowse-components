@@ -71,9 +71,8 @@ function Ruler({
           return (
             <text
               x={x - 3}
-              y={7}
+              y={7 + 11}
               key={`label-${tick.base}`}
-              dominantBaseline="hanging"
               style={{ fontSize: '11px' }}
               className={classes.majorTickLabel}
             >

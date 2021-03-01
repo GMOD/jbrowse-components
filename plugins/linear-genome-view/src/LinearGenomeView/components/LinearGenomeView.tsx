@@ -231,7 +231,10 @@ function SVGRuler({
   )
 }
 
-export async function renderToSvg(model: LGV, opts: { fullSvg: boolean }) {
+export async function renderToSvg(
+  model: LGV,
+  opts: { fullSvg: boolean } = { fullSvg: true },
+) {
   const fontSize = 15
   const textHeight = fontSize + 5
   const paddingHeight = 20
