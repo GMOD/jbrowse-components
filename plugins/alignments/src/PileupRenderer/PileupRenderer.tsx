@@ -521,18 +521,22 @@ export default class PileupRenderer extends BoxRendererType {
       const len = +mismatch.base || mismatch.length
       const txt = `${len}`
       if (mismatch.type === 'insertion' && len >= 10) {
-        const rect = ctx.measureText(txt)
-        const padding = 5
-        ctx.fillStyle = 'purple'
-        ctx.fillRect(
-          mismatchLeftPx - rect.width / 2 - padding,
-          topPx,
-          rect.width + 2 * padding,
-          heightPx,
-        )
         if (heightPx > charHeight) {
+          const rect = ctx.measureText(txt)
+          const padding = 5
+          ctx.fillStyle = 'purple'
+          ctx.fillRect(
+            mismatchLeftPx - rect.width / 2 - padding,
+            topPx,
+            rect.width + 2 * padding,
+            heightPx,
+          )
           ctx.fillStyle = 'white'
           ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        } else {
+          const padding = 2
+          ctx.fillStyle = 'purple'
+          ctx.fillRect(mismatchLeftPx - padding, topPx, 2 * padding, heightPx)
         }
       }
     }
@@ -702,7 +706,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   async render(props: PileupRenderProps) {
     const { forceSvg, fullSvg, regions, layout, bpPerPx } = props
-    const highResolutionScaling = props.highResolutionScaling || 1
+    let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
 
     const layoutRecords = this.layoutFeats(props)
@@ -722,6 +726,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     // render to <image> tag in svg, e.g. rasterized layer
     else if (forceSvg) {
+      highResolutionScaling = 4
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
         height * highResolutionScaling,
