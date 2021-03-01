@@ -8,6 +8,8 @@ import {
   IconButton,
   Checkbox,
   FormControlLabel,
+  CircularProgress,
+  Typography,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { LinearGenomeViewModel as LGV } from '..'
@@ -29,6 +31,7 @@ export default function ExportSvgDlg({
   handleClose: () => void
 }) {
   const [rasterizeLayers, setRasterizeLayers] = useState(true)
+  const [loading, setLoading] = useState(false)
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
@@ -39,6 +42,12 @@ export default function ExportSvgDlg({
         </IconButton>
       </DialogTitle>
       <DialogContent>
+        {loading ? (
+          <Typography>
+            Creating SVG
+            <CircularProgress style={{ marginLeft: 20 }} size={20} />
+          </Typography>
+        ) : null}
         <FormControlLabel
           control={
             <Checkbox
@@ -46,16 +55,17 @@ export default function ExportSvgDlg({
               onChange={() => setRasterizeLayers(val => !val)}
             />
           }
-          label="Rasterize canvas based tracks or use full SVG based rendering? Note: full SVG based rendering file sizes can be very larger"
+          label="Rasterize canvas based tracks? File may be much larger if this is turned off"
         />
 
         <Button
           variant="contained"
           color="primary"
           type="submit"
-          style={{ marginLeft: 20 }}
           onClick={async () => {
+            setLoading(true)
             await view.exportSvg({ fullSvg: !rasterizeLayers })
+            setLoading(false)
             handleClose()
           }}
         >
