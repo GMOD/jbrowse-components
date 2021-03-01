@@ -515,7 +515,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -1565,7 +1565,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -1729,7 +1729,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig2-LinearBasicDisplay"
+            data-testid="display-testConfig2-LinearBareDisplay"
             role="presentation"
           >
             <div

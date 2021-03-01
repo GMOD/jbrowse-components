@@ -64,8 +64,8 @@ describe('<LinearGenomeView />', () => {
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
@@ -121,8 +121,8 @@ describe('<LinearGenomeView />', () => {
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
@@ -133,8 +133,8 @@ describe('<LinearGenomeView />', () => {
           configuration: 'testConfig2',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig2-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig2-LinearBareDisplay',
             },
           ],
         },
