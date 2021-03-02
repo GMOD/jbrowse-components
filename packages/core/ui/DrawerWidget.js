@@ -1,14 +1,16 @@
 import Typography from '@material-ui/core/Typography'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
+import Button from '@material-ui/core/Button'
 import Toolbar from '@material-ui/core/Toolbar'
-import Tab from '@material-ui/core/Tab'
-import Tabs from '@material-ui/core/Tabs'
+import MobileStepper from '@material-ui/core/MobileStepper'
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
+import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -47,37 +49,60 @@ const DrawerWidget = observer(props => {
     heading,
   } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
-  const [value, setValue] = React.useState(visibleWidget)
+  const [activeWidget, setActiveWidget] = React.useState(
+    session.activeWidgets.size - 1,
+  )
 
-  const handleChange = (event, newVal) => {
-    console.log(newVal)
-    console.log(value)
-    setValue(newVal)
-    session.showWidget(newVal)
+  const handleNext = () => {
+    if (activeWidget < session.activeWidgets.size - 1) {
+      setActiveWidget(prevActiveWidget => prevActiveWidget + 1)
+      const widgetToShow = Array.from(session.activeWidgets.values())[
+        activeWidget
+      ]
+      session.showWidget(widgetToShow)
+    }
   }
 
-  const activeWidgets = Array.from(session.activeWidgets.values())
-  const tabs = activeWidgets.map((widget, index) => {
-    return <Tab key={widget.id} label={widget.id} value={widget} />
-  })
-  console.log(activeWidgets)
+  const handleBack = () => {
+    if (activeWidget > 0) {
+      setActiveWidget(prevActiveWidget => prevActiveWidget - 1)
+      const widgetToShow = Array.from(session.activeWidgets.values())[
+        activeWidget
+      ]
+      session.showWidget(widgetToShow)
+    }
+  }
+
+  console.log('active', activeWidget)
+  console.log('list', session.activeWidgets)
+
+  // console.log(ReactComponent)
+  // TODO: use widget id to get the wideget then show the widget
+  // TODO: use navigation either stepper or butttons
+  // TODO: back and forth buttons
+  // TODO: fix spacing between navigation and header
   return (
     <Drawer session={session} open={Boolean(session.activeWidgets.size)}>
-      {session.activeWidgets.size > 1 && (
-        <Tabs
-          indicatorColor="primary"
-          textColor="primary"
-          onChange={handleChange}
-          aria-label="disabled tabs example"
-        >
-          {activeWidgets.map(widget => {
-            return <Tab key={widget} label={widget.id} value={widget} />
-          })}
-        </Tabs>
-      )}
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
+            {session.activeWidgets.size > 1 && (
+              <MobileStepper
+                variant="text"
+                steps={session.activeWidgets.size}
+                activeStep={activeWidget}
+                nextButton={
+                  <Button onClick={handleNext}>
+                    <ArrowForwardIosIcon aria-label="Next" />
+                  </Button>
+                }
+                backButton={
+                  <Button onClick={handleBack}>
+                    <ArrowBackIosIcon aria-label="Back" />
+                  </Button>
+                }
+              />
+            )}
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
@@ -92,8 +117,6 @@ const DrawerWidget = observer(props => {
               color="inherit"
               aria-label="Close"
               onClick={() => {
-                console.log('I hid it')
-                console.log(visibleWidget)
                 session.hideWidget(visibleWidget)
               }}
             >
