@@ -1,12 +1,13 @@
 /* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
-import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import ComparativeServerSideRendererType, {
+  RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import React from 'react'
 import {
   overlayYPos,
   interstitialYPos,
@@ -17,10 +18,8 @@ import {
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
-interface BreakpointSplitRenderProps {
-  displayModel?: any
-  imageData: any
-  config: any
+export interface RenderArgsDeserialized
+  extends ComparativeRenderArgsDeserialized {
   height: number
   width: number
   middle: boolean
@@ -28,8 +27,9 @@ interface BreakpointSplitRenderProps {
   linkedTrack: string
   views: ReducedLinearGenomeView[]
 }
-export interface BreakpointSplitRenderingProps
-  extends BreakpointSplitRenderProps {
+
+export interface RenderArgsDeserializedWithImageData
+  extends RenderArgsDeserialized {
   imageData: any
 }
 
@@ -123,7 +123,7 @@ function drawArrow(
 }
 
 export default class BreakpointSplitRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: BreakpointSplitRenderProps) {
+  async makeImageData(props: RenderArgsDeserialized) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -224,24 +224,17 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     }
 
     const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-    }
+    return { imageData }
   }
 
-  async render(renderProps: BreakpointSplitRenderProps) {
-    const { height, width, imageData } = await this.makeImageData(renderProps)
+  async render(renderProps: RenderArgsDeserialized) {
+    const { height, width } = renderProps
+    const { imageData } = await this.makeImageData(renderProps)
 
-    const reactElement = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
+    const results = await super.render({ ...renderProps, imageData })
 
     return {
-      reactElement,
+      ...results,
       imageData,
       height,
       width,

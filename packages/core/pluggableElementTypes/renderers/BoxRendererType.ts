@@ -3,19 +3,19 @@ import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
-import { Feature } from '../../util/simpleFeature'
-import ServerSideRendererType, {
-  ResultsSerialized as BaseResultsSerialized,
-  RenderArgs,
-  RenderArgsSerialized,
-  ResultsDeserialized as BaseResultsDeserialized,
-  RenderArgsDeserialized as BaseRenderArgsDeserialized,
+import FeatureRendererType, {
+  RenderArgs as FeatureRenderArgs,
+  RenderArgsSerialized as FeatureRenderArgsSerialized,
+  RenderArgsDeserialized as FeatureRenderArgsDeserialized,
   RenderResults,
-} from './ServerSideRendererType'
+  ResultsSerialized as FeatureResultsSerialized,
+  ResultsDeserialized as FeatureResultsDeserialized,
+} from './FeatureRendererType'
 import { Region } from '../../util/types'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
+import RpcManager from '../../rpc/RpcManager'
 
 interface LayoutSessionProps {
   config: AnyConfigurationModel
@@ -91,20 +91,32 @@ export class LayoutSession implements LayoutSessionProps {
 /// *****************************************************************************
 /// *****************************************************************************
 
-type ResultsDeserialized = BaseResultsDeserialized & {
-  layout: PrecomputedLayout<string>
+export interface RenderArgs extends FeatureRenderArgs {
+  bpPerPx: number
 }
 
-type RenderArgsDeserialized = BaseRenderArgsDeserialized & {
+export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
+  bpPerPx: number
+}
+
+export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
+  bpPerPx: number
   layout: BaseLayout<unknown>
 }
 
-type ResultsSerialized = BaseResultsSerialized & {
+export type { RenderResults }
+
+export interface ResultsSerialized extends FeatureResultsSerialized {
   maxHeightReached: boolean
   layout: SerializedLayout
 }
 
-export default class BoxRendererType extends ServerSideRendererType {
+export interface ResultsDeserialized extends FeatureResultsDeserialized {
+  maxHeightReached: boolean
+  layout: PrecomputedLayout<string>
+}
+
+export default class BoxRendererType extends FeatureRendererType {
   sessions: { [sessionId: string]: LayoutSession } = {}
 
   getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
@@ -137,15 +149,13 @@ export default class BoxRendererType extends ServerSideRendererType {
     return new LayoutSession(props)
   }
 
-  freeResourcesInWorker(args: {
-    sessionId: string
-    regions: Region[] | undefined
-  }) {
+  async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
     const { sessionId, regions } = args
+    let freed = 0
     const session = this.sessions[sessionId]
     if (!regions && session) {
       delete this.sessions[sessionId]
-      return 1
+      freed = 1
     }
     if (session && regions) {
       session.layout.discardRange(
@@ -154,7 +164,7 @@ export default class BoxRendererType extends ServerSideRendererType {
         regions[0].end,
       )
     }
-    return 0
+    return freed + (await super.freeResourcesInClient(rpcManager, args))
   }
 
   deserializeLayoutInClient(json: SerializedLayout) {
@@ -162,14 +172,14 @@ export default class BoxRendererType extends ServerSideRendererType {
   }
 
   deserializeResultsInClient(
-    result: ResultsSerialized & { layout: SerializedLayout },
+    result: ResultsSerialized,
     args: RenderArgs,
-  ) {
+  ): ResultsDeserialized {
+    const layout = this.deserializeLayoutInClient(result.layout)
     const deserialized = super.deserializeResultsInClient(
-      result,
+      { ...result, layout } as FeatureResultsSerialized,
       args,
     ) as ResultsDeserialized
-    deserialized.layout = this.deserializeLayoutInClient(result.layout)
 
     // // debugging aid: check if there are features in `features` that are not in the layout
     // const featureIds1 = iterMap(deserialized.features.values(), f =>
@@ -187,16 +197,14 @@ export default class BoxRendererType extends ServerSideRendererType {
     return deserialized
   }
 
-  deserializeLayoutInWorker(args: RenderArgsDeserialized & LayoutSessionProps) {
+  deserializeLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
     const subLayout = session.layout.getSublayout(regions[0].refName)
     return subLayout
   }
 
-  deserializeArgsInWorker(
-    args: RenderArgsSerialized & LayoutSessionProps,
-  ): RenderArgsDeserialized {
+  deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
     const deserialized = super.deserializeArgsInWorker(
       args,
     ) as RenderArgsDeserialized
@@ -206,12 +214,10 @@ export default class BoxRendererType extends ServerSideRendererType {
 
   serializeResultsInWorker(
     results: RenderResults,
-    features: Map<string, Feature>,
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const serialized = super.serializeResultsInWorker(
       results,
-      features,
       args,
     ) as ResultsSerialized
 

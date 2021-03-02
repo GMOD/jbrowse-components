@@ -1,18 +1,20 @@
 import { checkAbortSignal, renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ComparativeServerSideRendererType, {
-  RenderArgs,
+  RenderArgs as ComparativeRenderArgs,
+  RenderArgsSerialized as ComparativeRenderArgsSerialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 
-interface ComparativeRenderArgs {
-  sessionId: string
+interface RenderArgs extends ComparativeRenderArgs {
+  adapterConfig: {}
+}
+
+interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
   adapterConfig: {}
   rendererType: string
-  renderProps: RenderArgs
-  signal?: RemoteAbortSignal
 }
 
 /**
@@ -23,9 +25,7 @@ interface ComparativeRenderArgs {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async serializeArguments(
-    args: ComparativeRenderArgs & { signal?: AbortSignal },
-  ) {
+  async serializeArguments(args: RenderArgs) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     if (!assemblyManager) {
@@ -35,18 +35,15 @@ export default class ComparativeRender extends RpcMethodType {
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 
-  async execute(args: ComparativeRenderArgs, rpcDriverClassName: string) {
+  async execute(
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    rpcDriverClassName: string,
+  ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
-    const {
-      sessionId,
-      adapterConfig,
-      rendererType,
-      renderProps,
-      signal,
-    } = deserializedArgs
+    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
     if (!sessionId) throw new Error('must pass a unique session id')
 
     checkAbortSignal(signal)
@@ -79,10 +76,8 @@ export default class ComparativeRender extends RpcMethodType {
 
     const renderArgs = {
       ...deserializedArgs,
-      ...renderProps,
       dataAdapter,
     }
-    delete renderArgs.renderProps
 
     const result = await RendererType.renderInWorker(renderArgs)
     checkAbortSignal(signal)

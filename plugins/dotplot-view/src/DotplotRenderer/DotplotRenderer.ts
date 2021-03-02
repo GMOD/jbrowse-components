@@ -1,35 +1,29 @@
-import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance } from 'mobx-state-tree'
-import ComparativeServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
+import ComparativeServerSideRendererType, {
+  RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Dotplot1DView } from '../DotplotView/model'
-import MyConfig from './configSchema'
 
 type Dim = Instance<typeof Dotplot1DView>
 
 const { parseCigar } = MismatchParser
 
-export interface DotplotRenderProps {
-  dataAdapter: BaseFeatureDataAdapter
-  signal?: AbortSignal
-  config: Instance<typeof MyConfig>
+export interface RenderArgsDeserialized
+  extends ComparativeRenderArgsDeserialized {
   height: number
   width: number
-  fontSize: number
   highResolutionScaling: number
-  pluginManager: PluginManager
   view: { hview: Dim; vview: Dim }
 }
 
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
-  async makeImageData(props: DotplotRenderProps & { views: Dim[] }) {
+  async makeImageData(props: RenderArgsDeserialized & { views: Dim[] }) {
     const {
       highResolutionScaling: scale = 1,
       width,
@@ -121,7 +115,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return createImageBitmap(canvas)
   }
 
-  async render(renderProps: DotplotRenderProps) {
+  async render(renderProps: RenderArgsDeserialized) {
     const {
       width,
       height,
@@ -148,14 +142,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       views: realizedViews,
     })
 
-    const reactElement = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
+    const results = await super.render({
+      ...renderProps,
+      height,
+      width,
+      imageData,
+    })
 
     return {
-      reactElement,
+      ...results,
       imageData,
       height,
       width,

@@ -5,7 +5,8 @@ import {
 } from '../data_adapters/dataAdapterCache'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import ServerSideRendererType, {
-  RenderArgsSerialized as RendererTypeRenderArgsSerialized,
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
@@ -132,13 +133,15 @@ export class CoreFreeResources extends RpcMethodType {
   }
 }
 
-export interface RenderArgs {
+export interface RenderArgs extends ServerSideRenderArgs {
+  adapterConfig: {}
+}
+
+export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   assemblyName: string
   regions: Region[]
-  sessionId: string
   adapterConfig: {}
   rendererType: string
-  renderProps: RendererTypeRenderArgsSerialized
 }
 
 /**
@@ -147,9 +150,7 @@ export interface RenderArgs {
 export class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
-  async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback: Function },
-  ) {
+  async serializeArguments(args: RenderArgs) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     if (!assemblyManager) {
@@ -160,22 +161,14 @@ export class CoreRender extends RpcMethodType {
   }
 
   async execute(
-    args: RenderArgs & {
-      signal?: RemoteAbortSignal
-    },
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
     rpcDriverClassName: string,
   ) {
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
-    const {
-      sessionId,
-      adapterConfig,
-      rendererType,
-      renderProps,
-      signal,
-    } = deserializedArgs
+    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
@@ -199,10 +192,8 @@ export class CoreRender extends RpcMethodType {
 
     const renderArgs = {
       ...deserializedArgs,
-      ...renderProps,
       dataAdapter,
     }
-    delete renderArgs.renderProps
 
     const result = await RendererType.renderInWorker(renderArgs)
 

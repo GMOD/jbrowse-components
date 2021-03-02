@@ -86,13 +86,18 @@ function LinearSyntenyRendering(props: {
       }),
     [features],
   )
-
-  const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
-  const { views } = parentView
   const matches = layoutMatches(deserializedFeatures)
-  const offsets = views.map(view => view.offsetPx)
 
+  const parentView =
+    'type' in displayModel
+      ? (getContainingView(displayModel) as LinearSyntenyViewModel)
+      : undefined
+  const { views } = parentView || { views: undefined }
+  const offsets = views && views.map(view => view.offsetPx)
   useEffect(() => {
+    if (!(parentView && views && offsets)) {
+      return
+    }
     if (!ref.current) {
       return
     }
