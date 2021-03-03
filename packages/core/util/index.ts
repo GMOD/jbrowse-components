@@ -856,3 +856,12 @@ export const complement = (() => {
     return seqString.replace(complementRegex, m => complementTable[m] || '')
   }
 })()
+
+// requires immediate execution in jest environment, because (hypothesis) it
+// otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
+// get the contents of the canvas
+export const rIC =
+  window.requestIdleCallback ||
+  (typeof jest === 'undefined'
+    ? (cb: Function) => setTimeout(() => cb(), 1)
+    : (cb: Function) => cb())
