@@ -258,7 +258,24 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       hasWidget(widget: any) {
         return self.activeWidgets.has(widget.id)
       },
-
+      getWidgetById(widgetId) {
+        if (isAlive(self)) {
+          console.log(Array.from(self.activeWidgets.values()))
+          return Array.from(self.activeWidgets.values()).find(
+            widget => widget.id === widgetId,
+          )
+        }
+        // returns most recently added item in active widgets
+        return undefined
+      },
+      getWidgetByIndex(index: number) {
+        if (isAlive(self)) {
+          console.log(Array.from(self.activeWidgets.values()))
+          return Array.from(self.activeWidgets.values())[index]
+        }
+        // returns most recently added item in active widgets
+        return undefined
+      },
       removeReferring(
         referring: any,
         track: any,

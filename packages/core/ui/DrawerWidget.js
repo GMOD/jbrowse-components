@@ -53,28 +53,37 @@ const DrawerWidget = observer(props => {
     session.activeWidgets.size - 1,
   )
 
+  useEffect(() => {
+    setActiveWidget(session.activeWidgets.size - 1)
+    console.log('hi')
+  }, [session.activeWidgets.size])
+
   const handleNext = () => {
     if (activeWidget < session.activeWidgets.size - 1) {
       setActiveWidget(prevActiveWidget => prevActiveWidget + 1)
-      const widgetToShow = Array.from(session.activeWidgets.values())[
-        activeWidget
-      ]
-      session.showWidget(widgetToShow)
+      console.log('active', activeWidget)
+
+      // const widgetToShow = Array.from(session.activeWidgets.values())[
+      //   activeWidget
+      // ]
+      // session.showWidget(widgetToShow)
     }
   }
 
   const handleBack = () => {
     if (activeWidget > 0) {
       setActiveWidget(prevActiveWidget => prevActiveWidget - 1)
-      const widgetToShow = Array.from(session.activeWidgets.values())[
-        activeWidget
-      ]
-      session.showWidget(widgetToShow)
+      console.log('active', activeWidget)
+
+      // const widgetToShow = Array.from(session.activeWidgets.values())[
+      //   activeWidget
+      // ]
+      // session.showWidget(widgetToShow)
     }
   }
 
   console.log('active', activeWidget)
-  console.log('list', session.activeWidgets)
+  console.log('list SIZE', session.activeWidgets.size)
 
   // console.log(ReactComponent)
   // TODO: use widget id to get the wideget then show the widget
