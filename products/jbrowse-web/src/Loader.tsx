@@ -289,7 +289,12 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      const hasCallbacks = await scanSharedSessionForCallbacks(session)
+      if (hasCallbacks) {
+        self.setSessionTriaged({ snap: session, origin: 'share' })
+      } else {
+        self.setSessionSnapshot({ ...session, id: shortid() })
+      }
     },
 
     async afterCreate() {
