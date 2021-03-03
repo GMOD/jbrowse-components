@@ -1,18 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import Accordion from '@material-ui/core/Accordion'
-import AccordionDetails from '@material-ui/core/AccordionDetails'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import Typography from '@material-ui/core/Typography'
+import React, { useEffect, useState } from 'react'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  Divider,
+  Paper,
+  Tooltip,
+} from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import Divider from '@material-ui/core/Divider'
-import Paper from '@material-ui/core/Paper'
-import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
-import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
+import { readConfObject } from '../configuration'
+import { measureText, getSession } from '../util'
+import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
 
 const globalOmit = [
@@ -81,11 +86,15 @@ export const useStyles = makeStyles(theme => ({
 interface BaseCardProps {
   title?: string
   defaultExpanded?: boolean
+  children?: React.ReactNode
 }
 
-export const BaseCard: FunctionComponent<BaseCardProps> = props => {
+export function BaseCard({
+  children,
+  title,
+  defaultExpanded = true,
+}: BaseCardProps) {
   const classes = useStyles()
-  const { children, title, defaultExpanded = true } = props
   return (
     <Accordion
       style={{ marginTop: '4px' }}
@@ -195,9 +204,42 @@ const ArrayValue = ({
 interface BaseProps extends BaseCardProps {
   feature: any
   descriptions?: Record<string, React.ReactNode>
+  model?: any
 }
 
-const CoreDetails = (props: BaseProps) => {
+function SequenceFeatureDetails(props: BaseProps) {
+  const { model, feature } = props
+  const { assemblyManager, rpcManager } = getSession(model)
+  const { assemblyNames } = model.view
+  const [sequence, setSequence] = useState<string>()
+  const [assemblyName] = assemblyNames
+  useEffect(() => {
+    ;(async () => {
+      const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+      const adapterConfig = readConfObject(assemblyConfig, [
+        'sequence',
+        'adapter',
+      ])
+      const sessionId = 'getSequence'
+      const region = {
+        start: feature.start,
+        end: feature.end,
+        refName: feature.refName,
+      }
+      const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
+        adapterConfig,
+        region,
+        sessionId,
+      })
+      const [feat] = feats as Feature[]
+      setSequence(feat.get('seq'))
+    })()
+  }, [feature, assemblyManager, rpcManager, assemblyName])
+
+  return <div>Hello world {sequence}</div>
+}
+
+function CoreDetails(props: BaseProps) {
   const { feature } = props
   const { refName, start, end, strand } = feature
   const strandMap: Record<string, string> = {
@@ -234,21 +276,6 @@ const CoreDetails = (props: BaseProps) => {
   )
 }
 
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-function measureText(str: string, fontSize = 10) {
-  // prettier-ignore
-  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-  const avg = 0.5279276315789471
-  return (
-    str
-      .split('')
-      .map(c =>
-        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
-      )
-      .reduce((cur, acc) => acc + cur) * fontSize
-  )
-}
-
 export const BaseCoreDetails = (props: BaseProps) => {
   return (
     <BaseCard {...props} title="Primary data">
@@ -265,7 +292,7 @@ interface AttributeProps {
   prefix?: string
 }
 
-export const Attributes: FunctionComponent<AttributeProps> = props => {
+export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
     omit = [],
@@ -410,7 +437,7 @@ export interface BaseInputProps extends BaseCardProps {
   formatter?: (val: unknown, key: string) => JSX.Element
 }
 
-const Subfeature = (props: BaseProps) => {
+function Subfeature(props: BaseProps) {
   const { feature } = props
   const { type, name, id } = feature
   const displayName = name || id
@@ -419,6 +446,9 @@ const Subfeature = (props: BaseProps) => {
       <CoreDetails {...props} />
       <Divider />
       <Attributes attributes={feature} {...props} />
+      <div>
+        <SequenceFeatureDetails {...props} />
+      </div>
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={false}>
           {feature.subfeatures.map((subfeature: any) => (
@@ -454,7 +484,11 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures">
           {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+            <Subfeature
+              key={JSON.stringify(subfeature)}
+              feature={subfeature}
+              model={model}
+            />
           ))}
         </BaseCard>
       ) : null}
