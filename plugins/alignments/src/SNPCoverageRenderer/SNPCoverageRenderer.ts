@@ -27,6 +27,8 @@ interface SNPCoverageRendererProps {
   sessionId: string
   signal: AbortSignal
   theme: ThemeOptions
+  ticks: { values: number[] }
+  displayCrossHatches: boolean
 }
 
 interface BaseInfo {
@@ -49,6 +51,8 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
+      displayCrossHatches,
+      ticks: { values },
     } = props
     const theme = createJBrowseTheme(configTheme)
     const [region] = regions
@@ -173,6 +177,17 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fill()
         }
       }
+    }
+
+    if (displayCrossHatches) {
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(140,140,140,0.8)'
+      values.forEach(tick => {
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(toY(tick)))
+        ctx.lineTo(width, Math.round(toY(tick)))
+        ctx.stroke()
+      })
     }
   }
 }

@@ -177,28 +177,28 @@ const stateModelFactory = (
         return filters
       },
 
-      get scaleOpts() {
-        return {
-          domain: self.domain,
-          stats: self.stats,
-          autoscaleType: getConf(self, 'autoscale'),
-          scaleType: getConf(self, 'scaleType'),
-          inverted: getConf(self, 'inverted'),
-        }
-      },
+      // get scaleOpts() {
+      //   return {
+      //     domain: self.domain,
+      //     stats: self.stats,
+      //     autoscaleType: getConf(self, 'autoscale'),
+      //     scaleType: getConf(self, 'scaleType'),
+      //     inverted: getConf(self, 'inverted'),
+      //   }
+      // },
 
-      get renderProps() {
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          notReady: !self.ready,
-          height: self.height,
-          displayModel: self,
-          scaleOpts: this.scaleOpts,
-          filters: self.filters,
-          config: self.rendererConfig,
-        }
-      },
+      // get renderProps() {
+      //   return {
+      //     ...self.composedRenderProps,
+      //     ...getParentRenderProps(self),
+      //     notReady: !self.ready,
+      //     height: self.height,
+      //     displayModel: self,
+      //     scaleOpts: this.scaleOpts,
+      //     filters: self.filters,
+      //     config: self.rendererConfig,
+      //   }
+      // },
     }))
 
 export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
