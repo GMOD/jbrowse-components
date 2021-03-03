@@ -463,7 +463,11 @@ const Renderer = observer(
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
-                  `Session could not be loaded. ${errorMessage}`,
+                  `Session could not be loaded. ${
+                    errorMessage.length > 1000
+                      ? `${errorMessage.slice(0, 1000)}...see more in console`
+                      : errorMessage
+                  }`,
                 )
               }
             } else {
