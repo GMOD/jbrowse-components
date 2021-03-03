@@ -1,16 +1,14 @@
 import Typography from '@material-ui/core/Typography'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
-import Button from '@material-ui/core/Button'
 import Toolbar from '@material-ui/core/Toolbar'
-import MobileStepper from '@material-ui/core/MobileStepper'
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
-import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos'
+import Tabs from '@material-ui/core/Tabs'
+import Tab from '@material-ui/core/Tab'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
-import React, { useRef, useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -40,69 +38,46 @@ const useStyles = makeStyles(theme => ({
     margin: theme.spacing(2),
   },
 }))
+
 const DrawerWidget = observer(props => {
   const { session } = props
-  const { visibleWidget, pluginManager } = session
+  const { visibleWidget, pluginManager, activeWidgets } = session
   const {
     ReactComponent,
     HeadingComponent,
     heading,
   } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
-  const [activeWidget, setActiveWidget] = React.useState(
-    session.activeWidgets.size - 1,
-  )
 
-  const handleNext = () => {
-    if (activeWidget < session.activeWidgets.size - 1) {
-      setActiveWidget(prevActiveWidget => prevActiveWidget + 1)
-      const widgetToShow = Array.from(session.activeWidgets.values())[
-        activeWidget
-      ]
-      session.showWidget(widgetToShow)
-    }
+  const handleChange = (event, newIndex) => {
+    session.showWidget(Array.from(activeWidgets.values())[newIndex])
   }
 
-  const handleBack = () => {
-    if (activeWidget > 0) {
-      setActiveWidget(prevActiveWidget => prevActiveWidget - 1)
-      const widgetToShow = Array.from(session.activeWidgets.values())[
-        activeWidget
-      ]
-      session.showWidget(widgetToShow)
-    }
-  }
-
-  console.log('active', activeWidget)
-  console.log('list', session.activeWidgets)
-
-  // console.log(ReactComponent)
-  // TODO: use widget id to get the wideget then show the widget
-  // TODO: use navigation either stepper or butttons
-  // TODO: back and forth buttons
-  // TODO: fix spacing between navigation and header
   return (
-    <Drawer session={session} open={Boolean(session.activeWidgets.size)}>
+    <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
-            {session.activeWidgets.size > 1 && (
-              <MobileStepper
-                variant="text"
-                steps={session.activeWidgets.size}
-                activeStep={activeWidget}
-                nextButton={
-                  <Button onClick={handleNext}>
-                    <ArrowForwardIosIcon aria-label="Next" />
-                  </Button>
-                }
-                backButton={
-                  <Button onClick={handleBack}>
-                    <ArrowBackIosIcon aria-label="Back" />
-                  </Button>
-                }
-              />
+            {activeWidgets.size > 1 && (
+              <Tabs
+                value={session.activeWidgets.size - 1}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="on"
+              >
+                {Array.from(activeWidgets.values()).map((widget, index) => {
+                  return (
+                    <Tab
+                      key={`${widget.id}-${index}`}
+                      label={widget.id}
+                      index={index}
+                    />
+                  )
+                })}
+              </Tabs>
             )}
+          </Toolbar>
+          <Toolbar disableGutters className={classes.drawerToolbar}>
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
