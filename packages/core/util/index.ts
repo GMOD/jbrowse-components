@@ -881,3 +881,103 @@ export function measureText(str: string, fontSize = 10) {
       .reduce((cur, acc) => acc + cur) * fontSize
   )
 }
+
+export const defaultStarts = ['ATG']
+export const defaultStops = ['TAA', 'TAG', 'TGA']
+export const defaultCodonTable = {
+  TCA: 'S',
+  TCC: 'S',
+  TCG: 'S',
+  TCT: 'S',
+  TTC: 'F',
+  TTT: 'F',
+  TTA: 'L',
+  TTG: 'L',
+  TAC: 'Y',
+  TAT: 'Y',
+  TAA: '*',
+  TAG: '*',
+  TGC: 'C',
+  TGT: 'C',
+  TGA: '*',
+  TGG: 'W',
+  CTA: 'L',
+  CTC: 'L',
+  CTG: 'L',
+  CTT: 'L',
+  CCA: 'P',
+  CCC: 'P',
+  CCG: 'P',
+  CCT: 'P',
+  CAC: 'H',
+  CAT: 'H',
+  CAA: 'Q',
+  CAG: 'Q',
+  CGA: 'R',
+  CGC: 'R',
+  CGG: 'R',
+  CGT: 'R',
+  ATA: 'I',
+  ATC: 'I',
+  ATT: 'I',
+  ATG: 'M',
+  ACA: 'T',
+  ACC: 'T',
+  ACG: 'T',
+  ACT: 'T',
+  AAC: 'N',
+  AAT: 'N',
+  AAA: 'K',
+  AAG: 'K',
+  AGC: 'S',
+  AGT: 'S',
+  AGA: 'R',
+  AGG: 'R',
+  GTA: 'V',
+  GTC: 'V',
+  GTG: 'V',
+  GTT: 'V',
+  GCA: 'A',
+  GCC: 'A',
+  GCG: 'A',
+  GCT: 'A',
+  GAC: 'D',
+  GAT: 'D',
+  GAA: 'E',
+  GAG: 'E',
+  GGA: 'G',
+  GGC: 'G',
+  GGG: 'G',
+  GGT: 'G',
+}
+
+/**
+ *  take CodonTable above and generate larger codon table that includes
+ *  all permutations of upper and lower case nucleotides
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function generateCodonTable(table: any) {
+  const tempCodonTable: { [key: string]: string } = {}
+  Object.keys(table).forEach(codon => {
+    const aa = table[codon]
+    const nucs: string[][] = []
+    for (let i = 0; i < 3; i++) {
+      const nuc = codon.charAt(i)
+      nucs[i] = []
+      nucs[i][0] = nuc.toUpperCase()
+      nucs[i][1] = nuc.toLowerCase()
+    }
+    for (let i = 0; i < 2; i++) {
+      const n0 = nucs[0][i]
+      for (let j = 0; j < 2; j++) {
+        const n1 = nucs[1][j]
+        for (let k = 0; k < 2; k++) {
+          const n2 = nucs[2][k]
+          const triplet = n0 + n1 + n2
+          tempCodonTable[triplet] = aa
+        }
+      }
+    }
+  })
+  return tempCodonTable
+}

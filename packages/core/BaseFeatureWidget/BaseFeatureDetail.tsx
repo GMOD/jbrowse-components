@@ -8,6 +8,8 @@ import {
   Divider,
   Paper,
   Tooltip,
+  Select,
+  MenuItem,
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
@@ -16,7 +18,12 @@ import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
 import { readConfObject } from '../configuration'
-import { measureText, getSession } from '../util'
+import {
+  measureText,
+  getSession,
+  defaultCodonTable,
+  generateCodonTable,
+} from '../util'
 import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
 
@@ -207,16 +214,29 @@ interface BaseProps extends BaseCardProps {
   model?: any
 }
 
+// display the stitched-together sequence of a gene's CDS, cDNA, or protein
+// sequence. this is a best effort and weird genomic phenomena could lead these
+// to not be 100% accurate
 function SequenceFeatureDetails(props: BaseProps) {
   const { model, feature } = props
   const { assemblyManager, rpcManager } = getSession(model)
   const { assemblyNames } = model.view
   const [sequence, setSequence] = useState<string>()
+  const [error, setError] = useState<string>()
   const [assemblyName] = assemblyNames
+  const hasCDS = feature.subfeatures.find((sub: any) => sub.type === 'CDS')
+  const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
+  const loading = !sequence
+  const codonTable = generateCodonTable(defaultCodonTable)
+
   useEffect(() => {
     ;(async () => {
-      const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
-      const adapterConfig = readConfObject(assemblyConfig, [
+      const assembly = await assemblyManager.waitForAssembly(assemblyName)
+      if (!assembly) {
+        setError('assembly not found')
+        return
+      }
+      const adapterConfig = readConfObject(assembly.configuration, [
         'sequence',
         'adapter',
       ])
@@ -224,7 +244,7 @@ function SequenceFeatureDetails(props: BaseProps) {
       const region = {
         start: feature.start,
         end: feature.end,
-        refName: feature.refName,
+        refName: assembly?.getCanonicalRefName(feature.refName),
       }
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
@@ -232,11 +252,149 @@ function SequenceFeatureDetails(props: BaseProps) {
         sessionId,
       })
       const [feat] = feats as Feature[]
+      if (!feat) {
+        setError('sequence not found')
+      }
+
       setSequence(feat.get('seq'))
     })()
   }, [feature, assemblyManager, rpcManager, assemblyName])
 
-  return <div>Hello world {sequence}</div>
+  const text: React.ReactNode[] = []
+  if (sequence && feature) {
+    const children = feature.subfeatures
+      .sort((a: any, b: any) => a.start - b.start)
+      .map((sub: any) => {
+        return {
+          ...sub,
+          start: sub.start - feature.start,
+          end: sub.end - feature.start,
+        }
+      })
+
+    const cdsColor = 'rgba(150,150,0,0.3)'
+    const utrColor = 'rgba(0,150,150,0.3)'
+    const proteinColor = 'rgba(150,0,150,0.3)'
+
+    const cds = children.filter((sub: any) => sub.type === 'CDS')
+    const exons = children.filter((sub: any) => sub.type === 'exon')
+
+    if (mode === 'cds') {
+      cds.forEach((sub: any) => {
+        text.push(
+          <div
+            key={`${sub.start}-${sub.end}`}
+            style={{
+              display: 'inline',
+              backgroundColor: cdsColor,
+            }}
+          >
+            {sequence.slice(sub.start, sub.end)}
+          </div>,
+        )
+      })
+    } else if (mode === 'cdna') {
+      // if we have CDS, it is a real gene, color the difference between the
+      // start and end of the CDS as UTR and the rest as CDS
+      if (cds.length) {
+        text.push(
+          <div
+            key="5prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {sequence.slice(0, cds[0].start)}
+          </div>,
+        )
+        cds.forEach((sub: any) => {
+          text.push(
+            <div
+              key={`${sub.start}-${sub.end}`}
+              style={{
+                display: 'inline',
+                backgroundColor: cdsColor,
+              }}
+            >
+              {sequence.slice(sub.start, sub.end)}
+            </div>,
+          )
+        })
+
+        text.push(
+          <div
+            key="3prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {sequence.slice(cds[cds.length - 1].end)}
+          </div>,
+        )
+      }
+      // no CDS, probably a pseudogene, color whole thing as "UTR"
+      else {
+        exons.forEach((sub: any) => {
+          text.push(
+            <div
+              key={`${sub.start}-${sub.end}`}
+              style={{
+                display: 'inline',
+                backgroundColor: utrColor,
+              }}
+            >
+              {sequence.slice(sub.start, sub.end)}
+            </div>,
+          )
+        })
+      }
+    } else if (mode === 'protein') {
+      let str = ''
+      cds.forEach((sub: any) => {
+        str += sequence.slice(sub.start, sub.end)
+      })
+      let protein = ''
+      for (let i = 0; i < str.length; i += 3) {
+        protein += codonTable[str.slice(i, i + 3)]
+      }
+      text.push(
+        <div
+          key={protein}
+          style={{
+            display: 'inline',
+            backgroundColor: proteinColor,
+          }}
+        >
+          {protein}
+        </div>,
+      )
+    }
+  }
+
+  return (
+    <div>
+      <Select
+        value={mode}
+        onChange={event => setMode(event.target.value as string)}
+      >
+        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+        <MenuItem value="cdna">cDNA</MenuItem>
+      </Select>
+      <div style={{ display: 'inline' }}>
+        {error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
+            {text}
+          </div>
+        )}
+        {loading ? <div>Loading gene sequence...</div> : null}
+      </div>
+    </div>
+  )
 }
 
 function CoreDetails(props: BaseProps) {
@@ -446,9 +604,9 @@ function Subfeature(props: BaseProps) {
       <CoreDetails {...props} />
       <Divider />
       <Attributes attributes={feature} {...props} />
-      <div>
+      {feature.type === 'mRNA' || feature.type === 'transcript' ? (
         <SequenceFeatureDetails {...props} />
-      </div>
+      ) : null}
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={false}>
           {feature.subfeatures.map((subfeature: any) => (
