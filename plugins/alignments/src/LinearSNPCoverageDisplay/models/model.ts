@@ -115,26 +115,20 @@ const stateModelFactory = (
       get extraTrackMenuItems() {
         return [
           {
-            type: 'subMenu',
-            label: 'SNPCoverageTrack settings',
-            subMenu: [
-              {
-                label: 'Draw insertion/clipping indicators',
-                type: 'checkbox',
-                checked: self.drawIndicatorsSetting,
-                onClick: () => {
-                  self.toggleDrawIndicators()
-                },
-              },
-              {
-                label: 'Draw insertion/clipping counts',
-                type: 'checkbox',
-                checked: self.drawInterbaseCountsSetting,
-                onClick: () => {
-                  self.toggleDrawInterbaseCounts()
-                },
-              },
-            ],
+            label: 'Draw insertion/clipping indicators',
+            type: 'checkbox',
+            checked: self.drawIndicatorsSetting,
+            onClick: () => {
+              self.toggleDrawIndicators()
+            },
+          },
+          {
+            label: 'Draw insertion/clipping counts',
+            type: 'checkbox',
+            checked: self.drawInterbaseCountsSetting,
+            onClick: () => {
+              self.toggleDrawInterbaseCounts()
+            },
           },
         ]
       },
