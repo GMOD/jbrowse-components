@@ -112,7 +112,7 @@ const stateModelFactory = (
         return []
       },
 
-      get composedTrackMenuItems() {
+      get extraTrackMenuItems() {
         return [
           {
             type: 'subMenu',

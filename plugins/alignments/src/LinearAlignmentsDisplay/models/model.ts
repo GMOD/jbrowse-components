@@ -113,8 +113,19 @@ const stateModelFactory = (
         get trackMenuItems(): MenuItem[] {
           return [
             ...trackMenuItems,
-            ...self.PileupDisplay.composedTrackMenuItems,
-            ...self.SNPCoverageDisplay.composedTrackMenuItems,
+            {
+              type: 'subMenu',
+              label: 'Pileup settings',
+              subMenu: self.PileupDisplay.composedTrackMenuItems,
+            },
+            {
+              type: 'subMenu',
+              label: 'SNPCoverage settings',
+              subMenu: [
+                ...self.SNPCoverageDisplay.composedTrackMenuItems,
+                ...self.SNPCoverageDisplay.extraTrackMenuItems,
+              ],
+            },
           ]
         },
       }
