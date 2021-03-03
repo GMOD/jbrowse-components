@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
-<div>
+<div
+  style="all: initial;"
+>
   <div
     class="MuiPaper-root makeStyles-viewContainer MuiPaper-elevation12 MuiPaper-rounded"
     style="padding: 0px 8px 8px;"

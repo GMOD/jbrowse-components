@@ -4,7 +4,6 @@ import React from 'react'
 import createSessionModel from '../createModel/createSessionModel'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
-import './App.css'
 
 type Session = Instance<ReturnType<typeof createSessionModel>>
 function JBrowseLinearGenomeView({
@@ -21,7 +20,9 @@ function JBrowseLinearGenomeView({
   const { ReactComponent } = viewType
 
   return (
-    <div className="yui3-cssreset">
+    // avoid parent styles getting into this div
+    // https://css-tricks.com/almanac/properties/a/all/
+    <div style={{ all: 'initial' }}>
       <ViewContainer key={`view-${view.id}`} view={view}>
         <ReactComponent model={view} session={session} />
       </ViewContainer>
