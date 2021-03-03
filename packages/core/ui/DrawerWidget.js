@@ -62,6 +62,7 @@ const DrawerWidget = observer(props => {
               <Tabs
                 value={session.activeWidgets.size - 1}
                 onChange={handleChange}
+                indicatorColor="primary"
                 variant="scrollable"
                 scrollButtons="on"
               >
