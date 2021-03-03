@@ -1,6 +1,5 @@
 import { types, cast } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
   AnyConfigurationSchemaType,
@@ -170,29 +169,6 @@ const stateModelFactory = (
         }
         return filters
       },
-
-      // get scaleOpts() {
-      //   return {
-      //     domain: self.domain,
-      //     stats: self.stats,
-      //     autoscaleType: getConf(self, 'autoscale'),
-      //     scaleType: getConf(self, 'scaleType'),
-      //     inverted: getConf(self, 'inverted'),
-      //   }
-      // },
-
-      // get renderProps() {
-      //   return {
-      //     ...self.composedRenderProps,
-      //     ...getParentRenderProps(self),
-      //     notReady: !self.ready,
-      //     height: self.height,
-      //     displayModel: self,
-      //     scaleOpts: this.scaleOpts,
-      //     filters: self.filters,
-      //     config: self.rendererConfig,
-      //   }
-      // },
     }))
 
 export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
