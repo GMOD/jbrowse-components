@@ -1004,11 +1004,11 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "nclist_long_names-LinearFeatureDisplay",
+          "displayId": "nclist_long_names-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "nclist with long names/descriptions",
@@ -1368,11 +1368,11 @@ Object {
           "type": "LinearLollipopDisplay",
         },
         Object {
-          "displayId": "lollipop_track-LinearFeatureDisplay",
+          "displayId": "lollipop_track-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
@@ -1440,11 +1440,11 @@ Object {
           "type": "LinearFilteringDisplay",
         },
         Object {
-          "displayId": "filtering_track-LinearFeatureDisplay",
+          "displayId": "filtering_track-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "FromConfig Track (defaults to LinearFilteringDisplay)",
@@ -1967,11 +1967,11 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "gff3tabix_genes-LinearFeatureDisplay",
+          "displayId": "gff3tabix_genes-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "GFF3Tabix genes",
@@ -2155,11 +2155,11 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "bigbed_genes-LinearFeatureDisplay",
+          "displayId": "bigbed_genes-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "BigBed genes",
@@ -2186,11 +2186,11 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "bedtabix_genes-LinearFeatureDisplay",
+          "displayId": "bedtabix_genes-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "BedTabix genes",
@@ -2248,11 +2248,11 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "EA_0Jp4oPKg-LinearFeatureDisplay",
+          "displayId": "EA_0Jp4oPKg-LinearBasicDisplay",
           "renderer": Object {
             "type": "SvgFeatureRenderer",
           },
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
         },
       ],
       "name": "NCList genes",

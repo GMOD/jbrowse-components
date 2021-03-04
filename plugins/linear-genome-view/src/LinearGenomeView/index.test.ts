@@ -10,7 +10,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { Instance, types } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
-import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBasicDisplay'
+import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38DisplayedRegions from './hg38DisplayedRegions.json'
 
 // a stub linear genome view state model that only accepts base track types.
@@ -33,12 +33,12 @@ stubManager.addTrackType(() => {
 })
 stubManager.addDisplayType(() => {
   const configSchema = ConfigurationSchema(
-    'LinearBasicDisplay',
+    'LinearBareDisplay',
     {},
     { explicitlyTyped: true },
   )
   return new DisplayType({
-    name: 'LinearBasicDisplay',
+    name: 'LinearBareDisplay',
     configSchema,
     stateModel: LinearBasicDisplayStateModelFactory(configSchema),
     trackType: 'BasicTrack',

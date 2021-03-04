@@ -150,7 +150,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "nclist_genes_hg19_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -369,7 +369,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -420,7 +420,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "mane_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
