@@ -150,6 +150,8 @@ export {
   BaseLinearDisplay,
   baseLinearDisplayConfigSchema,
   linearBasicDisplayConfigSchemaFactory,
+  featuresTrackConfigSchema,
+  featuresTrackModelFactory,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
