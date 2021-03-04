@@ -297,6 +297,7 @@ const stateModelFactory = (
             height: self.height,
             ticks: this.ticks,
             displayCrossHatches: self.displayCrossHatches,
+            filters: self.filters,
           }
         },
 
@@ -366,13 +367,17 @@ const stateModelFactory = (
                 self.toggleCrossHatches()
               },
             },
-            {
-              label: 'Renderer type',
-              subMenu: [...rendererTypes.keys()].map(key => ({
-                label: key,
-                onClick: () => self.setRendererType(key),
-              })),
-            },
+            ...(getConf(self, 'renderers').length > 1
+              ? [
+                  {
+                    label: 'Renderer type',
+                    subMenu: [...rendererTypes.keys()].map(key => ({
+                      label: key,
+                      onClick: () => self.setRendererType(key),
+                    })),
+                  },
+                ]
+              : []),
             {
               label: 'Autoscale type',
               subMenu: [

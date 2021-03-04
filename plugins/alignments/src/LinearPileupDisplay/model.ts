@@ -527,20 +527,20 @@ const stateModelFactory = (
               ],
             },
             {
-              label: 'Set feature height',
-              onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetFeatureHeightDlg,
-                  self,
-                )
-              },
-            },
-            {
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(
                   FilterByTagDlg,
+                  self,
+                )
+              },
+            },
+            {
+              label: 'Set feature height',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(
+                  SetFeatureHeightDlg,
                   self,
                 )
               },
