@@ -17,7 +17,7 @@ import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
-import { readConfObject } from '../configuration'
+import { getConf } from '../configuration'
 import {
   measureText,
   getSession,
@@ -233,7 +233,12 @@ function SequenceFeatureDetails(props: BaseProps) {
   const [preseq, setSequence] = useState<string>()
   const [error, setError] = useState<string>()
   const [assemblyName] = assemblyNames
-  const hasCDS = feature.subfeatures.find((sub: any) => sub.type === 'CDS')
+  const subfeatures = feature.subfeatures as {
+    start: number
+    end: number
+    type: string
+  }[]
+  const hasCDS = subfeatures.find(sub => sub.type === 'CDS')
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const loading = !preseq
   const codonTable = generateCodonTable(defaultCodonTable)
@@ -245,10 +250,7 @@ function SequenceFeatureDetails(props: BaseProps) {
         setError('assembly not found')
         return
       }
-      const adapterConfig = readConfObject(assembly.configuration, [
-        'sequence',
-        'adapter',
-      ])
+      const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
       const sessionId = 'getSequence'
       const region = {
         start: feature.start,
@@ -271,11 +273,6 @@ function SequenceFeatureDetails(props: BaseProps) {
 
   const text: React.ReactNode[] = []
   if (preseq && feature) {
-    const subfeatures = feature.subfeatures as {
-      start: number
-      end: number
-      type: string
-    }[]
     const children = subfeatures
       .sort((a, b) => a.start - b.start)
       .map(sub => {
@@ -376,7 +373,7 @@ function SequenceFeatureDetails(props: BaseProps) {
             }}
           >
             {sequence.slice(lastCds.end, lastCdsExon.end)}
-            {stitch(exons.slice(lastCdsExon), sequence)}
+            {stitch(exons.slice(lastCdsIdx), sequence)}
           </div>,
         )
       }
@@ -637,15 +634,20 @@ export interface BaseInputProps extends BaseCardProps {
 }
 
 function Subfeature(props: BaseProps) {
-  const { feature } = props
+  const { feature, model } = props
   const { type, name, id, subfeatures } = feature
   const displayName = name || id
+  const session = getSession(model)
+  const defSeqTypes = ['mRNA', 'transcript']
+  const sequenceTypes =
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+
   return (
     <BaseCard title={displayName ? `${displayName} - ${type}` : type}>
       <CoreDetails {...props} />
       <Divider />
       <Attributes attributes={feature} {...props} />
-      {feature.type === 'mRNA' || feature.type === 'transcript' ? (
+      {sequenceTypes.includes(feature.type) ? (
         <SequenceFeatureDetails {...props} />
       ) : null}
       {feature.subfeatures && feature.subfeatures.length ? (
