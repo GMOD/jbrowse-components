@@ -134,8 +134,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
     class="MuiFormGroup-root"
   />
   <div
-    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
-    style="margin-top: 4px;"
+    class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
   >
     <div
       aria-disabled="false"
@@ -267,8 +266,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
                 </div>
               </div>
               <div
-                class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
-                style="margin-top: 4px;"
+                class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
               >
                 <div
                   aria-disabled="false"

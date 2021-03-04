@@ -11,10 +11,16 @@ import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import JBrowseRootModelFactory from '../rootModel'
+import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
+import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
+import TestPlugin from './TestPlugin'
 
 window.TextEncoder = TextEncoder
 
@@ -64,6 +70,29 @@ test('lollipop track test', async () => {
   await expect(findByTestId('three')).resolves.toBeTruthy()
 })
 
+test('toplevel configuration', () => {
+  const pluginManager = new PluginManager(
+    corePlugins.concat([TestPlugin]).map(P => new P()),
+  )
+  pluginManager.createPluggableElements()
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, true)
+  const rootModel = JBrowseRootModel.create({
+    jbrowse: volvoxConfigSnapshot,
+    assemblyManager: {},
+  })
+  rootModel.setDefaultSession()
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
+  const state = pluginManager.rootModel
+  const { jbrowse } = state
+  const { configuration } = jbrowse
+  // test reading top level configurations added by Test Plugin
+  const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
+  const test2 = readConfObject(configuration, ['TestPlugin', 'topLevelTest'])
+  expect(test).toEqual('test works')
+  expect(test2).toEqual('test works')
+})
+
 test('variant track test - opens feature detail view', async () => {
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
@@ -95,6 +124,32 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
 }, 10000)
+
+describe('assembly aliases', () => {
+  it('allow a track with an alias assemblyName to display', async () => {
+    const variantTrack = volvoxConfigSnapshot.tracks.find(
+      track => track.trackId === 'volvox_filtered_vcf',
+    )
+    const assemblyAliasVariantTrack = JSON.parse(JSON.stringify(variantTrack))
+    assemblyAliasVariantTrack.assemblyNames = ['vvx']
+    const pluginManager = getPluginManager({
+      ...volvoxConfigSnapshot,
+      tracks: [assemblyAliasVariantTrack],
+    })
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    await findByText('Help')
+    state.session.views[0].setNewView(0.05, 5000)
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
+    state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
+      'test-vcf-604452',
+    )
+    const feat = await findByTestId('test-vcf-604452', {}, { timeout: 10000 })
+    expect(feat).toBeTruthy()
+  }, 10000)
+})
 
 describe('nclist track test with long name', () => {
   it('see that a feature gets ellipses', async () => {
@@ -132,10 +187,13 @@ describe('test configuration editor', () => {
     await expect(findByTestId('configEditor')).resolves.toBeTruthy()
     const input = await findByDisplayValue('goldenrod')
     fireEvent.change(input, { target: { value: 'green' } })
-    await waitFor(async () => {
-      const feats = await findAllByTestId('box-test-vcf-604452')
-      expect(feats[0]).toHaveAttribute('fill', 'green')
-    })
+    await waitFor(
+      async () => {
+        const feats = await findAllByTestId('box-test-vcf-604452')
+        expect(feats[0]).toHaveAttribute('fill', 'green')
+      },
+      { timeout: 10000 },
+    )
   }, 10000)
 })
 
@@ -191,7 +249,7 @@ test('looks at about this track dialog', async () => {
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', {}, { timeout: 10000 }))
   fireEvent.click(await findByText('About this track'))
   await findAllByText(/SQ/, {}, { timeout: 10000 })
-})
+}, 15000)

@@ -34,11 +34,18 @@ export default function JBrowseWeb(
           defaultValue:
             'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
+        featureDetails: ConfigurationSchema('FeatureDetails', {
+          sequenceTypes: {
+            type: 'stringArray',
+            defaultValue: ['mRNA', 'transcript'],
+          },
+        }),
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),

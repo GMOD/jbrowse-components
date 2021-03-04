@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
@@ -12,7 +12,8 @@ import {
   QueryParamProvider,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { types, Instance, SnapshotOut } from 'mobx-state-tree'
+import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
@@ -36,6 +37,7 @@ import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
 import SessionWarningModal from './sessionWarningModal'
+import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
   const s = window.location.search
@@ -107,7 +109,7 @@ const SessionLoader = types
     shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
-    plugins: [] as PluginConstructor[],
+    runtimePlugins: [] as PluginConstructor[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -124,6 +126,10 @@ const SessionLoader = types
 
     get encodedSession() {
       return self.sessionQuery?.startsWith('encoded-')
+    },
+
+    get jsonSession() {
+      return self.sessionQuery?.startsWith('json-')
     },
 
     get localSession() {
@@ -143,7 +149,6 @@ const SessionLoader = types
         !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
       )
     },
-
     get configLoaded() {
       return !!self.configError || !!self.configSnapshot
     },
@@ -158,8 +163,8 @@ const SessionLoader = types
     setSessionError(error: Error) {
       self.sessionError = error
     },
-    setPlugins(plugins: PluginConstructor[]) {
-      self.plugins = plugins
+    setRuntimePlugins(plugins: PluginConstructor[]) {
+      self.runtimePlugins = plugins
     },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
@@ -171,11 +176,8 @@ const SessionLoader = types
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setSessionTriaged(snap: unknown, origin: string) {
-      self.sessionTriaged = { snap, origin }
-    },
-    setShareWarningOpen(flag: boolean) {
-      self.shareWarningOpen = flag
+    setSessionTriaged(args?: { snap: unknown; origin: string }) {
+      self.sessionTriaged = args
     },
   }))
   .actions(self => ({
@@ -184,9 +186,10 @@ const SessionLoader = types
         const pluginLoader = new PluginLoader(config.plugins)
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
-        self.setPlugins([...corePlugins, ...runtimePlugins])
-      } catch (error) {
-        self.setConfigError(error)
+        self.setRuntimePlugins([...runtimePlugins])
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
       }
     },
     async fetchConfig() {
@@ -196,18 +199,19 @@ const SessionLoader = types
         }
         const location = openLocation(configLocation)
         const configText = (await location.readFile('utf8')) as string
-
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
-        await this.fetchPlugins(config)
         // cross origin config check
-        if (configUri.hostname !== window.location.hostname && !inDevelopment) {
-          self.setSessionTriaged(config, 'config')
-          self.setShareWarningOpen(true)
-        } else self.setConfigSnapshot(config)
-      } catch (error) {
-        self.setConfigError(error)
+        if (configUri.hostname !== window.location.hostname) {
+          self.setSessionTriaged({ snap: config, origin: 'config' })
+        } else {
+          await this.fetchPlugins(config)
+          self.setConfigSnapshot(config)
+        }
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
       }
     },
 
@@ -268,9 +272,10 @@ const SessionLoader = types
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
       const hasCallbacks = await scanSharedSessionForCallbacks(session)
       if (hasCallbacks) {
-        self.setSessionTriaged(session, 'share')
-        self.setShareWarningOpen(true)
-      } else self.setSessionSnapshot({ ...session, id: shortid() })
+        self.setSessionTriaged({ snap: session, origin: 'share' })
+      } else {
+        self.setSessionSnapshot({ ...session, id: shortid() })
+      }
     },
 
     async decodeEncodedUrlSession() {
@@ -280,8 +285,26 @@ const SessionLoader = types
       )
       self.setSessionSnapshot({ ...session, id: shortid() })
     },
+
+    async decodeJsonUrlSession() {
+      // @ts-ignore
+      const session = JSON.parse(self.sessionQuery.replace('json-', ''))
+      const hasCallbacks = await scanSharedSessionForCallbacks(session)
+      if (hasCallbacks) {
+        self.setSessionTriaged({ snap: session, origin: 'share' })
+      } else {
+        self.setSessionSnapshot({ ...session, id: shortid() })
+      }
+    },
+
     async afterCreate() {
-      const { localSession, encodedSession, sharedSession, configPath } = self
+      const {
+        localSession,
+        encodedSession,
+        sharedSession,
+        jsonSession,
+        configPath,
+      } = self
 
       // rename autosave to previousAutosave
       const lastAutosave = localStorage.getItem(`autosave-${configPath}`)
@@ -297,35 +320,45 @@ const SessionLoader = types
         return
       }
 
-      try {
-        if (sharedSession) {
-          await this.fetchSharedSession()
-        } else if (encodedSession) {
-          await this.decodeEncodedUrlSession()
-        } else if (localSession) {
-          await this.fetchSessionStorageSession()
-        } else if (self.sessionQuery) {
-          // if there was a sessionQuery and we don't recognize it
-          throw new Error('unrecognized session format')
-        } else {
-          // placeholder for session loaded, but none found
-          self.setBlankSession(true)
-        }
-        if (self.bc1) {
-          self.bc1.onmessage = msg => {
-            const ret =
-              JSON.parse(sessionStorage.getItem('current') || '{}').session ||
-              {}
-            if (ret.id === msg.data) {
-              if (self.bc2) {
-                self.bc2.postMessage(ret)
+      addDisposer(
+        self,
+        autorun(async () => {
+          try {
+            if (self.configSnapshot) {
+              if (sharedSession) {
+                await this.fetchSharedSession()
+              } else if (encodedSession) {
+                await this.decodeEncodedUrlSession()
+              } else if (jsonSession) {
+                await this.decodeJsonUrlSession()
+              } else if (localSession) {
+                await this.fetchSessionStorageSession()
+              } else if (self.sessionQuery) {
+                // if there was a sessionQuery and we don't recognize it
+                throw new Error('unrecognized session format')
+              } else {
+                // placeholder for session loaded, but none found
+                self.setBlankSession(true)
+              }
+              if (self.bc1) {
+                self.bc1.onmessage = msg => {
+                  const ret =
+                    JSON.parse(sessionStorage.getItem('current') || '{}')
+                      .session || {}
+                  if (ret.id === msg.data) {
+                    if (self.bc2) {
+                      self.bc2.postMessage(ret)
+                    }
+                  }
+                }
               }
             }
+          } catch (e) {
+            console.error(e)
+            self.setSessionError(e)
           }
-        }
-      } catch (e) {
-        self.setSessionError(e)
-      }
+        }),
+      )
     },
   }))
 
@@ -375,7 +408,7 @@ const Renderer = observer(
     useEffect(() => {
       try {
         const {
-          plugins,
+          runtimePlugins,
           adminKey,
           configSnapshot,
           sessionSnapshot,
@@ -383,10 +416,18 @@ const Renderer = observer(
         } = loader
 
         if (ready) {
-          // it is ready when a session has loaded and when there is no config error
-          // Assuming that the query changes self.sessionError or self.sessionSnapshot or self.blankSession
-          const pluginManager = new PluginManager(plugins.map(P => new P()))
-
+          // it is ready when a session has loaded and when there is no config
+          // error Assuming that the query changes self.sessionError or
+          // self.sessionSnapshot or self.blankSession
+          const pluginManager = new PluginManager([
+            ...corePlugins.map(P => {
+              return {
+                plugin: new P(),
+                metadata: { isCore: true },
+              } as PluginLoadRecord
+            }),
+            ...runtimePlugins.map(P => new P()),
+          ])
           pluginManager.createPluggableElements()
 
           const JBrowseRootModel = JBrowseRootModelFactory(
@@ -402,8 +443,8 @@ const Renderer = observer(
               configPath,
             })
 
-            // in order: saves the previous autosave for recovery, tries to load
-            // the local session if session in query, or loads the default
+            // in order: saves the previous autosave for recovery, tries to
+            // load the local session if session in query, or loads the default
             // session
             if (sessionError) {
               rootModel.setDefaultSession()
@@ -427,7 +468,11 @@ const Renderer = observer(
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
-                  `Session could not be loaded. ${errorMessage}`,
+                  `Session could not be loaded. ${
+                    errorMessage.length > 1000
+                      ? `${errorMessage.slice(0, 1000)}...see more in console`
+                      : errorMessage
+                  }`,
                 )
               }
             } else {
@@ -530,11 +575,38 @@ const Renderer = observer(
       )
     }
 
-    if (shareWarningOpen) {
-      return (
+    if (loader.sessionTriaged) {
+      const handleClose = () => {
+        loader.setSessionTriaged(undefined)
+      }
+      return loader.sessionTriaged.origin === 'session' ? (
         <SessionWarningModal
-          loader={loader}
-          sessionTriaged={loader.sessionTriaged}
+          onConfirm={() => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            loader.setSessionSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            loader.setBlankSession(true)
+            handleClose()
+          }}
+        />
+      ) : (
+        <ConfigWarningModal
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            await loader.fetchPlugins(session)
+            loader.setConfigSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            factoryReset()
+            handleClose()
+          }}
         />
       )
     }

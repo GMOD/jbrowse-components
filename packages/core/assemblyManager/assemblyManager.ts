@@ -4,9 +4,8 @@ import {
   cast,
   getParent,
   IAnyType,
-  SnapshotOrInstance,
-  types,
   Instance,
+  types,
 } from 'mobx-state-tree'
 import { when } from '../util'
 import { readConfObject } from '../configuration'
@@ -26,27 +25,18 @@ export default function assemblyManagerFactory(
     })
     .views(self => ({
       get(assemblyName: string) {
-        const canonicalName = this.aliasMap.get(assemblyName)
-        return self.assemblies.find(
-          assembly => assembly.name === (canonicalName || assemblyName),
-        )
+        return self.assemblies.find(assembly => assembly.hasName(assemblyName))
       },
 
       get assemblyList() {
-        return getParent(self).jbrowse.assemblies.slice()
+        // name is the explicit identifier and can be accessed without getConf,
+        // hence the union with {name:string}
+        return [
+          ...getParent(self).jbrowse.assemblies,
+          ...(getParent(self).session.sessionAssemblies || []),
+        ] as (AnyConfigurationModel & { name: string })[]
       },
 
-      get aliasMap() {
-        const aliases: Map<string, string> = new Map()
-        self.assemblies.forEach(assembly => {
-          if (assembly.aliases.length) {
-            assembly.aliases.forEach(assemblyAlias => {
-              aliases.set(assemblyAlias, assembly.name)
-            })
-          }
-        })
-        return aliases
-      },
       get rpcManager() {
         return getParent(self).rpcManager
       },
@@ -71,10 +61,7 @@ export default function assemblyManagerFactory(
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
-        const canonicalName = self.aliasMap.get(assemblyName)
-        const assembly = self.assemblies.find(
-          asm => asm.name === (canonicalName || assemblyName),
-        )
+        const assembly = self.get(assemblyName)
         if (assembly) {
           await when(() => Boolean(assembly.regions && assembly.refNameAliases))
           return assembly
@@ -141,10 +128,7 @@ export default function assemblyManagerFactory(
           reaction(
             // have to slice it to be properly reacted to
             () => self.assemblyList,
-            (
-              assemblyConfigs: Instance<typeof Assembly> &
-                AnyConfigurationModel[],
-            ) => {
+            assemblyConfigs => {
               self.assemblies.forEach(asm => {
                 if (!asm.configuration) {
                   this.removeAssembly(asm)
@@ -164,14 +148,19 @@ export default function assemblyManagerFactory(
           ),
         )
       },
+
+      // this can take an active instance of an assembly, in which case it is
+      // referred to, or it can take an identifier e.g. assembly name, which is
+      // used as a reference. snapshots cannot be used
       addAssembly(
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies.push({ configuration: assemblyConfig })
       },
+
       replaceAssembly(
         idx: number,
-        assemblyConfig: SnapshotOrInstance<typeof assemblyConfigType> | string,
+        assemblyConfig: Instance<typeof assemblyConfigType> | string,
       ) {
         self.assemblies[idx] = cast({
           configuration: assemblyConfig,

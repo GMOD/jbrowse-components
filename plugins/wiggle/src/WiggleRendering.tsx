@@ -13,6 +13,7 @@ function WiggleRendering(props: {
   height: number
   onMouseLeave: Function
   onMouseMove: Function
+  onFeatureClick: Function
 }) {
   const {
     regions,
@@ -22,33 +23,43 @@ function WiggleRendering(props: {
     height,
     onMouseLeave = () => {},
     onMouseMove = () => {},
+    onFeatureClick = () => {},
   } = props
   const [region] = regions
   const ref = useRef<HTMLDivElement>(null)
 
+  function getFeatureUnderMouse(eventClientX: number) {
+    // calculates feature under mouse
+    let offset = 0
+    if (ref.current) {
+      offset = ref.current.getBoundingClientRect().left
+    }
+    const offsetX = eventClientX - offset
+    const px = region.reversed ? width - offsetX : offsetX
+    const clientBp = region.start + bpPerPx * px
+    let featureUnderMouse
+    for (const feature of features.values()) {
+      if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
+        featureUnderMouse = feature
+        break
+      }
+    }
+    return featureUnderMouse
+  }
   return (
     <div
       ref={ref}
+      data-testid="wiggle-rendering-test"
       onMouseMove={event => {
-        let offset = 0
-        if (ref.current) {
-          offset = ref.current.getBoundingClientRect().left
-        }
-        const offsetX = event.clientX - offset
-        const px = region.reversed ? width - offsetX : offsetX
-        const clientBp = region.start + bpPerPx * px
-        let featureUnderMouse
-        for (const feature of features.values()) {
-          if (
-            clientBp <= feature.get('end') &&
-            clientBp >= feature.get('start')
-          ) {
-            featureUnderMouse = feature
-            break
-          }
-        }
-
+        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
         onMouseMove(
+          event,
+          featureUnderMouse ? featureUnderMouse.id() : undefined,
+        )
+      }}
+      onClick={event => {
+        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
+        onFeatureClick(
           event,
           featureUnderMouse ? featureUnderMouse.id() : undefined,
         )

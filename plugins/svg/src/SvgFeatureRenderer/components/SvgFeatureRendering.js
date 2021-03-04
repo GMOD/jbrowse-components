@@ -37,21 +37,22 @@ function RenderedFeatureGlyph(props) {
   let fontHeight
   let expansion
   if (labelsAllowed) {
+    const showLabels = readConfObject(config, 'showLabels')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], ['feature'])
     expansion = readConfObject(config, 'maxFeatureGlyphExpansion') || 0
     name = readConfObject(config, ['labels', 'name'], [feature]) || ''
-    shouldShowName = /\S/.test(name)
+    shouldShowName = /\S/.test(name) && showLabels
 
     description =
       readConfObject(config, ['labels', 'description'], [feature]) || ''
-    shouldShowDescription = /\S/.test(description)
+    shouldShowDescription = /\S/.test(description) && showLabels
     const fontWidth = fontHeight * fontWidthScaleFactor
     const textVerticalPadding = 2
 
     let nameWidth = 0
     if (shouldShowName) {
       nameWidth = Math.round(
-        Math.min(name.length * fontWidth, rootLayout.width + expansion),
+        Math.min(String(name).length * fontWidth, rootLayout.width + expansion),
       )
       rootLayout.addChild(
         'nameLabel',
@@ -68,7 +69,10 @@ function RenderedFeatureGlyph(props) {
         ? rootLayout.getSubRecord('nameLabel')
         : featureLayout
       descriptionWidth = Math.round(
-        Math.min(description.length * fontWidth, rootLayout.width + expansion),
+        Math.min(
+          String(description).length * fontWidth,
+          rootLayout.width + expansion,
+        ),
       )
       rootLayout.addChild(
         'descriptionLabel',
@@ -99,9 +103,9 @@ function RenderedFeatureGlyph(props) {
       rootLayout={rootLayout}
       bpPerPx={bpPerPx}
       config={config}
-      name={name}
+      name={String(name)}
       shouldShowName={shouldShowName}
-      description={description}
+      description={String(description)}
       shouldShowDescription={shouldShowDescription}
       fontHeight={fontHeight}
       allowedWidthExpansion={expansion}

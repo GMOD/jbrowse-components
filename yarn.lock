@@ -3921,10 +3921,10 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.1.5":
-  version "1.1.5"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.5.tgz#565bcf86105f6a26f8633dde2cbac8866896193f"
-  integrity sha512-/3eu0D+xYE0kXnNdO6ZqD6fk9uuxL9vGhSadau2cuZZ6dognNHDo4z8pBvlj4SJXdFwgkG9qVvR5DabRXq212Q==
+"@gmod/bam@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.6.tgz#53a1fd64c2630d6b8a8aa6ca2e4db236e80b5d8a"
+  integrity sha512-8E47E1C6ud7G806NFKsu2dt+tNY0Ob5en4mXjlMjNEMOtQhWWORhNVgCQDXsiDakg+0WUGboa05yfuUBGSCaJQ==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
@@ -3975,10 +3975,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.5.7":
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.7.tgz#f8922081ea37f77fe5f2d167b4e400c22d63799c"
-  integrity sha512-ivGfFSJf/orKeWhLUl2WfiD14ZCW3TaFbEgxSeaOmFr0sLe8sFWAx5V5xAXXhMgFvvou28vd2pXhZcqvEBXiAw==
+"@gmod/cram@^1.5.9":
+  version "1.5.9"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.5.9.tgz#be4db99f01b13ff04b09cc512ee7b924098559b4"
+  integrity sha512-yUGhMCvZytOkbvgHue0EJ9SuH5ae9kA5bc83Wjd9ahoQ5nG9tj6aLFt79nAQmKG789IOV1nql/ITZoymmUT+ow==
   dependencies:
     "@babel/runtime-corejs3" "^7.4.5"
     "@gmod/binary-parser" "^1.3.5"
@@ -5218,15 +5218,14 @@
     react-is "^16.8.0"
     react-transition-group "^4.4.0"
 
-"@material-ui/data-grid@^4.0.0-alpha.10", "@material-ui/data-grid@^4.0.0-alpha.11":
-  version "4.0.0-alpha.11"
-  resolved "https://registry.yarnpkg.com/@material-ui/data-grid/-/data-grid-4.0.0-alpha.11.tgz#ad3a8acd663d2256d1165b257165be342db5285d"
-  integrity sha512-OYgA1zNoFDHwA0KG7GoGCH3PnEuhbWL6EZbaVf2y+7biFaubHSIPiE5YOC4PBI+XJaIgESJhEjxc+ruhoSEc2w==
+"@material-ui/data-grid@^4.0.0-alpha.20":
+  version "4.0.0-alpha.20"
+  resolved "https://registry.yarnpkg.com/@material-ui/data-grid/-/data-grid-4.0.0-alpha.20.tgz#5fe8df438f5a9718636dc3bfaf268267cc87f17e"
+  integrity sha512-YqTTGs61zf3kT/5LuWWxwfTWwjXXJfP8nR7JiX30cMQXlOeIihQXHqbRrm7IHQRVWYQ5YxI95QLWtLHBIm2h0w==
   dependencies:
     "@material-ui/utils" "^5.0.0-alpha.14"
     prop-types "^15.7.2"
     reselect "^4.0.0"
-    tslib "^2.0.0"
 
 "@material-ui/icons@^4.0.0", "@material-ui/icons@^4.9.1":
   version "4.9.1"

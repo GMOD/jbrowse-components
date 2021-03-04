@@ -82,6 +82,14 @@ function Home() {
                   Linear genome view React component on <tt>npm</tt>
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="https://gmod.github.io/JBrowseR/"
+                  variant="contained"
+                >
+                  JBrowseR R package on <tt>CRAN</tt>
+                </Link>
+              </li>
               <li>More embeddable products coming soon</li>
             </ul>
             <h3>Desktop</h3>

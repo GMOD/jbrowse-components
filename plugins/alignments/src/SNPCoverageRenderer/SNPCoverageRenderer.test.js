@@ -53,6 +53,8 @@ test('several features', async () => {
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,
+    config: {},
+    ticks: { values: [0, 100] },
   })
 
   expect(result).toMatchSnapshot({

@@ -8,6 +8,7 @@ import {
   getSession,
   getContainingView,
   getContainingTrack,
+  isSelectionContainer,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -25,10 +26,13 @@ import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
-import { getNiceDomain } from '../../util'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { axisPropsFromTickScale } from 'react-d3-axis'
+import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
+import SetColorDlg from '../components/SetColorDialog'
 
 // fudge factor for making all labels on the YScalebar visible
 export const YSCALEBAR_LABEL_OFFSET = 5
@@ -63,8 +67,12 @@ const stateModelFactory = (
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
+        color: types.maybe(types.string),
+        summaryScoreMode: types.maybe(types.string),
+        rendererTypeNameState: types.maybe(types.string),
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
+        displayCrossHatches: types.maybe(types.boolean),
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -86,6 +94,9 @@ const stateModelFactory = (
         self.stats.scoreMax = stats.scoreMax
         self.ready = true
       },
+      setColor(color: string) {
+        self.color = color
+      },
 
       setLoading(aborter: AbortController) {
         const { statsFetchInProgress: statsFetch } = self
@@ -95,6 +106,15 @@ const stateModelFactory = (
         self.statsFetchInProgress = aborter
       },
 
+      // this overrides the BaseLinearDisplayModel to avoid popping up a
+      // feature detail display, but still sets the feature selection on the
+      // model so listeners can detect a click
+      selectFeature(feature: Feature) {
+        const session = getSession(self)
+        if (isSelectionContainer(session)) {
+          session.setSelection(feature)
+        }
+      },
       setResolution(res: number) {
         self.resolution = res
       },
@@ -111,6 +131,10 @@ const stateModelFactory = (
         }
       },
 
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreMode = val
+      },
+
       setAutoscale(val: string) {
         self.autoscale = val
       },
@@ -119,8 +143,16 @@ const stateModelFactory = (
         self.constraints.max = val
       },
 
+      setRendererType(val: string) {
+        self.rendererTypeNameState = val
+      },
+
       setMinScore(val?: number) {
         self.constraints.min = val
+      },
+
+      toggleCrossHatches() {
+        self.displayCrossHatches = !self.displayCrossHatches
       },
     }))
     .views(self => ({
@@ -133,7 +165,8 @@ const stateModelFactory = (
       },
 
       get rendererTypeName() {
-        const viewName = getConf(self, 'defaultRendering')
+        const viewName =
+          self.rendererTypeNameState || getConf(self, 'defaultRendering')
         const rendererType = rendererTypes.get(viewName)
         if (!rendererType) {
           throw new Error(`unknown alignments view name ${viewName}`)
@@ -173,12 +206,21 @@ const stateModelFactory = (
           ...configBlob,
           filled: self.fill,
           scaleType: this.scaleType,
+          displayCrossHatches: self.displayCrossHatches,
+          summaryScoreMode: self.summaryScoreMode,
+          color: self.color,
         })
       },
     }))
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        get summaryScoreModeSetting() {
+          return (
+            self.summaryScoreMode ||
+            readConfObject(self.rendererConfig, 'summaryScoreMode')
+          )
+        },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
 
@@ -187,6 +229,7 @@ const stateModelFactory = (
             bounds: [minScore, maxScore],
             scaleType,
           })
+          const headroom = getConf(self, 'headroom') || 0
 
           // avoid weird scalebar if log value and empty region displayed
           if (scaleType === 'log' && ret[1] === Number.MIN_VALUE) {
@@ -196,10 +239,10 @@ const stateModelFactory = (
           // heuristic to just give some extra headroom on bigwig scores if no
           // maxScore/minScore specified (they have MAX_VALUE/MIN_VALUE if so)
           if (maxScore === Number.MAX_VALUE && ret[1] > 1.0) {
-            ret[1] = round(ret[1])
+            ret[1] = round(ret[1] + headroom)
           }
           if (minScore === Number.MIN_VALUE && ret[0] < -1.0) {
-            ret[0] = round(ret[0])
+            ret[0] = round(ret[0] - headroom)
           }
 
           // avoid returning a new object if it matches the old value
@@ -233,11 +276,33 @@ const stateModelFactory = (
         get autoscaleType() {
           return self.autoscale || getConf(self, 'autoscale')
         },
+
+        get displayCrossHatchesSetting() {
+          return (
+            self.displayCrossHatches ||
+            readConfObject(self.rendererConfig, 'displayCrossHatches')
+          )
+        },
       }
     })
     .views(self => {
       const { trackMenuItems } = self
       return {
+        get ticks() {
+          const { scaleType, domain, height } = self
+          const range = [
+            height - YSCALEBAR_LABEL_OFFSET,
+            YSCALEBAR_LABEL_OFFSET,
+          ]
+          const scale = getScale({
+            scaleType,
+            domain,
+            range,
+            inverted: getConf(self, 'inverted'),
+          })
+          const ticks = height < 50 ? 2 : 4
+          return axisPropsFromTickScale(scale, ticks)
+        },
         get renderProps() {
           return {
             ...self.composedRenderProps,
@@ -247,9 +312,10 @@ const stateModelFactory = (
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
-            height:
-              self.height -
-              (self.needsScalebar ? YSCALEBAR_LABEL_OFFSET * 2 : 0),
+            height: self.height,
+            ticks: this.ticks,
+            displayCrossHatches: self.displayCrossHatches,
+            filters: self.filters,
           }
         },
 
@@ -290,6 +356,15 @@ const stateModelFactory = (
                       },
                     ],
                   },
+                  {
+                    label: 'Summary score mode',
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
+                      return {
+                        label: elt,
+                        onClick: () => self.setSummaryScoreMode(elt),
+                      }
+                    }),
+                  },
                 ]
               : []),
             ...(self.canHaveFill
@@ -311,6 +386,26 @@ const stateModelFactory = (
                 self.toggleLogScale()
               },
             },
+            {
+              type: 'checkbox',
+              label: 'Draw cross hatches',
+              checked: self.displayCrossHatchesSetting,
+              onClick: () => {
+                self.toggleCrossHatches()
+              },
+            },
+
+            ...(getConf(self, 'renderers').length > 1
+              ? [
+                  {
+                    label: 'Renderer type',
+                    subMenu: [...rendererTypes.keys()].map(key => ({
+                      label: key,
+                      onClick: () => self.setRendererType(key),
+                    })),
+                  },
+                ]
+              : []),
             {
               label: 'Autoscale type',
               subMenu: [
@@ -335,6 +430,12 @@ const stateModelFactory = (
               label: 'Set min/max score',
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(SetMinMaxDlg, self)
+              },
+            },
+            {
+              label: 'Set color',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(SetColorDlg, self)
               },
             },
           ]

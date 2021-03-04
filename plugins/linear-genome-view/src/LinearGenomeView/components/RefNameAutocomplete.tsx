@@ -2,8 +2,11 @@
  * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
  * Asynchronous Requests for autocomplete: https://material-ui.com/components/autocomplete/
  */
+import React, { useMemo } from 'react'
+import { observer } from 'mobx-react'
 import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
+// material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
@@ -12,9 +15,7 @@ import { InputAdornment } from '@material-ui/core'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
-import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
-import React, { useMemo } from 'react'
+// other
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
@@ -35,23 +36,23 @@ function RefNameAutocomplete({
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
-  onSelect: (region: Region | undefined) => void
+  onSelect: (region: string | undefined) => void
   assemblyName?: string
   value?: string
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
   const session = getSession(model)
-  const { assemblyManager } = getSession(model)
+  const { assemblyManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
   const options: Array<Option> = useMemo(() => {
-    const possOptions = regions.map(option => {
+    const defaultOptions = regions.map(option => {
       return { type: 'reference sequence', value: option.refName }
     })
-    return possOptions
+    return defaultOptions
   }, [regions])
 
   function onChange(newRegionName: Option | string) {
@@ -63,28 +64,7 @@ function RefNameAutocomplete({
       if (typeof newRegionName === 'string') {
         newRegionValue = newRegionName
       }
-      const newRegion: Region | undefined = regions.find(
-        region => newRegionValue === region.refName,
-      )
-      if (newRegion) {
-        // @ts-ignore
-        onSelect(getSnapshot(newRegion))
-      } else {
-        newRegionValue && navTo(newRegionValue)
-      }
-    }
-  }
-
-  function navTo(locString: string) {
-    try {
-      if (model.displayedRegions.length !== 0) {
-        model.navToLocString(locString)
-      } else {
-        throw new Error(`Unknown reference sequence "${locString}"`)
-      }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
+      onSelect(newRegionValue)
     }
   }
 
@@ -97,6 +77,7 @@ function RefNameAutocomplete({
       disableClearable
       freeSolo
       includeInputInList
+      clearOnBlur
       loading={loaded}
       selectOnFocus
       style={style}
@@ -117,8 +98,7 @@ function RefNameAutocomplete({
         return filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
-      onChange={(e, newRegion) => {
-        e.preventDefault()
+      onChange={(_, newRegion) => {
         onChange(newRegion)
       }}
       renderInput={params => {
@@ -144,6 +124,7 @@ function RefNameAutocomplete({
             {...params}
             {...TextFieldProps}
             helperText={helperText}
+            value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
           />

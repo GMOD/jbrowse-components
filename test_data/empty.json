@@ -1,0 +1,11 @@
+{
+  "defaultSession": {
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView"
+      }
+    ]
+  }
+}

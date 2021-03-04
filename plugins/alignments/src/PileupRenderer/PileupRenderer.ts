@@ -1,15 +1,10 @@
 /* eslint-disable no-bitwise */
-import deepEqual from 'deep-equal'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import BoxRendererType, {
-  LayoutSession,
-} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
-import MultiLayout from '@jbrowse/core/util/layouts/MultiLayout'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
@@ -21,8 +16,13 @@ import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
-import { Mismatch } from '../BamAdapter/MismatchParser'
+import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
+import { orientationTypes } from './util'
+import {
+  PileupLayoutSession,
+  PileupLayoutSessionProps,
+} from './PileupLayoutSession'
 
 export interface PileupRenderProps {
   features: Map<string, Feature>
@@ -30,11 +30,11 @@ export interface PileupRenderProps {
   config: AnyConfigurationModel
   regions: Region[]
   bpPerPx: number
-  colorBy: {
+  colorBy?: {
     type: string
     tag?: string
   }
-  colorTagMap: { [key: string]: string }
+  colorTagMap?: { [key: string]: string }
   height: number
   width: number
   highResolutionScaling: number
@@ -59,68 +59,6 @@ interface RenderArgsAugmented extends RenderArgsDeserialized {
   showSoftClip?: boolean
 }
 
-interface PileupLayoutSessionProps {
-  config: AnyConfigurationModel
-  bpPerPx: number
-  filters: SerializableFilterChain
-  sortedBy: unknown
-  showSoftClip: unknown
-}
-
-type MyMultiLayout = MultiLayout<GranularRectLayout<unknown>, unknown>
-interface CachedPileupLayout {
-  layout: MyMultiLayout
-  config: AnyConfigurationModel
-  filters: SerializableFilterChain
-  sortedBy: unknown
-  showSoftClip: boolean
-}
-
-// orientation definitions from igv.js, see also https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
-const orientationTypes = {
-  fr: {
-    F1R2: 'LR',
-    F2R1: 'LR',
-
-    F1F2: 'LL',
-    F2F1: 'LL',
-
-    R1R2: 'RR',
-    R2R1: 'RR',
-
-    R1F2: 'RL',
-    R2F1: 'RL',
-  } as { [key: string]: string },
-
-  rf: {
-    R1F2: 'LR',
-    R2F1: 'LR',
-
-    R1R2: 'LL',
-    R2R1: 'LL',
-
-    F1F2: 'RR',
-    F2F1: 'RR',
-
-    F1R2: 'RL',
-    F2R1: 'RL',
-  } as { [key: string]: string },
-
-  ff: {
-    F2F1: 'LR',
-    R1R2: 'LR',
-
-    F2R1: 'LL',
-    R1F2: 'LL',
-
-    R2F1: 'RR',
-    F1R2: 'RR',
-
-    R2R1: 'RL',
-    F1F2: 'RL',
-  } as { [key: string]: string },
-}
-
 const alignmentColoring: { [key: string]: string } = {
   color_fwd_strand_not_proper: '#ECC8C8',
   color_rev_strand_not_proper: '#BEBED8',
@@ -140,42 +78,21 @@ const alignmentColoring: { [key: string]: string } = {
   color_shortinsert: 'pink',
 }
 
-// Sorting and revealing soft clip changes the layout of Pileup renderer
-// Adds extra conditions to see if cached layout is valid
-class PileupLayoutSession extends LayoutSession {
-  sortedBy: unknown
-
-  showSoftClip = false
-
-  constructor(args: PileupLayoutSessionProps) {
-    super(args)
-    this.config = args.config
-  }
-
-  cachedLayoutIsValid(cachedLayout: CachedPileupLayout) {
-    return (
-      super.cachedLayoutIsValid(cachedLayout) &&
-      this.showSoftClip === cachedLayout.showSoftClip &&
-      deepEqual(this.sortedBy, cachedLayout.sortedBy)
-    )
-  }
-
-  cachedLayout: CachedPileupLayout | undefined
-
-  get layout(): MyMultiLayout {
-    if (!this.cachedLayout || !this.cachedLayoutIsValid(this.cachedLayout)) {
-      this.cachedLayout = {
-        layout: this.makeLayout(),
-        config: readConfObject(this.config),
-        filters: this.filters,
-        sortedBy: this.sortedBy,
-        showSoftClip: this.showSoftClip,
-      }
-    }
-    return this.cachedLayout.layout
-  }
+interface LayoutFeature {
+  heightPx: number
+  topPx: number
+  feature: Feature
 }
+
 export default class PileupRenderer extends BoxRendererType {
+  // get width and height of chars the height is an approximation: width
+  // letter M is approximately the height
+  getCharWidthHeight(ctx: CanvasRenderingContext2D) {
+    const charWidth = ctx.measureText('A').width
+    const charHeight = ctx.measureText('M').width
+    return { charWidth, charHeight }
+  }
+
   layoutFeature(
     feature: Feature,
     layout: BaseLayout<Feature>,
@@ -239,9 +156,9 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  // expands region for clipping to use
-  // In future when stats are improved, look for average read size in renderArg stats
-  // and set that as the maxClippingSize/expand region by average read size
+  // expands region for clipping to use. possible improvement: use average read
+  // size to set the heuristic maxClippingSize expansion (e.g. short reads
+  // don't have to expand a softclipping size a lot, but long reads might)
   getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
     const { config, showSoftClip } = renderArgs
 
@@ -316,26 +233,101 @@ export default class PileupRenderer extends BoxRendererType {
     return strand === 1 ? 'color_fwd_strand' : 'color_rev_strand'
   }
 
+  colorByPerBaseQuality(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    _config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const qual = feature.get('qual') as string
+    const scores = (qual || '').split(' ').map(val => +val)
+    const cigarOps = parseCigar(feature.get('CIGAR'))
+    const width = 1 / bpPerPx
+    const [leftPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+
+    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
+      const len = +cigarOps[i]
+      const op = cigarOps[i + 1]
+      if (op === 'S' || op === 'I') {
+        k += len
+      } else if (op === 'D' || op === 'N') {
+        j += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        for (let m = 0; m < len; m++) {
+          const score = scores[k + m]
+          ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
+          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+        }
+        j += len
+      }
+    }
+  }
+
   drawRect(
     ctx: CanvasRenderingContext2D,
-    feat: {
-      heightPx: number
-      topPx: number
-      feature: Feature
-    },
+    feat: LayoutFeature,
+    props: PileupRenderProps,
+  ) {
+    const { regions, bpPerPx } = props
+    const { heightPx, topPx, feature } = feat
+    const [region] = regions
+    const [leftPx, rightPx] = bpSpanPx(
+      feature.get('start'),
+      feature.get('end'),
+      region,
+      bpPerPx,
+    )
+    const flip = region.reversed ? -1 : 1
+    const strand = feature.get('strand') * flip
+    if (bpPerPx < 10) {
+      if (strand === -1) {
+        ctx.beginPath()
+        ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
+        ctx.lineTo(leftPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx)
+        ctx.lineTo(leftPx, topPx)
+        ctx.closePath()
+        ctx.fill()
+      } else {
+        ctx.beginPath()
+        ctx.moveTo(leftPx, topPx)
+        ctx.lineTo(leftPx, topPx + heightPx)
+        ctx.lineTo(rightPx, topPx + heightPx)
+        ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
+        ctx.lineTo(rightPx, topPx)
+        ctx.closePath()
+        ctx.fill()
+      }
+    } else {
+      ctx.fillRect(leftPx, topPx, rightPx - leftPx, heightPx)
+    }
+  }
+
+  drawAlignmentRect(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
     props: PileupRenderProps,
   ) {
     const {
       config,
       bpPerPx,
       regions,
-      colorBy = { type: '' },
-      colorTagMap,
+      colorBy: { tag = '', type: colorType = '' } = {},
+      colorTagMap = {},
     } = props
-    const { heightPx, topPx, feature } = feat
-    const { type: colorType } = colorBy
+    const { feature } = feat
     const region = regions[0]
 
+    // first pass for simple color changes that change the color of the
+    // alignment
     switch (colorType) {
       case 'insertSize':
         ctx.fillStyle = this.colorByInsertSize(feature, config)
@@ -346,6 +338,7 @@ export default class PileupRenderer extends BoxRendererType {
       case 'mappingQuality':
         ctx.fillStyle = `hsl(${feature.get('mq')},50%,50%)`
         break
+
       case 'pairOrientation':
         ctx.fillStyle = this.colorByOrientation(feature, config)
         break
@@ -354,7 +347,6 @@ export default class PileupRenderer extends BoxRendererType {
         break
       case 'xs':
       case 'tag': {
-        const tag = colorBy.tag as string
         const tags = feature.get('tags')
         const val = tags ? tags[tag] : feature.get(tag)
 
@@ -382,7 +374,8 @@ export default class PileupRenderer extends BoxRendererType {
           ctx.fillStyle = alignmentColoring[map[val] || 'color_nostrand']
         }
 
-        // tag is not one of the autofilled tags, has color-value pairs from fetchValues
+        // tag is not one of the autofilled tags, has color-value pairs from
+        // fetchValues
         else {
           const foundValue = colorTagMap[val]
           ctx.fillStyle = foundValue || 'color_nostrand'
@@ -391,69 +384,51 @@ export default class PileupRenderer extends BoxRendererType {
       }
       case 'insertSizeAndPairOrientation':
         break
+
       case 'normal':
       default:
         ctx.fillStyle = readConfObject(config, 'color', [feature])
         break
     }
 
-    const [leftPx, rightPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
-      region,
-      bpPerPx,
-    )
-    const flip = region.reversed ? -1 : 1
-    const strand = feature.get('strand') * flip
-    if (strand === -1) {
-      ctx.beginPath()
-      ctx.moveTo(leftPx - 5, topPx + heightPx / 2)
-      ctx.lineTo(leftPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx)
-      ctx.lineTo(leftPx, topPx)
-      ctx.closePath()
-      ctx.fill()
-    } else {
-      ctx.beginPath()
-      ctx.moveTo(leftPx, topPx)
-      ctx.lineTo(leftPx, topPx + heightPx)
-      ctx.lineTo(rightPx, topPx + heightPx)
-      ctx.lineTo(rightPx + 5, topPx + heightPx / 2)
-      ctx.lineTo(rightPx, topPx)
-      ctx.closePath()
-      ctx.fill()
+    this.drawRect(ctx, feat, props)
+
+    // second pass for color types that render per-base things that go over the
+    // existing drawing
+    switch (colorType) {
+      case 'perBaseQuality':
+        this.colorByPerBaseQuality(ctx, feat, config, region, bpPerPx)
+        break
     }
-    // ctx.fillRect(leftPx, topPx, Math.max(rightPx - leftPx, 1.5), heightPx)
   }
 
   drawMismatches(
     ctx: CanvasRenderingContext2D,
-    feat: {
-      heightPx: number
-      topPx: number
-      feature: Feature
-    },
-    mismatches: Mismatch[],
+    feat: LayoutFeature,
     props: PileupRenderProps,
+    mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
     const { config, bpPerPx, regions } = props
-    const [region] = regions
     const { heightPx, topPx, feature } = feat
+    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const [region] = regions
+    const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const charWidth = ctx.measureText('A').width
-    const charHeight = ctx.measureText('M').width
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
+    const mismatches: Mismatch[] = feature.get('mismatches')
+    const heightLim = charHeight - 2
 
+    // two pass rendering: first pass, draw all the mismatches except wide
+    // insertion markers
     for (let i = 0; i < mismatches.length; i += 1) {
       const mismatch = mismatches[i]
       const [mismatchLeftPx, mismatchRightPx] = bpSpanPx(
-        feature.get('start') + mismatch.start,
-        feature.get('start') + mismatch.start + mismatch.length,
+        start + mismatch.start,
+        start + mismatch.start + mismatch.length,
         region,
         bpPerPx,
       )
@@ -467,10 +442,20 @@ export default class PileupRenderer extends BoxRendererType {
           colorForBase[
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
-        ctx.fillStyle = baseColor
+
+        let color = baseColor
+        if (mismatchQuality && mismatch.qual !== undefined) {
+          color = Color(baseColor)
+            .alpha(mismatch.qual / 90)
+            .hsl()
+            .string()
+        }
+        ctx.fillStyle = color
+
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
+          // normal SNP coloring
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
             mismatch.base,
@@ -481,15 +466,20 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (mismatch.type === 'insertion') {
         ctx.fillStyle = 'purple'
         const pos = mismatchLeftPx - 1
-        ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-        ctx.fillRect(pos - w, topPx, w * 3, 1)
-        ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
-          ctx.fillText(
-            `(${mismatch.base})`,
-            mismatchLeftPx + 2,
-            topPx + heightPx,
-          )
+        const len = +mismatch.base || mismatch.length
+        if (len < 10) {
+          ctx.fillRect(pos, topPx, w, heightPx)
+          if (1 / bpPerPx >= charWidth) {
+            ctx.fillRect(pos - w, topPx, w * 3, 1)
+            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+          }
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
+            ctx.fillText(
+              `(${mismatch.base})`,
+              mismatchLeftPx + 2,
+              topPx + heightPx,
+            )
+          }
         }
       } else if (mismatch.type === 'hardclip' || mismatch.type === 'softclip') {
         ctx.fillStyle = mismatch.type === 'hardclip' ? 'red' : 'blue'
@@ -497,7 +487,7 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
         ctx.fillRect(pos - w, topPx, w * 3, 1)
         ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillText(
             `(${mismatch.base})`,
             mismatchLeftPx + 2,
@@ -515,6 +505,104 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
       }
     }
+
+    // second pass, draw wide insertion markers on top
+    for (let i = 0; i < mismatches.length; i += 1) {
+      const mismatch = mismatches[i]
+      const [mismatchLeftPx] = bpSpanPx(
+        feature.get('start') + mismatch.start,
+        feature.get('start') + mismatch.start + mismatch.length,
+        region,
+        bpPerPx,
+      )
+      const len = +mismatch.base || mismatch.length
+      const txt = `${len}`
+      if (mismatch.type === 'insertion' && len >= 10) {
+        const rect = ctx.measureText(txt)
+        const padding = 5
+        ctx.fillStyle = 'purple'
+        ctx.fillRect(
+          mismatchLeftPx - rect.width / 2 - padding,
+          topPx,
+          rect.width + 2 * padding,
+          heightPx,
+        )
+        if (heightPx > charHeight) {
+          ctx.fillStyle = 'white'
+          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        }
+      }
+    }
+  }
+
+  drawSoftClipping(
+    ctx: CanvasRenderingContext2D,
+    feat: LayoutFeature,
+    props: PileupRenderProps,
+    config: AnyConfigurationModel,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    theme: any,
+  ) {
+    const { feature, topPx, heightPx } = feat
+    const { regions, bpPerPx } = props
+    const [region] = regions
+    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const mismatches: Mismatch[] = feature.get('mismatches')
+    const seq = feature.get('seq')
+    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const colorForBase: { [key: string]: string } = {
+      A: theme.palette.bases.A.main,
+      C: theme.palette.bases.C.main,
+      G: theme.palette.bases.G.main,
+      T: theme.palette.bases.T.main,
+      deletion: '#808080', // gray
+    }
+
+    // Display all bases softclipped off in lightened colors
+    if (seq) {
+      mismatches
+        .filter(mismatch => mismatch.type === 'softclip')
+        .forEach(mismatch => {
+          const softClipLength = mismatch.cliplen || 0
+          const softClipStart =
+            mismatch.start === 0
+              ? feature.get('start') - softClipLength
+              : feature.get('start') + mismatch.start
+
+          for (let k = 0; k < softClipLength; k += 1) {
+            const base = seq.charAt(k + mismatch.start)
+
+            // If softclip length+start is longer than sequence, no need to continue showing base
+            if (!base) return
+
+            const [softClipLeftPx, softClipRightPx] = bpSpanPx(
+              softClipStart + k,
+              softClipStart + k + 1,
+              region,
+              bpPerPx,
+            )
+            const softClipWidthPx = Math.max(
+              minFeatWidth,
+              Math.abs(softClipLeftPx - softClipRightPx),
+            )
+
+            // Black accounts for IUPAC ambiguity code bases such as N that
+            // show in soft clipping
+            const baseColor = colorForBase[base] || '#000000'
+            ctx.fillStyle = baseColor
+            ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
+
+            if (softClipWidthPx >= charWidth && heightPx >= charHeight - 5) {
+              ctx.fillStyle = theme.palette.getContrastText(baseColor)
+              ctx.fillText(
+                base,
+                softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
+                topPx + heightPx,
+              )
+            }
+          }
+        })
+    }
   }
 
   async makeImageData(props: PileupRenderProps) {
@@ -527,6 +615,7 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
@@ -544,7 +633,6 @@ export default class PileupRenderer extends BoxRendererType {
     if (!layout.addRect) {
       throw new Error('invalid layout object')
     }
-    const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
 
     const sortedFeatures =
       sortedBy && sortedBy.type && region.start === sortedBy.pos
@@ -575,8 +663,6 @@ export default class PileupRenderer extends BoxRendererType {
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
     ctx.font = 'bold 10px Courier New,monospace'
-    const charWidth = ctx.measureText('A').width
-    const charHeight = ctx.measureText('M').width
     layoutRecords.forEach(feat => {
       if (feat === null) {
         return
@@ -585,60 +671,17 @@ export default class PileupRenderer extends BoxRendererType {
       const { feature, topPx, heightPx } = feat
 
       ctx.fillStyle = readConfObject(config, 'color', [feature])
-      this.drawRect(ctx, { feature, topPx, heightPx }, props)
-      const mismatches: Mismatch[] = feature.get('mismatches')
-      const seq = feature.get('seq')
-
-      if (mismatches) {
-        this.drawMismatches(ctx, feat, mismatches, props, colorForBase, theme)
-        // Display all bases softclipped off in lightened colors
-        if (showSoftClip && seq) {
-          mismatches
-            .filter(mismatch => mismatch.type === 'softclip')
-            .forEach(mismatch => {
-              const softClipLength = mismatch.cliplen || 0
-              const softClipStart =
-                mismatch.start === 0
-                  ? feature.get('start') - softClipLength
-                  : feature.get('start') + mismatch.start
-
-              for (let k = 0; k < softClipLength; k += 1) {
-                const base = seq.charAt(k + mismatch.start)
-
-                // If softclip length+start is longer than sequence, no need to continue showing base
-                if (!base) return
-
-                const [softClipLeftPx, softClipRightPx] = bpSpanPx(
-                  softClipStart + k,
-                  softClipStart + k + 1,
-                  region,
-                  bpPerPx,
-                )
-                const softClipWidthPx = Math.max(
-                  minFeatWidth,
-                  Math.abs(softClipLeftPx - softClipRightPx),
-                )
-
-                // Black accounts for IUPAC ambiguity code bases such as N that
-                // show in soft clipping
-                const baseColor = colorForBase[base] || '#000000'
-                ctx.fillStyle = baseColor
-                ctx.fillRect(softClipLeftPx, topPx, softClipWidthPx, heightPx)
-
-                if (
-                  softClipWidthPx >= charWidth &&
-                  heightPx >= charHeight - 5
-                ) {
-                  ctx.fillStyle = theme.palette.getContrastText(baseColor)
-                  ctx.fillText(
-                    base,
-                    softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
-                    topPx + heightPx,
-                  )
-                }
-              }
-            })
-        }
+      this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
+      this.drawMismatches(
+        ctx,
+        feat,
+        props,
+        colorBy.type === 'mismatchQuality',
+        colorForBase,
+        theme,
+      )
+      if (showSoftClip) {
+        this.drawSoftClipping(ctx, feat, props, config, theme)
       }
     })
 

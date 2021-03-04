@@ -44,13 +44,18 @@ export default ConfigurationSchema(
     maxClippingSize: {
       type: 'integer',
       description: 'the max clip size to be used in a pileup rendering',
-      defaultValue: 0,
+      defaultValue: 10000,
     },
     height: {
       type: 'integer',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
       functionSignature: ['feature'],
+    },
+    noSpacing: {
+      type: 'boolean',
+      description: 'remove spacing between features',
+      defaultValue: false,
     },
   },
   { explicitlyTyped: true },

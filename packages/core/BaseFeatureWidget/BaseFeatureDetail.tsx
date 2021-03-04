@@ -1,19 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import Accordion from '@material-ui/core/Accordion'
-import AccordionDetails from '@material-ui/core/AccordionDetails'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import Typography from '@material-ui/core/Typography'
+import React, { useEffect, useState } from 'react'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  Divider,
+  Tooltip,
+  Select,
+  MenuItem,
+} from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import Divider from '@material-ui/core/Divider'
-import Paper from '@material-ui/core/Paper'
-import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
-import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
+import { getConf } from '../configuration'
+import {
+  measureText,
+  getSession,
+  defaultCodonTable,
+  generateCodonTable,
+  revcom,
+} from '../util'
+import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
+
+type Feat = { start: number; end: number }
 
 const globalOmit = [
   'name',
@@ -76,19 +90,28 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
+
+  accordionBorder: {
+    marginTop: '4px',
+    border: '1px solid #444',
+  },
 }))
 
 interface BaseCardProps {
   title?: string
   defaultExpanded?: boolean
+  children?: React.ReactNode
 }
 
-export const BaseCard: FunctionComponent<BaseCardProps> = props => {
+export function BaseCard({
+  children,
+  title,
+  defaultExpanded = true,
+}: BaseCardProps) {
   const classes = useStyles()
-  const { children, title, defaultExpanded = true } = props
   return (
     <Accordion
-      style={{ marginTop: '4px' }}
+      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >
@@ -146,6 +169,7 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
 }
 const SimpleValue = ({
   name,
+
   value,
   description,
   prefix,
@@ -195,9 +219,245 @@ const ArrayValue = ({
 interface BaseProps extends BaseCardProps {
   feature: any
   descriptions?: Record<string, React.ReactNode>
+  model?: any
 }
 
-const CoreDetails = (props: BaseProps) => {
+function stitch(subfeats: any, sequence: string) {
+  return subfeats
+    .map((sub: any) => {
+      return sequence.slice(sub.start, sub.end)
+    })
+    .join('')
+}
+
+// display the stitched-together sequence of a gene's CDS, cDNA, or protein
+// sequence. this is a best effort and weird genomic phenomena could lead these
+// to not be 100% accurate
+function SequenceFeatureDetails(props: BaseProps) {
+  const { model, feature } = props
+  const { assemblyManager, rpcManager } = getSession(model)
+  const { assemblyNames } = model.view
+  const [preseq, setSequence] = useState<string>()
+  const [error, setError] = useState<string>()
+  const [assemblyName] = assemblyNames
+  const subfeatures = feature.subfeatures as {
+    start: number
+    end: number
+    type: string
+  }[]
+  const hasCDS = subfeatures.find(sub => sub.type === 'CDS')
+  const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
+  const loading = !preseq
+  const codonTable = generateCodonTable(defaultCodonTable)
+
+  useEffect(() => {
+    ;(async () => {
+      const assembly = await assemblyManager.waitForAssembly(assemblyName)
+      if (!assembly) {
+        setError('assembly not found')
+        return
+      }
+      const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
+      const sessionId = 'getSequence'
+      const region = {
+        start: feature.start,
+        end: feature.end,
+        refName: assembly?.getCanonicalRefName(feature.refName),
+      }
+      const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
+        adapterConfig,
+        region,
+        sessionId,
+      })
+      const [feat] = feats as Feature[]
+      if (!feat) {
+        setError('sequence not found')
+      }
+
+      setSequence(feat.get('seq'))
+    })()
+  }, [feature, assemblyManager, rpcManager, assemblyName])
+
+  const text: React.ReactNode[] = []
+  if (preseq && feature) {
+    const children = subfeatures
+      .sort((a, b) => a.start - b.start)
+      .map(sub => {
+        return {
+          ...sub,
+          start: sub.start - feature.start,
+          end: sub.end - feature.start,
+        }
+      })
+
+    const cdsColor = 'rgba(150,150,0,0.3)'
+    const utrColor = 'rgba(0,150,150,0.3)'
+    const proteinColor = 'rgba(150,0,150,0.3)'
+
+    // filter duplicate entries in cds and exon lists duplicate entries may be
+    // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
+    // probably worth ignoring here (produces broken protein translations if
+    // included)
+    // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
+    // transcript ENST00000445597.6
+    // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
+    const fid = (feat: Feat) => `${feat.start}-${feat.end}`
+
+    let cds = children
+      .filter(sub => sub.type === 'CDS')
+      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
+
+    let exons = children
+      .filter(sub => sub.type === 'exon')
+      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
+    const revstrand = feature.strand === -1
+    const sequence = revstrand ? revcom(preseq) : preseq
+    const seqlen = sequence.length
+    if (revstrand) {
+      cds = cds
+        .map(sub => ({
+          ...sub,
+          start: seqlen - sub.end,
+          end: seqlen - sub.start,
+        }))
+        .sort((a, b) => a.start - b.start)
+      exons = exons
+        .map(sub => ({
+          ...sub,
+          start: seqlen - sub.end,
+          end: seqlen - sub.start,
+        }))
+        .sort((a, b) => a.start - b.start)
+    }
+
+    if (mode === 'cds') {
+      text.push(
+        <div
+          key={`cds-${feature.start}-${feature.end}`}
+          style={{
+            display: 'inline',
+            backgroundColor: cdsColor,
+          }}
+        >
+          {stitch(cds, sequence)}
+        </div>,
+      )
+    } else if (mode === 'cdna') {
+      // if we have CDS, it is a real gene, color the difference between the
+      // start and end of the CDS as UTR and the rest as CDS
+      if (cds.length) {
+        const firstCds = cds[0]
+        const lastCds = cds[cds.length - 1]
+        const firstCdsIdx = exons.findIndex(exon => {
+          return exon.end >= firstCds.start && exon.start <= firstCds.start
+        })
+        const lastCdsIdx = exons.findIndex(exon => {
+          return exon.end >= lastCds.end && exon.start <= lastCds.end
+        })
+        const lastCdsExon = exons[lastCdsIdx]
+        const firstCdsExon = exons[firstCdsIdx]
+
+        // logic: there can be "UTR exons" that are just UTRs, so we stitch
+        // those together until we get to a CDS that overlaps and exon
+        text.push(
+          <div
+            key="5prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {stitch(exons.slice(0, firstCdsIdx), sequence)}
+            {sequence.slice(firstCdsExon.start, firstCds.start)}
+          </div>,
+        )
+
+        text.push(
+          <div
+            key={`cds-${feature.start}-${feature.end}`}
+            style={{
+              display: 'inline',
+              backgroundColor: cdsColor,
+            }}
+          >
+            {stitch(cds, sequence)}
+          </div>,
+        )
+
+        text.push(
+          <div
+            key="3prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {sequence.slice(lastCds.end, lastCdsExon.end)}
+            {stitch(exons.slice(lastCdsIdx), sequence)}
+          </div>,
+        )
+      }
+      // no CDS, probably a pseudogene, color whole thing as "UTR"
+      else {
+        const cdna = stitch(exons, sequence)
+        text.push(
+          <div
+            key={cdna}
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {cdna}
+          </div>,
+        )
+      }
+    } else if (mode === 'protein') {
+      const str = stitch(cds, sequence)
+      let protein = ''
+      for (let i = 0; i < str.length; i += 3) {
+        // use & symbol for undefined codon, or partial slice
+        protein += codonTable[str.slice(i, i + 3)] || '&'
+      }
+      text.push(
+        <div
+          key={protein}
+          style={{
+            display: 'inline',
+            backgroundColor: proteinColor,
+          }}
+        >
+          {protein}
+        </div>,
+      )
+    }
+  }
+
+  return (
+    <div>
+      <Select
+        value={mode}
+        onChange={event => setMode(event.target.value as string)}
+      >
+        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+        <MenuItem value="cdna">cDNA</MenuItem>
+      </Select>
+      <div style={{ display: 'inline' }}>
+        {error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
+            {text}
+          </div>
+        )}
+        {loading ? <div>Loading gene sequence...</div> : null}
+      </div>
+    </div>
+  )
+}
+
+function CoreDetails(props: BaseProps) {
   const { feature } = props
   const { refName, start, end, strand } = feature
   const strandMap: Record<string, string> = {
@@ -211,7 +471,7 @@ const CoreDetails = (props: BaseProps) => {
   const displayRef = refName ? `${refName}:` : ''
   const displayedDetails: Record<string, any> = {
     ...feature,
-    length: end - start,
+    length: (end - start).toLocaleString('en-US'),
     position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
   }
 
@@ -234,21 +494,6 @@ const CoreDetails = (props: BaseProps) => {
   )
 }
 
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-function measureText(str: string, fontSize = 10) {
-  // prettier-ignore
-  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-  const avg = 0.5279276315789471
-  return (
-    str
-      .split('')
-      .map(c =>
-        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
-      )
-      .reduce((cur, acc) => acc + cur) * fontSize
-  )
-}
-
 export const BaseCoreDetails = (props: BaseProps) => {
   return (
     <BaseCard {...props} title="Primary data">
@@ -260,12 +505,12 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
   prefix?: string
 }
 
-export const Attributes: FunctionComponent<AttributeProps> = props => {
+export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
     omit = [],
@@ -384,7 +629,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             <SimpleValue
               key={key}
               name={key}
-              value={formatter(value)}
+              value={formatter(value, key)}
               description={description}
               prefix={prefix}
             />
@@ -407,27 +652,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown) => JSX.Element
-}
-
-const Subfeature = (props: BaseProps) => {
-  const { feature } = props
-  const { type, name, id } = feature
-  const displayName = name || id
-  return (
-    <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
-      <CoreDetails {...props} />
-      <Divider />
-      <Attributes attributes={feature} {...props} />
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures" defaultExpanded={false}>
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
-          ))}
-        </BaseCard>
-      ) : null}
-    </BaseCard>
-  )
+  formatter?: (val: unknown, key: string) => JSX.Element
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -435,29 +660,64 @@ function isEmpty(obj: Record<string, unknown>) {
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const classes = useStyles()
   const { model } = props
+  const { featureData } = model
 
-  if (!model.featureData) {
+  if (!featureData) {
     return null
   }
-  const feature = JSON.parse(JSON.stringify(model.featureData))
+  const feature = JSON.parse(JSON.stringify(featureData))
 
   if (isEmpty(feature)) {
     return null
   }
+  return <FeatureDetails model={model} feature={feature} />
+})
+
+export const FeatureDetails = (props: {
+  model: any
+  feature: any
+  depth?: number
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => JSX.Element
+}) => {
+  const { model, feature, depth = 0 } = props
+  const { name, id, type, subfeatures } = feature
+  const displayName = name || id
+  const ellipsedDisplayName =
+    displayName && displayName.length > 20 ? '' : displayName
+  const session = getSession(model)
+  const defSeqTypes = ['mRNA', 'transcript']
+  const sequenceTypes =
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+
   return (
-    <Paper className={classes.paperRoot}>
-      <BaseCoreDetails feature={feature} {...props} />
+    <BaseCard
+      title={ellipsedDisplayName ? `${ellipsedDisplayName} - ${type}` : type}
+    >
+      <div>Core details</div>
+      <CoreDetails {...props} />
       <Divider />
-      <BaseAttributes feature={feature} {...props} />
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures">
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+      <div>Attributes</div>
+      <Attributes attributes={feature} {...props} />
+      {sequenceTypes.includes(feature.type) ? (
+        <SequenceFeatureDetails {...props} />
+      ) : null}
+      {subfeatures && subfeatures.length ? (
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={!sequenceTypes.includes(feature.type)}
+        >
+          {subfeatures.map((sub: any) => (
+            <FeatureDetails
+              key={JSON.stringify(sub)}
+              feature={sub}
+              model={model}
+              depth={depth + 1}
+            />
           ))}
         </BaseCard>
       ) : null}
-    </Paper>
+    </BaseCard>
   )
-})
+}
