@@ -329,7 +329,7 @@ function SequenceFeatureDetails(props: BaseProps) {
             }}
           >
             {feature.strand === -1
-              ? stitch(exons.slice(lastCdsIdx), feature, sequence)
+              ? null
               : stitch(exons.slice(0, firstCdsIdx), feature, sequence)}
             {feature.strand === -1
               ? revcom(sequence.slice(lastCds.end, lastCdsExon.end))
@@ -358,8 +358,11 @@ function SequenceFeatureDetails(props: BaseProps) {
             }}
           >
             {feature.strand === -1
-              ? revcom(sequence.slice(0, cds[0].start))
-              : sequence.slice(cds[cds.length - 1].end)}
+              ? revcom(sequence.slice(firstCdsExon.start, firstCds.start))
+              : sequence.slice(lastCds.end, lastCdsExon.end)}
+            {feature.strand === -1
+              ? stitch(exons.slice(0, firstCdsIdx), feature, sequence)
+              : null}
           </div>,
         )
       }
