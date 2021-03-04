@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { featuresTrackConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 export function LinearVariantDisplayConfigFactory(
   pluginManager: PluginManager,
 ) {
-  const configSchema = featuresTrackConfigSchema(pluginManager)
+  const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
 
   return ConfigurationSchema(
     'LinearVariantDisplay',

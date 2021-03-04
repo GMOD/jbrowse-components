@@ -5,7 +5,7 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { featuresTrackModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 import { LinearVariantDisplayConfigModel } from './configSchema'
 
@@ -13,7 +13,7 @@ export default function (configSchema: LinearVariantDisplayConfigModel) {
   return types
     .compose(
       'LinearVariantDisplay',
-      featuresTrackModelFactory(configSchema),
+      linearBasicDisplayModelFactory(configSchema),
       types.model({
         type: types.literal('LinearVariantDisplay'),
         configuration: ConfigurationReference(configSchema),
