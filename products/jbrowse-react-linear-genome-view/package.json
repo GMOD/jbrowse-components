@@ -30,7 +30,10 @@
     "prepublishOnly": "yarn test",
     "prepare": "tsdx build",
     "storybook": "start-storybook -s ./public -p 6006",
-    "build-storybook": "build-storybook"
+    "pre-build": "rm -rf public/test_data && mkdir -p public/test_data/volvox && cp -r ../../test_data/volvox public/test_data",
+    "build-storybook": "build-storybook -s public",
+    "post-build": "cd public && rm -rf test_data && ln -s ../../../test_data/",
+    "deploy-storybook": "storybook-to-aws-s3 --bucket-path jbrowse-storybook"
   },
   "dependencies": {
     "@jbrowse/core": "^1.0.3",
