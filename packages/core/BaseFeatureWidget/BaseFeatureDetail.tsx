@@ -271,9 +271,14 @@ function SequenceFeatureDetails(props: BaseProps) {
 
   const text: React.ReactNode[] = []
   if (preseq && feature) {
-    const children = feature.subfeatures
-      .sort((a: any, b: any) => a.start - b.start)
-      .map((sub: any) => {
+    const subfeatures = feature.subfeatures as {
+      start: number
+      end: number
+      type: string
+    }[]
+    const children = subfeatures
+      .sort((a, b) => a.start - b.start)
+      .map(sub => {
         return {
           ...sub,
           start: sub.start - feature.start,
@@ -285,22 +290,22 @@ function SequenceFeatureDetails(props: BaseProps) {
     const utrColor = 'rgba(0,150,150,0.3)'
     const proteinColor = 'rgba(150,0,150,0.3)'
 
-    let cds = children.filter((sub: any) => sub.type === 'CDS')
-    let exons = children.filter((sub: any) => sub.type === 'exon')
+    let cds = children.filter(sub => sub.type === 'CDS')
+    let exons = children.filter(sub => sub.type === 'exon')
     const revstrand = feature.strand === -1
     const sequence = revstrand ? revcom(preseq) : preseq
 
     const seqlen = sequence.length
     if (revstrand) {
       cds = cds
-        .map((sub: any) => ({
+        .map(sub => ({
           ...sub,
           start: seqlen - sub.end,
           end: seqlen - sub.start,
         }))
         .sort((a, b) => a.start - b.start)
       exons = exons
-        .map((sub: any) => ({
+        .map(sub => ({
           ...sub,
           start: seqlen - sub.end,
           end: seqlen - sub.start,
@@ -326,10 +331,10 @@ function SequenceFeatureDetails(props: BaseProps) {
       if (cds.length) {
         const firstCds = cds[0]
         const lastCds = cds[cds.length - 1]
-        const firstCdsIdx = exons.findIndex((exon: any) => {
+        const firstCdsIdx = exons.findIndex(exon => {
           return exon.end >= firstCds.start && exon.start <= firstCds.start
         })
-        const lastCdsIdx = exons.findIndex((exon: any) => {
+        const lastCdsIdx = exons.findIndex(exon => {
           return exon.end >= lastCds.end && exon.start <= lastCds.end
         })
         const lastCdsExon = exons[lastCdsIdx]
@@ -633,10 +638,10 @@ export interface BaseInputProps extends BaseCardProps {
 
 function Subfeature(props: BaseProps) {
   const { feature } = props
-  const { type, name, id } = feature
+  const { type, name, id, subfeatures } = feature
   const displayName = name || id
   return (
-    <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
+    <BaseCard title={displayName ? `${displayName} - ${type}` : type}>
       <CoreDetails {...props} />
       <Divider />
       <Attributes attributes={feature} {...props} />
@@ -645,8 +650,8 @@ function Subfeature(props: BaseProps) {
       ) : null}
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={false}>
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+          {subfeatures.map((sub: any) => (
+            <Subfeature key={JSON.stringify(sub)} feature={sub} />
           ))}
         </BaseCard>
       ) : null}
