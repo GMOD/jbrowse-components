@@ -32,6 +32,7 @@ import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import SetMinMaxDlg from '../components/SetMinMaxDialog'
+import SetColorDlg from '../components/SetColorDialog'
 
 // fudge factor for making all labels on the YScalebar visible
 export const YSCALEBAR_LABEL_OFFSET = 5
@@ -66,6 +67,8 @@ const stateModelFactory = (
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
+        color: types.maybe(types.string),
+        summaryScoreMode: types.maybe(types.string),
         rendererTypeNameState: types.maybe(types.string),
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
@@ -90,6 +93,9 @@ const stateModelFactory = (
         self.stats.scoreMin = stats.scoreMin
         self.stats.scoreMax = stats.scoreMax
         self.ready = true
+      },
+      setColor(color: string) {
+        self.color = color
       },
 
       setLoading(aborter: AbortController) {
@@ -123,6 +129,10 @@ const stateModelFactory = (
         } else {
           self.scale = 'linear'
         }
+      },
+
+      setSummaryScoreMode(val: string) {
+        self.summaryScoreMode = val
       },
 
       setAutoscale(val: string) {
@@ -197,12 +207,20 @@ const stateModelFactory = (
           filled: self.fill,
           scaleType: this.scaleType,
           displayCrossHatches: self.displayCrossHatches,
+          summaryScoreMode: self.summaryScoreMode,
+          color: self.color,
         })
       },
     }))
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        get summaryScoreModeSetting() {
+          return (
+            self.summaryScoreMode ||
+            readConfObject(self.rendererConfig, 'summaryScoreMode')
+          )
+        },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
 
@@ -338,6 +356,15 @@ const stateModelFactory = (
                       },
                     ],
                   },
+                  {
+                    label: 'Summary score mode',
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
+                      return {
+                        label: elt,
+                        onClick: () => self.setSummaryScoreMode(elt),
+                      }
+                    }),
+                  },
                 ]
               : []),
             ...(self.canHaveFill
@@ -367,6 +394,7 @@ const stateModelFactory = (
                 self.toggleCrossHatches()
               },
             },
+
             ...(getConf(self, 'renderers').length > 1
               ? [
                   {
@@ -402,6 +430,12 @@ const stateModelFactory = (
               label: 'Set min/max score',
               onClick: () => {
                 getContainingTrack(self).setDialogComponent(SetMinMaxDlg, self)
+              },
+            },
+            {
+              label: 'Set color',
+              onClick: () => {
+                getContainingTrack(self).setDialogComponent(SetColorDlg, self)
               },
             },
           ]
