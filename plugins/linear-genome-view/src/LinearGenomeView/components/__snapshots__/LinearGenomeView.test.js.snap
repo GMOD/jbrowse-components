@@ -88,47 +88,31 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       <div
         class="makeStyles-headerBar"
       >
-        <div>
-          <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
-            tabindex="0"
-            title="Open track selector"
-            type="button"
-            value="track_select"
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <span
+            class="MuiButton-label"
           >
-            <span
-              class="MuiButton-label"
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root makeStyles-buttonSpacer"
+              focusable="false"
+              viewBox="0 0 24 24"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root makeStyles-buttonSpacer"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-          <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiButton-label"
-            >
-              Export SVG
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+              <path
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
         <div
           class="makeStyles-spacer"
         />
@@ -531,7 +515,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -859,47 +843,31 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <div
         class="makeStyles-headerBar"
       >
-        <div>
-          <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
-            tabindex="0"
-            title="Open track selector"
-            type="button"
-            value="track_select"
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <span
+            class="MuiButton-label"
           >
-            <span
-              class="MuiButton-label"
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root makeStyles-buttonSpacer"
+              focusable="false"
+              viewBox="0 0 24 24"
             >
-              <svg
-                aria-hidden="true"
-                class="MuiSvgIcon-root makeStyles-buttonSpacer"
-                focusable="false"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
-                />
-              </svg>
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-          <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
-            tabindex="0"
-            type="button"
-          >
-            <span
-              class="MuiButton-label"
-            >
-              Export SVG
-            </span>
-            <span
-              class="MuiTouchRipple-root"
-            />
-          </button>
-        </div>
+              <path
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              />
+            </svg>
+          </span>
+          <span
+            class="MuiTouchRipple-root"
+          />
+        </button>
         <div
           class="makeStyles-spacer"
         />
@@ -1597,7 +1565,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -1761,7 +1729,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig2-LinearBasicDisplay"
+            data-testid="display-testConfig2-LinearBareDisplay"
             role="presentation"
           >
             <div

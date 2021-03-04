@@ -323,10 +323,9 @@ exports[`processed transcript 1`] = `
         y="1.75"
       />
       <text
-        dominant-baseline="hanging"
         style="font-size: 13px; fill: black; cursor: default;"
         x="1991.7"
-        y="12"
+        y="25"
       >
         au9.g1002.t1
       </text>

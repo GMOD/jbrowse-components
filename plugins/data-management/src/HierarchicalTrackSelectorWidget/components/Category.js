@@ -17,6 +17,10 @@ const useStyles = makeStyles(theme => ({
   expandIcon: {
     color: '#FFFFFF',
   },
+  accordionBorder: {
+    marginTop: 4,
+    border: '1px solid #444',
+  },
 }))
 
 function Category({
@@ -45,7 +49,7 @@ function Category({
 
   return (
     <Accordion
-      style={{ marginTop: 4, border: '1px solid #444' }}
+      className={classes.accordionBorder}
       expanded={!model.collapsed.get(pathName)}
       onChange={() => model.toggleCategory(pathName)}
     >
