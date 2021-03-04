@@ -4,7 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
 import {
-  BaseFeatureDetails,
+  FeatureDetails,
   BaseCard,
   useStyles,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
@@ -162,9 +162,10 @@ function AlignmentFeatureDetails(props: { model: any }) {
   const SA = (feat.tags && feat.tags.SA) || feat.SA
   return (
     <Paper data-testid="alignment-side-drawer">
-      <BaseFeatureDetails
+      <FeatureDetails
         {...props}
         omit={omit}
+        feature={feat}
         formatter={(value: unknown, key: string) => {
           return key === 'next_segment_position' ? (
             <PairLink model={model} locString={value as string} />

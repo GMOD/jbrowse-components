@@ -1,16 +1,24 @@
 import { render } from '@testing-library/react'
+import { types } from 'mobx-state-tree'
 import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { stateModelFactory } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
   console.warn = jest.fn()
   const pluginManager = new PluginManager([])
-  const model = stateModelFactory(pluginManager).create({
-    type: 'AlignmentsFeatureWidget',
+
+  const Session = types.model({
+    pluginManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
   })
-  model.setFeatureData({
+  const session = Session.create({
+    widget: { type: 'AlignmentsFeatureWidget' },
+  })
+  session.widget.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     start: 2,
@@ -28,7 +36,9 @@ test('open up a widget', () => {
     refName: 'ctgA',
     type: 'match',
   })
-  const { container, getByText } = render(<ReactComponent model={model} />)
+  const { container, getByText } = render(
+    <ReactComponent model={session.widget} />,
+  )
   expect(container.firstChild).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })
