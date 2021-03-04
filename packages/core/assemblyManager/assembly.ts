@@ -296,6 +296,9 @@ export default function assemblyFactory(
 function makeLoadAssemblyData(pluginManager: PluginManager) {
   return (self: Assembly) => {
     if (self.configuration) {
+      // use full configuration instead of snapshot of the config, the
+      // rpcManager normally receives a snapshot but we bypass rpcManager here
+      // to avoid spinning up a webworker
       const sequenceAdapterConfig = self.configuration.sequence.adapter
       const refNameAliasesAdapterConfig =
         self.configuration.refNameAliases?.adapter
