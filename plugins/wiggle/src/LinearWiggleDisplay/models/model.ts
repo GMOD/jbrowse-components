@@ -356,6 +356,15 @@ const stateModelFactory = (
                       },
                     ],
                   },
+                  {
+                    label: 'Summary score mode',
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
+                      return {
+                        label: elt,
+                        onClick: () => self.setSummaryScoreMode(elt),
+                      }
+                    }),
+                  },
                 ]
               : []),
             ...(self.canHaveFill
@@ -385,15 +394,7 @@ const stateModelFactory = (
                 self.toggleCrossHatches()
               },
             },
-            {
-              label: 'Summary score mode',
-              subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
-                return {
-                  label: elt,
-                  onClick: () => self.setSummaryScoreMode(elt),
-                }
-              }),
-            },
+
             ...(getConf(self, 'renderers').length > 1
               ? [
                   {
