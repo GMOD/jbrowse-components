@@ -50,9 +50,9 @@ const DrawerWidget = observer(props => {
   const classes = useStyles()
 
   const handleChange = (event, newIndex) => {
-    if (event.target.tagName !== 'DIV') {
-      event.preventDefault()
-    }
+    // if (event.target.tagName !== 'DIV') {
+    //   event.preventDefault()
+    // }
     session.showWidget(Array.from(activeWidgets.values())[newIndex])
   }
 
@@ -78,7 +78,7 @@ const DrawerWidget = observer(props => {
                       label={
                         <div>
                           <Typography>{widget.id}</Typography>
-                          <div className={classes.drawerToolbarCloseButton} />
+                          {/* <div className={classes.drawerToolbarCloseButton} />
                           <IconButton
                             className={classes.drawerCloseButton}
                             data-testid="drawer-close"
@@ -89,7 +89,7 @@ const DrawerWidget = observer(props => {
                             }}
                           >
                             <CloseIcon />
-                          </IconButton>
+                          </IconButton> */}
                         </div>
                       }
                       index={index}
@@ -99,7 +99,7 @@ const DrawerWidget = observer(props => {
               </Tabs>
             </Toolbar>
           )}
-          {/* <Toolbar disableGutters className={classes.drawerToolbar}>
+          <Toolbar disableGutters className={classes.drawerToolbar}>
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
@@ -119,7 +119,7 @@ const DrawerWidget = observer(props => {
             >
               <CloseIcon />
             </IconButton>
-          </Toolbar> */}
+          </Toolbar>
         </AppBar>
         <ReactComponent model={visibleWidget} session={session} />
       </div>
