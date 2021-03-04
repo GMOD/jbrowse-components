@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -50,15 +50,20 @@ const DrawerWidget = observer(props => {
   const classes = useStyles()
 
   const handleChange = (event, newIndex) => {
+    if (event.target.tagName !== 'DIV') {
+      event.preventDefault()
+    }
     session.showWidget(Array.from(activeWidgets.values())[newIndex])
   }
 
+  // TODO: need to fix warning
+  // TODO: fix styling in tabs
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
-          <Toolbar disableGutters className={classes.drawerToolbar}>
-            {activeWidgets.size > 1 && (
+          {activeWidgets.size > 1 && (
+            <Toolbar disableGutters className={classes.drawerToolbar}>
               <Tabs
                 value={session.activeWidgets.size - 1}
                 onChange={handleChange}
@@ -70,15 +75,31 @@ const DrawerWidget = observer(props => {
                   return (
                     <Tab
                       key={`${widget.id}-${index}`}
-                      label={widget.id}
+                      label={
+                        <div>
+                          <Typography>{widget.id}</Typography>
+                          <div className={classes.drawerToolbarCloseButton} />
+                          <IconButton
+                            className={classes.drawerCloseButton}
+                            data-testid="drawer-close"
+                            color="inherit"
+                            aria-label="Close"
+                            onClick={() => {
+                              session.hideWidget(widget)
+                            }}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </div>
+                      }
                       index={index}
                     />
                   )
                 })}
               </Tabs>
-            )}
-          </Toolbar>
-          <Toolbar disableGutters className={classes.drawerToolbar}>
+            </Toolbar>
+          )}
+          {/* <Toolbar disableGutters className={classes.drawerToolbar}>
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
@@ -98,7 +119,7 @@ const DrawerWidget = observer(props => {
             >
               <CloseIcon />
             </IconButton>
-          </Toolbar>
+          </Toolbar> */}
         </AppBar>
         <ReactComponent model={visibleWidget} session={session} />
       </div>
