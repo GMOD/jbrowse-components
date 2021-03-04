@@ -866,7 +866,6 @@ export const rIC =
     ? (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb())
 
-
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: string, fontSize = 10) {
   // prettier-ignore

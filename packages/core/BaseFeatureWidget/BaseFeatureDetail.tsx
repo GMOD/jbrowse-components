@@ -215,15 +215,12 @@ interface BaseProps extends BaseCardProps {
   model?: any
 }
 
-function stitch(subfeats: any, feature: any, sequence: string) {
-  let chunks = subfeats.map((sub: any) => {
-    const chunk = sequence.slice(sub.start, sub.end)
-    return feature.strand === -1 ? revcom(chunk) : chunk
-  })
-  if (feature.strand === -1) {
-    chunks = chunks.reverse()
-  }
-  return chunks.join('')
+function stitch(subfeats: any, sequence: string) {
+  return subfeats
+    .map((sub: any) => {
+      return sequence.slice(sub.start, sub.end)
+    })
+    .join('')
 }
 
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
@@ -233,12 +230,12 @@ function SequenceFeatureDetails(props: BaseProps) {
   const { model, feature } = props
   const { assemblyManager, rpcManager } = getSession(model)
   const { assemblyNames } = model.view
-  const [sequence, setSequence] = useState<string>()
+  const [preseq, setSequence] = useState<string>()
   const [error, setError] = useState<string>()
   const [assemblyName] = assemblyNames
   const hasCDS = feature.subfeatures.find((sub: any) => sub.type === 'CDS')
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
-  const loading = !sequence
+  const loading = !preseq
   const codonTable = generateCodonTable(defaultCodonTable)
 
   useEffect(() => {
@@ -273,7 +270,7 @@ function SequenceFeatureDetails(props: BaseProps) {
   }, [feature, assemblyManager, rpcManager, assemblyName])
 
   const text: React.ReactNode[] = []
-  if (sequence && feature) {
+  if (preseq && feature) {
     const children = feature.subfeatures
       .sort((a: any, b: any) => a.start - b.start)
       .map((sub: any) => {
@@ -288,8 +285,28 @@ function SequenceFeatureDetails(props: BaseProps) {
     const utrColor = 'rgba(0,150,150,0.3)'
     const proteinColor = 'rgba(150,0,150,0.3)'
 
-    const cds = children.filter((sub: any) => sub.type === 'CDS')
-    const exons = children.filter((sub: any) => sub.type === 'exon')
+    let cds = children.filter((sub: any) => sub.type === 'CDS')
+    let exons = children.filter((sub: any) => sub.type === 'exon')
+    const revstrand = feature.strand === -1
+    const sequence = revstrand ? revcom(preseq) : preseq
+
+    const seqlen = sequence.length
+    if (revstrand) {
+      cds = cds
+        .map((sub: any) => ({
+          ...sub,
+          start: seqlen - sub.end,
+          end: seqlen - sub.start,
+        }))
+        .sort((a, b) => a.start - b.start)
+      exons = exons
+        .map((sub: any) => ({
+          ...sub,
+          start: seqlen - sub.end,
+          end: seqlen - sub.start,
+        }))
+        .sort((a, b) => a.start - b.start)
+    }
 
     if (mode === 'cds') {
       text.push(
@@ -300,7 +317,7 @@ function SequenceFeatureDetails(props: BaseProps) {
             backgroundColor: cdsColor,
           }}
         >
-          {stitch(cds, feature, sequence)}
+          {stitch(cds, sequence)}
         </div>,
       )
     } else if (mode === 'cdna') {
@@ -310,10 +327,10 @@ function SequenceFeatureDetails(props: BaseProps) {
         const firstCds = cds[0]
         const lastCds = cds[cds.length - 1]
         const firstCdsIdx = exons.findIndex((exon: any) => {
-          return exon.end > firstCds.start && exon.start < firstCds.start
+          return exon.end >= firstCds.start && exon.start <= firstCds.start
         })
         const lastCdsIdx = exons.findIndex((exon: any) => {
-          return exon.end > lastCds.end && exon.start < lastCds.end
+          return exon.end >= lastCds.end && exon.start <= lastCds.end
         })
         const lastCdsExon = exons[lastCdsIdx]
         const firstCdsExon = exons[firstCdsIdx]
@@ -328,12 +345,8 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: utrColor,
             }}
           >
-            {feature.strand === -1
-              ? null
-              : stitch(exons.slice(0, firstCdsIdx), feature, sequence)}
-            {feature.strand === -1
-              ? revcom(sequence.slice(lastCds.end, lastCdsExon.end))
-              : sequence.slice(firstCdsExon.start, firstCds.start)}
+            {stitch(exons.slice(0, firstCdsIdx), sequence)}
+            {sequence.slice(firstCdsExon.start, firstCds.start)}
           </div>,
         )
 
@@ -345,7 +358,7 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: cdsColor,
             }}
           >
-            {stitch(cds, feature, sequence)}
+            {stitch(cds, sequence)}
           </div>,
         )
 
@@ -357,12 +370,8 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: utrColor,
             }}
           >
-            {feature.strand === -1
-              ? revcom(sequence.slice(firstCdsExon.start, firstCds.start))
-              : sequence.slice(lastCds.end, lastCdsExon.end)}
-            {feature.strand === -1
-              ? stitch(exons.slice(0, firstCdsIdx), feature, sequence)
-              : null}
+            {sequence.slice(lastCds.end, lastCdsExon.end)}
+            {stitch(exons.slice(lastCdsExon), sequence)}
           </div>,
         )
       }
@@ -376,12 +385,12 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: utrColor,
             }}
           >
-            {stitch(exons, feature, sequence)}
+            {stitch(exons, sequence)}
           </div>,
         )
       }
     } else if (mode === 'protein') {
-      const str = stitch(cds, feature, sequence)
+      const str = stitch(cds, sequence)
       let protein = ''
       for (let i = 0; i < str.length; i += 3) {
         protein += codonTable[str.slice(i, i + 3)]
