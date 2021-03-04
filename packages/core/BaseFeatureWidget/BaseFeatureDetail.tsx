@@ -674,7 +674,7 @@ export const BaseFeatureDetails = observer((props: BaseInputProps) => {
   return <FeatureDetails model={model} feature={feature} />
 })
 
-const FeatureDetails = (props: {
+export const FeatureDetails = (props: {
   model: any
   feature: any
   depth?: number
@@ -682,13 +682,17 @@ const FeatureDetails = (props: {
   const { model, feature, depth = 0 } = props
   const { name, id, type, subfeatures } = feature
   const displayName = name || id
+  const ellipsedDisplayName =
+    displayName && displayName.length > 20 ? '' : displayName
   const session = getSession(model)
   const defSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
     getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
 
   return (
-    <BaseCard title={displayName ? `${displayName} - ${type}` : type}>
+    <BaseCard
+      title={ellipsedDisplayName ? `${ellipsedDisplayName} - ${type}` : type}
+    >
       <div>Core details</div>
       <CoreDetails {...props} />
       <Divider />
