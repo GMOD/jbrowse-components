@@ -272,7 +272,7 @@ test('export svg', async () => {
     await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
   )
 
-  fireEvent.click(await findByText(/Export SVG/))
+  state.session.views[0].exportSvg()
 
   await waitFor(
     async () => {
