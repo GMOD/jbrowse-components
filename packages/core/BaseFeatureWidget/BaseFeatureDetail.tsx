@@ -89,6 +89,11 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
+
+  accordionBorder: {
+    marginTop: '4px',
+    border: '1px solid #444',
+  },
 }))
 
 interface BaseCardProps {
@@ -105,7 +110,7 @@ export function BaseCard({
   const classes = useStyles()
   return (
     <Accordion
-      style={{ marginTop: '4px' }}
+      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >
@@ -379,15 +384,16 @@ function SequenceFeatureDetails(props: BaseProps) {
       }
       // no CDS, probably a pseudogene, color whole thing as "UTR"
       else {
+        const cdna = stitch(exons, sequence)
         text.push(
           <div
-            key={`cdna-${feature.start}-${feature.end}`}
+            key={cdna}
             style={{
               display: 'inline',
               backgroundColor: utrColor,
             }}
           >
-            {stitch(exons, sequence)}
+            {cdna}
           </div>,
         )
       }
@@ -395,7 +401,8 @@ function SequenceFeatureDetails(props: BaseProps) {
       const str = stitch(cds, sequence)
       let protein = ''
       for (let i = 0; i < str.length; i += 3) {
-        protein += codonTable[str.slice(i, i + 3)]
+        // use & symbol for undefined codon, or partial slice
+        protein += codonTable[str.slice(i, i + 3)] || '&'
       }
       text.push(
         <div
@@ -653,7 +660,7 @@ function Subfeature(props: BaseProps) {
       {feature.subfeatures && feature.subfeatures.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={false}>
           {subfeatures.map((sub: any) => (
-            <Subfeature key={JSON.stringify(sub)} feature={sub} />
+            <Subfeature key={JSON.stringify(sub)} feature={sub} model={model} />
           ))}
         </BaseCard>
       ) : null}
