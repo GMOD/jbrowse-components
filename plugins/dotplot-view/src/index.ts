@@ -245,6 +245,8 @@ export default class DotplotPlugin extends Plugin {
                   hview: {
                     offsetPx: 0,
                     bpPerPx: refLength / 800,
+                    minimumBlockWidth: 0,
+                    interRegionPaddingWidth: 0,
                     displayedRegions: features.map(f => {
                       return {
                         start: f.start,
@@ -257,6 +259,8 @@ export default class DotplotPlugin extends Plugin {
                   vview: {
                     offsetPx: 0,
                     bpPerPx: totalLength / 400,
+                    minimumBlockWidth: 0,
+                    interRegionPaddingWidth: 0,
                     displayedRegions: [
                       {
                         assemblyName: readAssembly,
