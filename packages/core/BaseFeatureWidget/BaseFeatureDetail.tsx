@@ -6,7 +6,6 @@ import {
   AccordionSummary,
   Typography,
   Divider,
-  Paper,
   Tooltip,
   Select,
   MenuItem,
@@ -27,6 +26,8 @@ import {
 } from '../util'
 import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
+
+type Feat = { start: number; end: number }
 
 const globalOmit = [
   'name',
@@ -168,6 +169,7 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
 }
 const SimpleValue = ({
   name,
+
   value,
   description,
   prefix,
@@ -292,11 +294,24 @@ function SequenceFeatureDetails(props: BaseProps) {
     const utrColor = 'rgba(0,150,150,0.3)'
     const proteinColor = 'rgba(150,0,150,0.3)'
 
-    let cds = children.filter(sub => sub.type === 'CDS')
-    let exons = children.filter(sub => sub.type === 'exon')
+    // filter duplicate entries in cds and exon lists duplicate entries may be
+    // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
+    // probably worth ignoring here (produces broken protein translations if
+    // included)
+    // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
+    // transcript ENST00000445597.6
+    // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
+    const fid = (feat: Feat) => `${feat.start}-${feat.end}`
+
+    let cds = children
+      .filter(sub => sub.type === 'CDS')
+      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
+
+    let exons = children
+      .filter(sub => sub.type === 'exon')
+      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
     const revstrand = feature.strand === -1
     const sequence = revstrand ? revcom(preseq) : preseq
-
     const seqlen = sequence.length
     if (revstrand) {
       cds = cds
@@ -456,7 +471,7 @@ function CoreDetails(props: BaseProps) {
   const displayRef = refName ? `${refName}:` : ''
   const displayedDetails: Record<string, any> = {
     ...feature,
-    length: end - start,
+    length: (end - start).toLocaleString('en-US'),
     position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
   }
 
@@ -640,9 +655,32 @@ export interface BaseInputProps extends BaseCardProps {
   formatter?: (val: unknown, key: string) => JSX.Element
 }
 
-function Subfeature(props: BaseProps) {
-  const { feature, model } = props
-  const { type, name, id, subfeatures } = feature
+function isEmpty(obj: Record<string, unknown>) {
+  return Object.keys(obj).length === 0
+}
+
+export const BaseFeatureDetails = observer((props: BaseInputProps) => {
+  const { model } = props
+  const { featureData } = model
+
+  if (!featureData) {
+    return null
+  }
+  const feature = JSON.parse(JSON.stringify(featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
+  return <FeatureDetails model={model} feature={feature} />
+})
+
+const FeatureDetails = (props: {
+  model: any
+  feature: any
+  depth?: number
+}) => {
+  const { model, feature, depth = 0 } = props
+  const { name, id, type, subfeatures } = feature
   const displayName = name || id
   const session = getSession(model)
   const defSeqTypes = ['mRNA', 'transcript']
@@ -651,55 +689,29 @@ function Subfeature(props: BaseProps) {
 
   return (
     <BaseCard title={displayName ? `${displayName} - ${type}` : type}>
+      <div>Core details</div>
       <CoreDetails {...props} />
       <Divider />
+      <div>Attributes</div>
       <Attributes attributes={feature} {...props} />
       {sequenceTypes.includes(feature.type) ? (
         <SequenceFeatureDetails {...props} />
       ) : null}
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures" defaultExpanded={false}>
+      {subfeatures && subfeatures.length ? (
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={!sequenceTypes.includes(feature.type)}
+        >
           {subfeatures.map((sub: any) => (
-            <Subfeature key={JSON.stringify(sub)} feature={sub} model={model} />
+            <FeatureDetails
+              key={JSON.stringify(sub)}
+              feature={sub}
+              model={model}
+              depth={depth + 1}
+            />
           ))}
         </BaseCard>
       ) : null}
     </BaseCard>
   )
 }
-
-function isEmpty(obj: Record<string, unknown>) {
-  return Object.keys(obj).length === 0
-}
-
-export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const classes = useStyles()
-  const { model } = props
-
-  if (!model.featureData) {
-    return null
-  }
-  const feature = JSON.parse(JSON.stringify(model.featureData))
-
-  if (isEmpty(feature)) {
-    return null
-  }
-  return (
-    <Paper className={classes.paperRoot}>
-      <BaseCoreDetails feature={feature} {...props} />
-      <Divider />
-      <BaseAttributes feature={feature} {...props} />
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures">
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature
-              key={JSON.stringify(subfeature)}
-              feature={subfeature}
-              model={model}
-            />
-          ))}
-        </BaseCard>
-      ) : null}
-    </Paper>
-  )
-})
