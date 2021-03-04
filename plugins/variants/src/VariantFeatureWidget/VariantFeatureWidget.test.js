@@ -9,6 +9,7 @@ import VariantFeatureDetails from './VariantFeatureWidget'
 
 describe('VariantTrack widget', () => {
   it('renders with just the required model elements', () => {
+    console.warn = jest.fn()
     const pluginManager = new PluginManager([])
     const Session = types.model({
       pluginManager: types.optional(types.frozen(), {}),
