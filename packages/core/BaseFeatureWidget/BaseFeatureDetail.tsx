@@ -23,6 +23,7 @@ import {
   getSession,
   defaultCodonTable,
   generateCodonTable,
+  revcom,
 } from '../util'
 import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
@@ -214,6 +215,17 @@ interface BaseProps extends BaseCardProps {
   model?: any
 }
 
+function stitch(subfeats: any, feature: any, sequence: string) {
+  let chunks = subfeats.map((sub: any) => {
+    const chunk = sequence.slice(sub.start, sub.end)
+    return feature.strand === -1 ? revcom(chunk) : chunk
+  })
+  if (feature.strand === -1) {
+    chunks = chunks.reverse()
+  }
+  return chunks.join('')
+}
+
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -280,23 +292,34 @@ function SequenceFeatureDetails(props: BaseProps) {
     const exons = children.filter((sub: any) => sub.type === 'exon')
 
     if (mode === 'cds') {
-      cds.forEach((sub: any) => {
-        text.push(
-          <div
-            key={`${sub.start}-${sub.end}`}
-            style={{
-              display: 'inline',
-              backgroundColor: cdsColor,
-            }}
-          >
-            {sequence.slice(sub.start, sub.end)}
-          </div>,
-        )
-      })
+      text.push(
+        <div
+          key={`cds-${feature.start}-${feature.end}`}
+          style={{
+            display: 'inline',
+            backgroundColor: cdsColor,
+          }}
+        >
+          {stitch(cds, feature, sequence)}
+        </div>,
+      )
     } else if (mode === 'cdna') {
       // if we have CDS, it is a real gene, color the difference between the
       // start and end of the CDS as UTR and the rest as CDS
       if (cds.length) {
+        const firstCds = cds[0]
+        const lastCds = cds[cds.length - 1]
+        const firstCdsIdx = exons.findIndex((exon: any) => {
+          return exon.end > firstCds.start && exon.start < firstCds.start
+        })
+        const lastCdsIdx = exons.findIndex((exon: any) => {
+          return exon.end > lastCds.end && exon.start < lastCds.end
+        })
+        const lastCdsExon = exons[lastCdsIdx]
+        const firstCdsExon = exons[firstCdsIdx]
+
+        // logic: there can be "UTR exons" that are just UTRs, so we stitch
+        // those together until we get to a CDS that overlaps and exon
         text.push(
           <div
             key="5prime_utr"
@@ -305,22 +328,26 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: utrColor,
             }}
           >
-            {sequence.slice(0, cds[0].start)}
+            {feature.strand === -1
+              ? stitch(exons.slice(lastCdsIdx), feature, sequence)
+              : stitch(exons.slice(0, firstCdsIdx), feature, sequence)}
+            {feature.strand === -1
+              ? revcom(sequence.slice(lastCds.end, lastCdsExon.end))
+              : sequence.slice(firstCdsExon.start, firstCds.start)}
           </div>,
         )
-        cds.forEach((sub: any) => {
-          text.push(
-            <div
-              key={`${sub.start}-${sub.end}`}
-              style={{
-                display: 'inline',
-                backgroundColor: cdsColor,
-              }}
-            >
-              {sequence.slice(sub.start, sub.end)}
-            </div>,
-          )
-        })
+
+        text.push(
+          <div
+            key={`cds-${feature.start}-${feature.end}`}
+            style={{
+              display: 'inline',
+              backgroundColor: cdsColor,
+            }}
+          >
+            {stitch(cds, feature, sequence)}
+          </div>,
+        )
 
         text.push(
           <div
@@ -330,31 +357,28 @@ function SequenceFeatureDetails(props: BaseProps) {
               backgroundColor: utrColor,
             }}
           >
-            {sequence.slice(cds[cds.length - 1].end)}
+            {feature.strand === -1
+              ? revcom(sequence.slice(0, cds[0].start))
+              : sequence.slice(cds[cds.length - 1].end)}
           </div>,
         )
       }
       // no CDS, probably a pseudogene, color whole thing as "UTR"
       else {
-        exons.forEach((sub: any) => {
-          text.push(
-            <div
-              key={`${sub.start}-${sub.end}`}
-              style={{
-                display: 'inline',
-                backgroundColor: utrColor,
-              }}
-            >
-              {sequence.slice(sub.start, sub.end)}
-            </div>,
-          )
-        })
+        text.push(
+          <div
+            key={`cdna-${feature.start}-${feature.end}`}
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {stitch(exons, feature, sequence)}
+          </div>,
+        )
       }
     } else if (mode === 'protein') {
-      let str = ''
-      cds.forEach((sub: any) => {
-        str += sequence.slice(sub.start, sub.end)
-      })
+      const str = stitch(cds, feature, sequence)
       let protein = ''
       for (let i = 0; i < str.length; i += 3) {
         protein += codonTable[str.slice(i, i + 3)]
