@@ -678,6 +678,8 @@ export const FeatureDetails = (props: {
   model: any
   feature: any
   depth?: number
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => JSX.Element
 }) => {
   const { model, feature, depth = 0 } = props
   const { name, id, type, subfeatures } = feature
