@@ -4,6 +4,7 @@ export default ({ jbrequire }) => {
   const { useEffect, useRef } = React
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { unmountComponentAtNode, hydrate } = jbrequire('react-dom')
+  const { rIC } = jbrequire('@jbrowse/core/util')
 
   function RpcRenderedSvgGroup({ model }) {
     const { data, html, filled, renderProps, renderingComponent } = model
@@ -23,14 +24,14 @@ export default ({ jbrequire }) => {
           // use requestIdleCallback to defer main-thread rendering
           // and hydration for when we have some free time. helps
           // keep the framerate up.
-          requestIdleCallback(() => {
+          rIC(() => {
             if (!isAlive(model)) return
             const mainThreadRendering = React.createElement(
               renderingComponent,
               { ...data, ...renderProps },
               null,
             )
-            requestIdleCallback(() => {
+            rIC(() => {
               if (!isAlive(model)) return
               hydrate(mainThreadRendering, domNode)
             })
