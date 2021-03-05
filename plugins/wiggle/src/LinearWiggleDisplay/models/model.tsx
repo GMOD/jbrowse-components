@@ -396,7 +396,7 @@ const stateModelFactory = (
               },
             },
 
-            ...(getConf(self, 'renderers').length > 1
+            ...(Object.keys(getConf(self, 'renderers')).length > 1
               ? [
                   {
                     label: 'Renderer type',
