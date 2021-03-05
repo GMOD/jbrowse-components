@@ -135,6 +135,7 @@ export class CoreFreeResources extends RpcMethodType {
 
 export interface RenderArgs extends ServerSideRenderArgs {
   adapterConfig: {}
+  rendererType: string
 }
 
 export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
@@ -153,11 +154,18 @@ export class CoreRender extends RpcMethodType {
   async serializeArguments(args: RenderArgs) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
-    if (!assemblyManager) {
-      return args
-    }
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const { rendererType } = args
+
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    return RendererType.serializeArgsInClient(renamedArgs)
   }
 
   async execute(

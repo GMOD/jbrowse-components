@@ -10,6 +10,7 @@ import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 
 interface RenderArgs extends ComparativeRenderArgs {
   adapterConfig: {}
+  rendererType: string
 }
 
 interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
@@ -28,11 +29,20 @@ export default class ComparativeRender extends RpcMethodType {
   async serializeArguments(args: RenderArgs) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
-    if (!assemblyManager) {
-      return args
-    }
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const { rendererType } = args
+
+    const RendererType = this.pluginManager.getRendererType(rendererType)
+
+    if (!(RendererType instanceof ComparativeServerSideRendererType))
+      throw new Error(
+        'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
+      )
+
+    return RendererType.serializeArgsInClient(renamedArgs)
   }
 
   async execute(

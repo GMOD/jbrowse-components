@@ -73,12 +73,10 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const serializedArgs = this.serializeArgsInClient(args)
-
     const result = (await rpcManager.call(
       args.sessionId,
       'ComparativeRender',
-      serializedArgs,
+      args,
     )) as ResultsSerialized
 
     const deserialized = this.deserializeResultsInClient(result, args)
