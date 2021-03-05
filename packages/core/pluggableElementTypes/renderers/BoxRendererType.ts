@@ -7,11 +7,12 @@ import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
   RenderArgsSerialized as FeatureRenderArgsSerialized,
   RenderArgsDeserialized as FeatureRenderArgsDeserialized,
-  RenderResults,
+  RenderResults as FeatureRenderResults,
   ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
 } from './FeatureRendererType'
 import { Region } from '../../util/types'
+import { Feature } from '../../util/simpleFeature'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, isConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
@@ -101,10 +102,11 @@ export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
-  layout: BaseLayout<unknown>
 }
 
-export type { RenderResults }
+export interface RenderResults extends FeatureRenderResults {
+  layout: BaseLayout<Feature>
+}
 
 export interface ResultsSerialized extends FeatureResultsSerialized {
   maxHeightReached: boolean
@@ -197,19 +199,11 @@ export default class BoxRendererType extends FeatureRendererType {
     return deserialized
   }
 
-  deserializeLayoutInWorker(args: RenderArgsDeserialized) {
+  createLayoutInWorker(args: RenderArgsDeserialized) {
     const { regions } = args
     const session = this.getWorkerSession(args)
     const subLayout = session.layout.getSublayout(regions[0].refName)
     return subLayout
-  }
-
-  deserializeArgsInWorker(args: RenderArgsSerialized): RenderArgsDeserialized {
-    const deserialized = super.deserializeArgsInWorker(
-      args,
-    ) as RenderArgsDeserialized
-    deserialized.layout = this.deserializeLayoutInWorker(deserialized)
-    return deserialized
   }
 
   serializeResultsInWorker(
@@ -222,7 +216,7 @@ export default class BoxRendererType extends FeatureRendererType {
     ) as ResultsSerialized
 
     const [region] = args.regions
-    serialized.layout = args.layout.serializeRegion(
+    serialized.layout = results.layout.serializeRegion(
       this.getExpandedRegion(region, args),
     )
     if (serialized.layout.rectangles) {
@@ -233,5 +227,18 @@ export default class BoxRendererType extends FeatureRendererType {
 
     serialized.maxHeightReached = serialized.layout.maxHeightReached
     return serialized
+  }
+
+  /**
+   * gets layout and renders
+   *
+   * @param props - render args
+   */
+  async render(props: RenderArgsDeserialized): Promise<RenderResults> {
+    const layout =
+      (props.layout as undefined | BaseLayout<unknown>) ||
+      this.createLayoutInWorker(props)
+    const result = await super.render({ ...props, layout })
+    return { ...result, layout }
   }
 }

@@ -50,9 +50,10 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   highResolutionScaling: number
 }
 
-export interface RenderArgsDeserializedWithFeatures
+export interface RenderArgsDeserializedWithFeaturesAndLayout
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
+  layout: BaseLayout<Feature>
 }
 
 interface LayoutRecord {
@@ -318,7 +319,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawAlignmentRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: RenderArgsDeserializedWithFeatures,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
     const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = props
     const { tag = '', type: colorType = '' } = colorBy || {}
@@ -404,7 +405,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawMismatches(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: RenderArgsDeserializedWithFeatures,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -537,7 +538,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawSoftClipping(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: RenderArgsDeserializedWithFeatures,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     config: AnyConfigurationModel,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
@@ -604,7 +605,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
+  async makeImageData(props: RenderArgsDeserializedWithFeaturesAndLayout) {
     const {
       features,
       layout,
@@ -695,15 +696,17 @@ export default class PileupRenderer extends BoxRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
+    const layout = this.createLayoutInWorker(renderProps)
     const {
       height,
       width,
       imageData,
       maxHeightReached,
-    } = await this.makeImageData({ ...renderProps, features })
+    } = await this.makeImageData({ ...renderProps, features, layout })
     const results = await super.render({
       ...renderProps,
       features,
+      layout,
       height,
       width,
       imageData,
@@ -715,7 +718,7 @@ export default class PileupRenderer extends BoxRendererType {
       height,
       width,
       maxHeightReached,
-      layout: renderProps.layout,
+      layout,
     }
   }
 
