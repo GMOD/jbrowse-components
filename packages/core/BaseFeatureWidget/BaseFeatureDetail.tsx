@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types,no-nested-ternary */
 import React, { useEffect, useState } from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import {
@@ -287,6 +287,7 @@ function SequenceFeatureDetails(props: BaseProps) {
         end: feature.end,
         refName: assembly?.getCanonicalRefName(feature.refName),
       }
+
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
         region,
@@ -295,6 +296,7 @@ function SequenceFeatureDetails(props: BaseProps) {
       const [feat] = feats as Feature[]
       if (!feat) {
         setError('sequence not found')
+        return
       }
 
       setSequence(feat.get('seq'))
@@ -498,12 +500,13 @@ function SequenceFeatureDetails(props: BaseProps) {
       <div style={{ display: 'inline' }}>
         {error ? (
           <Typography color="error">{error}</Typography>
+        ) : loading ? (
+          <div>Loading gene sequence...</div>
         ) : (
           <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
             {text}
           </div>
         )}
-        {loading ? <div>Loading gene sequence...</div> : null}
       </div>
     </div>
   )
