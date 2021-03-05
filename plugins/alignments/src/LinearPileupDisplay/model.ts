@@ -32,6 +32,7 @@ import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
@@ -399,7 +400,7 @@ const stateModelFactory = (
               }`)
             }
           }
-          return filters
+          return new SerializableFilterChain({ filters })
         },
 
         get renderProps() {

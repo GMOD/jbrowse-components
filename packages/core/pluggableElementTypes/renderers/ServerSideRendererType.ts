@@ -28,7 +28,7 @@ interface BaseRenderArgs extends RenderProps {
 
 export interface RenderArgs extends BaseRenderArgs {
   config: SnapshotOrInstance<AnyConfigurationModel>
-  filters: SerializedFilterChain
+  filters: SerializableFilterChain
 }
 
 export interface RenderArgsSerialized extends BaseRenderArgs {
@@ -63,6 +63,7 @@ export default class ServerSideRenderer extends RendererType {
       config: isStateTreeNode(args.config)
         ? getSnapshot(args.config)
         : args.config,
+      filters: args.filters && args.filters.toJSON().filters,
     }
   }
 

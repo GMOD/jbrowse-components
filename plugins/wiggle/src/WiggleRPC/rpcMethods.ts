@@ -80,7 +80,10 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return args
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    return renameRegionsIfNeeded(assemblyManager, {
+      ...args,
+      filters: args.filters && args.filters.toJSON().filters,
+    })
   }
 
   async execute(
