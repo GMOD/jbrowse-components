@@ -292,7 +292,10 @@ export async function renderToSvg(
               )
 
               return (
-                <g key={track.trackId} transform={`translate(0 ${current})`}>
+                <g
+                  key={track.configuration.trackId}
+                  transform={`translate(0 ${current})`}
+                >
                   <text fontSize={fontSize}>{trackName}</text>
                   <g transform={`translate(0 ${textHeight})`}>
                     {await display.renderSvg(opts)}

@@ -43,10 +43,10 @@ export default function ExportSvgDlg({
       </DialogTitle>
       <DialogContent>
         {loading ? (
-          <Typography>
-            Creating SVG
-            <CircularProgress style={{ marginLeft: 20 }} size={20} />
-          </Typography>
+          <div>
+            <CircularProgress size={20} style={{ marginRight: 20 }} />
+            <Typography display="inline">Creating SVG</Typography>
+          </div>
         ) : null}
         <FormControlLabel
           control={
