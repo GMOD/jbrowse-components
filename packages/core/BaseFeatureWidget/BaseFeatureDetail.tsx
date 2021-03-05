@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import React, { useEffect, useState } from 'react'
+import ErrorBoundary from 'react-error-boundary'
 import {
   Accordion,
   AccordionDetails,
@@ -27,7 +28,7 @@ import {
 import { Feature } from '../util/simpleFeature'
 import SanitizedHTML from '../ui/SanitizedHTML'
 
-type Feat = { start: number; end: number }
+type Feat = { start: number; end: number; type: string }
 
 const globalOmit = [
   'name',
@@ -230,6 +231,28 @@ function stitch(subfeats: any, sequence: string) {
     .join('')
 }
 
+// filter if they have the same ID
+function filterId(feat: Feat) {
+  return `${feat.start}-${feat.end}`
+}
+
+// filters if successive elements share same start/end
+function dedupe(list: Feat[]) {
+  return list.filter(
+    (item, pos, ary) => !pos || filterId(item) !== filterId(ary[pos - 1]),
+  )
+}
+
+function revlist(list: Feat[], seqlen: number) {
+  return list
+    .map(sub => ({
+      ...sub,
+      start: seqlen - sub.end,
+      end: seqlen - sub.start,
+    }))
+    .sort((a, b) => a.start - b.start)
+}
+
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -301,33 +324,21 @@ function SequenceFeatureDetails(props: BaseProps) {
     // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
     // transcript ENST00000445597.6
     // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
-    const fid = (feat: Feat) => `${feat.start}-${feat.end}`
 
-    let cds = children
-      .filter(sub => sub.type === 'CDS')
-      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
+    let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
 
-    let exons = children
-      .filter(sub => sub.type === 'exon')
-      .filter((item, pos, ary) => !pos || fid(item) !== fid(ary[pos - 1]))
+    let cdsAndUtr = dedupe(
+      children.filter(sub => sub.type === 'CDS' || sub.type.match(/utr/i)),
+    )
+
+    let exons = dedupe(children.filter(sub => sub.type === 'exon'))
     const revstrand = feature.strand === -1
     const sequence = revstrand ? revcom(preseq) : preseq
     const seqlen = sequence.length
     if (revstrand) {
-      cds = cds
-        .map(sub => ({
-          ...sub,
-          start: seqlen - sub.end,
-          end: seqlen - sub.start,
-        }))
-        .sort((a, b) => a.start - b.start)
-      exons = exons
-        .map(sub => ({
-          ...sub,
-          start: seqlen - sub.end,
-          end: seqlen - sub.start,
-        }))
-        .sort((a, b) => a.start - b.start)
+      cds = revlist(cds, seqlen)
+      exons = revlist(exons, seqlen)
+      cdsAndUtr = revlist(cdsAndUtr, seqlen)
     }
 
     if (mode === 'cds') {
@@ -343,9 +354,8 @@ function SequenceFeatureDetails(props: BaseProps) {
         </div>,
       )
     } else if (mode === 'cdna') {
-      // if we have CDS, it is a real gene, color the difference between the
-      // start and end of the CDS as UTR and the rest as CDS
-      if (cds.length) {
+      // use "impliedUTRs" type mode
+      if (cds.length && exons.length) {
         const firstCds = cds[0]
         const lastCds = cds[cds.length - 1]
         const firstCdsIdx = exons.findIndex(exon => {
@@ -394,6 +404,48 @@ function SequenceFeatureDetails(props: BaseProps) {
           >
             {sequence.slice(lastCds.end, lastCdsExon.end)}
             {stitch(exons.slice(lastCdsIdx), sequence)}
+          </div>,
+        )
+      }
+      // use "impliedUTRs" type mode
+      else if (cdsAndUtr.length) {
+        const fiveUTR = cdsAndUtr[0]
+        const threeUTR = cdsAndUtr[cdsAndUtr.length - 1]
+        text.push(
+          <div
+            key="5prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {sequence.slice(fiveUTR.start, fiveUTR.end)}
+          </div>,
+        )
+        const cdsSequence = cdsAndUtr
+          .slice(1, cdsAndUtr.length - 2)
+          .map(chunk => sequence.slice(chunk.start, chunk.end))
+          .join('')
+        text.push(
+          <div
+            key="5prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: cdsColor,
+            }}
+          >
+            {cdsSequence}
+          </div>,
+        )
+        text.push(
+          <div
+            key="5prime_utr"
+            style={{
+              display: 'inline',
+              backgroundColor: utrColor,
+            }}
+          >
+            {sequence.slice(threeUTR.start, threeUTR.end)}
           </div>,
         )
       }
@@ -701,7 +753,15 @@ export const FeatureDetails = (props: {
       <div>Attributes</div>
       <Attributes attributes={feature} {...props} />
       {sequenceTypes.includes(feature.type) ? (
-        <SequenceFeatureDetails {...props} />
+        <ErrorBoundary
+          FallbackComponent={({ error }) => (
+            <Typography color="error">
+              Failed to fetch sequence for feature: {`${error}`}
+            </Typography>
+          )}
+        >
+          <SequenceFeatureDetails {...props} />
+        </ErrorBoundary>
       ) : null}
       {subfeatures && subfeatures.length ? (
         <BaseCard
