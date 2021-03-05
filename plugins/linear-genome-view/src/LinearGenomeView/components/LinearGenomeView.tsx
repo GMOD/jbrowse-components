@@ -257,6 +257,7 @@ export async function renderToSvg(
       width={width}
       height={height}
       xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox={[0, 0, width + shift * 2, height].toString()}
     >
       <rect width={width + shift * 2} height={height} fill="white" />

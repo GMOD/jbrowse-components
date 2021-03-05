@@ -744,7 +744,7 @@ export default class PileupRenderer extends BoxRendererType {
         imageData = canvas.toDataURL()
       }
       const element = (
-        <image width={width} height={height} href={imageData as string} />
+        <image width={width} height={height} xlinkHref={imageData as string} />
       )
       ret = { element, height, width }
     }

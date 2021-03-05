@@ -119,7 +119,7 @@ export default class HicRenderer extends ServerSideRendererType {
         imageData = canvas.toDataURL()
       }
       const element = (
-        <image width={width} height={height} href={imageData as string} />
+        <image width={width} height={height} xlinkHref={imageData as string} />
       )
       return { element, height, width }
     }
