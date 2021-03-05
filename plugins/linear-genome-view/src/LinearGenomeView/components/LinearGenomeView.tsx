@@ -163,7 +163,7 @@ function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
       <line x1={x0} x2={x0} y1={5} y2={15} stroke="black" />
       <line x1={x1} x2={x1} y1={5} y2={15} stroke="black" />
       <text
-        x={(x1 - x0) / 2}
+        x={x0 + (x1 - x0) / 2}
         y={fontSize * 2}
         textAnchor="middle"
         fontSize={fontSize}
@@ -296,7 +296,9 @@ export async function renderToSvg(
                   key={track.configuration.trackId}
                   transform={`translate(0 ${current})`}
                 >
-                  <text fontSize={fontSize}>{trackName}</text>
+                  <text fontSize={fontSize} x={Math.max(-model.offsetPx, 0)}>
+                    {trackName}
+                  </text>
                   <g transform={`translate(0 ${textHeight})`}>
                     {await display.renderSvg(opts)}
                   </g>

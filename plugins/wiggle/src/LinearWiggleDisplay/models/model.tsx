@@ -586,14 +586,17 @@ const stateModelFactory = (
         async renderSvg(opts: { fullSvg: boolean }) {
           await when(() => self.ready)
           const { needsScalebar, stats } = self
+          const view = getContainingView(self)
           return (
             <>
               <g id="snpcov">{await superRenderSvg(opts)}</g>
               {needsScalebar && stats ? (
-                <YScaleBar
-                  model={self as WiggleDisplayModel}
-                  orientation="left"
-                />
+                <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>
+                  <YScaleBar
+                    model={self as WiggleDisplayModel}
+                    orientation="left"
+                  />
+                </g>
               ) : null}
             </>
           )
