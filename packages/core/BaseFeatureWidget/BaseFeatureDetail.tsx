@@ -243,7 +243,7 @@ function dedupe(list: Feat[]) {
   )
 }
 
-function revlist(list: Feat[], seqlen) {
+function revlist(list: Feat[], seqlen: number) {
   return list
     .map(sub => ({
       ...sub,
