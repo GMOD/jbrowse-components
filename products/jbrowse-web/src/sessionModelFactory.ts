@@ -448,14 +448,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           configuration,
         }
         self.widgets.set(id, data)
+        self.visibleWidgetIndex += 1
         return self.widgets.get(id)
       },
 
       showWidget(widget: any) {
         transaction(() => {
-          if (!self.activeWidgets.has(widget.id))
-            // self.activeWidgets.delete(widget.id)
-            self.activeWidgets.set(widget.id, widget)
+          // if (!self.activeWidgets.has(widget.id))
+          // self.activeWidgets.delete(widget.id)
+          self.activeWidgets.set(widget.id, widget)
         })
       },
 

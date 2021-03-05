@@ -1,16 +1,14 @@
 import Typography from '@material-ui/core/Typography'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
-import Button from '@material-ui/core/Button'
 import Toolbar from '@material-ui/core/Toolbar'
-import MobileStepper from '@material-ui/core/MobileStepper'
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
-import React, { useRef, useState } from 'react'
+import React from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
