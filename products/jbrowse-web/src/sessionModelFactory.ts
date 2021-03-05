@@ -12,7 +12,7 @@ import {
   TrackViewModel,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
-import { observable } from 'mobx'
+import { observable, transaction } from 'mobx'
 import {
   getMembers,
   getParent,
@@ -51,6 +51,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
+      visibleWidgetIndex: types.optional(types.number, 0),
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),
@@ -141,7 +142,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         if (isAlive(self))
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
-            self.activeWidgets.size - 1
+            self.visibleWidgetIndex
           ]
         return undefined
       },
@@ -429,7 +430,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         state.displayedRegions = getSnapshot(otherView.displayedRegions)
         return this.addView(viewType, state)
       },
-
+      setVisibleWidgetIndex(index: number) {
+        self.visibleWidgetIndex = index
+      },
       addWidget(
         typeName: string,
         id: string,
@@ -449,9 +452,11 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
-          self.activeWidgets.delete(widget.id)
-        self.activeWidgets.set(widget.id, widget)
+        transaction(() => {
+          if (!self.activeWidgets.has(widget.id))
+            // self.activeWidgets.delete(widget.id)
+            self.activeWidgets.set(widget.id, widget)
+        })
       },
 
       hasWidget(widget: any) {
@@ -463,6 +468,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       hideAllWidgets() {
+        self.visibleWidgetIndex = 0
         self.activeWidgets.clear()
       },
 
