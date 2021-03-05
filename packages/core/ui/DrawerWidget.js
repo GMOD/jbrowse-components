@@ -95,12 +95,15 @@ const DrawerWidget = observer(props => {
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
-            <IconButton
-              onClick={handleBack}
-              className={classes.navigationButton}
-            >
-              <ArrowBackIosIcon aria-label="Back" />
-            </IconButton>
+            {session.activeWidgets.size > 1 && (
+              <IconButton
+                onClick={handleBack}
+                className={classes.navigationButton}
+                disabled={visibleWidgetIndex === 0}
+              >
+                <ArrowBackIosIcon aria-label="Back" />
+              </IconButton>
+            )}
             <Typography variant="h6" color="inherit">
               {HeadingComponent ? (
                 <HeadingComponent model={visibleWidget} />
@@ -108,12 +111,15 @@ const DrawerWidget = observer(props => {
                 heading || undefined
               )}
             </Typography>
-            <IconButton
-              onClick={handleNext}
-              className={classes.navigationButton}
-            >
-              <ArrowForwardIosIcon aria-label="Next" />
-            </IconButton>
+            {session.activeWidgets.size > 1 && (
+              <IconButton
+                onClick={handleNext}
+                className={classes.navigationButton}
+                disabled={visibleWidgetIndex === session.activeWidgets.size - 1}
+              >
+                <ArrowForwardIosIcon aria-label="Next" />
+              </IconButton>
+            )}
             <div className={classes.drawerToolbarCloseButton} />
             <IconButton
               className={classes.drawerCloseButton}
