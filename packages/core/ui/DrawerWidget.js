@@ -68,7 +68,6 @@ const DrawerWidget = observer(props => {
     console.log('I clicked next, visibleWidgetIndex: ', visibleWidgetIndex)
     if (visibleWidgetIndex + 1 <= session.activeWidgets.size - 1) {
       session.setVisibleWidgetIndex(visibleWidgetIndex + 1)
-      console.log('after setting', visibleWidgetIndex)
     }
   }
 
@@ -78,19 +77,18 @@ const DrawerWidget = observer(props => {
     console.log('I clicked back, visibleWidgetIndex: ', visibleWidgetIndex)
     if (visibleWidgetIndex - 1 >= 0) {
       session.setVisibleWidgetIndex(visibleWidgetIndex - 1)
-      console.log('after setting', visibleWidgetIndex)
     }
   }
 
   // console.log(ReactComponent)
   // console.log('active widget', session.activeWidgets)
-  console.log('size', session.activeWidgets.size)
   // console.log('visible widget index', session.visibleWidgetIndex)
   // console.log('visible widget', visibleWidget)
   // TODO: use widget id to get the wideget then show the widget
   // TODO: use navigation either stepper or butttons
   // TODO: back and forth buttons
   // TODO: fix spacing between navigation and header
+  console.log('size', session.activeWidgets.size)
   console.log('before render', visibleWidgetIndex)
   return (
     <Drawer session={session} open={Boolean(session.activeWidgets.size)}>

@@ -464,6 +464,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       hideWidget(widget: any) {
+        self.visibleWidgetIndex =
+          self.visibleWidgetIndex > 0 ? self.visibleWidgetIndex - 1 : 0
         self.activeWidgets.delete(widget.id)
       },
 
