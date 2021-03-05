@@ -147,7 +147,7 @@ export const BaseLinearDisplay = types
         const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
         for (const block of self.blockState.values()) {
           if (block && block.layout && block.layout.rectangles) {
-            layoutMaps.set(block.key, block.layout.rectangles)
+            layoutMaps.set(block.key, block.layout.getRectangles())
           }
         }
         stale = true
@@ -166,7 +166,7 @@ export const BaseLinearDisplay = types
         const layoutMaps = []
         for (const block of self.blockState.values()) {
           if (block && block.layout && block.layout.rectangles) {
-            layoutMaps.push(block.layout.rectangles)
+            layoutMaps.push(block.layout.getRectangles())
           }
         }
         stale = true // make rtree refresh
