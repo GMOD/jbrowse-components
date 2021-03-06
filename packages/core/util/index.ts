@@ -875,10 +875,12 @@ export function blobToDataURL(blob: Blob) {
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
-  window.requestIdleCallback ||
-  (typeof jest === 'undefined'
+  // eslint-disable-next-line no-nested-ternary
+  typeof window !== 'undefined'
+    ? window.requestIdleCallback
+    : typeof jest === 'undefined'
     ? (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb())
+    : (cb: Function) => cb()
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: string, fontSize = 10) {
