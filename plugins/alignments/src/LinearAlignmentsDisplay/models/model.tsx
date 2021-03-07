@@ -5,7 +5,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'deep-equal'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 import {
   addDisposer,
   getParent,
@@ -208,6 +208,7 @@ const stateModelFactory = (
       },
       async renderSvg(opts: { fullSvg: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
+        await when(() => self.PileupDisplay.ready)
         return (
           <>
             <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
