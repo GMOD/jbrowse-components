@@ -584,10 +584,9 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: { fullSvg: boolean }) {
-          await when(() => self.ready)
+          await when(() => self.ready && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
-          // @ts-ignore
-          const { offsetPx } = getContainingView(self)
+          const { offsetPx } = getContainingView(self) as LGV
           return (
             <>
               <g id="snpcov">{await superRenderSvg(opts)}</g>

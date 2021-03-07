@@ -139,6 +139,10 @@ const stateModelFactory = (
           height: self.snpCovHeight,
         }
       },
+      setUserBpPerPxLimit(limit: number) {
+        self.PileupDisplay.setUserBpPerPxLimit(limit)
+        self.SNPCoverageDisplay.setUserBpPerPxLimit(limit)
+      },
       setPileupDisplay(displayConfig: AnyConfigurationModel) {
         self.PileupDisplay = {
           type: 'LinearPileupDisplay',
