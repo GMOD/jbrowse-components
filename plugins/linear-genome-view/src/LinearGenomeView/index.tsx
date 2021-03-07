@@ -543,6 +543,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
+        return track
       },
 
       hideTrack(trackId: string) {
