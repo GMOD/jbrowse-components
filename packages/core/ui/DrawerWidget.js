@@ -4,6 +4,7 @@ import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tabs from '@material-ui/core/Tabs'
 import Tab from '@material-ui/core/Tab'
+import Select from '@material-ui/core/Select'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -49,64 +50,45 @@ const DrawerWidget = observer(props => {
   } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
 
-  const handleChange = (event, newIndex) => {
-    // if (event.target.tagName !== 'DIV') {
-    //   event.preventDefault()
-    // }
-    session.showWidget(Array.from(activeWidgets.values())[newIndex])
+  const handleChange = (e, option) => {
+    console.log(option.props.value)
+    session.showWidget(option.props.value)
+    // session.showWidget(Array.from(activeWidgets.values())[newIndex])
   }
 
   // TODO: need to fix warning
   // TODO: fix styling in tabs
+  // TODO: add title and description to the selection dropdown, tittle >>
+  // TODO: have a way to manage widgets from dropdown
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
-          {activeWidgets.size > 1 && (
-            <Toolbar disableGutters className={classes.drawerToolbar}>
-              <Tabs
-                value={session.activeWidgets.size - 1}
-                onChange={handleChange}
-                indicatorColor="primary"
-                variant="scrollable"
-                scrollButtons="on"
+          <Toolbar disableGutters className={classes.drawerToolbar}>
+            {activeWidgets.size <= 1 ? (
+              <Typography variant="h6" color="inherit">
+                {HeadingComponent ? (
+                  <HeadingComponent model={visibleWidget} />
+                ) : (
+                  heading || undefined
+                )}
+              </Typography>
+            ) : (
+              <Select
+                defaultValue={visibleWidget || ''}
+                onChange={(e, value) => {
+                  handleChange(e, value)
+                }}
               >
                 {Array.from(activeWidgets.values()).map((widget, index) => {
                   return (
-                    <Tab
-                      key={`${widget.id}-${index}`}
-                      label={
-                        <div>
-                          <Typography>{widget.id}</Typography>
-                          {/* <div className={classes.drawerToolbarCloseButton} />
-                          <IconButton
-                            className={classes.drawerCloseButton}
-                            data-testid="drawer-close"
-                            color="inherit"
-                            aria-label="Close"
-                            onClick={() => {
-                              session.hideWidget(widget)
-                            }}
-                          >
-                            <CloseIcon />
-                          </IconButton> */}
-                        </div>
-                      }
-                      index={index}
-                    />
+                    <option key={`${widget.id}-${index}`} value={widget}>
+                      {widget.id}
+                    </option>
                   )
                 })}
-              </Tabs>
-            </Toolbar>
-          )}
-          <Toolbar disableGutters className={classes.drawerToolbar}>
-            <Typography variant="h6" color="inherit">
-              {HeadingComponent ? (
-                <HeadingComponent model={visibleWidget} />
-              ) : (
-                heading || undefined
-              )}
-            </Typography>
+              </Select>
+            )}
             <div className={classes.drawerToolbarCloseButton} />
             <IconButton
               className={classes.drawerCloseButton}
