@@ -27,7 +27,7 @@ jobs:
           cd website/
           yarn build
           cd docs/
-          make pdf # generate the pdfcombined.md, run pandoc in docker in the next step
+          make jbrowse2.pdf # generate the pdfcombined.md, run pandoc in docker in the next step
           cp pdfcombined.md ../../
           cp titlemod.md ../../
           cp listings.tex ../../
