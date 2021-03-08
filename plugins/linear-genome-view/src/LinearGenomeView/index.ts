@@ -679,6 +679,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const canonicalRefName = assembly.getCanonicalRefName(
           parsedLocString.refName,
         )
+
         if (!canonicalRefName) {
           throw new Error(
             `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
@@ -696,7 +697,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
             )
           }
         }
-        this.navTo(parsedLocString)
+        const displayedRegion = regions.find(
+          region => region.refName === canonicalRefName,
+        )
+        if (displayedRegion) {
+          const start = clamp(
+            parsedLocString?.start ?? 0,
+            0,
+            displayedRegion.end,
+          )
+          const end = clamp(
+            parsedLocString?.end ?? displayedRegion.end,
+            0,
+            displayedRegion.end,
+          )
+
+          this.navTo({
+            ...parsedLocString,
+            start,
+            end,
+          })
+        }
       },
 
       /**
@@ -738,7 +759,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let s = start
         let e = end
         let refNameMatched = false
-
         const predicate = (r: Region) => {
           if (refName === r.refName) {
             refNameMatched = true

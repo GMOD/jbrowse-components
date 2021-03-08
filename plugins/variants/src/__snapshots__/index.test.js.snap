@@ -21,13 +21,8 @@ Object {
     },
     Object {
       "displayId": "trackId0-LinearVariantDisplay",
-      "renderers": Object {
-        "PileupRenderer": Object {
-          "type": "PileupRenderer",
-        },
-        "SvgFeatureRenderer": Object {
-          "type": "SvgFeatureRenderer",
-        },
+      "renderer": Object {
+        "type": "StructuralVariantChordRenderer",
       },
       "type": "LinearVariantDisplay",
     },

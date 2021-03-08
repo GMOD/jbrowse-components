@@ -86,10 +86,33 @@ export const LinearViewWithLongReads = () => {
       console.log('patch', patch)
     },
   })
+
   return (
     <ThemeProvider theme={theme}>
       <JBrowseLinearGenomeView viewState={state} />
     </ThemeProvider>
+  )
+}
+
+export const OneLinearGenomeViewWithOutsideStyling = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+
+  return (
+    <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
+      <h2>Hello world, this is centered but not affecting the internal LGV</h2>
+      <ThemeProvider theme={theme}>
+        <JBrowseLinearGenomeView viewState={state} />
+      </ThemeProvider>
+    </div>
   )
 }
 

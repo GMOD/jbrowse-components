@@ -48,7 +48,7 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       assemblyNames: ['volMyt1'],
       name: 'Foo Track',
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -59,13 +59,13 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
@@ -90,14 +90,14 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       name: 'Foo Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -116,25 +116,25 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
         {
           id: 'bar',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig2',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig2-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig2-LinearBareDisplay',
             },
           ],
         },

@@ -9,6 +9,7 @@ import {
   getScale,
   ScaleOpts,
   WiggleBaseRenderer,
+  YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ThemeOptions } from '@material-ui/core'
@@ -19,16 +20,15 @@ interface SNPCoverageRendererProps {
   regions: Region[]
   bpPerPx: number
   height: number
-  width: number
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  displayModel: unknown
   theme: ThemeOptions
+  ticks: { values: number[] }
+  displayCrossHatches: boolean
 }
 
 interface BaseInfo {
@@ -48,30 +48,39 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       regions,
       bpPerPx,
       scaleOpts,
-      height,
+      height: unadjustedHeight,
       theme: configTheme,
       config: cfg,
+      displayCrossHatches,
+      ticks: { values },
     } = props
     const theme = createJBrowseTheme(configTheme)
-
     const [region] = regions
-    const opts = { ...scaleOpts, range: [0, height] }
+    const width = (region.end - region.start) / bpPerPx
 
+    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+    // wiggle display, and makes the height of the actual drawn area add
+    // "padding" to the top and bottom of the display
+    const offset = YSCALEBAR_LABEL_OFFSET
+    const height = unadjustedHeight - offset * 2
+
+    const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
     const snpViewScale = getScale({ ...opts, scaleType: 'linear' })
-
     const originY = getOrigin(scaleOpts.scaleType)
     const snpOriginY = getOrigin('linear')
+
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
     const drawIndicators = readConfObject(cfg, 'drawIndicators')
-    const width = (region.end - region.start) / bpPerPx
 
-    const toY = (n: number, curr = 0) => height - viewScale(n) - curr
-    const snpToY = (n: number, curr = 0) => height - snpViewScale(n) - curr
-    const toHeight = (n: number, curr = 0) => toY(originY) - toY(n, curr)
-    const snpToHeight = (n: number, curr = 0) =>
-      snpToY(snpOriginY) - snpToY(n, curr)
+    // get the y coordinate that we are plotting at, this can be log scale
+    const toY = (n: number) => height - viewScale(n) + offset
+    const toHeight = (n: number) => toY(originY) - toY(n)
+
+    // this is always linear scale, even when plotted on top of log scale
+    const snpToY = (n: number) => height - snpViewScale(n) + offset
+    const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
 
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -135,23 +144,50 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         interbaseEvents.reduce((curr, info) => {
           const { score, base } = info
           ctx.fillStyle = colorForBase[base]
-          ctx.fillRect(leftPx, indicatorHeight + curr, 2, snpToHeight(score))
+          ctx.fillRect(
+            leftPx - 0.6,
+            indicatorHeight + snpToHeight(curr),
+            1.2,
+            snpToHeight(score),
+          )
           return curr + info.score
         }, 0)
       }
 
       if (drawIndicators) {
+        let accum = 0
+        let max = 0
+        let maxBase = ''
         interbaseEvents.forEach(({ score, base }) => {
-          if (score > totalScore * indicatorThreshold && totalScore > 10) {
-            ctx.fillStyle = colorForBase[base]
-            ctx.beginPath()
-            ctx.moveTo(leftPx - 3, 0)
-            ctx.lineTo(leftPx + 3, 0)
-            ctx.lineTo(leftPx, indicatorHeight)
-            ctx.fill()
+          accum += score
+          if (score > max) {
+            max = score
+            maxBase = base
           }
         })
+
+        // avoid drawing a bunch of indicators if coverage is very low e.g.
+        // less than 7
+        if (accum > totalScore * indicatorThreshold && totalScore > 7) {
+          ctx.fillStyle = colorForBase[maxBase]
+          ctx.beginPath()
+          ctx.moveTo(leftPx - 3, 0)
+          ctx.lineTo(leftPx + 3, 0)
+          ctx.lineTo(leftPx, indicatorHeight)
+          ctx.fill()
+        }
       }
+    }
+
+    if (displayCrossHatches) {
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(140,140,140,0.8)'
+      values.forEach(tick => {
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(toY(tick)))
+        ctx.lineTo(width, Math.round(toY(tick)))
+        ctx.stroke()
+      })
     }
   }
 }

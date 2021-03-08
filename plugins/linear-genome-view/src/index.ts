@@ -23,15 +23,20 @@ import {
   BlockModel,
 } from './BaseLinearDisplay'
 import {
-  configSchemaFactory as linearBasicDisplayConfigSchemaFactory,
-  stateModelFactory as LinearBasicDisplayStateModelFactory,
-} from './LinearBasicDisplay'
+  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
+  stateModelFactory as LinearBareDisplayStateModelFactory,
+} from './LinearBareDisplay'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
   ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
+
+import {
+  configSchema as linearBasicDisplayConfigSchemaFactory,
+  modelFactory as linearBasicDisplayModelFactory,
+} from './LinearBasicDisplay'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -63,12 +68,44 @@ export default class LinearGenomeViewPlugin extends Plugin {
       })
     })
 
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'BasicTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'BasicTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'BasicTrack',
+          configSchema,
+        ),
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema = linearBareDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'LinearBareDisplay',
+        configSchema,
+        stateModel: LinearBareDisplayStateModelFactory(configSchema),
+        trackType: 'BasicTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      })
+    })
+
     pluginManager.addDisplayType(() => {
       const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
         name: 'LinearBasicDisplay',
         configSchema,
-        stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        stateModel: linearBasicDisplayModelFactory(configSchema),
         trackType: 'FeatureTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
@@ -112,7 +149,11 @@ export {
   BaseLinearDisplayComponent,
   BaseLinearDisplay,
   baseLinearDisplayConfigSchema,
+  linearBareDisplayConfigSchemaFactory,
   linearBasicDisplayConfigSchemaFactory,
+  linearBasicDisplayModelFactory,
 }
+
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }
+
 export type { BaseLinearDisplayModel } from './BaseLinearDisplay'

@@ -49,7 +49,7 @@ export function createBaseTrackModel(
     }))
     .views(self => ({
       get rpcSessionId() {
-        return self.id
+        return self.configuration.trackId
       },
 
       get name() {

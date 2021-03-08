@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, rIC } from '@jbrowse/core/util'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
@@ -38,7 +38,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         // a long continuous scroll, it forces it to evaluate because
         // otherwise the continuous scroll would never give it time to do
         // so
-        requestIdleCallback(
+        rIC(
           () => {
             if (!isAlive(model)) {
               return

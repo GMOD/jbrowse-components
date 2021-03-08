@@ -6,7 +6,6 @@ import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 
 type Session = Instance<ReturnType<typeof createSessionModel>>
-
 function JBrowseLinearGenomeView({
   viewState,
 }: {
@@ -21,7 +20,9 @@ function JBrowseLinearGenomeView({
   const { ReactComponent } = viewType
 
   return (
-    <div>
+    // avoid parent styles getting into this div
+    // https://css-tricks.com/almanac/properties/a/all/
+    <div style={{ all: 'initial' }}>
       <ViewContainer key={`view-${view.id}`} view={view}>
         <ReactComponent model={view} session={session} />
       </ViewContainer>

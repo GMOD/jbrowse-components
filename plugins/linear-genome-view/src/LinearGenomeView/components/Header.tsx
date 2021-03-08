@@ -102,24 +102,24 @@ export default observer(({ model }: { model: LGV }) => {
 
   const setDisplayedRegion = useCallback(
     (newRegionValue: string | undefined) => {
-      if (newRegionValue) {
-        const newRegion: Region | undefined = model.displayedRegions.find(
-          region => newRegionValue === region.refName,
-        )
-        // navigate to region or if region not found try navigating to locstring
-        if (newRegion) {
-          model.setDisplayedRegions([newRegion])
-          // we use showAllRegions after setDisplayedRegions to make the entire
-          // region visible, xref #1703
-          model.showAllRegions()
-        } else {
-          try {
+      try {
+        if (newRegionValue) {
+          const newRegion: Region | undefined = model.displayedRegions.find(
+            region => newRegionValue === region.refName,
+          )
+          // navigate to region or if region not found try navigating to locstring
+          if (newRegion) {
+            model.setDisplayedRegions([newRegion])
+            // we use showAllRegions after setDisplayedRegions to make the entire
+            // region visible, xref #1703
+            model.showAllRegions()
+          } else {
             newRegionValue && model.navToLocString(newRegionValue)
-          } catch (e) {
-            console.warn(e)
-            session.notify(`${e}`, 'warning')
           }
         }
+      } catch (e) {
+        console.warn(e)
+        session.notify(`${e}`, 'warning')
       }
     },
     [model, session],

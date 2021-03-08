@@ -54,6 +54,7 @@ test('several features', async () => {
     highResolutionScaling: 1,
     height: 100,
     config: {},
+    ticks: { values: [0, 100] },
   })
 
   expect(result).toMatchSnapshot({

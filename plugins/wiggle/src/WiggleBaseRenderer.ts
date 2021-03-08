@@ -8,6 +8,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
 export interface WiggleBaseRendererProps {
@@ -16,15 +17,15 @@ export interface WiggleBaseRendererProps {
   regions: Region[]
   bpPerPx: number
   height: number
-  width: number
   highResolutionScaling: number
   blockKey: string
   dataAdapter: BaseFeatureDataAdapter
-  notReady: boolean
   scaleOpts: ScaleOpts
   sessionId: string
   signal: AbortSignal
-  displayModel: unknown
+  displayCrossHatches: boolean
+  ticks: { values: number[] }
+  theme: ThemeOptions
 }
 
 export default abstract class extends ServerSideRendererType {

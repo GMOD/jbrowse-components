@@ -262,7 +262,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
   try {
     return findParentThatIs(node, isDisplayModel)
   } catch (e) {
-    throw new Error('no containing track found')
+    throw new Error('no containing display found')
   }
 }
 
@@ -856,3 +856,127 @@ export const complement = (() => {
     return seqString.replace(complementRegex, m => complementTable[m] || '')
   }
 })()
+
+// requires immediate execution in jest environment, because (hypothesis) it
+// otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
+// get the contents of the canvas
+export const rIC =
+  window.requestIdleCallback ||
+  (typeof jest === 'undefined'
+    ? (cb: Function) => setTimeout(() => cb(), 1)
+    : (cb: Function) => cb())
+
+// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
+export function measureText(str: string, fontSize = 10) {
+  // prettier-ignore
+  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+  const avg = 0.5279276315789471
+  return (
+    str
+      .split('')
+      .map(c =>
+        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
+      )
+      .reduce((cur, acc) => acc + cur) * fontSize
+  )
+}
+
+export const defaultStarts = ['ATG']
+export const defaultStops = ['TAA', 'TAG', 'TGA']
+export const defaultCodonTable = {
+  TCA: 'S',
+  TCC: 'S',
+  TCG: 'S',
+  TCT: 'S',
+  TTC: 'F',
+  TTT: 'F',
+  TTA: 'L',
+  TTG: 'L',
+  TAC: 'Y',
+  TAT: 'Y',
+  TAA: '*',
+  TAG: '*',
+  TGC: 'C',
+  TGT: 'C',
+  TGA: '*',
+  TGG: 'W',
+  CTA: 'L',
+  CTC: 'L',
+  CTG: 'L',
+  CTT: 'L',
+  CCA: 'P',
+  CCC: 'P',
+  CCG: 'P',
+  CCT: 'P',
+  CAC: 'H',
+  CAT: 'H',
+  CAA: 'Q',
+  CAG: 'Q',
+  CGA: 'R',
+  CGC: 'R',
+  CGG: 'R',
+  CGT: 'R',
+  ATA: 'I',
+  ATC: 'I',
+  ATT: 'I',
+  ATG: 'M',
+  ACA: 'T',
+  ACC: 'T',
+  ACG: 'T',
+  ACT: 'T',
+  AAC: 'N',
+  AAT: 'N',
+  AAA: 'K',
+  AAG: 'K',
+  AGC: 'S',
+  AGT: 'S',
+  AGA: 'R',
+  AGG: 'R',
+  GTA: 'V',
+  GTC: 'V',
+  GTG: 'V',
+  GTT: 'V',
+  GCA: 'A',
+  GCC: 'A',
+  GCG: 'A',
+  GCT: 'A',
+  GAC: 'D',
+  GAT: 'D',
+  GAA: 'E',
+  GAG: 'E',
+  GGA: 'G',
+  GGC: 'G',
+  GGG: 'G',
+  GGT: 'G',
+}
+
+/**
+ *  take CodonTable above and generate larger codon table that includes
+ *  all permutations of upper and lower case nucleotides
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function generateCodonTable(table: any) {
+  const tempCodonTable: { [key: string]: string } = {}
+  Object.keys(table).forEach(codon => {
+    const aa = table[codon]
+    const nucs: string[][] = []
+    for (let i = 0; i < 3; i++) {
+      const nuc = codon.charAt(i)
+      nucs[i] = []
+      nucs[i][0] = nuc.toUpperCase()
+      nucs[i][1] = nuc.toLowerCase()
+    }
+    for (let i = 0; i < 2; i++) {
+      const n0 = nucs[0][i]
+      for (let j = 0; j < 2; j++) {
+        const n1 = nucs[1][j]
+        for (let k = 0; k < 2; k++) {
+          const n2 = nucs[2][k]
+          const triplet = n0 + n1 + n2
+          tempCodonTable[triplet] = aa
+        }
+      }
+    }
+  })
+  return tempCodonTable
+}

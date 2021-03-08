@@ -126,6 +126,86 @@ describe('add-track', () => {
 
   setup
     .do(initctx)
+    .command(['add-track', '/testing/in/place.bam', '--load', 'inPlace'])
+    .it('adds a track with load inPlace', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'place',
+          name: 'place',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: '/testing/in/place.bam',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: '/testing/in/place.bam.bai',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+            },
+          },
+        },
+      ])
+    })
+  setup
+    .do(initctx)
+    .command([
+      'add-track',
+      '/testing/in/place.bam',
+      '--load',
+      'inPlace',
+      '--indexFile',
+      '/something/else/random.bai',
+    ])
+    .it('adds a track with load inPlace', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+
+      expect(JSON.parse(contents).tracks).toEqual([
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'place',
+          name: 'place',
+          assemblyNames: ['testAssembly'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: '/testing/in/place.bam',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: '/something/else/random.bai',
+              },
+            },
+            sequenceAdapter: {
+              type: 'testSeqAdapter',
+              twoBitLocation: {
+                uri: 'test.2bit',
+              },
+            },
+          },
+        },
+      ])
+    })
+
+  setup
+    .do(initctx)
     .command([
       'add-track',
       simpleBam,
