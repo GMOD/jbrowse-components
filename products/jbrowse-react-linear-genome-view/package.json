@@ -30,10 +30,10 @@
     "prepublishOnly": "yarn test",
     "prepare": "tsdx build",
     "storybook": "start-storybook -s ./public -p 6006",
-    "pre-build": "node scripts/preBuild.js",
+    "prebuild-storybook": "node scripts/preBuild.js",
     "build-storybook": "build-storybook -s public",
-    "post-build": "node scripts/postBuild.js",
-    "deploy-storybook": "storybook-to-aws-s3 --bucket-path jbrowse-storybook"
+    "postbuild-storybook": "node scripts/postBuild.js",
+    "deploy-storybook": "storybook-to-aws-s3 --bucket-path=jbrowse.org/jb2/storybook"
   },
   "dependencies": {
     "@jbrowse/core": "^1.0.3",
