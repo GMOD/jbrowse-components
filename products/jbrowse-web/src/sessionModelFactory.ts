@@ -453,9 +453,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       showWidget(widget: any) {
+        // if (self.activeWidgets.has(widget.id))
+        //   self.activeWidgets.delete(widget.id)
+        // self.activeWidgets.set(widget.id, widget)
         transaction(() => {
-          // if (!self.activeWidgets.has(widget.id))
-          // self.activeWidgets.delete(widget.id)
           self.activeWidgets.set(widget.id, widget)
         })
       },
@@ -465,12 +466,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       hideWidget(widget: any) {
-        self.visibleWidgetIndex =
-          self.visibleWidgetIndex > 0 ? self.visibleWidgetIndex - 1 : 0
+        self.visibleWidgetIndex -= 1
+        // TODO: when a widget gets hidden, rearrage other indices
         self.activeWidgets.delete(widget.id)
       },
 
       hideAllWidgets() {
+        // Reset the visibleWidgetIndex
         self.visibleWidgetIndex = 0
         self.activeWidgets.clear()
       },

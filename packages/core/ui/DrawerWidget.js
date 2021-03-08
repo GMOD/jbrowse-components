@@ -125,14 +125,14 @@ const DrawerWidget = observer(props => {
               color="inherit"
               aria-label="Close"
               onClick={() => {
-                session.hideWidget(activeWidget)
+                session.hideWidget(visibleWidget)
               }}
             >
               <CloseIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
-        <ReactComponent model={activeWidget} session={session} />
+        <ReactComponent model={visibleWidget} session={session} />
       </div>
     </Drawer>
   )
