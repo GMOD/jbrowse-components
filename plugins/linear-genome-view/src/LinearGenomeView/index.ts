@@ -40,6 +40,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -124,6 +125,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogComponent: undefined as React.FC<any> | undefined,
     }))
     .views(self => ({
       get width(): number {
@@ -439,6 +442,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setDialogComponent(comp?: React.FC<any>) {
+        self.DialogComponent = comp
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -1156,12 +1163,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDisplayedRegions([])
-                // it is necessary to run these after setting displayed regions
-                // empty or else self.offsetPx gets set to infinity and breaks
-                // mobx-state-tree snapshot
-                self.scrollTo(0)
-                self.zoomTo(10)
+                self.setDialogComponent(ReturnToImportFormDlg)
               },
               icon: FolderOpenIcon,
             },
