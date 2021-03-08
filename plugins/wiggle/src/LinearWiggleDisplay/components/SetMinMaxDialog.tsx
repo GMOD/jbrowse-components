@@ -23,6 +23,7 @@ export default function SetMinMaxDlg(props: {
   display: {
     minScore: number
     maxScore: number
+    scaleType: string
     setMinScore: Function
     setMaxScore: Function
   }
@@ -30,7 +31,7 @@ export default function SetMinMaxDlg(props: {
 }) {
   const classes = useStyles()
   const { display, handleClose } = props
-  const { minScore, maxScore } = display
+  const { minScore, maxScore, scaleType } = display
 
   const [min, setMin] = useState(
     `${minScore !== Number.MIN_VALUE ? minScore : ''}`,
@@ -43,6 +44,9 @@ export default function SetMinMaxDlg(props: {
     min !== '' && max !== '' && !Number.isNaN(+min) && !Number.isNaN(+max)
       ? +max > +min
       : true
+
+  const logOk =
+    scaleType === 'log' && min !== '' && !Number.isNaN(+min) ? +min > 0 : true
 
   return (
     <Dialog open onClose={handleClose}>
@@ -58,6 +62,12 @@ export default function SetMinMaxDlg(props: {
           {!ok ? (
             <Typography color="error">
               Max is greater than or equal to min
+            </Typography>
+          ) : null}
+
+          {!logOk ? (
+            <Typography color="error">
+              Min score should be greater than 0 for log scale
             </Typography>
           ) : null}
 
