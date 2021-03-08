@@ -132,6 +132,10 @@ const stateModelFactory = (
         }
       },
 
+      setScaleType(scale?: string) {
+        self.scale = scale
+      },
+
       setSummaryScoreMode(val: string) {
         self.summaryScoreMode = val
       },
@@ -154,6 +158,10 @@ const stateModelFactory = (
 
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
+      },
+
+      setCrossHatches(cross: boolean) {
+        self.displayCrossHatches = cross
       },
     }))
     .views(self => ({
@@ -230,6 +238,7 @@ const stateModelFactory = (
             bounds: [minScore, maxScore],
             scaleType,
           })
+
           const headroom = getConf(self, 'headroom') || 0
 
           // avoid weird scalebar if log value and empty region displayed
