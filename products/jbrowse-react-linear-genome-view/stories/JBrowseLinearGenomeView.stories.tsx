@@ -33,7 +33,7 @@ function addRelativeUris(config: any, baseUri: string) {
 
 addRelativeUris(
   volvoxConfig,
-  new URL(`${window.location.origin}/test_data/volvox/config.json`).href,
+  new URL('test_data/volvox/config.json', window.location.href).href,
 )
 
 const supportedTrackTypes = [
