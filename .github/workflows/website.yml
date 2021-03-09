@@ -35,8 +35,9 @@ jobs:
           ln -s website/docs/img
           cat <<EOF > entrypoint.sh
           #!/bin/sh -l
+          apk add make
           /opt/texlive/texdir/bin/x86_64-linuxmusl/tlmgr install pmboxdraw
-          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
+          PANDOC_PATH=/usr/bin/pandoc PANDOC_OPTS="--pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex" make -C website jbrowse2.pdf
           EOF
           chmod +x entrypoint.sh
           cat entrypoint.sh
