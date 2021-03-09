@@ -2,9 +2,8 @@ import Typography from '@material-ui/core/Typography'
 import AppBar from '@material-ui/core/AppBar'
 import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
-import Tabs from '@material-ui/core/Tabs'
-import Tab from '@material-ui/core/Tab'
 import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -51,13 +50,10 @@ const DrawerWidget = observer(props => {
   const classes = useStyles()
 
   const handleChange = (e, option) => {
-    console.log(option.props.value)
     session.showWidget(option.props.value)
-    // session.showWidget(Array.from(activeWidgets.values())[newIndex])
   }
 
-  // TODO: need to fix warning
-  // TODO: fix styling in tabs
+  // TODO: fix styling
   // TODO: add title and description to the selection dropdown, tittle >>
   // TODO: have a way to manage widgets from dropdown
   return (
@@ -75,16 +71,16 @@ const DrawerWidget = observer(props => {
               </Typography>
             ) : (
               <Select
-                defaultValue={visibleWidget || ''}
+                value={visibleWidget || ''}
                 onChange={(e, value) => {
                   handleChange(e, value)
                 }}
               >
                 {Array.from(activeWidgets.values()).map((widget, index) => {
                   return (
-                    <option key={`${widget.id}-${index}`} value={widget}>
+                    <MenuItem key={`${widget.id}-${index}`} value={widget}>
                       {widget.id}
-                    </option>
+                    </MenuItem>
                   )
                 })}
               </Select>
