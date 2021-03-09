@@ -10,6 +10,8 @@ all: combined.md jbrowse2.pdf
 pdfcombined.md: $(SRC_FILES)
 	for f in $^; do cat $$f | node tex_parser.js; done > $@
 
+titlerev: title_rev_$(COMMITSHA).md
+
 title_rev_$(COMMITSHA).md: title.md
 	sed -e 's/git-commit-sha/git revision $(COMMITSHA)/' $< > $@
 
@@ -25,4 +27,4 @@ combined.md: $(SRC_FILES)
 clean:
 	git clean -fdx .
 
-.PHONY: clean
+.PHONY: clean titlerev
