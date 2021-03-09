@@ -66,11 +66,11 @@ There is a script `scripts/release.sh` that will publish the public packages in
 the monorepo to NPM and trigger the creation of a release on GitHub. To run this
 script:
 
-- Create a file outside the monorepo with a blog post about the release.
-  Usually this includes an overview of the major bugfixes and/or features being
-  released. The release script will automatically add download and detailed
-  changelog information to this post. You can see examples at
-  https://jbrowse.org/jb2/blog.
+- Ensure that there is a file for this release in
+  `website/release_announcement_drafts/` for this release. Usually this includes
+  an overview of the major bugfixes and/or features being released. The release
+  script will automatically add download and detailed changelog information to
+  this post. You can see examples at https://jbrowse.org/jb2/blog.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate
   one, go to https://github.com/settings/tokens, click "Generate new token,"
@@ -86,7 +86,7 @@ script:
 Run the script like this:
 
 ```
-scripts/release.sh /path/to/blogpost.md myGitHubAuthToken versionIncreaseLevel
+scripts/release.sh myGitHubAuthToken versionIncreaseLevel
 ```
 
 If you don't provide `versionIncreaseLevel`, it will default to "patch".
