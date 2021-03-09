@@ -67,10 +67,11 @@ the monorepo to NPM and trigger the creation of a release on GitHub. To run this
 script:
 
 - Ensure that there is a file for this release in
-  `website/release_announcement_drafts/` for this release. Usually this includes
-  an overview of the major bugfixes and/or features being released. The release
-  script will automatically add download and detailed changelog information to
-  this post. You can see examples at https://jbrowse.org/jb2/blog.
+  `website/release_announcement_drafts/` containing a an overview or the major
+  features and bugfixes in the release, with as many nice screenshots or movies
+  as possible. The release script will automatically add download and detailed
+  changelog information to this post. You can see examples of the finished
+  posts at https://jbrowse.org/jb2/blog.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate
   one, go to https://github.com/settings/tokens, click "Generate new token,"
