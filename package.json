@@ -152,5 +152,8 @@
   "dependencies": {
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-linear-genome-view": "^1.0.0"
+  },
+  "resolutions": {
+    "@types/react": "^16.9.34"
   }
 }
