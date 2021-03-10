@@ -2750,6 +2750,40 @@ Object {
       "trackId": "volvox-rg-cram",
       "type": "AlignmentsTrack",
     },
+    Object {
+      "adapter": Object {
+        "bigWigLocation": Object {
+          "uri": "volvox.bw.nonexist",
+        },
+        "type": "BigWigAdapter",
+      },
+      "assemblyNames": Array [
+        "wombat",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_wrong_assembly-LinearWiggleDisplay",
+          "renderers": Object {
+            "DensityRenderer": Object {
+              "type": "DensityRenderer",
+            },
+            "LinePlotRenderer": Object {
+              "type": "LinePlotRenderer",
+            },
+            "XYPlotRenderer": Object {
+              "type": "XYPlotRenderer",
+            },
+          },
+          "type": "LinearWiggleDisplay",
+        },
+      ],
+      "name": "wiggle_track (wrong assembly error)",
+      "trackId": "volvox_wrong_assembly",
+      "type": "QuantitativeTrack",
+    },
   ],
 }
 `;

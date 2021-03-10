@@ -22,6 +22,12 @@ NPMUSER=$(npm whoami)
 MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
 [[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
 
+# make sure packages are all up to date
+yarn
+
+# make sure the tests are passing
+yarn test
+
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
 # Use semver to get the new version from the semver level

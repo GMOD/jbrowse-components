@@ -40,6 +40,7 @@ import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -124,6 +125,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      DialogComponent: undefined as
+        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
+        | undefined,
     }))
     .views(self => ({
       get width(): number {
@@ -432,13 +436,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get centerLineInfo() {
-        const centerLineInfo = self.displayedRegions.length
+        return self.displayedRegions.length
           ? this.pxToBp(self.width / 2)
           : undefined
-        return centerLineInfo
       },
     }))
     .actions(self => ({
+      setDialogComponent(
+        comp?: React.FC<{
+          handleClose: () => void
+          model: { clearView: Function }
+        }>,
+      ) {
+        self.DialogComponent = comp
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -1156,12 +1167,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDisplayedRegions([])
-                // it is necessary to run these after setting displayed regions
-                // empty or else self.offsetPx gets set to infinity and breaks
-                // mobx-state-tree snapshot
-                self.scrollTo(0)
-                self.zoomTo(10)
+                self.setDialogComponent(ReturnToImportFormDlg)
               },
               icon: FolderOpenIcon,
             },
@@ -1270,6 +1276,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
+      // this "clears the view" and makes the view return to the import form
+      clearView() {
+        self.setDisplayedRegions([])
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
+      },
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
