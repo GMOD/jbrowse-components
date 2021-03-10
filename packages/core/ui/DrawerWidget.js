@@ -54,14 +54,8 @@ const DrawerWidget = observer(props => {
     heading,
   } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
-  const [activeWidget, setActiveWidget] = React.useState(
-    HeadingComponent || heading || '',
-  )
 
   const handleChange = (e, option) => {
-    const newWidget = pluginManager.getWidgetType(option.props.value.type)
-    const newHeader = newWidget.HeadingComponent || newWidget.heading
-    setActiveWidget(newHeader)
     session.showWidget(option.props.value)
   }
 
@@ -97,13 +91,18 @@ const DrawerWidget = observer(props => {
             ) : (
               <>
                 <Select
-                  value={activeWidget || ''}
+                  value={visibleWidget || ''}
                   className={classes.drawerSelect}
-                  renderValue={selected => (
-                    <Typography variant="h6" color="inherit">
-                      {selected}
-                    </Typography>
-                  )}
+                  renderValue={selected => {
+                    return (
+                      <Typography variant="h6" color="inherit">
+                        {pluginManager.getWidgetType(selected.type).heading ||
+                          pluginManager.getWidgetType(selected.type)
+                            .HeadingComponent ||
+                          selected.id}
+                      </Typography>
+                    )
+                  }}
                   onChange={(e, value) => {
                     handleChange(e, value)
                   }}
