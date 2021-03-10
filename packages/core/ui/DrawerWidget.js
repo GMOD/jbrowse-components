@@ -5,6 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import ListItemText from '@material-ui/core/ListItemText'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -36,7 +37,7 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   drawerSelect: {
-    width: '100%',
+    width: '98%',
     color: 'white',
   },
   drawerLoading: {
@@ -100,7 +101,14 @@ const DrawerWidget = observer(props => {
                 {Array.from(activeWidgets.values()).map((widget, index) => {
                   return (
                     <MenuItem key={`${widget.id}-${index}`} value={widget}>
-                      {widget.id}
+                      <ListItemText
+                        primary={
+                          pluginManager.getWidgetType(widget.type).heading ||
+                          pluginManager.getWidgetType(widget.type)
+                            .HeadingComponent ||
+                          widget.id
+                        }
+                      />
                       <ListItemSecondaryAction>
                         <IconButton
                           className={classes.drawerCloseButton}
