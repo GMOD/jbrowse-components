@@ -1,6 +1,5 @@
 import { types, cast } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
   AnyConfigurationSchemaType,
@@ -87,109 +86,89 @@ const stateModelFactory = (
       },
     }))
 
-    .views(self => ({
-      get TooltipComponent() {
-        return Tooltip
-      },
+    .views(self => {
+      const { trackMenuItems } = self
+      return {
+        get TooltipComponent() {
+          return Tooltip
+        },
 
-      get adapterConfig() {
-        const subadapter = getConf(self.parentTrack, 'adapter')
-        return {
-          type: 'SNPCoverageAdapter',
-          subadapter,
-        }
-      },
+        get adapterConfig() {
+          const subadapter = getConf(self.parentTrack, 'adapter')
+          return {
+            type: 'SNPCoverageAdapter',
+            subadapter,
+          }
+        },
 
-      get rendererTypeName() {
-        return rendererTypes.get('snpcoverage')
-      },
+        get rendererTypeName() {
+          return rendererTypes.get('snpcoverage')
+        },
 
-      get needsScalebar() {
-        return true
-      },
+        get needsScalebar() {
+          return true
+        },
 
-      get contextMenuItems() {
-        return []
-      },
+        get contextMenuItems() {
+          return []
+        },
 
-      get composedTrackMenuItems() {
-        return [
-          {
-            type: 'subMenu',
-            label: 'SNPCoverageTrack settings',
-            subMenu: [
-              {
-                label: 'Draw insertion/clipping indicators',
-                type: 'checkbox',
-                checked: self.drawIndicatorsSetting,
-                onClick: () => {
-                  self.toggleDrawIndicators()
-                },
+        get extraTrackMenuItems() {
+          return [
+            {
+              label: 'Draw insertion/clipping indicators',
+              type: 'checkbox',
+              checked: self.drawIndicatorsSetting,
+              onClick: () => {
+                self.toggleDrawIndicators()
               },
-              {
-                label: 'Draw insertion/clipping counts',
-                type: 'checkbox',
-                checked: self.drawInterbaseCountsSetting,
-                onClick: () => {
-                  self.toggleDrawInterbaseCounts()
-                },
+            },
+            {
+              label: 'Draw insertion/clipping counts',
+              type: 'checkbox',
+              checked: self.drawInterbaseCountsSetting,
+              onClick: () => {
+                self.toggleDrawInterbaseCounts()
               },
-            ],
-          },
-        ]
-      },
-
-      // The SNPCoverage filters are called twice because the BAM/CRAM features
-      // pass filters and then the SNPCoverage score features pass through
-      // here, and those have no name/flags/tags so those are passed thru
-      get filters() {
-        let filters: string[] = []
-        if (self.filterBy) {
-          const { flagInclude, flagExclude } = self.filterBy
-          filters = [
-            `jexl:feature|getData('snpinfo') != undefined ? true : ((feature|getData('flags')&${flagInclude})==${flagInclude}) && !(feature|getData('flags')&${flagExclude})`,
+            },
           ]
+        },
+        get trackMenuItems() {
+          return [
+            ...trackMenuItems,
+            ...self.composedTrackMenuItems,
+            ...this.extraTrackMenuItems,
+          ]
+        },
+        // The SNPCoverage filters are called twice because the BAM/CRAM features
+        // pass filters and then the SNPCoverage score features pass through
+        // here, and those have no name/flags/tags so those are passed thru
+        get filters() {
+          let filters: string[] = []
+          if (self.filterBy) {
+            const { flagInclude, flagExclude } = self.filterBy
+            filters = [
+              `jexl:feature|getData('snpinfo') != undefined ? true : ((feature|getData('flags')&${flagInclude})==${flagInclude}) && !(feature|getData('flags')&${flagExclude})`,
+            ]
 
-          if (self.filterBy.tagFilter) {
-            const { tag, value } = self.filterBy.tagFilter
-            filters.push(
-              `jexl:feature|getData('snpinfo') ? true : "${value}" =='*' ? (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) != undefined\n
-              : (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
-            )
+            if (self.filterBy.tagFilter) {
+              const { tag, value } = self.filterBy.tagFilter
+              filters.push(
+                `jexl:feature|getData('snpinfo') ? true : "${value}" =='*' ? (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) != undefined\n
+                : (feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
+              )
+            }
+            if (self.filterBy.readName) {
+              const { readName } = self.filterBy
+              filters.push(
+                `jexl:feature|getData('snpinfo') ? true : feature|getData('name') == "${readName}"`,
+              )
+            }
           }
-          if (self.filterBy.readName) {
-            const { readName } = self.filterBy
-            filters.push(
-              `jexl:feature|getData('snpinfo') ? true : feature|getData('name') == "${readName}"`,
-            )
-          }
-        }
-        return filters
-      },
-
-      get scaleOpts() {
-        return {
-          domain: self.domain,
-          stats: self.stats,
-          autoscaleType: getConf(self, 'autoscale'),
-          scaleType: getConf(self, 'scaleType'),
-          inverted: getConf(self, 'inverted'),
-        }
-      },
-
-      get renderProps() {
-        return {
-          ...self.composedRenderProps,
-          ...getParentRenderProps(self),
-          notReady: !self.ready,
-          height: self.height,
-          displayModel: self,
-          scaleOpts: this.scaleOpts,
-          filters: self.filters,
-          config: self.rendererConfig,
-        }
-      },
-    }))
+          return filters
+        },
+      }
+    })
 
 export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
 

@@ -15,7 +15,7 @@ set -o pipefail
 [[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
 [[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
 
-BRANCH=$(git branch --show-current)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
 NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }

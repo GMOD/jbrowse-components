@@ -16,7 +16,7 @@ import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import {
-  BaseFeatureDetails,
+  FeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { getSession } from '@jbrowse/core/util'
@@ -211,11 +211,7 @@ function VariantFeatureDetails(props: any) {
 
   return (
     <Paper data-testid="variant-side-drawer">
-      <BaseFeatureDetails
-        feature={rest}
-        descriptions={descriptions}
-        {...props}
-      />
+      <FeatureDetails feature={rest} descriptions={descriptions} {...props} />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel

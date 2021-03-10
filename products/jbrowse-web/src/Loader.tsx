@@ -34,6 +34,7 @@ import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
 import SessionWarningModal from './sessionWarningModal'
+import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
   const s = window.location.search
@@ -145,7 +146,6 @@ const SessionLoader = types
         !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
       )
     },
-
     get configLoaded() {
       return !!self.configError || !!self.configSnapshot
     },
@@ -196,15 +196,14 @@ const SessionLoader = types
         }
         const location = openLocation(configLocation)
         const configText = (await location.readFile('utf8')) as string
-
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
-        await this.fetchPlugins(config)
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
         } else {
+          await this.fetchPlugins(config)
           self.setConfigSnapshot(config)
         }
       } catch (e) {
@@ -282,7 +281,12 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      const hasCallbacks = await scanSharedSessionForCallbacks(session)
+      if (hasCallbacks) {
+        self.setSessionTriaged({ snap: session, origin: 'share' })
+      } else {
+        self.setSessionSnapshot({ ...session, id: shortid() })
+      }
     },
 
     async afterCreate() {
@@ -459,7 +463,11 @@ const Renderer = observer(
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
-                  `Session could not be loaded. ${errorMessage}`,
+                  `Session could not be loaded. ${
+                    errorMessage.length > 1000
+                      ? `${errorMessage.slice(0, 1000)}...see more in console`
+                      : errorMessage
+                  }`,
                 )
               }
             } else {
@@ -563,10 +571,37 @@ const Renderer = observer(
     }
 
     if (loader.sessionTriaged) {
-      return (
+      const handleClose = () => {
+        loader.setSessionTriaged(undefined)
+      }
+      return loader.sessionTriaged.origin === 'session' ? (
         <SessionWarningModal
-          loader={loader}
-          sessionTriaged={loader.sessionTriaged}
+          onConfirm={() => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            loader.setSessionSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            loader.setBlankSession(true)
+            handleClose()
+          }}
+        />
+      ) : (
+        <ConfigWarningModal
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            await loader.fetchPlugins(session)
+            loader.setConfigSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            factoryReset()
+            handleClose()
+          }}
         />
       )
     }

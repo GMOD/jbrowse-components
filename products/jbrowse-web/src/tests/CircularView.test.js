@@ -66,9 +66,14 @@ describe('circular views', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
 
     // expect the chord track to render eventually
-    await wait(() => {
-      expect(getByTestId('structuralVariantChordRenderer')).toBeInTheDocument()
-    })
+    await wait(
+      () => {
+        expect(
+          getByTestId('structuralVariantChordRenderer'),
+        ).toBeInTheDocument()
+      },
+      { timeout: 10000 },
+    )
     // make sure a chord is rendered
     await wait(() => {
       expect(getByTestId('chord-test-vcf-66132')).toBeInTheDocument()
@@ -90,5 +95,5 @@ describe('circular views', () => {
     await wait(() => {
       expect(getByTestId('chord-test-vcf-62852')).toBeInTheDocument()
     })
-  }, 10000)
+  }, 15000)
 })

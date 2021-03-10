@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function SessionWarningModal({
+export default function ConfigWarningModal({
   onConfirm,
   onCancel,
 }: {
@@ -45,11 +45,11 @@ export default function SessionWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            This link contains an external session, which may contain dangerous
-            code.
+            This link contains a cross origin config that loads a configuration
+            from an external site.
           </DialogContentText>
           <DialogContentText>
-            Please ensure you trust the source of this session.
+            Please ensure you trust the source of this link.
           </DialogContentText>
         </DialogContent>
         <div className={classes.buttons}>
@@ -65,7 +65,7 @@ export default function SessionWarningModal({
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
+            onClick={async () => {
               onCancel()
             }}
           >

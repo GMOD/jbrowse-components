@@ -1,3 +1,9 @@
+## [1.0.4](https://github.com/GMOD/jbrowse-components/compare/v1.0.3...v1.0.4) (2021-03-08)
+
+### Reverts
+
+- Revert "Add NA12878 minion CRAM", file was buggy ([8319f94](https://github.com/GMOD/jbrowse-components/commit/8319f94cb195022cd0595f7a160a8d511b6bb854))
+
 ## [1.0.3](https://github.com/GMOD/jbrowse-components/compare/v1.0.2...v1.0.3) (2021-01-11)
 
 ## [1.0.2](https://github.com/GMOD/jbrowse-components/compare/v1.0.1...v1.0.2) (2020-12-02)

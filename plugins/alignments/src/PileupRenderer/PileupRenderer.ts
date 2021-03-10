@@ -420,6 +420,7 @@ export default class PileupRenderer extends BoxRendererType {
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
+    const heightLim = charHeight - 2
 
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
@@ -453,7 +454,7 @@ export default class PileupRenderer extends BoxRendererType {
 
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
@@ -465,14 +466,14 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (mismatch.type === 'insertion') {
         ctx.fillStyle = 'purple'
         const pos = mismatchLeftPx - 1
-
         const len = +mismatch.base || mismatch.length
-
         if (len < 10) {
-          ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-          ctx.fillRect(pos - w, topPx, w * 3, 1)
-          ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-          if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
+          ctx.fillRect(pos, topPx, w, heightPx)
+          if (1 / bpPerPx >= charWidth) {
+            ctx.fillRect(pos - w, topPx, w * 3, 1)
+            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+          }
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillText(
               `(${mismatch.base})`,
               mismatchLeftPx + 2,
@@ -486,7 +487,7 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
         ctx.fillRect(pos - w, topPx, w * 3, 1)
         ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillText(
             `(${mismatch.base})`,
             mismatchLeftPx + 2,

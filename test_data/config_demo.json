@@ -150,7 +150,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "nclist_genes_hg19_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -369,7 +369,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -420,7 +420,7 @@
       },
       "displays": [
         {
-          "type": "LinearFeatureDisplay",
+          "type": "LinearBasicDisplay",
           "displayId": "mane_hg38_linear",
           "renderer": {
             "type": "SvgFeatureRenderer",
@@ -1555,11 +1555,11 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam"
         },
         "index": {
           "location": {
-            "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai"
           }
         },
         "sequenceAdapter": {
@@ -1585,10 +1585,10 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram"
         },
         "craiLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
@@ -1640,7 +1640,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
         }
       }
     },
@@ -1653,7 +1653,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
         }
       }
     },
@@ -1666,7 +1666,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
         }
       }
     },
@@ -1679,7 +1679,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
         }
       }
     },
@@ -1692,7 +1692,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
         }
       }
     },
@@ -1705,7 +1705,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
         }
       }
     },
@@ -1718,7 +1718,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
         }
       }
     },
@@ -1731,7 +1731,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
         }
       }
     },
@@ -3005,7 +3005,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
         }
       },
       "displays": [
@@ -3025,7 +3025,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
         }
       },
       "displays": [
@@ -3045,7 +3045,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
         }
       }
     },
@@ -3058,7 +3058,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
         }
       }
     },
@@ -3068,13 +3068,13 @@
       "name": "ENCODE cis-regulatory elements (all cell types)",
       "category": ["Annotation"],
       "metadata": {
-        "source": "http://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=1020236289_HOhuYmfogKvSVWee06A1OECtrgLq&c=chrX&g=encodeCcreCombined"
+        "source": "https://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=1020236289_HOhuYmfogKvSVWee06A1OECtrgLq&c=chrX&g=encodeCcreCombined"
       },
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb"
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb"
         }
       },
       "displays": [
