@@ -35,6 +35,10 @@ const useStyles = makeStyles(theme => ({
   drawerToolbarCloseButton: {
     flexGrow: 1,
   },
+  drawerSelect: {
+    width: '100%',
+    color: 'white',
+  },
   drawerLoading: {
     margin: theme.spacing(2),
   },
@@ -63,16 +67,32 @@ const DrawerWidget = observer(props => {
         <AppBar position="static" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
             {activeWidgets.size <= 1 ? (
-              <Typography variant="h6" color="inherit">
-                {HeadingComponent ? (
-                  <HeadingComponent model={visibleWidget} />
-                ) : (
-                  heading || undefined
-                )}
-              </Typography>
+              <>
+                <Typography variant="h6" color="inherit">
+                  {HeadingComponent ? (
+                    <HeadingComponent model={visibleWidget} />
+                  ) : (
+                    heading || undefined
+                  )}
+                </Typography>
+                <div className={classes.drawerToolbarCloseButton} />
+                <IconButton
+                  className={classes.drawerCloseButton}
+                  data-testid="drawer-close"
+                  color="inherit"
+                  aria-label="Close"
+                  onClick={() => {
+                    session.hideWidget(visibleWidget)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </>
             ) : (
               <Select
                 value={visibleWidget || ''}
+                className={classes.drawerSelect}
+                displayEmpty
                 onChange={(e, value) => {
                   handleChange(e, value)
                 }}
@@ -99,18 +119,6 @@ const DrawerWidget = observer(props => {
                 })}
               </Select>
             )}
-            <div className={classes.drawerToolbarCloseButton} />
-            <IconButton
-              className={classes.drawerCloseButton}
-              data-testid="drawer-close"
-              color="inherit"
-              aria-label="Close"
-              onClick={() => {
-                session.hideWidget(visibleWidget)
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
           </Toolbar>
         </AppBar>
         <ReactComponent model={visibleWidget} session={session} />
