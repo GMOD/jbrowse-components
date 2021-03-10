@@ -56,5 +56,7 @@ jobs:
           cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
       - name: Deploy Storybook for branch to S3
-        run: yarn deploy-storybook
+        run: |
+          pwd
+          yarn deploy-storybook
         working-directory: products/jbrowse-react-linear-genome-view
