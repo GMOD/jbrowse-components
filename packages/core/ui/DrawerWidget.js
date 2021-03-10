@@ -54,14 +54,19 @@ const DrawerWidget = observer(props => {
     heading,
   } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
+  const [activeWidget, setActiveWidget] = React.useState(
+    HeadingComponent || heading || '',
+  )
 
   const handleChange = (e, option) => {
+    const newWidget = pluginManager.getWidgetType(option.props.value.type)
+    const newHeader = newWidget.HeadingComponent || newWidget.heading
+    setActiveWidget(newHeader)
     session.showWidget(option.props.value)
   }
 
   // TODO: fix styling
   // TODO: add title and description to the selection dropdown, tittle >>
-  // TODO: have a way to manage widgets from dropdown
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
@@ -90,42 +95,59 @@ const DrawerWidget = observer(props => {
                 </IconButton>
               </>
             ) : (
-              <Select
-                value={visibleWidget || ''}
-                className={classes.drawerSelect}
-                displayEmpty
-                onChange={(e, value) => {
-                  handleChange(e, value)
-                }}
-              >
-                {Array.from(activeWidgets.values()).map((widget, index) => {
-                  return (
-                    <MenuItem key={`${widget.id}-${index}`} value={widget}>
-                      <ListItemText
-                        primary={
-                          pluginManager.getWidgetType(widget.type).heading ||
-                          pluginManager.getWidgetType(widget.type)
-                            .HeadingComponent ||
-                          widget.id
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          className={classes.drawerCloseButton}
-                          data-testid="drawer-close"
-                          color="inherit"
-                          aria-label="Close"
-                          onClick={() => {
-                            session.hideWidget(visibleWidget)
-                          }}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </MenuItem>
-                  )
-                })}
-              </Select>
+              <>
+                <Select
+                  value={activeWidget || ''}
+                  className={classes.drawerSelect}
+                  renderValue={selected => (
+                    <Typography variant="h6" color="inherit">
+                      {selected}
+                    </Typography>
+                  )}
+                  onChange={(e, value) => {
+                    handleChange(e, value)
+                  }}
+                >
+                  {Array.from(activeWidgets.values()).map((widget, index) => {
+                    return (
+                      <MenuItem key={`${widget.id}-${index}`} value={widget}>
+                        <ListItemText
+                          primary={
+                            pluginManager.getWidgetType(widget.type).heading ||
+                            pluginManager.getWidgetType(widget.type)
+                              .HeadingComponent ||
+                            widget.id
+                          }
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            className={classes.drawerCloseButton}
+                            data-testid="drawer-close"
+                            color="inherit"
+                            aria-label="Close"
+                            onClick={() => {
+                              session.hideWidget(widget)
+                            }}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </MenuItem>
+                    )
+                  })}
+                </Select>
+                <IconButton
+                  className={classes.drawerCloseButton}
+                  data-testid="drawer-close"
+                  color="inherit"
+                  aria-label="Close"
+                  onClick={() => {
+                    session.hideWidget(visibleWidget)
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              </>
             )}
           </Toolbar>
         </AppBar>
