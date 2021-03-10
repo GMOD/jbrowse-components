@@ -11,7 +11,6 @@ import {
   IconButton,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
-import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
   loadingMessage: {
@@ -35,28 +34,19 @@ function ReturnToImportFormDialog({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: { clearView: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()
   return (
-    <Dialog
-      data-testid="sequence-dialog"
-      maxWidth="xl"
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog maxWidth="xl" open onClose={handleClose}>
+      <DialogTitle>
         Reference sequence
         {handleClose ? (
           <IconButton
-            data-testid="close-seqDialog"
             className={classes.closeButton}
             onClick={() => {
               handleClose()
-              model.setOffsets(undefined, undefined)
             }}
           >
             <CloseIcon />
@@ -72,12 +62,7 @@ function ReturnToImportFormDialog({
       <DialogActions>
         <Button
           onClick={() => {
-            model.setDisplayedRegions([])
-            // it is necessary to run these after setting displayed regions
-            // empty or else model.offsetPx gets set to infinity and breaks
-            // mobx-state-tree snapshot
-            model.scrollTo(0)
-            model.zoomTo(10)
+            model.clearView()
             handleClose()
           }}
           variant="contained"

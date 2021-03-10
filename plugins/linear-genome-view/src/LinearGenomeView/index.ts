@@ -125,8 +125,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as
+        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
+        | undefined,
     }))
     .views(self => ({
       get width(): number {
@@ -435,15 +436,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get centerLineInfo() {
-        const centerLineInfo = self.displayedRegions.length
+        return self.displayedRegions.length
           ? this.pxToBp(self.width / 2)
           : undefined
-        return centerLineInfo
       },
     }))
     .actions(self => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setDialogComponent(comp?: React.FC<any>) {
+      setDialogComponent(
+        comp?: React.FC<{
+          handleClose: () => void
+          model: { clearView: Function }
+        }>,
+      ) {
         self.DialogComponent = comp
       },
       setWidth(newWidth: number) {
@@ -1272,6 +1276,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
+      // this "clears the view" and makes the view return to the import form
+      clearView() {
+        self.setDisplayedRegions([])
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
+      },
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
