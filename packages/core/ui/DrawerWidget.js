@@ -4,6 +4,7 @@ import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -80,6 +81,19 @@ const DrawerWidget = observer(props => {
                   return (
                     <MenuItem key={`${widget.id}-${index}`} value={widget}>
                       {widget.id}
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          className={classes.drawerCloseButton}
+                          data-testid="drawer-close"
+                          color="inherit"
+                          aria-label="Close"
+                          onClick={() => {
+                            session.hideWidget(visibleWidget)
+                          }}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
                     </MenuItem>
                   )
                 })}
