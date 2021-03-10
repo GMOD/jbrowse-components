@@ -9,8 +9,8 @@ const fs = require('fs')
 const path = require('path')
 
 function main() {
-  // get rid of any existing test_data folder
-  fs.rmdirSync('public/test_data', { recursive: true })
+  // get rid of any existing test_data symlink
+  fs.unlinkSync('public/test_data')
   // create the volvox directory to put files in
   fs.mkdirSync('public/test_data/', { recursive: true })
   // copy volvox into new directory
