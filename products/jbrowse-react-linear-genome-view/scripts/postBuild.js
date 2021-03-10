@@ -9,7 +9,7 @@ const process = require('process')
 
 function main() {
   // get rid of any existing test_data folder
-  fs.rmdirSync('public/test_data', { recursive: true })
+  // fs.rmdirSync('public/test_data', { recursive: true })
   // re-create the symlink
   process.chdir('./public')
   fs.symlinkSync('../../../test_data/', './test_data')

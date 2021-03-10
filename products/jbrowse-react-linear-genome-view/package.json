@@ -32,7 +32,7 @@
     "storybook": "start-storybook -s ./public -p 6006",
     "prebuild-storybook": "node scripts/preBuild.js",
     "build-storybook": "build-storybook -s public",
-    "postbuild-storybook": "node scripts/postBuild.js",
+    "postbuild-storybook": "rimraf public/test_data && node scripts/postBuild.js",
     "deploy-storybook": "storybook-to-aws-s3 --bucket-path=jbrowse.org/jb2/storybook"
   },
   "dependencies": {
