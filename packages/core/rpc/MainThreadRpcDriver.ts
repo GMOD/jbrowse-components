@@ -40,6 +40,6 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     const rpcMethod = pluginManager.getRpcMethodType(functionName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const result = await rpcMethod.execute(serializedArgs, this.name)
-    return rpcMethod.deserializeReturn(result, this.name)
+    return rpcMethod.deserializeReturn(result, args, this.name)
   }
 }

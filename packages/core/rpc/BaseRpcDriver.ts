@@ -260,6 +260,6 @@ export default abstract class BaseRpcDriver {
     // killed before the call could return
     const resultP = Promise.race([callP, killedP])
 
-    return rpcMethod.deserializeReturn(await resultP, this.name)
+    return rpcMethod.deserializeReturn(await resultP, args, this.name)
   }
 }

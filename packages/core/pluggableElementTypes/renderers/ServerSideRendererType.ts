@@ -136,15 +136,9 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const results = (await rpcManager.call(
-      args.sessionId,
-      'CoreRender',
-      args,
-    )) as ResultsSerialized
-    // const result = await renderRegionWithWorker(session, serializedArgs)
-
-    const deserialized = this.deserializeResultsInClient(results, args)
-    return deserialized
+    return rpcManager.call(args.sessionId, 'CoreRender', args) as Promise<
+      ResultsSerialized
+    >
   }
 
   /**

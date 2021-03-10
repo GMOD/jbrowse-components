@@ -7,6 +7,8 @@ import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
@@ -151,12 +153,16 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
 export class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
-  async serializeArguments(args: RenderArgs) {
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
     const renamedArgs = assemblyManager
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args
+
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return renamedArgs
+    }
 
     const { rendererType } = args
 
@@ -172,10 +178,13 @@ export class CoreRender extends RpcMethodType {
     args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
     rpcDriverClassName: string,
   ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
+    let deserializedArgs = args
+    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(
+        args,
+        rpcDriverClassName,
+      )
+    }
     const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
@@ -203,10 +212,33 @@ export class CoreRender extends RpcMethodType {
       dataAdapter,
     }
 
-    const result = await RendererType.renderInWorker(renderArgs)
+    const result =
+      rpcDriverClassName === 'MainThreadRpcDriver'
+        ? await RendererType.render(renderArgs)
+        : await RendererType.renderInWorker(renderArgs)
 
     checkAbortSignal(signal)
     return result
+  }
+
+  async deserializeReturn(
+    serializedReturn: RenderResults | ResultsSerialized,
+    args: RenderArgs,
+    rpcDriverClassName: string,
+  ): Promise<unknown> {
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return serializedReturn
+    }
+
+    const { rendererType } = args
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+    return RendererType.deserializeResultsInClient(
+      serializedReturn as ResultsSerialized,
+      args,
+    )
   }
 }
 
