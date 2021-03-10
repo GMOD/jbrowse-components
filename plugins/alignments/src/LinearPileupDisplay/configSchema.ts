@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
+import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -43,7 +43,10 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'normal',
       },
     },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      explicitlyTyped: true,
+    },
   )
 }
 
