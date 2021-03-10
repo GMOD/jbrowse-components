@@ -62,5 +62,5 @@ jobs:
       - name: Deploy Storybook for branch to S3
         run: |
           pwd
-          yarn deploy-storybook --ci -e storybook-static
+          yarn deploy-storybook -e storybook-static
         working-directory: products/jbrowse-react-linear-genome-view
