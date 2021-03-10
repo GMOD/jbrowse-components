@@ -1,0 +1,35 @@
+import { customFields } from '../../docusaurus.config.json'
+
+export const Link = ({ extra, children }) => {
+  return <a href={`${customFields.currentLink}${extra}`}>{children}</a>
+}
+
+# JBrowse 2 demos
+
+These demos contain examples of new workflows and views in JBrowse 2, with links
+to live sessions in order for you to be able to experience the app yourself.
+The link above will always direct to the most recent demo that has been released.
+Enjoy!
+
+Current version demos
+
+- <Link extra="?config=test_data/config_demo.json">Human sample data</Link>
+- <Link extra="?config=test_data/volvox/config.json">Volvox sample data</Link>
+- <Link extra="?config=test_data/breakpoint/config.json">
+    Breakpoint split view
+  </Link>
+- <Link extra="?config=test_data/config_dotplot.json">
+    Grape vs Peach dotplot
+  </Link>
+- <Link extra="?config=test_data/yeast_synteny/config.json">Yeast dotplot</Link>
+
+Conference demos:
+
+- [BOG2021](http://jbrowse.org/demos/bog2021/)
+- [ASHG2020](http://jbrowse.org/demos/ashg2020/)
+- [ITCR2020](http://jbrowse.org/demos/itcr2020/)
+- [BOG2020](http://jbrowse.org/demos/bog2020/)
+
+Embedded demos
+
+- [Embedded mode + cancer genomics demo](http://jbrowse.org/demos/cancer-demo-2020/)
