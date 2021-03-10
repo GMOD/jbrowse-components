@@ -12,7 +12,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { abortBreakPoint } from '@jbrowse/core/util'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -43,9 +43,7 @@ export interface PileupRenderProps {
     by: string
   }
 }
-function timeout(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+
 export default class HicRenderer extends ServerSideRendererType {
   async makeImageData(props: PileupRenderProps) {
     const {
@@ -78,16 +76,14 @@ export default class HicRenderer extends ServerSideRendererType {
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
-      await timeout(1)
-      checkAbortSignal(signal)
+      await abortBreakPoint(signal)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         maxScore = Math.max(counts, maxScore)
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
-      await timeout(1)
-      checkAbortSignal(signal)
+      await abortBreakPoint(signal)
       ctx.rotate(-Math.PI / 4)
       let start = Date.now()
       for (let i = 0; i < features.length; i++) {
@@ -99,9 +95,8 @@ export default class HicRenderer extends ServerSideRendererType {
         ])
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         if (+Date.now() - start > 400) {
-          checkAbortSignal(signal)
           // eslint-disable-next-line no-await-in-loop
-          await timeout(1)
+          await abortBreakPoint(signal)
           start = +Date.now()
         }
       }
