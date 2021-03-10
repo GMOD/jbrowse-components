@@ -185,6 +185,7 @@ export function renderBlockData(
   self: Instance<BlockStateModel>,
   optDisplay?: any,
 ) {
+  try {
   const display = optDisplay || (getContainingDisplay(self) as any)
   const { assemblyManager, rpcManager } = getSession(display)
   const {
@@ -233,6 +234,9 @@ export function renderBlockData(
       blockKey: self.key,
       timeout: 1000000, // 10000,
     },
+  }
+  } catch (e) {
+    return { displayError: e }
   }
 }
 

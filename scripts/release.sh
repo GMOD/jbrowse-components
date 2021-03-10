@@ -15,12 +15,18 @@ set -o pipefail
 [[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
 [[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
 
-BRANCH=$(git branch --show-current)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
 NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
 MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
 [[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
+
+# make sure packages are all up to date
+yarn
+
+# make sure the tests are passing
+yarn test
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
