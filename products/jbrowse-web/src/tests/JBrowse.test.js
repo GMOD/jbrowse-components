@@ -233,11 +233,21 @@ test('404 sequence file', async () => {
       <JBrowse pluginManager={pluginManager} />
     </ErrorBoundary>,
   )
-  expect(
-    await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
-      exact: false,
-    }),
-  ).toBeTruthy()
+  await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
+    exact: false,
+  })
+})
+
+test('wrong assembly', async () => {
+  console.error = jest.fn()
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
+  const view = state.session.views[0]
+  view.showTrack('volvox_wrong_assembly')
+  await findAllByText(
+    'Error: region assembly (volvox) does not match track assemblies (wombat)',
+  )
 })
 
 test('looks at about this track dialog', async () => {
