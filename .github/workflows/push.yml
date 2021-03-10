@@ -57,10 +57,10 @@ jobs:
       #     aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
       - name: Build Storybook static site
         run: |
-          npm run build-storybook
+          yarn build-storybook
         working-directory: products/jbrowse-react-linear-genome-view
       - name: Deploy Storybook for branch to S3
         run: |
           pwd
-          npm run deploy-storybook --ci -e storybook-static
+          yarn deploy-storybook --ci -e storybook-static
         working-directory: products/jbrowse-react-linear-genome-view
