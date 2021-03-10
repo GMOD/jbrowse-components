@@ -19,7 +19,7 @@ class MockWorkerHandle {
   async call(
     name: string,
     _args = [],
-    opts: { timeout: number; signal?: AbortSignal },
+    opts: { timeout: number; signal?: AbortSignal } = { timeout: 3000 },
   ) {
     const start = Date.now()
     if (name === 'ping') {
@@ -61,6 +61,7 @@ class MockWorkerHandle {
     } else if (name === 'MockRenderShort') {
       this.busy = true
       await timeout(100)
+      checkAbortSignal(opts.signal)
       this.busy = false
     }
   }
@@ -137,4 +138,28 @@ test('test RPC driver operation timeout and worker replace', async () => {
     expect(e.message).toMatch(/operation timed out/)
   }
   await driver.call(pluginManager, 'sessionId', 'MockRenderShort', {}, {})
+})
+
+test('remote abort', async () => {
+  console.warn = jest.fn()
+  expect.assertions(1)
+  const driver = new MockRpcDriver()
+  const pluginManager = new PluginManager()
+
+  pluginManager.addRpcMethod(() => new MockRendererShort(pluginManager))
+  pluginManager.createPluggableElements()
+  try {
+    const controller = new AbortController()
+    const resP = driver.call(
+      pluginManager,
+      'sessionId',
+      'MockRenderShort',
+      {},
+      { signal: controller.signal },
+    )
+    controller.abort()
+    await resP
+  } catch (e) {
+    expect(e.message).toMatch(/abort/)
+  }
 })
