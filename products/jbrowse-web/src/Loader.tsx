@@ -25,7 +25,10 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { readSessionFromDynamo } from './sessionSharing'
+import {
+  readSessionFromDynamo,
+  scanSharedSessionForCallbacks,
+} from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'

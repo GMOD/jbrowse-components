@@ -25,6 +25,13 @@ function createJexlInstance(/* config?: any*/): JexlNonBuildable {
     return arg
   })
 
+  // logging
+  jexlInstance.addTransform('log', (thing: unknown) => {
+    // eslint-disable-next-line no-console
+    console.log(thing)
+    return thing
+  })
+
   // math
   // addfunction added in jexl 2.3 but types/jexl still on 2.2
   ;(jexlInstance as JexlWithAddFunction).addFunction('max', Math.max)

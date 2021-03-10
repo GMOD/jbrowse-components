@@ -601,7 +601,7 @@ but must be provided by the calling code (the code reading the config slot). To
 pass arguments to the a callback we say
 
 ```js
-readConfObject(config, 'color', [feature])
+readConfObject(config, 'color', { feature })
 ```
 
 That implies the color configuration callback will be passed a feature, so the
@@ -634,7 +634,7 @@ callback for color, it might look like this
   "renderers": {
     "SvgFeatureRenderer": {
       "type": "SvgFeatureRenderer",
-      "color": "function(feat) { return feat.get('type')==='SNV'?'green':'purple' }"
+      "color": "feat|getData('type')=='SNV'?'green':'purple'"
     }
   }
 }

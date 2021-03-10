@@ -2487,7 +2487,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "feature|getDate('gene_name')"
             }
           }
         }
@@ -2518,7 +2518,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "feature|getData('gene_name')"
             }
           }
         }
@@ -3084,7 +3084,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(f) { return f.get('ucscLabel') }"
+              "description": "f|getData('ucscLabel')"
             }
           }
         }
