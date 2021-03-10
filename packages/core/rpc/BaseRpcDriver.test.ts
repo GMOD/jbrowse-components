@@ -1,4 +1,5 @@
 import PluginManager from '../PluginManager'
+import { checkAbortSignal } from '../util'
 import BaseRpcDriver, { watchWorker } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 
@@ -18,20 +19,19 @@ class MockWorkerHandle {
   async call(
     name: string,
     _args = [],
-    opts: { timeout: number } = { timeout: 3000 },
+    opts: { timeout: number; signal?: AbortSignal },
   ) {
     const start = Date.now()
     if (name === 'ping') {
       while (this.busy) {
-        if (opts.timeout < Date.now() - start) {
+        if (opts.timeout < +Date.now() - start) {
           throw new Error('timeout')
         }
 
         // eslint-disable-next-line no-await-in-loop
         await timeout(50)
       }
-    }
-    if (name === 'doWorkShortPingTime') {
+    } else if (name === 'doWorkShortPingTime') {
       this.busy = true
       await timeout(50)
       this.busy = false
@@ -43,24 +43,22 @@ class MockWorkerHandle {
       this.busy = true
       await timeout(50)
       this.busy = false
-    }
-
-    if (name === 'doWorkLongPingTime') {
+    } else if (name === 'doWorkLongPingTime') {
       this.busy = true
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = false
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = true
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = false
-    }
-    if (name === 'MockRenderTimeout') {
+    } else if (name === 'MockRenderTimeout') {
       this.busy = true
       await timeout(10000)
       this.busy = false
-    }
-
-    if (name === 'MockRenderShort') {
+    } else if (name === 'MockRenderShort') {
       this.busy = true
       await timeout(100)
       this.busy = false
@@ -70,12 +68,32 @@ class MockWorkerHandle {
 test('watch worker with long ping, generates timeout', async () => {
   const worker = new MockWorkerHandle()
 
+  expect.assertions(1)
   try {
     const workerWatcher = watchWorker(worker, 200)
-    const result = worker.call('doWorkLongPingTime')
+    const result = worker.call('doWorkLongPingTime', undefined, {
+      timeout: 100,
+    })
     await Promise.race([result, workerWatcher])
   } catch (e) {
     expect(e.message).toMatch(/timeout/)
+  }
+})
+
+test('test worker abort', async () => {
+  const worker = new MockWorkerHandle()
+  expect.assertions(1)
+
+  try {
+    const controller = new AbortController()
+    const resultP = worker.call('doWorkLongPingTime', undefined, {
+      signal: controller.signal,
+      timeout: 2000,
+    })
+    controller.abort()
+    await resultP
+  } catch (e) {
+    expect(e.message).toMatch(/abort/)
   }
 })
 
