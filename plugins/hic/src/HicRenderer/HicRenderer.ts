@@ -37,12 +37,15 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
+  signal?: AbortSignal
   sortObject: {
     position: number
     by: string
   }
 }
-
+function timeout(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 export default class HicRenderer extends ServerSideRendererType {
   async makeImageData(props: PileupRenderProps) {
     const {
@@ -58,58 +61,57 @@ export default class HicRenderer extends ServerSideRendererType {
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
     const res = await dataAdapter.getResolution(bpPerPx)
-    console.log({ signal })
-    try {
-      console.time('test')
-      if (!(width > 0) || !(height > 0)) {
-        return { height: 0, width: 0, maxHeightReached: false }
-      }
+    if (!(width > 0) || !(height > 0)) {
+      return { height: 0, width: 0, maxHeightReached: false }
+    }
 
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
-      const w = res / (bpPerPx * Math.sqrt(2))
-      const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      const baseColor = Color(readConfObject(config, 'baseColor'))
-      if (features.length) {
-        const offset = features[0].bin1
-        let maxScore = 0
-        let minBin = 0
-        let maxBin = 0
-        checkAbortSignal(signal)
-        for (let i = 0; i < features.length; i++) {
-          const { bin1, bin2, counts } = features[i]
-          maxScore = Math.max(counts, maxScore)
-          minBin = Math.min(Math.min(bin1, bin2), minBin)
-          maxBin = Math.max(Math.max(bin1, bin2), maxBin)
-        }
-        checkAbortSignal(signal)
-        ctx.rotate(-Math.PI / 4)
-        for (let i = 0; i < features.length; i++) {
-          const { bin1, bin2, counts } = features[i]
-          ctx.fillStyle = readConfObject(config, 'color', [
-            counts,
-            maxScore,
-            baseColor,
-          ])
-          ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
-          if (i % 10000 === 0) {
-            checkAbortSignal(signal)
-          }
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
+    const w = res / (bpPerPx * Math.sqrt(2))
+    const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    const baseColor = Color(readConfObject(config, 'baseColor'))
+    if (features.length) {
+      const offset = features[0].bin1
+      let maxScore = 0
+      let minBin = 0
+      let maxBin = 0
+      await timeout(1)
+      checkAbortSignal(signal)
+      for (let i = 0; i < features.length; i++) {
+        const { bin1, bin2, counts } = features[i]
+        maxScore = Math.max(counts, maxScore)
+        minBin = Math.min(Math.min(bin1, bin2), minBin)
+        maxBin = Math.max(Math.max(bin1, bin2), maxBin)
+      }
+      await timeout(1)
+      checkAbortSignal(signal)
+      ctx.rotate(-Math.PI / 4)
+      let start = Date.now()
+      for (let i = 0; i < features.length; i++) {
+        const { bin1, bin2, counts } = features[i]
+        ctx.fillStyle = readConfObject(config, 'color', [
+          counts,
+          maxScore,
+          baseColor,
+        ])
+        ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
+        if (+Date.now() - start > 400) {
+          checkAbortSignal(signal)
+          // eslint-disable-next-line no-await-in-loop
+          await timeout(1)
+          start = +Date.now()
         }
       }
+    }
 
-      const imageData = await createImageBitmap(canvas)
-      console.timeEnd('test')
-      return {
-        imageData,
-        height,
-        width,
-      }
-    } catch (e) {
-      console.error(e)
+    const imageData = await createImageBitmap(canvas)
+    return {
+      imageData,
+      height,
+      width,
     }
   }
 
