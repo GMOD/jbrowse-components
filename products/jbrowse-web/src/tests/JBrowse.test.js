@@ -280,5 +280,5 @@ test('export svg', async () => {
     },
     { timeout: 25000 },
   )
-  expect(FileSaver.saveAs).toMatchSnapshot()
+  expect(FileSaver.saveAs).toHaveBeenCalled()
 }, 25000)
