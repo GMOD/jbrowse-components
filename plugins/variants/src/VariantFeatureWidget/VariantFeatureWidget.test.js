@@ -12,6 +12,7 @@ describe('VariantTrack widget', () => {
     console.warn = jest.fn()
     const pluginManager = new PluginManager([])
     const Session = types.model({
+      rpcManager: types.optional(types.frozen(), {}),
       pluginManager: types.optional(types.frozen(), {}),
       configuration: ConfigurationSchema('test', {}),
       widget: stateModelFactory(pluginManager),

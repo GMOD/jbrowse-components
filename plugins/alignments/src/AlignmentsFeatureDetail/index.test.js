@@ -12,6 +12,7 @@ test('open up a widget', () => {
 
   const Session = types.model({
     pluginManager: types.optional(types.frozen(), {}),
+    rpcManager: types.optional(types.frozen(), {}),
     configuration: ConfigurationSchema('test', {}),
     widget: stateModelFactory(pluginManager),
   })

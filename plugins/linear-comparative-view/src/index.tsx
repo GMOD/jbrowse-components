@@ -601,6 +601,7 @@ export default class extends Plugin {
           name: 'LinearSyntenyRenderer',
           configSchema: linearSyntenyRendererConfigSchema,
           ReactComponent: LinearSyntenyRendererReactComponent,
+          pluginManager,
         }),
     )
   }

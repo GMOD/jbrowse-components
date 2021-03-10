@@ -2,8 +2,8 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@material-ui/core/styles'
+import { getEnv } from 'mobx-state-tree'
 import { LinearComparativeViewModel } from '../model'
 import Header from './Header'
 
@@ -65,7 +65,7 @@ const Overlays = observer(({ model }: Props) => {
 const MiddleComparativeView = observer(({ model }: Props) => {
   const classes = useStyles()
   const { views } = model
-  const { pluginManager } = getSession(model)
+  const { pluginManager } = getEnv(model)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const viewType = pluginManager.getViewType(views[0].type) as any
@@ -87,7 +87,7 @@ const MiddleComparativeView = observer(({ model }: Props) => {
 const OverlayComparativeView = observer(({ model }: Props) => {
   const classes = useStyles()
   const { views } = model
-  const { pluginManager } = getSession(model)
+  const { pluginManager } = getEnv(model)
   return (
     <div>
       <Header model={model} />

@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
@@ -74,7 +75,7 @@ const useStyles = makeStyles(theme => ({
 
 function App({ session, HeaderButtons }) {
   const classes = useStyles()
-  const { pluginManager } = session
+  const { pluginManager } = getEnv(session)
   const { visibleWidget, drawerWidth } = session
 
   function handleNameChange(newName) {
