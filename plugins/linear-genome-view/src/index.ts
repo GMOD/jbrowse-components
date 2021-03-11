@@ -151,8 +151,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 
   async initFromLocString(pluginManager: PluginManager) {
-    const { loc, ...rest } = queryString.parse(window.location.search)
-    if (pluginManager.rootModel && loc) {
+    const parsed = queryString.parse(window.location.search)
+    if (pluginManager.rootModel && parsed.loc) {
       if (!pluginManager.rootModel.session) {
         // @ts-ignore types are not accurate here, they are stub abstracts
         pluginManager.rootModel.setSession({ name: 'New session' })
@@ -185,8 +185,10 @@ export default class LinearGenomeViewPlugin extends Plugin {
         )
       })
       // @ts-ignore types are not accurate here, they are stub abstracts
-      view.navToLocString(loc)
-      const pageUrl = `${window.location.href}?${queryString.stringify(rest)}`
+      view.navToLocString(parsed.loc)
+      const root = window.location.href.split('?')[0]
+      const { loc, ...rest } = queryString.parse(window.location.search)
+      const pageUrl = `${root}?${queryString.stringify(rest)}`
       window.history.replaceState({}, '', pageUrl)
     }
   }
