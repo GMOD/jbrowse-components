@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 import React from 'react'
-import SimpleFeature from '@gmod/jbrowse-core/util/simpleFeature'
-import { readConfObject } from '@gmod/jbrowse-core/configuration'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { readConfObject } from '@jbrowse/core/configuration'
 import Segments from './Segments'
 import { layOutFeature, layOutSubfeatures } from './util'
 
@@ -121,14 +121,12 @@ function makeUTRs(parent, subparts) {
 
 function getSubparts(f, config) {
   let c = f.get('subfeatures')
-  if (!c) {
+  if (!c || !c.length) {
     return []
   }
-
-  // possible todo, inferCDS
-  // used in JB1 for intermine REST API adapter
-
-  if (c && readConfObject(config, 'impliedUTRs')) {
+  const hasUTRs = !!c.find(child => child.get('type').match(/UTR/))
+  const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
+  if ((!hasUTRs && isTranscript) || readConfObject(config, 'impliedUTRs')) {
     c = makeUTRs(f, c)
   }
 
