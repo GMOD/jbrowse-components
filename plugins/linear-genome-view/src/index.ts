@@ -3,6 +3,9 @@ import {
   ReactComponent as BaseFeatureWidgetReactComponent,
   stateModelFactory as baseFeatureWidgetStateModelFactory,
 } from '@jbrowse/core/BaseFeatureWidget'
+import shortid from 'shortid'
+import { when } from 'mobx'
+import { getSnapshot } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -16,6 +19,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
+import queryString from 'query-string'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
@@ -141,6 +145,41 @@ export default class LinearGenomeViewPlugin extends Plugin {
           session.addView('LinearGenomeView', {})
         },
       })
+    }
+
+    this.initFromLocString(pluginManager)
+  }
+
+  async initFromLocString(pluginManager: PluginManager) {
+    const parsed = queryString.parse(window.location.search)
+    if (pluginManager.rootModel && parsed.loc) {
+      const { session } = pluginManager.rootModel
+      if (session) {
+        const { assemblyManager } = session
+        const view = session.addView('LinearGenomeView', {
+          id: shortid(),
+          type: 'LinearGenomeView',
+        })
+        await when(() => {
+          return (
+            assemblyManager.allPossibleRefNames &&
+            assemblyManager.allPossibleRefNames.length
+          )
+        })
+        const assembly = assemblyManager.assemblies[0]
+        const region = assembly && assembly.regions && assembly.regions[0]
+        view.setDisplayedRegions([getSnapshot(region)])
+        await when(() => {
+          return (
+            assemblyManager.allPossibleRefNames &&
+            assemblyManager.allPossibleRefNames.length &&
+            view.initialized
+          )
+        })
+        view.navToLocString(parsed.loc)
+        delete parsed.loc
+        window.location.search = queryString.stringify(parsed)
+      }
     }
   }
 }
