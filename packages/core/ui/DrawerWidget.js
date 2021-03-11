@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   drawerSelect: {
-    width: '98%',
+    width: '85%',
     color: 'white',
   },
   drawerLoading: {
@@ -60,7 +60,6 @@ const DrawerWidget = observer(props => {
   }
 
   // TODO: fix styling
-  // TODO: add title and description to the selection dropdown, tittle >>
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
@@ -111,12 +110,13 @@ const DrawerWidget = observer(props => {
                     return (
                       <MenuItem key={`${widget.id}-${index}`} value={widget}>
                         <ListItemText
-                          primary={
-                            pluginManager.getWidgetType(widget.type).heading ||
-                            pluginManager.getWidgetType(widget.type)
-                              .HeadingComponent ||
-                            widget.id
-                          }
+                          primary={`
+                            ${
+                              pluginManager.getWidgetType(widget.type)
+                                .heading ||
+                              pluginManager.getWidgetType(widget.type)
+                                .HeadingComponent
+                            } Widget`}
                         />
                         <ListItemSecondaryAction>
                           <IconButton
@@ -135,6 +135,7 @@ const DrawerWidget = observer(props => {
                     )
                   })}
                 </Select>
+                <div className={classes.drawerToolbarCloseButton} />
                 <IconButton
                   className={classes.drawerCloseButton}
                   data-testid="drawer-close"
