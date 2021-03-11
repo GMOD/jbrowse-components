@@ -154,10 +154,14 @@ export default class LinearGenomeViewPlugin extends Plugin {
     const { loc, ...rest } = queryString.parse(window.location.search)
     if (pluginManager.rootModel && loc) {
       if (!pluginManager.rootModel.session) {
+        // @ts-ignore types are not accurate here, they are stub abstracts
         pluginManager.rootModel.setSession({ name: 'New session' })
       }
       const { session } = pluginManager.rootModel
+
+      // @ts-ignore types are not accurate here, they are stub abstracts
       const { assemblyManager } = session
+      // @ts-ignore types are not accurate here, they are stub abstracts
       const view = session.addView('LinearGenomeView', {
         id: shortid(),
         type: 'LinearGenomeView',
@@ -170,14 +174,17 @@ export default class LinearGenomeViewPlugin extends Plugin {
       })
       const assembly = assemblyManager.assemblies[0]
       const region = assembly && assembly.regions && assembly.regions[0]
+      // @ts-ignore types are not accurate here, they are stub abstracts
       view.setDisplayedRegions([getSnapshot(region)])
       await when(() => {
         return (
           assemblyManager.allPossibleRefNames &&
           assemblyManager.allPossibleRefNames.length &&
+          // @ts-ignore types are not accurate here, they are stub abstracts
           view.initialized
         )
       })
+      // @ts-ignore types are not accurate here, they are stub abstracts
       view.navToLocString(loc)
       const pageUrl = `${window.location.href}?${queryString.stringify(rest)}`
       window.history.replaceState({}, '', pageUrl)
