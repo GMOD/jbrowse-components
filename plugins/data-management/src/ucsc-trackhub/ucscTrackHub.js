@@ -1,3 +1,4 @@
+/* eslint curly:error */
 import objectHash from 'object-hash'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -48,7 +49,9 @@ export function generateTracks(
       'container',
       'view',
     ]
-    if (trackKeys.some(key => parentTrackKeys.includes(key))) return
+    if (trackKeys.some(key => parentTrackKeys.includes(key))) {
+      return
+    }
     const parentTracks = []
     let currentTrackName = trackName
     do {
@@ -59,8 +62,8 @@ export function generateTracks(
       }
     } while (currentTrackName)
     parentTracks.reverse()
-    const categories = parentTracks.map(parentTrack =>
-      parentTrack.get('shortLabel'),
+    const categories = parentTracks.map(
+      parentTrack => parentTrack.get('shortLabel') || parentTrack.get('track'),
     )
     const res = makeTrackConfig(
       track,
@@ -85,39 +88,41 @@ function makeTrackConfig(
   sequenceAdapter,
 ) {
   let trackType = track.get('type')
-  if (!trackType) trackType = trackDb.get(track.get('parent')).get('type')
+  if (!trackType) {
+    trackType = trackDb.get(track.get('parent')).get('type')
+  }
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&
     track.get('bigDataUrl').toLowerCase().endsWith('cram')
-  )
+  ) {
     baseTrackType = 'cram'
+  }
   let bigDataLocation
-  if (trackDbFileLocation.uri)
+  if (trackDbFileLocation.uri) {
     bigDataLocation = {
       uri: new URL(track.get('bigDataUrl'), trackDbFileLocation.uri).href,
     }
-  else bigDataLocation = { localPath: track.get('bigDataUrl') }
+  } else {
+    bigDataLocation = { localPath: track.get('bigDataUrl') }
+  }
   let bigDataIndexLocation
 
   switch (baseTrackType) {
     case 'bam':
-      if (trackDbFileLocation.uri)
-        bigDataIndexLocation = track.get('bigDataIndex')
-          ? {
-              uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
-                .href,
-            }
-          : {
-              uri: new URL(
-                `${track.get('bigDataUrl')}.bai`,
-                trackDbFileLocation.uri,
-              ).href,
-            }
-      else
+      if (trackDbFileLocation.uri) {
+        const idx = track.get('bigDataIndex')
+        bigDataIndexLocation = {
+          uri: new URL(
+            idx || `${track.get('bigDataUrl')}.bai`,
+            trackDbFileLocation.uri,
+          ).href,
+        }
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
@@ -271,7 +276,7 @@ function makeTrackConfig(
         categories,
       )
     case 'cram':
-      if (trackDbFileLocation.uri)
+      if (trackDbFileLocation.uri) {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
@@ -283,10 +288,11 @@ function makeTrackConfig(
                 trackDbFileLocation.uri,
               ).href,
             }
-      else
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
@@ -335,7 +341,7 @@ function makeTrackConfig(
         categories,
       )
     case 'vcfTabix':
-      if (trackDbFileLocation.uri)
+      if (trackDbFileLocation.uri) {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
@@ -347,10 +353,11 @@ function makeTrackConfig(
                 trackDbFileLocation.uri,
               ).href,
             }
-      else
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.tbi` }
+      }
       return {
         type: 'VariantTrack',
         name: track.get('shortLabel'),

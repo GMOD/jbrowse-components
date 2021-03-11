@@ -91,7 +91,13 @@ export default function (pluginManager) {
             .catch(error => {
               console.error(error)
               session.notify(
-                `There was a problem connecting to the UCSC Track Hub "${self.name}". Please make sure you have entered a valid hub.txt file. The error that was thrown is: "${error}"`,
+                `There was a problem connecting to the UCSC Track Hub "${
+                  self.name
+                }". Please make sure you have entered a valid hub.txt file. The error that was thrown is: "${
+                  error.message.length > 1000
+                    ? `${error.message.slice(0, 1000)}...`
+                    : error.message
+                }"`,
                 'error',
               )
               session.breakConnection(self.configuration)
