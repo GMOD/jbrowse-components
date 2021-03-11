@@ -94,13 +94,15 @@ const DrawerWidget = observer(props => {
                   renderValue={selected => {
                     return (
                       <Typography variant="h6" color="inherit">
-                        {getEnv(session).pluginManager.getWidgetType(
-                          selected.type,
-                        ).heading ||
+                        {`${
+                          getEnv(session).pluginManager.getWidgetType(
+                            selected.type,
+                          ).heading ||
                           getEnv(session).pluginManager.getWidgetType(
                             selected.type,
                           ).HeadingComponent ||
-                          ''}
+                          ''
+                        }`}
                       </Typography>
                     )
                   }}
