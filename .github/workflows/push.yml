@@ -59,6 +59,13 @@ jobs:
     name: Build and deploy static Storybook site to AWS S3
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
       - name: Build Storybook static site
         run: |
           yarn build-storybook
