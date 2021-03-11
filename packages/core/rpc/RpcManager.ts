@@ -58,59 +58,23 @@ export default class RpcManager {
     this.driverObjects = new Map()
   }
 
-  getDriver(driverName: string): DriverClass {
-    const driverConfig = this.mainConfiguration.drivers.get(driverName)
-    if (!driverConfig) {
-      throw new Error(`could not find driver config for "${driverName}"`)
-    }
-    const driver = this.driverObjects.get(driverName)
+  getDriver(backendName: keyof typeof DriverClasses): DriverClass {
+    const driver = this.driverObjects.get(backendName)
     if (driver) return driver
 
-    // a bit verbose, but it keeps TypeScript happy
-    let newDriver
-    const backendName = driverConfig.type as keyof typeof DriverClasses
-    if (backendName === 'MainThreadRpcDriver') {
-      const backendConfiguration = this.backendConfigurations
-        .MainThreadRpcDriver
-      if (!backendConfiguration) {
-        throw new Error(
-          `requested RPC driver "${backendName}" is missing config`,
-        )
-      }
-      const DriverClass = DriverClasses[backendName]
-      newDriver = new DriverClass({
-        ...backendConfiguration,
-        config: driverConfig,
-      })
-    } else if (backendName === 'ElectronRpcDriver') {
-      const backendConfiguration = this.backendConfigurations.ElectronRpcDriver
-      if (!backendConfiguration) {
-        throw new Error(
-          `requested RPC driver "${backendName}" is missing config`,
-        )
-      }
-      const DriverClass = DriverClasses[backendName]
-      newDriver = new DriverClass(
-        { ...backendConfiguration, config: driverConfig },
-        { plugins: this.runtimePluginDefinitions },
-      )
-    } else if (backendName === 'WebWorkerRpcDriver') {
-      const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
-      if (!backendConfiguration) {
-        throw new Error(
-          `requested RPC driver "${backendName}" is missing config`,
-        )
-      }
-      const DriverClass = DriverClasses[backendName]
-      newDriver = new DriverClass(
-        { ...backendConfiguration, config: driverConfig },
-        { plugins: this.runtimePluginDefinitions },
-      )
-    } else {
-      throw new Error(`requested RPC driver "${backendName}" is not installed`)
-    }
+    const backendConfiguration = this.backendConfigurations[backendName]
+    const DriverClassImpl = DriverClasses[backendName]
 
-    this.driverObjects.set(driverName, newDriver)
+    if (!DriverClassImpl) {
+      throw new Error(`requested RPC driver "${backendName}" is not installed`)
+    } else if (!backendConfiguration) {
+      throw new Error(`requested RPC driver "${backendName}" is missing config`)
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newDriver = new DriverClassImpl(backendConfiguration as any, {
+      plugins: this.runtimePluginDefinitions,
+    })
+    this.driverObjects.set(backendName, newDriver)
     return newDriver
   }
 
@@ -119,11 +83,11 @@ export default class RpcManager {
     _functionName: string,
     args: { rpcDriverName?: string },
   ) {
-    const driverName =
+    const backendName =
       args.rpcDriverName ||
       readConfObject(this.mainConfiguration, 'defaultDriver')
 
-    return this.getDriver(driverName)
+    return this.getDriver(backendName)
   }
 
   async call(sessionId: string, functionName: string, args: {}, opts = {}) {
