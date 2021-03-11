@@ -36,7 +36,7 @@ jobs:
           cat <<EOF > entrypoint.sh
           #!/bin/sh -l
           /opt/texlive/texdir/bin/x86_64-linuxmusl/tlmgr install pmboxdraw
-          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/title_rev_*.md pdfcombined.md
+          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex -H disable_float.tex --toc -o website/jbrowse2.pdf website/docs/title_rev_*.md pdfcombined.md
           EOF
           chmod +x entrypoint.sh
           cat entrypoint.sh
