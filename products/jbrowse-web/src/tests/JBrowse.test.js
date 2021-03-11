@@ -11,11 +11,16 @@ import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
 // locals
 import { clearCache } from '@jbrowse/core/util/io/rangeFetcher'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { readConfObject, getConf } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+import JBrowseRootModelFactory from '../rootModel'
+import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 import JBrowse from '../JBrowse'
 import { setup, getPluginManager, generateReadBuffer } from './util'
+import TestPlugin from './TestPlugin'
 
 window.TextEncoder = TextEncoder
 
@@ -63,6 +68,29 @@ test('lollipop track test', async () => {
 
   await findByTestId('display-lollipop_track_linear')
   await expect(findByTestId('three')).resolves.toBeTruthy()
+})
+
+test('toplevel configuration', () => {
+  const pluginManager = new PluginManager(
+    corePlugins.concat([TestPlugin]).map(P => new P()),
+  )
+  pluginManager.createPluggableElements()
+  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, true)
+  const rootModel = JBrowseRootModel.create({
+    jbrowse: volvoxConfigSnapshot,
+    assemblyManager: {},
+  })
+  rootModel.setDefaultSession()
+  pluginManager.setRootModel(rootModel)
+  pluginManager.configure()
+  const state = pluginManager.rootModel
+  const { jbrowse } = state
+  const { configuration } = jbrowse
+  // test reading top level configurations added by Test Plugin
+  const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
+  const test2 = readConfObject(configuration, ['TestPlugin', 'topLevelTest'])
+  expect(test).toEqual('test works')
+  expect(test2).toEqual('test works')
 })
 
 test('variant track test - opens feature detail view', async () => {
@@ -205,11 +233,21 @@ test('404 sequence file', async () => {
       <JBrowse pluginManager={pluginManager} />
     </ErrorBoundary>,
   )
-  expect(
-    await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
-      exact: false,
-    }),
-  ).toBeTruthy()
+  await findByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
+    exact: false,
+  })
+})
+
+test('wrong assembly', async () => {
+  console.error = jest.fn()
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findAllByText } = render(<JBrowse pluginManager={pluginManager} />)
+  const view = state.session.views[0]
+  view.showTrack('volvox_wrong_assembly')
+  await findAllByText(
+    'Error: region assembly (volvox) does not match track assemblies (wombat)',
+  )
 })
 
 test('looks at about this track dialog', async () => {
@@ -221,7 +259,7 @@ test('looks at about this track dialog', async () => {
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', {}, { timeout: 10000 }))
   fireEvent.click(await findByText('About this track'))
   await findAllByText(/SQ/, {}, { timeout: 10000 })
-})
+}, 15000)

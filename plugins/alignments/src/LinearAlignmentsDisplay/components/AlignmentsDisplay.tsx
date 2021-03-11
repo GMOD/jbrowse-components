@@ -1,17 +1,11 @@
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { AlignmentsDisplayModel } from '../models/model'
 
 export default observer(({ model }: { model: AlignmentsDisplayModel }) => {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
-
-  // determine height of the model when toggling pileupdisplay
-  useEffect(() => {
-    SNPCoverageDisplay.setHeight(!showPileup ? model.height : 45)
-  }, [SNPCoverageDisplay, model, showPileup])
-
   return (
     <div
       data-testid={`display-${getConf(model, 'displayId')}`}

@@ -7,9 +7,6 @@ import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Divider from '@material-ui/core/Divider'
 import WarningIcon from '@material-ui/icons/Warning'
-import shortid from 'shortid'
-import { Instance, IAnyStateTreeNode } from 'mobx-state-tree'
-import { SessionLoader } from './Loader'
 
 const useStyles = makeStyles(theme => ({
   main: {
@@ -26,19 +23,13 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function SessionWarningModal({
-  loader,
-  sessionTriaged,
+  onConfirm,
+  onCancel,
 }: {
-  loader: Instance<SessionLoader>
-  sessionTriaged: { snap: IAnyStateTreeNode; origin: string }
+  onConfirm: () => void
+  onCancel: () => void
 }) {
   const classes = useStyles()
-
-  const session = JSON.parse(JSON.stringify(sessionTriaged.snap))
-
-  const handleClose = () => {
-    loader.setSessionTriaged(undefined)
-  }
   return (
     <Dialog
       open
@@ -54,10 +45,11 @@ export default function SessionWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            External sessions can contain code that runs.
+            This link contains an external session, which may contain dangerous
+            code.
           </DialogContentText>
           <DialogContentText>
-            Please ensure and confirm you trust the source of this session.
+            Please ensure you trust the source of this session.
           </DialogContentText>
         </DialogContent>
         <div className={classes.buttons}>
@@ -65,26 +57,16 @@ export default function SessionWarningModal({
             color="primary"
             variant="contained"
             style={{ marginRight: 5 }}
-            onClick={() => {
-              sessionTriaged.origin === 'share'
-                ? loader.setSessionSnapshot({
-                    ...session,
-                    id: shortid(),
-                  })
-                : loader.setConfigSnapshot({
-                    ...session,
-                    id: shortid(),
-                  })
-              handleClose()
+            onClick={async () => {
+              onConfirm()
             }}
           >
-            Confirm
+            Yes, I trust it
           </Button>
           <Button
             variant="contained"
             onClick={() => {
-              loader.setBlankSession(true)
-              handleClose()
+              onCancel()
             }}
           >
             Cancel

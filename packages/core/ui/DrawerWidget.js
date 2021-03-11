@@ -10,6 +10,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import React from 'react'
 import Drawer from './Drawer'
 
@@ -48,11 +49,9 @@ const useStyles = makeStyles(theme => ({
 const DrawerWidget = observer(props => {
   const { session } = props
   const { visibleWidget, pluginManager, activeWidgets } = session
-  const {
-    ReactComponent,
-    HeadingComponent,
-    heading,
-  } = pluginManager.getWidgetType(visibleWidget.type)
+  const { ReactComponent, HeadingComponent, heading } = getEnv(
+    session,
+  ).pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
 
   const handleChange = (e, option) => {
@@ -95,11 +94,12 @@ const DrawerWidget = observer(props => {
                   renderValue={selected => {
                     return (
                       <Typography variant="h6" color="inherit">
-                        {`${
-                          pluginManager.getWidgetType(selected.type).heading ||
-                          pluginManager.getWidgetType(selected.type)
-                            .HeadingComponent
-                        } Widget`}
+                        {getEnv(session).pluginManager.getWidgetType(
+                          selected.type,
+                        ).heading ||
+                          getEnv(session).pluginManager.getWidgetType(
+                            selected.type,
+                          ).HeadingComponent}
                       </Typography>
                     )
                   }}
@@ -113,10 +113,12 @@ const DrawerWidget = observer(props => {
                         <ListItemText
                           primary={`
                             ${
-                              pluginManager.getWidgetType(widget.type)
-                                .heading ||
-                              pluginManager.getWidgetType(widget.type)
-                                .HeadingComponent
+                              getEnv(session).pluginManager.getWidgetType(
+                                widget.type,
+                              ).heading ||
+                              getEnv(session).pluginManager.getWidgetType(
+                                widget.type,
+                              ).HeadingComponent
                             } Widget`}
                         />
                         <ListItemSecondaryAction>

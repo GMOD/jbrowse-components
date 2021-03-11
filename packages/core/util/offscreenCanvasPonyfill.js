@@ -26,11 +26,17 @@ class PonyfillOffscreenContext {
 
   // setters (no getters working)
   set strokeStyle(style) {
-    this.commands.push({ type: 'strokeStyle', style })
+    if (style !== this.currentStrokeStyle) {
+      this.commands.push({ type: 'strokeStyle', style })
+      this.currentStrokeStyle = style
+    }
   }
 
   set fillStyle(style) {
-    this.commands.push({ type: 'fillStyle', style })
+    if (style !== this.currentFillStyle) {
+      this.commands.push({ type: 'fillStyle', style })
+      this.currentFillStyle = style
+    }
   }
 
   set font(style) {

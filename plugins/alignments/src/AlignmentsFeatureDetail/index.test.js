@@ -1,11 +1,25 @@
 import { render } from '@testing-library/react'
+import { types } from 'mobx-state-tree'
 import React from 'react'
-import { stateModel } from '.'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { stateModelFactory } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
-  const model = stateModel.create({ type: 'AlignmentsFeatureWidget' })
-  model.setFeatureData({
+  console.warn = jest.fn()
+  const pluginManager = new PluginManager([])
+
+  const Session = types.model({
+    pluginManager: types.optional(types.frozen(), {}),
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const session = Session.create({
+    widget: { type: 'AlignmentsFeatureWidget' },
+  })
+  session.widget.setFeatureData({
     seq:
       'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     start: 2,
@@ -23,7 +37,9 @@ test('open up a widget', () => {
     refName: 'ctgA',
     type: 'match',
   })
-  const { container, getByText } = render(<ReactComponent model={model} />)
+  const { container, getByText } = render(
+    <ReactComponent model={session.widget} />,
+  )
   expect(container.firstChild).toMatchSnapshot()
   expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

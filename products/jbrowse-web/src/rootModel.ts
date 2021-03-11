@@ -97,7 +97,6 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const Session = sessionModelFactory(pluginManager)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -105,6 +104,7 @@ export default function RootModel(
     { dispatcher },
     ...assemblyConfigSchemas,
   )
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
   const assemblyManagerType = assemblyManagerFactory(
     assemblyConfigSchemasType,
     pluginManager,
@@ -515,12 +515,15 @@ export function createTestSession(snapshot = {}) {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = RootModel(pluginManager)
-  const root = JBrowseRootModel.create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+  const root = JBrowseRootModel.create(
+    {
+      jbrowse: {
+        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+      },
+      assemblyManager: {},
     },
-    assemblyManager: {},
-  })
+    { pluginManager },
+  )
   root.setSession({
     name: 'testSession',
     ...snapshot,

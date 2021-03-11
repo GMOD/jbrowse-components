@@ -548,11 +548,8 @@ export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue: `function(feature) {
-        var s = feature.get('strand');
-        return s === -1 ? '#8F8FD8': '#EC8B8B'
-      }`,
-    functionSignature: ['feature'],
+    defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    contextVariable: ['feature'],
   },
   displayMode: {
     type: 'stringEnum',
@@ -599,12 +596,12 @@ readConfObject(track.configuration, 'maxHeight')`
 
 Config callbacks allow you to have a dynamic color based on some function logic
 you provide. All config slots can actually become config callback. The
-arguments that are given to the callback are listed by the 'functionSignature'
+arguments that are given to the callback are listed by the 'contextVariable'
 but must be provided by the calling code (the code reading the config slot). To
 pass arguments to the a callback we say
 
 ```js
-readConfObject(config, 'color', [feature])
+readConfObject(config, 'color', { feature })
 ```
 
 That implies the color configuration callback will be passed a feature, so the
@@ -637,7 +634,7 @@ callback for color, it might look like this
   "renderers": {
     "SvgFeatureRenderer": {
       "type": "SvgFeatureRenderer",
-      "color": "function(feat) { return feat.get('type')==='SNV'?'green':'purple' }"
+      "color": "feat|getData('type')=='SNV'?'green':'purple'"
     }
   }
 }
@@ -1114,6 +1111,7 @@ export default class ArcRendererPlugin extends Plugin {
           name: 'ArcRenderer',
           ReactComponent: ArcRendererReactComponent,
           configSchema: ArcRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -1192,7 +1190,7 @@ export default class ArcRenderer extends ServerSideRendererType {
       )
 
       ctx.beginPath()
-      ctx.strokeStyle = readConfObject(config, 'color', [feature])
+      ctx.strokeStyle = readConfObject(config, 'color', { feature })
       ctx.lineWidth = 3
       ctx.moveTo(left, 0)
       ctx.bezierCurveTo(left, 200, right, 200, right, 0)
@@ -1390,6 +1388,7 @@ export default class SVGPlugin extends Plugin {
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -1405,7 +1404,7 @@ export default function SvgFeatureRendering(props) {
   const region = regions[0]
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', [feature])
+  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {

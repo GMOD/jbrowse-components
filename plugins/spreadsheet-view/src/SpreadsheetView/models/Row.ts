@@ -34,9 +34,12 @@ export default (pluginManager: PluginManager) => {
       get cellsWithDerived() {
         const { columns } = getParent(self, 3)
         let i = 0
-        return columns.map((column: { isDerived: boolean; func: Function }) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return columns.map((column: { isDerived: boolean; expr: any }) => {
           if (column.isDerived) {
-            return column.func(self, column)
+            return column.expr.evalSync({
+              row: self,
+            })
           }
           return self.cells[i++]
         })

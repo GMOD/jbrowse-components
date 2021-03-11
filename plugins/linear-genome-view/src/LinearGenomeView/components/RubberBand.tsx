@@ -80,11 +80,6 @@ const VerticalGuide = observer(
   },
 )
 
-interface Coord {
-  left: number
-  top: number
-}
-
 function RubberBand({
   model,
   ControlComponent = <div />,
@@ -94,7 +89,14 @@ function RubberBand({
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [anchorPosition, setAnchorPosition] = useState<Coord>()
+
+  // clientX and clientY used for anchorPosition for menu
+  // offsetX used for calculations about width of selection
+  const [anchorPosition, setAnchorPosition] = useState<{
+    offsetX: number
+    clientX: number
+    clientY: number
+  }>()
   const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
@@ -112,9 +114,16 @@ function RubberBand({
 
     function globalMouseUp(event: MouseEvent) {
       if (startX !== undefined && controlsRef.current) {
-        const left =
-          event.clientX - controlsRef.current.getBoundingClientRect().left
-        setAnchorPosition({ left, top: event.clientY })
+        const { clientX, clientY } = event
+        const ref = controlsRef.current
+        const offsetX = clientX - ref.getBoundingClientRect().left
+        // as stated above, store both clientX/Y and offsetX for different
+        // purposes
+        setAnchorPosition({
+          offsetX,
+          clientX,
+          clientY,
+        })
         setGuideX(undefined)
       }
     }
@@ -165,7 +174,7 @@ function RubberBand({
       return
     }
     let leftPx = startX
-    let rightPx = anchorPosition.left
+    let rightPx = anchorPosition.offsetX
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
@@ -179,7 +188,7 @@ function RubberBand({
       return
     }
     let leftPx = startX
-    let rightPx = anchorPosition.left
+    let rightPx = anchorPosition.offsetX
     // handles clicking and draging to the left
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
@@ -247,7 +256,7 @@ function RubberBand({
   }
 
   /* Calculating Pixels for Mouse Dragging */
-  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
   const left = right < startX ? right : startX
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
@@ -322,7 +331,10 @@ function RubberBand({
       {anchorPosition ? (
         <Menu
           anchorReference="anchorPosition"
-          anchorPosition={anchorPosition}
+          anchorPosition={{
+            left: anchorPosition.clientX,
+            top: anchorPosition.clientY,
+          }}
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}

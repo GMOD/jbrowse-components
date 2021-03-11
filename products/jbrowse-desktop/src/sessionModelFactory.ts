@@ -35,7 +35,10 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseDesktopSessionModel', {
@@ -57,9 +60,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .volatile((/* self */) => ({
-      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -245,6 +248,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           }
         }
         self.views.remove(view)
+      },
+
+      addAssembly(assemblyConfig: any) {
+        self.sessionAssemblies.push(assemblyConfig)
       },
 
       addAssemblyConf(assemblyConf: any) {

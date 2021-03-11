@@ -515,7 +515,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -709,7 +709,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
       class="MuiGrid-root MuiGrid-item"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
         tabindex="0"
         type="button"
       >
@@ -717,6 +717,20 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
           class="MuiButton-label"
         >
           Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Show all regions in assembly
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -1551,7 +1565,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -1715,7 +1729,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig2-LinearBasicDisplay"
+            data-testid="display-testConfig2-LinearBareDisplay"
             role="presentation"
           >
             <div

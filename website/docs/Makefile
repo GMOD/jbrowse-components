@@ -1,4 +1,5 @@
-#!/bin/bash
+PANDOC_PATH?=pandoc
+
 SRC := $(shell node read_sidebar.js)
 # note: SRC_FILES will include cli.md
 SRC_FILES := $(filter-out combined_pdf.md combined.md pdfcombined.md introduction.md, $(SRC))
@@ -9,11 +10,13 @@ all: combined.md jbrowse2.pdf
 pdfcombined.md: $(SRC_FILES)
 	for f in $^; do cat $$f | node tex_parser.js; done > $@
 
+titlerev: title_rev_$(COMMITSHA).md
+
 title_rev_$(COMMITSHA).md: title.md
 	sed -e 's/git-commit-sha/git revision $(COMMITSHA)/' $< > $@
 
 jbrowse2.pdf: pdfcombined.md disable_float.tex title_rev_$(COMMITSHA).md listings.tex
-	pandoc -H disable_float.tex title_rev_$(COMMITSHA).md pdfcombined.md --listings -H listings.tex  --toc -o $@
+	$(PANDOC_PATH) $(PANDOC_OPTS) -H disable_float.tex title_rev_$(COMMITSHA).md pdfcombined.md --listings -H listings.tex  --toc -o $@
 
 cli.md: ../../products/jbrowse-cli/README.md
 	cp $^ $@
@@ -24,4 +27,4 @@ combined.md: $(SRC_FILES)
 clean:
 	git clean -fdx .
 
-.PHONY: clean
+.PHONY: clean titlerev

@@ -247,7 +247,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 }
 
 export interface RegionsAdapter extends BaseAdapter {
-  getRegions(opts: { signal?: AbortSignal }): Promise<NoAssemblyRegion[]>
+  getRegions(opts: BaseOptions): Promise<NoAssemblyRegion[]>
 }
 
 export interface SequenceAdapter

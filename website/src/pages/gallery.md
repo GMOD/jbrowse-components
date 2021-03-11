@@ -73,3 +73,18 @@ line, with feet indicating directionality)
 ![](./img/color_by_tag.png)
 Image of coloring and sorting by the HP (haplotype) tag, which can be done for
 BAM and CRAM. Users can color, sort, and filter by tags
+
+---
+
+![](./img/insertion_indicators.png)
+The browser has a variety of ways to help show insertions including "large
+insertion indicators" (a feature also seen in IGV) and upside down histogram of
+insertion/clipping counts
+
+---
+
+![](./img/read_vs_ref_insertion.png)
+The read vs reference visualization can show the "sequence track" on the "read"
+to see which bases are inserted. Users can also use the "Get sequence" click
+and drag to get the sequence of the contents of the insertions or unaligned
+portions of the read (e.g. softclipped parts)

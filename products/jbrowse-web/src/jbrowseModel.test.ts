@@ -14,13 +14,17 @@ describe('JBrowse model', () => {
     const pluginManager = new PluginManager(corePlugins.map(P => new P()))
       .createPluggableElements()
       .configure()
-    const Session = sessionModelFactory(pluginManager)
+
     const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
       pluginManager,
     )
     const assemblyConfigSchemasType = types.union(
       { dispatcher },
       ...assemblyConfigSchemas,
+    )
+    const Session = sessionModelFactory(
+      pluginManager,
+      assemblyConfigSchemasType,
     )
     JBrowseModel = jbrowseModelFactory(
       pluginManager,
