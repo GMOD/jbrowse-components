@@ -95,10 +95,11 @@ const DrawerWidget = observer(props => {
                   renderValue={selected => {
                     return (
                       <Typography variant="h6" color="inherit">
-                        {pluginManager.getWidgetType(selected.type).heading ||
+                        {`${
+                          pluginManager.getWidgetType(selected.type).heading ||
                           pluginManager.getWidgetType(selected.type)
-                            .HeadingComponent ||
-                          selected.id}
+                            .HeadingComponent
+                        } Widget`}
                       </Typography>
                     )
                   }}
