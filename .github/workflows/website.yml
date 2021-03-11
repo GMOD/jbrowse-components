@@ -31,6 +31,7 @@ jobs:
           cp pdfcombined.md ../../
           cp title_rev_*.md ../../
           cp listings.tex ../../
+          cp disable_float.tex ../../
           cd ../../
           ln -s website/docs/img
           cat <<EOF > entrypoint.sh
