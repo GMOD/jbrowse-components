@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
 
 const DrawerWidget = observer(props => {
   const { session } = props
-  const { visibleWidget, pluginManager, activeWidgets } = session
+  const { visibleWidget, activeWidgets } = session
   const { ReactComponent, HeadingComponent, heading } = getEnv(
     session,
   ).pluginManager.getWidgetType(visibleWidget.type)
@@ -99,7 +99,8 @@ const DrawerWidget = observer(props => {
                         ).heading ||
                           getEnv(session).pluginManager.getWidgetType(
                             selected.type,
-                          ).HeadingComponent}
+                          ).HeadingComponent ||
+                          ''}
                       </Typography>
                     )
                   }}
