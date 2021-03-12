@@ -90,6 +90,7 @@ export default class extends Plugin {
           name: 'DensityRenderer',
           ReactComponent: DensityRendererReactComponent,
           configSchema: densityRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -99,6 +100,7 @@ export default class extends Plugin {
           name: 'LinePlotRenderer',
           ReactComponent: LinePlotRendererReactComponent,
           configSchema: linePlotRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -108,6 +110,7 @@ export default class extends Plugin {
           name: 'XYPlotRenderer',
           ReactComponent: XYPlotRendererReactComponent,
           configSchema: xyPlotRendererConfigSchema,
+          pluginManager,
         }),
     )
 

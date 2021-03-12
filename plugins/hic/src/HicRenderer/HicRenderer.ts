@@ -52,6 +52,7 @@ export default class HicRenderer extends ServerSideRendererType {
       highResolutionScaling = 1,
       dataAdapter,
     } = props
+
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
@@ -83,11 +84,11 @@ export default class HicRenderer extends ServerSideRendererType {
       ctx.rotate(-Math.PI / 4)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
-        ctx.fillStyle = readConfObject(config, 'color', [
-          counts,
+        ctx.fillStyle = readConfObject(config, 'color', {
+          count: counts,
           maxScore,
           baseColor,
-        ])
+        })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
       }
     }

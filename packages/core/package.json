@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -46,6 +46,7 @@
     "generic-filehandle": "^2.0.1",
     "http-range-fetcher": "^1.2.2",
     "is-object": "^1.0.1",
+    "jexl": "^2.3.0",
     "json-stable-stringify": "^1.0.1",
     "load-script2": "^2.0.5",
     "object-hash": "^1.3.1",
