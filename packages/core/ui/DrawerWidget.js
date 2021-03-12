@@ -37,11 +37,13 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   drawerSelect: {
-    width: '85%',
-    color: 'white',
+    color: theme.palette.secondary.contrastText,
   },
   drawerLoading: {
     margin: theme.spacing(2),
+  },
+  dropDownIcon: {
+    color: theme.palette.secondary.contrastText,
   },
 }))
 
@@ -91,6 +93,7 @@ const DrawerWidget = observer(props => {
                   value={visibleWidget || ''}
                   inputProps={{ 'data-testid': 'widget-drawer-selects' }}
                   className={classes.drawerSelect}
+                  classes={{ icon: classes.dropDownIcon }}
                   renderValue={selected => {
                     const {
                       HeadingComponent: HeadingComp,
