@@ -24,6 +24,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         PileupRenderer: PileupRendererConfigSchema,
         SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
+      renderer: '',
       maxDisplayedBpPerPx: {
         type: 'number',
         description: 'maximum bpPerPx that is displayed in the view',
