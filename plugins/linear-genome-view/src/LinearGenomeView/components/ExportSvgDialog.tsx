@@ -24,10 +24,10 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function ExportSvgDlg({
-  view,
+  model,
   handleClose,
 }: {
-  view: LGV
+  model: LGV
   handleClose: () => void
 }) {
   const [rasterizeLayers, setRasterizeLayers] = useState(true)
@@ -64,7 +64,7 @@ export default function ExportSvgDlg({
           type="submit"
           onClick={async () => {
             setLoading(true)
-            await view.exportSvg({ fullSvg: !rasterizeLayers })
+            await model.exportSvg({ fullSvg: !rasterizeLayers })
             setLoading(false)
             handleClose()
           }}

@@ -132,7 +132,7 @@
           "displayId": "nextstrain-color-display",
           "renderer": {
             "type": "SvgFeatureRenderer",
-            "color1": "function(feature) { return feature.get('fill') || 'black' }"
+            "color1": "feature|getData('fill') || 'black'"
           }
         }
       ]

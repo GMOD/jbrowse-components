@@ -43,7 +43,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       ),
     })
     .volatile((/* self */) => ({
-      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what

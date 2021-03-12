@@ -270,12 +270,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -436,12 +431,15 @@ const Renderer = observer(
           )
 
           if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            const rootModel = JBrowseRootModel.create(
+              {
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              },
+              { pluginManager },
+            )
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default

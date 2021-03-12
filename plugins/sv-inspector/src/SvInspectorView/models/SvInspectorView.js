@@ -154,6 +154,10 @@ export default pluginManager => {
       },
 
       get featuresCircularTrackConfiguration() {
+        pluginManager.jexl.addFunction(
+          'defaultOnChordClick',
+          defaultOnChordClick,
+        )
         const configuration = {
           type: 'VariantTrack',
           trackId: `sv-inspector-variant-track-${self.id}`,
@@ -164,7 +168,7 @@ export default pluginManager => {
             {
               type: 'ChordVariantDisplay',
               displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
-              onChordClick: defaultOnChordClick.toString(),
+              onChordClick: `jexl:defaultOnChordClick(feature, track, pluginManager)`,
               renderer: { type: 'StructuralVariantChordRenderer' },
             },
           ],

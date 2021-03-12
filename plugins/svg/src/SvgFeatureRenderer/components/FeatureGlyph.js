@@ -40,7 +40,7 @@ function FeatureGlyph(props) {
         text={name}
         x={rootLayout.getSubRecord('nameLabel').absolute.left}
         y={rootLayout.getSubRecord('nameLabel').absolute.top}
-        color={readConfObject(config, ['labels', 'nameColor'], [feature])}
+        color={readConfObject(config, ['labels', 'nameColor'], { feature })}
         fontHeight={fontHeight}
         reversed={reversed}
         featureWidth={featureLayout.width}
@@ -56,11 +56,9 @@ function FeatureGlyph(props) {
         text={description}
         x={rootLayout.getSubRecord('descriptionLabel').absolute.left}
         y={rootLayout.getSubRecord('descriptionLabel').absolute.top}
-        color={readConfObject(
-          config,
-          ['labels', 'descriptionColor'],
-          [feature],
-        )}
+        color={readConfObject(config, ['labels', 'descriptionColor'], {
+          feature,
+        })}
         fontHeight={fontHeight}
         featureWidth={featureLayout.width}
         reversed={reversed}

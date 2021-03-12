@@ -14,6 +14,7 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
   BaseCard,
@@ -119,7 +120,7 @@ function BreakendPanel(props: {
 }) {
   const { model, locStrings, feature } = props
   const session = getSession(model)
-  const { pluginManager } = session
+  const { pluginManager } = getEnv(session)
   let viewType: any
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')

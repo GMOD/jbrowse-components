@@ -77,6 +77,12 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           handleClose={() => aboutTrack.setShowAbout(false)}
         />
       ) : null}
+      {model.DialogComponent ? (
+        <model.DialogComponent
+          model={model}
+          handleClose={() => model.setDialogComponent(undefined)}
+        />
+      ) : null}
 
       {dialogTrack ? (
         <dialogTrack.DialogComponent

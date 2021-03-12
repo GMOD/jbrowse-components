@@ -3497,10 +3497,17 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.2.0", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.5", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
+"@babel/runtime@^7.2.0", "@babel/runtime@^7.3.4", "@babel/runtime@^7.7.2", "@babel/runtime@^7.8.4", "@babel/runtime@^7.9.2":
   version "7.10.1"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.10.1.tgz#b6eb75cac279588d3100baecd1b9894ea2840822"
   integrity sha512-nQbbCbQc9u/rpg1XCxoMYQTbSMVZjCDxErQ1ClCn9Pvcmv1lGads19ep0a2VsEiIJeHqjZley6EQGEC3Yo1xMA==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
+"@babel/runtime@^7.4.5", "@babel/runtime@^7.9.6":
+  version "7.13.10"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.13.10.tgz#47d42a57b6095f4468da440388fdbad8bebf0d7d"
+  integrity sha512-4QPkjJq6Ns3V/RgpEahRk+AGfL0eO6RHHtTWoNNr5mO49G6B5+X6d6THgWEAvTrznU5xYpbAlVKRYcsCgh/Akw==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -6987,6 +6994,11 @@
   dependencies:
     jest-diff "^25.2.1"
     pretty-format "^25.2.1"
+
+"@types/jexl@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@types/jexl/-/jexl-2.2.0.tgz#f7d9c631e78a6d4bad716c79360a6acb1f4e24dd"
+  integrity sha512-btcq6HoxgBeKEAWAgee45C9eO4F7ayWHi3pQK6NpEPYtfo8b4J13QkxcfWN4ck8QDTlnDRQJxMP4Ceb/4ncO7Q==
 
 "@types/json-parse-better-errors@^1.0.0":
   version "1.0.0"
@@ -12342,7 +12354,7 @@ es6-promisify@^5.0.0:
   dependencies:
     es6-promise "^4.0.3"
 
-es6-promisify@^6.0.0, es6-promisify@^6.0.1:
+es6-promisify@^6.0.0, es6-promisify@^6.0.1, es6-promisify@^6.1.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-6.1.1.tgz#46837651b7b06bf6fff893d03f29393668d01621"
   integrity sha512-HBL8I3mIki5C1Cc9QjKUenHtnG0A5/xA8Q/AllRcfiwl2CZFXGK7ddBiCoRwAix4i2KxcQfjtIVcrVbB3vbmwg==
@@ -13783,12 +13795,12 @@ gaze@^1.0.0:
     globule "^1.0.0"
 
 generic-filehandle@^2.0.0, generic-filehandle@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.0.2.tgz#bc529c33e3408784362b8854760ecea37752a098"
-  integrity sha512-TrwRgZKwzT8wMIIBQy78nEVSRF2hI3BFXaS1s6MPNwTyfNS8CWMMLiFDMmDU3/RaFzEwE2IKJ7OMRF/XtNt/1Q==
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.1.0.tgz#3a6210bcd9332f3022e10c83c720a11152725f14"
+  integrity sha512-UsV3DUgvgsWSA3eTT/knshtYiYInObBLbRwb/z33Sv8JK49VeZUmGWah4K3Y69cneKI4gA9nNCgXYGEDxec24A==
   dependencies:
-    "@babel/runtime" "^7.4.5"
-    es6-promisify "^6.0.1"
+    "@babel/runtime" "^7.9.6"
+    es6-promisify "^6.1.1"
     file-uri-to-path "^2.0.0"
 
 genfun@^5.0.0:
@@ -16767,6 +16779,13 @@ jest@^25.3.0:
     "@jest/core" "^25.5.4"
     import-local "^3.0.2"
     jest-cli "^25.5.4"
+
+jexl@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/jexl/-/jexl-2.3.0.tgz#73e0694d86ca917ac24fed753f201c1db59a46c5"
+  integrity sha512-ecqln4kTWNkMwbFvTukOMDq1jy1GcPzvshhMp/s4pxU86xdLDq7HbDRa87DfMfbSAOS8V6EwvCdfs0S+w/iycA==
+  dependencies:
+    "@babel/runtime" "^7.10.2"
 
 jju@~1.4.0:
   version "1.4.0"

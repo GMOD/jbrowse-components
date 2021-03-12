@@ -48,7 +48,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ? (_: Feature, score: number) =>
             score < pivotValue ? negColor : posColor
         : (feature: Feature, _score: number) =>
-            readConfObject(config, 'color', [feature])
+            readConfObject(config, 'color', { feature })
 
     ctx.strokeStyle = 'grey'
     ctx.moveTo(0, toY(0))
