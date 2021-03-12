@@ -5,7 +5,6 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import ListItemText from '@material-ui/core/ListItemText'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import CloseIcon from '@material-ui/icons/Close'
@@ -90,19 +89,22 @@ const DrawerWidget = observer(props => {
               <>
                 <Select
                   value={visibleWidget || ''}
+                  inputProps={{ 'data-testid': 'widget-drawer-selects' }}
                   className={classes.drawerSelect}
                   renderValue={selected => {
+                    const {
+                      HeadingComponent: HeadingComp,
+                      heading: headingText,
+                    } = getEnv(session).pluginManager.getWidgetType(
+                      selected.type,
+                    )
                     return (
                       <Typography variant="h6" color="inherit">
-                        {`${
-                          getEnv(session).pluginManager.getWidgetType(
-                            selected.type,
-                          ).heading ||
-                          getEnv(session).pluginManager.getWidgetType(
-                            selected.type,
-                          ).HeadingComponent ||
-                          ''
-                        }`}
+                        {HeadingComp ? (
+                          <HeadingComp model={selected} />
+                        ) : (
+                          headingText || undefined
+                        )}
                       </Typography>
                     )
                   }}
@@ -111,19 +113,19 @@ const DrawerWidget = observer(props => {
                   }}
                 >
                   {Array.from(activeWidgets.values()).map((widget, index) => {
+                    const {
+                      HeadingComponent: HeadingComp,
+                      heading: headingText,
+                    } = getEnv(session).pluginManager.getWidgetType(widget.type)
                     return (
                       <MenuItem key={`${widget.id}-${index}`} value={widget}>
-                        <ListItemText
-                          primary={`
-                            ${
-                              getEnv(session).pluginManager.getWidgetType(
-                                widget.type,
-                              ).heading ||
-                              getEnv(session).pluginManager.getWidgetType(
-                                widget.type,
-                              ).HeadingComponent
-                            } Widget`}
-                        />
+                        <Typography variant="h6" color="inherit">
+                          {HeadingComp ? (
+                            <HeadingComp model={widget} />
+                          ) : (
+                            headingText || undefined
+                          )}
+                        </Typography>
                         <ListItemSecondaryAction>
                           <IconButton
                             className={classes.drawerCloseButton}

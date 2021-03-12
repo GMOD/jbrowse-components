@@ -194,6 +194,8 @@ describe('test configuration editor', () => {
       },
       { timeout: 10000 },
     )
+    // shows up when there 2+ active widgets
+    await findByTestId('widget-drawer-selects')
   }, 10000)
 })
 
