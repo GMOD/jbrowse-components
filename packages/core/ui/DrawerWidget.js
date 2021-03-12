@@ -4,10 +4,11 @@ import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
+import CloseIcon from '@material-ui/icons/Close'
+import DeleteIcon from '@material-ui/icons/Delete'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import React from 'react'
@@ -139,7 +140,7 @@ const DrawerWidget = observer(props => {
                               session.hideWidget(widget)
                             }}
                           >
-                            <CloseIcon />
+                            <DeleteIcon />
                           </IconButton>
                         </ListItemSecondaryAction>
                       </MenuItem>
