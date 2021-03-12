@@ -6,9 +6,9 @@ export const parameters = {
         'Getting Started',
         'Default Sessions',
         'Linear View',
-        'Nextstrain View'
-      ], 
-      locales: '', 
+        'Nextstrain View',
+      ],
+      locales: '',
     },
   },
 }
