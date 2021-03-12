@@ -128,7 +128,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
       DialogComponent: undefined as
-        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
+        | React.FC<{ handleClose: () => void; model: any }>
         | undefined,
     }))
     .views(self => ({
@@ -447,7 +447,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setDialogComponent(
         comp?: React.FC<{
           handleClose: () => void
-          model: { clearView: Function }
+          model: any
         }>,
       ) {
         self.DialogComponent = comp

@@ -65,7 +65,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     <div style={{ position: 'relative' }}>
       {DialogComponent ? (
         <DialogComponent
-          view={model}
+          model={model}
           handleClose={() => {
             model.setDialogComponent(undefined)
           }}
