@@ -12,6 +12,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { abortBreakPoint } from '@jbrowse/core/util'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -36,6 +37,7 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
+  signal?: AbortSignal
   sortObject: {
     position: number
     by: string
@@ -51,13 +53,13 @@ export default class HicRenderer extends ServerSideRendererType {
       bpPerPx,
       highResolutionScaling = 1,
       dataAdapter,
+      signal,
     } = props
 
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
     const res = await dataAdapter.getResolution(bpPerPx)
-
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0, maxHeightReached: false }
     }
@@ -75,13 +77,16 @@ export default class HicRenderer extends ServerSideRendererType {
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
+      await abortBreakPoint(signal)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         maxScore = Math.max(counts, maxScore)
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
+      await abortBreakPoint(signal)
       ctx.rotate(-Math.PI / 4)
+      let start = Date.now()
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = readConfObject(config, 'color', {
@@ -90,6 +95,11 @@ export default class HicRenderer extends ServerSideRendererType {
           baseColor,
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
+        if (+Date.now() - start > 400) {
+          // eslint-disable-next-line no-await-in-loop
+          await abortBreakPoint(signal)
+          start = +Date.now()
+        }
       }
     }
 
