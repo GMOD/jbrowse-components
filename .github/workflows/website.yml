@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - master
+      - main
 name: Upload website
 jobs:
   build:

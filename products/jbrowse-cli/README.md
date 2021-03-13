@@ -340,7 +340,7 @@ OPTIONS
 
   --branch=branch     Download a development build from a named git branch
 
-  --nightly           Download the latest development build from the master branch
+  --nightly           Download the latest development build from the main branch
 
 EXAMPLES
   $ jbrowse create /path/to/new/installation
@@ -426,7 +426,7 @@ OPTIONS
 
   --branch=branch     Download a development build from a named git branch
 
-  --nightly           Download the latest development build from the master branch
+  --nightly           Download the latest development build from the main branch
 
 EXAMPLES
   $ jbrowse upgrade # Upgrades current directory to latest jbrowse release
