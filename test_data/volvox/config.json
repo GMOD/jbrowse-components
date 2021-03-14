@@ -308,14 +308,14 @@
           "location": {
             "uri": "volvox-sorted-altname.bam.bai"
           }
-        },
-        "displays": [
-          {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_pileup_pileup"
-          }
-        ]
-      }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPileupDisplay",
+          "displayId": "volvox_bam_pileup_pileup"
+        }
+      ]
     },
     {
       "type": "AlignmentsTrack",
