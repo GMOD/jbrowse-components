@@ -1,7 +1,17 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  getAllByRole,
+  getByRole,
+  getByTestId,
+  getByText,
+} from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
@@ -195,7 +205,13 @@ describe('test configuration editor', () => {
       { timeout: 10000 },
     )
     // shows up when there 2+ active widgets
-    await findByTestId('widget-drawer-selects')
+    const widgetSelect = await findByTestId('widget-drawer-selects')
+    const button = getByRole(widgetSelect, 'button')
+    fireEvent.mouseDown(button)
+    const popoverMenuItem = await screen.findByTestId(
+      'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
+    )
+    fireEvent.mouseDown(popoverMenuItem)
   }, 10000)
 })
 

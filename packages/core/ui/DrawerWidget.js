@@ -92,7 +92,7 @@ const DrawerWidget = observer(props => {
               <>
                 <Select
                   value={visibleWidget || ''}
-                  inputProps={{ 'data-testid': 'widget-drawer-selects' }}
+                  data-testid="widget-drawer-selects"
                   className={classes.drawerSelect}
                   classes={{ icon: classes.dropDownIcon }}
                   renderValue={selected => {
@@ -122,7 +122,11 @@ const DrawerWidget = observer(props => {
                       heading: headingText,
                     } = getEnv(session).pluginManager.getWidgetType(widget.type)
                     return (
-                      <MenuItem key={`${widget.id}-${index}`} value={widget}>
+                      <MenuItem
+                        data-testid={`widget-drawer-selects-item-${widget.type}`}
+                        key={`${widget.id}-${index}`}
+                        value={widget}
+                      >
                         <Typography variant="h6" color="inherit">
                           {HeadingComp ? (
                             <HeadingComp model={widget} />
