@@ -729,6 +729,18 @@ Object {
       ],
       "displays": Array [
         Object {
+          "displayId": "volvox_bam_pileup_pileup",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
           "displayId": "volvox_bam_pileup-LinearAlignmentsDisplay",
           "renderers": Object {
             "PileupRenderer": Object {
@@ -742,18 +754,6 @@ Object {
             },
           },
           "type": "LinearAlignmentsDisplay",
-        },
-        Object {
-          "displayId": "volvox_bam_pileup-LinearPileupDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
-          },
-          "type": "LinearPileupDisplay",
         },
         Object {
           "displayId": "volvox_bam_pileup-LinearSNPCoverageDisplay",
