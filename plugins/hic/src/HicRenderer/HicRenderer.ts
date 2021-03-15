@@ -24,7 +24,7 @@ interface HicFeature {
 }
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => number
+  getResolution: (bp: number) => Promise<number>
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -37,6 +37,7 @@ export interface RenderArgsDeserialized
   dataAdapter: HicDataAdapter
   bpPerPx: number
   highResolutionScaling: number
+  resolution: number
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -60,7 +61,7 @@ export default class HicRenderer extends ServerSideRendererType {
       highResolutionScaling = 1,
       dataAdapter,
       signal,
-      resolution
+      resolution,
     } = props
 
     const [region] = regions
