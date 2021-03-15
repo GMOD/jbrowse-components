@@ -7,10 +7,7 @@ import {
   render,
   screen,
   waitFor,
-  getAllByRole,
   getByRole,
-  getByTestId,
-  getByText,
 } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
