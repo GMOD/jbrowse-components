@@ -211,7 +211,8 @@ describe('test configuration editor', () => {
     const popoverMenuItem = await screen.findByTestId(
       'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
     )
-    fireEvent.mouseDown(popoverMenuItem)
+    fireEvent.click(popoverMenuItem)
+    await findByTestId('hierarchical_track_selector')
   }, 10000)
 })
 
