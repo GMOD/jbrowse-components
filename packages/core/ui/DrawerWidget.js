@@ -6,6 +6,7 @@ import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import CloseIcon from '@material-ui/icons/Close'
 import DeleteIcon from '@material-ui/icons/Delete'
+import MinimizeIcon from '@material-ui/icons/Minimize'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -151,6 +152,17 @@ const DrawerWidget = observer(props => {
                   })}
                 </Select>
                 <div className={classes.drawerToolbarCloseButton} />
+                <IconButton
+                  className={classes.drawerCloseButton}
+                  data-testid="drawer-close"
+                  color="inherit"
+                  aria-label="Close"
+                  onClick={() => {
+                    session.minimizeWidgetDrawer()
+                  }}
+                >
+                  <MinimizeIcon />
+                </IconButton>
                 <IconButton
                   className={classes.drawerCloseButton}
                   data-testid="drawer-close"

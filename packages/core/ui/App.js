@@ -1,7 +1,10 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable react/prop-types */
 import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import { makeStyles } from '@material-ui/core/styles'
+import Fab from '@material-ui/core/Fab'
+import LaunchIcon from '@material-ui/icons/Launch'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
@@ -40,6 +43,13 @@ const useStyles = makeStyles(theme => ({
     height: '100vh',
     width: '100%',
   },
+  fab: {
+    float: 'right',
+    position: 'sticky',
+    marginTop: theme.spacing(2),
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
+  },
   menuBarAndComponents: {
     gridColumn: 'main',
     display: 'grid',
@@ -76,7 +86,7 @@ const useStyles = makeStyles(theme => ({
 function App({ session, HeaderButtons }) {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
-  const { visibleWidget, drawerWidth } = session
+  const { visibleWidget, drawerWidth, minimized } = session
 
   function handleNameChange(newName) {
     if (
@@ -96,7 +106,7 @@ function App({ session, HeaderButtons }) {
       className={classes.root}
       style={{
         gridTemplateColumns: `[main] 1fr${
-          visibleWidget ? ` [drawer] ${drawerWidth}px` : ''
+          visibleWidget && !minimized ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
     >
@@ -158,7 +168,22 @@ function App({ session, HeaderButtons }) {
         </div>
       </div>
 
-      {visibleWidget ? <DrawerWidget session={session} /> : null}
+      {minimized ? (
+        <div className={classes.fab}>
+          <Fab
+            color="primary"
+            size="medium"
+            aria-label="show"
+            style={{ float: 'right' }}
+            onClick={() => {
+              session.showWidgetDrawer()
+            }}
+          >
+            <LaunchIcon />
+          </Fab>
+        </div>
+      ) : null}
+      {visibleWidget && !minimized ? <DrawerWidget session={session} /> : null}
       <Snackbar session={session} />
     </div>
   )
