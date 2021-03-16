@@ -60,7 +60,6 @@ const DrawerWidget = observer(props => {
     session.showWidget(option.props.value)
   }
 
-  // TODO: fix styling
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
