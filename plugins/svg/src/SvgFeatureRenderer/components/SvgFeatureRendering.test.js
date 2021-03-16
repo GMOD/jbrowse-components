@@ -7,6 +7,8 @@ import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
 
+import '@testing-library/jest-dom/extend-expect'
+
 test('no features', () => {
   const { container } = render(
     <Rendering
@@ -378,6 +380,481 @@ test('processed transcript', () => {
       bpPerPx={3}
     />,
   )
+
+  expect(container.firstChild).toMatchSnapshot()
+})
+
+test('processed transcript (exons + impliedUTR)', () => {
+  const { container } = render(
+    <Rendering
+      width={500}
+      height={500}
+      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      features={
+        new Map([
+          [
+            'one',
+
+            // from BCL10 http://localhost:3001/?config=test_data%2Fconfig_demo.json&session=share-stBb1dYlIN&password=rwNsf
+            new SimpleFeature({
+              source: 'BestRefSeq',
+              type: 'gene',
+              start: 85731458,
+              end: 85742315,
+              strand: -1,
+              phase: 0,
+              refName: 'NC_000001.10',
+              id: 'gene1109',
+              dbxref: ['GeneID:8915', 'HGNC:HGNC:989', 'MIM:603517'],
+              name: 'BCL10',
+              description: 'BCL10 immune signaling adaptor',
+              gbkey: 'Gene',
+              gene: 'BCL10',
+              gene_biotype: 'protein_coding',
+              gene_synonym: [
+                'c-E10',
+                'CARMEN',
+                'CIPER',
+                'CLAP',
+                'IMD37',
+                'mE10',
+              ],
+              subfeatures: [
+                {
+                  source: 'BestRefSeq',
+                  type: 'mRNA',
+                  start: 85731458,
+                  end: 85742315,
+                  strand: -1,
+                  phase: 0,
+                  refName: 'NC_000001.10',
+                  id: 'mRNA2437',
+                  parent: 'gene1109',
+                  dbxref: [
+                    'GeneID:8915',
+                    'Genbank:NM_003921.5',
+                    'HGNC:HGNC:989',
+                    'MIM:603517',
+                  ],
+                  name: 'NM_003921.5',
+                  gbkey: 'mRNA',
+                  gene: 'BCL10',
+                  product:
+                    'BCL10 immune signaling adaptor, transcript variant 1',
+                  tag: 'RefSeq Select',
+                  transcript_id: 'NM_003921.5',
+                  subfeatures: [
+                    {
+                      start: 85731458,
+                      end: 85733309,
+                      strand: -1,
+                      type: 'three_prime_UTR',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0_three_prime_UTR_0',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85731458,
+                      end: 85733665,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_003921.5',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 1',
+                      tag: 'RefSeq Select',
+                      transcript_id: 'NM_003921.5',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-0',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85733309,
+                      end: 85733665,
+                      strand: -1,
+                      phase: 2,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2350',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'CCDS:CCDS704.1',
+                        'GeneID:8915',
+                        'Genbank:NP_003912.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_003912.1',
+                      note: 'isoform 1 is encoded by transcript variant 1',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 1',
+                      protein_id: 'NP_003912.1',
+                      tag: 'RefSeq Select',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-1',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85736300,
+                      end: 85736589,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2350',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'CCDS:CCDS704.1',
+                        'GeneID:8915',
+                        'Genbank:NP_003912.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_003912.1',
+                      note: 'isoform 1 is encoded by transcript variant 1',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 1',
+                      protein_id: 'NP_003912.1',
+                      tag: 'RefSeq Select',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-2',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85741978,
+                      end: 85742035,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2350',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'CCDS:CCDS704.1',
+                        'GeneID:8915',
+                        'Genbank:NP_003912.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_003912.1',
+                      note: 'isoform 1 is encoded by transcript variant 1',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 1',
+                      protein_id: 'NP_003912.1',
+                      tag: 'RefSeq Select',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-3',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85736300,
+                      end: 85736589,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_003921.5',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 1',
+                      tag: 'RefSeq Select',
+                      transcript_id: 'NM_003921.5',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-4',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85741978,
+                      end: 85742315,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2437',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_003921.5',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 1',
+                      tag: 'RefSeq Select',
+                      transcript_id: 'NM_003921.5',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-5',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                    {
+                      start: 85742035,
+                      end: 85742315,
+                      strand: -1,
+                      type: 'five_prime_UTR',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0_five_prime_UTR_2',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                    },
+                  ],
+                  uniqueId:
+                    'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0',
+                  parentId:
+                    'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480',
+                },
+                {
+                  source: 'BestRefSeq',
+                  type: 'mRNA',
+                  start: 85731458,
+                  end: 85742315,
+                  strand: -1,
+                  phase: 0,
+                  refName: 'NC_000001.10',
+                  id: 'mRNA2436',
+                  parent: 'gene1109',
+                  dbxref: [
+                    'GeneID:8915',
+                    'Genbank:NM_001320715.2',
+                    'HGNC:HGNC:989',
+                    'MIM:603517',
+                  ],
+                  name: 'NM_001320715.2',
+                  gbkey: 'mRNA',
+                  gene: 'BCL10',
+                  product:
+                    'BCL10 immune signaling adaptor, transcript variant 2',
+                  transcript_id: 'NM_001320715.2',
+                  subfeatures: [
+                    {
+                      start: 85731458,
+                      end: 85733309,
+                      strand: -1,
+                      type: 'three_prime_UTR',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1_three_prime_UTR_0',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85731458,
+                      end: 85733632,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_001320715.2',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 2',
+                      transcript_id: 'NM_001320715.2',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-0',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85733309,
+                      end: 85733632,
+                      strand: -1,
+                      phase: 2,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2349',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NP_001307644.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_001307644.1',
+                      note: 'isoform 2 is encoded by transcript variant 2',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 2',
+                      protein_id: 'NP_001307644.1',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-1',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85736300,
+                      end: 85736589,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2349',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NP_001307644.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_001307644.1',
+                      note: 'isoform 2 is encoded by transcript variant 2',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 2',
+                      protein_id: 'NP_001307644.1',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-2',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'CDS',
+                      start: 85741978,
+                      end: 85742035,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      id: 'CDS2349',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NP_001307644.1',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      name: 'NP_001307644.1',
+                      note: 'isoform 2 is encoded by transcript variant 2',
+                      gbkey: 'CDS',
+                      gene: 'BCL10',
+                      product: 'B-cell lymphoma/leukemia 10 isoform 2',
+                      protein_id: 'NP_001307644.1',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-3',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85736300,
+                      end: 85736589,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_001320715.2',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 2',
+                      transcript_id: 'NM_001320715.2',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-4',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      source: 'BestRefSeq',
+                      type: 'exon',
+                      start: 85741978,
+                      end: 85742315,
+                      strand: -1,
+                      phase: 0,
+                      refName: 'NC_000001.10',
+                      parent: 'mRNA2436',
+                      dbxref: [
+                        'GeneID:8915',
+                        'Genbank:NM_001320715.2',
+                        'HGNC:HGNC:989',
+                        'MIM:603517',
+                      ],
+                      gbkey: 'mRNA',
+                      gene: 'BCL10',
+                      product:
+                        'BCL10 immune signaling adaptor, transcript variant 2',
+                      transcript_id: 'NM_001320715.2',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-5',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                    {
+                      start: 85742035,
+                      end: 85742315,
+                      strand: -1,
+                      type: 'five_prime_UTR',
+                      uniqueId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1_five_prime_UTR_2',
+                      parentId:
+                        'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                    },
+                  ],
+                  uniqueId:
+                    'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1',
+                  parentId:
+                    'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480',
+                },
+              ],
+              uniqueId:
+                'type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480',
+            }),
+          ],
+        ])
+      }
+      config={SvgRendererConfigSchema.create({})}
+      bpPerPx={3}
+    />,
+  )
+
+  // finds that the color3 is outputted for impliedUTRs
+  expect(container).toContainHTML('#357089')
 
   expect(container.firstChild).toMatchSnapshot()
 })
