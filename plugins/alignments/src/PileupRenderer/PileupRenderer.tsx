@@ -504,8 +504,14 @@ export default class PileupRenderer extends BoxRendererType {
         if (mismatchLeftPx + mismatchWidthPx > 0) {
           ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
         }
+        const height = 1.5
         ctx.fillStyle = '#333'
-        ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
+        ctx.fillRect(
+          mismatchLeftPx,
+          topPx + heightPx / 2 - height / 2,
+          mismatchWidthPx,
+          height,
+        )
       }
     }
 
@@ -521,7 +527,10 @@ export default class PileupRenderer extends BoxRendererType {
       const len = +mismatch.base || mismatch.length
       const txt = `${len}`
       if (mismatch.type === 'insertion' && len >= 10) {
-        if (heightPx > charHeight) {
+        if (bpPerPx > 10) {
+          ctx.fillStyle = 'purple'
+          ctx.fillRect(mismatchLeftPx - 1, topPx, 2, heightPx)
+        } else if (heightPx > charHeight) {
           const rect = ctx.measureText(txt)
           const padding = 5
           ctx.fillStyle = 'purple'
@@ -611,7 +620,6 @@ export default class PileupRenderer extends BoxRendererType {
         })
     }
   }
-
 
   async makeImageData(
     ctx: CanvasRenderingContext2D,
