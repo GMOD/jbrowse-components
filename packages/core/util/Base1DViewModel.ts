@@ -19,8 +19,8 @@ const Base1DView = types
     displayedRegions: types.array(Region),
     bpPerPx: 0,
     offsetPx: 0,
-    interRegionPaddingWidth: types.optional(types.number, 2),
-    minimumBlockWidth: types.optional(types.number, 3),
+    interRegionPaddingWidth: types.optional(types.number, 0),
+    minimumBlockWidth: types.optional(types.number, 0),
   })
   .volatile(() => ({
     features: undefined as undefined | Feature[],
