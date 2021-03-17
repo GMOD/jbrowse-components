@@ -1186,6 +1186,41 @@
           "uri": "volvox.bw.nonexist"
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_colors",
+      "name": "volvox filtered vcf (green snp, purple indel)",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "ChordVariantDisplay",
+          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
+          "renderer": {
+            "type": "StructuralVariantChordRenderer"
+          }
+        },
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+          }
+        }
+      ]
     }
   ],
   "defaultSession": {

@@ -212,3 +212,18 @@ genomic translocations
 
 This is a "superview" type that contains a circular and spreadsheet view as
 child views
+
+## Internal plugin build system
+
+Plugins may be built as separate packages that can be distributed on NPM. In
+order to streamline development and avoid having to build every plugin before
+developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry for
+plugins in this monorepo by default points to the un-built code (e.g.
+`src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
+`products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
+
+When you want to use a built plugin, you can run `yarn useDist` in the plugin's
+`package.json`, and then run `yarn useSrc` to restore it when you're done. As an
+example, the root-level `yarn build` that builds all the packages does this to
+build all the plugins and then build JBrowse Web and JBrowse Desktop using the
+built plugins.
