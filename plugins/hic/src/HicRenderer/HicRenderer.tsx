@@ -8,12 +8,13 @@ import ServerSideRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
-import { blobToDataURL } from '@jbrowse/core/util'
+import { blobToDataURL, abortBreakPoint } from '@jbrowse/core/util'
 import {
   createCanvas,
   createImageBitmap,
   PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
+
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -40,6 +41,7 @@ export interface PileupRenderProps {
   height: number
   width: number
   highResolutionScaling: number
+  signal?: AbortSignal
   sortObject: {
     position: number
     by: string
@@ -48,7 +50,7 @@ export interface PileupRenderProps {
 
 export default class HicRenderer extends ServerSideRendererType {
   async makeImageData(ctx: CanvasRenderingContext2D, props: PileupRenderProps) {
-    const { features, config, bpPerPx, dataAdapter } = props
+    const { features, config, bpPerPx, signal, dataAdapter } = props
     const res = await dataAdapter.getResolution(bpPerPx)
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = Color(readConfObject(config, 'baseColor'))
@@ -57,13 +59,16 @@ export default class HicRenderer extends ServerSideRendererType {
       let maxScore = 0
       let minBin = 0
       let maxBin = 0
+      await abortBreakPoint(signal)
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         maxScore = Math.max(counts, maxScore)
         minBin = Math.min(Math.min(bin1, bin2), minBin)
         maxBin = Math.max(Math.max(bin1, bin2), maxBin)
       }
+      await abortBreakPoint(signal)
       ctx.rotate(-Math.PI / 4)
+      let start = Date.now()
       for (let i = 0; i < features.length; i++) {
         const { bin1, bin2, counts } = features[i]
         ctx.fillStyle = readConfObject(config, 'color', {
@@ -72,6 +77,11 @@ export default class HicRenderer extends ServerSideRendererType {
           baseColor,
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
+        if (+Date.now() - start > 400) {
+          // eslint-disable-next-line no-await-in-loop
+          await abortBreakPoint(signal)
+          start = +Date.now()
+        }
       }
     }
   }

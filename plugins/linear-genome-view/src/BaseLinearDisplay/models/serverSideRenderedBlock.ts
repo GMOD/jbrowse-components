@@ -186,55 +186,55 @@ export function renderBlockData(
   optDisplay?: any,
 ) {
   try {
-  const display = optDisplay || (getContainingDisplay(self) as any)
-  const { assemblyManager, rpcManager } = getSession(display)
-  const {
-    adapterConfig,
-    renderProps,
-    rendererType,
-    error: displayError,
-    parentTrack,
-  } = display
-  const assemblyNames = getTrackAssemblyNames(parentTrack)
-  const regionAsm = self.region.assemblyName
-  if (
-    !assemblyNames.includes(regionAsm) &&
-    !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
-  ) {
-    throw new Error(
-      `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
-    )
-  }
-
-  const { config } = renderProps
-  // This line is to trigger the mobx reaction when the config changes
-  // It won't trigger the reaction if it doesn't think we're accessing it
-  readConfObject(config)
-
-  const sessionId = getRpcSessionId(display)
-  const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-
-  return {
-    rendererType,
-    rpcManager,
-    renderProps,
-    cannotBeRenderedReason,
-    displayError,
-    renderArgs: {
-      statusCallback: (message: string) => {
-        if (isAlive(self)) {
-          self.setStatus(message)
-        }
-      },
-      assemblyName: self.region.assemblyName,
-      regions: [self.region],
+    const display = optDisplay || (getContainingDisplay(self) as any)
+    const { assemblyManager, rpcManager } = getSession(display)
+    const {
       adapterConfig,
-      rendererType: rendererType.name,
-      sessionId,
-      blockKey: self.key,
-      timeout: 1000000, // 10000,
-    },
-  }
+      renderProps,
+      rendererType,
+      error: displayError,
+      parentTrack,
+    } = display
+    const assemblyNames = getTrackAssemblyNames(parentTrack)
+    const regionAsm = self.region.assemblyName
+    if (
+      !assemblyNames.includes(regionAsm) &&
+      !assemblyNames.find(name => assemblyManager.get(name)?.hasName(regionAsm))
+    ) {
+      throw new Error(
+        `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
+      )
+    }
+
+    const { config } = renderProps
+    // This line is to trigger the mobx reaction when the config changes
+    // It won't trigger the reaction if it doesn't think we're accessing it
+    readConfObject(config)
+
+    const sessionId = getRpcSessionId(display)
+    const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
+
+    return {
+      rendererType,
+      rpcManager,
+      renderProps,
+      cannotBeRenderedReason,
+      displayError,
+      renderArgs: {
+        statusCallback: (message: string) => {
+          if (isAlive(self)) {
+            self.setStatus(message)
+          }
+        },
+        assemblyName: self.region.assemblyName,
+        regions: [self.region],
+        adapterConfig,
+        rendererType: rendererType.name,
+        sessionId,
+        blockKey: self.key,
+        timeout: 1000000, // 10000,
+      },
+    }
   } catch (e) {
     return { displayError: e }
   }

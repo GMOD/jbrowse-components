@@ -127,7 +127,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as
+      DialogComponent: undefined as  // eslint-disable-next-line @typescript-eslint/no-explicit-any
         | React.FC<{ handleClose: () => void; model: any }>
         | undefined,
     }))
@@ -447,6 +447,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setDialogComponent(
         comp?: React.FC<{
           handleClose: () => void
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           model: any
         }>,
       ) {

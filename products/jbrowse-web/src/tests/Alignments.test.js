@@ -189,7 +189,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Strand'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-strand')
+    await findAllByTestId('pileup-strand', {}, { timeout: 10000 })
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
