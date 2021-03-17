@@ -883,11 +883,11 @@ class MyAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate(async observer => {
       try {
         const { refName, start, end } = region
-        const myapi = await fetch(
+        const response = await fetch(
           'http://myservice/genes/${refName}/${start}-${end}',
           options,
         )
-        if (result.ok) {
+        if (response.ok) {
           const features = await result.json()
           features.forEach(feature => {
             observer.next(
