@@ -420,6 +420,10 @@ export default class PileupRenderer extends BoxRendererType {
     const [region] = regions
     const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const insertionScale = readConfObject(
+      config,
+      'largeInsertionIndicatorScale',
+    )
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
@@ -502,14 +506,20 @@ export default class PileupRenderer extends BoxRendererType {
         // note that this was also related to chrome bug https://bugs.chromium.org/p/chro>
         // ref #1236
         if (mismatchLeftPx + mismatchWidthPx > 0) {
-          ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+          ctx.clearRect(
+            mismatchLeftPx,
+            topPx,
+            // make small exons more visible when zoomed far out
+            mismatchWidthPx - (bpPerPx > 10 ? 1.5 : 0),
+            heightPx,
+          )
         }
-        const height = 1.5
+        const height = Math.min(heightPx / 2, 1.5)
         ctx.fillStyle = '#333'
         ctx.fillRect(
           mismatchLeftPx,
           topPx + heightPx / 2 - height / 2,
-          mismatchWidthPx,
+          mismatchWidthPx - (bpPerPx > 10 ? 1.5 : 0),
           height,
         )
       }
@@ -527,7 +537,7 @@ export default class PileupRenderer extends BoxRendererType {
       const len = +mismatch.base || mismatch.length
       const txt = `${len}`
       if (mismatch.type === 'insertion' && len >= 10) {
-        if (bpPerPx > 10) {
+        if (bpPerPx > insertionScale) {
           ctx.fillStyle = 'purple'
           ctx.fillRect(mismatchLeftPx - 1, topPx, 2, heightPx)
         } else if (heightPx > charHeight) {

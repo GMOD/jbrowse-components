@@ -55,6 +55,11 @@ export default ConfigurationSchema(
       description: 'remove spacing between features',
       defaultValue: false,
     },
+    largeInsertionIndicatorScale: {
+      type: 'number',
+      description: 'scale at which to draw the large insertion indicators',
+      defaultValue: 10,
+    },
   },
   { explicitlyTyped: true },
 )
