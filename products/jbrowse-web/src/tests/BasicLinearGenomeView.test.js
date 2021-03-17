@@ -169,9 +169,13 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
-    await findByTestId('display-volvox_refseq-LinearReferenceSequenceDisplay')
+    await findByTestId(
+      'display-volvox_refseq-LinearReferenceSequenceDisplay',
+      {},
+      { timeout: 10000 },
+    )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  })
+  }, 10000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
@@ -206,6 +210,8 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
     )
 
     const autocomplete = await findByTestId('autocomplete')
@@ -233,5 +239,5 @@ describe('valid file tests', () => {
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
       expect.stringContaining('ctgB'),
     )
-  })
+  }, 15000)
 })
