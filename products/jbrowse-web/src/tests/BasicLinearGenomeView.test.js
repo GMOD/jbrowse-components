@@ -47,7 +47,11 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
-    const track = await findByTestId('display-volvox_alignments_alignments')
+    const track = await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -55,7 +59,7 @@ describe('valid file tests', () => {
     await waitFor(() => {})
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
-  })
+  }, 10000)
 
   it('click and drag to rubberBand', async () => {
     const pluginManager = getPluginManager()
