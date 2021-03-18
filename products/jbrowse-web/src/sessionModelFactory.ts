@@ -467,6 +467,7 @@ export default function sessionModelFactory(
         if (self.activeWidgets.has(widget.id))
           self.activeWidgets.delete(widget.id)
         self.activeWidgets.set(widget.id, widget)
+        self.minimized = false
       },
 
       hasWidget(widget: any) {
