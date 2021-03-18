@@ -126,7 +126,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   refName,
                 },
               })
-              return f.get('thickStart') && f.get('blockCount')
+
+              // collection of heuristics for suggesting that this feature
+              // should be converted to a gene, CNV bigbed has many gene like
+              // features including thickStart and blockCount but no strand
+              return f.get('thickStart') &&
+                f.get('blockCount') &&
+                f.get('strand') !== 0
                 ? ucscProcessedTranscript(f)
                 : f
             },
