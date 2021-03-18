@@ -8,6 +8,7 @@ import {
   ThemeProvider,
 } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
+import humanConfig from '../public/test_data/config.json'
 import volvoxSession from '../public/volvox-session.json'
 
 export default {
@@ -146,12 +147,11 @@ export const WithRuntimePlugins = () => {
   useEffect(() => {
     async function getPlugins() {
       const loadedPlugins = await loadPlugins([
-        /* array of plugin definitions like:
         {
-          "name": "GDC",
-          "url": "http://localhost:9000/plugin.js"
-        }
-        */
+          name: 'UCSC',
+          url:
+            'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+        },
       ])
       setPlugins(loadedPlugins)
     }
@@ -163,11 +163,60 @@ export const WithRuntimePlugins = () => {
   }
 
   const state = createViewState({
-    assembly,
-    tracks,
-    defaultSession,
-    location: 'ctgA:1105..1221',
+    assembly: humanConfig.assemblies[0],
     plugins,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'segdups_ucsc_hg19',
+        name: 'UCSC SegDups',
+        category: ['Annotation'],
+        assemblyNames: ['hg19'],
+        adapter: {
+          type: 'UCSCAdapter',
+          track: 'genomicSuperDups',
+        },
+      },
+    ],
+    location: '1:2,467,681..2,667,681',
+    defaultSession: {
+      name: 'Runtime plugins',
+      view: {
+        id: 'aU9Nqje1U',
+        type: 'LinearGenomeView',
+        offsetPx: 22654,
+        bpPerPx: 108.93300653594771,
+        displayedRegions: [
+          {
+            refName: '1',
+            start: 0,
+            end: 249250621,
+            reversed: false,
+            assemblyName: 'hg19',
+          },
+        ],
+        tracks: [
+          {
+            id: 'MbiRphmDa',
+            type: 'FeatureTrack',
+            configuration: 'segdups_ucsc_hg19',
+            displays: [
+              {
+                id: '8ovhuA5cFM',
+                type: 'LinearBasicDisplay',
+                height: 100,
+                configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
+              },
+            ],
+          },
+        ],
+        hideHeader: false,
+        hideHeaderOverview: false,
+        trackSelectorType: 'hierarchical',
+        trackLabels: 'overlapping',
+        showCenterLine: false,
+      },
+    },
   })
   return (
     <ThemeProvider theme={theme}>
