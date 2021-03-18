@@ -4,8 +4,8 @@ import IconButton from '@material-ui/core/IconButton'
 import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
-import CloseIcon from '@material-ui/icons/Close'
 import DeleteIcon from '@material-ui/icons/Delete'
+import MinimizeIcon from '@material-ui/icons/Minimize'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -51,9 +51,9 @@ const useStyles = makeStyles(theme => ({
 const DrawerWidget = observer(props => {
   const { session } = props
   const { visibleWidget, activeWidgets } = session
-  const { ReactComponent, HeadingComponent, heading } = getEnv(
-    session,
-  ).pluginManager.getWidgetType(visibleWidget.type)
+  const { ReactComponent } = getEnv(session).pluginManager.getWidgetType(
+    visibleWidget.type,
+  )
   const classes = useStyles()
 
   const handleChange = (e, option) => {
@@ -65,105 +65,76 @@ const DrawerWidget = observer(props => {
       <div className={classes.defaultDrawer}>
         <AppBar position="static" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
-            {activeWidgets.size <= 1 ? (
-              <>
-                <Typography variant="h6" color="inherit">
-                  {HeadingComponent ? (
-                    <HeadingComponent model={visibleWidget} />
-                  ) : (
-                    heading || undefined
-                  )}
-                </Typography>
-                <div className={classes.drawerToolbarCloseButton} />
-                <IconButton
-                  className={classes.drawerCloseButton}
-                  data-testid="drawer-close"
-                  color="inherit"
-                  aria-label="Close"
-                  onClick={() => {
-                    session.hideWidget(visibleWidget)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </>
-            ) : (
-              <>
-                <Select
-                  value={visibleWidget || ''}
-                  data-testid="widget-drawer-selects"
-                  className={classes.drawerSelect}
-                  classes={{ icon: classes.dropDownIcon }}
-                  renderValue={selected => {
-                    const {
-                      HeadingComponent: HeadingComp,
-                      heading: headingText,
-                    } = getEnv(session).pluginManager.getWidgetType(
-                      selected.type,
-                    )
-                    return (
-                      <Typography variant="h6" color="inherit">
-                        {HeadingComp ? (
-                          <HeadingComp model={selected} />
-                        ) : (
-                          headingText || undefined
-                        )}
-                      </Typography>
-                    )
-                  }}
-                  onChange={(e, value) => {
-                    handleChange(e, value)
-                  }}
-                >
-                  {Array.from(activeWidgets.values()).map((widget, index) => {
-                    const {
-                      HeadingComponent: HeadingComp,
-                      heading: headingText,
-                    } = getEnv(session).pluginManager.getWidgetType(widget.type)
-                    return (
-                      <MenuItem
-                        data-testid={`widget-drawer-selects-item-${widget.type}`}
-                        key={`${widget.id}-${index}`}
-                        value={widget}
+            <Select
+              value={visibleWidget || ''}
+              data-testid="widget-drawer-selects"
+              className={classes.drawerSelect}
+              classes={{ icon: classes.dropDownIcon }}
+              renderValue={selected => {
+                const {
+                  HeadingComponent: HeadingComp,
+                  heading: headingText,
+                } = getEnv(session).pluginManager.getWidgetType(selected.type)
+                return (
+                  <Typography variant="h6" color="inherit">
+                    {HeadingComp ? (
+                      <HeadingComp model={selected} />
+                    ) : (
+                      headingText || undefined
+                    )}
+                  </Typography>
+                )
+              }}
+              onChange={(e, value) => {
+                handleChange(e, value)
+              }}
+            >
+              {Array.from(activeWidgets.values()).map((widget, index) => {
+                const {
+                  HeadingComponent: HeadingComp,
+                  heading: headingText,
+                } = getEnv(session).pluginManager.getWidgetType(widget.type)
+                return (
+                  <MenuItem
+                    data-testid={`widget-drawer-selects-item-${widget.type}`}
+                    key={`${widget.id}-${index}`}
+                    value={widget}
+                  >
+                    <Typography variant="h6" color="inherit">
+                      {HeadingComp ? (
+                        <HeadingComp model={widget} />
+                      ) : (
+                        headingText || undefined
+                      )}
+                    </Typography>
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        className={classes.drawerCloseButton}
+                        data-testid="drawer-widget-delete"
+                        color="inherit"
+                        aria-label="Delete"
+                        onClick={() => {
+                          session.hideWidget(widget)
+                        }}
                       >
-                        <Typography variant="h6" color="inherit">
-                          {HeadingComp ? (
-                            <HeadingComp model={widget} />
-                          ) : (
-                            headingText || undefined
-                          )}
-                        </Typography>
-                        <ListItemSecondaryAction>
-                          <IconButton
-                            className={classes.drawerCloseButton}
-                            data-testid="drawer-close"
-                            color="inherit"
-                            aria-label="Close"
-                            onClick={() => {
-                              session.hideWidget(widget)
-                            }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </ListItemSecondaryAction>
-                      </MenuItem>
-                    )
-                  })}
-                </Select>
-                <div className={classes.drawerToolbarCloseButton} />
-                <IconButton
-                  className={classes.drawerCloseButton}
-                  data-testid="drawer-close"
-                  color="inherit"
-                  aria-label="Close"
-                  onClick={() => {
-                    session.hideWidget(visibleWidget)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </>
-            )}
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </MenuItem>
+                )
+              })}
+            </Select>
+            <div className={classes.drawerToolbarCloseButton} />
+            <IconButton
+              className={classes.drawerCloseButton}
+              data-testid="drawer-minimize"
+              color="inherit"
+              onClick={() => {
+                session.minimizeWidgetDrawer()
+              }}
+            >
+              <MinimizeIcon />
+            </IconButton>
           </Toolbar>
         </AppBar>
         <ReactComponent model={visibleWidget} session={session} />
