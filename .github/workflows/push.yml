@@ -79,5 +79,5 @@ jobs:
       - name: Deploy Storybook for branch to S3
         run: |
           pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
         working-directory: products/jbrowse-react-linear-genome-view
