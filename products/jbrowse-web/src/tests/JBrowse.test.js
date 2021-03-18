@@ -121,7 +121,6 @@ test('variant track test - opens feature detail view', async () => {
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
-  fireEvent.click(await findByTestId('drawer-close'))
   const feats2 = await findAllByTestId(
     'test-vcf-604452',
     {},
