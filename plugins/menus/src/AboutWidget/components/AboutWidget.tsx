@@ -1,10 +1,8 @@
-import Typography from '@material-ui/core/Typography'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import React from 'react'
-import { makeStyles } from '@material-ui/core'
-import Link from '@material-ui/core/Link'
+import { makeStyles, Typography, Link } from '@material-ui/core'
 import { PluginMetaData } from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles(theme => ({
@@ -51,7 +49,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
     .map((plugin: BasePlugin) => {
       return (
         <li key={plugin.name}>
-          {plugin.name} {plugin.version}
+          {plugin.name} {plugin.version || ''}
         </li>
       )
     })
@@ -61,7 +59,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       return !corePlugins.includes(plugin.name)
     })
     .map((plugin: BasePlugin) => {
-      const text = `${plugin.name} ${plugin.version}`
+      const text = `${plugin.name} ${plugin.version || ''}`
       return (
         <li key={plugin.name}>
           {plugin.url ? (
