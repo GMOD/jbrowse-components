@@ -8,7 +8,6 @@ import {
   ThemeProvider,
 } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
-import humanConfig from '../public/test_data/config.json'
 import volvoxSession from '../public/volvox-session.json'
 
 export default {
@@ -163,7 +162,35 @@ export const WithRuntimePlugins = () => {
   }
 
   const state = createViewState({
-    assembly: humanConfig.assemblies[0],
+    assembly: {
+      name: 'hg19',
+      aliases: ['GRCh37'],
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'Pd8Wh30ei9R',
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+          },
+          faiLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+          },
+          gziLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+          },
+        },
+      },
+      refNameAliases: {
+        adapter: {
+          type: 'RefNameAliasAdapter',
+          location: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+          },
+        },
+      },
+    },
     plugins,
     tracks: [
       {
