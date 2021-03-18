@@ -131,6 +131,52 @@ test('variant track test - opens feature detail view', async () => {
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
 }, 10000)
 
+test('widget drawer navigation', async () => {
+  const pluginManager = getPluginManager(undefined, true)
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, getByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(0.05, 5000)
+  // opens a config editor widget
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
+  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+  fireEvent.click(await findByText('Settings'))
+  await expect(findByTestId('configEditor')).resolves.toBeTruthy()
+  // shows up when there  active widgets
+  const widgetSelect = await findByTestId('widget-drawer-selects')
+  const button = getByRole(widgetSelect, 'button')
+  fireEvent.mouseDown(button)
+  const popoverMenuItem = await screen.findByTestId(
+    'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
+  )
+  fireEvent.click(popoverMenuItem)
+  await findByTestId('hierarchical_track_selector')
+
+  // test minimize and maximize widget drawer
+  expect(state.session.minimized).toBeFalsy()
+
+  await findByTestId('drawer-minimize')
+  const minimizeButton = await getByTestId('drawer-minimize')
+  fireEvent.click(minimizeButton)
+  expect(state.session.minimized).toBeTruthy()
+
+  const fabMaximize = await screen.findByTestId('drawer-maximize')
+  fireEvent.click(fabMaximize)
+  expect(state.session.minimized).toBeFalsy()
+
+  // test deleting widget from select dropdown using trash icon
+  expect(state.session.activeWidgets.size).toEqual(2)
+  const widgetSelect2 = await findByTestId('widget-drawer-selects')
+  const button2 = getByRole(widgetSelect2, 'button')
+  fireEvent.mouseDown(button2)
+  const popoverDeleteIcon = await screen.findByTestId(
+    'ConfigurationEditorWidget-drawer-delete',
+  )
+  fireEvent.click(popoverDeleteIcon)
+  expect(state.session.activeWidgets.size).toEqual(1)
+})
 describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
     const variantTrack = volvoxConfigSnapshot.tracks.find(
@@ -200,15 +246,6 @@ describe('test configuration editor', () => {
       },
       { timeout: 10000 },
     )
-    // shows up when there 2+ active widgets
-    const widgetSelect = await findByTestId('widget-drawer-selects')
-    const button = getByRole(widgetSelect, 'button')
-    fireEvent.mouseDown(button)
-    const popoverMenuItem = await screen.findByTestId(
-      'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
-    )
-    fireEvent.click(popoverMenuItem)
-    await findByTestId('hierarchical_track_selector')
   }, 10000)
 })
 

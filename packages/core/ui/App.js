@@ -173,6 +173,7 @@ function App({ session, HeaderButtons }) {
             color="primary"
             size="small"
             aria-label="show"
+            data-testid="drawer-maximize"
             style={{ float: 'right' }}
             onClick={() => {
               session.showWidgetDrawer()

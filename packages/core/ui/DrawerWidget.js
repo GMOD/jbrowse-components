@@ -110,7 +110,7 @@ const DrawerWidget = observer(props => {
                     <ListItemSecondaryAction>
                       <IconButton
                         className={classes.drawerCloseButton}
-                        data-testid="drawer-widget-delete"
+                        data-testid={`${widget.type}-drawer-delete`}
                         color="inherit"
                         aria-label="Delete"
                         onClick={() => {
