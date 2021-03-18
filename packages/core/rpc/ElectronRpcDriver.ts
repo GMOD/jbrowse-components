@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop */
+/* eslint-disable no-await-in-loop,@typescript-eslint/no-explicit-any */
 import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
@@ -12,7 +12,8 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electronBetterIpc = {}, electron } = window
+const { electronBetterIpc = {}, electron } =
+  typeof window !== 'undefined' ? window : ({} as any)
 
 async function wait(ms: number) {
   return new Promise(resolve => {

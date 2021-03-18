@@ -1,4 +1,4 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-underscore-dangle */
 import uri2path from 'file-uri-to-path'
 import {
   Fetcher,
@@ -15,7 +15,7 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electron } = window
+const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 class ElectronRemoteFileError extends Error {
   public status: number | undefined
