@@ -6,7 +6,12 @@ import Segments from './Segments'
 import { layOutFeature, layOutSubfeatures } from './util'
 
 function ProcessedTranscript(props) {
-  return <Segments {...props} />
+  // eslint-disable-next-line react/prop-types
+  const { feature, config } = props
+  const subfeatures = getSubparts(feature, config)
+
+  // we manually compute some subfeatures, so pass these separately
+  return <Segments {...props} subfeatures={subfeatures} />
 }
 
 // make a function that will filter features features according to the
@@ -40,8 +45,9 @@ function isUTR(feature) {
   )
 }
 
-function makeUTRs(parent, subparts) {
+function makeUTRs(parent, subs) {
   // based on Lincoln's UTR-making code in Bio::Graphics::Glyph::processed_transcript
+  const subparts = [...subs]
 
   let codeStart = Infinity
   let codeEnd = -Infinity
@@ -124,20 +130,17 @@ function getSubparts(f, config) {
   if (!c || !c.length) {
     return []
   }
-  const hasUTRs = !!c.find(child => child.get('type').match(/UTR/))
+  const hasUTRs = !!c.find(child => isUTR(child))
   const isTranscript = ['mRNA', 'transcript'].includes(f.get('type'))
-  if ((!hasUTRs && isTranscript) || readConfObject(config, 'impliedUTRs')) {
+  const impliedUTRs = !hasUTRs && isTranscript
+
+  // if we think we should use impliedUTRs, or it is specifically in the
+  // config, then makeUTRs
+  if (impliedUTRs || readConfObject(config, 'impliedUTRs')) {
     c = makeUTRs(f, c)
   }
 
-  const filtered = []
-  for (let i = 0; i < c.length; i++) {
-    if (filterSubpart(c[i], config)) {
-      filtered.push(c[i])
-    }
-  }
-
-  return filtered
+  return c.filter(element => filterSubpart(element, config))
 }
 
 ProcessedTranscript.layOut = ({

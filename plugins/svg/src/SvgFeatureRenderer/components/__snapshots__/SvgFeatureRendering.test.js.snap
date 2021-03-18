@@ -176,158 +176,224 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 >
   <svg
     class="SvgFeatureRendering"
-    height="52px"
+    height="40px"
     style="display: block;"
     width="333.3333333333333px"
   >
     <g>
       <polyline
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0"
-        points="28577152.7,5,28580771.7,5,28580769.2,2.5,28580769.2,7.5,28580771.7,5"
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0"
+        points="7759845,5,7766453,5,7766450.5,2.5,7766450.5,7.5,7766453,5"
         stroke="black"
-        transform="rotate(180,28578962.2,5)"
+        transform="rotate(180,7763149,5)"
       />
       <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0_three_prime_UTR_0"
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-1"
+        fill="goldenrod"
+        height="10"
+        width="327.3333333333333"
+        x="7759845"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7759845,0,7759840,5,7759845,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-2"
+        fill="goldenrod"
+        height="10"
+        width="35.333333333333336"
+        x="7760604.333333333"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7760604.333333333,0,7760599.333333333,5,7760604.333333333,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-3"
+        fill="goldenrod"
+        height="10"
+        width="78.66666666666667"
+        x="7761725.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7761725.666666667,0,7761720.666666667,5,7761725.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-4"
+        fill="goldenrod"
+        height="10"
+        width="52.666666666666664"
+        x="7762144.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7762144.666666667,0,7762139.666666667,5,7762144.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-5"
+        fill="goldenrod"
+        height="10"
+        width="36.666666666666664"
+        x="7763199.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7763199.666666667,0,7763194.666666667,5,7763199.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-6"
+        fill="goldenrod"
+        height="10"
+        width="45.333333333333336"
+        x="7763927.333333333"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7763927.333333333,0,7763922.333333333,5,7763927.333333333,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-7"
+        fill="goldenrod"
+        height="10"
+        width="4"
+        x="7766265.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7766265.666666667,0,7766260.666666667,5,7766265.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-8"
+        fill="goldenrod"
+        height="10"
+        width="327.3333333333333"
+        x="7759845"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7759845,0,7759840,5,7759845,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-9"
+        fill="goldenrod"
+        height="10"
+        width="35.333333333333336"
+        x="7760604.333333333"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7760604.333333333,0,7760599.333333333,5,7760604.333333333,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-10"
+        fill="goldenrod"
+        height="10"
+        width="78.66666666666667"
+        x="7761725.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7761725.666666667,0,7761720.666666667,5,7761725.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-11"
+        fill="goldenrod"
+        height="10"
+        width="52.666666666666664"
+        x="7762144.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7762144.666666667,0,7762139.666666667,5,7762144.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-12"
+        fill="goldenrod"
+        height="10"
+        width="36.666666666666664"
+        x="7763199.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7763199.666666667,0,7763194.666666667,5,7763199.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-13"
+        fill="goldenrod"
+        height="10"
+        width="45.333333333333336"
+        x="7763927.333333333"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7763927.333333333,0,7763922.333333333,5,7763927.333333333,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0-14"
+        fill="goldenrod"
+        height="10"
+        width="4"
+        x="7766265.666666667"
+        y="0"
+      />
+      <polygon
+        fill="goldenrod"
+        points="7766265.666666667,0,7766260.666666667,5,7766265.666666667,10"
+      />
+      <rect
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_7"
         fill="#357089"
         height="6.5"
-        width="333.3333333333333"
-        x="28577152.7"
+        width="31.666666666666668"
+        x="7766421.333333333"
         y="1.75"
       />
       <polygon
         fill="#357089"
-        points="28577152.7,1.75,28577149.45,5,28577152.7,8.25"
+        points="7766421.333333333,1.75,7766418.083333333,5,7766421.333333333,8.25"
       />
       <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-1"
-        fill="goldenrod"
-        height="10"
-        width="118.66666666666667"
-        x="28577769.7"
-        y="0"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28577769.7,0,28577764.7,5,28577769.7,10"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-2"
-        fill="goldenrod"
-        height="10"
-        width="96.33333333333333"
-        x="28578766.7"
-        y="0"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28578766.7,0,28578761.7,5,28578766.7,10"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0-3"
-        fill="goldenrod"
-        height="10"
-        width="19"
-        x="28580659.366666667"
-        y="0"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28580659.366666667,0,28580654.366666667,5,28580659.366666667,10"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-0_five_prime_UTR_2"
+        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-107608116-0_five_prime_UTR_6"
         fill="#357089"
         height="6.5"
-        width="93.33333333333333"
-        x="28580678.366666667"
+        width="38.333333333333336"
+        x="7766269.666666667"
         y="1.75"
       />
       <polygon
         fill="#357089"
-        points="28580678.366666667,1.75,28580675.116666667,5,28580678.366666667,8.25"
-      />
-      <polyline
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1"
-        points="28577152.7,17,28580771.7,17,28580769.2,14.5,28580769.2,19.5,28580771.7,17"
-        stroke="black"
-        transform="rotate(180,28578962.2,17)"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1_three_prime_UTR_0"
-        fill="#357089"
-        height="6.5"
-        width="333.3333333333333"
-        x="28577152.7"
-        y="13.75"
-      />
-      <polygon
-        fill="#357089"
-        points="28577152.7,13.75,28577149.45,17,28577152.7,20.25"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-1"
-        fill="goldenrod"
-        height="10"
-        width="107.66666666666667"
-        x="28577769.7"
-        y="12"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28577769.7,12,28577764.7,17,28577769.7,22"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-2"
-        fill="goldenrod"
-        height="10"
-        width="96.33333333333333"
-        x="28578766.7"
-        y="12"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28578766.7,12,28578761.7,17,28578766.7,22"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1-3"
-        fill="goldenrod"
-        height="10"
-        width="19"
-        x="28580659.366666667"
-        y="12"
-      />
-      <polygon
-        fill="goldenrod"
-        points="28580659.366666667,12,28580654.366666667,17,28580659.366666667,22"
-      />
-      <rect
-        data-testid="type-Gff3TabixAdapter;type-Gff3TabixAdapter;uri-https://s3.amazonaws.com/jbrowse.org/genomes/hg19/nc-offset-294046480-1_five_prime_UTR_2"
-        fill="#357089"
-        height="6.5"
-        width="93.33333333333333"
-        x="28580678.366666667"
-        y="13.75"
-      />
-      <polygon
-        fill="#357089"
-        points="28580678.366666667,13.75,28580675.116666667,17,28580678.366666667,20.25"
+        points="7766269.666666667,1.75,7766266.416666667,5,7766269.666666667,8.25"
       />
       <text
         dominant-baseline="hanging"
         style="font-size: 13px; fill: black; cursor: default;"
-        x="28577152.7"
-        y="24"
+        x="7759845"
+        y="12"
       >
-        BCL10
+        LACTBL1
       </text>
       <text
         dominant-baseline="hanging"
         style="font-size: 13px; fill: blue; cursor: default;"
-        x="28577152.7"
-        y="39"
+        x="7759845"
+        y="27"
       >
-        BCL10 immune signaling adaptor
+        lactamase beta like 1
       </text>
     </g>
   </svg>
