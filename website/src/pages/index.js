@@ -37,7 +37,12 @@ const useStyles = makeStyles(theme => ({
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
+  const { currentLink } = siteConfig.customFields
+  const pathArray = currentLink.split('/')
+  const currentVersion = pathArray[pathArray.length - 2]
+  const storybookLink = `https://jbrowse.org/storybook/${currentVersion}/`
   const classes = useStyles()
+
   return (
     <Layout
       title={`${siteConfig.title}`}
@@ -64,10 +69,7 @@ function Home() {
                 </Link>
               </li>
               <li>
-                <Link
-                  href={siteConfig.customFields.currentLink}
-                  variant="contained"
-                >
+                <Link href={currentLink} variant="contained">
                   Browse web demo instance
                 </Link>
               </li>
@@ -75,10 +77,7 @@ function Home() {
             <h3>Embedded</h3>
             <ul>
               <li>
-                <Link
-                  href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view"
-                  variant="contained"
-                >
+                <Link href={storybookLink} variant="contained">
                   Linear genome view React component on <tt>npm</tt>
                 </Link>
               </li>

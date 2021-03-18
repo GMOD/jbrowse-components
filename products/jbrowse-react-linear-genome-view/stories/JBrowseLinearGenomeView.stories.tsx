@@ -8,6 +8,7 @@ import {
   ThemeProvider,
 } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
+import volvoxSession from '../public/volvox-session.json'
 
 export default {
   title: 'Linear View',
@@ -32,7 +33,7 @@ function addRelativeUris(config: any, baseUri: string) {
 
 addRelativeUris(
   volvoxConfig,
-  new URL(`${window.location.origin}/test_data/volvox/config.json`).href,
+  new URL('test_data/volvox/config.json', window.location.href).href,
 )
 
 const supportedTrackTypes = [
@@ -50,6 +51,10 @@ const tracks = volvoxConfig.tracks.filter(track =>
 const defaultSession = {
   name: 'Storybook',
   view: volvoxConfig.defaultSession.views[0],
+}
+const longReadsSession = {
+  ...defaultSession,
+  view: volvoxSession.session.views[0],
 }
 
 export const OneLinearGenomeView = () => {
@@ -70,6 +75,25 @@ export const OneLinearGenomeView = () => {
   )
 }
 
+export const LinearViewWithLongReads = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession: longReadsSession,
+    location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
 export const OneLinearGenomeViewWithOutsideStyling = () => {
   const state = createViewState({
     assembly,
@@ -81,6 +105,7 @@ export const OneLinearGenomeViewWithOutsideStyling = () => {
       console.log('patch', patch)
     },
   })
+
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
       <h2>Hello world, this is centered but not affecting the internal LGV</h2>

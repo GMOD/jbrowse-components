@@ -55,3 +55,29 @@ jobs:
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
           cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
           aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
+  storybook:
+    name: Build and deploy static Storybook site to AWS S3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: Build Storybook static site
+        run: |
+          yarn build-storybook
+        working-directory: products/jbrowse-react-linear-genome-view
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy Storybook for branch to S3
+        run: |
+          pwd
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/$(echo ${{github.ref}} | cut -d "/" -f3-)
+        working-directory: products/jbrowse-react-linear-genome-view
