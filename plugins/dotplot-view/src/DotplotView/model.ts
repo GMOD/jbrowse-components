@@ -262,7 +262,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         activateTrackSelector() {
           if (self.trackSelectorType === 'hierarchical') {
-            const session = getSession(self)
+            const session: any = getSession(self)
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',

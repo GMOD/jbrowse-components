@@ -110,7 +110,6 @@ const Base1DView = types
         const offset = bp
         return {
           // has to be as type `any` or get error
-          // Exported variable 'Base1DView' has or is using name '$nonEmptyObject' from external module "/home/cdiesh/src/jbrowse-components/node_modules/mobx-state-tree/dist/types/complex-types/model" but cannot be named.
           ...(getSnapshot(region) as any),
           oob: true,
           coord: region.reversed

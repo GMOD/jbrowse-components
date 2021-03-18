@@ -157,7 +157,7 @@ export default function sessionModelFactory(
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent<any>(self), node => {
+        walk(getParent<any>(self), (node: any) => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
