@@ -1,14 +1,15 @@
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { AbstractViewModel } from '../util'
 
 export interface BaseProps extends BaseCardProps {
-  feature: SimpleFeatureSerialized & {
-    start: number
-    end: number
-    refName: string
-  }
+  feature: SimpleFeatureSerialized
   descriptions?: Record<string, React.ReactNode>
-  model?: IAnyStateTreeNode
+  model?: IAnyStateTreeNode & {
+    view?: AbstractViewModel & {
+      assemblyNames?: string[]
+    }
+  }
 }
 
 export interface BaseCardProps {

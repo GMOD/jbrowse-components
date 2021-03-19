@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
-import { Select, MenuItem } from '@material-ui/core'
+import { Select, MenuItem, Typography } from '@material-ui/core'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -8,8 +8,18 @@ import {
   getSession,
 } from '../util'
 import { BaseProps } from './types'
+import { getConf } from '../configuration'
+import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
 
-type Feat = { start: number; end: number; type: string }
+interface Feat {
+  start: number
+  end: number
+  type: string
+}
+interface ParentFeat extends Feat {
+  strand?: number
+  subfeatures?: Feat[]
+}
 
 function stitch(subfeats: Feat[], sequence: string) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
@@ -188,7 +198,7 @@ function calculateUTRs(cds: Feat[], exons: Feat[]) {
 
 function SequencePanel(props: {
   sequence: { seq: string; upstream: string; downstream: string }
-  feature: Feat & { strand: number; subfeatures: Feat[] }
+  feature: ParentFeat
   mode: string
 }) {
   const { feature, mode } = props
@@ -197,6 +207,10 @@ function SequencePanel(props: {
   } = props
   const { subfeatures } = feature
   const codonTable = generateCodonTable(defaultCodonTable)
+
+  if (!subfeatures) {
+    return null
+  }
 
   const children = subfeatures
     .sort((a, b) => a.start - b.start)
@@ -296,10 +310,10 @@ function SequencePanel(props: {
 // to not be 100% accurate
 export default function SequenceFeatureDetails(props: BaseProps) {
   const { model, feature } = props
-  const { assemblyManager, rpcManager } = getSession(model)
-  const { assemblyNames } = model.view
-  const subfeatures = feature.subfeatures as Feat[]
-  const hasCDS = subfeatures.find(sub => sub.type === 'CDS')
+
+  const parentFeature = (feature as unknown) as ParentFeat
+  const { subfeatures } = parentFeature
+  const hasCDS = subfeatures?.find(sub => sub.type === 'CDS')
 
   const [sequence, setSequence] = useState<{
     seq: string
@@ -308,10 +322,14 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   }>()
   const [error, setError] = useState<string>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
-  const [assemblyName] = assemblyNames
-  const loading = !sequence
 
   useEffect(() => {
+    if (!model) {
+      return
+    }
+    const { assemblyManager, rpcManager } = getSession(model)
+    const { assemblyNames } = model.view || { assemblyNames: [] }
+    const [assemblyName] = assemblyNames
     async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!assembly) {
@@ -332,7 +350,15 @@ export default function SequenceFeatureDetails(props: BaseProps) {
     }
     ;(async () => {
       try {
-        const { start, end, refName: ref } = feature
+        const {
+          start,
+          end,
+          refName: ref,
+        } = feature as SimpleFeatureSerialized & {
+          refName: string
+          start: number
+          end: number
+        }
         const seq = await fetchSeq(start, end, ref)
         const upstream = await fetchSeq(Math.max(0, start - 500), start, ref)
         const downstream = await fetchSeq(end, end + 500, ref)
@@ -341,7 +367,9 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         setError(e)
       }
     })()
-  }, [feature, assemblyManager, rpcManager, assemblyName])
+  }, [feature, model])
+
+  const loading = !sequence
 
   return (
     <div>
@@ -365,7 +393,11 @@ export default function SequenceFeatureDetails(props: BaseProps) {
           <div>Loading gene sequence...</div>
         ) : sequence ? (
           <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
-            <SequencePanel feature={feature} mode={mode} sequence={sequence} />
+            <SequencePanel
+              feature={parentFeature}
+              mode={mode}
+              sequence={sequence}
+            />
           </div>
         ) : (
           <div>No sequence found</div>

@@ -202,13 +202,18 @@ const ArrayValue = ({
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature
+  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+    start: number
+    end: number
+    strand: number
+    refName: string
+  }
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayStart = (start + 1).toLocaleString('en-US')
   const displayEnd = end.toLocaleString('en-US')
   const displayRef = refName ? `${refName}:` : ''
@@ -436,7 +441,11 @@ export const FeatureDetails = (props: {
 
   return (
     <BaseCard
-      title={ellipsedDisplayName ? `${ellipsedDisplayName} - ${type}` : type}
+      title={
+        ellipsedDisplayName
+          ? `${ellipsedDisplayName} - ${type}`
+          : `${type || ''}`
+      }
     >
       <div>Core details</div>
       <CoreDetails {...props} />
