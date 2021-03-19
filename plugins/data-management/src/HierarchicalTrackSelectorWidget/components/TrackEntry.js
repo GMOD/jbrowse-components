@@ -3,7 +3,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import Checkbox from '@material-ui/core/Checkbox'
-import Fade from '@material-ui/core/Fade'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import IconButton from '@material-ui/core/IconButton'
 import { makeStyles } from '@material-ui/core/styles'
@@ -59,53 +58,51 @@ function TrackEntry({ model, disabled, trackConf, assemblyName }) {
     : []
 
   return (
-    <Fade in>
-      <div className={classes.track}>
-        <Tooltip title={titleText} placement="left" enterDelay={500}>
-          <FormControlLabel
-            className={classes.formControlLabel}
-            control={
-              <Checkbox
-                inputProps={{
-                  'data-testid': `htsTrackEntry-${trackId}`,
-                }}
-                className={classes.checkbox}
-              />
-            }
-            label={
-              assemblyName ? `Reference Sequence (${assemblyName})` : trackName
-            }
-            checked={model.view.tracks.some(t => t.configuration === trackConf)}
-            onChange={() => model.view.toggleTrack(trackConf.trackId)}
-            disabled={disabled || unsupported}
-          />
-        </Tooltip>
-        {menuItems.length ? (
-          <IconButton
-            className={classes.configureButton}
-            onClick={event => {
-              setAnchorEl(event.currentTarget)
-            }}
-            color="secondary"
-            data-testid={`htsTrackEntryMenu-${trackId}`}
-          >
-            <HorizontalDots />
-          </IconButton>
-        ) : null}
-        <Menu
-          anchorEl={anchorEl}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setAnchorEl(null)
-          }}
-          open={Boolean(anchorEl)}
-          onClose={() => {
-            setAnchorEl(null)
-          }}
-          menuItems={menuItems}
+    <div className={classes.track}>
+      <Tooltip title={titleText} placement="left" enterDelay={500}>
+        <FormControlLabel
+          className={classes.formControlLabel}
+          control={
+            <Checkbox
+              inputProps={{
+                'data-testid': `htsTrackEntry-${trackId}`,
+              }}
+              className={classes.checkbox}
+            />
+          }
+          label={
+            assemblyName ? `Reference Sequence (${assemblyName})` : trackName
+          }
+          checked={model.view.tracks.some(t => t.configuration === trackConf)}
+          onChange={() => model.view.toggleTrack(trackConf.trackId)}
+          disabled={disabled || unsupported}
         />
-      </div>
-    </Fade>
+      </Tooltip>
+      {menuItems.length ? (
+        <IconButton
+          className={classes.configureButton}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+          color="secondary"
+          data-testid={`htsTrackEntryMenu-${trackId}`}
+        >
+          <HorizontalDots />
+        </IconButton>
+      ) : null}
+      <Menu
+        anchorEl={anchorEl}
+        onMenuItemClick={(_, callback) => {
+          callback()
+          setAnchorEl(null)
+        }}
+        open={Boolean(anchorEl)}
+        onClose={() => {
+          setAnchorEl(null)
+        }}
+        menuItems={menuItems}
+      />
+    </div>
   )
 }
 
