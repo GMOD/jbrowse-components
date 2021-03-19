@@ -7,7 +7,7 @@ export const parameters = {
         'Default Sessions',
         'Linear View',
         'Nextstrain View',
-        'Next.js Usage'
+        'Next.js Usage',
       ],
       locales: '',
     },
