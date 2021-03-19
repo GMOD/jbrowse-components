@@ -1,14 +1,19 @@
-import Divider from '@material-ui/core/Divider'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import { MenuProps as MUIMenuProps } from '@material-ui/core/Menu'
-import MenuItem, { MenuItemProps } from '@material-ui/core/MenuItem'
-import MenuList from '@material-ui/core/MenuList'
-import Paper from '@material-ui/core/Paper'
-import Popover, { PopoverProps } from '@material-ui/core/Popover'
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import { makeStyles } from '@material-ui/core/styles'
+import {
+  Divider,
+  Grow,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  MenuProps as MUIMenuProps,
+  MenuItem,
+  MenuItemProps,
+  MenuList,
+  Paper,
+  Popover,
+  PopoverProps,
+  SvgIconProps,
+  makeStyles,
+} from '@material-ui/core'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CheckBoxIcon from '@material-ui/icons/CheckBox'
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
@@ -178,7 +183,7 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
   )
 }
 
-const MenuPage = (props: MenuPageProps) => {
+const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(
     null,
   )
@@ -384,20 +389,18 @@ const MenuPage = (props: MenuPageProps) => {
   }
 
   return (
-    <>
-      {open ? (
-        <Paper
-          elevation={8}
-          ref={paperRef}
-          className={classes.paper}
-          style={{ ...position }}
-        >
-          {ListContents}
-        </Paper>
-      ) : null}
-    </>
+    <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
+      <Paper
+        elevation={8}
+        ref={paperRef}
+        className={classes.paper}
+        style={{ ...position }}
+      >
+        {ListContents}
+      </Paper>
+    </Grow>
   )
-}
+})
 
 interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
@@ -409,6 +412,7 @@ interface MenuProps extends PopoverProps {
 
 function Menu(props: MenuProps) {
   const { open, onClose, menuItems, onMenuItemClick, ...other } = props
+
   return (
     <Popover
       transitionDuration={0}
