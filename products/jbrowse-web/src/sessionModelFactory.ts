@@ -73,6 +73,7 @@ export default function sessionModelFactory(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      minimized: types.optional(types.boolean, false),
     })
     .volatile((/* self */) => ({
       /**
@@ -466,6 +467,7 @@ export default function sessionModelFactory(
         if (self.activeWidgets.has(widget.id))
           self.activeWidgets.delete(widget.id)
         self.activeWidgets.set(widget.id, widget)
+        self.minimized = false
       },
 
       hasWidget(widget: any) {
@@ -475,7 +477,12 @@ export default function sessionModelFactory(
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
       },
-
+      minimizeWidgetDrawer() {
+        self.minimized = true
+      },
+      showWidgetDrawer() {
+        self.minimized = false
+      },
       hideAllWidgets() {
         self.activeWidgets.clear()
       },
