@@ -196,7 +196,7 @@ function calculateUTRs(cds: Feat[], exons: Feat[]) {
   return [...fiveUTRs, ...threeUTRs]
 }
 
-function SequencePanel(props: {
+export function SequencePanel(props: {
   sequence: { seq: string; upstream: string; downstream: string }
   feature: ParentFeat
   mode: string
@@ -253,56 +253,47 @@ function SequencePanel(props: {
     utr = revlist(utr, sequence.length)
   }
 
-  if (mode === 'cds') {
-    return <GeneCDS cds={cds} sequence={sequence} />
-  }
-  if (mode === 'cdna') {
-    // utr's were supplied, no inference needed
-    return <GenecDNA exons={exons} cds={cds} utr={utr} sequence={sequence} />
-  }
-  if (mode === 'protein') {
-    return <GeneProtein cds={cds} codonTable={codonTable} sequence={sequence} />
-  }
-
-  if (mode === 'gene') {
-    return (
-      <GenecDNA
-        exons={exons}
-        cds={cds}
-        utr={utr}
-        sequence={sequence}
-        includeIntrons
-      />
-    )
-  }
-
-  if (mode === 'gene_collapsed_intron') {
-    return (
-      <GenecDNA
-        exons={exons}
-        cds={cds}
-        sequence={sequence}
-        utr={utr}
-        includeIntrons
-        collapseIntron
-      />
-    )
-  }
-
-  if (mode === 'gene_updownstream') {
-    return (
-      <GenecDNA
-        exons={exons}
-        cds={cds}
-        sequence={sequence}
-        utr={utr}
-        upstream={upstream}
-        downstream={downstream}
-        includeIntrons
-      />
-    )
-  }
-  return <div>Unknown type</div>
+  return (
+    <div data-testid="sequence_panel">
+      {mode === 'cds' ? (
+        <GeneCDS cds={cds} sequence={sequence} />
+      ) : mode === 'cdna' ? (
+        // utr's were supplied, no inference needed
+        <GenecDNA exons={exons} cds={cds} utr={utr} sequence={sequence} />
+      ) : mode === 'protein' ? (
+        <GeneProtein cds={cds} codonTable={codonTable} sequence={sequence} />
+      ) : mode === 'gene' ? (
+        <GenecDNA
+          exons={exons}
+          cds={cds}
+          utr={utr}
+          sequence={sequence}
+          includeIntrons
+        />
+      ) : mode === 'gene_collapsed_intron' ? (
+        <GenecDNA
+          exons={exons}
+          cds={cds}
+          sequence={sequence}
+          utr={utr}
+          includeIntrons
+          collapseIntron
+        />
+      ) : mode === 'gene_updownstream' ? (
+        <GenecDNA
+          exons={exons}
+          cds={cds}
+          sequence={sequence}
+          utr={utr}
+          upstream={upstream}
+          downstream={downstream}
+          includeIntrons
+        />
+      ) : (
+        <div>Unknown type</div>
+      )}
+    </div>
+  )
 }
 
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
