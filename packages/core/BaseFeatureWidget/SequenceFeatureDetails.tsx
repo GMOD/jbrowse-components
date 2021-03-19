@@ -317,8 +317,9 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
 
   useEffect(() => {
+    let finished = false
     if (!model) {
-      return
+      return () => {}
     }
     const { assemblyManager, rpcManager } = getSession(model)
     const { assemblyNames } = model.view || { assemblyNames: [] }
@@ -355,11 +356,17 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         const seq = await fetchSeq(start, end, ref)
         const upstream = await fetchSeq(Math.max(0, start - 500), start, ref)
         const downstream = await fetchSeq(end, end + 500, ref)
-        setSequence({ seq, upstream, downstream })
+        if (!finished) {
+          setSequence({ seq, upstream, downstream })
+        }
       } catch (e) {
         setError(e)
       }
     })()
+
+    return () => {
+      finished = true
+    }
   }, [feature, model])
 
   const loading = !sequence
@@ -372,11 +379,13 @@ export default function SequenceFeatureDetails(props: BaseProps) {
       >
         {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
         {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene with introns</MenuItem>
+        <MenuItem value="gene">Gene w/ introns</MenuItem>
         <MenuItem value="gene_collapsed_intron">
-          Gene w/ +/- 10bp of intron
+          Gene w/ 10bp of intron
         </MenuItem>
-        <MenuItem value="gene_updownstream">Gene +/- 500bp upstream</MenuItem>
+        <MenuItem value="gene_updownstream">
+          Gene w/ 500bp up+down stream
+        </MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
       <div data-testid="feature_sequence" style={{ display: 'inline' }}>
