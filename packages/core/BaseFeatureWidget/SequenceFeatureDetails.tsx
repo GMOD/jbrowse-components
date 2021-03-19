@@ -80,6 +80,7 @@ function GeneProtein(props: {
     // use & symbol for undefined codon, or partial slice
     protein += codonTable[str.slice(i, i + 3)] || '&'
   }
+
   return (
     <div
       style={{
@@ -203,8 +204,9 @@ export function SequencePanel(props: {
 }) {
   const { feature, mode } = props
   let {
-    sequence: { seq: sequence, upstream, downstream },
+    sequence: { seq: sequence, upstream = '', downstream = '' },
   } = props
+
   const { subfeatures } = feature
   const codonTable = generateCodonTable(defaultCodonTable)
 

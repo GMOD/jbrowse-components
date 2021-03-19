@@ -26,14 +26,14 @@ test('test using the sequence feature panel', () => {
     <SequencePanel
       sequence={{ seq: dna }}
       mode="protein"
-      feature={feature.data}
+      feature={feature.subfeatures[0]}
     />,
   )
 
   const element = getByTestId('sequence_panel')
-  expect(element).toMatchSnapshot()
   expect(1).toEqual(1)
 
   // http://m.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000116544;r=1:34865436-34929650
-  expect(element.textContent).toEqual(peptide)
+  // with stop codon on the end
+  expect(element.textContent).toEqual(`${peptide}*`)
 })
