@@ -297,8 +297,8 @@ function GenecDNA(props: {
   sequence: string
   upstream?: string
   downstream?: string
-  includeIntrons: boolean
-  collapseIntron: boolean
+  includeIntrons?: boolean
+  collapseIntron?: boolean
 }) {
   const {
     utr,
@@ -310,10 +310,9 @@ function GenecDNA(props: {
     includeIntrons,
     collapseIntron,
   } = props
-  const firstCDS = cds[0]
-  const lastCDS = cds[cds.length - 1]
-  const fiveUTRs = utr.filter(elt => elt.end <= firstCDS.start)
-  const threeUTRs = utr.filter(elt => elt.start >= lastCDS.end)
+  const chunks = cds.length
+    ? [...cds, ...utr].sort((a, b) => a.start - b.start)
+    : exons
   return (
     <>
       {upstream ? (
@@ -326,23 +325,16 @@ function GenecDNA(props: {
           {upstream}
         </div>
       ) : null}
-      <div
-        style={{
-          display: 'inline',
-          backgroundColor: utrColor,
-        }}
-      >
-        {fiveUTRs.map(c => sequence.slice(c.start, c.end)).join('')}
-      </div>
+
       <>
-        {(cds.length ? cds : exons).map((chunk, index) => {
-          const intron = sequence.slice(chunk.end, cds[index + 1]?.start)
+        {chunks.map((chunk, index) => {
+          const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
           return (
             <>
               <div
                 style={{
                   display: 'inline',
-                  backgroundColor: cdsColor,
+                  backgroundColor: chunk.type === 'CDS' ? cdsColor : utrColor,
                 }}
               >
                 {sequence.slice(chunk.start, chunk.end)}
@@ -363,15 +355,6 @@ function GenecDNA(props: {
           )
         })}
       </>
-
-      <div
-        style={{
-          display: 'inline',
-          backgroundColor: utrColor,
-        }}
-      >
-        {threeUTRs.map(c => sequence.slice(c.start, c.end)).join('')}
-      </div>
 
       {downstream ? (
         <div
@@ -452,10 +435,15 @@ function SequencePanel(props: {
   if (!utr.length && cds.length) {
     utr = calculateUTRs(cds, exons)
   }
+
   if (feature.strand === -1) {
-    sequence = revcom(sequence)
-    upstream = revcom(downstream)
-    downstream = revcom(upstream)
+    // doing this in a single assignment is needed because downstream and
+    // upstream are swapped so this avoids a temp variable
+    ;[sequence, upstream, downstream] = [
+      revcom(sequence),
+      revcom(downstream),
+      revcom(upstream),
+    ]
     cds = revlist(cds, sequence.length)
     exons = revlist(exons, sequence.length)
     utr = revlist(utr, sequence.length)
