@@ -139,18 +139,14 @@ const FieldName = ({
 }) => {
   const classes = useStyles()
   const val = (prefix ? `${prefix}.` : '') + name
-  return (
-    <>
-      {description ? (
-        <Tooltip title={description} placement="left">
-          <div className={clsx(classes.fieldDescription, classes.fieldName)}>
-            {val}
-          </div>
-        </Tooltip>
-      ) : (
-        <div className={classes.fieldName}>{val}</div>
-      )}
-    </>
+  return description ? (
+    <Tooltip title={description} placement="left">
+      <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+        {val}
+      </div>
+    </Tooltip>
+  ) : (
+    <div className={classes.fieldName}>{val}</div>
   )
 }
 
@@ -223,12 +219,8 @@ interface BaseProps extends BaseCardProps {
   model?: any
 }
 
-function stitch(subfeats: any, sequence: string) {
-  return subfeats
-    .map((sub: any) => {
-      return sequence.slice(sub.start, sub.end)
-    })
-    .join('')
+function stitch(subfeats: Feat[], sequence: string) {
+  return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
 }
 
 // filter if they have the same ID
@@ -253,6 +245,274 @@ function revlist(list: Feat[], seqlen: number) {
     .sort((a, b) => a.start - b.start)
 }
 
+const cdsColor = 'rgba(150,150,0,0.3)'
+const utrColor = 'rgba(0,150,150,0.3)'
+const proteinColor = 'rgba(150,0,150,0.3)'
+const intronColor = 'rgba(200,200,200,0.3)'
+const updownstreamColor = 'rgba(120,0,0,0.3)'
+
+function GeneCDS(props: { cds: Feat[]; sequence: string }) {
+  const { cds, sequence } = props
+
+  return (
+    <div
+      style={{
+        display: 'inline',
+        backgroundColor: cdsColor,
+      }}
+    >
+      {stitch(cds, sequence)}
+    </div>
+  )
+}
+
+function GeneProtein(props: {
+  cds: Feat[]
+  sequence: string
+  codonTable: any
+}) {
+  const { cds, sequence, codonTable } = props
+  const str = stitch(cds, sequence)
+  let protein = ''
+  for (let i = 0; i < str.length; i += 3) {
+    // use & symbol for undefined codon, or partial slice
+    protein += codonTable[str.slice(i, i + 3)] || '&'
+  }
+  return (
+    <div
+      style={{
+        display: 'inline',
+        backgroundColor: proteinColor,
+      }}
+    >
+      {protein}
+    </div>
+  )
+}
+
+function GenecDNA(props: {
+  utr: Feat[]
+  cds: Feat[]
+  exons: Feat[]
+  sequence: string
+  upstream?: string
+  downstream?: string
+  includeIntrons: boolean
+  collapseIntron: boolean
+}) {
+  const {
+    utr,
+    cds,
+    exons,
+    sequence,
+    upstream,
+    downstream,
+    includeIntrons,
+    collapseIntron,
+  } = props
+  const firstCDS = cds[0]
+  const lastCDS = cds[cds.length - 1]
+  const fiveUTRs = utr.filter(elt => elt.end <= firstCDS.start)
+  const threeUTRs = utr.filter(elt => elt.start >= lastCDS.end)
+  return (
+    <>
+      {upstream ? (
+        <div
+          style={{
+            display: 'inline',
+            backgroundColor: updownstreamColor,
+          }}
+        >
+          {upstream}
+        </div>
+      ) : null}
+      <div
+        style={{
+          display: 'inline',
+          backgroundColor: utrColor,
+        }}
+      >
+        {fiveUTRs.map(c => sequence.slice(c.start, c.end)).join('')}
+      </div>
+      <>
+        {(cds.length ? cds : exons).map((chunk, index) => {
+          const intron = sequence.slice(chunk.end, cds[index + 1]?.start)
+          return (
+            <>
+              <div
+                style={{
+                  display: 'inline',
+                  backgroundColor: cdsColor,
+                }}
+              >
+                {sequence.slice(chunk.start, chunk.end)}
+              </div>
+              {includeIntrons ? (
+                <div
+                  style={{
+                    display: 'inline',
+                    backgroundColor: intronColor,
+                  }}
+                >
+                  {collapseIntron && intron.length > 20
+                    ? `${intron.slice(0, 10)}...${intron.slice(-10)}`
+                    : intron}
+                </div>
+              ) : null}
+            </>
+          )
+        })}
+      </>
+
+      <div
+        style={{
+          display: 'inline',
+          backgroundColor: utrColor,
+        }}
+      >
+        {threeUTRs.map(c => sequence.slice(c.start, c.end)).join('')}
+      </div>
+
+      {downstream ? (
+        <div
+          style={{
+            display: 'inline',
+            backgroundColor: updownstreamColor,
+          }}
+        >
+          {downstream}
+        </div>
+      ) : null}
+    </>
+  )
+}
+
+// calculates UTRs using impliedUTRs logic
+function calculateUTRs(cds: Feat[], exons: Feat[]) {
+  const firstCds = cds[0]
+  const lastCds = cds[cds.length - 1]
+  const firstCdsIdx = exons.findIndex(
+    exon => exon.end >= firstCds.start && exon.start <= firstCds.start,
+  )
+  const lastCdsIdx = exons.findIndex(
+    exon => exon.end >= lastCds.end && exon.start <= lastCds.end,
+  )
+  const lastCdsExon = exons[lastCdsIdx]
+  const firstCdsExon = exons[firstCdsIdx]
+
+  const fiveUTRs = [
+    ...exons.slice(0, firstCdsIdx),
+    { start: firstCdsExon.start, end: firstCds.start },
+  ].map(elt => ({ ...elt, type: 'five_prime_UTR' }))
+
+  const threeUTRs = [
+    { start: lastCds.end, end: lastCdsExon.end },
+    ...exons.slice(lastCdsIdx),
+  ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
+
+  return [...fiveUTRs, ...threeUTRs]
+}
+
+function SequencePanel(props: {
+  sequence: { seq: string; upstream: string; downstream: string }
+  feature: Feat & { strand: number; subfeatures: Feat[] }
+  mode: string
+}) {
+  const { feature, mode } = props
+  let {
+    sequence: { seq: sequence, upstream, downstream },
+  } = props
+  const { subfeatures } = feature
+  const codonTable = generateCodonTable(defaultCodonTable)
+
+  const children = subfeatures
+    .sort((a, b) => a.start - b.start)
+    .map(sub => {
+      return {
+        ...sub,
+        start: sub.start - feature.start,
+        end: sub.end - feature.start,
+      }
+    })
+
+  // we filter duplicate entries in cds and exon lists duplicate entries may
+  // be rare but was seen in Gencode v36 track NCList, likely a bug on GFF3
+  // or probably worth ignoring here (produces broken protein translations if
+  // included)
+  //
+  // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
+  // transcript ENST00000445597.6
+  //
+  // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
+
+  let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
+  let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
+  let exons = dedupe(children.filter(sub => sub.type === 'exon'))
+
+  if (!utr.length && cds.length) {
+    utr = calculateUTRs(cds, exons)
+  }
+  if (feature.strand === -1) {
+    sequence = revcom(sequence)
+    upstream = revcom(downstream)
+    downstream = revcom(upstream)
+    cds = revlist(cds, sequence.length)
+    exons = revlist(exons, sequence.length)
+    utr = revlist(utr, sequence.length)
+  }
+
+  if (mode === 'cds') {
+    return <GeneCDS cds={cds} sequence={sequence} />
+  }
+  if (mode === 'cdna') {
+    // utr's were supplied, no inference needed
+    return <GenecDNA exons={exons} cds={cds} utr={utr} sequence={sequence} />
+  }
+  if (mode === 'protein') {
+    return <GeneProtein cds={cds} codonTable={codonTable} sequence={sequence} />
+  }
+
+  if (mode === 'gene') {
+    return (
+      <GenecDNA
+        exons={exons}
+        cds={cds}
+        utr={utr}
+        sequence={sequence}
+        includeIntrons
+      />
+    )
+  }
+
+  if (mode === 'gene_collapsed_intron') {
+    return (
+      <GenecDNA
+        exons={exons}
+        cds={cds}
+        sequence={sequence}
+        utr={utr}
+        includeIntrons
+        collapseIntron
+      />
+    )
+  }
+
+  if (mode === 'gene_updownstream') {
+    return (
+      <GenecDNA
+        exons={exons}
+        cds={cds}
+        sequence={sequence}
+        utr={utr}
+        upstream={upstream}
+        downstream={downstream}
+        includeIntrons
+      />
+    )
+  }
+  return <div>Unknown type</div>
+}
+
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -260,232 +520,50 @@ function SequenceFeatureDetails(props: BaseProps) {
   const { model, feature } = props
   const { assemblyManager, rpcManager } = getSession(model)
   const { assemblyNames } = model.view
-  const [preseq, setSequence] = useState<string>()
-  const [error, setError] = useState<string>()
-  const [assemblyName] = assemblyNames
-  const subfeatures = feature.subfeatures as {
-    start: number
-    end: number
-    type: string
-  }[]
+  const subfeatures = feature.subfeatures as Feat[]
   const hasCDS = subfeatures.find(sub => sub.type === 'CDS')
+
+  const [sequence, setSequence] = useState<{
+    seq: string
+    upstream: string
+    downstream: string
+  }>()
+  const [error, setError] = useState<string>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
-  const loading = !preseq
-  const codonTable = generateCodonTable(defaultCodonTable)
+  const [assemblyName] = assemblyNames
+  const loading = !sequence
 
   useEffect(() => {
-    ;(async () => {
+    async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!assembly) {
-        setError('assembly not found')
-        return
+        throw new Error('assembly not found')
       }
       const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
       const sessionId = 'getSequence'
-      const region = {
-        start: feature.start,
-        end: feature.end,
-        refName: assembly?.getCanonicalRefName(feature.refName),
-      }
-
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig,
-        region,
         sessionId,
+        region: { start, end, refName: assembly?.getCanonicalRefName(refName) },
       })
       const [feat] = feats as Feature[]
       if (!feat) {
-        setError('sequence not found')
-        return
+        throw new Error('sequence not found')
       }
-
-      setSequence(feat.get('seq'))
+      return feat.get('seq') as string
+    }
+    ;(async () => {
+      try {
+        const { start, end, refName: ref } = feature
+        const seq = await fetchSeq(start, end, ref)
+        const upstream = await fetchSeq(Math.max(0, start - 500), start, ref)
+        const downstream = await fetchSeq(end, end + 500, ref)
+        setSequence({ seq, upstream, downstream })
+      } catch (e) {
+        setError(e)
+      }
     })()
   }, [feature, assemblyManager, rpcManager, assemblyName])
-
-  const text: React.ReactNode[] = []
-  if (preseq && feature) {
-    const children = subfeatures
-      .sort((a, b) => a.start - b.start)
-      .map(sub => {
-        return {
-          ...sub,
-          start: sub.start - feature.start,
-          end: sub.end - feature.start,
-        }
-      })
-
-    const cdsColor = 'rgba(150,150,0,0.3)'
-    const utrColor = 'rgba(0,150,150,0.3)'
-    const proteinColor = 'rgba(150,0,150,0.3)'
-
-    // filter duplicate entries in cds and exon lists duplicate entries may be
-    // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
-    // probably worth ignoring here (produces broken protein translations if
-    // included)
-    // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
-    // transcript ENST00000445597.6
-    // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
-
-    let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
-
-    let cdsAndUtr = dedupe(
-      children.filter(sub => sub.type === 'CDS' || sub.type.match(/utr/i)),
-    )
-
-    let exons = dedupe(children.filter(sub => sub.type === 'exon'))
-    const revstrand = feature.strand === -1
-    const sequence = revstrand ? revcom(preseq) : preseq
-    const seqlen = sequence.length
-    if (revstrand) {
-      cds = revlist(cds, seqlen)
-      exons = revlist(exons, seqlen)
-      cdsAndUtr = revlist(cdsAndUtr, seqlen)
-    }
-
-    if (mode === 'cds') {
-      text.push(
-        <div
-          key={`cds-${feature.start}-${feature.end}`}
-          style={{
-            display: 'inline',
-            backgroundColor: cdsColor,
-          }}
-        >
-          {stitch(cds, sequence)}
-        </div>,
-      )
-    } else if (mode === 'cdna') {
-      // use "impliedUTRs" type mode
-      if (cds.length && exons.length) {
-        const firstCds = cds[0]
-        const lastCds = cds[cds.length - 1]
-        const firstCdsIdx = exons.findIndex(exon => {
-          return exon.end >= firstCds.start && exon.start <= firstCds.start
-        })
-        const lastCdsIdx = exons.findIndex(exon => {
-          return exon.end >= lastCds.end && exon.start <= lastCds.end
-        })
-        const lastCdsExon = exons[lastCdsIdx]
-        const firstCdsExon = exons[firstCdsIdx]
-
-        // logic: there can be "UTR exons" that are just UTRs, so we stitch
-        // those together until we get to a CDS that overlaps and exon
-        text.push(
-          <div
-            key="5prime_utr"
-            style={{
-              display: 'inline',
-              backgroundColor: utrColor,
-            }}
-          >
-            {stitch(exons.slice(0, firstCdsIdx), sequence)}
-            {sequence.slice(firstCdsExon.start, firstCds.start)}
-          </div>,
-        )
-
-        text.push(
-          <div
-            key={`cds-${feature.start}-${feature.end}`}
-            style={{
-              display: 'inline',
-              backgroundColor: cdsColor,
-            }}
-          >
-            {stitch(cds, sequence)}
-          </div>,
-        )
-
-        text.push(
-          <div
-            key="3prime_utr"
-            style={{
-              display: 'inline',
-              backgroundColor: utrColor,
-            }}
-          >
-            {sequence.slice(lastCds.end, lastCdsExon.end)}
-            {stitch(exons.slice(lastCdsIdx), sequence)}
-          </div>,
-        )
-      }
-      // use "impliedUTRs" type mode
-      else if (cdsAndUtr.length) {
-        const fiveUTR = cdsAndUtr[0]
-        const threeUTR = cdsAndUtr[cdsAndUtr.length - 1]
-        text.push(
-          <div
-            key="5prime_utr"
-            style={{
-              display: 'inline',
-              backgroundColor: utrColor,
-            }}
-          >
-            {sequence.slice(fiveUTR.start, fiveUTR.end)}
-          </div>,
-        )
-        const cdsSequence = cdsAndUtr
-          .slice(1, cdsAndUtr.length - 2)
-          .map(chunk => sequence.slice(chunk.start, chunk.end))
-          .join('')
-        text.push(
-          <div
-            key="5prime_utr"
-            style={{
-              display: 'inline',
-              backgroundColor: cdsColor,
-            }}
-          >
-            {cdsSequence}
-          </div>,
-        )
-        text.push(
-          <div
-            key="5prime_utr"
-            style={{
-              display: 'inline',
-              backgroundColor: utrColor,
-            }}
-          >
-            {sequence.slice(threeUTR.start, threeUTR.end)}
-          </div>,
-        )
-      }
-      // no CDS, probably a pseudogene, color whole thing as "UTR"
-      else {
-        const cdna = stitch(exons, sequence)
-        text.push(
-          <div
-            key={cdna}
-            style={{
-              display: 'inline',
-              backgroundColor: utrColor,
-            }}
-          >
-            {cdna}
-          </div>,
-        )
-      }
-    } else if (mode === 'protein') {
-      const str = stitch(cds, sequence)
-      let protein = ''
-      for (let i = 0; i < str.length; i += 3) {
-        // use & symbol for undefined codon, or partial slice
-        protein += codonTable[str.slice(i, i + 3)] || '&'
-      }
-      text.push(
-        <div
-          key={protein}
-          style={{
-            display: 'inline',
-            backgroundColor: proteinColor,
-          }}
-        >
-          {protein}
-        </div>,
-      )
-    }
-  }
 
   return (
     <div>
@@ -495,6 +573,11 @@ function SequenceFeatureDetails(props: BaseProps) {
       >
         {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
         {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+        <MenuItem value="gene">Gene with introns</MenuItem>
+        <MenuItem value="gene_collapsed_intron">
+          Gene w/ +/- 10bp of intron
+        </MenuItem>
+        <MenuItem value="gene_updownstream">Gene +/- 500bp upstream</MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
       <div style={{ display: 'inline' }}>
@@ -502,10 +585,12 @@ function SequenceFeatureDetails(props: BaseProps) {
           <Typography color="error">{error}</Typography>
         ) : loading ? (
           <div>Loading gene sequence...</div>
-        ) : (
+        ) : sequence ? (
           <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
-            {text}
+            <SequencePanel feature={feature} mode={mode} sequence={sequence} />
           </div>
+        ) : (
+          <div>No sequence found</div>
         )}
       </div>
     </div>
