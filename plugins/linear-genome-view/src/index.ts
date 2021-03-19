@@ -124,7 +124,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'BaseFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: baseFeatureWidgetConfigSchema,
           stateModel: baseFeatureWidgetStateModelFactory(pluginManager),
           ReactComponent: BaseFeatureWidgetReactComponent,
