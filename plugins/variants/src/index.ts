@@ -81,7 +81,7 @@ export default class VariantsPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'VariantFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: variantFeatureWidgetConfigSchema,
           stateModel: variantFeatureWidgetStateModelFactory(pluginManager),
           ReactComponent: VariantFeatureWidgetReactComponent,

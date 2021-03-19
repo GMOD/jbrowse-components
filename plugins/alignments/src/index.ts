@@ -124,7 +124,7 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'AlignmentsFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
           ReactComponent: AlignmentsFeatureDetailReactComponent,
