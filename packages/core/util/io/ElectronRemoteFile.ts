@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-underscore-dangle */
+/* eslint-disable no-underscore-dangle */
 import uri2path from 'file-uri-to-path'
 import {
   Fetcher,
@@ -15,6 +15,8 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 class ElectronRemoteFileError extends Error {

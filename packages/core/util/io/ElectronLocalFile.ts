@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { GenericFilehandle, FilehandleOptions } from 'generic-filehandle'
 
 declare global {
@@ -6,6 +5,8 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 type PathLike = import('fs').PathLike
