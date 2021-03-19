@@ -118,7 +118,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -223,7 +223,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -274,7 +274,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('geneName2')"
+              "description": "jexl:get(feature,'geneName2')"
             }
           }
         }

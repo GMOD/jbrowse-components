@@ -610,7 +610,7 @@ export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    defaultValue: `jexl:get(feature,'strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
     contextVariable: ['feature'],
   },
   displayMode: {
@@ -704,7 +704,7 @@ callback for color, it might look like this
       "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
       "renderer": {
         "type": "SvgFeatureRenderer",
-        "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+        "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
       }
     }
   ]
