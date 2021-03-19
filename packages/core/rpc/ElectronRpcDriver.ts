@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop,@typescript-eslint/no-explicit-any */
+/* eslint-disable no-await-in-loop */
 import shortid from 'shortid'
 import BaseRpcDriver from './BaseRpcDriver'
 import PluginManager from '../PluginManager'
@@ -13,6 +13,7 @@ declare global {
   }
 }
 const { electronBetterIpc = {}, electron } =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   typeof window !== 'undefined' ? window : ({} as any)
 
 async function wait(ms: number) {
