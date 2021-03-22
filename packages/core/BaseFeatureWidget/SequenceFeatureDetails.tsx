@@ -1,6 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { Select, MenuItem, Typography } from '@material-ui/core'
+import { useInView } from 'react-intersection-observer'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -308,6 +309,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   const { subfeatures } = parentFeature
   const hasCDS = subfeatures?.find(sub => sub.type === 'CDS')
 
+  const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<{
     seq: string
     upstream: string
@@ -318,7 +320,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
 
   useEffect(() => {
     let finished = false
-    if (!model) {
+    if (!model || !inView) {
       return () => {}
     }
     const { assemblyManager, rpcManager } = getSession(model)
@@ -345,17 +347,17 @@ export default function SequenceFeatureDetails(props: BaseProps) {
     ;(async () => {
       try {
         const {
-          start,
-          end,
-          refName: ref,
+          start: s,
+          end: e,
+          refName,
         } = feature as SimpleFeatureSerialized & {
           refName: string
           start: number
           end: number
         }
-        const seq = await fetchSeq(start, end, ref)
-        const upstream = await fetchSeq(Math.max(0, start - 500), start, ref)
-        const downstream = await fetchSeq(end, end + 500, ref)
+        const seq = await fetchSeq(s, e, refName)
+        const upstream = await fetchSeq(Math.max(0, s - 500), s, refName)
+        const downstream = await fetchSeq(e, e + 500, refName)
         if (!finished) {
           setSequence({ seq, upstream, downstream })
         }
@@ -367,12 +369,12 @@ export default function SequenceFeatureDetails(props: BaseProps) {
     return () => {
       finished = true
     }
-  }, [feature, model])
+  }, [feature, inView, model])
 
   const loading = !sequence
 
   return (
-    <div>
+    <div ref={ref}>
       <Select
         value={mode}
         onChange={event => setMode(event.target.value as string)}
