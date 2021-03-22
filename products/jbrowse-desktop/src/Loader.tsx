@@ -97,11 +97,14 @@ export default function Loader({
       const JBrowseRootModel = JBrowseRootModelFactory(pm)
       try {
         if (configSnapshot) {
-          const rootModel = JBrowseRootModel.create({
-            jbrowse: configSnapshot,
-            assemblyManager: {},
-            version: packagedef.version,
-          })
+          const rootModel = JBrowseRootModel.create(
+            {
+              jbrowse: configSnapshot,
+              assemblyManager: {},
+              version: packagedef.version,
+            },
+            { pluginManager: pm },
+          )
           rootModel.jbrowse.configuration.rpc.addDriverConfig(
             'ElectronRpcDriver',
             { type: 'ElectronRpcDriver' },

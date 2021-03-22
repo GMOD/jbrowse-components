@@ -21,6 +21,7 @@ export default class extends Plugin {
           name: 'LollipopRenderer',
           ReactComponent: LollipopRendererReactComponent,
           configSchema: lollipopRendererConfigSchema,
+          pluginManager,
         }),
     )
 

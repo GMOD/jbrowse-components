@@ -1,4 +1,4 @@
-import { stringToFunction } from '@jbrowse/core/util/functionStrings'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
 import { SnapshotIn, Instance, addDisposer } from 'mobx-state-tree'
@@ -30,10 +30,13 @@ export default (pluginManager: PluginManager) => {
       derivationFunctionText: types.maybe(types.string),
     })
     .views(self => ({
-      get func() {
+      get expr() {
         if (self.isDerived) {
-          // compile this as a function
-          return stringToFunction(String(self.derivationFunctionText))
+          // compile this as a jexl expression
+          return stringToJexlExpression(
+            String(self.derivationFunctionText),
+            pluginManager.jexl,
+          )
         }
         return undefined
       },

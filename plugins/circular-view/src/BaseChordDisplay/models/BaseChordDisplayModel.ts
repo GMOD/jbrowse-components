@@ -15,7 +15,7 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { Region } from '@jbrowse/core/util/types'
-import { getParent, isAlive, types } from 'mobx-state-tree'
+import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import renderReactionFactory from './renderReaction'
 import { CircularViewModel } from '../../CircularView'
@@ -43,10 +43,11 @@ export const BaseChordDisplayModel = types
     }
   })
   .actions(self => {
-    const { pluginManager } = getSession(self)
+    const { pluginManager } = getEnv(self)
+    const track = self
     return {
       onChordClick(feature: Feature) {
-        getConf(self, 'onChordClick', [feature, self, pluginManager])
+        getConf(self, 'onChordClick', { feature, track, pluginManager })
       },
     }
   })
@@ -92,7 +93,7 @@ export const BaseChordDisplayModel = types
      */
     get rendererType() {
       const display = self
-      const { pluginManager } = getSession(self)
+      const { pluginManager } = getEnv(self)
       const ThisRendererType = pluginManager.getRendererType(
         self.rendererTypeName,
       )
@@ -181,7 +182,7 @@ export const BaseChordDisplayModel = types
     },
   }))
   .actions(self => {
-    const { pluginManager } = getSession(self)
+    const { pluginManager } = getEnv(self)
     const {
       renderReactionData,
       renderReactionEffect,

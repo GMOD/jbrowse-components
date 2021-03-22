@@ -16,6 +16,7 @@ export default class extends Plugin {
           name: 'ProteinReferenceSequenceTrackRenderer',
           ReactComponent: ProteinReferenceSequenceTrackRendererReactComponent,
           configSchema: proteinReferenceSequenceTrackRendererConfigSchema,
+          pluginManager,
         }),
     )
   }

@@ -33,7 +33,7 @@ export default class extends WiggleBaseRenderer {
       readConfObject(config, 'color') === '#f0f'
         ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
           feature => 'grey'
-        : feature => readConfObject(config, 'color', [feature])
+        : feature => readConfObject(config, 'color', { feature })
 
     let lastVal
     for (const feature of features.values()) {

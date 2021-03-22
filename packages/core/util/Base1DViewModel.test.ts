@@ -33,8 +33,8 @@ test('Able to set bpPerPx, width and calculate widths', () => {
   expect(model.totalBp).toEqual(42400)
   // 40000 + (3000 - 600 = 2400) = 42400 / 1 (bpPerPx) = 42400
   expect(model.displayedRegionsTotalPx).toEqual(42400)
-  expect(model.interRegionPaddingWidth).toEqual(2)
-  expect(model.minimumBlockWidth).toEqual(3)
+  expect(model.interRegionPaddingWidth).toEqual(0)
+  expect(model.minimumBlockWidth).toEqual(0)
 })
 
 test('Able to set and showAll Regions', () => {

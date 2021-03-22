@@ -125,6 +125,7 @@ export default class SequencePlugin extends Plugin {
           name: 'DivSequenceRenderer',
           ReactComponent: DivSequenceRendererReactComponent,
           configSchema: divSequenceRendererConfigSchema,
+          pluginManager,
         }),
     )
   }

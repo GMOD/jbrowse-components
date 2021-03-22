@@ -63,7 +63,6 @@ export default function sessionModelFactory(
       sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .volatile((/* self */) => ({
-      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what

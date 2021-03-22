@@ -168,10 +168,11 @@ export default abstract class BaseRpcDriver {
     signalId: number,
   ) {
     const worker = this.getWorker(sessionId, pluginManager)
-    worker.call(functionName, signalId, {
-      timeout: 1000000,
-      rpcDriverClassName: this.name,
-    })
+    worker.call(
+      functionName,
+      { signalId },
+      { timeout: 1000000, rpcDriverClassName: this.name },
+    )
   }
 
   createWorkerPool(): LazyWorker[] {

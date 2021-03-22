@@ -13,20 +13,11 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
-  loadingMessage: {
-    padding: theme.spacing(5),
-  },
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
-  },
-  dialogContent: {
-    width: '80em',
-  },
-  textAreaFont: {
-    fontFamily: 'Courier New',
   },
 }))
 

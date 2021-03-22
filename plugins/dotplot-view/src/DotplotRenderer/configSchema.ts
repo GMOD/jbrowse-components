@@ -14,7 +14,7 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of each feature in a synteny',
       defaultValue: 'black',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     lineWidth: {
       type: 'number',

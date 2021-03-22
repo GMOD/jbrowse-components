@@ -1,4 +1,5 @@
 import PluginManager from '../PluginManager'
+import { checkAbortSignal } from '../util'
 import BaseRpcDriver, { watchWorker, WorkerHandle } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import { ConfigurationSchema } from '../configuration'
@@ -19,7 +20,11 @@ class MockWorkerHandle implements WorkerHandle {
   async call(
     name: string,
     _args = [],
-    opts: { timeout: number; rpcDriverClassName: string } = {
+    opts: {
+      timeout: number
+      signal?: AbortSignal
+      rpcDriverClassName: string
+    } = {
       timeout: 3000,
       rpcDriverClassName: 'MockRpcDriver',
     },
@@ -27,15 +32,14 @@ class MockWorkerHandle implements WorkerHandle {
     const start = Date.now()
     if (name === 'ping') {
       while (this.busy) {
-        if (opts.timeout < Date.now() - start) {
+        if (opts.timeout < +Date.now() - start) {
           throw new Error('timeout')
         }
 
         // eslint-disable-next-line no-await-in-loop
         await timeout(50)
       }
-    }
-    if (name === 'doWorkShortPingTime') {
+    } else if (name === 'doWorkShortPingTime') {
       this.busy = true
       await timeout(50)
       this.busy = false
@@ -47,26 +51,25 @@ class MockWorkerHandle implements WorkerHandle {
       this.busy = true
       await timeout(50)
       this.busy = false
-    }
-
-    if (name === 'doWorkLongPingTime') {
+    } else if (name === 'doWorkLongPingTime') {
       this.busy = true
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = false
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = true
-      await timeout(500)
+      await timeout(1000)
+      checkAbortSignal(opts.signal)
       this.busy = false
-    }
-    if (name === 'MockRenderTimeout') {
+    } else if (name === 'MockRenderTimeout') {
       this.busy = true
       await timeout(10000)
       this.busy = false
-    }
-
-    if (name === 'MockRenderShort') {
+    } else if (name === 'MockRenderShort') {
       this.busy = true
       await timeout(100)
+      checkAbortSignal(opts.signal)
       this.busy = false
     }
   }
@@ -74,12 +77,34 @@ class MockWorkerHandle implements WorkerHandle {
 test('watch worker with long ping, generates timeout', async () => {
   const worker = new MockWorkerHandle()
 
+  expect.assertions(1)
   try {
     const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
-    const result = worker.call('doWorkLongPingTime')
+    const result = worker.call('doWorkLongPingTime', undefined, {
+      timeout: 100,
+      rpcDriverClassName: 'MockRpcDriver',
+    })
     await Promise.race([result, workerWatcher])
   } catch (e) {
     expect(e.message).toMatch(/timeout/)
+  }
+})
+
+test('test worker abort', async () => {
+  const worker = new MockWorkerHandle()
+  expect.assertions(1)
+
+  try {
+    const controller = new AbortController()
+    const resultP = worker.call('doWorkLongPingTime', undefined, {
+      signal: controller.signal,
+      timeout: 2000,
+      rpcDriverClassName: 'MockRpcDriver',
+    })
+    controller.abort()
+    await resultP
+  } catch (e) {
+    expect(e.message).toMatch(/abort/)
   }
 })
 
@@ -130,4 +155,29 @@ test('test RPC driver operation timeout and worker replace', async () => {
     expect(e.message).toMatch(/operation timed out/)
   }
   await driver.call(pluginManager, 'sessionId', 'MockRenderShort', {}, {})
+})
+
+test('remote abort', async () => {
+  console.warn = jest.fn()
+  expect.assertions(1)
+  const config = ConfigurationSchema('Mock', {}).create()
+  const driver = new MockRpcDriver({ config })
+  const pluginManager = new PluginManager()
+
+  pluginManager.addRpcMethod(() => new MockRendererShort(pluginManager))
+  pluginManager.createPluggableElements()
+  try {
+    const controller = new AbortController()
+    const resP = driver.call(
+      pluginManager,
+      'sessionId',
+      'MockRenderShort',
+      {},
+      { signal: controller.signal },
+    )
+    controller.abort()
+    await resP
+  } catch (e) {
+    expect(e.message).toMatch(/abort/)
+  }
 })

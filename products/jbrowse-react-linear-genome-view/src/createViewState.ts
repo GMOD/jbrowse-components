@@ -51,7 +51,7 @@ export default function createViewState(opts: ViewStateOptions) {
     assemblyManager: {},
     session: defaultSession,
   }
-  const stateTree = model.create(stateSnapshot)
+  const stateTree = model.create(stateSnapshot, { pluginManager })
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {

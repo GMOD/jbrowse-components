@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
+import { getParent, Instance, types, isRoot, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import { getConf } from '../../configuration'
 import { MenuItem } from '../../ui'
-import { getSession } from '../../util'
 import { getParentRenderProps } from '../../util/tracks'
 import { ElementId } from '../../util/types/mst'
 
@@ -23,7 +22,7 @@ export const BaseDisplay = types
       onHorizontalScroll?: Function
       blockState?: Record<string, any>
     }> {
-      const { pluginManager } = getSession(self)
+      const { pluginManager } = getEnv(self)
       const displayType = pluginManager.getDisplayType(self.type)
       return displayType.ReactComponent as React.FC<{
         model: typeof self
@@ -68,10 +67,8 @@ export const BaseDisplay = types
      * renderer
      */
     get rendererType() {
-      const session = getSession(self)
-      const RendererType = session.pluginManager.getRendererType(
-        self.rendererTypeName,
-      )
+      const { pluginManager } = getEnv(self)
+      const RendererType = pluginManager.getRendererType(self.rendererTypeName)
       if (!RendererType)
         throw new Error(`renderer "${self.rendererTypeName}" not found`)
       if (!RendererType.ReactComponent)

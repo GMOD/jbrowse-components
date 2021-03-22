@@ -19,6 +19,7 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
+import queryString from 'query-string'
 import shortid from 'shortid'
 import {
   writeAWSAnalytics,
@@ -40,7 +41,6 @@ import SessionWarningModal from './sessionWarningModal'
 import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
-  const s = window.location.search
   const links = [
     ['test_data/volvox/config.json', 'Volvox sample data'],
     ['test_data/config.json', 'Human basic'],
@@ -71,11 +71,20 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            {links.map(([link, name]) => (
-              <li key={name}>
-                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
-              </li>
-            ))}
+            {links.map(([link, name]) => {
+              const { href, search } = window.location
+              const { config, ...rest } = queryString.parse(search)
+              const root = href.split('?')[0]
+              const params = queryString.stringify({
+                ...rest,
+                config: link,
+              })
+              return (
+                <li key={name}>
+                  <a href={`${root}?${params}`}>{name}</a>
+                </li>
+              )
+            })}
           </ul>
         </>
       ) : (
@@ -270,12 +279,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -436,12 +440,15 @@ const Renderer = observer(
           )
 
           if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            const rootModel = JBrowseRootModel.create(
+              {
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              },
+              { pluginManager },
+            )
             rootModel.jbrowse.configuration.rpc.addDriverConfig(
               'WebWorkerRpcDriver',
               { type: 'WebWorkerRpcDriver' },

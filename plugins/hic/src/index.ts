@@ -9,6 +9,7 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import Color from 'color'
 import HicAdapterFactory from './HicAdapter'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
@@ -36,6 +37,7 @@ export default class HicPlugin extends Plugin {
           name: 'HicRenderer',
           ReactComponent: HicRendererReactComponent,
           configSchema: hicRendererConfigSchema,
+          pluginManager,
         }),
     )
     pluginManager.addTrackType(() => {
@@ -68,5 +70,15 @@ export default class HicPlugin extends Plugin {
         ReactComponent: BaseLinearDisplayComponent,
       })
     })
+  }
+
+  configure(pluginManager: PluginManager) {
+    pluginManager.jexl.addTransform('alpha', (color: Color, value: number) =>
+      color.alpha(value),
+    )
+    pluginManager.jexl.addTransform('hsl', (color: Color) => color.hsl())
+    pluginManager.jexl.addTransform('colorString', (color: Color) =>
+      color.string(),
+    )
   }
 }
