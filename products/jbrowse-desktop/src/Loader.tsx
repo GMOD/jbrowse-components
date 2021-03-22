@@ -103,7 +103,7 @@ export default function Loader({
               assemblyManager: {},
               version: packagedef.version,
             },
-            { pluginManager },
+            { pluginManager: pm },
           )
           // make some things available globally for testing
           // e.g. window.MODEL.views[0] in devtools
@@ -142,7 +142,7 @@ export default function Loader({
         console.error(e)
       }
     }
-  }, [plugins, configSnapshot, initialTimestamp, pluginManager])
+  }, [plugins, configSnapshot, initialTimestamp])
 
   if (!(configSnapshot && plugins && pluginManager) && !error) {
     return (
