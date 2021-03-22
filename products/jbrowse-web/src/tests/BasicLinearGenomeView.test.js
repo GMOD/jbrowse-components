@@ -67,7 +67,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const track = await findByTestId('rubberBand_controls')
+    const track = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
@@ -76,7 +80,7 @@ describe('valid file tests', () => {
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
-  })
+  }, 15000)
 
   it('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
     const pluginManager = getPluginManager()
