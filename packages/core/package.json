@@ -28,7 +28,7 @@
     "prepack": "yarn build",
     "build": "NODE_ENV=production babel . --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md CHANGELOG.md ../../LICENSE dist/ && tsc",
     "version": "standard-changelog && git add CHANGELOG.md",
-    "postpublish": "git push origin master --follow-tags"
+    "postpublish": "git push origin main --follow-tags"
   },
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",

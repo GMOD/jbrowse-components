@@ -130,7 +130,7 @@ users with the "Share" button
 The scale bars accept a click and drag action to select a region
 
 <!--
-https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
+https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
 -->
 
 ![](./img/rubberband.png)
