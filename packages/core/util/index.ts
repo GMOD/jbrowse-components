@@ -861,10 +861,12 @@ export const complement = (() => {
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
-  window.requestIdleCallback ||
-  (typeof jest === 'undefined'
-    ? (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb())
+  // eslint-disable-next-line no-nested-ternary
+  typeof jest === 'undefined'
+    ? typeof window !== 'undefined'
+      ? window.requestIdleCallback
+      : (cb: Function) => setTimeout(() => cb(), 1)
+    : (cb: Function) => cb()
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: string, fontSize = 10) {
