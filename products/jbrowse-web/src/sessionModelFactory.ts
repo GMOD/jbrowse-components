@@ -28,7 +28,6 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
@@ -95,6 +94,9 @@ export default function sessionModelFactory(
       },
       get rpcManager() {
         return getParent(self).jbrowse.rpcManager as RpcManager
+      },
+      get textSearchManager() {
+        return getParent(self).textSearchManager // may want to add type to this
       },
       get configuration() {
         return getParent(self).jbrowse.configuration

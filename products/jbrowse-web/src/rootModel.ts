@@ -1,34 +1,39 @@
 /* eslint curly:error*/
-import assemblyManagerFactory, {
-  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
-} from '@jbrowse/core/assemblyManager'
-import PluginManager from '@jbrowse/core/PluginManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
-import { AbstractSessionModel } from '@jbrowse/core/util'
-import AddIcon from '@material-ui/icons/Add'
-import SettingsIcon from '@material-ui/icons/Settings'
-import AppsIcon from '@material-ui/icons/Apps'
 import {
   addDisposer,
   cast,
   getSnapshot,
   getParent,
-  SnapshotIn,
-  types,
-  IAnyStateTreeNode,
-  Instance,
   getType,
+  getPropertyMembers,
+  getChildType,
+  IAnyStateTreeNode,
+  IAnyType,
+  Instance,
   isArrayType,
   isModelType,
   isReferenceType,
   isValidReference,
-  getPropertyMembers,
   isMapType,
-  getChildType,
-  IAnyType,
+  SnapshotIn,
+  types,
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
+// jbrowse
+import assemblyManagerFactory, {
+  assemblyConfigSchemas as AssemblyConfigSchemasFactory,
+} from '@jbrowse/core/assemblyManager'
+import PluginManager from '@jbrowse/core/PluginManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import TextSearchManagerF from '@jbrowse/core/TextSearch/TextSearchManager'
+import { AbstractSessionModel } from '@jbrowse/core/util'
+// material ui
+import { MenuItem } from '@jbrowse/core/ui'
+import AddIcon from '@material-ui/icons/Add'
+import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
+
+// other
 import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
@@ -109,6 +114,7 @@ export default function RootModel(
     assemblyConfigSchemasType,
     pluginManager,
   )
+  const TextSearchManager = pluginManager.load(TextSearchManagerF)
   return types
     .model('Root', {
       jbrowse: jbrowseWebFactory(
@@ -125,6 +131,7 @@ export default function RootModel(
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
+      textSearchManager: new TextSearchManager(),
       pluginManager,
       error: undefined as undefined | Error,
     }))
