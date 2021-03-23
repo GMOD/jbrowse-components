@@ -55,7 +55,7 @@ $ npm install @jbrowse/react-linear-genome-view
 
 ## Documentation
 
-The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/master).
+The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/main).
 
 ### Note on fonts
 
