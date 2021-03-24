@@ -2784,6 +2784,45 @@ Object {
       "trackId": "volvox_wrong_assembly",
       "type": "QuantitativeTrack",
     },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
+          "renderer": Object {
+            "type": "StructuralVariantChordRenderer",
+          },
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+          "renderer": Object {
+            "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'",
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (green snp, purple indel)",
+      "trackId": "variant_colors",
+      "type": "VariantTrack",
+    },
   ],
 }
 `;

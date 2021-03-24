@@ -2487,7 +2487,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "feature|getDate('gene_name')"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }

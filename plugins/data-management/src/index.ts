@@ -51,7 +51,7 @@ export default class extends Plugin {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
         name: 'HierarchicalTrackSelectorWidget',
-        heading: 'Available Tracks',
+        heading: 'Available tracks',
         configSchema: HierarchicalTrackSelectorConfigSchema,
         stateModel: HierarchicalTrackSelectorStateModelFactory(pluginManager),
         ReactComponent: HierarchicalTrackSelectorReactComponent,

@@ -39,12 +39,12 @@
     "@oclif/dev-cli": "^1.25.1",
     "@oclif/test": "^1.2.7",
     "@rescripts/cli": "^0.0.14",
-    "@storybook/addon-actions": "^6.0.28",
-    "@storybook/addon-docs": "^6.0.28",
-    "@storybook/addon-links": "^6.0.28",
-    "@storybook/addons": "^6.0.28",
+    "@storybook/addon-actions": "^6.1.20",
+    "@storybook/addon-docs": "^6.1.20",
+    "@storybook/addon-links": "^6.1.20",
+    "@storybook/addons": "^6.1.20",
     "@storybook/preset-create-react-app": "^3.1.5",
-    "@storybook/react": "^6.0.28",
+    "@storybook/react": "^6.1.20",
     "@testing-library/jest-dom": "^5.5.0",
     "@testing-library/react": "^11.0.0",
     "@types/base64-js": "^1.2.5",
@@ -149,9 +149,5 @@
     "whatwg-fetch": "^3.0.0",
     "worker-loader": "^2.0.0"
   },
-  "version": "0.0.0",
-  "dependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0"
-  }
+  "version": "0.0.0"
 }

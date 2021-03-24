@@ -1299,6 +1299,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       // this "clears the view" and makes the view return to the import form
       clearView() {
         self.setDisplayedRegions([])
+        self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks
         // mobx-state-tree snapshot
