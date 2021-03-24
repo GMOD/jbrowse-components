@@ -53,6 +53,11 @@ export default function (/* config?: any*/): JexlNonBuildable {
     str.codePointAt(pos),
   )
   j.addFunction(
+    'startsWith',
+    (str: string, searchStr: string, length?: number | undefined) =>
+      str.startsWith(searchStr, length),
+  )
+  j.addFunction(
     'endsWith',
     (str: string, searchStr: string, length?: number | undefined) =>
       str.endsWith(searchStr, length),
@@ -96,13 +101,6 @@ export default function (/* config?: any*/): JexlNonBuildable {
   })
   j.addFunction('trimEnd', (str: string) => str.trimEnd())
   j.addFunction('trimStart', (str: string) => str.trimStart())
-
-  j.addFunction('hashcode', (str: string) =>
-    str
-      .split('')
-      .map(c => c.charCodeAt(0))
-      .reduce((a, b) => a + b, 0),
-  )
 
   j.addFunction('getTag', (feature: Feature, str: string) => {
     const tags = feature.get('tags')

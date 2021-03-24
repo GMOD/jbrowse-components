@@ -672,10 +672,7 @@ various feature attributes
 
 ### Example of a config callback
 
-We currently use jexl to express callbacks. This is more limited than arbitrary
-javascript, but can be expressive
-
-See https://github.com/TomFrost/Jexl for more details
+We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more details.
 
 If you had an variant track in your config, and wanted to make a custom config
 callback for color, it might look like this

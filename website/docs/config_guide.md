@@ -1127,11 +1127,10 @@ For example:
 
 ### Configuration callbacks
 
-We use jexl (see https://github.com/TomFrost/Jexl) for defining configuration
-callbacks. This is more limited than allowing arbitrary javascript in our
-configs, but helps prevent things like XSS.
+We use Jexl (see https://github.com/TomFrost/Jexl) for defining configuration
+callbacks.
 
-An example of a jexl configuration callback might look like this
+An example of a Jexl configuration callback might look like this
 
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 
@@ -1169,8 +1168,8 @@ String functions
 jexl:charAt('abc',2) // c
 jexl:charCodeAt(' ',0) // 32
 jexl:codePointAt(' ',0) // 32
+jexl:startsWith('kittycat','kit') // true
 jexl:endsWith('kittycat','cat') // true
-jexl:hashcode('kittycat') // random number, in this case, 877
 jexl:padStart('cat', 8, 'kitty') // kittycat
 jexl:padEnd('kitty', 8, 'cat') // kittycat
 jexl:replace('kittycat','cat','') // kitty
