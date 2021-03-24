@@ -1,0 +1,103 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+<Meta title="Next.js Usage" />
+
+# Usage with Next.js
+
+[Next.js](https://nextjs.org/) is a popular framework for building
+server-rendered React websites with Node.js.
+Given that the JB2 LGV React component is designed for use in static
+apps, that are a few extra steps that need to be taken when using
+the component in a Next.js app.
+
+## Configuration
+
+It is important to understand that in Next.js apps, webpack compilation
+happens twice: once for the server and once for the client.
+Because of this, the following additional webpack configuration needs
+to be added to your `next.config.js` file:
+
+```js
+module.exports = {
+  webpack: (config, { isServer }) => {
+    // Fixes npm packages that depend on `fs` module
+    if (!isServer) {
+      config.node = {
+        fs: 'empty',
+      }
+    }
+
+    return config
+  },
+}
+```
+
+This resolves issues with how our data parsers work, since they are written
+to work in either Node.js or in the browser.
+
+## Dynamic imports
+
+Some React components, such as the React LGV component are not written to
+be compatible with server-side rendering, since they rely on APIs that exist
+only in the browser.
+For these types of components, it is necessary to use [dynamic imports](https://nextjs.org/docs/advanced-features/dynamic-import).
+
+Here is an example of how to dynamically load a component using the JB2 component into a Next.js page:
+
+```js
+// In components/Browser.js
+
+import {
+  createViewState,
+  createJBrowseTheme,
+  JBrowseLinearGenomeView,
+  ThemeProvider,
+} from '@jbrowse/react-linear-genome-view'
+
+const theme = createJBrowseTheme()
+
+const assembly = {
+  // configuration
+}
+
+const tracks = [
+  // configuration
+]
+
+const defaultSession = {
+  // configuration
+}
+
+function View() {
+  const state = createViewState({
+    assembly,
+    tracks,
+    location: '10:29,838,737..29,838,819',
+    defaultSession,
+  })
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
+export default View
+```
+
+Then, in the page where the component is used:
+
+```js
+// in pages/index.js
+import dynamic from 'next/dynamic'
+
+const Browser = dynamic(() => import('../components/Browser'), { ssr: false })
+
+export default function Home() {
+  return (
+    <div>
+      <Browser />
+    </div>
+  )
+}
+```

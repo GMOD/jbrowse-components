@@ -66,7 +66,7 @@ export async function watchWorker(
 
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
-  const canDetect = 'hardwareConcurrency' in window.navigator
+  const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
   if (mainThread && canDetect) {
     return window.navigator.hardwareConcurrency
   }

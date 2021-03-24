@@ -213,14 +213,16 @@ export default function stateModelFactory(pluginManager: any) {
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
+        // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
+
+        const calc = (track: any, feat: Feature) =>
+          track.displays[0].layoutFeatures.get(feat.id())
+
         return features.map(c =>
-          c.map((feature: Feature) => {
-            let layout: LayoutRecord | undefined
-            const level = tracks.findIndex(track => {
-              layout = track.displays[0].layoutFeatures.get(feature.id())
-              return layout
-            })
+          c.map(feature => {
+            const level = tracks.findIndex(track => calc(track, feature))
+            const layout = calc(tracks[level], feature)
             return {
               feature,
               layout,

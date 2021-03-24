@@ -74,7 +74,7 @@ script:
   finished posts at https://jbrowse.org/jb2/blog. If you want to preview the
   changelog to help write the release announcement, you can use the command
   `GITHUB_AUTH=<auth_token> yarn --silent lerna-changelog > tmp_changelog.md`
-  (make sure to run the command on the master branch). See the next step if you
+  (make sure to run the command on the main branch). See the next step if you
   need to generate an access token.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate

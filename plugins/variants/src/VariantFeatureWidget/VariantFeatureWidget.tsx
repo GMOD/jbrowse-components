@@ -14,12 +14,13 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { getSession } from '@jbrowse/core/util'
+import BreakendOptionDialog from './BreakendOptionDialog'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
@@ -121,12 +122,15 @@ function BreakendPanel(props: {
   const { model, locStrings, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
+  const [breakpointDialog, setBreakpointDialog] = useState(false)
   let viewType: any
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // plugin not added
   }
+
+  const simpleFeature = new SimpleFeature(feature)
   return (
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
@@ -166,15 +170,7 @@ function BreakendPanel(props: {
                   <Link
                     href="#"
                     onClick={() => {
-                      const { view } = model
-                      const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                        new SimpleFeature(feature),
-                        view,
-                      )
-                      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.featureData = feature
-                      session.addView('BreakpointSplitView', viewSnapshot)
+                      setBreakpointDialog(true)
                     }}
                   >
                     {`${feature.refName}:${feature.start} // ${locString} (split view)`}
@@ -183,6 +179,16 @@ function BreakendPanel(props: {
               )
             })}
           </ul>
+          {breakpointDialog ? (
+            <BreakendOptionDialog
+              model={model}
+              feature={simpleFeature}
+              viewType={viewType}
+              handleClose={() => {
+                setBreakpointDialog(false)
+              }}
+            />
+          ) : null}
         </>
       ) : null}
     </BaseCard>
