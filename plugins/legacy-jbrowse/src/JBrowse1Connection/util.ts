@@ -1,6 +1,6 @@
 import getValue from 'get-value'
 import objectHash from 'object-hash'
-import { Track, Source, Config } from './types'
+import { Track, Source } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isTrack(arg: any): arg is Track {
@@ -175,41 +175,4 @@ function mixin(
   }
 
   return dest // Object
-}
-
-export function evalHooks(conf: Config): Config {
-  if (conf) {
-    for (const x of Object.keys(conf)) {
-      // @ts-ignore
-      if (typeof conf[x] === 'object')
-        // recur
-        // @ts-ignore
-        conf[x] = evalHooks(conf[x])
-      // @ts-ignore
-      else if (typeof conf[x] === 'string') {
-        // compile
-        // @ts-ignore
-        const spec = conf[x]
-        if (/^\s*function\s*\(/.test(spec)) {
-          // @ts-ignore
-          conf[x] = evalHook(spec)
-        }
-      }
-    }
-  }
-  return conf
-}
-
-function evalHook(...args: string[]): Function {
-  // can't bind arguments because the closure compiler
-  // renames variables, and we need to assign in the eval
-  if (typeof args[0] !== 'string') return args[0]
-  try {
-    // eslint-disable-next-line no-eval
-    eval(`arguments[0]=${args[0]};`)
-  } catch (e) {
-    console.error(`${e} parsing config callback '${args[0]}'`)
-  }
-  // @ts-ignore
-  return args[0]
 }
