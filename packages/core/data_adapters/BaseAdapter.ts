@@ -29,6 +29,7 @@ export type AnyDataAdapter =
   | BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
+  | BaseTextSearchAdapter
   | RegionsAdapter
   | SequenceAdapter
 
@@ -283,4 +284,16 @@ export function isRefNameAliasAdapter(
   thing: object,
 ): thing is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in thing
+}
+
+export abstract class BaseTextSearchAdapter extends BaseAdapter {
+  public abstract async getTextSearchAdapterTest(
+    opts?: BaseOptions,
+  ): Promise<string[]>
+}
+
+export function isTextSearchAdapter(
+  thing: AnyDataAdapter,
+): thing is BaseTextSearchAdapter {
+  return 'getTextSearchAdapterTest' in thing
 }
