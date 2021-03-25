@@ -6,6 +6,7 @@ export default (pluginManager: PluginManager) => {
   const TextSearchAdapterConfigSchema = ConfigurationSchema(
     'TextSearchAdapter',
     {
+      // metadata about tracks and assemblies covered by text search adapter
       tracks: {
         type: 'stringArray',
         defaultValue: [],
