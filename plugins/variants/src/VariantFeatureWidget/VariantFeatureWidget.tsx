@@ -24,7 +24,7 @@ import BreakendOptionDialog from './BreakendOptionDialog'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const { feature } = props
 
   const { samples = {} } = feature
@@ -107,6 +107,8 @@ function VariantSamples(props: any) {
           columns={infoFields}
           rowHeight={20}
           headerHeight={25}
+          {/* this helps avoid https://github.com/mui-org/material-ui-x/issues/1197 */}
+          disableClickEventBubbling
           disableColumnMenu
         />
       </div>

@@ -336,6 +336,8 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                         hideFooterSelectedRowCount
                         columns={columns}
                         hideFooter={rows.length < 100}
+          {/* this helps avoid https://github.com/mui-org/material-ui-x/issues/1197 */}
+                        disableClickEventBubbling
                       />
                     </div>
                   </React.Fragment>
