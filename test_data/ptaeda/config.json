@@ -1,0 +1,24 @@
+{
+  "assemblies": [
+    {
+      "name": "ptaeda",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ptaeda-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/Pinus_taeda/fasta/GCA_000404065.3_Ptaeda2.0_genomic.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/Pinus_taeda/fasta/GCA_000404065.3_Ptaeda2.0_genomic.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/Pinus_taeda/fasta/GCA_000404065.3_Ptaeda2.0_genomic.fa.gz.gzi"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": []
+}
