@@ -5,7 +5,12 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import intersect from 'array-intersection'
 
 function passesFilter(filter, trackConf) {
-  return readConfObject(trackConf, 'name').match(filter)
+  const name = readConfObject(trackConf, 'name')
+  const categories = readConfObject(trackConf, 'category')
+  const regexp = new RegExp(filter, 'i')
+  return (
+    !!name.match(regexp) || categories.filter(cat => !!cat.match(regexp)).length
+  )
 }
 
 export function generateHierarchy(model, trackConfigurations, collapsed) {

@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import {
-  Typography,
+  AppBar,
   IconButton,
-  Toolbar,
-  Select,
-  MenuItem,
   ListItemSecondaryAction,
+  MenuItem,
+  Select,
+  Toolbar,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
@@ -55,7 +56,8 @@ const DrawerHeader = observer(props => {
   }
   const theme = useTheme()
   return (
-    <div
+    <AppBar
+      position="sticky"
       ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
       style={{ background: theme.palette.secondary.main }}
     >
@@ -131,7 +133,7 @@ const DrawerHeader = observer(props => {
           <MinimizeIcon />
         </IconButton>
       </Toolbar>
-    </div>
+    </AppBar>
   )
 })
 

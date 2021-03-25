@@ -58,7 +58,7 @@ function VariantSamples(props: any) {
           ? filters.every(key => {
               const val = row[key]
               const currFilter = filter[key]
-              return currFilter ? val.match(currFilter) : true
+              return currFilter ? val.match(new RegExp(currFilter, 'i')) : true
             })
           : true
       })

@@ -239,8 +239,6 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
   if (!assemblyName) {
     return null
   }
-  const trackConfigs = model.trackConfigurations(assemblyName, session.tracks)
-  const filterError = trackConfigs.filter(filter).length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
   return (
@@ -252,8 +250,6 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
           className={classes.searchBox}
           label="Filter tracks"
           value={model.filterText}
-          error={trackConfigs.filter(filter).length === 0}
-          helperText={filterError ? 'No matches' : ''}
           onChange={handleInputChange}
           fullWidth
           InputProps={{
