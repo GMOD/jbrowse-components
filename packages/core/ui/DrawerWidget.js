@@ -56,7 +56,7 @@ const DrawerHeader = observer(props => {
   const theme = useTheme()
   return (
     <div
-      ref={ref => setToolbarHeight(ref.getBoundingClientRect().height)}
+      ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
       style={{ background: theme.palette.secondary.main }}
     >
       <Toolbar disableGutters className={classes.drawerToolbar}>

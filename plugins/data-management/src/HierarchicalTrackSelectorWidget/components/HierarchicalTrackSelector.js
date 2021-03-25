@@ -34,6 +34,8 @@ import React, { useState } from 'react'
 import { FixedSizeTree } from 'react-vtree'
 
 import AutoSizer from 'react-virtualized-auto-sizer'
+import CloseConnectionDialog from './CloseConnectionDialog'
+import DeleteConnectionDialog from './DeleteConnectionDialog'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -58,118 +60,6 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1),
   },
 }))
-
-const CloseConnectionDlg = observer(props => {
-  const { open, modalInfo, setModalInfo } = props
-  const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo || {}
-  return (
-    <Dialog
-      aria-labelledby="connection-modal-title"
-      aria-describedby="connection-modal-description"
-      open={open}
-    >
-      <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
-      <DialogContent>
-        <>
-          {dereferenceTypeCount ? (
-            <>
-              <DialogContentText>
-                Closing this connection will close:
-              </DialogContentText>
-              <List>
-                {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
-                ))}
-              </List>
-            </>
-          ) : null}
-          <DialogContentText>
-            Are you sure you want to close this connection?
-          </DialogContentText>
-        </>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setModalInfo()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  if (safelyBreakConnection) safelyBreakConnection()
-                  setModalInfo()
-                }
-              : () => {}
-          }
-          color="primary"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
-
-const DeleteConnectionDlg = observer(props => {
-  const { open, modalInfo, session, setModalInfo } = props
-  const { connectionConf, name, dereferenceTypeCount, safelyBreakConnection } =
-    modalInfo || {}
-  return (
-    <Dialog
-      aria-labelledby="connection-modal-title"
-      aria-describedby="connection-modal-description"
-      open={open}
-    >
-      <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
-      <DialogContent>
-        {dereferenceTypeCount ? (
-          <>
-            Closing this connection will close
-            <List>
-              {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                <ListItem key={key}>{`${value} ${key}`}</ListItem>
-              ))}
-            </List>
-          </>
-        ) : null}
-        <DialogContentText>
-          Are you sure you want to delete this connection?
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            setModalInfo()
-          }}
-          color="primary"
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={
-            modalInfo
-              ? () => {
-                  if (safelyBreakConnection) safelyBreakConnection()
-                  session.deleteConnection(connectionConf)
-                  setModalInfo()
-                }
-              : () => {}
-          }
-          color="primary"
-        >
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
 
 function makeTreeWalker(nodes, onChange) {
   return function* treeWalker(refresh) {
@@ -269,7 +159,6 @@ const Example = ({ tree, model, toolbarHeight }) => {
 }
 
 function HierarchicalTrackSelector({ model, toolbarHeight }) {
-  console.log({ toolbarHeight })
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
@@ -361,6 +250,7 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
   const trackConfigs = model.trackConfigurations(assemblyName, session.tracks)
   const filterError = trackConfigs.filter(filter).length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
+  console.log({ toolbarHeight })
 
   return <Example tree={nodes} model={model} toolbarHeight={toolbarHeight} />
 }
