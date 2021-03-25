@@ -30,7 +30,11 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
-  }, [currentSessionId, setSessionId])
+    // @ts-ignore
+    window.JBrowseRootModel = rootModel
+    // @ts-ignore
+    window.JBrowseSession = session
+  }, [currentSessionId, rootModel, session, setSessionId])
 
   useEffect(() => {
     onSnapshot(jbrowse, async snapshot => {
@@ -63,7 +67,7 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { AssemblyManager } = pluginManager.getPlugin(
+  const { AssemblyManager, SetDefaultSession } = pluginManager.getPlugin(
     'DataManagementPlugin',
   ).exports
   return (
@@ -74,13 +78,23 @@ const JBrowse = observer(({ pluginManager }) => {
         HeaderButtons={<ShareButton session={session} />}
       />
       {adminKey ? (
-        <AssemblyManager
-          rootModel={rootModel}
-          open={rootModel.isAssemblyEditing}
-          onClose={() => {
-            rootModel.setAssemblyEditing(false)
-          }}
-        />
+        <>
+          <AssemblyManager
+            rootModel={rootModel}
+            open={rootModel.isAssemblyEditing}
+            onClose={() => {
+              rootModel.setAssemblyEditing(false)
+            }}
+          />
+          <SetDefaultSession
+            rootModel={rootModel}
+            open={rootModel.isDefaultSessionEditing}
+            onClose={() => {
+              rootModel.setDefaultSessionEditing(false)
+            }}
+            currentDefault={rootModel.jbrowse.defaultSession.name}
+          />
+        </>
       ) : null}
     </ThemeProvider>
   )

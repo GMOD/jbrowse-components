@@ -13,24 +13,27 @@ interface Glyph extends React.FunctionComponent {
 }
 
 export function chooseGlyphComponent(feature: Feature): Glyph {
-  const subfeatures = feature.get('subfeatures')
-  let hasSubSub = false
+  const type = feature.get('type')
+  const strand = feature.get('strand')
+  const subfeatures: Feature[] = feature.get('subfeatures')
+
   if (subfeatures) {
-    subfeatures.forEach((subfeature: Feature) => {
-      if (subfeature.get('subfeatures')) hasSubSub = true
+    const hasSubSub = subfeatures.find(subfeature => {
+      return !!subfeature.get('subfeatures')
     })
-    if (hasSubSub) return Subfeatures
-    const type = feature.get('type')
+    if (hasSubSub) {
+      return Subfeatures
+    }
+    const transcriptTypes = ['mRNA', 'transcript']
     if (
-      ['mRNA', 'transcript'].includes(type) &&
-      subfeatures.find((f: Feature) => f.get('type') === 'CDS')
-    )
+      transcriptTypes.includes(type) &&
+      subfeatures.find(f => f.get('type') === 'CDS')
+    ) {
       return ProcessedTranscript
+    }
     return Segments
   }
-  const strand = feature.get('strand')
-  if ([1, -1].includes(strand)) return Chevron
-  return Box
+  return [1, -1].includes(strand) ? Chevron : Box
 }
 
 interface BaseLayOutArgs {
@@ -84,11 +87,12 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
       : chooseGlyphComponent(feature)
   const parentFeature = feature.parent()
   let x = 0
-  if (parentFeature)
+  if (parentFeature) {
     x = reversed
       ? (parentFeature.get('end') - feature.get('end')) / bpPerPx
       : (feature.get('start') - parentFeature.get('start')) / bpPerPx
-  const height = readConfObject(config, 'height', [feature])
+  }
+  const height = readConfObject(config, 'height', { feature })
   const width = (feature.get('end') - feature.get('start')) / bpPerPx
   const layoutParent = layout.parent
   const top = layoutParent ? layoutParent.top : 0
@@ -97,7 +101,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
     x,
     displayMode === 'collapse' ? 0 : top,
     width,
-    displayMode === 'compact' ? height / 3 : height,
+    displayMode === 'compact' ? height / 2 : height,
     { GlyphComponent },
   )
   return subLayout
@@ -105,7 +109,7 @@ export function layOutFeature(args: FeatureLayOutArgs): SceneGraph {
 
 export function layOutSubfeatures(args: SubfeatureLayOutArgs): void {
   const { layout: subLayout, subfeatures, bpPerPx, reversed, config } = args
-  subfeatures.forEach((subfeature: Feature) => {
+  subfeatures.forEach(subfeature => {
     const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
     ;(SubfeatureGlyphComponent.layOut || layOut)({
       layout: subLayout,

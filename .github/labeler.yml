@@ -1,0 +1,6 @@
+# Add label if any file is changed
+# https://github.com/actions/labeler/issues/28#issuecomment-552362351
+needs label triage:
+  - '**'
+  - '.*'
+  - '.*/**'

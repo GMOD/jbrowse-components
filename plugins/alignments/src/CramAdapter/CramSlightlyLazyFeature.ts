@@ -10,6 +10,7 @@ import CramAdapterF from './CramAdapter'
 type CramAdapter = ClassReturnedBy<typeof CramAdapterF>
 
 export interface Mismatch {
+  qual?: number
   start: number
   length: number
   type: string
@@ -29,10 +30,6 @@ export default class CramSlightlyLazyFeature implements Feature {
   constructor(record: any, store: CramAdapter) {
     this.record = record
     this._store = store
-  }
-
-  _get_id() {
-    return this.id()
   }
 
   _get_name() {
@@ -67,14 +64,17 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.isReverseComplemented() ? -1 : 1
   }
 
-  _get_read_group_id() {
-    return this.record.readGroupId
+  _read_group_id() {
+    const rg = this._store.samHeader.readGroups
+    return rg ? rg[this.record.readGroupId] : undefined
   }
 
   _get_qual() {
-    return (this.record.qualityScores || [])
-      .map((q: number) => q + 33)
-      .join(' ')
+    return (this.record.qualityScores || []).join(' ')
+  }
+
+  qualRaw() {
+    return this.record.qualityScores
   }
 
   _get_seq_id() {
@@ -112,7 +112,10 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_tags() {
-    return this.record.tags
+    const RG = this._read_group_id()
+    const { tags } = this.record
+    // avoids a tag copy if no RG, but just copy if there is one
+    return RG !== undefined ? { ...tags, RG } : tags
   }
 
   _get_seq() {
@@ -229,7 +232,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   id() {
-    return this.record.uniqueId + 1
+    return `${this._store.id}-${this.record.uniqueId}`
   }
 
   get(field: string) {
@@ -272,7 +275,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tags: Record<string, any> = {}
     this.tags().forEach((t: string) => {
-      tags[t] = this.get(t)
+      const val = this.get(t)
+      if (val !== undefined) {
+        tags[t] = val
+      }
     })
 
     return {
@@ -285,31 +291,29 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   _get_mismatches(): Mismatch[] {
     const readFeatures = this.get('cram_read_features')
+    const qual = this.qualRaw()
     if (!readFeatures) return []
     const start = this.get('start')
     const mismatches: Mismatch[] = []
     readFeatures.forEach(
-      ({
-        code,
-        refPos,
-        data,
-        sub,
-        ref,
-      }: {
+      (args: {
         code: string
         refPos: number
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any
+        pos: number
         sub: string
         ref: string
       }) => {
-        refPos = refPos - 1 - start
+        const { code, pos, data, sub, ref } = args
+        const refPos = args.refPos - 1 - start
         if (code === 'X') {
           // substitution
           mismatches.push({
             start: refPos,
             length: 1,
             base: sub,
+            qual: qual?.[pos],
             altbase: ref,
             type: 'mismatch',
           })

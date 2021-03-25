@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, rIC } from '@jbrowse/core/util'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer, PropTypes } from 'mobx-react'
 import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
@@ -10,7 +10,6 @@ import type { BlockModel } from '../models/serverSideRenderedBlock'
 
 function ServerSideRenderedContent(props: { model: BlockModel }) {
   const ssrContainerNode = useRef<HTMLDivElement>(null)
-  const hydrated = useRef(false)
 
   const { model } = props
   const session = getSession(model)
@@ -18,17 +17,16 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
 
   useEffect(() => {
     const domNode = ssrContainerNode.current
-    const isHydrated = hydrated.current
     function doHydrate() {
       const {
         data,
-        region,
         html,
+        filled,
         renderProps,
         renderingComponent: RenderingComponent,
       } = model
-      if (domNode && model.filled) {
-        if (isHydrated && domNode) {
+      if (domNode && filled) {
+        if (domNode) {
           unmountComponentAtNode(domNode)
         }
         domNode.innerHTML = html
@@ -40,9 +38,17 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         // a long continuous scroll, it forces it to evaluate because
         // otherwise the continuous scroll would never give it time to do
         // so
-        requestIdleCallback(
+        rIC(
           () => {
-            if (!isAlive(model) || !isAlive(region)) return
+            if (!isAlive(model)) {
+              return
+            }
+
+            const { region } = model
+            if (!isAlive(region)) {
+              return
+            }
+
             const serializedRegion = isStateTreeNode(region)
               ? getSnapshot(region)
               : region
@@ -56,7 +62,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
               </ThemeProvider>,
               domNode,
             )
-            hydrated.current = true
           },
           { timeout: 300 },
         )
@@ -66,7 +71,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     doHydrate()
 
     return () => {
-      if (domNode && isHydrated) {
+      if (domNode) {
         unmountComponentAtNode(domNode)
       }
     }

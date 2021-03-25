@@ -235,7 +235,6 @@ export default class BreakpointSplitRenderer extends ComparativeServerSideRender
     const { height, width, imageData } = await this.makeImageData(renderProps)
 
     const element = React.createElement(
-      // @ts-ignore
       this.ReactComponent,
       { ...renderProps, height, width, imageData },
       null,

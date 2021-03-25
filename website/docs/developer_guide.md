@@ -4,10 +4,9 @@ title: Developer guide
 toplevel: true
 ---
 
-In this Developer Guide, will introduce the JBrowse 2 ecosystem from the
-developer's point of view. We'll examine the core concepts of how code is
-packaged and structured, and then go over how to create new plugins and
-pluggable elements.
+In this guide, will introduce the JBrowse 2 ecosystem from the developer's
+point of view. We'll examine the core concepts of how code is packaged and
+structured, and then go over how to create new plugins and pluggable elements.
 
 ## Introduction and overview
 
@@ -19,10 +18,9 @@ The JBrowse 2 ecosystem has two main type of top-level artifacts that are
 published on their own: products and plugins.
 
 ![](./img/products_and_plugins.png)
-
 Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g.
 LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack,
-etc.), data adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
+etc.), adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like
 mobx state tree autoruns that add logic to other parts of the app (e.g. adding
 context menus)
 
@@ -44,6 +42,34 @@ command-line tool implemented with [OCLIF](https://oclif.io/).
 This figure summarizes the general architecture of our state model and React
 component tree
 
+## Example plugins
+
+You can follow this guide for developing plugins, but you might also want to
+refer to working versions of plugins on the web now
+
+This repo contains a template for creating new plugins
+https://github.com/GMOD/jbrowse-plugin-template.
+
+Here are some examples of working plugins.
+
+- [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api) - probably the simplest plugin example, it demonstrates accessing data from
+  UCSC REST API
+- [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) - a
+  custom plugin to display manhattan plot GWAS data
+- [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api) - demonstrates accessing data from mygene.info, part of the "biothings API"
+  family
+- [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) -
+  demonstrates creating a custom view type that doesn't use any conventional
+  tracks
+- [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) -
+  demonstrates accessing GDC cancer data GraphQL API, plus a custom drawer and
+  track type for coloring variants by impact score
+
+You can use these to see how plugins are generally structured, and can use the
+pluggable elements in them as templates for your own pluggable elements.
+
+We will go over what plugins do and what is in them now
+
 ## What's in a plugin
 
 A plugin is an independently distributed package of code that is designed to
@@ -55,7 +81,7 @@ method and a `configure` method that the application calls. This class is
 distributed as a webpack bundle that exports it to a namespace on the browser's
 `window` object specifically for JBrowse plugins[^1].
 
-It's common for a plugin to use have its `configure` method set up [mobx
+It's common for a plugin to use its `configure` method to set up [mobx
 autoruns or reactions](https://mobx.js.org/refguide/autorun.html) that react to
 changes in the application's state to modify its behavior.
 
@@ -72,14 +98,15 @@ JBrowse 2 plugins
 
 The pluggable types that we have in JBrowse 2 are
 
-- Data adapters
+- Adapters
 - Track types
 - Renderer types
 - Widgets
 - RPC calls
+- Display types
 - View types
 
-In additional to creating plugins that create new data adapters, track types,
+In additional to creating plugins that create new adapters, track types,
 etc. note that you can also wrap the behavior of another track so these
 elements are composable
 
@@ -88,14 +115,14 @@ another adapter, views that contains other subviews, and tracks that contain
 other tracks, leading to a lot of interesting behavior. Details and examples
 below
 
-### Data adapters
+### Adapters
 
-Data adapters basically are parsers for a given data format. We will review
-what data adapters the alignments plugin has (to write your own data adapter,
-see [creating data adapters](developer_guide#creating-data-adapters))
+Adapters basically are parsers for a given data format. We will review
+what adapters the alignments plugin has (to write your own adapter,
+see [creating adapters](developer_guide#creating-adapters))
 
-Example data adapters: the `@jbrowse/plugin-alignments` plugin creates
-multiple data adapter types
+Example adapters: the `@jbrowse/plugin-alignments` plugin creates
+multiple adapter types
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
   for use by the browser.
@@ -104,6 +131,26 @@ multiple data adapter types
   uses getSubAdapter to instantiate it
 - `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
   subadapter, and calculates feature coverage from it
+
+### Displays
+
+A display is a method for displaying a particular track in a particular view
+
+For example, we have a notion of a synteny track type, and the synteny track
+type has two display models
+
+- DotplotDisplay, which is used in the dotplot view
+- LinearSyntenyDisplay, which is used in the linear synteny view
+
+This enables a single track entry to be used in multiple view types e.g. if I
+run jbrowse add-track myfile.paf, this automatically creates a synteny track
+that can be opened in both a dotplot and a linear synteny view.
+
+Most track types only have a "linear" display available, but one more example
+is the VariantTrack, which has two display methods
+
+- LinearVariantDisplay - used in linear genome view
+- ChordVariantDisplay - used in the circular view
 
 ### Renderers
 
@@ -170,7 +217,7 @@ the standard linear-genome-view.
 We have demonstrated a couple new view types in JBrowse 2 already including
 
 - `LinearGenomeView` - the classic linear view of a genome
-- `CircularView` - a Circos-style whole genome view
+- `CircularView` - a Circos-like circular whole genome view
 - `DotplotView` - a comparative 2-D genome view
 - `SvInspectorView` - superview containing `CircularView` and `SpreadsheetView`
   subviews
@@ -292,7 +339,7 @@ In the above screenshot, the `File` menu has several items and an `Add`
 sub-menu, which has more items. You can have arbitrarily deep sub-menus.
 
 You add menus in the `configure` method of your plugin. Not all JBrowse products
-will have to-level menus, though. JBrowse Web and JBrowse Desktop have them, but
+will have top-level menus, though. JBrowse Web and JBrowse Desktop have them, but
 something like JBrowse Linear View (which is an just a single view designed to
 be embedded in another page) does not. This means you need to check whether or
 not menus are supported using `isAbstractMenuManager` in the `configure` method.
@@ -399,7 +446,7 @@ Add a menu item to a sub-menu
 | menuPath | Path to the sub-menu to add to, starting with the top-level menu (e.g. `['File', 'Insert']`). |
 | menuItem | Menu item to append.                                                                          |
 
-##### Return Value
+##### Return value
 
 The new length of the sub-menu
 
@@ -415,7 +462,7 @@ Insert a menu item into a sub-menu
 | menuItem | Menu item to insert.                                                                                                                             |
 | position | Position to insert menu item. If negative, counts from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the second-to-last one. |
 
-##### Return Value
+##### Return value
 
 The new length of the sub-menu
 
@@ -442,7 +489,35 @@ types
   }))
 ```
 
-### Adding track context menu items
+Note that it is also common to use this scenario, because the base display may
+implement track menu items so this is like getting the superclasses track menu
+items
+
+```js
+types
+  .model({
+    // model
+  })
+  .views(self => {
+    const { trackMenuitems } = self
+    return {
+      get composedTrackMenuItems() {
+        return [
+          {
+            label: 'Menu Item',
+            icon: AddIcon,
+            onClick: () => {},
+          },
+        ]
+      },
+      get trackMenuItems() {
+        return [...trackMenuItems, ...this.composedTrackMenuItems]
+      },
+    }
+  })
+```
+
+### Adding track context-menu items
 
 When you right-click in a linear track, a context menu will appear if there are
 any menu items defined for it. It's possible to add items to that menu, and you
@@ -496,134 +571,6 @@ class SomePlugin extends Plugin {
 }
 ```
 
-## Monorepo code organization
-
-JBrowse 2 code is organized as a monorepo using [lerna](https://lerna.js.org/)
-and [yarn workspaces](https://classic.yarnpkg.com/en/docs/workspaces/). Using a
-monorepo means that instead of separate GitHub repositories for each piece of
-JBrowse, they are all in a single place and can share code easily. In the top
-level of the repository there are two directories, `packages/` and `products/`
-that each contain multiple packages.
-
-Each "package" is an npm-style (i.e. contains `package.json`) package. The
-packages in `packages/` are core code, development tools, etc. The packages in
-`plugins/` are JBrowse plugins. Most of JBrowse is written as plugins, so that
-is where most of the code is. The packages in `products/` are user-facing
-products, such as JBrowse Web, JBrowse Desktop, JBrowse CLI, etc.
-
-### Monorepo packages
-
-The following is a summary of some of the individual packages in the monorepo.
-It's not a comprehensive list, but will hopefully help familiarize you with how
-the code is organized.
-
-#### products/jbrowse-web
-
-This is the full JBrowse Web app. It is built using
-[create-react-app](https://create-react-app.dev/).
-
-It includes many other packages as core plugins, can load other plugins at
-runtime, and more.
-
-It also currently holds the "integration tests" that we use for our code in
-`products/jbrowse-web/src/tests`.
-
-#### products/jbrowse-desktop
-
-JBrowse Desktop is our essentially the same as JBrowse Web, but packaged with
-[electron](https://www.electronjs.org/) into a desktop app. This gives it the
-ability to easily load and save tracks based on files on your local filesystem.
-It also has save sessions locally, and works offline.
-
-#### products/website
-
-This provides the docusaurus website with docs, blog, and pdf documentation
-
-#### plugins/alignments
-
-This package provides the "alignments" related features including
-
-- BamAdapter - our BAM parser that wraps @gmod/bam NPM module
-- CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
-- PileupTrack type - draws alignments as boxes in a "pileup" style view
-- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
-- AlignmentsTrack - a "supertrack" which contains a PileupTrack and
-  SNPCoverageTrack "subtracks"
-- AlignmentsFeatureWidget for alignments features
-
-#### plugins/variants/
-
-Provides variant features including
-
-- VCF tabix parser
-- VariantFeatureWidget
-- VariantTrack that is basically just a normal track, but has logic to popup
-  the VariantFeatureWidget on feature click
-
-#### plugins/hic
-
-This provides a HicAdapter based on the .hic file format
-([ref](https://github.com/aidenlab/juicer/wiki/Data#hic-files))
-
-Also a track type and renderer to visualize these
-
-#### plugins/bed
-
-Provides two bed related data adapters
-
-- BigBedAdapter
-- BedTabixAdapter
-
-These can be used with the SvgFeatureRenderer
-
-#### plugins/wiggle
-
-Provides wiggle track types with different types of rendering formats including
-
-- XYPlotRenderer
-- LinePlotRenderer
-- DensityRenderer
-
-The WiggleTrack type can swap out these different rendering types, and
-calculates stats such as max and min score over a region before the region is
-rendered
-
-#### plugins/svg
-
-This is the main gene glyphs, which are rendered using SVG
-
-General usage of this involves referencing the SvgFeatureRenderer
-
-#### plugins/spreadsheet-view
-
-This provides a spreadsheet-in-the-browser that can be used as a data backend
-to power other views
-
-#### plugins/circular-view
-
-This provides our 'Circos-style' whole-genome overview of data, especially
-genomic translocations
-
-#### plugins/sv-inspector
-
-This is a "superview" type that contains a circular and spreadsheet view as
-child views
-
-### Plugin Build system
-
-Plugins may be built as separate packages that can be distributed on NPM. In
-order to streamline development and avoid having to build every plugin before
-developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry by
-default points to the un-built code (e.g. `src/index.ts`). JBrowse Web then
-takes care of building the plugins itself (see
-`products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
-
-When you want to use a built plugin, you can run `yarn useDist` in the plugin's
-`package.json`, and then run `yarn useSrc` to restore it when you're done. As an
-example, the root-level `yarn build` that builds all the packages does this to
-build all the plugins and then build JBrowse Web and JBrowse Desktop using the
-built plugins.
-
 ## Configuration model concepts
 
 ### Configuration slot types
@@ -663,11 +610,8 @@ export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue: `function(feature) {
-        var s = feature.get('strand');
-        return s === -1 ? '#8F8FD8': '#EC8B8B'
-      }`,
-    functionSignature: ['feature'],
+    defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    contextVariable: ['feature'],
   },
   displayMode: {
     type: 'stringEnum',
@@ -714,12 +658,12 @@ readConfObject(track.configuration, 'maxHeight')`
 
 Config callbacks allow you to have a dynamic color based on some function logic
 you provide. All config slots can actually become config callback. The
-arguments that are given to the callback are listed by the 'functionSignature'
+arguments that are given to the callback are listed by the 'contextVariable'
 but must be provided by the calling code (the code reading the config slot). To
 pass arguments to the a callback we say
 
 ```js
-readConfObject(config, 'color', [feature])
+readConfObject(config, 'color', { feature })
 ```
 
 That implies the color configuration callback will be passed a feature, so the
@@ -728,39 +672,47 @@ various feature attributes
 
 ### Example of a config callback
 
+We currently use jexl to express callbacks. This is more limited than arbitrary
+javascript, but can be expressive
+
+See https://github.com/TomFrost/Jexl for more details
+
 If you had an variant track in your config, and wanted to make a custom config
 callback for color, it might look like this
 
 ```json
 {
   "type": "VariantTrack",
-  "trackId": "myvcf",
-  "name": "My variants",
-  "assemblyNames": ["h19"],
+  "trackId": "variant_colors",
+  "name": "volvox filtered vcf (green snp, purple indel)",
   "category": ["VCF"],
+  "assemblyNames": ["volvox"],
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": {
-      "uri": "test_data/volvox/volvox.filtered.vcf.gz"
+      "uri": "volvox.filtered.vcf.gz"
     },
     "index": {
       "location": {
-        "uri": "test_data/volvox/volvox.filtered.vcf.gz.tbi"
+        "uri": "volvox.filtered.vcf.gz.tbi"
       }
     }
   },
-  "renderers": {
-    "SvgFeatureRenderer": {
-      "type": "SvgFeatureRenderer",
-      "color": "function(feat) { return feat.get('type')==='SNV'?'green':'purple' }"
+  "displays": [
+    {
+      "type": "LinearVariantDisplay",
+      "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+      "renderer": {
+        "type": "SvgFeatureRenderer",
+        "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+      }
     }
-  }
+  ]
 }
 ```
 
 This draws all SNV (single nucleotide variants) as green, and other types as
-purple (insertion, deletion, other structural variant). Note that JSON format
-doesn't allow fancy multiline
+purple (insertion, deletion, other structural variant).
 
 ### Configuration internals
 
@@ -775,7 +727,7 @@ ConfigSlot types, and other nodes are ConfigurationSchema types.
          Slot  Slot
 ```
 
-Configurations are all descendents of a single root configuration, which is
+Configurations are all descendants of a single root configuration, which is
 `root.configuration`.
 
 Configuration types should always be created by the `ConfigurationSchema`
@@ -828,22 +780,60 @@ Reading the sub-config schema is as follows
 const indexType = readConfObject(config, ['index', 'indexType'])
 ```
 
-## Creating data adapters
+Alternatively can use
 
-### What is a data adapter
+```js
+const indexConf = readConfObject(config, ['index'])
+indexConf.indexType
+```
 
-A data adapter is essentially a class that parses your data type and returns
-features that jbrowse will draw
+However, this may miss default values from the slot, the readConfObject has
+special logic to fill in the default value
 
-Sometimes, a data adapter can be implemented by itself, e.g. if you are
-adapting a storeclass that returns genes, then you can use our standard track
-types for that. If you are making a data adapter for some custom type of data
-that also needs a custom type of drawing, you may need to implement a data
-adapter along with a track type and/or renderer
+## Creating adapters
 
-### Skeleton of a data adapter
+### What is an adapter
 
-So we see basically something like this, this is stripped down for simplicity
+An adapter is essentially a class that fetches and parses your data and returns
+it in a format JBrowse understands.
+
+For example, if you have some data source that contains genes, and you want to
+display those genes using JBrowse's existing gene displays, you can write a
+custom adapter to do so. If you want to do a custom display of your data,
+though, you'll probably need to create a custom display and/or renderer along
+with your adapter.
+
+### What types of adapters are there
+
+- **Feature adapter** - This is the most common type of adapter. Essentially,
+  it takes a request for a _region_ (a chromosome, starting position, and ending
+  position) and returns the _features_ (e.g. genes, reads, variants, etc.) that
+  are in that region. Examples of this in JBrowse include adapters for
+  [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) and
+  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) file formats.
+- **Regions adapter** - This type of adapter is used to define what regions are
+  in an assembly. It returns a list of chromosomes/contigs/scaffolds and their
+  sizes. An example of this in JBrowse is an adapter for a
+  [chrome.sizes](https://software.broadinstitute.org/software/igv/chromSizes)
+  file.
+- **Sequence adapter** - This is basically a combination of a regions adapter
+  and a feature adapter. It can give the list of regions in an assembly, and
+  can also return the sequence of a queried region. Examples of this in JBrowse
+  include adapters for
+  [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
+  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
+- **RefName alias adapter** - This type of adapter is used to return data about
+  aliases for reference sequence names, for example to define that "chr1" is an
+  alias for "1". An example of this in JBrowse is an adapter for
+  (alias files)[http://software.broadinstitute.org/software/igv/LoadData/#aliasfile]
+
+Note about refname alias adapter: the first column must match what is seen in
+your FASTA file
+
+### Skeleton of a feature adapter
+
+A basic feature adapter might look like this (with implementation omitted for
+simplicity):
 
 ```js
 class MyAdapter extends BaseFeatureDataAdapter {
@@ -851,10 +841,10 @@ class MyAdapter extends BaseFeatureDataAdapter {
     // config
   }
   async getRefNames() {
-    // return ref names used in your data adapter, used for refname renaming
+    // return refNames used in your adapter, used for refName renaming
   }
   getFeatures(region) {
-    // return features from your data adapter, using rxjs observable
+    // return features from your adapter, using rxjs observable
   }
   freeResources(region) {
     // can be empty
@@ -862,11 +852,11 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-So to make a data adapter, you implement the getRefNames function (optional),
-the getFeatures function (returns an rxjs observable stream of features,
-discussed below) and freeResources (optional)
+So to make a feature adapter, you implement the getRefNames function
+(optional), the getFeatures function (returns an rxjs observable stream of
+features, discussed below) and freeResources (optional)
 
-### Example data adapter
+### Example feature adapter
 
 To take this a little slow let's look at each function individually
 
@@ -879,35 +869,40 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 class MyAdapter extends BaseFeatureDataAdapter {
-  // @param config - a configuration object
-  // @param getSubAdapter - function to initialize additional subadapters
+  // your constructor gets a config object that you can read with readConfObject
+  // if you use "subadapters" then you can initialize those with getSubAdapter
   constructor(config, getSubAdapter) {
     const fileLocation = readConfObject(config, 'fileLocation')
     const subadapter = readConfObject(config, 'sequenceAdapter')
     const sequenceAdapter = getSubAdapter(subadapter)
   }
 
-  // @param region - { refName:string, start:number, end:number}
-  // @param options - { signal: AbortSignal, bpPerPx: number }
-  // @return an rxjs Observable
+  // use rxjs observer.next(new SimpleFeature(...your feature data....) for each
+  // feature you want to return
   getFeatures(region, options) {
     return ObservableCreate(async observer => {
       try {
-        const myapi = await fetch(
+        const { refName, start, end } = region
+        const response = await fetch(
           'http://myservice/genes/${refName}/${start}-${end}',
+          options,
         )
-        if (result.ok) const features = await result.json()
-        features.forEach(feature => {
-          observer.next(
-            new SimpleFeature({
-              uniqueID: `${feature.chr}-${feature.start}-${feature.end}`,
-              refName: feature.chr,
-              start: feature.start,
-              end: feature.end,
-            }),
-          )
-        })
-        observer.complete()
+        if (response.ok) {
+          const features = await result.json()
+          features.forEach(feature => {
+            observer.next(
+              new SimpleFeature({
+                uniqueID: `${feature.refName}-${feature.start}-${feature.end}`,
+                refName: feature.refName,
+                start: feature.start,
+                end: feature.end,
+              }),
+            )
+          })
+          observer.complete()
+        } else {
+          throw new Error(`${response.status} - ${response.statusText}`)
+        }
       } catch (e) {
         observer.error(e)
       }
@@ -928,7 +923,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-### What is needed from a data adapter
+### What is needed from a feature adapter
 
 #### getRefNames
 
@@ -943,9 +938,11 @@ renaming](config_guide#configuring-reference-renaming)
 #### getFeatures
 
 A function that returns features from the file given a genomic
-range query e.g. getFeatures(region, options), where region is an object like
+range query e.g.
 
-The region contains
+`getFeatures(region, options)`
+
+The region parameter contains
 
 ```typescript
 interface Region {
@@ -957,7 +954,17 @@ interface Region {
 }
 ```
 
-The options can contain any number of things
+The refName, start, end specify a simple genomic range. The "assemblyName" is
+used to query a specific assembly if your adapter responds to multiple
+assemblies e.g. for a synteny data file or a REST API that queries a backend
+with multiple assemblies.
+
+The "originalRefName" are also passed, where originalRefName is the queried
+refname before ref renaming e.g. in BamAdapter, if the BAM file uses chr1, and
+your reference genome file uses 1, then originalRefName will be 1 and refName
+will be chr1
+
+The options parameter to getFeatures can contain any number of things
 
 ```typescript
 interface Options {
@@ -968,18 +975,18 @@ interface Options {
 }
 ```
 
-- bpPerPx - number: resolution of the genome browser when the features were
+- `bpPerPx` - number: resolution of the genome browser when the features were
   fetched
-- signal - can be used to abort a fetch request when it is no longer needed,
+- `signal` - can be used to abort a fetch request when it is no longer needed,
   from AbortController
-- statusCallback - not implemented yet but in the future may allow you to
+- `statusCallback` - not implemented yet but in the future may allow you to
   report the status of your loading operations
-- headers - set of HTTP headers as a JSON object
+- `headers` - set of HTTP headers as a JSON object
 
-We return an rxjs Observable. This is similar to a JBrowse 1 getFeatures call,
-where we pass each feature to a featureCallback, tell it when we are done with
-finishCallback, and send errors to errorCallback, except we do all those things
-with the Observable
+We return an rxjs Observable from getFeatures. This is similar to a JBrowse 1
+getFeatures call, where we pass each feature to a featureCallback, tell it when
+we are done with finishCallback, and send errors to errorCallback, except we do
+all those things with the Observable
 
 Here is a "conversion" of JBrowse 1 getFeatures callbacks to JBrowse 2
 observable calls
@@ -990,22 +997,21 @@ observable calls
 
 #### freeResources
 
-This is uncommonly used, so most data adapters make this an empty function
+This is uncommonly used, so most adapters make this an empty function
 
-Most data adapters in fact use an LRU cache to make resources go away over time
+Most adapters in fact use an LRU cache to make resources go away over time
 instead of manually cleaning up resources
 
-## Creating a new plugin
+### Writing your own plugin
 
 JBrowse 2 plugins can be used to add new pluggable elements (views, tracks,
-data adapters, etc), and to modify behavior of the application by adding code
+adapters, etc), and to modify behavior of the application by adding code
 that watches the application's state. For the full list of what kinds of
 pluggable element types plugins can add, see the [pluggable
 elements](developer_guide#pluggable-elements) page.
 
-We will go over creating an example plugin. The first thing that we have is a
-`src/index.js` which exports a default class containing the plugin registration
-code
+The first thing that we have is a `src/index.js` which exports a default class
+containing the plugin registration code
 
 src/index.js
 
@@ -1118,16 +1124,13 @@ track.json
 
 ```json
 {
-  "type": "BasicTrack",
+  "type": "FeatureTrack",
   "trackId": "genehancer_ucsc",
   "name": "UCSC GeneHancer",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "UCSCAdapter",
     "track": "geneHancerInteractionsDoubleElite"
-  },
-  "renderer": {
-    "type": "SvgFeatureRenderer"
   }
 }
 ```
@@ -1185,6 +1188,7 @@ export default class ArcRendererPlugin extends Plugin {
           name: 'ArcRenderer',
           ReactComponent: ArcRendererReactComponent,
           configSchema: ArcRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -1263,7 +1267,7 @@ export default class ArcRenderer extends ServerSideRendererType {
       )
 
       ctx.beginPath()
-      ctx.strokeStyle = readConfObject(config, 'color', [feature])
+      ctx.strokeStyle = readConfObject(config, 'color', { feature })
       ctx.lineWidth = 3
       ctx.moveTo(left, 0)
       ctx.bezierCurveTo(left, 200, right, 200, right, 0)
@@ -1461,6 +1465,7 @@ export default class SVGPlugin extends Plugin {
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -1476,7 +1481,7 @@ export default function SvgFeatureRendering(props) {
   const region = regions[0]
 
   const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', [feature])
+  const height = readConfObject(config, 'height', { feature })
   return (
     <svg>
       {feats.map(feature => {
@@ -1520,8 +1525,8 @@ If you want to drastically modify the feature fetching behavior, you can modify
 the renderer's getFeatures call
 
 The base ServerSideRendererType class has a built-in getFeatures function that,
-in turn, calls your data adapter's getFeatures function, but if you need
-tighter control over how your data adapter's getFeatures method is called then
+in turn, calls your adapter's getFeatures function, but if you need
+tighter control over how your adapter's getFeatures method is called then
 your renderer. The Hi-C renderer type does not operate on conventional
 features and instead works with contact matrices, so the Hi-C renderer has a
 custom getFeatures function
@@ -1556,149 +1561,12 @@ instead of a track, but here are some reasons you might want a custom track
   automatically initialized rather than the BasicTrack (which combines any
   adapter and renderer)
 
-### What does creating a track look like
+For examples of custom track types, refer to things like
 
-When you create your plugin, you will add a cCreating a custom track is
-basically looks like this
-
-You have your config schema
-
-```js
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BasicTrackConfig } from '@jbrowse/plugin-linear-genome-view'
-
-const configSchema = ConfigurationSchema(
-  'MyTrack',
-  {
-    color: {
-      type: 'string',
-      description: 'the color to use on my special features',
-      defaultValue: 'green',
-    },
-  },
-  { baseConfiguration: BasicTrackConfig, explicitlyTyped: true },
-)
-```
-
-### What are the details of configSchema and stateModel
-
-- stateModel - a mobx-state-tree object that manages track logic
-- configSchema - a combination of a "stateModel" and a "configSchema"
-
-The state model is often implemented as a composition of the "base track" and
-some custom logic
-
-```js
-import { observer } from 'mobx-react'
-import { types } from 'mobx-state-tree'
-import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
-
-// A component which changes color when you click on it
-// Note that this track is an observer, so it automatically re-renders
-// when something inside the track model changes e.g. model.hasTheBellRung
-const BackgroundChangeTrack = observer(props => {
-  const { model } = props
-  return (
-    <div
-      style={{ backgroundColor: model.hasTheBellRung ? 'red' : 'green' }}
-      onClick={() => model.ringTheBell()}
-    >
-      <BlockBasedTrack {...props} />
-    </div>
-  )
-})
-
-// A track state model that implements the logic for changing the
-// background color on user click
-return types.compose(
-  'BackgroundChangeTrack',
-  BaseTrack,
-  types
-    .model({
-      hasTheBellRung: false,
-    })
-    .volatile(() => ({
-      ReactComponent: MyComponent,
-    }))
-    .actions(self => ({
-      ringTheBell() {
-        self.hasTheBellRung = true
-      },
-    })),
-)
-```
-
-This custom track type is fairly silly, but it shows us that our "track" can
-really be any React component that we want it to, and that we can control some
-logical state of the track by using mobx-state-tree
-
-### Putting it all together
-
-Here is a complete plugin that creates it's ReactComponent, configSchema,
-stateModel, and Plugin class in a single file. You are of course welcome to
-split things up into different files in your own plugins :)
-
-src/index.js
-
-```js
-import { observer } from 'mobx-react'
-import { types } from 'mobx-state-tree'
-import { BlockBasedTrack } from '@jbrowse/plugin-linear-genome-view'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { BasicTrackConfig } from '@jbrowse/plugin-linear-genome-view'
-import Plugin from '@jbrowse/core/Plugin'
-
-const BackgroundChangeTrack = observer(props => {
-  const { model } = props
-  return (
-    <div
-      style={{ backgroundColor: model.hasTheBellRung ? 'red' : 'green' }}
-      onClick={() => model.ringTheBell()}
-    >
-      <BlockBasedTrack {...props} />
-    </div>
-  )
-})
-
-const stateModel = types.compose(
-  'BackgroundChangeTrack',
-  BaseTrack,
-  types
-    .model({
-      hasTheBellRung: false,
-    })
-    .volatile(() => ({
-      ReactComponent: MyComponent,
-    }))
-    .actions(self => ({
-      ringTheBell() {
-        self.hasTheBellRung = true
-      },
-    })),
-)
-
-const configSchema = ConfigurationSchema(
-  'MyTrack',
-  {
-    color: {
-      type: 'string',
-      description: 'the color to use on my special features',
-      defaultValue: 'green',
-    },
-  },
-  { baseConfiguration: BasicTrackConfig, explicitlyTyped: true },
-)
-
-export default class MyPlugin extends Plugin {
-  install(pluginManager) {
-    pluginManager.addTrackType(() => {
-      return new TrackType({
-        name: 'MyTrack',
-        compatibleView: 'LinearGenomeView', // this is the default
-        configSchema,
-        stateModel,
-      })
-    })
-  }
-}
-```
+- HicTrack, which uses a custom HicRenderer to draw contact matrix
+- GDCPlugin, which has a custom track type that registers custom feature detail
+  widgets
+- VariantTrack, which also registers custom widgets, and has
+  ChordVariantDisplay and LinearVariantDisplay
+- SyntenyTrack, which can be displayed with DotplotDisplay or
+  LinearSyntenyDisplay

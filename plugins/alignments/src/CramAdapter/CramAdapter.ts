@@ -22,6 +22,7 @@ interface HeaderLine {
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
+  readGroups?: number[]
 }
 
 export class CramAdapter extends BaseFeatureDataAdapter {
@@ -30,7 +31,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
   private sequenceAdapter: BaseFeatureDataAdapter
 
-  private samHeader: Header = {}
+  public samHeader: Header = {}
 
   // maps a refname to an id
   private seqIdToRefName: string[] | undefined
@@ -40,7 +41,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
   public constructor(
     config: AnyConfigurationModel,
-    getSubAdapter: getSubAdapterType,
+    getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
 
@@ -65,9 +66,9 @@ export class CramAdapter extends BaseFeatureDataAdapter {
       'type',
     ])
 
-    const { dataAdapter } = getSubAdapter(
+    const dataAdapter = getSubAdapter?.(
       readConfObject(config, 'sequenceAdapter'),
-    )
+    ).dataAdapter
     // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       this.sequenceAdapter = dataAdapter
@@ -79,7 +80,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.cram.cram.getSamHeader(opts)
+    return this.cram.cram.getHeaderText(opts)
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {
@@ -105,7 +106,7 @@ export class CramAdapter extends BaseFeatureDataAdapter {
 
     const trimmed: string[] = []
     seqChunks
-      .sort((a: Feature, b: Feature) => a.get('start') - b.get('start'))
+      .sort((a, b) => a.get('start') - b.get('start'))
       .forEach((chunk: Feature) => {
         const chunkStart = chunk.get('start')
         const chunkEnd = chunk.get('end')
@@ -150,8 +151,17 @@ export class CramAdapter extends BaseFeatureDataAdapter {
           }
         })
       })
+
+      const rgLines = samHeader.filter((l: { tag: string }) => l.tag === 'RG')
+      const readGroups = rgLines.map((rgLine: { data: HeaderLine[] }) => {
+        const { value } =
+          rgLine.data.find(item => {
+            return item.tag === 'ID'
+          }) || {}
+        return value
+      })
       if (idToName.length) {
-        this.samHeader = { idToName, nameToId }
+        this.samHeader = { idToName, nameToId, readGroups }
       }
       statusCallback('')
     }

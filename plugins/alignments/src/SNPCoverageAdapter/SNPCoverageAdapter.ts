@@ -5,14 +5,12 @@ import {
 import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { toArray } from 'rxjs/operators'
-import { blankStats, rectifyStats, scoresToStats } from '@jbrowse/plugin-wiggle'
-import { Instance, getSnapshot } from 'mobx-state-tree'
+import { toArray, filter } from 'rxjs/operators'
+import { getSnapshot } from 'mobx-state-tree'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import NestedFrequencyTable from '../NestedFrequencyTable'
-
-import MyConfigSchemaF from './configSchema'
 
 interface Mismatch {
   start: number
@@ -31,50 +29,38 @@ export interface StatsRegion {
   bpPerPx?: number
 }
 
-export default (pluginManager: PluginManager) => {
-  const MyConfigSchema = MyConfigSchemaF(pluginManager)
-
-  function generateInfoList(table: NestedFrequencyTable) {
-    const infoList = []
-    const overallScore = table.total()
-
-    // log info w/ base name, total score, and strand breakdown
-    // eslint-disable-next-line guard-for-in
-    for (const base in table.categories) {
-      const strands = table.categories[base].categories as {
-        [key: string]: number
-      }
-      const score = Object.values(strands).reduce((a, b) => a + b, 0)
-      infoList.push({
-        base,
-        score,
-        strands,
-      })
+function generateInfoList(table: NestedFrequencyTable) {
+  const infoList = Object.entries(table.categories).map(([base, strand]) => {
+    const strands = strand.categories as {
+      [key: string]: number
     }
+    const score = Object.values(strands).reduce((a, b) => a + b, 0)
+    return {
+      base,
+      score,
+      strands,
+    }
+  })
 
-    // sort so higher scores get drawn last, reference always first
-    infoList.sort((a, b) =>
-      a.score < b.score || b.base === 'reference' ? 1 : -1,
-    )
+  // sort so higher scores get drawn last, reference always first
+  infoList.sort((a, b) =>
+    a.score < b.score || b.base === 'reference' ? 1 : -1,
+  )
 
-    // add overall total to end
-    infoList.push({
-      base: 'total',
-      score: overallScore,
-    })
-    return infoList
-  }
-
+  return [...infoList, { base: 'total', score: table.total() }]
+}
+export default (_: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
 
     public constructor(
-      config: Instance<typeof MyConfigSchema>,
-      getSubAdapter: getSubAdapterType,
+      config: AnyConfigurationModel,
+      getSubAdapter?: getSubAdapterType,
     ) {
       super(config)
 
-      const { dataAdapter } = getSubAdapter(getSnapshot(config.subadapter))
+      const dataAdapter = getSubAdapter?.(getSnapshot(config.subadapter))
+        .dataAdapter
 
       if (dataAdapter instanceof BaseFeatureDataAdapter) {
         this.subadapter = dataAdapter
@@ -83,54 +69,16 @@ export default (pluginManager: PluginManager) => {
       }
     }
 
-    public getRegionStats(region: Region, opts: BaseOptions = {}) {
-      const feats = this.getFeatures(region, opts)
-      return scoresToStats(region, feats)
-    }
-
-    public async getMultiRegionStats(
-      regions: Region[] = [],
-      opts: BaseOptions = {},
-    ) {
-      if (!regions.length) {
-        return blankStats()
-      }
-
-      const feats = await Promise.all(
-        regions.map(region => this.getRegionStats(region, opts)),
-      )
-
-      const scoreMax = feats
-        .map(s => s.scoreMax)
-        .reduce((acc, curr) => Math.max(acc, curr))
-      const scoreMin = feats
-        .map(s => s.scoreMin)
-        .reduce((acc, curr) => Math.min(acc, curr))
-      const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-      const scoreSumSquares = feats
-        .map(s => s.scoreSumSquares)
-        .reduce((a, b) => a + b, 0)
-      const featureCount = feats
-        .map(s => s.featureCount)
-        .reduce((a, b) => a + b, 0)
-      const basesCovered = feats
-        .map(s => s.basesCovered)
-        .reduce((a, b) => a + b, 0)
-
-      return rectifyStats({
-        scoreMin,
-        scoreMax,
-        featureCount,
-        basesCovered,
-        scoreSumSquares,
-        scoreSum,
-      })
-    }
-
     getFeatures(region: Region, opts: BaseOptions = {}) {
       return ObservableCreate<Feature>(async observer => {
         const features = await this.subadapter
           .getFeatures(region, opts)
+          .pipe(
+            filter(feature => {
+              // @ts-ignore
+              return opts.filters ? opts.filters.passes(feature, opts) : true
+            }),
+          )
           .pipe(toArray())
           .toPromise()
 
@@ -139,14 +87,22 @@ export default (pluginManager: PluginManager) => {
           region,
           opts.bpPerPx || 1,
         )
+
+        // avoid having the softclip and hardclip count towards score
+        const score = (bin: NestedFrequencyTable) =>
+          bin.total() -
+          (bin.categories.softclip?.total() || 0) -
+          (bin.categories.hardclip?.total() || 0) -
+          (bin.categories.deletion?.total() || 0)
+
         coverageBins.forEach((bin, index) => {
           if (bin.total()) {
             observer.next(
               new SimpleFeature({
-                id: `pos_${region.start}${index}`,
+                id: `${this.id}-${region.start}-${index}`,
                 data: {
-                  score: bin.total(),
-                  snpinfo: generateInfoList(bin), // info needed to draw snps
+                  score: score(bin),
+                  snpinfo: generateInfoList(bin),
                   start: region.start + index,
                   end: region.start + index + 1,
                   refName: region.refName,
@@ -194,17 +150,20 @@ export default (pluginManager: PluginManager) => {
         }
       }
 
-      const forEachBin = function forEachBin(
+      const forEachBin = (
         start: number,
         end: number,
         callback: (bin: number, overlap: number) => void,
-      ) {
+      ) => {
         let s = (start - leftBase) / binWidth
         let e = (end - 1 - leftBase) / binWidth
         let sb = Math.floor(s)
         let eb = Math.floor(e)
 
-        if (sb >= binMax || eb < 0) return // does not overlap this block
+        if (sb >= binMax || eb < 0) {
+          // does not overlap this block
+          return
+        }
 
         // enforce 0 <= bin < binMax
         if (sb < 0) {
@@ -250,7 +209,9 @@ export default (pluginManager: PluginManager) => {
         const strand = getStrand(feature)
         const start = feature.get('start')
         const end = feature.get('end')
-        // increment start and end partial-overlap bins by proportion of overlap
+
+        // increment start and end partial-overlap bins by proportion of
+        // overlap
         forEachBin(start, end, (bin, overlap) => {
           coverageBins[bin].getNested('reference').increment(strand, overlap)
         })
@@ -258,38 +219,57 @@ export default (pluginManager: PluginManager) => {
         // Calculate SNP coverage
         if (binWidth === 1) {
           const mismatches: Mismatch[] = feature.get('mismatches')
-          // bpPerPx < 10 ? feature.get('mismatches') : feature.get('skips_and_dels')
 
-          // loops through mismatches and updates coverage variables accordingly.
+          // loops through mismatches and updates coverage variables
+          // accordingly.
           if (mismatches) {
             for (let i = 0; i < mismatches.length; i++) {
               const mismatch = mismatches[i]
-              if (mismatch.type !== 'insertion') {
-                forEachBin(
-                  start + mismatch.start,
-                  start + mismatch.start + mismatch.length,
-                  (binNum, overlap) => {
-                    // Note: we decrement 'reference' so that total of the score is the total coverage
-                    const bin = coverageBins[binNum]
-                    bin.getNested('reference').decrement(strand, overlap)
-                    let { base } = mismatch
-
-                    if (mismatch.type === 'insertion') {
-                      base = `ins ${base}`
-                    } else if (mismatch.type === 'skip') {
-                      base = 'skip'
-                    }
-
-                    if (base === 'skip') {
-                      bin.getNested(base).decrement('reference', overlap)
-                    }
-
-                    if (base && base !== '*' && base !== 'skip') {
-                      bin.getNested(base).increment(strand, overlap)
-                    }
-                  },
-                )
+              const len = (base: Mismatch) => {
+                return base.type !== 'insertion' &&
+                  base.type !== 'softclip' &&
+                  base.type !== 'hardclip'
+                  ? base.length
+                  : 1
               }
+
+              forEachBin(
+                start + mismatch.start,
+                start + mismatch.start + len(mismatch),
+                (binNum, overlap) => {
+                  // Note: we decrement 'reference' so that total of the score
+                  // is the total coverage
+                  const bin = coverageBins[binNum]
+                  if (
+                    mismatch.type !== 'softclip' &&
+                    mismatch.type !== 'hardclip'
+                  ) {
+                    bin.getNested('reference').decrement(strand, overlap)
+                  }
+
+                  let { base } = mismatch
+
+                  if (mismatch.type === 'insertion') {
+                    base = `insertion`
+                  } else if (mismatch.type === 'skip') {
+                    base = 'skip'
+                  } else if (mismatch.type === 'softclip') {
+                    base = 'softclip'
+                  } else if (mismatch.type === 'hardclip') {
+                    base = 'hardclip'
+                  } else if (mismatch.type === 'deletion') {
+                    base = 'deletion'
+                  }
+
+                  if (base === 'skip') {
+                    bin.getNested(base).decrement('reference', overlap)
+                  }
+
+                  if (base && base !== '*' && base !== 'skip') {
+                    bin.getNested(base).increment(strand, overlap)
+                  }
+                },
+              )
             }
           }
         }

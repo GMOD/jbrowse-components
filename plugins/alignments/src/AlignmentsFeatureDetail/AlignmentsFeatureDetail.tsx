@@ -1,35 +1,22 @@
-import Paper from '@material-ui/core/Paper'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React, { useState, FunctionComponent } from 'react'
+import { Typography, Link, Paper } from '@material-ui/core'
+import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
+import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
 import {
-  BaseFeatureDetails,
+  FeatureDetails,
   BaseCard,
   useStyles,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+import { parseCigar } from '../BamAdapter/MismatchParser'
 
-interface AlnCardProps {
-  title: string
-}
+const omit = ['clipPos', 'flags']
 
-interface AlnProps extends AlnCardProps {
-  feature: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
-const featureFlags = [
-  'unmapped',
-  'qc_failed',
-  'duplicate',
-  'secondary_alignment',
-  'supplementary_alignment',
-]
-
-const omit = ['length_on_ref', 'clipPos', 'template_length']
-
-const AlignmentFlags: FunctionComponent<AlnProps> = props => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function AlignmentFlags(props: { feature: any }) {
   const classes = useStyles()
   const { feature } = props
+  const { flags } = feature
   const flagNames = [
     'read paired',
     'read mapped in proper pair',
@@ -44,7 +31,6 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
     'read is PCR or optical duplicate',
     'supplementary alignment',
   ]
-  const { flags } = feature
   return (
     <BaseCard {...props} title="Flags">
       <div style={{ display: 'flex' }}>
@@ -64,13 +50,6 @@ const AlignmentFlags: FunctionComponent<AlnProps> = props => {
       })}
     </BaseCard>
   )
-}
-AlignmentFlags.propTypes = {
-  feature: PropTypes.objectOf(PropTypes.any).isRequired,
-}
-
-interface AlnInputProps extends AlnCardProps {
-  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 function Formatter({ value }: { value: unknown }) {
@@ -92,22 +71,113 @@ function Formatter({ value }: { value: unknown }) {
   return <div>{display}</div>
 }
 
-const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
+// utility function to get length of alignment from cigar
+function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function SupplementaryAlignments(props: { tag: string; model: any }) {
+  const { tag, model } = props
+  const session = getSession(model)
+  return (
+    <BaseCard {...props} title="Supplementary alignments">
+      <Typography>List of supplementary alignment locations</Typography>
+      <ul>
+        {tag
+          .split(';')
+          .filter(SA => !!SA)
+          .map((SA, index) => {
+            const [saRef, saStart, saStrand, saCigar] = SA.split(',')
+            const saLength = getLengthOnRef(saCigar)
+            const extra = Math.floor(saLength / 5)
+            const start = +saStart
+            const end = +saStart + saLength
+            const locString = `${saRef}:${Math.max(1, start - extra)}-${
+              end + extra
+            }`
+            const displayString = `${saRef}:${start}-${end} (${saStrand})`
+            return (
+              <li key={`${locString}-${index}`}>
+                <Link
+                  onClick={() => {
+                    const { view } = model
+                    if (view) {
+                      view.navToLocString(locString)
+                    } else {
+                      session.notify(
+                        'No view associated with this feature detail panel anymore',
+                        'warning',
+                      )
+                    }
+                  }}
+                  href="#"
+                >
+                  {displayString}
+                </Link>
+              </li>
+            )
+          })}
+      </ul>
+    </BaseCard>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function PairLink({ locString, model }: { locString: string; model: any }) {
+  const session = getSession(model)
+  return (
+    <Link
+      onClick={() => {
+        const { view } = model
+        if (view) {
+          view.navToLocString(locString)
+        } else {
+          session.notify(
+            'No view associated with this feature detail panel anymore',
+            'warning',
+          )
+        }
+      }}
+      href="#"
+    >
+      {locString}
+    </Link>
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function AlignmentFeatureDetails(props: { model: any }) {
   const { model } = props
   const feat = JSON.parse(JSON.stringify(model.featureData))
+  const SA = (feat.tags && feat.tags.SA) || feat.SA
   return (
     <Paper data-testid="alignment-side-drawer">
-      <BaseFeatureDetails
+      <FeatureDetails
         {...props}
-        omit={featureFlags.concat(omit)}
-        formatter={(value: unknown) => <Formatter value={value} />}
+        omit={omit}
+        feature={feat}
+        formatter={(value: unknown, key: string) => {
+          return key === 'next_segment_position' ? (
+            <PairLink model={model} locString={value as string} />
+          ) : (
+            <Formatter value={value} />
+          )
+        }}
       />
+      {SA ? <SupplementaryAlignments model={model} tag={SA} /> : null}
       <AlignmentFlags feature={feat} {...props} />
     </Paper>
   )
-}
-AlignmentFeatureDetails.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(AlignmentFeatureDetails)

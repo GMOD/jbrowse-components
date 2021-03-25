@@ -4,35 +4,34 @@ export default ({ jbrequire }) => {
   const { useEffect, useRef } = React
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
   const { unmountComponentAtNode, hydrate } = jbrequire('react-dom')
+  const { rIC } = jbrequire('@jbrowse/core/util')
 
   function RpcRenderedSvgGroup({ model }) {
     const { data, html, filled, renderProps, renderingComponent } = model
 
     const ssrContainerNode = useRef(null)
-    const hydrated = useRef(false)
 
     useEffect(() => {
       const domNode = ssrContainerNode.current
-      const isHydrated = hydrated.current
       function doHydrate() {
         if (domNode && filled) {
-          if (domNode && domNode.innerHTML && isHydrated) {
+          if (domNode && domNode.innerHTML) {
             domNode.style.display = 'none'
-            requestIdleCallback(() => unmountComponentAtNode(domNode))
+            unmountComponentAtNode(domNode)
           }
           domNode.style.display = 'inline'
           domNode.innerHTML = html
           // use requestIdleCallback to defer main-thread rendering
           // and hydration for when we have some free time. helps
           // keep the framerate up.
-          requestIdleCallback(() => {
+          rIC(() => {
             if (!isAlive(model)) return
             const mainThreadRendering = React.createElement(
               renderingComponent,
               { ...data, ...renderProps },
               null,
             )
-            requestIdleCallback(() => {
+            rIC(() => {
               if (!isAlive(model)) return
               hydrate(mainThreadRendering, domNode)
             })
@@ -40,6 +39,11 @@ export default ({ jbrequire }) => {
         }
       }
       doHydrate()
+      return () => {
+        if (domNode) {
+          unmountComponentAtNode(domNode)
+        }
+      }
     })
 
     return <g ref={ssrContainerNode} />

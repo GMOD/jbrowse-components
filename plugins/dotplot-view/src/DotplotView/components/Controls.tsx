@@ -7,12 +7,10 @@ import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import TrackSelectorIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import IconButton from '@material-ui/core/IconButton'
-import ToggleButton from '@material-ui/lab/ToggleButton'
 
 import { observer } from 'mobx-react'
-import { isSessionModelWithWidgets, getSession } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
 export default () => {
@@ -36,7 +34,6 @@ export default () => {
 
   const Controls = observer(({ model }: { model: DotplotViewModel }) => {
     const classes = useStyles()
-    const session = getSession(model)
     return (
       <div className={classes.controls}>
         <IconButton
@@ -97,22 +94,15 @@ export default () => {
           <ZoomIn />
         </IconButton>
 
-        <ToggleButton
+        <IconButton
           onClick={model.activateTrackSelector}
-          title="select tracks"
-          selected={
-            isSessionModelWithWidgets(session) &&
-            session.visibleWidget &&
-            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            // @ts-ignore
-            session.visibleWidget.view.id === model.id
-          }
+          title="Open track selector"
           value="track_select"
           data-testid="circular_track_select"
           color="secondary"
         >
           <TrackSelectorIcon />
-        </ToggleButton>
+        </IconButton>
       </div>
     )
   })

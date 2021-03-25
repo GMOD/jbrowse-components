@@ -1,5 +1,19 @@
 {
   "configuration": {},
+  "plugins": [
+    {
+      "name": "Biothings",
+      "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
+    },
+    {
+      "name": "GDC",
+      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
+    },
+    {
+      "name": "UCSC",
+      "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
+    }
+  ],
   "assemblies": [
     {
       "name": "hg19",
@@ -65,14 +79,18 @@
       "name": "NCBI RefSeq (GFF3Tabix)",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
+      "metadata": {
+        "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
+        "dateaccessed": "12/03/2020"
+      },
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/GRCh37_latest_genomic.sort.gff.gz.tbi"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
           }
         }
       }
@@ -137,7 +155,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -168,6 +186,84 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarCnv.bb"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg38",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mygene_hg19",
+      "name": "MyGene v3",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "adapter": {
+        "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "type": "MyGeneV3Adapter"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "segdups_ucsc_hg19",
+      "name": "UCSC SegDups",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "genomicSuperDups"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "genehancer_ucsc_hg38",
+      "name": "UCSC GeneHancer",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "geneHancerInteractionsDoubleElite"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "genehancer_ucsc_hg19",
+      "name": "UCSC GeneHancer",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "geneHancerInteractionsDoubleElite"
+      }
+    },
+    {
+      "type": "GDCTrack",
+      "trackId": "gdc_plugin_track",
+      "name": "GDC cancer variants (GraphQL plugin)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "GDCAdapter"
+      },
+      "displays": [
+        {
+          "type": "LinearGDCDisplay",
+          "displayId": "gdc_plugin_track_linear",
+          "renderer": {
+            "color1": "jexl:{LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'}|cast[feature|getData('consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
+            "labels": {
+              "name": "jexl:feature|getData('genomicDnaChange')"
+            },
+            "type": "SvgFeatureRenderer"
+          }
+        }
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -278,7 +374,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -329,7 +425,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('geneName2') }"
+              "description": "jexl:feature|getData('geneName2')"
             }
           }
         }
@@ -338,7 +434,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "gdc_features",
-      "name": "GDC Cancer",
+      "name": "GDC cancer variants (UCSC BigBed)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -364,7 +460,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_refseq_109_hg38",
-      "name": "NCBI RefSeq (GFF3Tabix)",
+      "name": "NCBI RefSeq analysis set (GFF3Tabix)",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
@@ -375,6 +471,24 @@
         "index": {
           "location": {
             "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_109_hg38_latest",
+      "name": "NCBI RefSeq (GFF3Tabix)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz.tbi"
           }
         }
       }
@@ -629,6 +743,27 @@
       }
     },
     {
+      "type": "QuantitativeTrack",
+      "trackId": "gccontent_hg19",
+      "name": "GCContent",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GCContentAdapter",
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "illumina_hg002",
       "name": "HG002 Illumina hs37d5.2x250",
@@ -719,6 +854,42 @@
           "gziLocation": {
             "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
           }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "na12878_highcov",
+      "name": "NA12878 high-coverage",
+      "assemblyNames": ["hg38"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "renderers": {
+        "PileupRenderer": {
+          "type": "PileupRenderer"
+        },
+        "SvgFeatureRenderer": {
+          "type": "SvgFeatureRenderer"
         }
       }
     },
@@ -901,7 +1072,14 @@
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF303QSJ/@@download/ENCFF303QSJ.bigWig"
         }
-      }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "wiggle_global_autoscale-LinearWiggleDisplay",
+          "autoscale": "global"
+        }
+      ]
     },
     {
       "type": "QuantitativeTrack",
@@ -926,6 +1104,24 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF082DRX/@@download/ENCFF082DRX.bigBed"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "get_rm_vcf",
+      "name": "GeT-RM NCBI vcf",
+      "assemblyNames": ["hg19"],
+      "category": ["NA12878"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/NA12878/NA12878_high_quality_variant.vcf.gz.tbi"
+          }
         }
       }
     },
@@ -1359,11 +1555,11 @@
       "adapter": {
         "type": "BamAdapter",
         "bamLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam"
         },
         "index": {
           "location": {
-            "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.bam.bai"
           }
         },
         "sequenceAdapter": {
@@ -1389,10 +1585,10 @@
       "adapter": {
         "type": "CramAdapter",
         "cramLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram"
         },
         "craiLocation": {
-          "uri": "http://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/skbr3/SKBR3_550bp_pcrFREE_S1_L001_AND_L002_R1_001.101bp.bwamem.ill.mapped.sort.cram.crai"
         },
         "sequenceAdapter": {
           "type": "BgzipFastaAdapter",
@@ -1444,7 +1640,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign100mer.bigWig"
         }
       }
     },
@@ -1457,7 +1653,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign24mer.bigWig"
         }
       }
     },
@@ -1470,7 +1666,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign36mer.bigWig"
         }
       }
     },
@@ -1483,7 +1679,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign40mer.bigWig"
         }
       }
     },
@@ -1496,7 +1692,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign50mer.bigWig"
         }
       }
     },
@@ -1509,7 +1705,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeCrgMapabilityAlign75mer.bigWig"
         }
       }
     },
@@ -1522,7 +1718,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness20bp.bigWig"
         }
       }
     },
@@ -1535,7 +1731,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeMapability/wgEncodeDukeMapabilityUniqueness35bp.bigWig"
         }
       }
     },
@@ -1654,6 +1850,1245 @@
           "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenTriplo.bb"
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliSwissprot",
+      "name": "unipAliSwissprot",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliSwissprot.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliTrembl",
+      "name": "unipAliTrembl",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipAliTrembl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipChain",
+      "name": "unipChain",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipChain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipConflict",
+      "name": "unipConflict",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipConflict.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDisulfBond",
+      "name": "unipDisulfBond",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDisulfBond.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDomain",
+      "name": "unipDomain",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipDomain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipInterest",
+      "name": "unipInterest",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipInterest.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocCytopl",
+      "name": "unipLocCytopl",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocCytopl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocExtra",
+      "name": "unipLocExtra",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocExtra.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocSignal",
+      "name": "unipLocSignal",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocSignal.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocTransMemb",
+      "name": "unipLocTransMemb",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipLocTransMemb.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipModif",
+      "name": "unipModif",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipModif.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipMut",
+      "name": "unipMut",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipMut.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipOther",
+      "name": "unipOther",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipOther.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipRepeat",
+      "name": "unipRepeat",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipRepeat.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipSplice",
+      "name": "unipSplice",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipSplice.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipStruct",
+      "name": "unipStruct",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/uniprot/unipStruct.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliSwissprot_hg38",
+      "name": "unipAliSwissprot_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliSwissprot.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipAliTrembl_hg38",
+      "name": "unipAliTrembl_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipAliTrembl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipChain_hg38",
+      "name": "unipChain_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipChain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipConflict_hg38",
+      "name": "unipConflict_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipConflict.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDisulfBond_hg38",
+      "name": "unipDisulfBond_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDisulfBond.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipDomain_hg38",
+      "name": "unipDomain_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipInterest_hg38",
+      "name": "unipInterest_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipInterest.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocCytopl_hg38",
+      "name": "unipLocCytopl_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocCytopl.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocExtra_hg38",
+      "name": "unipLocExtra_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocExtra.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocSignal_hg38",
+      "name": "unipLocSignal_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocSignal.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipLocTransMemb_hg38",
+      "name": "unipLocTransMemb_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipLocTransMemb.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipModif_hg38",
+      "name": "unipModif_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipModif.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipMut_hg38",
+      "name": "unipMut_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipMut.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipOther_hg38",
+      "name": "unipOther_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipOther.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipRepeat_hg38",
+      "name": "unipRepeat_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipRepeat.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipSplice_hg38",
+      "name": "unipSplice_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipSplice.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "unipStruct_hg38",
+      "name": "unipStruct_hg38",
+      "category": ["Uniprot"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipStruct.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "knownGene",
+      "name": "knownGene",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/knownGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "knownGene_hg38",
+      "name": "knownGene_hg38",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/knownGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151.bed4",
+      "name": "snp151.bed4",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp137",
+      "name": "snp137",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/vai/snp137.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "snp151_hg38",
+      "name": "snp151_hg38",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/vai/snp151.bed4.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gnomad_v2.1_sv.sites",
+      "name": "Gnomad - v2.1 SVs",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/structuralVariants/gnomad_v2.1_sv.sites.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "missenseConstrained",
+      "name": "Gnomad - missense constraint",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/missense/missenseConstrained.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "pliByGene",
+      "name": "Gnomad - probability of loss-of-function intolerant (pLI) by gene",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/gnomAD/pLI/pliByGene.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvGold",
+      "name": "dgvGold",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvGold.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvSupporting.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvMerged_hg19",
+      "name": "dgvMerged",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvMerged.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "dgvSupporting_hg19",
+      "name": "dgvSupporting",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg19/dgv/dgvSupporting.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36lift37.annotation.sort.gff3",
+      "name": "Gencode v36 (GRCh37 liftover)",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg37_lift_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "jexl:feature|getData('gene_name')"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36.annotation.sort.gff3",
+      "name": "Gencode v36",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gencode_nclist_v36_hg38_linear",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "feature|getData('gene_name')"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "nstd175.GRCh37.variant_call.vcf",
+      "name": "HG002 dbVar variant calls",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/dbVar/data/Homo_sapiens/by_study/vcf/nstd175.GRCh37.variant_call.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "name": "HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb/alignment/HG002.Sequel.15kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "name": "HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_10kb/alignment/HG002.Sequel.10kb.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio",
+      "name": "HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_CCS_15kb_20kb_chemistry2/GRCh37/HG002.SequelII.merged_15kb_20kb.pbmm2.hs37d5.haplotag.RTG.10x.trio.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "name": "HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/PacBio_SequelII_CCS_11kb/HG002.SequelII.pbmm2.hs37d5.whatshap.haplotag.RTG.10x.trio.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002_GRCh37_ONT-UL_UCSC_20200508.phased",
+      "name": "HG002_GRCh37_ONT-UL_UCSC_20200508.phased",
+      "category": ["GIAB", "Nanopore"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/UCSC_Ultralong_OxfordNanopore_Promethion/HG002_GRCh37_ONT-UL_UCSC_20200508.phased.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002_hs37d5_ONT-UL_GIAB_20200204",
+      "name": "HG002_hs37d5_ONT-UL_GIAB_20200204",
+      "category": ["GIAB", "Nanopore"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/guppy-V3.4.5/HG002_hs37d5_ONT-UL_GIAB_20200204.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG003.hs37d5.consensusalignments",
+      "name": "HG003.hs37d5.consensusalignments",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG003.hs37d5.consensusalignments.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG003_GRCh37_ONT-UL_UCSC_20200508",
+      "name": "HG003_GRCh37_ONT-UL_UCSC_20200508",
+      "category": ["GIAB", "Nanopore"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/UCSC_Ultralong_OxfordNanopore_Promethion/HG003_GRCh37_ONT-UL_UCSC_20200508.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG004_GRCh37_ONT-UL_UCSC_20200508",
+      "name": "HG004_GRCh37_ONT-UL_UCSC_20200508",
+      "category": ["GIAB", "Nanopore"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/UCSC_Ultralong_OxfordNanopore_Promethion/HG004_GRCh37_ONT-UL_UCSC_20200508.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG004.hs37d5.consensusalignments",
+      "name": "HG004.hs37d5.consensusalignments",
+      "category": ["GIAB", "Pacbio"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/PacBio_CCS_15kb_20kb_chemistry2/hs37d5/HG004.hs37d5.consensusalignments.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG004.hs37d5.2x250",
+      "name": "HG004.hs37d5.2x250",
+      "category": ["GIAB", "Illumina"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG004_NA24143_mother/NIST_Illumina_2x250bps/novoalign_bams/HG004.hs37d5.2x250.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG003.hs37d5.2x250",
+      "name": "HG003.hs37d5.2x250",
+      "category": ["GIAB", "Illumina"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams/HG003.hs37d5.2x250.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.hs37d5.2x250",
+      "name": "HG002.hs37d5.2x250",
+      "category": ["GIAB", "Illumina"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Illumina_2x250bps/novoalign_bams/HG002.hs37d5.2x250.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "svanalyzer_union_171212_v0.5.0_annotated.vcf",
+      "name": "Crowdsourced GIAB SV",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/analysis/NIST_UnionSVs_12122017/svanalyzer_union_171212_v0.5.0_annotated.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG002.hs37d5.300x",
+      "name": "HG002.hs37d5.300x",
+      "category": ["GIAB"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_HiSeq_HG002_Homogeneity-10953946/NHGRI_Illumina300X_AJtrio_novoalign_bams/HG002.hs37d5.300x.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way_line",
+      "name": "hg19.100way.phyloP100way (line)",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "hg19.100way.phyloP100way_line",
+          "defaultRendering": "line"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way_density",
+      "name": "hg19.100way.phyloP100way (density)",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "hg19.100way.phyloP100way_density",
+          "defaultRendering": "density"
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg19.100way.phyloP100way",
+      "name": "hg19.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw"
+        }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38.100way.phyloP100way",
+      "name": "hg38.100way.phyloP100way",
+      "category": ["Conservation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.100way.phyloP100way.bw"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "encodeCcreCombined",
+      "name": "ENCODE cis-regulatory elements (all cell types)",
+      "category": ["Annotation"],
+      "metadata": {
+        "source": "https://genome.ucsc.edu/cgi-bin/hgTrackUi?hgsid=1020236289_HOhuYmfogKvSVWee06A1OECtrgLq&c=chrX&g=encodeCcreCombined"
+      },
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/encode3/ccre/encodeCcreCombined.bb"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "testing1",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "labels": {
+              "description": "f|getData('ucscLabel')"
+            }
+          }
+        }
+      ]
     }
   ],
   "connections": [],

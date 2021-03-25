@@ -62,6 +62,10 @@ export default class extends BaseFeatureDataAdapter {
     return this.gff.getReferenceSequenceNames(opts)
   }
 
+  public async getHeader() {
+    return this.gff.getHeader()
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
@@ -191,7 +195,6 @@ export default class extends BaseFeatureDataAdapter {
 
   private featureData(data: FeatureLoc) {
     const f: Record<string, unknown> = { ...data }
-
     ;(f.start as number) -= 1 // convert to interbase
     f.strand = { '+': 1, '-': -1, '.': 0, '?': undefined }[data.strand] // convert strand
     f.phase = Number(data.phase)

@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import fs, { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import crypto from 'crypto'
 import boxen from 'boxen'
 import chalk from 'chalk'
@@ -7,6 +7,8 @@ import os from 'os'
 import express from 'express'
 import cors from 'cors'
 import JBrowseCommand, { Config } from '../base'
+
+const fsPromises = fs.promises
 
 function isValidPort(port: number) {
   return port > 0 && port < 65535
@@ -77,7 +79,6 @@ export default class AdminServer extends JBrowseCommand {
         port = parseInt(runFlags.port, 10)
       }
     }
-    // @ts-ignore
     const app = express()
     app.use(express.static('.'))
     app.use(cors())
@@ -132,7 +133,9 @@ export default class AdminServer extends JBrowseCommand {
       const ip = getNetworkAddress()
 
       localAddress = `http://${address}:${details.port}?adminKey=${adminKey}`
-      networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+      if (ip) {
+        networkAddress = `http://${ip}:${details.port}?adminKey=${adminKey}`
+      }
     }
     let message = chalk.green(
       'Now serving JBrowse\nNavigate to the below URL to configure',
@@ -162,5 +165,5 @@ function getNetworkAddress() {
       }
     }
   }
-  throw new Error('Could not determine IP address')
+  return undefined
 }

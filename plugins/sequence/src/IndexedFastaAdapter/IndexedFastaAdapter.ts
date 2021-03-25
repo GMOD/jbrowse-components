@@ -1,7 +1,7 @@
 import { IndexedFasta } from '@gmod/indexedfasta'
 import {
   BaseFeatureDataAdapter,
-  RegionsAdapter,
+  SequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -12,7 +12,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import AbortablePromiseCache from 'abortable-promise-cache'
 import LRU from '@jbrowse/core/util/QuickLRU'
 
-export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
+export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
   protected fasta: typeof IndexedFasta
 
   private seqCache = new AbortablePromiseCache({

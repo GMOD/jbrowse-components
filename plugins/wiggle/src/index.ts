@@ -3,11 +3,14 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import WiggleBaseRenderer from './WiggleBaseRenderer'
+import WiggleRendering from './WiggleRendering'
 import {
   AdapterClass as BigWigAdapterClass,
   configSchema as bigWigAdapterConfigSchema,
@@ -16,10 +19,12 @@ import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
   ReactComponent as DensityRendererReactComponent,
 } from './DensityRenderer'
+import * as utils from './util'
 import {
   configSchemaFactory as linearWiggleDisplayConfigSchemaFactory,
   modelFactory as linearWiggleDisplayModelFactory,
   ReactComponent as LinearWiggleDisplayReactComponent,
+  YSCALEBAR_LABEL_OFFSET,
 } from './LinearWiggleDisplay'
 import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
@@ -60,7 +65,10 @@ export default class extends Plugin {
       return new DisplayType({
         name: 'LinearWiggleDisplay',
         configSchema,
-        stateModel: linearWiggleDisplayModelFactory(configSchema),
+        stateModel: linearWiggleDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
         trackType: 'QuantitativeTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,
@@ -82,6 +90,7 @@ export default class extends Plugin {
           name: 'DensityRenderer',
           ReactComponent: DensityRendererReactComponent,
           configSchema: densityRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -91,6 +100,7 @@ export default class extends Plugin {
           name: 'LinePlotRenderer',
           ReactComponent: LinePlotRendererReactComponent,
           configSchema: linePlotRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -100,6 +110,7 @@ export default class extends Plugin {
           name: 'XYPlotRenderer',
           ReactComponent: XYPlotRendererReactComponent,
           configSchema: xyPlotRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -108,11 +119,19 @@ export default class extends Plugin {
       () => new WiggleGetMultiRegionStats(pluginManager),
     )
   }
+
+  exports = {
+    LinearWiggleDisplayReactComponent,
+    XYPlotRendererReactComponent,
+    utils,
+    WiggleBaseRenderer,
+    linearWiggleDisplayModelFactory,
+  }
 }
 
-export * from './statsUtil'
 export * from './util'
 
-export { default as WiggleRendering } from './WiggleRendering'
-export { default as WiggleBaseRenderer } from './WiggleBaseRenderer'
+export { WiggleRendering }
+export { WiggleBaseRenderer }
 export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
+export { YSCALEBAR_LABEL_OFFSET }

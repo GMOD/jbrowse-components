@@ -1,6 +1,6 @@
 import React from 'react'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
@@ -16,7 +16,11 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
-const getFile = (url: string) => new LocalFile(require.resolve(`../../${url}`))
+const getFile = (url: string) => {
+  url = url.replace(/http:\/\/localhost\//, '')
+  return new LocalFile(require.resolve(`../../${url}`))
+}
+
 const readBuffer = async (url: string, args: RequestInit) => {
   if (url.match(/testid/)) {
     return {
@@ -26,10 +30,27 @@ const readBuffer = async (url: string, args: RequestInit) => {
       },
     }
   }
+  if (url.match(/testcustomcallback/)) {
+    return {
+      ok: true,
+      async text() {
+        return `{"session":"eJzVVm1v2zYQ_isCvzQB7NiK4zTQt9TNVm9p59puUmANAlo6SdwoSiPptwb-7zuSsiw7dhpk2YB9MGAe7-W5e053fCAsIgHRX5fwOfslnJAGETQDFPWFhkRSzXLhaVDagwXNCg6e37ponbZP_YbXDfyLoPvWG3xEs4zKhAkStBskknQO8pZFOiVB5-KsQWYM5ooEvz-4cGzj-974RnO9LEzUayaAyp9B5BncoBHe5HGsQA8WJDhtt9H7pBiANMf2SbuLwZgqOF1CNIQE_bkoEuJPLo1QJ5foRGkqtQUHAhF00ZPfQLUZSAUoiClX0CBUKcgmfFkaz3I-yxdkdYf4JA3_rKUwHOpr-XF0c7PBfslZIjIQWo2NMl6EuYhZMnWZVv6aPBdJUwKNVFPNmhOaNf1zv312cX7WOe-87TQVKIUGay9lhrXgf_XTL1dt6Y-Gu5XbYHjvrFBhwDhMi_U5KH2o3kD9OhmLSO362NZvkBRYkmLxfFP9nZQenjYtofejp5I_gHy7KPeFdX2_WH43zZZPFeRIHvqNpyI0YI5ioHoq4dh7-CY8TwIehFcKTxLQR28UsiiiN8ffxIoY9kUEEhvApOGQD0tRLbGdi1WDjGbJT87rHvU9l6sVGqk0n4_yWPc4KwomkqrlYsY1yHeWmJjTpC9CPo3A9qo5Xy3Ks9_tnBtPo0-DnkmdJrDLaZq__0qv2Kw72eV0j9GG2LMf8rrX_BXJVaIIS___GsO1HPbxtufWEQccQm3Gi5Fa5oh1rXI-dcXybflMaBxsJtbqBbQ-e1Y8q6I1dk-7bdd-6_xIoOUUnMx1t5Os7sygS1kEHzCeqU7ZohvRb-jBzPLqyo7FkS1RLseulCnDMDJMWUg5KVWu6QQ4loYYDJy6T6CEhUmANFmVXg2KOYuQT8tb3d24Hm7T9gc1qq_gwyGVWxvIzmqOuOwy2PA3hoV2fLusH2-uirmriNUxbQkrGL06ye6yAoAbyvx52ZZAGCwrcqlHTlp6XaPZd1eB6u-5NB1J8aObwW3FhEtVgP0W-9jvVIRQXtTBuEV1cCnafnh6aDy5DkV9N1tjzxp7c6ZTb3TjHYV5sTwm29vcgFrvc-wvGtFCbw2AdzS7LIX4xqDZdR5Ws3Aq2QG4J6hp9RV8sUqp1kXQanG05mmudNDBp0bLtMp9RDVtOSct1x4nfygMYLjD2bIwkfizo-KP_ePIhuat58UPHxOvN_T_d2u88cIV8npvpC3TR9X8L98zr_w-eGz_dHYvIsKut3KY9KpBZvr-bvU3l2iNHA"}`
+      },
+    }
+  }
   if (url.match(/nonexist/)) {
     return {
       ok: false,
       statusText: 'failed to find session',
+    }
+  }
+  // this is the analytics
+  if (url.match(/jb2=true/)) {
+    return {
+      ok: true,
+      async json() {
+        return {}
+      },
     }
   }
   try {
@@ -106,7 +127,7 @@ describe('<Loader />', () => {
       </QueryParamProvider>,
     )
 
-    expect(await findByText('Help')).toBeTruthy()
+    await findByText('Help')
   })
 
   it('can use config from a url with shared session ', async () => {
@@ -121,10 +142,27 @@ describe('<Loader />', () => {
         <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>,
     )
-    expect(await findByText('Help')).toBeTruthy()
 
-    expect(sessionStorage.length).toBeGreaterThan(0)
+    await findByText('Help')
+    await waitFor(() => {
+      expect(sessionStorage.length).toBeGreaterThan(0)
+    })
   })
+
+  xit('can warn of custom callbacks in shared session', async () => {
+    const { findByTestId } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=share-testcustomcallback&password=ZXCV1',
+        }}
+      >
+        <Loader initialTimestamp={initialTimestamp} />
+      </QueryParamProvider>,
+    )
+    expect(await findByTestId('session-warning-modal')).toBeTruthy()
+  }, 10000)
 
   it('can use config from a url with nonexistent share param ', async () => {
     const { findAllByText } = render(
@@ -140,6 +178,23 @@ describe('<Loader />', () => {
         </QueryParamProvider>
       </ErrorBoundary>,
     )
-    await findAllByText(/Unable to fetch session/)
+    await findAllByText(/Error/)
+  }, 10000)
+
+  it('can catch error from loading a bad config', async () => {
+    const { findAllByText } = render(
+      <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
+        <QueryParamProvider
+          // @ts-ignore
+          location={{
+            search:
+              '?config=test_data/bad_config_for_testing_error_catcher.json',
+          }}
+        >
+          <Loader initialTimestamp={initialTimestamp} />
+        </QueryParamProvider>
+      </ErrorBoundary>,
+    )
+    await findAllByText(/Failed to load/)
   }, 10000)
 })

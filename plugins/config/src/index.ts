@@ -10,8 +10,10 @@ import {
 } from './ConfigurationEditorWidget'
 import {
   AdapterClass as FromConfigAdapterClass,
+  RegionsAdapterClass as FromConfigRegionsAdapterClass,
   SequenceAdapterClass as FromConfigSequenceAdapterClass,
   configSchema as fromConfigAdapterConfigSchema,
+  regionsConfigSchema as fromConfigRegionsAdapterConfigSchema,
   sequenceConfigSchema as fromConfigSequenceAdapterConfigSchema,
 } from './FromConfigAdapter'
 import {
@@ -29,6 +31,14 @@ export default class extends Plugin {
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
           AdapterClass: FromConfigAdapterClass,
+        }),
+    )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'FromConfigRegionsAdapter',
+          configSchema: fromConfigRegionsAdapterConfigSchema,
+          AdapterClass: FromConfigRegionsAdapterClass,
         }),
     )
     pluginManager.addAdapterType(

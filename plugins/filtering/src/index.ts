@@ -19,7 +19,7 @@ export default class extends Plugin {
         name: 'LinearFilteringDisplay',
         configSchema,
         stateModel: linearFilteringDisplayModelFactory(configSchema),
-        trackType: 'FeatureTrack',
+        trackType: 'FilteringTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearFilteringDisplayReactComponent,
       })

@@ -9,14 +9,14 @@ function Box(props) {
   const { feature, region, config, featureLayout, selected, bpPerPx } = props
   const screenWidth = (region.end - region.start) / bpPerPx
 
-  const color1 = readConfObject(config, 'color1', [feature])
+  const color1 = readConfObject(config, 'color1', { feature })
   let emphasizedColor1
   try {
     emphasizedColor1 = emphasize(color1, 0.3)
   } catch (error) {
     emphasizedColor1 = color1
   }
-  const color2 = readConfObject(config, 'color2', [feature])
+  const color2 = readConfObject(config, 'color2', { feature })
 
   const { left, top, width, height } = featureLayout.absolute
 

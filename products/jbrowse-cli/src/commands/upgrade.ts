@@ -11,7 +11,7 @@ export default class Upgrade extends JBrowseCommand {
   static examples = [
     '$ jbrowse upgrade # Upgrades current directory to latest jbrowse release',
     '$ jbrowse upgrade /path/to/jbrowse2/installation',
-    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag @jbrowse/web@0.0.1',
+    '$ jbrowse upgrade /path/to/jbrowse2/installation --tag v1.0.0',
     '$ jbrowse upgrade --listVersions # Lists out all available versions of JBrowse 2',
     '$ jbrowse upgrade --url https://sample.com/jbrowse2.zip',
   ]
@@ -41,7 +41,13 @@ export default class Upgrade extends JBrowseCommand {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.\nDefaults to latest',
+        'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
+    }),
+    branch: flags.string({
+      description: 'Download a development build from a named git branch',
+    }),
+    nightly: flags.boolean({
+      description: 'Download the latest development build from the main branch',
     }),
     url: flags.string({
       char: 'u',
@@ -53,7 +59,7 @@ export default class Upgrade extends JBrowseCommand {
     const { args: runArgs, flags: runFlags } = this.parse(Upgrade)
     const { localPath: argsPath } = runArgs as { localPath: string }
 
-    const { listVersions, tag, url } = runFlags
+    const { listVersions, tag, url, branch, nightly } = runFlags
 
     if (listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
@@ -77,7 +83,10 @@ export default class Upgrade extends JBrowseCommand {
     }
 
     const locationUrl =
-      url || (tag ? await this.getTag(tag) : await this.getLatest())
+      url ||
+      (nightly ? await this.getBranch('main') : '') ||
+      (branch ? await this.getBranch(branch) : '') ||
+      (tag ? await this.getTag(tag) : await this.getLatest())
 
     this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)

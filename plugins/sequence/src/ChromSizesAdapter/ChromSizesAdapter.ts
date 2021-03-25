@@ -1,17 +1,15 @@
 import {
-  BaseFeatureDataAdapter,
   RegionsAdapter,
+  BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { GenericFilehandle } from 'generic-filehandle'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import MyConfigSchema from './configSchema'
 
-export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
+export default class extends BaseAdapter implements RegionsAdapter {
   // the map of refSeq to length
   protected refSeqs: Promise<Record<string, number>>
 
@@ -43,10 +41,6 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
     return refSeqs
   }
 
-  public async getRefNames() {
-    return Object.keys(await this.refSeqs)
-  }
-
   public async getRegions() {
     const refSeqs = await this.refSeqs
     return Object.keys(refSeqs).map(refName => ({
@@ -54,13 +48,6 @@ export default class extends BaseFeatureDataAdapter implements RegionsAdapter {
       start: 0,
       end: refSeqs[refName],
     }))
-  }
-
-  public getFeatures() {
-    return ObservableCreate<Feature>(observer => {
-      // provides no sequence
-      observer.complete()
-    })
   }
 
   public freeResources(/* { region } */): void {}

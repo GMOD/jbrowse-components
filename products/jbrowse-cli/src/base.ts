@@ -208,7 +208,7 @@ export default abstract class JBrowseCommand extends Command {
       }
     }
 
-    throw new Error('no @jbrowse/web tags found')
+    throw new Error('no version tags found')
   }
 
   async *fetchVersions() {
@@ -224,9 +224,7 @@ export default abstract class JBrowseCommand extends Command {
         // eslint-disable-next-line no-await-in-loop
         result = (await response.json()) as GithubRelease[]
 
-        yield result.filter(release =>
-          release.tag_name.startsWith('@jbrowse/web'),
-        )
+        yield result.filter(release => release.tag_name.startsWith('v'))
         page++
       } else {
         throw new Error(`${response.statusText}`)
@@ -250,5 +248,9 @@ export default abstract class JBrowseCommand extends Command {
     return this.error(`Error: Could not find version: ${response.statusText}`, {
       exit: 90,
     })
+  }
+
+  async getBranch(branch: string) {
+    return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
   }
 }

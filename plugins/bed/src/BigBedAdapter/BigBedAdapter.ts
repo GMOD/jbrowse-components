@@ -50,6 +50,18 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys((await this.bigbed.getHeader()).refsByName)
   }
 
+  async getHeader(opts?: BaseOptions) {
+    const { version, fileType } = await this.bigbed.getHeader(opts)
+    // @ts-ignore
+    const { autoSql } = await this.parser
+    const { fields, ...rest } = autoSql
+    const f = Object.fromEntries(
+      // @ts-ignore
+      fields.map(({ name, comment }) => [name, comment]),
+    )
+    return { version, fileType, autoSql: { ...rest }, fields: f }
+  }
+
   public async refIdToName(refId: number) {
     return ((await this.bigbed.getHeader()).refsByNumber[refId] || {}).name
   }
@@ -101,6 +113,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
               if (r.uniqueId === undefined) {
                 throw new Error('invalid bbi feature')
               }
+              delete data.chromStart
+              delete data.chromEnd
+              delete data.chrom
 
               const f = new SimpleFeature({
                 id: `${this.id}-${r.uniqueId}`,
@@ -111,7 +126,13 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
                   refName,
                 },
               })
-              return f.get('thickStart') && f.get('blockCount')
+
+              // collection of heuristics for suggesting that this feature
+              // should be converted to a gene, CNV bigbed has many gene like
+              // features including thickStart and blockCount but no strand
+              return f.get('thickStart') &&
+                f.get('blockCount') &&
+                f.get('strand') !== 0
                 ? ucscProcessedTranscript(f)
                 : f
             },

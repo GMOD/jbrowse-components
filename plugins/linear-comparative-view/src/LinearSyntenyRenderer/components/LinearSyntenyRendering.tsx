@@ -56,8 +56,8 @@ function layoutMatches(features: Feature[][]) {
 }
 
 /**
- * A block whose content is rendered outside of the main thread and hydrated by this
- * component.
+ * A block whose content is rendered outside of the main thread and hydrated by
+ * this component.
  */
 function LinearSyntenyRendering(props: {
   width: number
@@ -108,8 +108,8 @@ function LinearSyntenyRendering(props: {
     const middle = true
     const hideTiny = false
     matches.forEach(m => {
-      // we follow a path in the list of chunks, not from top to bottom, just in series
-      // following x1,y1 -> x2,y2
+      // we follow a path in the list of chunks, not from top to bottom, just
+      // in series following x1,y1 -> x2,y2
       for (let i = 0; i < m.length - 1; i += 1) {
         const { layout: c1, feature: f1, level: l1, refName: ref1 } = m[i]
         const { layout: c2, feature: f2, level: l2, refName: ref2 } = m[i + 1]
@@ -148,8 +148,8 @@ function LinearSyntenyRendering(props: {
             // @ts-ignore
             overlayYPos(trackIds[1], l2, views, c2, l2 < l1)
 
-        // drawing a line if the results are thin results in much less pixellation than
-        // filling in a thin polygon
+        // drawing a line if the results are thin results in much less
+        // pixellation than filling in a thin polygon
         if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
           ctx.beginPath()
           ctx.moveTo(x11, y1)
@@ -158,6 +158,12 @@ function LinearSyntenyRendering(props: {
         } else {
           let currX1 = x11
           let currX2 = x21
+
+          // flip the direction of the CIGAR drawing in horizontally flipped
+          // modes
+          const rev1 = x11 < x12 ? 1 : -1
+          const rev2 = x21 < x22 ? 1 : -1
+
           const cigar = f1.get('cg') || f1.get('CIGAR')
           if (cigar) {
             const cigarOps = parseCigar(cigar)
@@ -168,19 +174,23 @@ function LinearSyntenyRendering(props: {
               const prevX1 = currX1
               const prevX2 = currX2
 
-              if (op === 'M') {
+              if (op === 'M' || op === '=') {
                 ctx.fillStyle = '#f003'
-                currX1 += val / views[0].bpPerPx
-                currX2 += val / views[1].bpPerPx
+                currX1 += (val / views[0].bpPerPx) * rev1
+                currX2 += (val / views[1].bpPerPx) * rev2
+              } else if (op === 'X') {
+                ctx.fillStyle = 'brown'
+                currX1 += (val / views[0].bpPerPx) * rev1
+                currX2 += (val / views[1].bpPerPx) * rev2
               } else if (op === 'D') {
                 ctx.fillStyle = '#00f3'
-                currX1 += val / views[0].bpPerPx
+                currX1 += (val / views[0].bpPerPx) * rev1
               } else if (op === 'N') {
                 ctx.fillStyle = '#0a03'
-                currX1 += val / views[0].bpPerPx
+                currX1 += (val / views[0].bpPerPx) * rev1
               } else if (op === 'I') {
                 ctx.fillStyle = '#ff03'
-                currX2 += val / views[1].bpPerPx
+                currX2 += (val / views[1].bpPerPx) * rev2
               }
               ctx.beginPath()
               ctx.moveTo(prevX1, y1)

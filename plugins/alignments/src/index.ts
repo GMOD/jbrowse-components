@@ -14,7 +14,7 @@ import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
-  stateModel as alignmentsFeatureDetailStateModel,
+  stateModelFactory as alignmentsFeatureDetailStateModelFactory,
 } from './AlignmentsFeatureDetail'
 import BamAdapterF from './BamAdapter'
 import * as MismatchParser from './BamAdapter/MismatchParser'
@@ -42,6 +42,7 @@ import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
+import { PileupGetGlobalValueForTag } from './PileupRPC/rpcMethods'
 
 export { MismatchParser }
 
@@ -94,7 +95,10 @@ export default class AlignmentsPlugin extends Plugin {
       return new DisplayType({
         name: 'LinearSNPCoverageDisplay',
         configSchema,
-        stateModel: linearSNPCoverageDisplayModelFactory(configSchema),
+        stateModel: linearSNPCoverageDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
         trackType: 'AlignmentsTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LinearWiggleDisplayReactComponent,
@@ -120,9 +124,9 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'AlignmentsFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
-          stateModel: alignmentsFeatureDetailStateModel,
+          stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
           ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )
@@ -161,6 +165,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+          pluginManager,
         }),
     )
     pluginManager.addRendererType(
@@ -169,7 +174,12 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
+          pluginManager,
         }),
+    )
+
+    pluginManager.addRpcMethod(
+      () => new PileupGetGlobalValueForTag(pluginManager),
     )
   }
 }

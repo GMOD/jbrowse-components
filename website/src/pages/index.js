@@ -37,35 +37,54 @@ const useStyles = makeStyles(theme => ({
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
+  const { currentLink } = siteConfig.customFields
+  const pathArray = currentLink.split('/')
+  const currentVersion = pathArray[pathArray.length - 2]
+  const storybookLink = `https://jbrowse.org/storybook/lgv/${currentVersion}/`
   const classes = useStyles()
+
   return (
-    <Layout
-      title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title={`${siteConfig.title}`}>
       <div className={classes.body}>
         <div className={classes.container}>
           <div style={{ flexBasis: '50%' }}>
             <h1>JBrowse 2</h1>
             <p>
               A pluggable open-source platform for visualizing and integrating
-              biological data
+              biological data.
             </p>
+            <p>
+              Includes a full-featured web application, embeddable components
+              for developers, and soon a desktop application.
+            </p>
+            <h3>Web</h3>
             <ul>
               <li>
                 {' '}
-                <Link href="/jb2/blog" variant="contained">
-                  Download latest release
-                </Link>
+                <Link href="/jb2/blog">Download latest web release</Link>
               </li>
               <li>
-                <Link
-                  href={siteConfig.customFields.currentLink}
-                  variant="contained"
-                >
-                  Browse demo instance
+                <Link href={currentLink}>Browse web demo instance</Link>
+              </li>
+            </ul>
+            <h3>Embedded</h3>
+            <ul>
+              <li>
+                <Link href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
+                  Linear genome view React component on <tt>npm</tt>
+                </Link>{' '}
+                <Link href={storybookLink}>(docs)</Link>
+              </li>
+              <li>
+                <Link href="https://gmod.github.io/JBrowseR/">
+                  JBrowseR R package on <tt>CRAN</tt>
                 </Link>
               </li>
+              <li>More embeddable products coming soon</li>
+            </ul>
+            <h3>Desktop</h3>
+            <ul>
+              <li>Coming soon</li>
             </ul>
           </div>
           <div style={{ flexBasis: '50%', padding: 20 }}>
@@ -87,9 +106,8 @@ function Home() {
               formats
             </li>
             <li>
-              New plugin ecosystem which can add additional view types, track
-              types, data adapters, and more, allowing nearly endless
-              extensibility
+              Plugin ecosystem which can add additional view types, track types,
+              data adapters, and more, for nearly endless extensibility
             </li>
 
             <li>And more!</li>
@@ -119,18 +137,19 @@ function Home() {
           <Typography variant="h4">License</Typography>
           <hr />
           <Typography>
-            JBrowse is released under the Apache-2.0 License, see the JBrowse
-            LICENSE file.
+            JBrowse is released under the{' '}
+            <a href="https://www.apache.org/licenses/LICENSE-2.0">
+              Apache License, Version 2.0
+            </a>
           </Typography>
         </div>
         <div className={classes.section}>
           <Typography variant="h4">Funding and Collaboration</Typography>
           <hr />
           <Typography>
-            The development of JBrowse is supported by grants from the US
-            National Institutes of Health (R01HG004483 & U24 CA 220441) , The
-            Chan Zuckerberg Initiative, The Ontario Institute for Cancer
-            Research, and University of California, Berkeley.
+            JBrowse development is supported by the US National Institutes of
+            Health, The Chan Zuckerberg Initiative, The Ontario Institute for
+            Cancer Research, and University of California, Berkeley.
           </Typography>
         </div>
       </div>

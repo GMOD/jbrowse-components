@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import fs from 'fs'
 import { ipcMain, ipcRenderer } from 'electron'
-import { render, waitForElement } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
 import React from 'react'
 import corePlugins from './corePlugins'
@@ -44,10 +43,13 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
-  const rootModel = JBrowseRootModel.create({
-    jbrowse: initialState || {},
-    assemblyManager: {},
-  })
+  const rootModel = JBrowseRootModel.create(
+    {
+      jbrowse: initialState || {},
+      assemblyManager: {},
+    },
+    { pluginManager },
+  )
   pluginManager.setRootModel(rootModel)
 
   pluginManager.configure()
@@ -74,9 +76,9 @@ describe('main jbrowse app render', () => {
       return {}
     })
 
-    const { getByText } = render(<JBrowse pluginManager={getPluginManager()} />)
-    expect(
-      await waitForElement(() => getByText('Start a new session')),
-    ).toBeTruthy()
+    const { findByText } = render(
+      <JBrowse pluginManager={getPluginManager()} />,
+    )
+    await findByText('Start a new session')
   })
 })

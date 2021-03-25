@@ -13,7 +13,7 @@ test('log scale', () => {
   const domain = [1, 100]
   const range = [0, 100]
   const scale = getScale({ scaleType, domain, range })
-  expect(scale.domain()).toEqual(domain)
+  expect(scale.domain()).toEqual([1, 128])
 })
 
 test('test inverted', () => {
@@ -22,7 +22,7 @@ test('test inverted', () => {
   const domain = [1, 100]
   const range = [0, 100]
   const scale = getScale({ scaleType, domain, range, inverted })
-  expect(scale.domain()).toEqual(domain)
+  expect(scale.domain()).toEqual([1, 128])
   expect(scale.range()).toEqual(range.reverse())
 })
 

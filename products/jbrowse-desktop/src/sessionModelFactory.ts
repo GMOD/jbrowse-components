@@ -35,7 +35,10 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseDesktopSessionModel', {
@@ -57,9 +60,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.map(
         types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
       ),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
     })
     .volatile((/* self */) => ({
-      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -239,15 +242,16 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       removeView(view: any) {
-        for (const [id, widget] of self.activeWidgets) {
-          if (
-            id === 'hierarchicalTrackSelector' &&
-            widget.view &&
-            widget.view.id === view.id
-          )
+        for (const [, widget] of self.activeWidgets) {
+          if (widget.view && widget.view.id === view.id) {
             this.hideWidget(widget)
+          }
         }
         self.views.remove(view)
+      },
+
+      addAssembly(assemblyConfig: any) {
+        self.sessionAssemblies.push(assemblyConfig)
       },
 
       addAssemblyConf(assemblyConf: any) {
@@ -478,6 +482,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       setDefaultSession() {
         return getParent(self).setDefaultSession()
+      },
+      setSession(sessionSnapshot: SnapshotIn<typeof self>) {
+        return getParent(self).setSession(sessionSnapshot)
       },
     }))
     .extend(() => {

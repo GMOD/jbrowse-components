@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
     "jbrowse",
@@ -16,8 +16,8 @@
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
-  "srcMain": "src/index.ts",
-  "main": "src/index.ts",
+  "srcMain": "src/index.tsx",
+  "main": "src/index.tsx",
   "distModule": "dist/plugin-linear-comparative-view.esm.js",
   "module": "",
   "files": [

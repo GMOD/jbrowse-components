@@ -1,16 +1,15 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import DensityRenderer, { configSchema, ReactComponent } from '.'
 
-function DensityRendererPlugin() {
-  return new DensityRenderer({
-    name: 'DensityRenderer',
-    ReactComponent,
-    configSchema,
-  })
-}
-
+const pluginManager = {}
+const renderer = new DensityRenderer({
+  name: 'DensityRenderer',
+  ReactComponent,
+  configSchema,
+  pluginManager,
+})
 test('empty', async () => {
-  const result = await DensityRendererPlugin().makeImageData({
+  const result = await renderer.makeImageData({
     regions: [
       {
         end: 100,
@@ -26,7 +25,7 @@ test('empty', async () => {
 })
 
 test('inverted mode and reversed', async () => {
-  const result = await DensityRendererPlugin().makeImageData({
+  const result = await renderer.makeImageData({
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),

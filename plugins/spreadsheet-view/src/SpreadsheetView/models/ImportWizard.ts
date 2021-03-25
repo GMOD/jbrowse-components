@@ -1,11 +1,13 @@
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { unzip } from '@gmod/bgzf-filehandle'
 import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
 import { parseVcfBuffer } from '../importAdapters/VcfImport'
 import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
 import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
-const IMPORT_SIZE_LIMIT = 300000
+// 30MB
+const IMPORT_SIZE_LIMIT = 30_000_000
 
 export default (pluginManager: PluginManager) => {
   const { lib } = pluginManager
@@ -30,18 +32,17 @@ export default (pluginManager: PluginManager) => {
 
   return types
     .model('SpreadsheetImportWizard', {
-      fileSource: types.frozen(),
       fileType: types.optional(types.enumeration(fileTypes), 'CSV'),
-      loading: false,
-
       hasColumnNameLine: true,
       columnNameLineNumber: 1,
-
       selectedAssemblyIdx: 0,
     })
     .volatile(() => ({
       fileTypes,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fileSource: undefined as any,
       error: undefined as Error | undefined,
+      loading: false,
     }))
     .views(self => ({
       get isReadyToOpen() {
@@ -66,6 +67,19 @@ export default (pluginManager: PluginManager) => {
         }
         return undefined
       },
+
+      get fileName() {
+        return (
+          self.fileSource.uri ||
+          self.fileSource.localPath ||
+          (self.fileSource.blob && self.fileSource.blob.name)
+        )
+      },
+
+      get requiresUnzip() {
+        return this.fileName.endsWith('gz')
+      },
+
       isValidRefName(refName: string, assemblyName?: string) {
         return getSession(self).assemblyManager.isValidRefName(
           refName,
@@ -80,10 +94,7 @@ export default (pluginManager: PluginManager) => {
 
         if (self.fileSource) {
           // try to autodetect the file type, ignore errors
-          const name =
-            self.fileSource.uri ||
-            self.fileSource.localPath ||
-            (self.fileSource.blob && self.fileSource.blob.name)
+          const name = self.fileName
 
           if (name) {
             const match = fileTypesRegexp.exec(name)
@@ -142,6 +153,7 @@ export default (pluginManager: PluginManager) => {
           if (self.loading)
             throw new Error('cannot import, load already in progress')
           self.loading = true
+
           const filehandle = openLocation(self.fileSource)
           filehandle
             .stat()
@@ -154,6 +166,9 @@ export default (pluginManager: PluginManager) => {
                 )
             })
             .then(() => filehandle.readFile())
+            .then(buffer => {
+              return self.requiresUnzip ? unzip(buffer) : buffer
+            })
             .then(buffer => typeParser(buffer as Buffer, self))
             .then(spreadsheet => {
               this.setLoaded()

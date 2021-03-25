@@ -4,7 +4,7 @@ import RotateLeft from '@material-ui/icons/RotateLeft'
 import RotateRight from '@material-ui/icons/RotateRight'
 import LockOutline from '@material-ui/icons/LockOutlined'
 import LockOpen from '@material-ui/icons/LockOpen'
-import LineStyle from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import RulerFactory from './Ruler'
 
 const dragHandleHeight = 3
@@ -23,7 +23,6 @@ export default pluginManager => {
   const IconButton = jbrequire('@material-ui/core/IconButton')
   const MenuItem = jbrequire('@material-ui/core/MenuItem')
   const TextField = jbrequire('@material-ui/core/TextField')
-  const ToggleButton = jbrequire('@material-ui/lab/ToggleButton')
   const { makeStyles } = jbrequire('@material-ui/core/styles')
   const { grey } = jbrequire('@material-ui/core/colors')
 
@@ -103,7 +102,6 @@ export default pluginManager => {
 
   const Controls = observer(({ model, showingFigure }) => {
     const classes = useStyles()
-    const session = getSession(model)
     return (
       <div className={classes.controls}>
         <IconButton
@@ -163,20 +161,14 @@ export default pluginManager => {
         </IconButton>
 
         {model.hideTrackSelectorButton ? null : (
-          <ToggleButton
+          <IconButton
             onClick={model.activateTrackSelector}
-            title="select tracks"
-            selected={
-              session.visibleWidget &&
-              session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-              session.visibleWidget.view.id === model.id
-            }
-            value="track_select"
+            title="Open track selector"
             data-testid="circular_track_select"
             color="secondary"
           >
-            <LineStyle />
-          </ToggleButton>
+            <TrackSelectorIcon />
+          </IconButton>
         )}
       </div>
     )
@@ -186,10 +178,7 @@ export default pluginManager => {
     const classes = useStyles()
     const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
     const { assemblyNames, assemblyManager } = getSession(model)
-    const [assemblyError, setAssemblyError] = useState('')
-    if (!assemblyNames.length) {
-      setAssemblyError('No configured assemblies')
-    }
+    const assemblyError = assemblyNames.length ? '' : 'No configured assemblies'
     const assembly = assemblyManager.get(assemblyNames[selectedAssemblyIdx])
     const regions =
       assembly && assembly.regions ? getSnapshot(assembly.regions) : []

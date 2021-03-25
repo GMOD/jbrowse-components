@@ -385,8 +385,8 @@ function HierarchicalTrackSelector({ model }) {
           value={assemblyIdx}
           onChange={handleTabChange}
         >
-          {assemblyNames.map(name => (
-            <Tab key={name} label={name} />
+          {assemblyNames.map((name, index) => (
+            <Tab key={`${name}-${index}`} label={name} />
           ))}
         </Tabs>
       ) : null}

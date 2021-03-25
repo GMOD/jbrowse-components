@@ -1,9 +1,11 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import fetch from 'node-fetch'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
+
+const fsPromises = fs.promises
 
 export default class Create extends JBrowseCommand {
   static description = 'Downloads and installs the latest JBrowse 2 release'
@@ -12,7 +14,7 @@ export default class Create extends JBrowseCommand {
     '$ jbrowse create /path/to/new/installation',
     '$ jbrowse create /path/to/new/installation --force',
     '$ jbrowse create /path/to/new/installation --url url.com/directjbrowselink.zip',
-    '$ jbrowse create /path/to/new/installation --tag @jbrowse/web@0.0.1',
+    '$ jbrowse create /path/to/new/installation --tag v1.0.0',
     '$ jbrowse create --listVersions # Lists out all available versions of JBrowse 2',
   ]
 
@@ -36,6 +38,12 @@ export default class Create extends JBrowseCommand {
       char: 'l',
       description: 'Lists out all versions of JBrowse 2',
     }),
+    branch: flags.string({
+      description: 'Download a development build from a named git branch',
+    }),
+    nightly: flags.boolean({
+      description: 'Download the latest development build from the main branch',
+    }),
     url: flags.string({
       char: 'u',
       description: 'A direct URL to a JBrowse 2 release',
@@ -43,7 +51,7 @@ export default class Create extends JBrowseCommand {
     tag: flags.string({
       char: 't',
       description:
-        'Version of JBrowse 2 to install. Format is @jbrowse/web@0.0.1.\nDefaults to latest',
+        'Version of JBrowse 2 to install. Format is v1.0.0.\nDefaults to latest',
     }),
   }
 
@@ -52,7 +60,7 @@ export default class Create extends JBrowseCommand {
     const { localPath: argsPath } = runArgs as { localPath: string }
     this.debug(`Want to install path at: ${argsPath}`)
 
-    const { force, url, listVersions, tag } = runFlags
+    const { force, url, listVersions, tag, branch, nightly } = runFlags
 
     if (listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
@@ -70,7 +78,10 @@ export default class Create extends JBrowseCommand {
     }
 
     const locationUrl =
-      url || (tag ? await this.getTag(tag) : await this.getLatest())
+      url ||
+      (nightly ? await this.getBranch('main') : '') ||
+      (branch ? await this.getBranch(branch) : '') ||
+      (tag ? await this.getTag(tag) : await this.getLatest())
 
     this.log(`Fetching ${locationUrl}...`)
     const response = await fetch(locationUrl)

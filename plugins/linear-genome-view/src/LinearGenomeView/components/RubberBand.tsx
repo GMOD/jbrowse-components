@@ -1,15 +1,18 @@
-import { Menu } from '@jbrowse/core/ui'
-import { stringify } from '@jbrowse/core/util'
-import Popover from '@material-ui/core/Popover'
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useRef, useEffect, useState } from 'react'
+import ReactPropTypes from 'prop-types'
+import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
+// material ui
 import { fade } from '@material-ui/core/styles/colorManipulator'
+import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import { Menu } from '@jbrowse/core/ui'
+import { makeStyles } from '@material-ui/core/styles'
+import Popover from '@material-ui/core/Popover'
 import Tooltip from '@material-ui/core/Tooltip'
 import Typography from '@material-ui/core/Typography'
 import ZoomInIcon from '@material-ui/icons/ZoomIn'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import ReactPropTypes from 'prop-types'
-import React, { useRef, useEffect, useState } from 'react'
+
+import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -77,11 +80,6 @@ const VerticalGuide = observer(
   },
 )
 
-interface Coord {
-  left: number
-  top: number
-}
-
 function RubberBand({
   model,
   ControlComponent = <div />,
@@ -91,7 +89,14 @@ function RubberBand({
 }) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
-  const [anchorPosition, setAnchorPosition] = useState<Coord>()
+
+  // clientX and clientY used for anchorPosition for menu
+  // offsetX used for calculations about width of selection
+  const [anchorPosition, setAnchorPosition] = useState<{
+    offsetX: number
+    clientX: number
+    clientY: number
+  }>()
   const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
@@ -108,8 +113,17 @@ function RubberBand({
     }
 
     function globalMouseUp(event: MouseEvent) {
-      if (startX !== undefined) {
-        setAnchorPosition({ left: event.clientX, top: event.clientY })
+      if (startX !== undefined && controlsRef.current) {
+        const { clientX, clientY } = event
+        const ref = controlsRef.current
+        const offsetX = clientX - ref.getBoundingClientRect().left
+        // as stated above, store both clientX/Y and offsetX for different
+        // purposes
+        setAnchorPosition({
+          offsetX,
+          clientX,
+          clientY,
+        })
         setGuideX(undefined)
       }
     }
@@ -133,7 +147,7 @@ function RubberBand({
     ) {
       handleClose()
     }
-  })
+  }, [mouseDragging, currentX, startX, model.bpPerPx])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -152,6 +166,7 @@ function RubberBand({
 
   function mouseOut() {
     setGuideX(undefined)
+    model.setOffsets(undefined, undefined)
   }
 
   function zoomToRegion() {
@@ -159,13 +174,28 @@ function RubberBand({
       return
     }
     let leftPx = startX
-    let rightPx = anchorPosition.left
+    let rightPx = anchorPosition.offsetX
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
     model.moveTo(leftOffset, rightOffset)
+  }
+
+  function getSequence() {
+    if (startX === undefined || anchorPosition === undefined) {
+      return
+    }
+    let leftPx = startX
+    let rightPx = anchorPosition.offsetX
+    // handles clicking and draging to the left
+    if (rightPx < leftPx) {
+      ;[leftPx, rightPx] = [rightPx, leftPx]
+    }
+    const leftOffset = model.pxToBp(leftPx)
+    const rightOffset = model.pxToBp(rightPx)
+    model.setOffsets(leftOffset, rightOffset)
   }
 
   function handleClose() {
@@ -187,6 +217,18 @@ function RubberBand({
       icon: ZoomInIcon,
       onClick: () => {
         zoomToRegion()
+        handleClose()
+      },
+    },
+    {
+      label: 'Get sequence',
+      disabled:
+        currentX !== undefined &&
+        startX !== undefined &&
+        Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
+      icon: MenuOpenIcon,
+      onClick: () => {
+        getSequence()
         handleClose()
       },
     },
@@ -214,13 +256,12 @@ function RubberBand({
   }
 
   /* Calculating Pixels for Mouse Dragging */
-  const right = anchorPosition ? anchorPosition.left : currentX || 0
+  const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
   const left = right < startX ? right : startX
   const width = Math.abs(right - startX)
   const leftBpOffset = model.pxToBp(left)
   const rightBpOffset = model.pxToBp(left + width)
-  const numOfBpSelected = Math.round(width * model.bpPerPx)
-
+  const numOfBpSelected = Math.ceil(width * model.bpPerPx)
   return (
     <>
       {rubberBandRef.current ? (
@@ -290,7 +331,10 @@ function RubberBand({
       {anchorPosition ? (
         <Menu
           anchorReference="anchorPosition"
-          anchorPosition={anchorPosition}
+          anchorPosition={{
+            left: anchorPosition.clientX,
+            top: anchorPosition.clientY,
+          }}
           onMenuItemClick={handleMenuItemClick}
           open={open}
           onClose={handleClose}

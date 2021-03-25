@@ -1,5 +1,5 @@
 ---
-title: jbrowse-web 1.0.0
+title: v1.0.0 Release
 date: 2020-11-05
 tags: ['release', 'jbrowse 2']
 ---
@@ -20,7 +20,7 @@ Changes
 - fixed bug with reference sequences that don't use the alias system
 - fixed bug with SV inspector having a disabled state stuck on the buttons
 - added documentation for the `jbrowse admin-server` command
-  [here](/docs/quickstart_admin)
+  [here](/docs/quickstart_gui)
 - added display modes, a giant effort to make the same track visible in
   multiple contexts
 - added a splash screen when no default session is in the config file

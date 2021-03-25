@@ -4,17 +4,19 @@ import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import Accordion from '@material-ui/core/Accordion'
-import AccordionDetails from '@material-ui/core/AccordionDetails'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import Typography from '@material-ui/core/Typography'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Tooltip,
+  Typography,
+} from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Tooltip from '@material-ui/core/Tooltip'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import isObject from 'is-object'
 
@@ -76,7 +78,7 @@ export const BaseCard: React.FunctionComponent<BaseCardProps> = props => {
   )
 }
 
-const omit = ['refNames']
+const omit = ['refNames', 'displays', 'baseUri']
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
@@ -234,7 +236,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   )
 }
 
-type FileInfo = Record<string, unknown>
+type FileInfo = Record<string, unknown> | string
 
 export default function AboutDialog({
   model,
@@ -253,6 +255,7 @@ export default function AboutDialog({
   useEffect(() => {
     const aborter = new AbortController()
     const { signal } = aborter
+    let cancelled = false
     ;(async () => {
       try {
         const adapterConfig = getConf(model, 'adapter')
@@ -260,14 +263,19 @@ export default function AboutDialog({
           adapterConfig,
           signal,
         })
-        setInfo(result as FileInfo)
+        if (!cancelled) {
+          setInfo(result as FileInfo)
+        }
       } catch (e) {
-        setError(e)
+        if (!cancelled) {
+          setError(e)
+        }
       }
     })()
 
     return () => {
       aborter.abort()
+      cancelled = true
     }
   }, [model, rpcManager, sessionId])
 
@@ -299,7 +307,17 @@ export default function AboutDialog({
             ) : info === undefined ? (
               'Loading file data...'
             ) : (
-              <Attributes attributes={info} />
+              <Attributes
+                attributes={
+                  typeof info === 'string'
+                    ? {
+                        header: `<pre>${info
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')}</pre>`,
+                      }
+                    : info
+                }
+              />
             )}
           </BaseCard>
         ) : null}

@@ -1,3 +1,4 @@
+import { toArray } from 'rxjs/operators'
 import {
   freeAdapterResources,
   getAdapter,
@@ -8,37 +9,12 @@ import ServerSideRendererType, {
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
-  isRegionsAdapter,
   BaseFeatureDataAdapter,
-  isRefNameAliasAdapter,
+  isFeatureAdapter,
 } from '../data_adapters/BaseAdapter'
 import { Region } from '../util/types'
 import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
-
-export class CoreGetRegions extends RpcMethodType {
-  name = 'CoreGetRegions'
-
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
-    const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    if (
-      dataAdapter instanceof BaseFeatureDataAdapter &&
-      isRegionsAdapter(dataAdapter)
-    ) {
-      return dataAdapter.getRegions(deserializedArgs)
-    }
-    return []
-  }
-}
+import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
@@ -62,28 +38,6 @@ export class CoreGetRefNames extends RpcMethodType {
   }
 }
 
-export class CoreGetRefNameAliases extends RpcMethodType {
-  name = 'CoreGetRefNameAliases'
-
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
-    const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
-    if (isRefNameAliasAdapter(dataAdapter)) {
-      return dataAdapter.getRefNameAliases(deserializedArgs)
-    }
-    return []
-  }
-}
-
 export class CoreGetFileInfo extends RpcMethodType {
   name = 'CoreGetInfo'
 
@@ -99,9 +53,40 @@ export class CoreGetFileInfo extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    return !isRefNameAliasAdapter(dataAdapter)
+    return isFeatureAdapter(dataAdapter)
       ? dataAdapter.getHeader(deserializedArgs)
       : null
+  }
+}
+
+export class CoreGetFeatures extends RpcMethodType {
+  name = 'CoreGetFeatures'
+
+  async deserializeReturn(feats: SimpleFeatureSerialized[]) {
+    return feats.map(feat => {
+      return new SimpleFeature(feat)
+    })
+  }
+
+  async execute(args: {
+    sessionId: string
+    signal: RemoteAbortSignal
+    region: Region
+    adapterConfig: {}
+  }) {
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig, region } = deserializedArgs
+    const { dataAdapter } = getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    if (isFeatureAdapter(dataAdapter)) {
+      const ret = dataAdapter.getFeatures(region)
+      const r = await ret.pipe(toArray()).toPromise()
+      return r.map(f => f.toJSON())
+    }
+    return []
   }
 }
 
@@ -186,11 +171,14 @@ export class CoreRender extends RpcMethodType {
       this.pluginManager.getRendererType(rendererType),
     )
 
-    const result = await RendererType.renderInWorker({
+    const renderArgs = {
       ...deserializedArgs,
       ...renderProps,
       dataAdapter,
-    })
+    }
+    delete renderArgs.renderProps
+
+    const result = await RendererType.renderInWorker(renderArgs)
 
     checkAbortSignal(signal)
     return result

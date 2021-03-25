@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - master
+      - main
 name: Upload website
 jobs:
   build:
@@ -18,22 +18,32 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
-      - name: Install deps
-        run: yarn
-      - run: |
+      - name: Install deps (with cache)
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: website
+      - name: Build website
+        run: |
           cd website/
-          yarn
           yarn build
           cd docs/
-          make pdf # generate the pdfcombined.md, run pandoc in docker in the next step
+          make pdfcombined.md titlerev # generate the pdfcombined.md, run pandoc in docker in the next step
           cp pdfcombined.md ../../
-          cp titlemod.md ../../
+          cp title_rev_*.md ../../
           cp listings.tex ../../
+          cp disable_float.tex ../../
           cd ../../
           ln -s website/docs/img
+          cat <<EOF > entrypoint.sh
+          #!/bin/sh -l
+          /opt/texlive/texdir/bin/x86_64-linuxmusl/tlmgr install pmboxdraw
+          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex -H disable_float.tex --toc -o website/jbrowse2.pdf website/docs/title_rev_*.md pdfcombined.md
+          EOF
+          chmod +x entrypoint.sh
+          cat entrypoint.sh
       - uses: docker://pandoc/latex:2.9
         with:
-          args: --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/titlemod.md pdfcombined.md
+          entrypoint: /github/workspace/entrypoint.sh
       - name: Upload
         run: |
           cd website/

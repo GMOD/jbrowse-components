@@ -1,9 +1,11 @@
 /* eslint curly:error */
 import { flags } from '@oclif/command'
-import fs, { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
 import JBrowseCommand from '../base'
+
+const fsPromises = fs.promises
 
 interface Track {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,12 +36,23 @@ export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
-    '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
-    '$ jbrowse add-track https://mywebsite.com/my.bam',
-    `$ jbrowse add-track /path/to/my.bam --type AlignmentsTrack --name 'New Track' --load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite`,
-    `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
+    `# --load copy copies my.bam and my.bam.bai to current directory and adds track to config.json`,
+    '$ jbrowse add-track /path/to/my.bam --load copy\n',
+
+    `# same as above, but specify path to bai file`,
+    '$ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy\n',
+
+    `# --load symlink creates symlink in /path/to/jb2/ directory for this file, and adds track to config.json`,
+    '$ jbrowse add-track /path/to/my.bam --target /path/to/jb2/config.json --load symlink\n',
+
+    `# no --load flag to add literal URL for this track to config.json`,
+    '$ jbrowse add-track https://mywebsite.com/my.bam\n',
+
+    `# --load move to move the file `,
+    `$ jbrowse add-track /path/to/my.bam --name 'New Track' --load move\n`,
+
+    `# --load inPlace puts /url/relative/path.bam in the config without performing any file operations`,
+    `$ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite`,
   ]
 
   static args = [
@@ -51,7 +64,7 @@ export default class AddTrack extends JBrowseCommand {
   ]
 
   static flags = {
-    type: flags.string({
+    trackType: flags.string({
       char: 't',
       description: `Type of track, by default inferred from track file`,
     }),
@@ -141,7 +154,7 @@ export default class AddTrack extends JBrowseCommand {
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
-    let { type, trackId, name, assemblyNames } = runFlags
+    let { trackType, trackId, name, assemblyNames } = runFlags
 
     const configDirectory = path.dirname(this.target)
     if (!argsTrack) {
@@ -159,12 +172,26 @@ export default class AddTrack extends JBrowseCommand {
     }
     const location = argsTrack
 
-    const isUrl = (loc: string) => loc.match(/^https?:\/\//)
-    const adapter = this.guessAdapter(
-      isUrl(location) ? location : path.join(subDir, path.basename(location)),
-      protocol as 'uri' | 'localPath',
-      !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
-    )
+    const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
+    const inPlace = load === 'inPlace'
+    const useIndex = isUrl(index) || inPlace || index
+    const effectiveLocation =
+      isUrl(location) || inPlace
+        ? location
+        : path.join(subDir, path.basename(location))
+
+    const effectiveIndexLocation =
+      !index || isUrl(index) || inPlace
+        ? index
+        : path.join(subDir, path.basename(index))
+    const adapter = useIndex
+      ? this.guessAdapter(effectiveLocation, protocol, effectiveIndexLocation)
+      : this.guessAdapter(effectiveLocation, protocol)
+
+    if (adapter.type === 'PAFAdapter') {
+      // @ts-ignore
+      adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
+    }
 
     if (isUrl(location) && load) {
       this.error(
@@ -201,18 +228,18 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // set up the track information
-    type = type || this.guessTrackType(adapter.type)
+    trackType = trackType || this.guessTrackType(adapter.type)
     trackId = trackId || path.basename(location, path.extname(location))
     name = name || trackId
     assemblyNames = assemblyNames || configContents.assemblies[0].name
     this.debug(`Name is: ${name}`)
-    this.debug(`Type is: ${type}`)
+    this.debug(`Type is: ${trackType}`)
     this.debug(`Track is :${trackId}`)
     this.debug(`Assembly name(s) is :${assemblyNames}`)
 
     const configObj = config ? parseJSON(config) : {}
     const trackConfig: Track = {
-      type,
+      type: trackType,
       trackId,
       name,
       category: category ? category.split(',').map(c => c.trim()) : undefined,
@@ -228,7 +255,7 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // any special track modifications go here
-    switch (type) {
+    switch (trackType) {
       case 'AlignmentsTrack': {
         const assembly = configContents.assemblies.find(
           asm => asm.name === assemblyNames,
@@ -267,6 +294,7 @@ export default class AddTrack extends JBrowseCommand {
 
     // copy/symlinks/moves the track into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location, index))
+
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -402,14 +430,14 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
       return {
         file: fileName,
         index: index || `${fileName}.fai`,
       }
     }
 
-    if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+    if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
       return {
         file: fileName,
         index: `${fileName}.fai`,
@@ -455,11 +483,7 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   // find way to import this instead of having to paste it
-  guessAdapter(
-    fileName: string,
-    protocol: 'uri' | 'localPath',
-    index?: string,
-  ) {
+  guessAdapter(fileName: string, protocol: string, index?: string) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
         return { uri: location }
@@ -622,7 +646,7 @@ export default class AddTrack extends JBrowseCommand {
 
     if (/\.paf/i.test(fileName)) {
       return {
-        type: 'PafAdapter',
+        type: 'PAFAdapter',
         pafLocation: makeLocation(fileName),
       }
     }
@@ -642,7 +666,7 @@ export default class AddTrack extends JBrowseCommand {
       TwoBitAdapter: 'ReferenceSequenceTrack',
       VcfTabixAdapter: 'VariantTrack',
       HicAdapter: 'HicTrack',
-      PafAdapter: 'LinearSyntenyTrack',
+      PAFAdapter: 'SyntenyTrack',
     }
     return known[adapterType] || 'FeatureTrack'
   }

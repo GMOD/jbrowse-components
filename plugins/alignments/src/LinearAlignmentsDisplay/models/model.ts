@@ -12,6 +12,7 @@ import {
   Instance,
   types,
 } from 'mobx-state-tree'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
 
 const minDisplayHeight = 20
@@ -30,6 +31,7 @@ const stateModelFactory = (
         SNPCoverageDisplay: types.maybe(
           pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
         ),
+        snpCovHeight: 45,
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
         height: 250,
@@ -50,12 +52,16 @@ const stateModelFactory = (
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
       },
+      setSNPCoverageHeight(n: number) {
+        self.snpCovHeight = n
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
       return {
         get pileupDisplayConfig() {
           const conf = getConf(self)
+          const track = getContainingTrack(self)
           const { SNPCoverageRenderer, ...rest } = conf.renderers
           return {
             ...conf,
@@ -63,7 +69,7 @@ const stateModelFactory = (
               ...rest,
             },
             type: 'LinearPileupDisplay',
-            name: `${getConf(getParent(self, 2), 'name')} pileup`,
+            name: `${getConf(track, 'name')} pileup`,
             displayId: `${self.configuration.displayId}_pileup_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
           }
         },
@@ -107,48 +113,29 @@ const stateModelFactory = (
         get trackMenuItems(): MenuItem[] {
           return [
             ...trackMenuItems,
-            ...self.PileupDisplay.composedTrackMenuItems,
-            ...self.SNPCoverageDisplay.composedTrackMenuItems,
+            {
+              type: 'subMenu',
+              label: 'Pileup settings',
+              subMenu: self.PileupDisplay.composedTrackMenuItems,
+            },
+            {
+              type: 'subMenu',
+              label: 'SNPCoverage settings',
+              subMenu: [
+                ...self.SNPCoverageDisplay.composedTrackMenuItems,
+                ...self.SNPCoverageDisplay.extraTrackMenuItems,
+              ],
+            },
           ]
         },
       }
     })
     .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            if (!self.SNPCoverageDisplay) {
-              // @ts-ignore
-              self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
-            } else if (
-              !deepEqual(
-                self.snpCoverageDisplayConfig,
-                getSnapshot(self.SNPCoverageDisplay.configuration),
-              )
-            ) {
-              self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
-            }
-
-            if (!self.PileupDisplay) {
-              // @ts-ignore
-              self.setPileupDisplay(self.pileupDisplayConfig)
-            } else if (
-              !deepEqual(
-                self.pileupDisplayConfig,
-                getSnapshot(self.PileupDisplay.configuration),
-              )
-            ) {
-              self.PileupDisplay.setConfig(self.pileupDisplayConfig)
-            }
-          }),
-        )
-      },
       setSNPCoverageDisplay(displayConfig: AnyConfigurationModel) {
         self.SNPCoverageDisplay = {
           type: 'LinearSNPCoverageDisplay',
           configuration: displayConfig,
-          height: 40,
+          height: self.snpCovHeight,
         }
       },
       setPileupDisplay(displayConfig: AnyConfigurationModel) {
@@ -166,6 +153,57 @@ const stateModelFactory = (
         const oldHeight = self.height
         const newHeight = this.setHeight(self.height + distance)
         return newHeight - oldHeight
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (!self.SNPCoverageDisplay) {
+              self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
+            } else if (
+              !deepEqual(
+                self.snpCoverageDisplayConfig,
+                getSnapshot(self.SNPCoverageDisplay.configuration),
+              )
+            ) {
+              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
+              self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
+            }
+
+            if (!self.PileupDisplay) {
+              self.setPileupDisplay(self.pileupDisplayConfig)
+            } else if (
+              !deepEqual(
+                self.pileupDisplayConfig,
+                getSnapshot(self.PileupDisplay.configuration),
+              )
+            ) {
+              self.PileupDisplay.setConfig(self.pileupDisplayConfig)
+            }
+
+            // propagate the filterBy setting from pileupdisplay to snpcoverage
+            // note: the snpcoverage display is not able to control filterBy
+            // itself
+            if (
+              !deepEqual(
+                getSnapshot(self.PileupDisplay.filterBy),
+                getSnapshot(self.SNPCoverageDisplay.filterBy),
+              )
+            ) {
+              self.SNPCoverageDisplay.setFilterBy(
+                getSnapshot(self.PileupDisplay.filterBy),
+              )
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+          }),
+        )
       },
     }))
 }

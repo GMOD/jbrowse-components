@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import InfoIcon from '@material-ui/icons/Info'
 import { transaction } from 'mobx'
-import { getRoot, Instance, resolveIdentifier, types } from 'mobx-state-tree'
+import {
+  getRoot,
+  Instance,
+  resolveIdentifier,
+  types,
+  getEnv,
+} from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import {
   AnyConfigurationSchemaType,
@@ -35,15 +41,21 @@ export function createBaseTrackModel(
     })
     .volatile(() => ({
       showAbout: false,
+      DialogComponent: undefined as React.FC | undefined,
+      DialogDisplay: undefined as any,
     }))
     .actions(self => ({
       setShowAbout(show: boolean) {
         self.showAbout = show
       },
+      setDialogComponent(dlg: any, context?: any) {
+        self.DialogComponent = dlg
+        self.DialogDisplay = context
+      },
     }))
     .views(self => ({
       get rpcSessionId() {
-        return self.id
+        return self.configuration.trackId
       },
 
       get name() {
@@ -55,12 +67,10 @@ export function createBaseTrackModel(
        */
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
-        const session = getSession(self)
+        const { pluginManager: pm } = getEnv(self)
         if (!adapterConfig)
           throw new Error(`no adapter configuration provided for ${self.type}`)
-        const adapterType = session.pluginManager.getAdapterType(
-          adapterConfig.type,
-        )
+        const adapterType = pm.getAdapterType(adapterConfig.type)
         if (!adapterType)
           throw new Error(`unknown adapter type ${adapterConfig.type}`)
         return adapterType

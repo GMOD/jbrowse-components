@@ -25,12 +25,14 @@ import {
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
 import AssemblyManager from './AssemblyManager'
+import SetDefaultSession from './SetDefaultSession'
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
 
   exports = {
     AssemblyManager,
+    SetDefaultSession,
   }
 
   install(pluginManager: PluginManager) {
@@ -49,7 +51,7 @@ export default class extends Plugin {
     pluginManager.addWidgetType(() => {
       return new WidgetType({
         name: 'HierarchicalTrackSelectorWidget',
-        heading: 'Available Tracks',
+        heading: 'Available tracks',
         configSchema: HierarchicalTrackSelectorConfigSchema,
         stateModel: HierarchicalTrackSelectorStateModelFactory(pluginManager),
         ReactComponent: HierarchicalTrackSelectorReactComponent,

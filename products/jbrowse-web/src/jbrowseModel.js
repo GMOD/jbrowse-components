@@ -9,6 +9,7 @@ import {
   resolveIdentifier,
   types,
 } from 'mobx-state-tree'
+import { toJS } from 'mobx'
 
 // poke some things for testing (this stuff will eventually be removed)
 window.getSnapshot = getSnapshot
@@ -33,11 +34,18 @@ export default function JBrowseWeb(
           defaultValue:
             'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/',
         },
+        featureDetails: ConfigurationSchema('FeatureDetails', {
+          sequenceTypes: {
+            type: 'stringArray',
+            defaultValue: ['mRNA', 'transcript'],
+          },
+        }),
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        ...pluginManager.pluginConfigurationSchemas(),
       }),
       plugins: types.frozen(),
       assemblies: types.array(assemblyConfigSchemasType),
@@ -76,7 +84,14 @@ export default function JBrowseWeb(
         if (assembly) {
           return assembly
         }
-        const length = self.assemblies.push(assemblyConf)
+        const length = self.assemblies.push({
+          ...assemblyConf,
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: `${name}-${Date.now()}`,
+            ...(assemblyConf.sequence || {}),
+          },
+        })
         return self.assemblies[length - 1]
       },
       removeAssemblyConf(assemblyName) {
@@ -119,6 +134,9 @@ export default function JBrowseWeb(
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
+        if (idx === -1) {
+          return undefined
+        }
         return self.connections.splice(idx, 1)
       },
 
@@ -130,6 +148,19 @@ export default function JBrowseWeb(
         }
 
         return self.tracks.splice(idx, 1)
+      },
+      setDefaultSessionConf(sessionConf) {
+        let newDefault
+        if (getParent(self).session.name === sessionConf.name) {
+          newDefault = getSnapshot(sessionConf)
+        } else {
+          newDefault = toJS(sessionConf)
+        }
+        const { name } = newDefault
+        if (!name) {
+          throw new Error(`unable to set default session to ${name}`)
+        }
+        self.defaultSession = newDefault
       },
     }))
     .views(self => ({

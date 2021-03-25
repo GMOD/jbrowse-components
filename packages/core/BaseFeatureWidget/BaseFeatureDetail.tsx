@@ -1,17 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import Accordion from '@material-ui/core/Accordion'
-import AccordionDetails from '@material-ui/core/AccordionDetails'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import Typography from '@material-ui/core/Typography'
+import React from 'react'
+import ErrorBoundary from 'react-error-boundary'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  Divider,
+  Tooltip,
+} from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import Divider from '@material-ui/core/Divider'
-import Paper from '@material-ui/core/Paper'
-import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
+import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
-import React, { FunctionComponent } from 'react'
+import clsx from 'clsx'
 import isObject from 'is-object'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { getConf } from '../configuration'
+import { measureText, getSession } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
+import SequenceFeatureDetails from './SequenceFeatureDetails'
+import { BaseCardProps, BaseProps } from './types'
+import { SimpleFeatureSerialized } from '../util/simpleFeature'
+
+const globalOmit = [
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'type',
+  'length',
+  'position',
+  'subfeatures',
+  'uniqueId',
+  'exonFrames',
+  'parentId',
+  'thickStart',
+  'thickEnd',
+]
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -26,13 +53,19 @@ export const useStyles = makeStyles(theme => ({
   },
   field: {
     display: 'flex',
+    flexWrap: 'wrap',
+  },
+  fieldDescription: {
+    '&:hover': {
+      background: 'yellow',
+    },
   },
   fieldName: {
     wordBreak: 'break-all',
     minWidth: '90px',
     maxWidth: '150px',
     borderBottom: '1px solid #0003',
-    backgroundColor: theme.palette.grey[200],
+    background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -46,29 +79,30 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-word',
     maxHeight: 300,
     padding: theme.spacing(0.5),
-    backgroundColor: theme.palette.grey[100],
+    background: theme.palette.grey[100],
     border: `1px solid ${theme.palette.grey[300]}`,
     boxSizing: 'border-box',
     overflow: 'auto',
   },
+
+  accordionBorder: {
+    marginTop: '4px',
+    border: '1px solid #444',
+  },
 }))
-const coreRenderedDetails = [
-  'Position',
-  'Description',
-  'Name',
-  'Length',
-  'Type',
-]
 
-interface BaseCardProps {
-  title: string
-}
-
-export const BaseCard: FunctionComponent<BaseCardProps> = props => {
+export function BaseCard({
+  children,
+  title,
+  defaultExpanded = true,
+}: BaseCardProps) {
   const classes = useStyles()
-  const { children, title } = props
   return (
-    <Accordion style={{ marginTop: '4px' }} defaultExpanded>
+    <Accordion
+      className={classes.accordionBorder}
+      defaultExpanded={defaultExpanded}
+      TransitionProps={{ unmountOnExit: true }}
+    >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
       >
@@ -81,129 +115,247 @@ export const BaseCard: FunctionComponent<BaseCardProps> = props => {
   )
 }
 
-interface BaseProps extends BaseCardProps {
-  feature: Record<string, any>
-  descriptions?: Record<string, React.ReactNode>
+const FieldName = ({
+  description,
+  name,
+  prefix,
+}: {
+  description?: React.ReactNode
+  name: string
+  prefix?: string
+}) => {
+  const classes = useStyles()
+  const val = (prefix ? `${prefix}.` : '') + name
+  return description ? (
+    <Tooltip title={description} placement="left">
+      <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+        {val}
+      </div>
+    </Tooltip>
+  ) : (
+    <div className={classes.fieldName}>{val}</div>
+  )
 }
 
-export const BaseCoreDetails = (props: BaseProps) => {
+const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
+  return (
+    <div className={classes.fieldValue}>
+      {React.isValidElement(value) ? (
+        value
+      ) : (
+        <SanitizedHTML
+          html={isObject(value) ? JSON.stringify(value) : String(value)}
+        />
+      )}
+    </div>
+  )
+}
+const SimpleValue = ({
+  name,
+
+  value,
+  description,
+  prefix,
+}: {
+  description?: React.ReactNode
+  name: string
+  value: any
+  prefix?: string
+}) => {
+  const classes = useStyles()
+  return value ? (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} description={description} name={name} />
+      <BasicValue value={value} />
+    </div>
+  ) : null
+}
+
+const ArrayValue = ({
+  name,
+  value,
+  description,
+  prefix,
+}: {
+  description?: React.ReactNode
+  name: string
+  value: any[]
+  prefix?: string
+}) => {
+  const classes = useStyles()
+  return (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} description={description} name={name} />
+      {value.length === 1 ? (
+        <BasicValue value={value[0]} />
+      ) : (
+        value.map((val, i) => (
+          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+            <BasicValue value={val} />
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
+function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature
-  const strandMap: Record<number, string> = {
+  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+    start: number
+    end: number
+    strand: number
+    refName: string
+  }
+  const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
+  const displayStart = (start + 1).toLocaleString('en-US')
+  const displayEnd = end.toLocaleString('en-US')
+  const displayRef = refName ? `${refName}:` : ''
   const displayedDetails: Record<string, any> = {
     ...feature,
-    length: end - start,
-    position: `${refName}:${start + 1}..${end} ${strandStr}`,
+    length: (end - start).toLocaleString('en-US'),
+    position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
   }
 
+  const coreRenderedDetails = [
+    'Position',
+    'Description',
+    'Name',
+    'Length',
+    'Type',
+  ]
   return (
-    <BaseCard {...props} title="Primary data">
+    <>
       {coreRenderedDetails.map(key => {
         const value = displayedDetails[key.toLowerCase()]
-        const strValue = String(value)
-        return value ? (
-          <div className={classes.field} key={key}>
-            <div className={classes.fieldName}>{key}</div>
-            <div className={classes.fieldValue}>
-              <SanitizedHTML html={strValue} />
-            </div>
-          </div>
+        return value !== null && value !== undefined ? (
+          <SimpleValue key={key} name={key} value={value} />
         ) : null
       })}
+    </>
+  )
+}
+
+export const BaseCoreDetails = (props: BaseProps) => {
+  return (
+    <BaseCard {...props} title="Primary data">
+      <CoreDetails {...props} />
     </BaseCard>
   )
 }
 
-const omit = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
-  'length',
-  'position',
-  'subfeatures',
-  'uniqueId',
-  'exonFrames',
-]
-
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
+  prefix?: string
 }
 
-export const Attributes: FunctionComponent<AttributeProps> = props => {
-  const classes = useStyles()
+export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
-    omit: propOmit = [],
-    formatter = (value: unknown) => (
-      <SanitizedHTML
-        html={isObject(value) ? JSON.stringify(value) : String(value)}
-      />
-    ),
+    omit = [],
     descriptions,
+    formatter = val => val,
+    prefix = '',
   } = props
+  const omits = [...omit, ...globalOmit]
 
-  const SimpleValue = ({ name, value }: { name: string; value: any }) => {
-    const description = descriptions && descriptions[name]
-    return (
-      <div style={{ display: 'flex' }}>
-        {description ? (
-          <Tooltip title={description} placement="left">
-            <div className={classes.fieldName}>{name}</div>
-          </Tooltip>
-        ) : (
-          <div className={classes.fieldName}>{name}</div>
-        )}
-        <div className={classes.fieldValue}>{formatter(value)}</div>
-      </div>
-    )
-  }
-  const ArrayValue = ({ name, value }: { name: string; value: any[] }) => {
-    const description = descriptions && descriptions[name]
-    return (
-      <div style={{ display: 'flex' }}>
-        {description ? (
-          <Tooltip title={description} placement="left">
-            <div className={classes.fieldName}>{name}</div>
-          </Tooltip>
-        ) : (
-          <div className={classes.fieldName}>{name}</div>
-        )}
-        {value.map((val, i) => (
-          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            <SanitizedHTML
-              html={isObject(val) ? JSON.stringify(val) : String(val)}
-            />
-          </div>
-        ))}
-      </div>
-    )
-  }
-
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
-        .filter(
-          ([k, v]) =>
-            v !== undefined && !omit.includes(k) && !propOmit.includes(k),
-        )
+        .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
+          if (Array.isArray(value) && value.length) {
+            if (value.length > 2 && value.every(val => isObject(val))) {
+              const keys = Object.keys(value[0]).sort()
+              const unionKeys = new Set(keys)
+              value.forEach(val =>
+                Object.keys(val).forEach(k => unionKeys.add(k)),
+              )
+              if (unionKeys.size < keys.length + 5) {
+                // avoids key 'id' from being used in row data
+                const rows = Object.entries(value).map(([k, val]) => {
+                  const { id, ...rest } = val
+                  return {
+                    id: k, // used by material UI
+                    identifier: id, // renamed from id to identifier
+                    ...rest,
+                  }
+                })
+
+                // avoids key 'id' from being used in column names, and tries
+                // to make it at the start of the colNames array
+                let colNames
+                if (unionKeys.has('id')) {
+                  unionKeys.delete('id')
+                  colNames = ['identifier', ...unionKeys]
+                } else {
+                  colNames = [...unionKeys]
+                }
+
+                const columns = colNames.map(val => ({
+                  field: val,
+                  width: Math.max(
+                    ...rows.map(row => {
+                      const result = String(row[val])
+                      return Math.min(
+                        Math.max(measureText(result, 14) + 50, 80),
+                        1000,
+                      )
+                    }),
+                  ),
+                }))
+
+                return (
+                  <React.Fragment key={key}>
+                    <FieldName prefix={prefix} name={key} />
+                    <div
+                      key={key}
+                      style={{
+                        height:
+                          Math.min(rows.length, 100) * 20 +
+                          50 +
+                          (rows.length < 100 ? 0 : 50),
+                        width: '100%',
+                      }}
+                    >
+                      {/* prettier-ignore */
+                        /* @ts-ignore  */}
+                      <DataGrid disableClickEventBubbling rowHeight={20} headerHeight={25}  rows={rows} rowsPerPageOptions={[]} hideFooterRowCount hideFooterSelectedRowCount columns={columns} hideFooter={rows.length < 100} />
+                    </div>
+                  </React.Fragment>
+                )
+              }
+            }
+          }
+          const description = descriptions && descriptions[key]
           if (Array.isArray(value)) {
             return value.length === 1 ? (
-              <SimpleValue key={key} name={key} value={value[0]} />
+              <SimpleValue
+                key={key}
+                name={key}
+                value={value[0]}
+                description={description}
+              />
             ) : (
-              <ArrayValue key={key} name={key} value={value} />
+              <ArrayValue
+                key={key}
+                name={key}
+                value={value}
+                description={description}
+                prefix={prefix}
+              />
             )
           }
           if (isObject(value)) {
@@ -212,21 +364,30 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
+                prefix={key}
               />
             )
           }
 
-          return <SimpleValue key={key} name={key} value={value} />
+          return (
+            <SimpleValue
+              key={key}
+              name={key}
+              value={formatter(value, key)}
+              description={description}
+              prefix={prefix}
+            />
+          )
         })}
     </>
   )
 }
 
 export const BaseAttributes = (props: BaseProps) => {
-  const { feature, descriptions } = props
+  const { feature } = props
   return (
     <BaseCard {...props} title="Attributes">
-      <Attributes {...props} attributes={feature} descriptions={descriptions} />
+      <Attributes {...props} attributes={feature} />
     </BaseCard>
   )
 }
@@ -234,19 +395,85 @@ export const BaseAttributes = (props: BaseProps) => {
 export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
-  formatter?: (val: unknown) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
+  formatter?: (val: unknown, key: string) => JSX.Element
+}
+
+function isEmpty(obj: Record<string, unknown>) {
+  return Object.keys(obj).length === 0
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const classes = useStyles()
-  const { model, descriptions } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
-  return (
-    <Paper className={classes.paperRoot}>
-      <BaseCoreDetails feature={feat} {...props} />
-      <Divider />
-      <BaseAttributes feature={feat} {...props} descriptions={descriptions} />
-    </Paper>
-  )
+  const { model } = props
+  const { featureData } = model
+
+  if (!featureData) {
+    return null
+  }
+  const feature = JSON.parse(JSON.stringify(featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
+  return <FeatureDetails model={model} feature={feature} />
 })
+
+export const FeatureDetails = (props: {
+  model: IAnyStateTreeNode
+  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  depth?: number
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => JSX.Element
+}) => {
+  const { model, feature, depth = 0 } = props
+  const { name, id, type, subfeatures } = feature
+  const displayName = (name || id) as string | undefined
+  const ellipsedDisplayName =
+    displayName && displayName.length > 20 ? '' : displayName
+  const session = getSession(model)
+  const defSeqTypes = ['mRNA', 'transcript']
+  const sequenceTypes =
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+
+  return (
+    <BaseCard
+      title={
+        ellipsedDisplayName
+          ? `${ellipsedDisplayName} - ${type}`
+          : `${type || ''}`
+      }
+    >
+      <div>Core details</div>
+      <CoreDetails {...props} />
+      <Divider />
+      <div>Attributes</div>
+      <Attributes attributes={feature} {...props} />
+      {sequenceTypes.includes(feature.type) ? (
+        <ErrorBoundary
+          FallbackComponent={({ error }) => (
+            <Typography color="error">
+              Failed to fetch sequence for feature: {`${error}`}
+            </Typography>
+          )}
+        >
+          <SequenceFeatureDetails {...props} />
+        </ErrorBoundary>
+      ) : null}
+      {subfeatures && subfeatures.length ? (
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={!sequenceTypes.includes(feature.type)}
+        >
+          {subfeatures.map((sub: any) => (
+            <FeatureDetails
+              key={JSON.stringify(sub)}
+              feature={sub}
+              model={model}
+              depth={depth + 1}
+            />
+          ))}
+        </BaseCard>
+      ) : null}
+    </BaseCard>
+  )
+}

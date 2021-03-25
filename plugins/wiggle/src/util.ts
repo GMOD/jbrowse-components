@@ -27,17 +27,21 @@ export function getScale({
 }: ScaleOpts) {
   let scale
   const [min, max] = domain
-  if (min === undefined || max === undefined) throw new Error('invalid domain')
+  if (min === undefined || max === undefined) {
+    throw new Error('invalid domain')
+  }
   if (scaleType === 'linear') {
     scale = scaleLinear()
   } else if (scaleType === 'log') {
     scale = scaleLog()
+    scale.base(2)
   } else if (scaleType === 'quantize') {
     scale = scaleQuantize()
   } else {
     throw new Error('undefined scaleType')
   }
   scale.domain(pivotValue !== undefined ? [min, pivotValue, max] : [min, max])
+  // console.log('before', scale.domain())
   scale.nice()
 
   const [rangeMin, rangeMax] = range
@@ -45,6 +49,8 @@ export function getScale({
     throw new Error('invalid range')
   }
   scale.range(inverted ? range.slice().reverse() : range)
+
+  // console.log('after', scale.domain())
   return scale
 }
 /**
@@ -121,7 +127,9 @@ export function getNiceDomain({
       return scaleLinear()
     }
     if (type === 'log') {
-      return scaleLog()
+      const scale = scaleLog()
+      scale.base(2)
+      return scale
     }
     if (type === 'quantize') {
       return scaleQuantize()

@@ -118,7 +118,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -223,7 +223,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('gene_name') }"
+              "description": "jexl:feature|getData('gene_name')"
             }
           }
         }
@@ -274,7 +274,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "function(feature) { return feature.get('geneName2') }"
+              "description": "jexl:feature|getData('geneName2')"
             }
           }
         }
@@ -303,6 +303,44 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "https://jbrowse.org/genomes/GRCh38/gaps.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36.annotation.sort.gff3",
+      "name": "Gencode v36",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/gencode/gencode.v36.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gencode.v36lift37.annotation.sort.gff3",
+      "name": "Gencode v36 (GRCh37 liftover)",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gencode/gencode.v36lift37.annotation.sort.gff3.gz.tbi"
+          },
+          "indexType": "TBI"
         }
       }
     }

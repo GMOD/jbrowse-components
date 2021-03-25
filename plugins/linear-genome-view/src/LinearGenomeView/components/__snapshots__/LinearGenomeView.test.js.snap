@@ -16,8 +16,16 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
-            style="min-width: 800px; border-color: rgb(153, 102, 0);"
+            class="makeStyles-scaleBarVisibleRegion"
+            style="width: 800px; left: 0px;"
+          />
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -25,10 +33,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             >
               ctgA
             </p>
-            <div
-              class="makeStyles-scaleBarVisibleRegion"
-              style="width: 800px; left: -1px; pointer-events: none;"
-            />
             <div
               class="makeStyles-scaleBarLabel"
               style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
@@ -60,6 +64,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               100
             </div>
           </div>
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
         </div>
       </div>
     </div>
@@ -73,7 +81,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,100,48,800,0,0,0"
+          points="0,48,101,48,800,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
@@ -81,24 +89,23 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="makeStyles-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-          color="secondary"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
           tabindex="0"
-          title="select tracks"
+          title="Open track selector"
           type="button"
           value="track_select"
         >
           <span
-            class="MuiToggleButton-label"
+            class="MuiButton-label"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root"
+              class="MuiSvgIcon-root makeStyles-buttonSpacer"
               focusable="false"
               viewBox="0 0 24 24"
             >
               <path
-                d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
               />
             </svg>
           </span>
@@ -110,7 +117,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="makeStyles-spacer"
         />
         <div
-          class="MuiFormGroup-root MuiFormGroup-row"
+          class="MuiFormGroup-root makeStyles-headerForm MuiFormGroup-row"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
@@ -160,12 +167,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root"
+            data-testid="autocomplete"
             role="combobox"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
-              style="margin: 7px;"
+              style="margin: 7px; min-width: 175px;"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
@@ -178,39 +186,29 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   autocomplete="off"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
                   id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
                   spellcheck="false"
                   type="text"
-                  value="ctgA"
+                  value="ctgA:1..100"
                 />
                 <div
-                  class="MuiAutocomplete-endAdornment"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  style="margin-right: 7px;"
                 >
-                  <button
-                    aria-label="Open"
-                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                    tabindex="-1"
-                    title="Open"
-                    type="button"
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                     />
-                  </button>
+                  </svg>
                 </div>
+                <div
+                  class="MuiAutocomplete-endAdornment"
+                />
                 <fieldset
                   aria-hidden="true"
                   class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
@@ -228,48 +226,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
             </div>
           </div>
-          <form>
-            <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
-              style="margin: 7px 7px 7px 21px;"
-            >
-              <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart"
-                style="background: rgba(255, 255, 255, 0.8); height: 32px;"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                  />
-                </svg>
-                <input
-                  aria-invalid="false"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
-                  type="text"
-                  value="ctgA:1..100"
-                />
-                <fieldset
-                  aria-hidden="true"
-                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                  style="padding-left: 8px;"
-                >
-                  <legend
-                    class="PrivateNotchedOutline-legend"
-                    style="width: 0.01px;"
-                  >
-                    <span>
-                      ​
-                    </span>
-                  </legend>
-                </fieldset>
-              </div>
-            </div>
-          </form>
         </div>
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
@@ -313,13 +269,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
             <input
               type="hidden"
-              value="332.1928094887362"
+              value="284.799690655495"
             />
             <span
               aria-orientation="horizontal"
               aria-valuemax="564.3856189774724"
-              aria-valuemin="332.1928094887362"
-              aria-valuenow="332.1928094887362"
+              aria-valuemin="284.799690655495"
+              aria-valuenow="284.799690655495"
               class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
               data-index="0"
               role="slider"
@@ -559,7 +515,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -684,20 +640,13 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
     >
       <div
         aria-expanded="false"
-        class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+        class="MuiAutocomplete-root"
+        data-testid="autocomplete"
         role="combobox"
       >
         <div
           class="MuiFormControl-root MuiTextField-root makeStyles-importFormEntry MuiFormControl-marginNormal MuiFormControl-fullWidth"
         >
-          <label
-            class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-filled"
-            data-shrink="true"
-            for="refNameAutocomplete-lgv"
-            id="refNameAutocomplete-lgv-label"
-          >
-            Sequence
-          </label>
           <div
             class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
           >
@@ -709,48 +658,40 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
               autocomplete="off"
               class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
               id="refNameAutocomplete-lgv"
+              placeholder="Search for location"
               spellcheck="false"
               type="text"
               value="ctgA"
             />
             <div
-              class="MuiAutocomplete-endAdornment"
+              class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+              style="margin-right: 7px;"
             >
-              <button
-                aria-label="Open"
-                class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                tabindex="-1"
-                title="Open"
-                type="button"
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root"
+                focusable="false"
+                viewBox="0 0 24 24"
               >
-                <span
-                  class="MuiIconButton-label"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root"
-                    focusable="false"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 10l5 5 5-5z"
-                    />
-                  </svg>
-                </span>
-                <span
-                  class="MuiTouchRipple-root"
+                <path
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                 />
-              </button>
+              </svg>
             </div>
+            <div
+              class="MuiAutocomplete-endAdornment"
+            />
             <fieldset
               aria-hidden="true"
               class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
+              style="padding-left: 8px;"
             >
               <legend
-                class="PrivateNotchedOutline-legendLabelled PrivateNotchedOutline-legendNotched"
+                class="PrivateNotchedOutline-legend"
+                style="width: 0.01px;"
               >
                 <span>
-                  Sequence
+                  ​
                 </span>
               </legend>
             </fieldset>
@@ -759,7 +700,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             class="MuiFormHelperText-root MuiFormHelperText-contained MuiFormHelperText-filled"
             id="refNameAutocomplete-lgv-helper-text"
           >
-            Select sequence to view
+            Enter a sequence or locstring
           </p>
         </div>
       </div>
@@ -768,7 +709,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
       class="MuiGrid-root MuiGrid-item"
     >
       <button
-        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedPrimary"
         tabindex="0"
         type="button"
       >
@@ -776,6 +717,20 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
           class="MuiButton-label"
         >
           Open
+        </span>
+        <span
+          class="MuiTouchRipple-root"
+        />
+      </button>
+      <button
+        class="MuiButtonBase-root MuiButton-root MuiButton-contained makeStyles-button MuiButton-containedSecondary"
+        tabindex="0"
+        type="button"
+      >
+        <span
+          class="MuiButton-label"
+        >
+          Show all regions in assembly
         </span>
         <span
           class="MuiTouchRipple-root"
@@ -802,8 +757,16 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="makeStyles-scaleBar"
         >
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
-            style="min-width: 72.54545454545455px; margin-right: 2px; border-color: rgb(153, 102, 0);"
+            class="makeStyles-scaleBarVisibleRegion"
+            style="width: 580px; left: 0px;"
+          />
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
@@ -811,24 +774,20 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             >
               ctgA
             </p>
-            <div
-              class="makeStyles-scaleBarVisibleRegion"
-              style="width: 72.54545454545455px; left: -1px; pointer-events: none;"
-            />
           </div>
           <div
-            class="MuiPaper-root makeStyles-scaleBarContig makeStyles-scaleBarContigForward MuiPaper-outlined MuiPaper-rounded"
-            style="min-width: 725.4545454545454px;"
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
+          />
+          <div
+            class="makeStyles-scaleBarContig makeStyles-scaleBarContigForward"
+            style="left: 72.72727272727273px; width: 727.2727272727273px;"
           >
             <p
               class="MuiTypography-root makeStyles-scaleBarRefName MuiTypography-body1"
             >
               ctgB
             </p>
-            <div
-              class="makeStyles-scaleBarVisibleRegion"
-              style="width: 506.36727272727273px; left: -1px; pointer-events: none;"
-            />
             <div
               class="makeStyles-scaleBarLabel"
               style="left: 145.0909090909091px; pointer-events: none;"
@@ -860,6 +819,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               2,000
             </div>
           </div>
+          <div
+            class="makeStyles-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
         </div>
       </div>
     </div>
@@ -873,7 +836,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       >
         <polygon
           fill="rgba(121, 134, 203, 0.3)"
-          points="0,48,800,48,580,0,0,0"
+          points="0,48,802,48,580,0,0,0"
           stroke="rgba(121, 134, 203, 0.8)"
         />
       </svg>
@@ -881,24 +844,23 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="makeStyles-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiToggleButton-root makeStyles-toggleButton"
-          color="secondary"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text makeStyles-toggleButton MuiButton-textSecondary"
           tabindex="0"
-          title="select tracks"
+          title="Open track selector"
           type="button"
           value="track_select"
         >
           <span
-            class="MuiToggleButton-label"
+            class="MuiButton-label"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root"
+              class="MuiSvgIcon-root makeStyles-buttonSpacer"
               focusable="false"
               viewBox="0 0 24 24"
             >
               <path
-                d="M3 16h5v-2H3v2zm6.5 0h5v-2h-5v2zm6.5 0h5v-2h-5v2zM3 20h2v-2H3v2zm4 0h2v-2H7v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zm4 0h2v-2h-2v2zM3 12h8v-2H3v2zm10 0h8v-2h-8v2zM3 4v4h18V4H3z"
+                d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
               />
             </svg>
           </span>
@@ -910,7 +872,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="makeStyles-spacer"
         />
         <div
-          class="MuiFormGroup-root MuiFormGroup-row"
+          class="MuiFormGroup-root makeStyles-headerForm MuiFormGroup-row"
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-outlined makeStyles-panButton"
@@ -960,12 +922,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </button>
           <div
             aria-expanded="false"
-            class="MuiAutocomplete-root MuiAutocomplete-hasPopupIcon"
+            class="MuiAutocomplete-root"
+            data-testid="autocomplete"
             role="combobox"
           >
             <div
               class="MuiFormControl-root MuiTextField-root makeStyles-headerRefName MuiFormControl-fullWidth"
-              style="margin: 7px;"
+              style="margin: 7px; min-width: 175px;"
             >
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiOutlinedInput-adornedEnd"
@@ -978,39 +941,29 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   autocomplete="off"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiAutocomplete-input MuiAutocomplete-inputFocused MuiInputBase-inputAdornedEnd MuiOutlinedInput-inputAdornedEnd"
                   id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
                   spellcheck="false"
                   type="text"
-                  value="ctgA"
+                  value="ctgA:1..100;ctgB:1,001..1,698"
                 />
                 <div
-                  class="MuiAutocomplete-endAdornment"
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                  style="margin-right: 7px;"
                 >
-                  <button
-                    aria-label="Open"
-                    class="MuiButtonBase-root MuiIconButton-root MuiAutocomplete-popupIndicator"
-                    tabindex="-1"
-                    title="Open"
-                    type="button"
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
                   >
-                    <span
-                      class="MuiIconButton-label"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M7 10l5 5 5-5z"
-                        />
-                      </svg>
-                    </span>
-                    <span
-                      class="MuiTouchRipple-root"
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
                     />
-                  </button>
+                  </svg>
                 </div>
+                <div
+                  class="MuiAutocomplete-endAdornment"
+                />
                 <fieldset
                   aria-hidden="true"
                   class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
@@ -1028,48 +981,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               </div>
             </div>
           </div>
-          <form>
-            <div
-              class="MuiFormControl-root MuiTextField-root makeStyles-input"
-              style="margin: 7px 7px 7px 21px;"
-            >
-              <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-formControl MuiInputBase-adornedStart MuiOutlinedInput-adornedStart"
-                style="background: rgba(255, 255, 255, 0.8); height: 32px;"
-              >
-                <svg
-                  aria-hidden="true"
-                  class="MuiSvgIcon-root"
-                  focusable="false"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                  />
-                </svg>
-                <input
-                  aria-invalid="false"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart MuiOutlinedInput-inputAdornedStart"
-                  type="text"
-                  value="ctgA:1..100;ctgB:1,001..1,698"
-                />
-                <fieldset
-                  aria-hidden="true"
-                  class="PrivateNotchedOutline-root MuiOutlinedInput-notchedOutline"
-                  style="padding-left: 8px;"
-                >
-                  <legend
-                    class="PrivateNotchedOutline-legend"
-                    style="width: 0.01px;"
-                  >
-                    <span>
-                      ​
-                    </span>
-                  </legend>
-                </fieldset>
-              </div>
-            </div>
-          </form>
         </div>
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
@@ -1111,7 +1022,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <span
               class="MuiSlider-track"
-              style="left: 0%; width: 2.3783941938133566%;"
+              style="left: 0%; width: 9.774680693120512%;"
             />
             <input
               type="hidden"
@@ -1120,12 +1031,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <span
               aria-orientation="horizontal"
               aria-valuemax="564.3856189774724"
-              aria-valuemin="-13.750352374993502"
+              aria-valuemin="-61.143471208234715"
               aria-valuenow="0"
               class="MuiSlider-thumb MuiSlider-thumbColorPrimary"
               data-index="0"
               role="slider"
-              style="left: 2.3783941938133566%;"
+              style="left: 9.774680693120512%;"
               tabindex="0"
             />
           </span>
@@ -1654,7 +1565,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig-LinearBasicDisplay"
+            data-testid="display-testConfig-LinearBareDisplay"
             role="presentation"
           >
             <div
@@ -1818,7 +1729,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="makeStyles-display"
-            data-testid="display-testConfig2-LinearBasicDisplay"
+            data-testid="display-testConfig2-LinearBareDisplay"
             role="presentation"
           >
             <div

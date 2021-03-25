@@ -5,6 +5,7 @@ import { Mismatch } from '../BamAdapter/MismatchParser'
 interface SortObject {
   pos: number
   type: string
+  tag?: string
 }
 export const sortFeature = (
   features: Map<string, Feature>,
@@ -27,9 +28,28 @@ export const sortFeature = (
     }
   })
 
+  const isCram = featureArray.length ? featureArray[0].get('tags') : false
   switch (type) {
     case 'Start location': {
       featuresInCenterLine.sort((a, b) => a.get('start') - b.get('start'))
+      break
+    }
+
+    case 'tag': {
+      const tag = sortedBy.tag as string
+      const getTag = (f: Feature, t: string) => {
+        return isCram ? f.get('tags')[t] : f.get(t)
+      }
+      const isString = typeof getTag(featuresInCenterLine[0], tag) === 'string'
+      if (isString) {
+        featuresInCenterLine.sort((a, b) =>
+          getTag(b, tag).localeCompare(getTag(a, tag)),
+        )
+      } else {
+        featuresInCenterLine.sort(
+          (a, b) => (getTag(b, tag) || 0) - (getTag(a, tag) || 0),
+        )
+      }
       break
     }
 

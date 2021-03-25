@@ -1,143 +1,137 @@
 ---
 id: quickstart_web
-title: Quick start guide using the CLI tools
+title: JBrowse web quick start
 toplevel: true
 ---
 
-This guide will walk through installing jbrowse 2 on your website
+In this guide, we'll get an instance of JBrowse running on your computer.
 
-JBrowse 2, like JBrowse 1, is "static site" compatible, meaning it does not
-have any server side code that needs to run. We refer to JBrowse 2 for the web
-as jbrowse-web also.
+## Pre-requisites
 
-### Pre-requisites
+- Ability to run commands on the command line
+- Node.js 10.4+
 
-- You have a webserver such as nginx, apache2, or something else that can
-  handle plain static resources (js, html, css)
+:::caution
 
-- Node.js 10+ - recommend to install this from somewhere other than apt e.g.
-  [NodeSource](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)
+If you are using `apt` as your package manager, we recommend not using it to
+install Node.js. Good alternatives include
+[NodeSource](https://github.com/nodesource) or
+[NVM](https://github.com/nvm-sh/nvm).
 
-### Using jbrowse CLI tools
+:::
 
-We provide a set of CLI tools for initializing your instance that can do
-multiple tasks such as
+## Download
 
-- downloading jbrowse 2 from github automatically
-- updating an existing jbrowse 2 instance with the latest version on github
-- loading a genome assembly
-- loading track configs
-- etc.
+You can download JBrowse 2 by using the JBrowse CLI or by downloading and
+unpacking it manually. We recommend using the JBrowse CLI since it also includes
+utilities to help you configure JBrowse 2 once it is set up.
 
-You can do many of these tasks manually if you have familiarity with the
-system, but the CLI tool will help automate tasks for you
+### Downloading using the JBrowse CLI
 
-#### Install the CLI tools
+The JBrowse CLI can help perform many tasks to help you manage JBrowse 2, such
+as:
 
-To install the JBrowse CLI tools, we expect node v10 or greater to be installed
-already, then you can use
+- create a new instance of JBrowse 2 automatically
+- update an existing instance of JBrowse 2 with the latest released version
+- configure your JBrowse 2 instance
+
+#### Installing the CLI tools
+
+To install the JBrowse CLI, run
 
 ```sh-session
 npm install -g @jbrowse/cli
 ```
 
-After running this command you can then test it with
+After running this command you can then test the installation with
 
 ```sh-session
 jbrowse --version
 ```
 
-This will output the current version of our CLI tools
+This will output the current version of the JBrowse CLI.
 
-Note: if you do not want to install the CLI tools, they are technically
-optional, but they provide useful commands for managing your jbrowse
-installation such as downloading a release automatically, adding tracks, genome
-assemblies, etc. to your installation
+:::note
 
-#### Using jbrowse create to install jbrowse
+If you can't or don't want to globally install the JBrowse CLI, you can also use
+the [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner) command, which
+is included with Node.js, to run JBrowse CLI without installing it. Simply
+replace `jbrowse` with `npx @jbrowse/cli` in any command, e.g.
 
-If you are running a web server such as apache2 or nginx, you may have your web
-server in a directory such as `/var/www/html`
+```
+npx @jbrowse/cli --version
+```
+
+:::
+
+#### Using `jbrowse create` to download JBrowse 2
+
+In the directory where you would like to download JBrowse 2, run this command
 
 ```sh-session
-jbrowse create /var/www/html/jbrowse2
+jbrowse create jbrowse2
 ```
 
-This will download the latest JBrowse 2 release from github releases and
-download it to the folder specified.
+### Downloading manually
 
-Note that `jbrowse create` simply downloads a release from github and unzips it to
-the folder specified
+You can also download JBrowse 2 manually. Go to the
+[releases page](https://github.com/GMOD/jbrowse-components/releases/) of the
+JBrowse 2 GitHub repository and find the latest release that is tagged
+`@jbrowse/web`. Download the ZIP file from that release. Make sure it is the ZIP
+file that starts with `jbrowse-web-` and not the "Source code" ZIP file. Once
+you have downloaded the ZIP file, extract it to the location you would like to
+have JBrowse 2.
 
-#### Loading a genome assembly
+### Checking the download
 
-After you have run the previous step, you will load a genome assembly, which we
-refer to simply as an assembly. This is basically a FASTA file
+Whether you used the JBrowse CLI or downloaded manually, the directory where you
+downloaded JBrowse should look something like this:
+
+```txt
+jbrowse2/
+├── a586bb28a5bad4a3aba2.worker.js
+├── a586bb28a5bad4a3aba2.worker.js.LICENSE.txt
+├── a586bb28a5bad4a3aba2.worker.js.map
+├── asset-manifest.json
+├── favicon.ico
+├── index.html
+├── manifest.json
+├── precache-manifest.52c8ba3337cf7ae812b37d874b2de030.js
+├── robots.txt
+├── service-worker.js
+├── static/
+└── test_data/
+```
+
+## Running JBrowse 2
+
+JBrowse 2 requires a web server to run. It won't work if you try to directly
+open the `index.html` in your web browser. We can use a simple server to check
+that JBrowse 2 has been downloaded properly. Run
 
 ```sh-session
-cd /var/www/html/jbrowse2
-samtools faidx ~/hg19.fa
-jbrowse add-assembly ~/hg19.fa --load copy
+cd jbrowse2/
+npx serve .
 ```
 
-This will copy the hg19.fa and hg19.fa.fai (the FASTA index) to the current
-folder, and initialize a file called config.json with the hg19 assembly.
+This will start a web server in our JBrowse 2 directory. Navigate to the
+location specified in the tool's output. It will look something like
+`http://localhost:5000`. Once at that page, you should see a page that says that
+the configuration is not found. That is expected, since we haven't configured
+JBrowse 2 yet. It will look something like this:
 
-You can also use .2bit files or bgzip-indexed fasta
+![JBrowse 2 screen showing no configuration found](./img/config_not_found.png)
 
-Here is an example with bgzip indexed fasta
+Go ahead an click on the sample config to see a JBrowse 2 running with a demo
+configuration. It should look like this:
 
-```
-cd /var/www/html/jbrowse2
-bgzip -i hg19.fa
-samtools faidx hg19.fa.gz
-jbrowse add-assembly ~/hg19.fa.gz --load copy
-```
+![JBrowse 2 with a sample configuration](./img/sample_config.png)
 
-See [configuring assemblies](config_guide#assembly-config) for more info on formats
-supported for the sequence file.
+Congratulations! You're running JBrowse 2.
 
-#### Adding a BAM track
+## Next steps
 
-Once you have loaded an assembly, we can try adding a BAM track
-
-```sh-session
-samtools index ~/myfile.bam
-jbrowse add-track ~/myfile.bam --load copy
-```
-
-This would copy myfile.bam and myfile.bam.bai (inferred filename) from the home
-directory
-
-Note that URLs are also allowed
-
-```sh-session
-jbrowse add-track http://myhost/myfile.bam
-```
-
-In this case it would not download the file, but simply put the URL in the
-config.json
-
-#### Adding a VCF track
-
-We generally expect VCF files to be tabix indexed. If you have tabix installed
-(sudo apt install tabix) then you can run
-
-```sh-session
-bgzip yourfile.vcf
-tabix yourfile.vcf.gz
-```
-
-Then run
-
-```sh-session
-jbrowse add-track yourfile.vcf.gz --load copy
-```
-
-#### Conclusion
-
-Hopefully this helps you get started with JBrowse 2
-
-Check out the rest of the docs, for more information, and also see the CLI docs
-for more info [CLI tools](cli) especially for details on some of the
-steps shown here.
+Now that JBrowse 2 is set up, you can configure it with your own genomes and
+tracks. There are two ways you can configure JBrowse 2: with the JBrowse CLI
+(guide [here](quickstart_cli)) or with JBrowse 2's built-in graphical
+configuration editing (guide [here](quickstart_gui)).

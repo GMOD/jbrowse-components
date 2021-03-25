@@ -5,7 +5,9 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electron } = window
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 type PathLike = import('fs').PathLike
 type Stats = import('fs').Stats
@@ -61,13 +63,12 @@ export default class ElectronLocalFile implements GenericFilehandle {
     return res
   }
 
-  async readFile(options: FilehandleOptions): Promise<Buffer | string> {
+  async readFile(_: FilehandleOptions = {}): Promise<Buffer | string> {
     if (!this.filename) throw new Error('no file path specified')
-    return this.ipcRenderer.invoke(
-      'readFile',
-      this.filename,
-      options,
-    ) as Promise<Buffer | string>
+
+    const result = await this.ipcRenderer.invoke('readFile', this.filename)
+
+    return result.byteLength !== undefined ? Buffer.from(result) : result
   }
 
   // todo memoize

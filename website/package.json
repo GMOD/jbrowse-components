@@ -4,19 +4,19 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prestart": "npm run make",
+    "prestart": "npm run make combined.md",
     "start": "docusaurus start",
-    "prebuild": "npm run make",
+    "prebuild": "npm run make combined.md",
     "build": "docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "predeploy": "npm run build",
+    "predeploy": "npm run build && npm run make",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/jb2/*\"",
-    "make": "cd docs; make md; cd -"
+    "make": "make -C docs"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-alpha.66",
-    "@docusaurus/preset-classic": "^2.0.0-alpha.66",
+    "@docusaurus/core": "^2.0.0-alpha.68",
+    "@docusaurus/preset-classic": "^2.0.0-alpha.68",
     "@material-ui/core": "^4.9.13",
     "clsx": "^1.1.1",
     "react": "^16.8.4",

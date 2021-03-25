@@ -5,15 +5,24 @@ import { renameRegionsIfNeeded } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  FeatureStats,
-  blankStats,
-  dataAdapterSupportsMultiRegionStats,
-  dataAdapterSupportsGlobalStats,
-} from '../statsUtil'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { FeatureStats, blankStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async execute(args: {
     adapterConfig: {}
@@ -30,8 +39,10 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     )
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsGlobalStats(dataAdapter)
+      // @ts-ignore
+      dataAdapter.constructor.capabilities.includes('hasGlobalStats')
     ) {
+      // @ts-ignore
       return dataAdapter.getGlobalStats(deserializedArgs)
     }
     return blankStats()
@@ -40,6 +51,19 @@ export class WiggleGetGlobalStats extends RpcMethodType {
 
 export class WiggleGetMultiRegionStats extends RpcMethodType {
   name = 'WiggleGetMultiRegionStats'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any) {
+    const l = await super.deserializeArguments(args)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
 
   async serializeArguments(
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
@@ -50,7 +74,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       return args
     }
 
-    // @ts-ignore
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 
@@ -70,10 +93,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       adapterConfig,
     )
 
-    if (
-      dataAdapter instanceof BaseFeatureDataAdapter &&
-      dataAdapterSupportsMultiRegionStats(dataAdapter)
-    ) {
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
     }
     return blankStats()

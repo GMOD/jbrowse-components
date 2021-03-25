@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   types,
   getParent,
@@ -56,10 +56,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-
-        // this represents assemblies in the specialized
-        // read vs ref dotplot view
-        viewAssemblyConfigs: types.array(types.frozen()),
       }),
     )
     .volatile(() => ({
@@ -83,6 +79,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       // // Get a composite map of featureId->feature map for a track
       // // across multiple views
+      //
       // getTrackFeatures(trackIds: string[]) {
       //   // @ts-ignore
       //   const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
@@ -110,6 +107,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             }
           }),
         )
+      },
+
+      // automatically removes session assemblies associated with this view
+      // e.g. read vs ref
+      beforeDestroy() {
+        const session = getSession(self)
+        self.assemblyNames.forEach(name => {
+          if (name.endsWith('-temp')) {
+            session.removeAssembly?.(name)
+          }
+        })
       },
 
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
@@ -160,13 +168,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
           if (isSessionModelWithWidgets(session)) {
-            // @ts-ignore
             const selector = session.addWidget(
               'HierarchicalTrackSelectorWidget',
               'hierarchicalTrackSelector',
               { view: self },
             )
-            // @ts-ignore
             session.showWidget(selector)
             return selector
           }
@@ -237,7 +243,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get menuItems(): MenuItem[] {
-        const session = getSession(self)
         const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
           if (view.menuItems) {
@@ -250,13 +255,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         menuItems.push({
           label: 'Open track selector',
           onClick: self.activateTrackSelector,
-          icon: LineStyleIcon,
-          disabled:
-            isSessionModelWithWidgets(session) &&
-            session.visibleWidget &&
-            session.visibleWidget.id === 'hierarchicalTrackSelector' &&
-            // @ts-ignore
-            session.visibleWidget.view.id === self.id,
+          icon: TrackSelectorIcon,
         })
         return menuItems
       },

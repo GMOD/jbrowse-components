@@ -4,8 +4,7 @@ import {
   createEvent,
   fireEvent,
   render,
-  wait,
-  waitForElement,
+  waitFor,
 } from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -48,15 +47,19 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
-    const track = await findByTestId('display-volvox_alignments_alignments')
+    const track = await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
     // wait for requestAnimationFrame
-    await wait(() => {})
+    await waitFor(() => {})
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
-  })
+  }, 10000)
 
   it('click and drag to rubberBand', async () => {
     const pluginManager = getPluginManager()
@@ -64,7 +67,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const track = await findByTestId('rubberBand_controls')
+    const track = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
@@ -73,6 +80,24 @@ describe('valid file tests', () => {
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
+  }, 15000)
+
+  it('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByTestId, findByText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    const rubberBandComponent = await findByTestId('rubberBand_controls')
+
+    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const getSeqMenuItem = await findByText('Get sequence')
+    fireEvent.click(getSeqMenuItem)
+    expect(state.session.views[0].leftOffset).toBeTruthy()
+    expect(state.session.views[0].rightOffset).toBeTruthy()
   })
 
   it('click and drag to reorder tracks', async () => {
@@ -100,31 +125,36 @@ describe('valid file tests', () => {
     fireEvent.dragEnter(trackRenderingContainer1)
     fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
     fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
-    await wait(() => expect(state.session.views[0].tracks[0].id).toBe(trackId1))
+    await waitFor(() =>
+      expect(state.session.views[0].tracks[0].id).toBe(trackId1),
+    )
   })
 
   it('click and zoom in and back out', async () => {
-    jest.useFakeTimers()
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, getAllByText } = render(
+    const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await getAllByText('ctgA')
+    await findAllByText('ctgA', {}, { timeout: 10000 })
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
-    await wait(() => {
-      jest.runAllTimers()
-      const after = state.session.views[0].bpPerPx
-      expect(after).toBe(before / 2)
-    })
+    await waitFor(
+      () => {
+        const after = state.session.views[0].bpPerPx
+        expect(after).toBe(before / 2)
+      },
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].bpPerPx).toBe(before / 2)
     fireEvent.click(await findByTestId('zoom_out'))
-    await wait(() => {
-      jest.runAllTimers()
-      const after = state.session.views[0].bpPerPx
-      expect(after).toBe(before)
-    })
+    await waitFor(
+      () => {
+        const after = state.session.views[0].bpPerPx
+        expect(after).toBe(before)
+      },
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].bpPerPx).toBe(before)
   }, 30000)
 
@@ -147,14 +177,18 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
-    await findByTestId('display-volvox_refseq-LinearReferenceSequenceDisplay')
+    await findByTestId(
+      'display-volvox_refseq-LinearReferenceSequenceDisplay',
+      {},
+      { timeout: 10000 },
+    )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  })
+  }, 10000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, getByText } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
 
@@ -164,12 +198,54 @@ describe('valid file tests', () => {
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
     fireEvent.click(viewMenu)
-    await waitForElement(() => getByText('Show center line'))
-    fireEvent.click(getByText('Show center line'))
+    fireEvent.click(await findByText('Show center line'))
     expect(state.session.views[0].showCenterLine).toBe(true)
 
     const { centerLineInfo } = state.session.views[0]
     expect(centerLineInfo.refName).toBe('ctgA')
     expect(centerLineInfo.offset).toEqual(120)
   })
+
+  it('test navigation with the search input box', async () => {
+    const pluginManager = getPluginManager()
+    const state = pluginManager.rootModel
+    const { findByText, findByTestId, findByPlaceholderText } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
+    expect(state.session.views[0].displayedRegions[0].refName).toEqual('ctgA')
+    fireEvent.click(await findByText('Help'))
+    // need this to complete before we can try to search
+    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+    await findByTestId(
+      'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
+    )
+
+    const autocomplete = await findByTestId('autocomplete')
+    const inputBox = await findByPlaceholderText('Search for location')
+
+    autocomplete.focus()
+    fireEvent.change(inputBox, {
+      target: { value: '{volvox2}ctgB:1..200' },
+    })
+
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    // specify different valid assembly when navigating via locstring
+    await waitFor(() =>
+      expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
+        'volvox2',
+      ),
+    )
+    await waitFor(() =>
+      expect(state.session.views[0].displayedRegions[0].refName).toEqual(
+        'ctgB',
+      ),
+    )
+    expect((await findByPlaceholderText('Search for location')).value).toEqual(
+      expect.stringContaining('ctgB'),
+    )
+  }, 15000)
 })

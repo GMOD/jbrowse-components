@@ -4,19 +4,22 @@ import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Divider from '@material-ui/core/Divider'
-import IconButton from '@material-ui/core/IconButton'
-import FormControl from '@material-ui/core/FormControl'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import Radio from '@material-ui/core/Radio'
-import RadioGroup from '@material-ui/core/RadioGroup'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  IconButton,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  TextField,
+  Typography,
+} from '@material-ui/core'
+
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CloseIcon from '@material-ui/icons/Close'
@@ -74,12 +77,8 @@ function SettingsDialog(props: {
 
   return (
     <>
-      <Dialog
-        onClose={handleClose}
-        aria-labelledby="simple-dialog-title"
-        open={open}
-      >
-        <DialogTitle id="simple-dialog-title">
+      <Dialog onClose={handleClose} open={open}>
+        <DialogTitle>
           Configure session sharing
           {handleClose ? (
             <IconButton className={classes.closeButton} onClick={handleClose}>
@@ -96,8 +95,6 @@ function SettingsDialog(props: {
           </DialogContentText>
           <FormControl component="fieldset">
             <RadioGroup
-              aria-label="gender"
-              name="gender1"
               value={setting}
               onChange={event => {
                 const val = event.target.value
@@ -136,11 +133,7 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
   }
 
   return (
-    <Dialog
-      onClose={handleClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}
-    >
+    <Dialog onClose={handleClose} open={open}>
       <DialogTitle id="simple-dialog-title">
         Info about session URLs
         {onClose ? (
@@ -238,10 +231,9 @@ const ShareDialog = observer(
           maxWidth="xl"
           open
           onClose={handleClose}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
+          data-testid="share-dialog"
         >
-          <DialogTitle id="alert-dialog-title">
+          <DialogTitle>
             JBrowse Shareable Link
             {handleClose ? (
               <IconButton className={classes.closeButton} onClick={handleClose}>
@@ -253,7 +245,7 @@ const ShareDialog = observer(
 
           <>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <DialogContentText>
                 Copy the URL below to share your current JBrowse session.
                 <IconButton onClick={() => setSettingsDialogOpen(true)}>
                   <SettingsIcon />
@@ -264,9 +256,7 @@ const ShareDialog = observer(
             <DialogContent>
               {currentSetting === 'short' ? (
                 error ? (
-                  <Typography color="error">
-                    Failed to generate short URL: {`${error}`}
-                  </Typography>
+                  <Typography color="error">{`${error}`}</Typography>
                 ) : loading ? (
                   <Typography>Generating short URL...</Typography>
                 ) : (
@@ -276,12 +266,15 @@ const ShareDialog = observer(
                     InputProps={{
                       readOnly: true,
                     }}
+                    // eslint-disable-next-line react/jsx-no-duplicate-props
+                    inputProps={{ 'data-testid': 'share-url-text' }}
                     variant="filled"
                     style={{ width: '100%' }}
                     onClick={event => {
                       const target = event.target as HTMLTextAreaElement
                       target.select()
                     }}
+                    data-testid="share-url-field"
                   />
                 )
               ) : (
@@ -309,6 +302,7 @@ const ShareDialog = observer(
               }}
               color="primary"
               startIcon={<ContentCopyIcon />}
+              disabled={currentSetting === 'short' && loading}
             >
               Copy URL to Clipboard
             </Button>

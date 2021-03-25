@@ -2,11 +2,13 @@ import { types } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import intersect from 'array-intersection'
 
 export function generateHierarchy(model, trackConfigurations, collapsed) {
   const hierarchy = { children: [] }
 
   trackConfigurations.forEach(trackConf => {
+    // console.log(readConfObject(trackConf, 'category'))
     const categories = [...(readConfObject(trackConf, 'category') || [])]
     if (trackConf.trackId.endsWith('sessionTrack')) {
       categories.unshift(' Session tracks')
@@ -77,28 +79,27 @@ export default pluginManager =>
         const trackConfigurations = session.tracks
         const viewType = self.view.type
 
-        const relevantTrackConfigurations = trackConfigurations.filter(
-          trackConf => {
-            const trackConfAssemblies = readConfObject(
-              trackConf,
-              'assemblyNames',
-            )
-            if (!trackConfAssemblies.includes(assemblyName)) {
-              return false
-            }
-            const viewType = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = viewType.displayTypes.map(
-              displayType => displayType.name,
-            )
-            for (const display of trackConf.displays) {
-              if (compatibleDisplays.includes(display.type)) {
-                return true
-              }
-            }
-            return false
-          },
-        )
-        return relevantTrackConfigurations
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!assembly) {
+          return []
+        }
+
+        // filter out tracks that don't match the current assembly (check all
+        // assembly aliases) and display types
+        return trackConfigurations
+          .filter(conf => {
+            const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+            const { allAliases } = assembly
+            return intersect(allAliases, trackConfAssemblies).length > 0
+          })
+          .filter(conf => {
+            const { displayTypes } = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = displayTypes.map(display => display.name)
+            const trackDisplays = conf.displays.map(display => display.type)
+            return intersect(compatibleDisplays, trackDisplays).length > 0
+          })
       },
 
       get assemblyNames() {
@@ -111,21 +112,13 @@ export default pluginManager =>
         }
         const trackConfigurations = connection.tracks
 
-        const relevantTrackConfigurations = trackConfigurations.filter(
-          trackConf => {
-            const viewType = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = viewType.displayTypes.map(
-              displayType => displayType.name,
-            )
-            for (const display of trackConf.displays) {
-              if (compatibleDisplays.includes(display.type)) {
-                return true
-              }
-            }
-            return false
-          },
-        )
-        return relevantTrackConfigurations
+        // filter out tracks that don't match the current display types
+        return trackConfigurations.filter(conf => {
+          const { displayTypes } = pluginManager.getViewType(self.view.type)
+          const compatibleDisplays = displayTypes.map(display => display.name)
+          const trackDisplays = conf.displays.map(display => display.type)
+          return intersect(compatibleDisplays, trackDisplays).length > 0
+        })
       },
 
       hierarchy(assemblyName) {

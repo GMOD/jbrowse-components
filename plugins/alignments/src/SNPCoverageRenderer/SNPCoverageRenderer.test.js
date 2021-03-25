@@ -1,15 +1,15 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import SNPCoverageRenderer, { configSchema, ReactComponent } from '.'
 
-function SNPCoverageRendererPlugin() {
-  return new SNPCoverageRenderer({
+test('several features', async () => {
+  const pluginManager = {}
+  const renderer = new SNPCoverageRenderer({
     name: 'SNPCoverageRenderer',
     ReactComponent,
     configSchema,
+    pluginManager,
   })
-}
-test('several features', async () => {
-  const result = await SNPCoverageRendererPlugin().makeImageData({
+  const result = await renderer.makeImageData({
     features: new Map([
       [
         't1',
@@ -53,6 +53,8 @@ test('several features', async () => {
     bpPerPx: 3,
     highResolutionScaling: 1,
     height: 100,
+    config: {},
+    ticks: { values: [0, 100] },
   })
 
   expect(result).toMatchSnapshot({

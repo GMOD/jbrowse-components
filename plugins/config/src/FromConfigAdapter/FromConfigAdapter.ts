@@ -1,7 +1,4 @@
-import {
-  BaseFeatureDataAdapter,
-  RegionsAdapter,
-} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SimpleFeature, {
   Feature,
   SimpleFeatureSerialized,
@@ -18,10 +15,8 @@ import { configSchema as FromConfigAdapterConfigSchema } from './configSchema'
  *   `"features": [ { "refName": "ctgA", "start":1, "end":20 }, ... ]`
  */
 
-export default class FromConfigAdapter
-  extends BaseFeatureDataAdapter
-  implements RegionsAdapter {
-  private features: Map<string, Feature[]>
+export default class FromConfigAdapter extends BaseFeatureDataAdapter {
+  protected features: Map<string, Feature[]>
 
   constructor(
     config: ConfigurationModel<typeof FromConfigAdapterConfigSchema>,
@@ -31,10 +26,10 @@ export default class FromConfigAdapter
       config,
       'features',
     ) as SimpleFeatureSerialized[]
-    this.features = this.makeFeatures(features || [])
+    this.features = FromConfigAdapter.makeFeatures(features || [])
   }
 
-  private makeFeatures(fdata: SimpleFeatureSerialized[]) {
+  static makeFeatures(fdata: SimpleFeatureSerialized[]) {
     const features = new Map<string, Feature[]>()
     for (let i = 0; i < fdata.length; i += 1) {
       if (fdata[i]) {
@@ -58,7 +53,7 @@ export default class FromConfigAdapter
     return features
   }
 
-  private makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
+  static makeFeature(data: SimpleFeatureSerialized): SimpleFeature {
     return new SimpleFeature(data)
   }
 
@@ -89,40 +84,6 @@ export default class FromConfigAdapter
       })
     }
     return Array.from(refNames)
-  }
-
-  /**
-   * Get refName, start, and end for all features after collapsing any overlaps
-   */
-  async getRegions() {
-    const regions = []
-
-    // recall: features are stored in this object sorted by start coordinate
-    for (const [refName, features] of this.features) {
-      let currentRegion
-      for (const feature of features) {
-        if (
-          currentRegion &&
-          currentRegion.end >= feature.get('start') &&
-          currentRegion.start <= feature.get('end')
-        ) {
-          currentRegion.end = feature.get('end')
-        } else {
-          if (currentRegion) regions.push(currentRegion)
-          currentRegion = {
-            refName,
-            start: feature.get('start'),
-            end: feature.get('end'),
-          }
-        }
-      }
-      if (currentRegion) regions.push(currentRegion)
-    }
-
-    // sort the regions by refName
-    regions.sort((a, b) => a.refName.localeCompare(b.refName))
-
-    return regions
   }
 
   async getRefNameAliases() {

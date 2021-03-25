@@ -36,7 +36,7 @@ export default class extends WiggleBaseRenderer {
       colorCallback = (feature: Feature) => colorScale(feature.get('score'))
     } else {
       colorCallback = (feature: Feature) =>
-        readConfObject(config, 'color', [feature])
+        readConfObject(config, 'color', { feature })
     }
 
     for (const feature of features.values()) {

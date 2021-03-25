@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",
@@ -15,37 +15,25 @@
     "directory": "packages/development-tools"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
+  "main": "index.js",
   "files": [
-    "dist"
+    "patches/",
+    "postinstall.js"
   ],
-  "scripts": {
-    "test": "jest",
-    "coverage": "npm test -- --coverage",
-    "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx src",
-    "clean": "rimraf dist",
-    "prebuild": "npm run clean",
-    "build": "babel src --out-dir dist --extensions '.ts,.js'",
-    "version": "standard-changelog && git add CHANGELOG.md",
-    "prepare": "npm run build",
-    "postpublish": "git push origin master --follow-tags"
+  "bin": {
+    "jbrowse-plugin-postinstall": "./postinstall.js"
   },
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {},
   "dependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@types/copy-webpack-plugin": "^6.0.0",
-    "@types/webpack": "^4.41.18",
-    "change-case": "^4.1.1",
-    "copy-webpack-plugin": "^6.0.3",
-    "css-loader": "^3.6.0",
-    "postcss-flexbugs-fixes": "^4.2.1",
-    "postcss-loader": "^3.0.0",
-    "postcss-preset-env": "^6.7.0",
-    "sass": "^1.26.10",
-    "sass-loader": "^9.0.2",
-    "style-loader": "^1.2.1"
+    "cross-spawn": "^7.0.3",
+    "patch-package": "^6.2.2",
+    "tsdx": "0.14.1"
   },
   "peerDependencies": {
-    "webpack": "^4.42.0"
+    "@jbrowse/core": "^1.0.3"
   },
   "publishConfig": {
     "access": "public"

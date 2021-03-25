@@ -8,12 +8,12 @@ export const configSchema = ConfigurationSchema('ConfigurationEditorWidget', {})
 export const HeadingComponent = observer(({ model }) => {
   if (model && model.target) {
     if (model.target.type) {
-      return `${model.target.type} Settings`
+      return `${model.target.type} settings`
     }
     if (isStateTreeNode(model.target)) {
       const type = getType(model.target)
       if (type && type.name) {
-        return `${type.name.replace('ConfigurationSchema', '')} Settings`
+        return `${type.name.replace('ConfigurationSchema', '')} settings`
       }
     }
   }

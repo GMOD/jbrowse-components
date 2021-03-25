@@ -1,6 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, rIC } from '@jbrowse/core/util'
 import { BlockModel } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
@@ -16,7 +16,6 @@ interface ErrorBoundaryState {
   hasError: boolean
   error?: Error
 }
-
 class RenderErrorBoundary extends Component<{}, ErrorBoundaryState> {
   // eslint-disable-next-line react/static-property-placement
   static propTypes = {
@@ -54,7 +53,6 @@ class RenderErrorBoundary extends Component<{}, ErrorBoundaryState> {
 
 function ServerSideRenderedContent(props: { model: BlockModel }) {
   const ssrContainerNode = useRef<HTMLDivElement>(null)
-  const hydrated = useRef(false)
 
   const { model } = props
   const session = getSession(model)
@@ -62,7 +60,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
 
   useEffect(() => {
     const domNode = ssrContainerNode.current
-    const isHydrated = hydrated.current
     function doHydrate() {
       const {
         data,
@@ -71,7 +68,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         renderingComponent: RenderingComponent,
       } = model
       if (domNode && model.filled) {
-        if (isHydrated && domNode) {
+        if (domNode) {
           unmountComponentAtNode(domNode)
         }
         domNode.innerHTML = html
@@ -83,7 +80,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
         // a long continuous scroll, it forces it to evaluate because
         // otherwise the continuous scroll would never give it time to do
         // so
-        requestIdleCallback(
+        rIC(
           () => {
             if (!isAlive(model)) {
               return
@@ -96,7 +93,6 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
               </ThemeProvider>,
               domNode,
             )
-            hydrated.current = true
           },
           { timeout: 300 },
         )
@@ -106,7 +102,7 @@ function ServerSideRenderedContent(props: { model: BlockModel }) {
     doHydrate()
 
     return () => {
-      if (domNode && isHydrated) {
+      if (domNode) {
         unmountComponentAtNode(domNode)
       }
     }

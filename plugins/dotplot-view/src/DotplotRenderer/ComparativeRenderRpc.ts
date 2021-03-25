@@ -36,13 +36,14 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   async execute(args: ComparativeRenderArgs) {
+    const deserializedArgs = await this.deserializeArguments(args)
     const {
       sessionId,
       adapterConfig,
       rendererType,
       renderProps,
       signal,
-    } = await this.deserializeArguments(args)
+    } = deserializedArgs
     if (!sessionId) throw new Error('must pass a unique session id')
 
     checkAbortSignal(signal)
@@ -73,12 +74,14 @@ export default class ComparativeRender extends RpcMethodType {
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
 
-    const result = await RendererType.renderInWorker({
+    const renderArgs = {
+      ...deserializedArgs,
       ...renderProps,
-      sessionId,
       dataAdapter,
-      signal,
-    })
+    }
+    delete renderArgs.renderProps
+
+    const result = await RendererType.renderInWorker(renderArgs)
     checkAbortSignal(signal)
     return result
   }

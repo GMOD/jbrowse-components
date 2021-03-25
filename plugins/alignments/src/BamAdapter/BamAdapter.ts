@@ -70,7 +70,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
-    return this.bam.getHeader(opts)
+    return this.bam.getHeaderText(opts)
   }
 
   private async setup(opts?: BaseOptions) {
@@ -157,7 +157,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     const { signal, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
-      // @ts-ignore
       statusCallback('Downloading alignments')
       const records = await this.bam.getRecordsForRange(
         refName,

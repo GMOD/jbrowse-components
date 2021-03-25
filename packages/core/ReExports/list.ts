@@ -7,6 +7,8 @@ export default [
   'prop-types',
 
   '@material-ui/core',
+  '@material-ui/core/SvgIcon',
+  '@material-ui/core/utils',
   '@material-ui/lab',
 
   '@jbrowse/core/Plugin',
@@ -29,6 +31,7 @@ export default [
   '@jbrowse/core/util/Base1DViewModel',
   '@jbrowse/core/util/io',
   '@jbrowse/core/util/mst-reflection',
+  '@jbrowse/core/util/rxjs',
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
 
   '@jbrowse/core/data_adapters/BaseAdapter',

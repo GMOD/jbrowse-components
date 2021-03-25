@@ -2,6 +2,7 @@ import { toUrlSafeB64 } from '@jbrowse/core/util'
 
 import AES from 'crypto-js/aes'
 import Utf8 from 'crypto-js/enc-utf8'
+import { functionRegexp } from '@jbrowse/core/util/functionStrings'
 
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {
@@ -22,6 +23,41 @@ const encrypt = (text: string, password: string) => {
 const decrypt = (text: string, password: string) => {
   const bytes = AES.decrypt(text, password)
   return bytes.toString(Utf8)
+}
+
+// recusively checks config for callbacks and removes them
+// was used to parse and delete, commented out for later if needed
+// const deleteCallbacks = (key: any) => {
+//   if (Array.isArray(key)) {
+//     key.forEach(a => {
+//       deleteCallbacks(a)
+//     })
+//   } else if (key && typeof key === 'object') {
+//     Object.entries(key).forEach(([innerKey, value]) => {
+//       if (typeof value === 'string' && value.startsWith('function')) {
+//         delete key[innerKey] // removing sets it to the default callback
+//       } else deleteCallbacks(key[innerKey])
+//     })
+//   }
+// }
+
+// use function regex (without ^ so it works anywhere)
+// to check for function syntax in stringified session
+export async function scanSharedSessionForCallbacks(
+  session: Record<string, unknown>,
+) {
+  const anywhereFunctionRegexp = new RegExp(functionRegexp.toString().slice(2))
+  const stringedSession = JSON.stringify(session)
+  return anywhereFunctionRegexp.test(stringedSession)
+}
+
+function getErrorMsg(err: string) {
+  try {
+    const obj = JSON.parse(err)
+    return obj.message
+  } catch (e) {
+    return err
+  }
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
@@ -45,7 +81,8 @@ export async function shareSessionToDynamo(
   })
 
   if (!response.ok) {
-    throw new Error(`Error sharing session ${response.statusText}`)
+    const err = await response.text()
+    throw new Error(getErrorMsg(err))
   }
   const json = await response.json()
   return {
@@ -69,17 +106,10 @@ export async function readSessionFromDynamo(
   })
 
   if (!response.ok) {
-    console.error({ response, url })
-    throw new Error(
-      `Unable to fetch session ${sessionId}\n${response.statusText}`,
-    )
+    const err = await response.text()
+    throw new Error(getErrorMsg(err))
   }
 
-  // TODO: shouldn't get a 200 back for this
-  const text = await response.text()
-  if (!text) {
-    throw new Error(`Unable to fetch session ${sessionId}`)
-  }
-  const json = JSON.parse(text)
+  const json = await response.json()
   return decrypt(json.session, password)
 }

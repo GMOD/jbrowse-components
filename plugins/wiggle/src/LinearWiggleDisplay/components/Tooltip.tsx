@@ -4,14 +4,20 @@ import MUITooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
 
-const toP = (s: number) => parseFloat(s.toPrecision(6))
+const toP = (s = 0) => parseFloat(s.toPrecision(6))
 
 const useStyles = makeStyles(theme => ({
   popper: {
     fontSize: '0.8em',
-    zIndex: theme.zIndex.tooltip, // important to have a zIndex directly on the popper itself, material-ui Tooltip uses popper and has similar thing
-    pointerEvents: 'none', // needed to avoid rapid mouseLeave/mouseEnter on popper
+
+    // important to have a zIndex directly on the popper itself
+    // @material-ui/Tooltip uses popper and has similar thing
+    zIndex: theme.zIndex.tooltip,
+
+    // needed to avoid rapid mouseLeave/mouseEnter on popper
+    pointerEvents: 'none',
   },
 
   hoverVertical: {
@@ -28,9 +34,16 @@ const useStyles = makeStyles(theme => ({
 
 function TooltipContents(props: { feature: Feature }) {
   const { feature } = props
+  const ref = feature.get('refName')
+  const displayRef = `${ref ? `${ref}:` : ''}`
+  const start = (feature.get('start') + 1).toLocaleString('en-US')
+  const end = feature.get('end').toLocaleString('en-US')
+  const coord = start === end ? start : `${start}..${end}`
+  const loc = `${displayRef}${coord}`
+
   return feature.get('summary') !== undefined ? (
     <div>
-      Summary
+      {loc}
       <br />
       Max: {toP(feature.get('maxScore'))}
       <br />
@@ -39,7 +52,11 @@ function TooltipContents(props: { feature: Feature }) {
       Min: {toP(feature.get('minScore'))}
     </div>
   ) : (
-    <div>{toP(feature.get('score'))}</div>
+    <div>
+      {loc}
+      <br />
+      {`${toP(feature.get('score'))}`}
+    </div>
   )
 }
 
@@ -69,7 +86,7 @@ const Tooltip = observer(
             style={{
               position: 'absolute',
               left: mouseCoord[0],
-              top: 0,
+              top: 5,
             }}
           >
             {' '}
@@ -77,7 +94,10 @@ const Tooltip = observer(
         </MUITooltip>
         <div
           className={classes.hoverVertical}
-          style={{ left: mouseCoord[0], height }}
+          style={{
+            left: mouseCoord[0],
+            height: height - YSCALEBAR_LABEL_OFFSET * 2,
+          }}
         />
       </>
     ) : null

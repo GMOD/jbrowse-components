@@ -6,11 +6,13 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginLoader from '@jbrowse/core/PluginLoader'
+
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
+import factoryReset from './factoryReset'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
@@ -37,8 +39,10 @@ export default function Loader({
     SnapshotIn<AnyConfigurationModel>
   >()
   const [plugins, setPlugins] = useState<PluginConstructor[]>()
-
   const classes = useStyles()
+  const [error, setError] = useState('')
+  const [snapshotError, setSnapshotError] = useState('')
+  const [pluginManager, setPluginManager] = useState<PluginManager>()
 
   const ipcRenderer = (electron && electron.ipcRenderer) || {
     invoke: () => {},
@@ -52,9 +56,11 @@ export default function Loader({
             configuration: { rpc: { defaultDriver: 'ElectronRpcDriver' } },
           }),
         )
-      } catch (error) {
+      } catch (e) {
+        // used to launch an error dialog for whatever caused loadConfig to
+        // fail
         setConfigSnapshot(() => {
-          throw error
+          throw e
         })
       }
     }
@@ -71,9 +77,11 @@ export default function Loader({
           pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
           setPlugins([...corePlugins, ...runtimePlugins])
-        } catch (error) {
+        } catch (e) {
+          // used to launch an error dialog for whatever caused plugin loading
+          // to fail
           setConfigSnapshot(() => {
-            throw error
+            throw e
           })
         }
       }
@@ -81,7 +89,62 @@ export default function Loader({
     fetchPlugins()
   }, [configSnapshot])
 
-  if (!(configSnapshot && plugins)) {
+  useEffect(() => {
+    if (plugins) {
+      const pm = new PluginManager(plugins.map(P => new P()))
+      pm.createPluggableElements()
+
+      const JBrowseRootModel = JBrowseRootModelFactory(pm)
+      try {
+        if (configSnapshot) {
+          const rootModel = JBrowseRootModel.create(
+            {
+              jbrowse: configSnapshot,
+              assemblyManager: {},
+              version: packagedef.version,
+            },
+            { pluginManager: pm },
+          )
+          // make some things available globally for testing
+          // e.g. window.MODEL.views[0] in devtools
+          // @ts-ignore
+          window.MODEL = rootModel.session
+          // @ts-ignore
+          window.ROOTMODEL = rootModel
+          pm.setRootModel(rootModel)
+
+          pm.configure()
+
+          if (
+            rootModel &&
+            !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
+          ) {
+            writeAWSAnalytics(rootModel, initialTimestamp)
+            writeGAAnalytics(rootModel, initialTimestamp)
+          }
+          setPluginManager(pm)
+        }
+      } catch (e) {
+        console.error(e)
+        const match = e.message.match(
+          /.*at path "(.*)" snapshot `(.*)` is not assignable/,
+        )
+        // best effort to make a better error message than the default
+        // mobx-state-tree
+        if (match) {
+          setError(`Failed to load element at ${match[1]}`)
+          setSnapshotError(match[2])
+        } else {
+          const additionalMsg =
+            e.message.length > 10000 ? '... see console for more' : ''
+          throw new Error(e.message.slice(0, 10000) + additionalMsg)
+        }
+        console.error(e)
+      }
+    }
+  }, [plugins, configSnapshot, initialTimestamp])
+
+  if (!(configSnapshot && plugins && pluginManager) && !error) {
     return (
       <CircularProgress
         disableShrink
@@ -91,44 +154,45 @@ export default function Loader({
     )
   }
 
-  const pluginManager = new PluginManager(plugins.map(P => new P()))
-  pluginManager.createPluggableElements()
+  const err = error
 
-  const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
-  let rootModel
-  try {
-    if (configSnapshot) {
-      rootModel = JBrowseRootModel.create({
-        jbrowse: configSnapshot,
-        assemblyManager: {},
-        version: packagedef.version,
-      })
-    }
-  } catch (e) {
-    console.error(e)
-    const additionalMsg =
-      e.message.length > 10000 ? '... see console for more' : ''
-    throw new Error(e.message.slice(0, 10000) + additionalMsg)
-  }
-
-  if (rootModel) {
-    // make some things available globally for testing
-    // e.g. window.MODEL.views[0] in devtools
-    // @ts-ignore
-    window.MODEL = rootModel.session
-    // @ts-ignore
-    window.ROOTMODEL = rootModel
-    pluginManager.setRootModel(rootModel)
-
-    pluginManager.configure()
-
-    if (
-      rootModel &&
-      !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
-    ) {
-      writeAWSAnalytics(rootModel, initialTimestamp)
-      writeGAAnalytics(rootModel, initialTimestamp)
-    }
+  if (err) {
+    return (
+      <div>
+        {err ? (
+          <div
+            style={{
+              border: '1px solid black',
+              padding: 2,
+              margin: 2,
+              backgroundColor: '#ff8888',
+            }}
+          >
+            {`${err}`}
+            {snapshotError ? (
+              <>
+                {' '}
+                ... Failed element had snapshot:
+                <pre
+                  style={{
+                    background: 'lightgrey',
+                    border: '1px solid black',
+                    maxHeight: 200,
+                    overflow: 'auto',
+                    margin: 20,
+                  }}
+                >
+                  {JSON.stringify(JSON.parse(snapshotError), null, 2)}
+                </pre>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+        <button type="button" onClick={() => factoryReset()}>
+          Factory reset
+        </button>
+      </div>
+    )
   }
 
   return <JBrowse pluginManager={pluginManager} />

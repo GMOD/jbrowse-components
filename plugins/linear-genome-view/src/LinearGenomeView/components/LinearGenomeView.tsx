@@ -3,6 +3,7 @@ import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
 import { observer } from 'mobx-react'
@@ -17,6 +18,7 @@ import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import AboutDialog from './AboutDialog'
+import SequenceDialog from './SequenceDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -26,26 +28,59 @@ const useStyles = makeStyles(theme => ({
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
+  spacer: {
+    marginRight: theme.spacing(2),
+  },
 }))
 
 const LinearGenomeView = observer((props: { model: LGV }) => {
   const { model } = props
-  const { tracks, error, hideHeader, initialized } = model
+  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
   // the AboutDialog is shown at this level because if it is
   // rendered as a child of the TracksContainer, then clicking on
   // the dialog scrolls the LGV
-  const aboutTrack = model.tracks.find(t => t.showAbout)
-  const handleClose = () => {
-    aboutTrack.setShowAbout(false)
+  const aboutTrack = model.tracks.find(track => track.showAbout)
+  const dialogTrack = model.tracks.find(track => track.DialogComponent)
+
+  if (!initialized) {
+    return null
   }
-  return !initialized ? (
-    <ImportForm model={model} />
-  ) : (
+  if (!hasDisplayedRegions) {
+    return <ImportForm model={model} />
+  }
+  return (
     <div style={{ position: 'relative' }}>
       {aboutTrack ? (
-        <AboutDialog model={aboutTrack} handleClose={handleClose} />
+        <AboutDialog
+          model={aboutTrack}
+          handleClose={() => aboutTrack.setShowAbout(false)}
+        />
+      ) : null}
+      {model.DialogComponent ? (
+        <model.DialogComponent
+          model={model}
+          handleClose={() => model.setDialogComponent(undefined)}
+        />
+      ) : null}
+
+      {dialogTrack ? (
+        <dialogTrack.DialogComponent
+          track={dialogTrack}
+          display={dialogTrack.DialogDisplay}
+          handleClose={() =>
+            dialogTrack.setDialogComponent(undefined, undefined)
+          }
+        />
+      ) : null}
+      {model.isSeqDialogDisplayed ? (
+        <SequenceDialog
+          model={model}
+          handleClose={() => {
+            model.setOffsets(undefined, undefined)
+          }}
+        />
       ) : null}
       {!hideHeader ? (
         <Header model={model} />
@@ -74,8 +109,10 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
                   variant="contained"
                   color="primary"
                   onClick={model.activateTrackSelector}
+                  style={{ zIndex: 1000 }}
                 >
-                  Select Tracks
+                  <TrackSelectorIcon className={classes.spacer} />
+                  Open track selector
                 </Button>
               </Paper>
             ) : (

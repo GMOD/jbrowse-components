@@ -25,16 +25,15 @@ export default (pluginManager: PluginManager) => {
         s = s.toLowerCase()
         return function stringPredicate(
           _sheet: unknown,
-          row: { cells: { text: string }[] },
+          row: { cellsWithDerived: { text: string }[] },
         ) {
-          const { cells } = row
+          const { cellsWithDerived } = row
           for (
             let columnNumber = 0;
-            columnNumber < cells.length;
+            columnNumber < cellsWithDerived.length;
             columnNumber += 1
           ) {
-            const cell = cells[columnNumber]
-            // TODO: add support for derived cells
+            const cell = cellsWithDerived[columnNumber]
             // note: case insensitive
             if (cell.text && cell.text.toLowerCase().includes(s)) return true
           }

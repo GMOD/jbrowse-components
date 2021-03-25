@@ -72,7 +72,7 @@ describe('Root MST model', () => {
               trackId: 'sequenceConfigId',
               type: 'ReferenceSequenceTrack',
               adapter: {
-                type: 'FromConfigAdapter',
+                type: 'FromConfigSequenceAdapter',
                 features: [
                   {
                     refName: 'ctgA',

@@ -73,8 +73,10 @@ export function stateModelFactory(configSchema: any) {
         afterAttach() {
           makeAbortableReaction(
             self as any,
-            renderBlockData,
-            renderBlockEffect as any,
+            () => renderBlockData(self as any),
+            (blockData): any => {
+              return blockData ? renderBlockEffect(blockData) : undefined
+            },
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,
@@ -112,6 +114,7 @@ export function stateModelFactory(configSchema: any) {
           html: any
           renderingComponent: React.Component
         }) {
+          if (args === undefined) return
           const { data, html, renderingComponent } = args
           self.filled = true
           self.message = undefined
@@ -141,27 +144,21 @@ export function stateModelFactory(configSchema: any) {
 
 function renderBlockData(self: DotplotDisplayModel) {
   const { rpcManager } = getSession(self)
-  const display = self
-
-  const { renderProps, rendererType } = display
+  const { renderProps, rendererType } = self
+  const { adapterConfig } = self
+  const parent = getContainingView(self) as DotplotViewModel
 
   // Alternative to readConfObject(config) is below
   // used because renderProps is something under our control.
   // Compare to serverSideRenderedBlock
   readConfObject(self.configuration)
-
-  const { adapterConfig } = self
-  const parent = getContainingView(self) as DotplotViewModel
   getSnapshot(parent)
-  const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
 
-  return {
-    rendererType,
-    rpcManager,
-    renderProps,
-    renderArgs: {
-      adapterConfig,
-      rendererType: rendererType.name,
+  if (parent.initialized) {
+    const { viewWidth, viewHeight, borderSize, borderX, borderY } = parent
+    return {
+      rendererType,
+      rpcManager,
       renderProps: {
         ...renderProps,
         view: getSnapshot(parent),
@@ -171,10 +168,15 @@ function renderBlockData(self: DotplotDisplayModel) {
         borderX,
         borderY,
       },
-      sessionId: getRpcSessionId(self),
-      timeout: 1000000, // 10000,
-    },
+      renderArgs: {
+        adapterConfig,
+        rendererType: rendererType.name,
+        sessionId: getRpcSessionId(self),
+        timeout: 1000000, // 10000,
+      },
+    }
   }
+  return undefined
 }
 
 async function renderBlockEffect(
@@ -184,11 +186,14 @@ async function renderBlockEffect(
     throw new Error('cannot render with no props')
   }
 
-  const { rendererType, rpcManager, renderArgs } = props
+  const { rendererType, rpcManager, renderArgs, renderProps } = props
 
   const { html, ...data } = await (rendererType as any).renderInClient(
     rpcManager,
-    renderArgs,
+    {
+      ...renderArgs,
+      ...renderProps,
+    },
   )
 
   return { html, data, renderingComponent: rendererType.ReactComponent }

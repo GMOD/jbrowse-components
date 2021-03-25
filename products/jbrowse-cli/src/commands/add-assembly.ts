@@ -1,7 +1,9 @@
 import { flags } from '@oclif/command'
-import fs, { promises as fsPromises } from 'fs'
+import fs from 'fs'
 import path from 'path'
 import JBrowseCommand, { Assembly, Sequence, Config } from '../base'
+
+const fsPromises = fs.promises
 
 function isValidJSON(string: string) {
   try {

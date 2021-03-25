@@ -7,7 +7,11 @@ import path from 'path'
 
 const fsPromises = fs.promises
 
-// On macOS, os.tmpdir() is not a real path: https://github.com/nodejs/node/issues/11422
+// increase test timeout for all tests
+jest.setTimeout(20000)
+
+// On macOS, os.tmpdir() is not a real path:
+// https://github.com/nodejs/node/issues/11422
 const tmpDir = fs.realpathSync(os.tmpdir())
 
 /* eslint-disable no-console */

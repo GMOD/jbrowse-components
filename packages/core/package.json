@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -20,15 +20,15 @@
   "author": "JBrowse Team",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "coverage": "npm test -- --coverage",
+    "test": "cd ../..; jest packages/core",
+    "coverage": "yarn test --coverage",
     "lint": "tsc --noEmit && eslint --ext .js,.ts,.jsx,.tsx .",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean",
-    "prepare": "npm run build",
-    "build": "NODE_ENV=production babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json CHANGELOG.md ../../LICENSE dist/ && tsc",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build",
+    "build": "NODE_ENV=production babel . --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md CHANGELOG.md ../../LICENSE dist/ && tsc",
     "version": "standard-changelog && git add CHANGELOG.md",
-    "postpublish": "git push origin master --follow-tags"
+    "postpublish": "git push origin main --follow-tags"
   },
   "dependencies": {
     "@librpc/web": "rbuels/librpc-web#737bb9706762a52a87169a12c9b59fb241febab0",
@@ -46,12 +46,14 @@
     "generic-filehandle": "^2.0.1",
     "http-range-fetcher": "^1.2.2",
     "is-object": "^1.0.1",
+    "jexl": "^2.3.0",
     "json-stable-stringify": "^1.0.1",
     "load-script2": "^2.0.5",
     "object-hash": "^1.3.1",
     "object.fromentries": "^2.0.0",
     "pako": "^1.0.10",
     "react-error-boundary": "^1.2.5",
+    "react-intersection-observer": "^8.31.0",
     "react-measure": "^2.3.0",
     "shortid": "^2.2.13",
     "tenacious-fetch": "^2.1.0",
@@ -60,6 +62,7 @@
   },
   "peerDependencies": {
     "@material-ui/core": "^4.0.0",
+    "@material-ui/data-grid": "^4.0.0-alpha.10",
     "@material-ui/lab": "^4.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",

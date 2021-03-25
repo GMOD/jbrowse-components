@@ -5,7 +5,14 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import SettingsIcon from '@material-ui/icons/Settings'
+import {
+  cast,
+  getParent,
+  getSnapshot,
+  SnapshotIn,
+  types,
+} from 'mobx-state-tree'
 import { UndoManager } from 'mst-middlewares'
 import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
@@ -21,7 +28,6 @@ interface Menu {
 }
 
 export default function RootModel(pluginManager: PluginManager) {
-  const Session = sessionModelFactory(pluginManager)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -29,7 +35,11 @@ export default function RootModel(pluginManager: PluginManager) {
     { dispatcher },
     ...assemblyConfigSchemas,
   )
-  const assemblyManagerType = assemblyManagerFactory(assemblyConfigSchemasType)
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
+  const assemblyManagerType = assemblyManagerFactory(
+    assemblyConfigSchemasType,
+    pluginManager,
+  )
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(
@@ -42,6 +52,7 @@ export default function RootModel(pluginManager: PluginManager) {
       error: types.maybe(types.string),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
+      isAssemblyEditing: false,
     })
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
@@ -57,6 +68,9 @@ export default function RootModel(pluginManager: PluginManager) {
             self.jbrowse.defaultSession.name
           } ${new Date().toLocaleString()}`,
         })
+      },
+      setAssemblyEditing(flag: boolean) {
+        self.isAssemblyEditing = flag
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -95,6 +109,20 @@ export default function RootModel(pluginManager: PluginManager) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()
+              },
+            },
+          ],
+        },
+        {
+          label: 'Edit',
+          menuItems: [
+            {
+              label: 'Open assembly manager',
+              icon: SettingsIcon,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick: (session: any) => {
+                const rootModel = getParent(session)
+                rootModel.setAssemblyEditing(true)
               },
             },
           ],

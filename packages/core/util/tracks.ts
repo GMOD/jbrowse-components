@@ -11,7 +11,7 @@ export function getTrackAssemblyNames(
 ) {
   const trackConf = track.configuration
   const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
-  if (trackAssemblyNames[0] === 'assemblyName') {
+  if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parent = getParent<any>(track.configuration)
@@ -19,7 +19,7 @@ export function getTrackAssemblyNames(
       return [readConfObject(parent, 'name')]
     }
   }
-  return trackAssemblyNames
+  return trackAssemblyNames as string[]
 }
 
 /** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
@@ -175,7 +175,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: makeLocation(fileName),
@@ -183,7 +183,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fna|mfa)\.b?gz$/i.test(fileName)) {
+  if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: makeLocation(fileName),
@@ -228,7 +228,7 @@ export function guessAdapter(
 
   if (/\.paf/i.test(fileName)) {
     return {
-      type: 'PafAdapter',
+      type: 'PAFAdapter',
       pafLocation: makeLocation(fileName),
     }
   }
@@ -248,7 +248,7 @@ export function guessTrackType(adapterType: string): string {
     TwoBitAdapter: 'ReferenceSequenceTrack',
     VcfTabixAdapter: 'VariantTrack',
     HicAdapter: 'HicTrack',
-    PafAdapter: 'LinearSyntenyTrack',
+    PAFAdapter: 'SyntenyTrack',
   }
   return known[adapterType] || 'FeatureTrack'
 }

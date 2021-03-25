@@ -1,6 +1,6 @@
 import {
   BaseFeatureDataAdapter,
-  RegionsAdapter,
+  SequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -14,7 +14,7 @@ import configSchema from './configSchema'
 
 export default class TwoBitAdapter
   extends BaseFeatureDataAdapter
-  implements RegionsAdapter {
+  implements SequenceAdapter {
   private twobit: typeof TwoBitFile
 
   constructor(config: Instance<typeof configSchema>) {

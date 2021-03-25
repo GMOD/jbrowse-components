@@ -2,13 +2,16 @@
 import React from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import { makeStyles } from '@material-ui/core/styles'
+import Fab from '@material-ui/core/Fab'
+import LaunchIcon from '@material-ui/icons/Launch'
 import Toolbar from '@material-ui/core/Toolbar'
 import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
-import LogoFull from './LogoFull'
+import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 
@@ -17,11 +20,34 @@ const useStyles = makeStyles(theme => ({
     html: {
       'font-family': 'Roboto',
     },
+    /* Based on: https://www.digitalocean.com/community/tutorials/css-scrollbars */
+    /* The emerging W3C standard
+       that is currently Firefox-only */
+    '*': {
+      'scrollbar-width': 'auto',
+      'scrollbar-color': 'rgba(0,0,0,.5) rgba(128,128,128)',
+    },
+    /* Works on Chrome/Edge/Safari */
+    '*::-webkit-scrollbar': {
+      '-webkit-appearance': 'none',
+      width: '12px',
+    },
+    '*::-webkit-scrollbar-thumb': {
+      'background-color': 'rgba(0,0,0,.5)',
+      '-webkit-box-shadow': '0 0 1px rgba(255,255,255,.5)',
+    },
   },
   root: {
     display: 'grid',
     height: '100vh',
     width: '100%',
+  },
+  fab: {
+    float: 'right',
+    position: 'sticky',
+    marginTop: theme.spacing(2),
+    bottom: theme.spacing(2),
+    right: theme.spacing(2),
   },
   menuBarAndComponents: {
     gridColumn: 'main',
@@ -58,8 +84,8 @@ const useStyles = makeStyles(theme => ({
 
 function App({ session, HeaderButtons }) {
   const classes = useStyles()
-  const { pluginManager } = session
-  const { visibleWidget, drawerWidth } = session
+  const { pluginManager } = getEnv(session)
+  const { visibleWidget, drawerWidth, minimized, activeWidgets } = session
 
   function handleNameChange(newName) {
     if (
@@ -79,7 +105,7 @@ function App({ session, HeaderButtons }) {
       className={classes.root}
       style={{
         gridTemplateColumns: `[main] 1fr${
-          visibleWidget ? ` [drawer] ${drawerWidth}px` : ''
+          visibleWidget && !minimized ? ` [drawer] ${drawerWidth}px` : ''
         }`,
       }}
     >
@@ -141,7 +167,25 @@ function App({ session, HeaderButtons }) {
         </div>
       </div>
 
-      {visibleWidget ? <DrawerWidget session={session} /> : null}
+      {activeWidgets.size > 0 && minimized ? (
+        <div className={classes.fab}>
+          <Fab
+            color="primary"
+            size="small"
+            aria-label="show"
+            data-testid="drawer-maximize"
+            style={{ float: 'right' }}
+            onClick={() => {
+              session.showWidgetDrawer()
+            }}
+          >
+            <LaunchIcon />
+          </Fab>
+        </div>
+      ) : null}
+
+      {visibleWidget && !minimized ? <DrawerWidget session={session} /> : null}
+
       <Snackbar session={session} />
     </div>
   )

@@ -17,7 +17,9 @@ import { Feature } from './simpleFeature'
 import {
   TypeTestedByPredicate,
   isSessionModel,
+  isDisplayModel,
   isViewModel,
+  isTrackModel,
   Region,
   AssemblyManager,
 } from './types'
@@ -244,6 +246,23 @@ export function getContainingView(node: IAnyStateTreeNode) {
     return findParentThatIs(node, isViewModel)
   } catch (e) {
     throw new Error('no containing view found')
+  }
+}
+
+/** get the state model of the view in the state tree that contains the given node */
+export function getContainingTrack(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isTrackModel)
+  } catch (e) {
+    throw new Error('no containing track found')
+  }
+}
+
+export function getContainingDisplay(node: IAnyStateTreeNode) {
+  try {
+    return findParentThatIs(node, isDisplayModel)
+  } catch (e) {
+    throw new Error('no containing display found')
   }
 }
 
@@ -750,6 +769,7 @@ export async function renameRegionsIfNeeded<
     ...args,
     regions: [...(args.regions || [])],
   }
+
   if (assemblyName) {
     const refNameMap = await assemblyManager.getRefNameMapForAdapter(
       adapterConfig,
@@ -757,7 +777,6 @@ export async function renameRegionsIfNeeded<
       newArgs,
     )
 
-    // console.log(`${JSON.stringify(regions)} ${JSON.stringify(refNameMap)}`)
     if (refNameMap && regions && newArgs.regions) {
       for (let i = 0; i < regions.length; i += 1) {
         newArgs.regions[i] = renameRegionIfNeeded(refNameMap, regions[i])
@@ -771,9 +790,195 @@ export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
 
-export function stringify(offset: { coord: number; refName: string }) {
-  return `${offset.refName}:${offset.coord.toLocaleString('en-US')}`
+export function stringify({
+  refName,
+  coord,
+  oob,
+}: {
+  coord: number
+  refName: string
+  oob?: boolean
+}) {
+  return `${refName}:${coord.toLocaleString('en-US')}${
+    oob ? ' (out of bounds)' : ''
+  }`
 }
 
 export const isElectron =
   typeof window !== 'undefined' && Boolean(window.electron)
+
+export function revcom(seqString: string) {
+  return complement(seqString).split('').reverse().join('')
+}
+
+export const complement = (() => {
+  const complementRegex = /[ACGT]/gi
+
+  // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
+  // generated with:
+  // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
+  const complementTable = {
+    S: 'S',
+    w: 'w',
+    T: 'A',
+    r: 'y',
+    a: 't',
+    N: 'N',
+    K: 'M',
+    x: 'x',
+    d: 'h',
+    Y: 'R',
+    V: 'B',
+    y: 'r',
+    M: 'K',
+    h: 'd',
+    k: 'm',
+    C: 'G',
+    g: 'c',
+    t: 'a',
+    A: 'T',
+    n: 'n',
+    W: 'W',
+    X: 'X',
+    m: 'k',
+    v: 'b',
+    B: 'V',
+    s: 's',
+    H: 'D',
+    c: 'g',
+    D: 'H',
+    b: 'v',
+    R: 'Y',
+    G: 'C',
+  } as { [key: string]: string }
+
+  return (seqString: string) => {
+    return seqString.replace(complementRegex, m => complementTable[m] || '')
+  }
+})()
+
+// requires immediate execution in jest environment, because (hypothesis) it
+// otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
+// get the contents of the canvas
+export const rIC =
+  // eslint-disable-next-line no-nested-ternary
+  typeof jest === 'undefined'
+    ? typeof window !== 'undefined'
+      ? window.requestIdleCallback
+      : (cb: Function) => setTimeout(() => cb(), 1)
+    : (cb: Function) => cb()
+
+// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
+export function measureText(str: string, fontSize = 10) {
+  // prettier-ignore
+  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+  const avg = 0.5279276315789471
+  return (
+    str
+      .split('')
+      .map(c =>
+        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
+      )
+      .reduce((cur, acc) => acc + cur, 0) * fontSize
+  )
+}
+
+export const defaultStarts = ['ATG']
+export const defaultStops = ['TAA', 'TAG', 'TGA']
+export const defaultCodonTable = {
+  TCA: 'S',
+  TCC: 'S',
+  TCG: 'S',
+  TCT: 'S',
+  TTC: 'F',
+  TTT: 'F',
+  TTA: 'L',
+  TTG: 'L',
+  TAC: 'Y',
+  TAT: 'Y',
+  TAA: '*',
+  TAG: '*',
+  TGC: 'C',
+  TGT: 'C',
+  TGA: '*',
+  TGG: 'W',
+  CTA: 'L',
+  CTC: 'L',
+  CTG: 'L',
+  CTT: 'L',
+  CCA: 'P',
+  CCC: 'P',
+  CCG: 'P',
+  CCT: 'P',
+  CAC: 'H',
+  CAT: 'H',
+  CAA: 'Q',
+  CAG: 'Q',
+  CGA: 'R',
+  CGC: 'R',
+  CGG: 'R',
+  CGT: 'R',
+  ATA: 'I',
+  ATC: 'I',
+  ATT: 'I',
+  ATG: 'M',
+  ACA: 'T',
+  ACC: 'T',
+  ACG: 'T',
+  ACT: 'T',
+  AAC: 'N',
+  AAT: 'N',
+  AAA: 'K',
+  AAG: 'K',
+  AGC: 'S',
+  AGT: 'S',
+  AGA: 'R',
+  AGG: 'R',
+  GTA: 'V',
+  GTC: 'V',
+  GTG: 'V',
+  GTT: 'V',
+  GCA: 'A',
+  GCC: 'A',
+  GCG: 'A',
+  GCT: 'A',
+  GAC: 'D',
+  GAT: 'D',
+  GAA: 'E',
+  GAG: 'E',
+  GGA: 'G',
+  GGC: 'G',
+  GGG: 'G',
+  GGT: 'G',
+}
+
+/**
+ *  take CodonTable above and generate larger codon table that includes
+ *  all permutations of upper and lower case nucleotides
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function generateCodonTable(table: any) {
+  const tempCodonTable: { [key: string]: string } = {}
+  Object.keys(table).forEach(codon => {
+    const aa = table[codon]
+    const nucs: string[][] = []
+    for (let i = 0; i < 3; i++) {
+      const nuc = codon.charAt(i)
+      nucs[i] = []
+      nucs[i][0] = nuc.toUpperCase()
+      nucs[i][1] = nuc.toLowerCase()
+    }
+    for (let i = 0; i < 2; i++) {
+      const n0 = nucs[0][i]
+      for (let j = 0; j < 2; j++) {
+        const n1 = nucs[1][j]
+        for (let k = 0; k < 2; k++) {
+          const n2 = nucs[2][k]
+          const triplet = n0 + n1 + n2
+          tempCodonTable[triplet] = aa
+        }
+      }
+    }
+  })
+  return tempCodonTable
+}

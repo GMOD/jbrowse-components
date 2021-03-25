@@ -21,7 +21,7 @@ import Typography from '@material-ui/core/Typography'
 import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import LogoFull from './LogoFull'
+import { LogoFull } from './Logo'
 import { inDevelopment } from '../util'
 import {
   NewEmptySession,

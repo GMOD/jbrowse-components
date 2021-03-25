@@ -1,5 +1,5 @@
 import { ComponentType } from 'react'
-import { IAnyModelType } from 'mobx-state-tree'
+import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 
@@ -8,19 +8,21 @@ export default class WidgetType extends PluggableElementBase {
 
   configSchema: AnyConfigurationSchemaType
 
-  HeadingComponent?: ComponentType
+  HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
 
-  ReactComponent: unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ReactComponent: React.FC<any>
 
   stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
     heading?: string
-    HeadingComponent?: ComponentType
+    HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    ReactComponent: unknown
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ReactComponent: React.FC<any>
   }) {
     super(stuff)
     this.heading = stuff.heading

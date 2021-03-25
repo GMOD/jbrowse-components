@@ -21,7 +21,7 @@ const Tooltip = observer(
     const { model, mouseCoord } = props
     const { featureUnderMouse } = model
     const mouseover = featureUnderMouse
-      ? getConf(model, 'mouseover', [featureUnderMouse])
+      ? getConf(model, 'mouseover', { feature: featureUnderMouse })
       : undefined
     return mouseover ? (
       <MUITooltip title={mouseover} open placement="right">
@@ -39,12 +39,9 @@ const Tooltip = observer(
   },
 )
 
-// I think I need to register the display's react component the same way a view's
-// or renderer's component gets registered
-
 type Coord = [number, number]
 const BaseLinearDisplay = observer(
-  (props: { model: BaseLinearDisplayModel; children: React.ReactNode }) => {
+  (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
 

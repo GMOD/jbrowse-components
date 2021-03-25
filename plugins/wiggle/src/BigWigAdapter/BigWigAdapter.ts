@@ -10,20 +10,22 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { map, mergeAll } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
-import {
-  blankStats,
-  rectifyStats,
-  scoresToStats,
-  UnrectifiedFeatureStats,
-  DataAdapterWithGlobalStats,
-} from '../statsUtil'
+import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
 
 import configSchema from './configSchema'
 
-export default class BigWigAdapter
-  extends BaseFeatureDataAdapter
-  implements DataAdapterWithGlobalStats {
+interface WiggleOptions extends BaseOptions {
+  resolution?: number
+}
+
+export default class BigWigAdapter extends BaseFeatureDataAdapter {
   private bigwig: BigWig
+
+  public static capabilities = [
+    'hasResolution',
+    'hasLocalStats',
+    'hasGlobalStats',
+  ]
 
   public constructor(config: Instance<typeof configSchema>) {
     super(config)
@@ -32,10 +34,10 @@ export default class BigWigAdapter
     })
   }
 
-  private setup(opts?: BaseOptions) {
+  private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     statusCallback('Downloading bigwig header')
-    const result = this.bigwig.getHeader(opts)
+    const result = await this.bigwig.getHeader(opts)
     statusCallback('')
     return result
   }
@@ -55,66 +57,26 @@ export default class BigWigAdapter
     return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
-  // todo: incorporate summary blocks
-  public getRegionStats(region: NoAssemblyRegion, opts?: BaseOptions) {
-    const feats = this.getFeatures(region, opts)
-    return scoresToStats(region, feats)
-  }
-
-  // todo: add caching
-  public async getMultiRegionStats(
-    regions: NoAssemblyRegion[] = [],
-    opts?: BaseOptions,
-  ) {
-    if (!regions.length) {
-      return blankStats()
-    }
-    const feats = await Promise.all(
-      regions.map(region => this.getRegionStats(region, opts)),
-    )
-
-    const scoreMax = feats
-      .map(s => s.scoreMax)
-      .reduce((acc, curr) => Math.max(acc, curr))
-    const scoreMin = feats
-      .map(s => s.scoreMin)
-      .reduce((acc, curr) => Math.min(acc, curr))
-    const scoreSum = feats.map(s => s.scoreSum).reduce((a, b) => a + b, 0)
-    const scoreSumSquares = feats
-      .map(s => s.scoreSumSquares)
-      .reduce((a, b) => a + b, 0)
-    const featureCount = feats
-      .map(s => s.featureCount)
-      .reduce((a, b) => a + b, 0)
-    const basesCovered = feats
-      .map(s => s.basesCovered)
-      .reduce((a, b) => a + b, 0)
-
-    return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
-      basesCovered,
-      scoreSumSquares,
-      scoreSum,
-    })
-  }
-
-  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+  public getFeatures(region: NoAssemblyRegion, opts: WiggleOptions = {}) {
     const { refName, start, end } = region
-    const { bpPerPx, signal, statusCallback = () => {} } = opts || {}
+    const {
+      bpPerPx = 0,
+      signal,
+      resolution = 1,
+      statusCallback = () => {},
+    } = opts
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
       const ob = await this.bigwig.getFeatureStream(refName, start, end, {
         ...opts,
-        basesPerSpan: bpPerPx,
+        basesPerSpan: bpPerPx / resolution,
       })
       ob.pipe(
         mergeAll(),
         map((record: BBIFeature) => {
           return new SimpleFeature({
-            id: String(record.start + 1),
-            data: record,
+            id: `${refName}:${record.start}-${record.end}`,
+            data: { ...record, refName },
           })
         }),
       ).subscribe(observer)
