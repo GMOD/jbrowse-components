@@ -24,7 +24,7 @@ import BreakendOptionDialog from './BreakendOptionDialog'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const { feature } = props
 
   const { samples = {} } = feature
@@ -65,7 +65,9 @@ function VariantSamples(props: any) {
   } catch (e) {
     error = e
   }
-
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
@@ -102,13 +104,9 @@ function VariantSamples(props: any) {
         </>
       ) : null}
       <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
-        <DataGrid
-          rows={rows}
-          columns={infoFields}
-          rowHeight={20}
-          headerHeight={25}
-          disableColumnMenu
-        />
+        {/* prettier-ignore */
+                        /* @ts-ignore  */}
+        <DataGrid rows={rows} columns={infoFields} rowHeight={20} headerHeight={25} disableClickEventBubbling disableColumnMenu />
       </div>
     </BaseCard>
   )
