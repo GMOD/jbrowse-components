@@ -1,33 +1,36 @@
 /* eslint-disable react/prop-types */
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Fab from '@material-ui/core/Fab'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormGroup from '@material-ui/core/FormGroup'
-import IconButton from '@material-ui/core/IconButton'
-import InputAdornment from '@material-ui/core/InputAdornment'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import Switch from '@material-ui/core/Switch'
-import Tab from '@material-ui/core/Tab'
-import Tabs from '@material-ui/core/Tabs'
-import TextField from '@material-ui/core/TextField'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Fab,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  InputAdornment,
+  List,
+  ListItem,
+  Menu,
+  MenuItem,
+  makeStyles,
+  Switch,
+  Tab,
+  Tabs,
+  TextField,
+} from '@material-ui/core'
+
 import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { FixedSizeTree } from 'react-vtree'
 
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -36,7 +39,6 @@ const useStyles = makeStyles(theme => ({
   root: {
     textAlign: 'left',
     padding: theme.spacing(1),
-    display: 'block',
   },
   searchBox: {
     marginBottom: theme.spacing(2),
@@ -211,11 +213,11 @@ function makeTreeWalker(nodes, onChange) {
 const Node = ({ data, isOpen, style, toggle }) => {
   const { isLeaf, nestingLevel, checked, id, name, onChange } = data
   return (
-    <div style={style}>
+    <div style={{ ...style }}>
       <div
         style={{
-          display: 'flex',
           marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
+          width: 500,
         }}
       >
         {!isLeaf ? (
@@ -230,9 +232,11 @@ const Node = ({ data, isOpen, style, toggle }) => {
               data-testid={`htsTrackEntry-${id}`}
               type="checkbox"
               checked={checked}
-              onChange={evt => onChange(id)}
+              onChange={() => onChange(id)}
             />
-            <label htmlFor={id}>{name}</label>
+            <label title={name} htmlFor={id}>
+              {name}
+            </label>
           </>
         )}
       </div>
@@ -240,49 +244,37 @@ const Node = ({ data, isOpen, style, toggle }) => {
   )
 }
 
-const Example = ({ tree, model }) => {
+const Example = ({ tree, model, toolbarHeight }) => {
   return (
-    <FixedSizeTree
-      treeWalker={makeTreeWalker(
-        { name: 'Tracks', id: 'Tracks', children: tree },
-        id => {
-          model.view.toggleTrack(id)
-        },
-      )}
-      itemSize={20}
-      height={1000}
-      width="100%"
-    >
-      {Node}
-    </FixedSizeTree>
+    <AutoSizer disableWidth>
+      {({ height }) => {
+        return (
+          <FixedSizeTree
+            treeWalker={makeTreeWalker(
+              { name: 'Tracks', id: 'Tracks', children: tree },
+              id => {
+                model.view.toggleTrack(id)
+              },
+            )}
+            itemSize={20}
+            height={height - toolbarHeight}
+            width="100%"
+          >
+            {Node}
+          </FixedSizeTree>
+        )
+      }}
+    </AutoSizer>
   )
 }
 
-function HierarchicalTrackSelector({ model }) {
+function HierarchicalTrackSelector({ model, toolbarHeight }) {
+  console.log({ toolbarHeight })
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
-  // const [height, setHeight] = useState(0)
-  // const ref = useRef(null)
   const classes = useStyles()
   const session = getSession(model)
-  // const [windowHeight, setWindowHeight] = useState(window.innerHeight)
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     const h = windowHeight - ref.current.getBoundingClientRect().top
-  //     // little fudge factor to avoid an outer scroll (only the virtualized
-  //     // container gets a scroll)
-  //     setHeight(h - 10)
-  //   }
-  // }, [windowHeight])
-
-  //   useEffect(() => {
-  //     const watcher = () => setWindowHeight(window.innerHeight)
-  //     window.addEventListener('resize', watcher)
-  //     return () => {
-  //       window.removeEventListener('resize', watcher)
-  //     }
-  //   }, [])
 
   function handleTabChange(event, newIdx) {
     setAssemblyIdx(newIdx)
@@ -366,135 +358,11 @@ function HierarchicalTrackSelector({ model }) {
   if (!assemblyName) {
     return null
   }
-
-  const filterError =
-    model.trackConfigurations(assemblyName, session.tracks) > 0 &&
-    model.trackConfigurations(assemblyName, session.tracks).filter(filter)
-      .length === 0
+  const trackConfigs = model.trackConfigurations(assemblyName, session.tracks)
+  const filterError = trackConfigs.filter(filter).length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-  return (
-    <div
-      key={model.view.id}
-      className={classes.root}
-      data-testid="hierarchical_track_selector"
-    >
-      {assemblyNames.length > 1 ? (
-        <Tabs
-          className={classes.tabs}
-          value={assemblyIdx}
-          onChange={handleTabChange}
-        >
-          {assemblyNames.map((name, index) => (
-            <Tab key={`${name}-${index}`} label={name} />
-          ))}
-        </Tabs>
-      ) : null}
-      <TextField
-        className={classes.searchBox}
-        label="Filter Tracks"
-        value={model.filterText}
-        error={filterError}
-        helperText={filterError ? 'No matches' : ''}
-        onChange={handleInputChange}
-        fullWidth
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton color="secondary" onClick={model.clearFilterText}>
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-      <Example tree={nodes} model={model} />
-
-      <FormGroup>
-        {session.connections
-          .filter(
-            connectionConf =>
-              readConfObject(connectionConf, 'assemblyName') === assemblyName,
-          )
-          .map(connectionConf => {
-            const name = readConfObject(connectionConf, 'name')
-            const id = connectionConf.connectionId
-            return (
-              <FormGroup row key={id}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        session.connectionInstances.has(assemblyName) &&
-                        !!session.connectionInstances
-                          .get(assemblyName)
-                          .find(connection => connection.name === name)
-                      }
-                      onChange={() => handleConnectionToggle(connectionConf)}
-                    />
-                  }
-                  label={name}
-                />
-                <IconButton
-                  data-testid="delete-connection"
-                  onClick={() => {
-                    breakConnection(connectionConf, true)
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </FormGroup>
-            )
-          })}
-      </FormGroup>
-      {session.connectionInstances.has(assemblyName) ? (
-        <>
-          <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.get(assemblyName).map(connection => (
-            <Paper
-              key={connection.name}
-              className={classes.connectionsPaper}
-              elevation={8}
-            >
-              <Typography variant="h6">{connection.name}</Typography>
-              <Contents
-                model={model}
-                filterPredicate={filter}
-                connection={connection}
-                assemblyName={assemblyName}
-                top
-              />
-            </Paper>
-          ))}
-        </>
-      ) : null}
-
-      <Fab color="secondary" className={classes.fab} onClick={handleFabClick}>
-        <AddIcon />
-      </Fab>
-      <Menu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleFabClose}
-      >
-        <MenuItem onClick={addConnection}>Add connection</MenuItem>
-        <MenuItem onClick={addTrack}>Add track</MenuItem>
-      </Menu>
-      <CloseConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && !modalInfo.deleting}
-        session={session}
-      />
-      <DeleteConnectionDlg
-        modalInfo={modalInfo}
-        setModalInfo={setModalInfo}
-        open={Boolean(modalInfo) && modalInfo.deleting}
-        session={session}
-      />
-    </div>
-  )
+  return <Example tree={nodes} model={model} toolbarHeight={toolbarHeight} />
 }
 
 HierarchicalTrackSelector.propTypes = {

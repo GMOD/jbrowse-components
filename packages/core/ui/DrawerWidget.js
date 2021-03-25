@@ -1,24 +1,22 @@
-import Typography from '@material-ui/core/Typography'
-import AppBar from '@material-ui/core/AppBar'
-import IconButton from '@material-ui/core/IconButton'
-import Toolbar from '@material-ui/core/Toolbar'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
+import React, { useState } from 'react'
+import {
+  Typography,
+  IconButton,
+  Toolbar,
+  Select,
+  MenuItem,
+  ListItemSecondaryAction,
+  makeStyles,
+} from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import MinimizeIcon from '@material-ui/icons/Minimize'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import { observer, PropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React from 'react'
+import { useTheme } from '@material-ui/core/styles'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
-  defaultDrawer: {},
-  components: {
-    display: 'block',
-  },
   drawerCloseButton: {
     float: 'right',
     '&:hover': {
@@ -48,103 +46,114 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const DrawerHeader = observer(props => {
+  const { session, setToolbarHeight } = props
+  const { visibleWidget, activeWidgets } = session
+  const classes = useStyles()
+  const handleChange = (e, option) => {
+    session.showWidget(option.props.value)
+  }
+  const theme = useTheme()
+  return (
+    <div
+      ref={ref => setToolbarHeight(ref.getBoundingClientRect().height)}
+      style={{ background: theme.palette.secondary.main }}
+    >
+      <Toolbar disableGutters className={classes.drawerToolbar}>
+        <Select
+          value={visibleWidget || ''}
+          data-testid="widget-drawer-selects"
+          className={classes.drawerSelect}
+          classes={{ icon: classes.dropDownIcon }}
+          renderValue={selected => {
+            const {
+              HeadingComponent: HeadingComp,
+              heading: headingText,
+            } = getEnv(session).pluginManager.getWidgetType(selected.type)
+            return (
+              <Typography variant="h6" color="inherit">
+                {HeadingComp ? (
+                  <HeadingComp model={selected} />
+                ) : (
+                  headingText || undefined
+                )}
+              </Typography>
+            )
+          }}
+          onChange={(e, value) => {
+            handleChange(e, value)
+          }}
+        >
+          {Array.from(activeWidgets.values()).map((widget, index) => {
+            const {
+              HeadingComponent: HeadingComp,
+              heading: headingText,
+            } = getEnv(session).pluginManager.getWidgetType(widget.type)
+            return (
+              <MenuItem
+                data-testid={`widget-drawer-selects-item-${widget.type}`}
+                key={`${widget.id}-${index}`}
+                value={widget}
+              >
+                <Typography variant="h6" color="inherit">
+                  {HeadingComp ? (
+                    <HeadingComp model={widget} />
+                  ) : (
+                    headingText || undefined
+                  )}
+                </Typography>
+                <ListItemSecondaryAction>
+                  <IconButton
+                    className={classes.drawerCloseButton}
+                    data-testid={`${widget.type}-drawer-delete`}
+                    color="inherit"
+                    aria-label="Delete"
+                    onClick={() => {
+                      session.hideWidget(widget)
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </MenuItem>
+            )
+          })}
+        </Select>
+        <div className={classes.drawerToolbarCloseButton} />
+        <IconButton
+          className={classes.drawerCloseButton}
+          data-testid="drawer-minimize"
+          color="inherit"
+          onClick={() => {
+            session.minimizeWidgetDrawer()
+          }}
+        >
+          <MinimizeIcon />
+        </IconButton>
+      </Toolbar>
+    </div>
+  )
+})
+
 const DrawerWidget = observer(props => {
   const { session } = props
   const { visibleWidget, activeWidgets } = session
   const { ReactComponent } = getEnv(session).pluginManager.getWidgetType(
     visibleWidget.type,
   )
-  const classes = useStyles()
-
-  const handleChange = (e, option) => {
-    session.showWidget(option.props.value)
-  }
+  const [toolbarHeight, setToolbarHeight] = useState(0)
+  console.log({ toolbarHeight })
 
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
-      <div className={classes.defaultDrawer}>
-        <AppBar position="static" color="secondary">
-          <Toolbar disableGutters className={classes.drawerToolbar}>
-            <Select
-              value={visibleWidget || ''}
-              data-testid="widget-drawer-selects"
-              className={classes.drawerSelect}
-              classes={{ icon: classes.dropDownIcon }}
-              renderValue={selected => {
-                const {
-                  HeadingComponent: HeadingComp,
-                  heading: headingText,
-                } = getEnv(session).pluginManager.getWidgetType(selected.type)
-                return (
-                  <Typography variant="h6" color="inherit">
-                    {HeadingComp ? (
-                      <HeadingComp model={selected} />
-                    ) : (
-                      headingText || undefined
-                    )}
-                  </Typography>
-                )
-              }}
-              onChange={(e, value) => {
-                handleChange(e, value)
-              }}
-            >
-              {Array.from(activeWidgets.values()).map((widget, index) => {
-                const {
-                  HeadingComponent: HeadingComp,
-                  heading: headingText,
-                } = getEnv(session).pluginManager.getWidgetType(widget.type)
-                return (
-                  <MenuItem
-                    data-testid={`widget-drawer-selects-item-${widget.type}`}
-                    key={`${widget.id}-${index}`}
-                    value={widget}
-                  >
-                    <Typography variant="h6" color="inherit">
-                      {HeadingComp ? (
-                        <HeadingComp model={widget} />
-                      ) : (
-                        headingText || undefined
-                      )}
-                    </Typography>
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        className={classes.drawerCloseButton}
-                        data-testid={`${widget.type}-drawer-delete`}
-                        color="inherit"
-                        aria-label="Delete"
-                        onClick={() => {
-                          session.hideWidget(widget)
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </MenuItem>
-                )
-              })}
-            </Select>
-            <div className={classes.drawerToolbarCloseButton} />
-            <IconButton
-              className={classes.drawerCloseButton}
-              data-testid="drawer-minimize"
-              color="inherit"
-              onClick={() => {
-                session.minimizeWidgetDrawer()
-              }}
-            >
-              <MinimizeIcon />
-            </IconButton>
-          </Toolbar>
-        </AppBar>
-        <ReactComponent model={visibleWidget} session={session} />
-      </div>
+      <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
+      <ReactComponent
+        model={visibleWidget}
+        session={session}
+        toolbarHeight={toolbarHeight}
+      />
     </Drawer>
   )
 })
-
-DrawerWidget.propTypes = {
-  session: PropTypes.observableObject.isRequired,
-}
 
 export default DrawerWidget
