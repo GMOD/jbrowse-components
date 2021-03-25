@@ -65,7 +65,7 @@ function VariantSamples(props: any) {
   } catch (e) {
     error = e
   }
-  // disableClickEventBubbling helps avoid
+  // disableSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   // needs typescript fix to remove ts-ignore
   return (
@@ -104,9 +104,14 @@ function VariantSamples(props: any) {
         </>
       ) : null}
       <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
-        {/* prettier-ignore */
-                        /* @ts-ignore  */}
-        <DataGrid rows={rows} columns={infoFields} rowHeight={20} headerHeight={25} disableClickEventBubbling disableColumnMenu />
+        <DataGrid
+          rows={rows}
+          columns={infoFields}
+          rowHeight={20}
+          headerHeight={25}
+          disableSelectionOnClick
+          disableColumnMenu
+        />
       </div>
     </BaseCard>
   )
