@@ -270,6 +270,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
   // disableClickEventBubbling helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
@@ -329,17 +330,9 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                         width: '100%',
                       }}
                     >
-                      <DataGrid
-                        rowHeight={20}
-                        headerHeight={25}
-                        rows={rows}
-                        rowsPerPageOptions={[]}
-                        hideFooterRowCount
-                        hideFooterSelectedRowCount
-                        columns={columns}
-                        hideFooter={rows.length < 100}
-                        disableClickEventBubbling
-                      />
+                      {/* prettier-ignore */
+                        /* @ts-ignore  */}
+                      <DataGrid disableClickEventBubbling rowHeight={20} headerHeight={25}  rows={rows} rowsPerPageOptions={[]} hideFooterRowCount hideFooterSelectedRowCount columns={columns} hideFooter={rows.length < 100} />
                     </div>
                   </React.Fragment>
                 )
