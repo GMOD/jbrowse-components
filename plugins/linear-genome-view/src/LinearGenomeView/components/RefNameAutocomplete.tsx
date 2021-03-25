@@ -16,8 +16,8 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
+import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
 import { LinearGenomeViewModel } from '..'
-// import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
 
 // filter for options that were fetched
 const filter = createFilterOptions<Option>({ trim: true, limit: 36 })
@@ -43,6 +43,8 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const [currentSearch, setCurrentSearch] = React.useState('')
+  const [currentOptions, setCurrentOptions] = React.useState([])
   const session = getSession(model)
   const { assemblyManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
@@ -53,10 +55,28 @@ function RefNameAutocomplete({
     const defaultOptions = regions.map(option => {
       return { type: 'reference sequence', value: option.refName }
     })
-    return defaultOptions
-  }, [regions])
+    return defaultOptions.concat(currentOptions)
+  }, [regions, currentOptions])
 
+  console.log(options)
+  React.useEffect(() => {
+    let active = true
+    if (active) {
+      const test = new JbrowseTextSearchAdapter()
+      if (currentSearch !== '') {
+        const results = test.search(currentSearch)
+        if (results.length > 0) {
+          setCurrentOptions(results)
+        }
+        console.log(currentSearch, ' : ', results)
+      }
+    }
+    return () => {
+      active = false
+    }
+  }, [currentSearch])
   function onChange(newRegionName: Option | string) {
+    //
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
@@ -68,8 +88,6 @@ function RefNameAutocomplete({
       onSelect(newRegionValue)
     }
   }
-
-  // console.log(session.textSearchManager.search('hi', 'full'))
 
   return (
     <Autocomplete
@@ -129,17 +147,8 @@ function RefNameAutocomplete({
             helperText={helperText}
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
-            // onChange={e => {
-            //   const test = new JbrowseTextSearchAdapter()
-            //   const result = test.search(e.target.value)
-            //   console.log(result)
-            //   if (result.refName) {
-            //     model.navToLocString(
-            //       `${result.refName}:${result.start}-${result.end}`,
-            //     )
-            //   }
-            // }}
             placeholder="Search for location"
+            onChange={e => setCurrentSearch(e.target.value)}
           />
         )
       }}
