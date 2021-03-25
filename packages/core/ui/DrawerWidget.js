@@ -135,14 +135,11 @@ const DrawerHeader = observer(props => {
   )
 })
 
-const DrawerWidget = observer(props => {
-  const { session } = props
+export default observer(({ session }) => {
   const { visibleWidget, activeWidgets } = session
-  const { ReactComponent } = getEnv(session).pluginManager.getWidgetType(
-    visibleWidget.type,
-  )
+  const { pluginManager } = getEnv(session)
+  const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
   const [toolbarHeight, setToolbarHeight] = useState(0)
-  console.log({ toolbarHeight })
 
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
@@ -155,5 +152,3 @@ const DrawerWidget = observer(props => {
     </Drawer>
   )
 })
-
-export default DrawerWidget

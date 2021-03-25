@@ -2,19 +2,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Fab,
   FormControlLabel,
   FormGroup,
   IconButton,
   InputAdornment,
-  List,
-  ListItem,
   Menu,
   MenuItem,
   makeStyles,
@@ -61,6 +53,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+// adapted from react-vtree docs
 function makeTreeWalker(nodes, onChange) {
   return function* treeWalker(refresh) {
     const stack = []
@@ -99,37 +92,35 @@ function makeTreeWalker(nodes, onChange) {
   }
 }
 
-// Node component receives current node height as a prop
 const Node = ({ data, isOpen, style, toggle }) => {
   const { isLeaf, nestingLevel, checked, id, name, onChange } = data
   return (
-    <div style={{ ...style }}>
-      <div
-        style={{
-          marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
-          width: 500,
-        }}
-      >
-        {!isLeaf ? (
-          <div onClick={toggle} role="presentation">
-            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+    <div
+      style={{
+        ...style,
+        marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
+        width: 500,
+      }}
+    >
+      {!isLeaf ? (
+        <div onClick={toggle} role="presentation">
+          {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+          {name}
+        </div>
+      ) : (
+        <>
+          <input
+            id={id}
+            data-testid={`htsTrackEntry-${id}`}
+            type="checkbox"
+            checked={checked}
+            onChange={() => onChange(id)}
+          />
+          <label title={name} htmlFor={id}>
             {name}
-          </div>
-        ) : (
-          <>
-            <input
-              id={id}
-              data-testid={`htsTrackEntry-${id}`}
-              type="checkbox"
-              checked={checked}
-              onChange={() => onChange(id)}
-            />
-            <label title={name} htmlFor={id}>
-              {name}
-            </label>
-          </>
-        )}
-      </div>
+          </label>
+        </>
+      )}
     </div>
   )
 }
@@ -250,7 +241,6 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
   const trackConfigs = model.trackConfigurations(assemblyName, session.tracks)
   const filterError = trackConfigs.filter(filter).length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
-  console.log({ toolbarHeight })
 
   return <Example tree={nodes} model={model} toolbarHeight={toolbarHeight} />
 }
