@@ -4,42 +4,55 @@ import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import intersect from 'array-intersection'
 
+function passesFilter(filter, trackConf) {
+  return readConfObject(trackConf, 'name').match(filter)
+}
+
 export function generateHierarchy(model, trackConfigurations, collapsed) {
   const hierarchy = { children: [] }
+  const { filterText, view } = model
 
-  trackConfigurations.forEach(trackConf => {
-    // console.log(readConfObject(trackConf, 'category'))
-    const categories = [...(readConfObject(trackConf, 'category') || [])]
-    if (trackConf.trackId.endsWith('sessionTrack')) {
-      categories.unshift(' Session tracks')
-    }
-    let currLevel = hierarchy
-    for (let i = 0; i < categories.length; i++) {
-      const category = categories[i]
-      const ret = currLevel.children.find(c => c.name === category)
-      const id = categories.slice(0, i + 1).join(',')
-      if (!ret) {
-        const n = {
-          children: [],
-          name: category,
-          id,
-          state: { expanded: !collapsed.get(id) },
-        }
-        currLevel.children.push(n)
-        currLevel = n
-      } else {
-        currLevel = ret
+  trackConfigurations
+    .filter(trackConf => passesFilter(filterText, trackConf))
+    .forEach(trackConf => {
+      const categories = readConfObject(trackConf, 'category') || []
+
+      // silly thing where if trackId ends with sessionTrack, then push it to
+      // a category that starts with a space to force sort to the top...
+      // double whammy hackyness
+      if (trackConf.trackId.endsWith('sessionTrack')) {
+        categories.unshift(' Session tracks')
       }
-    }
 
-    currLevel.children.push({
-      id: trackConf.trackId,
-      name: readConfObject(trackConf, 'name'),
-      conf: trackConf,
-      selected: model.view.tracks.find(f => f.configuration === trackConf),
-      children: [],
+      let currLevel = hierarchy
+
+      // find existing category to put track into or create it
+      for (let i = 0; i < categories.length; i++) {
+        const category = categories[i]
+        const ret = currLevel.children.find(c => c.name === category)
+        const id = categories.slice(0, i + 1).join(',')
+        if (!ret) {
+          const n = {
+            children: [],
+            name: category,
+            id,
+            state: { expanded: !collapsed.get(id) },
+          }
+          currLevel.children.push(n)
+          currLevel = n
+        } else {
+          currLevel = ret
+        }
+      }
+
+      currLevel.children.push({
+        id: trackConf.trackId,
+        name: readConfObject(trackConf, 'name'),
+        conf: trackConf,
+        selected: view.tracks.find(f => f.configuration === trackConf),
+        children: [],
+      })
     })
-  })
 
   return hierarchy.children
 }

@@ -153,6 +153,7 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
   const [anchorEl, setAnchorEl] = useState(null)
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
+  const [headerHeight, setHeaderHeight] = useState(0)
   const classes = useStyles()
   const session = getSession(model)
 
@@ -242,7 +243,37 @@ function HierarchicalTrackSelector({ model, toolbarHeight }) {
   const filterError = trackConfigs.filter(filter).length === 0
   const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-  return <Example tree={nodes} model={model} toolbarHeight={toolbarHeight} />
+  return (
+    <>
+      <div
+        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+      >
+        <TextField
+          className={classes.searchBox}
+          label="Filter tracks"
+          value={model.filterText}
+          error={trackConfigs.filter(filter).length === 0}
+          helperText={filterError ? 'No matches' : ''}
+          onChange={handleInputChange}
+          fullWidth
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton color="secondary" onClick={model.clearFilterText}>
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </div>
+      <Example
+        tree={nodes}
+        model={model}
+        toolbarHeight={toolbarHeight + headerHeight}
+      />
+    </>
+  )
 }
 
 HierarchicalTrackSelector.propTypes = {
