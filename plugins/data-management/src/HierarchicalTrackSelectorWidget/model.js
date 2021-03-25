@@ -76,11 +76,7 @@ export default pluginManager =>
           return []
         }
         const session = getSession(self)
-        const trackConfigurations = session.tracks
-        const viewType = self.view.type
-
-        const session = getSession(self)
-        const { assemblyManager } = session
+        const { tracks: trackConfigurations, assemblyManager } = session
         const assembly = assemblyManager.get(assemblyName)
         if (!assembly) {
           return []
