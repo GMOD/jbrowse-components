@@ -11,6 +11,7 @@ import React, { useCallback } from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
 import { LinearGenomeViewStateModel, HEADER_BAR_HEIGHT } from '..'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import OverviewScaleBar from './OverviewScaleBar'
@@ -114,7 +115,15 @@ export default observer(({ model }: { model: LGV }) => {
             // region visible, xref #1703
             model.showAllRegions()
           } else {
-            newRegionValue && model.navToLocString(newRegionValue)
+            const test = new JbrowseTextSearchAdapter()
+            const result = test.search(newRegionValue)[0]
+            if (result?.refName) {
+              model.navToLocString(
+                `${result.refName}:${result.start}-${result.end}`,
+              )
+            } else {
+              newRegionValue && model.navToLocString(newRegionValue)
+            }
           }
         }
       } catch (e) {

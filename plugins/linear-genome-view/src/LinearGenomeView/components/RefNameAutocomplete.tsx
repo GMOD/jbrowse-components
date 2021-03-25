@@ -17,6 +17,7 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 // other
 import { LinearGenomeViewModel } from '..'
+// import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
 
 // filter for options that were fetched
 const filter = createFilterOptions<Option>({ trim: true, limit: 36 })
@@ -67,6 +68,8 @@ function RefNameAutocomplete({
       onSelect(newRegionValue)
     }
   }
+
+  // console.log(session.textSearchManager.search('hi', 'full'))
 
   return (
     <Autocomplete
@@ -126,6 +129,16 @@ function RefNameAutocomplete({
             helperText={helperText}
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
+            // onChange={e => {
+            //   const test = new JbrowseTextSearchAdapter()
+            //   const result = test.search(e.target.value)
+            //   console.log(result)
+            //   if (result.refName) {
+            //     model.navToLocString(
+            //       `${result.refName}:${result.start}-${result.end}`,
+            //     )
+            //   }
+            // }}
             placeholder="Search for location"
           />
         )
