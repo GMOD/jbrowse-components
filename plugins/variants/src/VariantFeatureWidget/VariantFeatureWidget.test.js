@@ -26,7 +26,7 @@ describe('VariantTrack widget', () => {
       end: 177,
       name: 'rs123',
       REF: 'A',
-      ALT: '<TRA>',
+      ALT: ['<TRA>'],
       QUAL: 10.4,
       INFO: {
         MQ: 5,
