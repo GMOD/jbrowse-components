@@ -65,7 +65,8 @@ function VariantSamples(props: any) {
   } catch (e) {
     error = e
   }
-
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
@@ -107,7 +108,6 @@ function VariantSamples(props: any) {
           columns={infoFields}
           rowHeight={20}
           headerHeight={25}
-          {/* this helps avoid https://github.com/mui-org/material-ui-x/issues/1197 */}
           disableClickEventBubbling
           disableColumnMenu
         />

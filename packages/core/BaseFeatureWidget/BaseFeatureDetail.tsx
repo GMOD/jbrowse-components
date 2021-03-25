@@ -268,6 +268,8 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   } = props
   const omits = [...omit, ...globalOmit]
 
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
   return (
     <>
       {Object.entries(attributes)
@@ -336,7 +338,6 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                         hideFooterSelectedRowCount
                         columns={columns}
                         hideFooter={rows.length < 100}
-                        {/* this helps avoid https://github.com/mui-org/material-ui-x/issues/1197 */}
                         disableClickEventBubbling
                       />
                     </div>
