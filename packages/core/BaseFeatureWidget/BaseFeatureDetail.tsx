@@ -330,9 +330,17 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                         width: '100%',
                       }}
                     >
-                      {/* prettier-ignore */
-                        /* @ts-ignore  */}
-                      <DataGrid disableClickEventBubbling rowHeight={20} headerHeight={25}  rows={rows} rowsPerPageOptions={[]} hideFooterRowCount hideFooterSelectedRowCount columns={columns} hideFooter={rows.length < 100} />
+                      <DataGrid
+                        disableSelectionOnClick
+                        rowHeight={20}
+                        headerHeight={25}
+                        rows={rows}
+                        rowsPerPageOptions={[]}
+                        hideFooterRowCount
+                        hideFooterSelectedRowCount
+                        columns={columns}
+                        hideFooter={rows.length < 100}
+                      />
                     </div>
                   </React.Fragment>
                 )
