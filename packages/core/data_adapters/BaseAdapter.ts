@@ -31,7 +31,6 @@ export type AnyDataAdapter =
   | BaseRefNameAliasAdapter
   | RegionsAdapter
   | SequenceAdapter
-// | TextSearchAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props up to an ID of length 100
@@ -285,6 +284,3 @@ export function isRefNameAliasAdapter(
 ): thing is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in thing
 }
-
-// export interface TextSearchAdapter extends BaseAdapter {}
-// need to create a new adapter class that will handle search
