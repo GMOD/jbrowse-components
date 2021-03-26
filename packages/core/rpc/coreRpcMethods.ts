@@ -59,6 +59,27 @@ export class CoreGetFileInfo extends RpcMethodType {
   }
 }
 
+export class CoreGetMetadata extends RpcMethodType {
+  name = 'CoreGetMetadata'
+
+  async execute(args: {
+    sessionId: string
+    signal: RemoteAbortSignal
+    adapterConfig: {}
+  }) {
+    const deserializedArgs = await this.deserializeArguments(args)
+    const { sessionId, adapterConfig } = deserializedArgs
+    const { dataAdapter } = getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    return isFeatureAdapter(dataAdapter)
+      ? dataAdapter.getMetadata(deserializedArgs)
+      : null
+  }
+}
+
 export class CoreGetFeatures extends RpcMethodType {
   name = 'CoreGetFeatures'
 

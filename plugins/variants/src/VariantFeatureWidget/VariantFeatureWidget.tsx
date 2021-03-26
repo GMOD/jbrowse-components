@@ -200,9 +200,10 @@ function BreakendPanel(props: {
 
 function VariantFeatureDetails(props: any) {
   const { model } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
+  const { featureData, descriptions } = model
+  const feat = JSON.parse(JSON.stringify(featureData))
   const { samples, ...rest } = feat
-  const descriptions = {
+  const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
     POS:
       'position: The reference position, with the 1st base having position 1',
@@ -219,7 +220,11 @@ function VariantFeatureDetails(props: any) {
 
   return (
     <Paper data-testid="variant-side-drawer">
-      <FeatureDetails feature={rest} descriptions={descriptions} {...props} />
+      <FeatureDetails
+        feature={rest}
+        descriptions={{ ...basicDescriptions, ...descriptions }}
+        {...props}
+      />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types,no-nested-ternary */
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import {
@@ -33,6 +33,7 @@ const globalOmit = [
   'length',
   'position',
   'subfeatures',
+  'description',
   'uniqueId',
   'exonFrames',
   'parentId',
@@ -118,14 +119,14 @@ export function BaseCard({
 const FieldName = ({
   description,
   name,
-  prefix,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
-  const val = (prefix ? `${prefix}.` : '') + name
+  const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">
       <div className={clsx(classes.fieldDescription, classes.fieldName)}>
@@ -153,7 +154,6 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
 }
 const SimpleValue = ({
   name,
-
   value,
   description,
   prefix,
@@ -161,7 +161,7 @@ const SimpleValue = ({
   description?: React.ReactNode
   name: string
   value: any
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
   return value ? (
@@ -181,7 +181,7 @@ const ArrayValue = ({
   description?: React.ReactNode
   name: string
   value: any[]
-  prefix?: string
+  prefix?: string[]
 }) => {
   const classes = useStyles()
   return (
@@ -255,7 +255,7 @@ interface AttributeProps {
   omit?: string[]
   formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
-  prefix?: string
+  prefix?: string[]
 }
 
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
@@ -264,7 +264,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     omit = [],
     descriptions,
     formatter = val => val,
-    prefix = '',
+    prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
 
@@ -347,16 +347,21 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
               }
             }
           }
-          const description = descriptions && descriptions[key]
+          function accessNested(arr: string[], obj: Record<string, any> = {}) {
+            arr.forEach(elt => {
+              if (obj) {
+                obj = obj[elt]
+              }
+            })
+            return typeof obj === 'string'
+              ? obj
+              : typeof obj?.Description === 'string'
+              ? obj.Description
+              : undefined
+          }
+          const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
-            return value.length === 1 ? (
-              <SimpleValue
-                key={key}
-                name={key}
-                value={value[0]}
-                description={description}
-              />
-            ) : (
+            return (
               <ArrayValue
                 key={key}
                 name={key}
@@ -372,7 +377,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
-                prefix={key}
+                prefix={[...prefix, key]}
               />
             )
           }
