@@ -89,6 +89,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     return !!this.record.mate
   }
 
+  _get_pair_orientation() {
+    return this.record.isPaired() ? this.record.getPairOrientation() : undefined
+  }
+
   _get_template_length() {
     return this.record.templateLength || this.record.templateSize
   }
