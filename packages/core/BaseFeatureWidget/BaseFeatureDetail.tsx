@@ -268,6 +268,9 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   } = props
   const omits = [...omit, ...globalOmit]
 
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
@@ -328,6 +331,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                       }}
                     >
                       <DataGrid
+                        disableSelectionOnClick
                         rowHeight={20}
                         headerHeight={25}
                         rows={rows}

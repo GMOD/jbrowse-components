@@ -45,7 +45,7 @@ export default ConfigurationSchema(
       defaultValue: 10000,
     },
     height: {
-      type: 'integer',
+      type: 'number',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
       contextVariable: ['feature'],

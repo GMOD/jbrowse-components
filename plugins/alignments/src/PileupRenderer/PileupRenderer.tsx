@@ -112,11 +112,9 @@ export default class PileupRenderer extends BoxRendererType {
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip && seq) {
       for (let i = 0; i < mismatches.length; i += 1) {
-        const mismatch = mismatches[i]
-        if (mismatch.type === 'softclip') {
-          mismatch.start === 0
-            ? (expansionBefore = mismatch.cliplen || 0)
-            : (expansionAfter = mismatch.cliplen || 0)
+        const { type, start, cliplen = 0 } = mismatches[i]
+        if (type === 'softclip') {
+          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
         }
       }
     }
