@@ -7,6 +7,7 @@ import Stepper from '@material-ui/core/Stepper'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import React, { useState } from 'react'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
@@ -38,7 +39,7 @@ function AddConnectionWidget({ model }) {
 
   const session = getSession(model)
 
-  const { pluginManager } = session
+  const { pluginManager } = getEnv(session)
 
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)

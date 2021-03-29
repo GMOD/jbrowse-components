@@ -35,10 +35,12 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import LabelIcon from '@material-ui/icons/Label'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
 
@@ -123,6 +125,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      DialogComponent: undefined as
+        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
+        | undefined,
     }))
     .views(self => ({
       get width(): number {
@@ -145,7 +150,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const assembliesInitialized = this.assemblyNames.every(assemblyName => {
           if (
             assemblyManager.assemblyList
-              ?.map((asm: { name: string }) => asm.name)
+              ?.map(asm => asm.name)
               .includes(assemblyName)
           ) {
             return (assemblyManager.get(assemblyName) || {}).initialized
@@ -153,11 +158,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return true
         })
 
-        return (
-          self.volatileWidth !== undefined &&
-          self.displayedRegions.length > 0 &&
-          assembliesInitialized
-        )
+        return self.volatileWidth !== undefined && assembliesInitialized
+      },
+      get hasDisplayedRegions() {
+        return self.displayedRegions.length > 0
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset
@@ -432,13 +436,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       get centerLineInfo() {
-        const centerLineInfo = self.displayedRegions.length
+        return self.displayedRegions.length
           ? this.pxToBp(self.width / 2)
           : undefined
-        return centerLineInfo
       },
     }))
     .actions(self => ({
+      setDialogComponent(
+        comp?: React.FC<{
+          handleClose: () => void
+          model: { clearView: Function }
+        }>,
+      ) {
+        self.DialogComponent = comp
+      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -621,8 +632,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
-
-      navToLocString(locString: string) {
+      navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const locStrings = locString.split(';')
@@ -633,79 +643,91 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.navToMultiple(locations)
           return
         }
-        const displayedRegion = self.displayedRegions[0]
-        const { assemblyName } = displayedRegion
-        let assembly = assemblyManager.get(assemblyName)
+        let assemblyName = optAssemblyName
+        let defaultRefName = ''
+        if (self.displayedRegions.length !== 0) {
+          // defaults
+          assemblyName = self.displayedRegions[0].assemblyName
+          defaultRefName = self.displayedRegions[0].refName
+        }
+        let assembly = assemblyName && assemblyManager.get(assemblyName)
         if (!assembly) {
-          throw new Error(
-            `Could not find assembly ${displayedRegion.assemblyName}`,
-          )
+          throw new Error(`Could not find assembly ${assemblyName}`)
         }
         let { regions } = assembly
         if (!regions) {
+          throw new Error(`Regions for assembly ${assemblyName} not yet loaded`)
+        }
+        if (locStrings.length > 1) {
           throw new Error(
-            `Regions for assembly ${displayedRegion.assemblyName} not yet loaded`,
+            'Navigating to multiple locations is not allowed when viewing a whole chromosome',
           )
         }
-        const matchedRegion = regions.find(
-          region =>
-            region.refName === displayedRegion.refName &&
-            region.start === displayedRegion.start &&
-            region.end === displayedRegion.end,
+        const parsedLocString = parseLocString(locStrings[0], refName =>
+          isValidRefName(refName, assemblyName),
         )
-        if (matchedRegion) {
-          if (locStrings.length > 1) {
+        let changedAssembly = false
+        if (
+          parsedLocString.assemblyName &&
+          parsedLocString.assemblyName !== assemblyName
+        ) {
+          const newAssembly = assemblyManager.get(parsedLocString.assemblyName)
+          if (!newAssembly) {
             throw new Error(
-              'Navigating to multiple locations is not allowed when viewing a whole chromosome',
+              `Could not find assembly ${parsedLocString.assemblyName}`,
             )
           }
-          const parsedLocString = parseLocString(locStrings[0], refName =>
-            isValidRefName(refName, assemblyName),
-          )
-          let changedAssembly = false
-          if (
-            parsedLocString.assemblyName &&
-            parsedLocString.assemblyName !== displayedRegion.assemblyName
-          ) {
-            const newAssembly = assemblyManager.get(
-              parsedLocString.assemblyName,
+          assembly = newAssembly
+          changedAssembly = true
+          const newRegions = newAssembly.regions
+          if (!newRegions) {
+            throw new Error(
+              `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
             )
-            if (!newAssembly) {
-              throw new Error(
-                `Could not find assembly ${parsedLocString.assemblyName}`,
-              )
-            }
-            assembly = newAssembly
-            changedAssembly = true
-            const newRegions = newAssembly.regions
-            if (!newRegions) {
-              throw new Error(
-                `Regions for assembly ${parsedLocString.assemblyName} not yet loaded`,
-              )
-            }
-            regions = newRegions
           }
-          const canonicalRefName = assembly.getCanonicalRefName(
-            parsedLocString.refName,
+          regions = newRegions
+        }
+        const canonicalRefName = assembly.getCanonicalRefName(
+          parsedLocString.refName,
+        )
+
+        if (!canonicalRefName) {
+          throw new Error(
+            `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
           )
-          if (!canonicalRefName) {
+        }
+        if (changedAssembly || canonicalRefName !== defaultRefName) {
+          const newDisplayedRegion = regions.find(
+            region => region.refName === canonicalRefName,
+          )
+          if (newDisplayedRegion) {
+            this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
+          } else {
             throw new Error(
               `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
             )
           }
-          if (changedAssembly || canonicalRefName !== displayedRegion.refName) {
-            const newDisplayedRegion = regions.find(
-              region => region.refName === canonicalRefName,
-            )
-            if (newDisplayedRegion) {
-              this.setDisplayedRegions([getSnapshot(newDisplayedRegion)])
-            } else {
-              throw new Error(
-                `Could not find refName ${parsedLocString.refName} in ${assembly.name}`,
-              )
-            }
-          }
-          this.navTo(parsedLocString)
+        }
+        const displayedRegion = regions.find(
+          region => region.refName === canonicalRefName,
+        )
+        if (displayedRegion) {
+          const start = clamp(
+            parsedLocString?.start ?? 0,
+            0,
+            displayedRegion.end,
+          )
+          const end = clamp(
+            parsedLocString?.end ?? displayedRegion.end,
+            0,
+            displayedRegion.end,
+          )
+
+          this.navTo({
+            ...parsedLocString,
+            start,
+            end,
+          })
         }
       },
 
@@ -748,7 +770,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let s = start
         let e = end
         let refNameMatched = false
-
         const predicate = (r: Region) => {
           if (refName === r.refName) {
             refNameMatched = true
@@ -1144,6 +1165,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get menuItems(): MenuItem[] {
           const menuItems: MenuItem[] = [
             {
+              label: 'Return to import form',
+              onClick: () => {
+                self.setDialogComponent(ReturnToImportFormDlg)
+              },
+              icon: FolderOpenIcon,
+            },
+            {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: TrackSelectorIcon,
@@ -1248,6 +1276,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
+      // this "clears the view" and makes the view return to the import form
+      clearView() {
+        self.setDisplayedRegions([])
+        self.tracks.clear()
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
+      },
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp

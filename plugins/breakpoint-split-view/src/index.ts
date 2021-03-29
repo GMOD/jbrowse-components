@@ -19,7 +19,7 @@ export default class BreakpointSplitViewPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'BreakpointAlignmentsWidget',
-          heading: 'Breakpoint Feature Details',
+          heading: 'Breakpoint feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModel,
           ReactComponent: AlignmentsFeatureDetailReactComponent,

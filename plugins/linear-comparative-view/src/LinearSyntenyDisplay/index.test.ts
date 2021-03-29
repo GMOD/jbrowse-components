@@ -3,6 +3,7 @@ import { configSchemaFactory } from './index'
 import ThisPlugin from '..'
 
 test('create config', () => {
+  console.warn = jest.fn()
   const pluginManager = new PluginManager([new ThisPlugin()])
   expect(() =>
     configSchemaFactory(pluginManager).create({

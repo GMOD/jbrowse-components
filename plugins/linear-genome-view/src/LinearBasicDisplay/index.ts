@@ -1,2 +1,2 @@
-export { configSchemaFactory } from './configSchema'
-export { stateModelFactory } from './model'
+export { default as modelFactory } from './model'
+export { default as configSchema } from './configSchema'

@@ -37,11 +37,19 @@ export const sortFeature = (
 
     case 'tag': {
       const tag = sortedBy.tag as string
-      featuresInCenterLine.sort((a, b) => {
-        return isCram
-          ? (b.get('tags')[tag] || 0) - (a.get('tags')[tag] || 0)
-          : (b.get(tag) || 0) - (a.get(tag) || 0)
-      })
+      const getTag = (f: Feature, t: string) => {
+        return isCram ? f.get('tags')[t] : f.get(t)
+      }
+      const isString = typeof getTag(featuresInCenterLine[0], tag) === 'string'
+      if (isString) {
+        featuresInCenterLine.sort((a, b) =>
+          getTag(b, tag).localeCompare(getTag(a, tag)),
+        )
+      } else {
+        featuresInCenterLine.sort(
+          (a, b) => (getTag(b, tag) || 0) - (getTag(a, tag) || 0),
+        )
+      }
       break
     }
 

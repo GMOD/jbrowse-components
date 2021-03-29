@@ -23,6 +23,7 @@ class SNPCoverageRendererPlugin extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: snpCoverageRendererConfigSchema,
+          pluginManager,
         }),
     )
   }

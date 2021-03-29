@@ -7,10 +7,8 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
-      defaultValue: `function(feature) {
-  return '#c8c8c8'
-}`,
-      functionSignature: ['feature'],
+      defaultValue: `#c8c8c8`,
+      contextVariable: ['feature'],
     },
 
     orientationType: {
@@ -44,13 +42,18 @@ export default ConfigurationSchema(
     maxClippingSize: {
       type: 'integer',
       description: 'the max clip size to be used in a pileup rendering',
-      defaultValue: 0,
+      defaultValue: 10000,
     },
     height: {
-      type: 'integer',
+      type: 'number',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
+    },
+    noSpacing: {
+      type: 'boolean',
+      description: 'remove spacing between features',
+      defaultValue: false,
     },
   },
   { explicitlyTyped: true },

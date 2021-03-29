@@ -46,7 +46,7 @@ export async function watchWorker(worker: WorkerHandle, pingTime: number) {
 
 function detectHardwareConcurrency() {
   const mainThread = typeof window !== 'undefined'
-  const canDetect = 'hardwareConcurrency' in window.navigator
+  const canDetect = mainThread && 'hardwareConcurrency' in window.navigator
   if (mainThread && canDetect) {
     return window.navigator.hardwareConcurrency
   }
@@ -138,7 +138,7 @@ export default abstract class BaseRpcDriver {
     signalId: number,
   ) {
     const worker = this.getWorker(sessionId, pluginManager)
-    worker.call(functionName, signalId, { timeout: 1000000 })
+    worker.call(functionName, { signalId }, { timeout: 1000000 })
   }
 
   createWorkerPool(): LazyWorker[] {

@@ -1,10 +1,10 @@
 import React from 'react'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import WiggleRendering from './WiggleRendering'
 
 // these tests do very little, let's try to expand them at some point
-test('one', () => {
-  const { container } = render(
+test('one', async () => {
+  const { container, getByTestId } = render(
     <WiggleRendering
       width={500}
       height={500}
@@ -15,6 +15,7 @@ test('one', () => {
       config={{ type: 'DummyRenderer' }}
     />,
   )
-
+  const test = await getByTestId('wiggle-rendering-test')
+  expect(fireEvent.click(test)).toBeTruthy()
   expect(container.firstChild).toMatchSnapshot()
 })

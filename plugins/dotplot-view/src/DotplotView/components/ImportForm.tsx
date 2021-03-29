@@ -10,6 +10,7 @@ import Container from '@material-ui/core/Container'
 import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 import TextField from '@material-ui/core/TextField'
+import Typography from '@material-ui/core/Typography'
 import { DotplotViewModel } from '../model'
 
 export default () => {
@@ -47,6 +48,7 @@ export default () => {
             select
             variant="outlined"
             value={assemblyNames[selected] ? selected : ''}
+            inputProps={{ 'data-testid': 'dotplot-input' }}
             onChange={event => {
               onChange(Number(event.target.value))
             }}
@@ -68,12 +70,10 @@ export default () => {
     const classes = useStyles()
     const [numRows] = useState(2)
     const [selected, setSelected] = useState([0, 0])
-    const [error, setError] = useState('')
     const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
-    const { assemblyNames } = getSession(model) as { assemblyNames: string[] }
-    if (!assemblyNames.length) {
-      setError('No configured assemblies')
-    }
+    const session = getSession(model)
+    const { assemblyNames } = session
+    const error = assemblyNames.length ? '' : 'No configured assemblies'
 
     function onOpenClick() {
       model.setViews([
@@ -91,18 +91,15 @@ export default () => {
           : null
 
         // @ts-ignore
-        const configuration = getSession(model).addTrackConf({
+        const configuration = session.addTrackConf({
           trackId: `fileName-${Date.now()}`,
           name: fileName,
           assemblyNames: selected.map(selection => assemblyNames[selection]),
-          type: 'DotplotTrack',
+          type: 'SyntenyTrack',
           adapter: {
             type: 'PAFAdapter',
             pafLocation: trackData,
             assemblyNames: selected.map(selection => assemblyNames[selection]),
-          },
-          renderer: {
-            type: 'DotplotRenderer',
           },
         })
         model.toggleTrack(configuration.trackId)
@@ -118,53 +115,64 @@ export default () => {
           alignItems="center"
           style={{ width: '50%', margin: '0 auto' }}
         >
-          <Grid item>
-            <Paper style={{ padding: 12, marginBottom: 10 }}>
-              <p style={{ textAlign: 'center' }}>
-                Select assemblies for dotplot view
-              </p>
-              {[...new Array(numRows)].map((_, index) => (
-                <FormRow
-                  key={`row_${index}_${selected[index]}`}
-                  error={error}
-                  selected={selected[index]}
-                  onChange={val => {
-                    const copy = selected.slice(0)
-                    copy[index] = val
-                    setSelected(copy)
-                  }}
-                  model={model}
-                />
-              ))}
-            </Paper>
+          {error ? (
+            <Typography color="error">{error}</Typography>
+          ) : (
+            <>
+              <Grid item>
+                <Paper style={{ padding: 12, marginBottom: 10 }}>
+                  <p style={{ textAlign: 'center' }}>
+                    Select assemblies for dotplot view
+                  </p>
+                  {[...new Array(numRows)].map((_, index) => (
+                    <FormRow
+                      key={`row_${index}_${selected[index]}`}
+                      error={error}
+                      selected={selected[index]}
+                      onChange={val => {
+                        const copy = selected.slice(0)
+                        copy[index] = val
+                        setSelected(copy)
+                      }}
+                      model={model}
+                    />
+                  ))}
+                </Paper>
 
-            <Paper style={{ padding: 12, marginBottom: 10 }}>
-              <p style={{ textAlign: 'center' }}>
-                <b>Optional</b>: Add a PAF{' '}
-                <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
-                  (pairwise mapping format)
-                </a>{' '}
-                file for the dotplot view. Note that the first assembly should
-                be the left column of the PAF and the second assembly should be
-                the right column
-              </p>
-              <Grid container justify="center">
-                <Grid item>
-                  <FileSelector
-                    name="URL"
-                    description=""
-                    location={trackData}
-                    setLocation={loc => setTrackData(loc)}
-                  />
-                </Grid>
+                <Paper style={{ padding: 12, marginBottom: 10 }}>
+                  <p style={{ textAlign: 'center' }}>
+                    <b>Optional</b>: Add a PAF{' '}
+                    <a href="https://github.com/lh3/miniasm/blob/master/PAF.md">
+                      (pairwise mapping format)
+                    </a>{' '}
+                    file for the dotplot view. Note that the first assembly
+                    should be the left column of the PAF and the second assembly
+                    should be the right column
+                  </p>
+                  <Grid container justify="center">
+                    <Grid item>
+                      <FileSelector
+                        name="URL"
+                        description=""
+                        location={trackData}
+                        setLocation={loc => setTrackData(loc)}
+                      />
+                    </Grid>
+                  </Grid>
+                </Paper>
               </Grid>
-            </Paper>
-          </Grid>
-          <Grid item>
-            <Button onClick={onOpenClick} variant="contained" color="primary">
-              Open
-            </Button>
-          </Grid>
+              <Grid item>
+                <Button
+                  data-testid="submitDotplot"
+                  onClick={onOpenClick}
+                  variant="contained"
+                  color="primary"
+                >
+                  Open
+                </Button>
+              </Grid>
+            </>
+          )}
         </Grid>
       </Container>
     )

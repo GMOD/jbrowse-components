@@ -40,7 +40,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     if (
       dataAdapter instanceof BaseFeatureDataAdapter &&
       // @ts-ignore
-      dataAdapter.capabilities.includes('hasGlobalStats')
+      dataAdapter.constructor.capabilities.includes('hasGlobalStats')
     ) {
       // @ts-ignore
       return dataAdapter.getGlobalStats(deserializedArgs)

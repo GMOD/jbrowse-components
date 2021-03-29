@@ -106,6 +106,7 @@ const UrlChooser = (props: {
   return (
     <TextField
       fullWidth
+      inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
       onChange={handleChange}
     />

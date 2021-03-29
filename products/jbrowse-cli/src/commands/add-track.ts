@@ -36,12 +36,23 @@ export default class AddTrack extends JBrowseCommand {
   static description = 'Add a track to a JBrowse 2 configuration'
 
   static examples = [
-    '$ jbrowse add-track /path/to/my.bam --load copy',
-    '$ jbrowse add-track /path/to/my.bam --target /path/to/jbrowse2/installation/config.json --load symlink',
-    '$ jbrowse add-track https://mywebsite.com/my.bam',
-    `$ jbrowse add-track /path/to/my.bam --trackType AlignmentsTrack --name 'New Track' --load move`,
-    `$ jbrowse add-track /path/to/my.bam --trackId AlignmentsTrack1 --load inPlace --overwrite`,
-    `$ jbrowse add-track /path/to/my.bam --config '{"defaultRendering": "density"}'`,
+    `# --load copy copies my.bam and my.bam.bai to current directory and adds track to config.json`,
+    '$ jbrowse add-track /path/to/my.bam --load copy\n',
+
+    `# same as above, but specify path to bai file`,
+    '$ jbrowse add-track /path/to/my.bam --indexFile /path/to/my.bai --load copy\n',
+
+    `# --load symlink creates symlink in /path/to/jb2/ directory for this file, and adds track to config.json`,
+    '$ jbrowse add-track /path/to/my.bam --target /path/to/jb2/config.json --load symlink\n',
+
+    `# no --load flag to add literal URL for this track to config.json`,
+    '$ jbrowse add-track https://mywebsite.com/my.bam\n',
+
+    `# --load move to move the file `,
+    `$ jbrowse add-track /path/to/my.bam --name 'New Track' --load move\n`,
+
+    `# --load inPlace puts /url/relative/path.bam in the config without performing any file operations`,
+    `$ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite`,
   ]
 
   static args = [
@@ -161,12 +172,21 @@ export default class AddTrack extends JBrowseCommand {
     }
     const location = argsTrack
 
-    const isUrl = (loc: string) => loc.match(/^https?:\/\//)
-    const adapter = this.guessAdapter(
-      isUrl(location) ? location : path.join(subDir, path.basename(location)),
-      protocol as 'uri' | 'localPath',
-      !index || isUrl(index) ? index : path.join(subDir, path.basename(index)),
-    )
+    const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
+    const inPlace = load === 'inPlace'
+    const useIndex = isUrl(index) || inPlace || index
+    const effectiveLocation =
+      isUrl(location) || inPlace
+        ? location
+        : path.join(subDir, path.basename(location))
+
+    const effectiveIndexLocation =
+      !index || isUrl(index) || inPlace
+        ? index
+        : path.join(subDir, path.basename(index))
+    const adapter = useIndex
+      ? this.guessAdapter(effectiveLocation, protocol, effectiveIndexLocation)
+      : this.guessAdapter(effectiveLocation, protocol)
 
     if (adapter.type === 'PAFAdapter') {
       // @ts-ignore
@@ -274,6 +294,7 @@ export default class AddTrack extends JBrowseCommand {
 
     // copy/symlinks/moves the track into the jbrowse installation directory
     const filePaths = Object.values(this.guessFileNames(location, index))
+
     switch (load) {
       case 'copy': {
         await Promise.all(
@@ -462,11 +483,7 @@ export default class AddTrack extends JBrowseCommand {
   }
 
   // find way to import this instead of having to paste it
-  guessAdapter(
-    fileName: string,
-    protocol: 'uri' | 'localPath',
-    index?: string,
-  ) {
+  guessAdapter(fileName: string, protocol: string, index?: string) {
     function makeLocation(location: string): UriLocation | LocalPathLocation {
       if (protocol === 'uri') {
         return { uri: location }

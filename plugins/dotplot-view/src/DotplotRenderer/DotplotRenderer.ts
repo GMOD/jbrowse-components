@@ -55,7 +55,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const mateRef = mate.refName
       // const identity = feature.get('numMatches') / feature.get('blockLen')
       // ctx.fillStyle = `hsl(${identity * 150},50%,50%)`
-      const color = readConfObject(config, 'color', [feature])
+      const color = readConfObject(config, 'color', { feature })
       ctx.fillStyle = color
       ctx.strokeStyle = color
       const b10 = hview.bpToPx({ refName, coord: start })
@@ -93,7 +93,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               const prevX = currX
               const prevY = currY
 
-              if (op === 'M') {
+              if (op === 'M' || op === '=' || op === 'X') {
                 currX += val / hview.bpPerPx
                 currY += val / vview.bpPerPx
               } else if (op === 'D' || op === 'N') {

@@ -2,28 +2,40 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
+import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 export default class extends WiggleBaseRenderer {
   draw(ctx, props) {
-    const { features, regions, bpPerPx, scaleOpts, height, config } = props
+    const {
+      features,
+      regions,
+      bpPerPx,
+      scaleOpts,
+      height: unadjustedHeight,
+      ticks: { values },
+      displayCrossHatches,
+      config,
+    } = props
     const [region] = regions
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
+    const width = (region.end - region.start) / bpPerPx
+    const offset = YSCALEBAR_LABEL_OFFSET
+
+    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+    // wiggle display, and makes the height of the actual drawn area add
+    // "padding" to the top and bottom of the display
+    const height = unadjustedHeight - offset * 2
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => height - scale(rawscore)
-    let colorCallback
-    if (readConfObject(config, 'color') === '#f0f') {
-      colorCallback = feature =>
-        feature.get('score') < pivotValue ? negColor : posColor
-    } else {
-      colorCallback = feature => readConfObject(config, 'color', [feature])
-    }
-    let lastVal
+    const toY = rawscore => height - scale(rawscore) + offset
+    const colorCallback =
+      readConfObject(config, 'color') === '#f0f'
+        ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          feature => 'grey'
+        : feature => readConfObject(config, 'color', { feature })
 
+    let lastVal
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
@@ -64,6 +76,17 @@ export default class extends WiggleBaseRenderer {
         ctx.fillStyle = highlightColor
         ctx.fillRect(leftPx, 0, w, height)
       }
+    }
+
+    if (displayCrossHatches) {
+      ctx.lineWidth = 1
+      ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+      values.forEach(tick => {
+        ctx.beginPath()
+        ctx.moveTo(0, Math.round(toY(tick)))
+        ctx.lineTo(width, Math.round(toY(tick)))
+        ctx.stroke()
+      })
     }
   }
 }

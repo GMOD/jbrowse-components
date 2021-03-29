@@ -48,7 +48,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         type: 'number',
         description:
           'round the upper value of the domain scale to the nearest N',
-        defaultValue: 20,
+        defaultValue: 0,
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {

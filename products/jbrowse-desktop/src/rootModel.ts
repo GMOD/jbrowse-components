@@ -28,7 +28,6 @@ interface Menu {
 }
 
 export default function RootModel(pluginManager: PluginManager) {
-  const Session = sessionModelFactory(pluginManager)
   const { assemblyConfigSchemas, dispatcher } = AssemblyConfigSchemasFactory(
     pluginManager,
   )
@@ -36,6 +35,7 @@ export default function RootModel(pluginManager: PluginManager) {
     { dispatcher },
     ...assemblyConfigSchemas,
   )
+  const Session = sessionModelFactory(pluginManager, assemblyConfigSchemasType)
   const assemblyManagerType = assemblyManagerFactory(
     assemblyConfigSchemasType,
     pluginManager,

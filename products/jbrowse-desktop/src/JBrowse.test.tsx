@@ -43,10 +43,13 @@ function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager)
-  const rootModel = JBrowseRootModel.create({
-    jbrowse: initialState || {},
-    assemblyManager: {},
-  })
+  const rootModel = JBrowseRootModel.create(
+    {
+      jbrowse: initialState || {},
+      assemblyManager: {},
+    },
+    { pluginManager },
+  )
   pluginManager.setRootModel(rootModel)
 
   pluginManager.configure()

@@ -33,9 +33,13 @@ describe('<LinearGenomeView />', () => {
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
+    model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
-    await findByText('Open')
+    const openButton = await findByText('Open')
     expect(container.firstChild).toMatchSnapshot()
+    expect(model.displayedRegions.length).toEqual(0)
+    openButton.click()
+    expect(model.displayedRegions.length).toEqual(1)
   })
   it('renders one track, one region', async () => {
     const session = createTestSession()
@@ -44,7 +48,7 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       assemblyNames: ['volMyt1'],
       name: 'Foo Track',
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -55,13 +59,13 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
@@ -69,7 +73,6 @@ describe('<LinearGenomeView />', () => {
       displayedRegions: [
         { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
       ],
-      configuration: {},
     })
     const model = session.views[0]
     model.setWidth(800)
@@ -87,14 +90,14 @@ describe('<LinearGenomeView />', () => {
       trackId: 'testConfig',
       name: 'Foo Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
       assemblyNames: ['volMyt1'],
-      type: 'FeatureTrack',
+      type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
     session.addView('LinearGenomeView', {
@@ -113,35 +116,35 @@ describe('<LinearGenomeView />', () => {
       tracks: [
         {
           id: 'foo',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
             },
           ],
         },
         {
           id: 'bar',
-          type: 'FeatureTrack',
+          type: 'BasicTrack',
           height: 20,
           configuration: 'testConfig2',
           displays: [
             {
-              type: 'LinearBasicDisplay',
-              configuration: 'testConfig2-LinearBasicDisplay',
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig2-LinearBareDisplay',
             },
           ],
         },
       ],
-      configuration: {},
     })
     const model = session.views[0]
     model.setWidth(800)
     const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
+    await findByText('798 bp')
     expect(container.firstChild).toMatchSnapshot()
   })
 })

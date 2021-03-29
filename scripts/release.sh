@@ -1,32 +1,41 @@
 #!/usr/bin/env bash
 
-## Usage scripts/release.sh blogpost.md githubAuthToken <prerelease/patch/minor/major>
-# The first argument blogpost.md is published to the jbrowse 2 blog. The second
-# argument is a personal access token for the GitHub API with `public_repo`
+## Usage scripts/release.sh githubAuthToken <prerelease/patch/minor/major>
+# The first argument is a personal access token for the GitHub API with `public_repo`
 # scope. You can generate a token at https://github.com/settings/tokens
-# The third optional argument is a flag for the publishing command for version
+# The second optional argument is a flag for the publishing command for version
 # bump. If not provided, it will default to "patch".
 
 ## Precautionary bash tags
 set -e
 set -o pipefail
 
-[[ -n "$1" ]] || { echo "No blogpost file provided" && exit 1; }
-[[ -n "$2" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
-[[ -n "$3" ]] && SEMVER_LEVEL="$3" || SEMVER_LEVEL="patch"
+[[ -n "$1" ]] || { echo "No GITHUB_AUTH token provided" && exit 1; }
+GITHUB_AUTH=$1
+[[ -n "$2" ]] && SEMVER_LEVEL="$2" || SEMVER_LEVEL="patch"
 
-BRANCH=$(git branch --show-current)
-[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+[[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
 NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
-MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
-[[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
+MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
+[[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
+
+# make sure packages are all up to date
+yarn
+
+# make sure the tests are passing
+yarn test
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
 # Use semver to get the new version from the semver level
 VERSION=$(yarn --silent semver --increment "$SEMVER_LEVEL" "$PREVIOUS_VERSION")
 RELEASE_TAG=v$VERSION
+
+# make sure the blogpost draft is present
+BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
+[[ -f $BLOGPOST_DRAFT ]] || { echo "No blogpost draft found at $BLOGPOST_DRAFT, please write one." && exit 1; }
 
 # Updates the "Browse demo instance" link on the homepage
 INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$RELEASE_TAG/index.html
@@ -37,7 +46,7 @@ mv tmp.json website/docusaurus.config.json
 CHANGED=$(yarn --silent lerna changed --all --json)
 # Generates a changelog with a section added listing the packages that were
 # included in this release
-CHANGELOG=$(GITHUB_AUTH="$2" node scripts/changelog.js "$CHANGED" "$VERSION")
+CHANGELOG=$(GITHUB_AUTH="$GITHUB_AUTH" node scripts/changelog.js "$CHANGED" "$VERSION")
 # Add the changelog to the top of CHANGELOG.md
 echo "$CHANGELOG" >tmp.md
 echo "" >>tmp.md
@@ -45,7 +54,7 @@ cat CHANGELOG.md >>tmp.md
 mv tmp.md CHANGELOG.md
 
 # Blog post text
-NOTES=$(cat "$1")
+NOTES=$(cat "$BLOGPOST_DRAFT")
 DATE=$(date +"%Y-%m-%d")
 ## Blogpost run after lerna version, to get the accurate tags
 BLOGPOST_FILENAME=website/blog/${DATE}-${RELEASE_TAG}-release.md

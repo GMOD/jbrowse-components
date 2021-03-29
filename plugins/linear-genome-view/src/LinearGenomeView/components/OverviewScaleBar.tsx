@@ -113,18 +113,20 @@ const Polygon = observer(
   }) => {
     const theme = useTheme()
     const classes = useStyles()
-    const { offsetPx, dynamicBlocks: visibleRegions } = model
+    const {
+      offsetPx,
+      dynamicBlocks: { contentBlocks, totalWidthPxWithoutBorders },
+    } = model
 
     const polygonColor = theme.palette.tertiary
       ? theme.palette.tertiary.light
       : theme.palette.primary.light
 
-    if (!visibleRegions.contentBlocks.length) {
+    if (!contentBlocks.length) {
       return null
     }
-    const firstBlock = visibleRegions.contentBlocks[0]
-    const lastBlock =
-      visibleRegions.contentBlocks[visibleRegions.contentBlocks.length - 1]
+    const firstBlock = contentBlocks[0]
+    const lastBlock = contentBlocks[contentBlocks.length - 1]
     const topLeft = overview.bpToPx({
       refName: firstBlock.refName,
       coord: firstBlock.reversed ? firstBlock.end : firstBlock.start,
@@ -139,8 +141,8 @@ const Polygon = observer(
     const startPx = Math.max(0, -offsetPx)
     const endPx =
       startPx +
-      visibleRegions.totalWidthPxWithoutBorders +
-      (visibleRegions.contentBlocks.length * model.interRegionPaddingWidth) / 2
+      totalWidthPxWithoutBorders +
+      (contentBlocks.length * model.interRegionPaddingWidth) / 2
 
     const points = [
       [startPx, HEADER_BAR_HEIGHT],
@@ -185,6 +187,9 @@ const ScaleBar = observer(
     const gridPitch = chooseGridPitch(scale, 120, 15)
     const { dynamicBlocks: overviewVisibleRegions } = overview
 
+    if (!visibleRegions.contentBlocks.length) {
+      return null
+    }
     const firstBlock = visibleRegions.contentBlocks[0]
     const firstOverviewPx =
       overview.bpToPx({
@@ -301,6 +306,7 @@ function OverviewScaleBar({
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,
+    minimumBlockWidth: model.minimumBlockWidth,
   })
   overview.setVolatileWidth(width)
   overview.showAllRegions()

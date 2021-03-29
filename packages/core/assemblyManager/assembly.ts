@@ -155,8 +155,17 @@ export default function assemblyFactory(
       get name(): string {
         return readConfObject(self.configuration, 'name')
       },
+
       get aliases(): string[] {
         return readConfObject(self.configuration, 'aliases')
+      },
+
+      hasName(name: string) {
+        return this.name === name || this.aliases.includes(name)
+      },
+
+      get allAliases() {
+        return [this.name, ...this.aliases]
       },
       get refNames() {
         return self.regions && self.regions.map(region => region.refName)
@@ -287,13 +296,12 @@ export default function assemblyFactory(
 function makeLoadAssemblyData(pluginManager: PluginManager) {
   return (self: Assembly) => {
     if (self.configuration) {
-      const sequenceAdapterConfig = readConfObject(self.configuration, [
-        'sequence',
-        'adapter',
-      ])
+      // use full configuration instead of snapshot of the config, the
+      // rpcManager normally receives a snapshot but we bypass rpcManager here
+      // to avoid spinning up a webworker
+      const sequenceAdapterConfig = self.configuration.sequence.adapter
       const refNameAliasesAdapterConfig =
-        self.configuration.refNameAliases &&
-        readConfObject(self.configuration, ['refNameAliases', 'adapter'])
+        self.configuration.refNameAliases?.adapter
       return {
         sequenceAdapterConfig,
         assemblyName: self.name,

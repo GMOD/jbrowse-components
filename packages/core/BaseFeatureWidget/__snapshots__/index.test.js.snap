@@ -2,179 +2,116 @@
 
 exports[`open up a widget 1`] = `
 <div
-  class="MuiPaper-root makeStyles-paperRoot MuiPaper-elevation1 MuiPaper-rounded"
+  class="MuiPaper-root MuiAccordion-root makeStyles-accordionBorder MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
 >
   <div
-    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
-    style="margin-top: 4px;"
+    aria-disabled="false"
+    aria-expanded="true"
+    class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
+    role="button"
+    tabindex="0"
   >
     <div
-      aria-disabled="false"
-      aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
-      role="button"
-      tabindex="0"
+      class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
     >
-      <div
-        class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
+      <span
+        class="MuiTypography-root MuiTypography-button"
       >
-        <span
-          class="MuiTypography-root MuiTypography-button"
-        >
-           
-          Primary data
-        </span>
-      </div>
-      <div
-        aria-disabled="false"
-        aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-expandIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-            />
-          </svg>
-        </span>
-      </div>
+         
+        
+      </span>
     </div>
     <div
-      class="MuiCollapse-container MuiCollapse-entered"
-      style="min-height: 0px;"
+      aria-disabled="false"
+      aria-hidden="true"
+      class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
+    >
+      <span
+        class="MuiIconButton-label"
+      >
+        <svg
+          aria-hidden="true"
+          class="MuiSvgIcon-root makeStyles-expandIcon"
+          focusable="false"
+          viewBox="0 0 24 24"
+        >
+          <path
+            d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+          />
+        </svg>
+      </span>
+    </div>
+  </div>
+  <div
+    class="MuiCollapse-container MuiCollapse-entered"
+    style="min-height: 0px;"
+  >
+    <div
+      class="MuiCollapse-wrapper"
     >
       <div
-        class="MuiCollapse-wrapper"
+        class="MuiCollapse-wrapperInner"
       >
         <div
-          class="MuiCollapse-wrapperInner"
+          role="region"
         >
           <div
-            role="region"
+            class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
           >
+            <div>
+              Core details
+            </div>
             <div
-              class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
+              class="makeStyles-field"
             >
               <div
-                class="makeStyles-field"
+                class="makeStyles-fieldName"
               >
-                <div
-                  class="makeStyles-fieldName"
-                >
-                  Position
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  <div>
-                    ctgA:3..102 (+)
-                  </div>
-                </div>
+                Position
               </div>
               <div
-                class="makeStyles-field"
+                class="makeStyles-fieldValue"
               >
-                <div
-                  class="makeStyles-fieldName"
-                >
-                  Length
-                </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  <div>
-                    100
-                  </div>
+                <div>
+                  ctgA:3..102 (+)
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <hr
-    class="MuiDivider-root"
-  />
-  <div
-    class="MuiPaper-root MuiAccordion-root MuiAccordion-expanded MuiAccordion-rounded MuiPaper-elevation1 MuiPaper-rounded"
-    style="margin-top: 4px;"
-  >
-    <div
-      aria-disabled="false"
-      aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root MuiAccordionSummary-expanded"
-      role="button"
-      tabindex="0"
-    >
-      <div
-        class="MuiAccordionSummary-content MuiAccordionSummary-expanded"
-      >
-        <span
-          class="MuiTypography-root MuiTypography-button"
-        >
-           
-          Attributes
-        </span>
-      </div>
-      <div
-        aria-disabled="false"
-        aria-hidden="true"
-        class="MuiButtonBase-root MuiIconButton-root MuiAccordionSummary-expandIcon MuiAccordionSummary-expanded MuiIconButton-edgeEnd"
-      >
-        <span
-          class="MuiIconButton-label"
-        >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root makeStyles-expandIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
-            />
-          </svg>
-        </span>
-      </div>
-    </div>
-    <div
-      class="MuiCollapse-container MuiCollapse-entered"
-      style="min-height: 0px;"
-    >
-      <div
-        class="MuiCollapse-wrapper"
-      >
-        <div
-          class="MuiCollapse-wrapperInner"
-        >
-          <div
-            role="region"
-          >
             <div
-              class="MuiAccordionDetails-root makeStyles-expansionPanelDetails"
+              class="makeStyles-field"
             >
               <div
-                class="makeStyles-field"
+                class="makeStyles-fieldName"
               >
-                <div
-                  class="makeStyles-fieldName"
-                >
-                  score
+                Length
+              </div>
+              <div
+                class="makeStyles-fieldValue"
+              >
+                <div>
+                  100
                 </div>
-                <div
-                  class="makeStyles-fieldValue"
-                >
-                  <div>
-                    37
-                  </div>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root"
+            />
+            <div>
+              Attributes
+            </div>
+            <div
+              class="makeStyles-field"
+            >
+              <div
+                class="makeStyles-fieldName"
+              >
+                score
+              </div>
+              <div
+                class="makeStyles-fieldValue"
+              >
+                <div>
+                  37
                 </div>
               </div>
             </div>

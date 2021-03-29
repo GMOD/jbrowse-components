@@ -19,7 +19,7 @@ export function getTrackAssemblyNames(
       return [readConfObject(parent, 'name')]
     }
   }
-  return trackAssemblyNames
+  return trackAssemblyNames as string[]
 }
 
 /** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */

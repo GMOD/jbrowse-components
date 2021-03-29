@@ -1,9 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
+import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
+import SequencePlugin from '@jbrowse/plugin-sequence'
 import stateModelFactory from './model'
 
 test('creation', () => {
-  const pluginManager = new PluginManager([new LinearGenomeView()])
+  const pluginManager = new PluginManager([
+    new LinearGenomeViewPlugin(),
+    new SequencePlugin(),
+  ])
     .createPluggableElements()
     .configure()
   const model = stateModelFactory(pluginManager)

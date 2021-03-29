@@ -97,11 +97,14 @@ export default function Loader({
       const JBrowseRootModel = JBrowseRootModelFactory(pm)
       try {
         if (configSnapshot) {
-          const rootModel = JBrowseRootModel.create({
-            jbrowse: configSnapshot,
-            assemblyManager: {},
-            version: packagedef.version,
-          })
+          const rootModel = JBrowseRootModel.create(
+            {
+              jbrowse: configSnapshot,
+              assemblyManager: {},
+              version: packagedef.version,
+            },
+            { pluginManager: pm },
+          )
           // make some things available globally for testing
           // e.g. window.MODEL.views[0] in devtools
           // @ts-ignore

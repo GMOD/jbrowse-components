@@ -2,7 +2,11 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { guessTrackType, UNSUPPORTED } from '@jbrowse/core/util/tracks'
+import {
+  guessAdapter,
+  guessTrackType,
+  UNSUPPORTED,
+} from '@jbrowse/core/util/tracks'
 
 function isAbsoluteUrl(url: string) {
   try {
@@ -33,11 +37,11 @@ export default function f(pluginManager: PluginManager) {
       altTrackName: '',
       altTrackType: '',
 
-      trackAdapter: {} as any,
+      altTrackAdapter: {} as any,
     }))
     .actions(self => ({
       setTrackAdapter(obj: any) {
-        self.trackAdapter = obj
+        self.altTrackAdapter = obj
       },
       setTrackSource(str: string) {
         self.trackSource = str
@@ -60,36 +64,51 @@ export default function f(pluginManager: PluginManager) {
 
       clearData() {
         self.trackSource = ''
-        self.trackAdapter = {}
+        self.altTrackAdapter = {}
         self.indexTrackData = { uri: '' }
         self.trackData = { uri: '' }
         self.altTrackName = ''
         self.altTrackType = ''
         self.altAssemblyName = ''
+        self.altTrackAdapter = {}
       },
     }))
     .views(self => ({
+      get trackAdapter() {
+        const { trackData, indexTrackData } = self
+        if (trackData?.uri) {
+          return guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
+        }
+
+        if (trackData.localPath) {
+          return guessAdapter(trackData.localPath, 'localPath')
+        }
+        return self.altTrackAdapter
+      },
+
       get trackName() {
         // @ts-ignore
         const uri = self.trackData?.uri
+        const localPath = self.trackData?.localPath
         return (
           self.altTrackName ||
-          (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null)
+          (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null) ||
+          (localPath ? localPath.slice(localPath.lastIndexOf('/') + 1) : null)
         )
       },
 
       get isFtp() {
-        return (
-          (self.indexTrackData.uri &&
-            self.indexTrackData.uri.startsWith('ftp://')) ||
-          self.trackData.uri.startsWith('ftp://')
+        const { trackData, indexTrackData } = self
+        return !!(
+          (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
+          (trackData.uri && trackData.uri.startsWith('ftp://'))
         )
       },
 
       get isRelativeUrl() {
         return !(
           (self.indexTrackData.uri && isAbsoluteUrl(self.indexTrackData.uri)) ||
-          isAbsoluteUrl(self.trackData.uri)
+          (self.trackData.uri && isAbsoluteUrl(self.trackData.uri))
         )
       },
 
@@ -103,17 +122,15 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get unsupported() {
-        return self.trackAdapter.type === UNSUPPORTED
+        return this.trackAdapter.type === UNSUPPORTED
       },
 
       get assembly() {
-        return (
-          self.altAssemblyName || self.view.displayedRegions[0].assemblyName
-        )
+        return self.altAssemblyName || self.view.assemblyNames?.[0]
       },
 
       get trackType() {
-        return self.altTrackType || guessTrackType(self.trackAdapter.type)
+        return self.altTrackType || guessTrackType(this.trackAdapter.type)
       },
     }))
 }

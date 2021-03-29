@@ -74,9 +74,13 @@ export function deserializeAbortSignal({
  *
  * @param abortSignalId -
  */
-export function remoteAbort(abortSignalId: number) {
+export function remoteAbort(props: { signalId: number }) {
+  const { signalId: abortSignalId } = props
   const surrogateAbortController = surrogateAbortControllers.get(abortSignalId)
-  if (surrogateAbortController) surrogateAbortController.abort()
+
+  if (surrogateAbortController) {
+    surrogateAbortController.abort()
+  }
 }
 
 export function remoteAbortRpcHandler() {

@@ -14,7 +14,7 @@ import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
   ReactComponent as AlignmentsFeatureDetailReactComponent,
-  stateModel as alignmentsFeatureDetailStateModel,
+  stateModelFactory as alignmentsFeatureDetailStateModelFactory,
 } from './AlignmentsFeatureDetail'
 import BamAdapterF from './BamAdapter'
 import * as MismatchParser from './BamAdapter/MismatchParser'
@@ -124,9 +124,9 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'AlignmentsFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
-          stateModel: alignmentsFeatureDetailStateModel,
+          stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
           ReactComponent: AlignmentsFeatureDetailReactComponent,
         }),
     )
@@ -165,6 +165,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+          pluginManager,
         }),
     )
     pluginManager.addRendererType(
@@ -173,6 +174,7 @@ export default class AlignmentsPlugin extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: SNPCoverageRendererConfigSchema,
+          pluginManager,
         }),
     )
 
