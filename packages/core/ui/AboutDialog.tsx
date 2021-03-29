@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any,no-nested-ternary */
+/* eslint-disable @typescript-eslint/no-explicit-any,no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import {
   Dialog,

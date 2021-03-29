@@ -71,8 +71,8 @@ test('copy and delete reference sequence track disabled', async () => {
   expect(queryByText(/Session tracks/)).toBeNull()
   // clicking 'copy track' should not create a copy of a ref sequence track
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
-  expect(trackMenuItems[1].disabled).toBe(true)
   expect(trackMenuItems[2].disabled).toBe(true)
+  expect(trackMenuItems[3].disabled).toBe(true)
 })
 
 test('copy and delete track to session tracks', async () => {
