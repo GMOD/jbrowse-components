@@ -2818,7 +2818,7 @@ Object {
         Object {
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": Object {
-            "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'",
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
             "type": "SvgFeatureRenderer",
           },
           "type": "LinearVariantDisplay",

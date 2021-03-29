@@ -19,7 +19,15 @@ import { useTheme } from '@material-ui/core/styles'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
+<<<<<<< HEAD
+  drawerCloseButton: {
+=======
+  defaultDrawer: {},
+  components: {
+    display: 'block',
+  },
   drawerActions: {
+>>>>>>> origin/main
     float: 'right',
     '&:hover': {
       backgroundColor: fade(
@@ -115,6 +123,7 @@ const DrawerHeader = observer(props => {
                       session.hideWidget(widget)
                     }}
                   >
+<<<<<<< HEAD
                     <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
@@ -122,30 +131,72 @@ const DrawerHeader = observer(props => {
             )
           })}
         </Select>
-        <div className={classes.spacer} />
-        <div className={classes.drawerCloseButton}>
-          <IconButton
-            className={classes.drawerCloseButton}
-            data-testid="drawer-minimize"
-            color="inherit"
-            onClick={() => {
-              session.minimizeWidgetDrawer()
-            }}
-          >
-            <MinimizeIcon />
-          </IconButton>
-          <IconButton
-            data-testid="drawer-close"
-            color="inherit"
-            onClick={() => {
-              session.hideWidget(visibleWidget)
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
+        <div className={classes.drawerToolbarCloseButton} />
+        <IconButton
+          className={classes.drawerCloseButton}
+          data-testid="drawer-minimize"
+          color="inherit"
+          onClick={() => {
+            session.minimizeWidgetDrawer()
+          }}
+        >
+          <MinimizeIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
+=======
+                    <Typography variant="h6" color="inherit">
+                      {HeadingComp ? (
+                        <HeadingComp model={widget} />
+                      ) : (
+                        headingText || undefined
+                      )}
+                    </Typography>
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        className={classes.drawerCloseButton}
+                        data-testid={`${widget.type}-drawer-delete`}
+                        color="inherit"
+                        aria-label="Delete"
+                        onClick={() => {
+                          session.hideWidget(widget)
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </MenuItem>
+                )
+              })}
+            </Select>
+            <div className={classes.spacer} />
+            <div className={classes.drawerCloseButton}>
+              <IconButton
+                className={classes.drawerCloseButton}
+                data-testid="drawer-minimize"
+                color="inherit"
+                onClick={() => {
+                  session.minimizeWidgetDrawer()
+                }}
+              >
+                <MinimizeIcon />
+              </IconButton>
+              <IconButton
+                data-testid="drawer-close"
+                color="inherit"
+                onClick={() => {
+                  session.hideWidget(visibleWidget)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
+          </Toolbar>
+        </AppBar>
+        <ReactComponent model={visibleWidget} session={session} />
+      </div>
+    </Drawer>
+>>>>>>> origin/main
   )
 })
 

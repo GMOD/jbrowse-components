@@ -610,7 +610,7 @@ export default ConfigurationSchema('PileupRenderer', {
   color: {
     type: 'color',
     description: 'the color of each feature in a pileup alignment',
-    defaultValue: `jexl:feature|getData('strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
+    defaultValue: `jexl:get(feature,'strand') == - 1 ? '#8F8FD8' : '#EC8B8B'`,
     contextVariable: ['feature'],
   },
   displayMode: {
@@ -672,10 +672,7 @@ various feature attributes
 
 ### Example of a config callback
 
-We currently use jexl to express callbacks. This is more limited than arbitrary
-javascript, but can be expressive
-
-See https://github.com/TomFrost/Jexl for more details
+We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more details.
 
 If you had an variant track in your config, and wanted to make a custom config
 callback for color, it might look like this
@@ -704,7 +701,7 @@ callback for color, it might look like this
       "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
       "renderer": {
         "type": "SvgFeatureRenderer",
-        "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+        "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
       }
     }
   ]

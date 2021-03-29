@@ -17,7 +17,7 @@ export function stringToJexlExpression(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl?: any,
 ) {
-  const cacheKey = `${'nosig'}|${str}`
+  const cacheKey = `nosig|${str}`
   if (!compilationCache[cacheKey]) {
     const match = str.startsWith('jexl:')
     if (!match) {

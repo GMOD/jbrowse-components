@@ -31,16 +31,15 @@ It is likely preferable in most cases to install the tools first however
 ## Commands
 
 <!-- commands -->
-
-- [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
-- [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
-- [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
-- [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
-- [`jbrowse admin-server`](#jbrowse-admin-server)
-- [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
-- [`jbrowse help [COMMAND]`](#jbrowse-help-command)
-- [`jbrowse set-default-session`](#jbrowse-set-default-session)
-- [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
+* [`jbrowse add-assembly SEQUENCE`](#jbrowse-add-assembly-sequence)
+* [`jbrowse add-connection CONNECTIONURLORPATH`](#jbrowse-add-connection-connectionurlorpath)
+* [`jbrowse add-track TRACK`](#jbrowse-add-track-track)
+* [`jbrowse add-track-json TRACK`](#jbrowse-add-track-json-track)
+* [`jbrowse admin-server`](#jbrowse-admin-server)
+* [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
+* [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+* [`jbrowse set-default-session`](#jbrowse-set-default-session)
+* [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
 
@@ -71,7 +70,7 @@ OPTIONS
       show CLI help
 
   -l, --load=copy|symlink|move|inPlace
-      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data
+      Required flag when using a local file. Choose how to manage the data directory. Copy, symlink, or move the data 
       directory to the JBrowse directory. Or use inPlace to modify the config without doing any file operations
 
   -n, --name=name
@@ -134,7 +133,7 @@ EXAMPLES
   $ jbrowse add-assembly GRCh38.fa --target /path/to/jb2/installation/customconfig.json --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -180,15 +179,15 @@ EXAMPLES
   $ jbrowse add-connection http://mysite.com/jbrowse/data/
   $ jbrowse add-connection http://mysite.com/jbrowse/custom_data_folder/ --type JBrowse1Connection
   $ jbrowse add-connection http://mysite.com/path/to/hub.txt --assemblyName hg19
-  $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName
+  $ jbrowse add-connection http://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection --assemblyName 
   hg19
-  $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config
+  $ jbrowse add-connection http://mysite.com/path/to/custom --type custom --config 
   '{"uri":{"url":"https://mysite.com/path/to/custom"}}' --assemblyName hg19
-  $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target
+  $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target 
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -255,14 +254,14 @@ EXAMPLES
   # no --load flag to add literal URL for this track to config.json
   $ jbrowse add-track https://mywebsite.com/my.bam
 
-  # --load move to move the file
+  # --load move to move the file 
   $ jbrowse add-track /path/to/my.bam --name 'New Track' --load move
 
   # --load inPlace puts /url/relative/path.bam in the config without performing any file operations
   $ jbrowse add-track /url/relative/path.bam --trackId AlignmentsTrack1 --load url --overwrite
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
@@ -287,7 +286,7 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -315,7 +314,7 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -350,7 +349,7 @@ EXAMPLES
   $ jbrowse create --listVersions # Lists out all available versions of JBrowse 2
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/create.ts)_
+_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -396,13 +395,13 @@ OPTIONS
 
 EXAMPLES
   $ jbrowse set-default-session --session /path/to/default/session.json
-  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1,
+  $ jbrowse set-default-session --target /path/to/jb2/installation/config.json --view LinearGenomeView --tracks track1, 
   track2, track3
   $ jbrowse set-default-session --view LinearGenomeView, --name newName --viewId view-no-tracks
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -436,8 +435,7 @@ EXAMPLES
   $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.0.4/products/jbrowse-cli/src/commands/upgrade.ts)_
-
+_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/upgrade.ts)_
 <!-- commandsstop -->
 
 ## Debugging

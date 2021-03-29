@@ -46,13 +46,13 @@ test('can convert a stringArray slot to and from a callback', () => {
 test('can convert a slot with a default function value to a scalar value', () => {
   const model = ConfigSlot('tester', {
     type: 'string',
-    defaultValue: 'jexl:feature|getData("foo")',
+    defaultValue: 'jexl:get(feature,"foo")',
   })
   const instance = model.create()
-  expect(instance.value).toBe('jexl:feature|getData("foo")')
+  expect(instance.value).toBe('jexl:get(feature,"foo")')
   expect(() => instance.expr.evalSync()).toThrow()
   instance.convertToCallback()
-  expect(instance.value).toBe('jexl:feature|getData("foo")')
+  expect(instance.value).toBe('jexl:get(feature,"foo")')
   expect(() => instance.expr.evalSync()).toThrow()
   instance.convertToValue()
   expect(instance.value).not.toContain('jexl:')

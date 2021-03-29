@@ -9,7 +9,7 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       mouseover: {
         type: 'string',
         description: 'what to display in a given mouseover',
-        defaultValue: `jexl:feature|getData('name')`,
+        defaultValue: `jexl:get(feature,'name')`,
 
         contextVariable: ['feature'],
       },

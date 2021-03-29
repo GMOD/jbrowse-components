@@ -16,7 +16,7 @@ GITHUB_AUTH=$1
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 [[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
-NPMUSER=$(npm whomain
+NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
 MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 [[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
