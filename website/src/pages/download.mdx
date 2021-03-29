@@ -1,0 +1,33 @@
+import { customFields } from '../../docusaurus.config.json'
+
+export const Link = () => {
+  const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${customFields.currentVersion}`
+  return <a href={curr}>{curr}</a>
+}
+
+# JBrowse 2 download
+
+To get started with JBrowse 2, we recommend using the "jbrowse CLI"
+
+Run
+
+```
+npm install -g @jbrowse/cli
+jbrowse create jbrowse_folder
+```
+
+This will download the latest jbrowse to a folder called jbrowse_folder
+
+If you have a server with apache or nginx, you can then
+
+```
+mv jbrowse_folder /var/www/html/jbrowse2
+```
+
+Then your instance will be available from http://localhost/jbrowse2
+
+See [the quickstart guide](../docs/quickstart_web) for more info on loading tracks and getting started
+
+You can also manually download this release as a zip file from GitHub here
+
+<Link />
