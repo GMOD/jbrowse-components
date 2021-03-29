@@ -1,7 +1,6 @@
 import PluginManager from '../PluginManager'
-
+// export type searchType = 'full' | 'prefix' | 'exact'
 export default (pluginManager: PluginManager) => {
-  type searchType = 'full' | 'prefix' | 'exact'
   return class TextSearchManager {
     constructor() {
       this.name = 'text search manager test'
@@ -13,7 +12,7 @@ export default (pluginManager: PluginManager) => {
       return searchText
     }
 
-    search(input: string, searchType: searchType) {
+    search(input: string) {
       /* TODO: implement search
       search types: full, prefix, exact */
       return []

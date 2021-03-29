@@ -64,7 +64,9 @@ function RefNameAutocomplete({
     if (active) {
       const test = new JbrowseTextSearchAdapter()
       if (currentSearch !== '') {
-        const results = test.search(currentSearch)
+        // use controller to search users input query
+        const results = test.searchIndex(currentSearch)
+        // display results
         if (results.length > 0) {
           setCurrentOptions(results)
         }
