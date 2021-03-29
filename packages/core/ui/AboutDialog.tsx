@@ -1,9 +1,5 @@
 /* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any,no-nested-ternary */
 import React, { useState, useEffect } from 'react'
-import { readConfObject, getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   Accordion,
   AccordionDetails,
@@ -17,8 +13,10 @@ import {
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
 import { makeStyles } from '@material-ui/core/styles'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import isObject from 'is-object'
+import { readConfObject } from '../configuration'
+import { getSession } from '../util'
+import SanitizedHTML from './SanitizedHTML'
 
 export const useStyles = makeStyles(theme => ({
   expansionPanelDetails: {
@@ -242,15 +240,15 @@ export default function AboutDialog({
   model,
   handleClose,
 }: {
-  model: BaseTrackModel
+  model: any
   handleClose: () => void
 }) {
   const [info, setInfo] = useState<FileInfo>()
   const [error, setError] = useState<Error>()
-  const conf = getConf(model)
   const session = getSession(model)
   const { rpcManager } = session
-  const sessionId = getRpcSessionId(model)
+  const sessionId = model.trackId
+  const conf = readConfObject(model)
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -258,7 +256,7 @@ export default function AboutDialog({
     let cancelled = false
     ;(async () => {
       try {
-        const adapterConfig = getConf(model, 'adapter')
+        const adapterConfig = readConfObject(model, 'adapter')
         const result = await rpcManager.call(sessionId, 'CoreGetInfo', {
           adapterConfig,
           signal,
@@ -279,8 +277,8 @@ export default function AboutDialog({
     }
   }, [model, rpcManager, sessionId])
 
-  let trackName = getConf(model, 'name')
-  if (getConf(model, 'type') === 'ReferenceSequenceTrack') {
+  let trackName = readConfObject(model, 'name')
+  if (readConfObject(model, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Reference Sequence'
     session.assemblies.forEach(assembly => {
       if (assembly.sequence === model.configuration) {
