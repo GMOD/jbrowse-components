@@ -21,6 +21,14 @@
             "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.gzi"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/wormbase/ce_aliases.txt"
+          }
+        }
       }
     }
   ],
