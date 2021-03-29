@@ -40,14 +40,10 @@ export function createBaseTrackModel(
       ),
     })
     .volatile(() => ({
-      showAbout: false,
       DialogComponent: undefined as React.FC | undefined,
       DialogDisplay: undefined as any,
     }))
     .actions(self => ({
-      setShowAbout(show: boolean) {
-        self.showAbout = show
-      },
       setDialogComponent(dlg: any, context?: any) {
         self.DialogComponent = dlg
         self.DialogDisplay = context
@@ -95,12 +91,11 @@ export function createBaseTrackModel(
             }))
         )
       },
-      // distinct set of track items that are particular to this track type. for
-      // base, there are none
+      // distinct set of track items that are particular to this track type.
+      // for base, there are none
       //
       // note: this attribute is helpful when composing together multiple
-      // subtracks so that you don't repeat the "about this track" from each
-      // child track
+      // subtracks
       get composedTrackMenuItems(): MenuItem[] {
         return []
       },
@@ -222,18 +217,7 @@ export function createBaseTrackModel(
             })
           })
         }
-        return [
-          {
-            label: 'About this track',
-            icon: InfoIcon,
-            priority: 10,
-            onClick: () => {
-              self.setShowAbout(true)
-            },
-          },
-          ...menuItems,
-          ...displayChoices,
-        ]
+        return [...menuItems, ...displayChoices]
       },
     }))
 }

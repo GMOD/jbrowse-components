@@ -1,8 +1,5 @@
 // material ui things
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
+import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // misc
@@ -17,7 +14,6 @@ import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
-import AboutDialog from './AboutDialog'
 import SequenceDialog from './SequenceDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
@@ -38,10 +34,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
-  // the AboutDialog is shown at this level because if it is
-  // rendered as a child of the TracksContainer, then clicking on
-  // the dialog scrolls the LGV
-  const aboutTrack = model.tracks.find(track => track.showAbout)
   const dialogTrack = model.tracks.find(track => track.DialogComponent)
 
   if (!initialized) {
@@ -52,12 +44,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   }
   return (
     <div style={{ position: 'relative' }}>
-      {aboutTrack ? (
-        <AboutDialog
-          model={aboutTrack}
-          handleClose={() => aboutTrack.setShowAbout(false)}
-        />
-      ) : null}
       {model.DialogComponent ? (
         <model.DialogComponent
           model={model}

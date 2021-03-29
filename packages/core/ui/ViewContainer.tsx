@@ -1,17 +1,22 @@
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import IconButton, {
+import {
+  SvgIconProps,
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+  Paper,
+  makeStyles,
+  useTheme,
+  Tooltip,
+} from '@material-ui/core'
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
+
+import AboutDialog from './AboutDialog'
+import { getSession } from '../util'
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -139,6 +144,7 @@ export default withContentRect('bounds')(
       const classes = useStyles()
       const theme = useTheme()
       const padWidth = theme.spacing(1)
+      const session = getSession(view)
 
       let width = 0
       if (contentRect.bounds) {
@@ -161,6 +167,8 @@ export default withContentRect('bounds')(
           scrollRef.current.scrollIntoView({ block: 'center' })
       }, [])
 
+      const aboutTrack = session.showAboutConfig
+
       return (
         <Paper
           elevation={12}
@@ -168,6 +176,12 @@ export default withContentRect('bounds')(
           className={classes.viewContainer}
           style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
         >
+          {aboutTrack ? (
+            <AboutDialog
+              model={aboutTrack}
+              handleClose={() => session.setShowAboutConfig(undefined)}
+            />
+          ) : null}
           <div ref={scrollRef} style={{ display: 'flex' }}>
             <ViewMenu
               model={view}
