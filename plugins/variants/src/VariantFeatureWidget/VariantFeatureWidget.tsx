@@ -67,7 +67,6 @@ function VariantSamples(props: any) {
   }
   // disableSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
-  // needs typescript fix to remove ts-ignore
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}

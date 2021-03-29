@@ -270,7 +270,6 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
   // disableClickEventBubbling helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
-  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
