@@ -286,14 +286,16 @@ export function isRefNameAliasAdapter(
   return 'getRefNameAliases' in thing
 }
 
+export type searchType = 'full' | 'prefix' | 'exact'
 export abstract class BaseTextSearchAdapter extends BaseAdapter {
-  public abstract async getTextSearchAdapterTest(
-    opts?: BaseOptions,
+  public abstract async searchIndex(
+    query: string,
+    type: searchType,
   ): Promise<string[]>
 }
 
 export function isTextSearchAdapter(
   thing: AnyDataAdapter,
 ): thing is BaseTextSearchAdapter {
-  return 'getTextSearchAdapterTest' in thing
+  return 'searchIndex' in thing
 }

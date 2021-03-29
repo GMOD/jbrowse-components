@@ -1,9 +1,10 @@
 import { searchType } from '../../data_adapters/BaseAdapter'
+import * as data from './names/volvox/names/0.json'
 
 export default class JbrowseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
-  Allows search in Jbrowse 1 text index made by generate-names.pl
+  Allows search in Jbrowse 1 text index built by generate-names.pl
    */
   constructor() {
     //  read data from generate-names.pl
@@ -15,12 +16,13 @@ export default class JbrowseTextSearchAdapter {
     ]
   }
 
-  private readLines() {
-    // TODO: read lines from names
+  private loadIndex() {
+    // TODO: load index to search from
     return []
   }
 
   searchIndex(input: string, type: searchType) {
+    this.loadIndex()
     if (input) {
       return this.data.filter(elem => {
         return elem.value.includes(input)
