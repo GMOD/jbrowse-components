@@ -181,6 +181,25 @@ export default function JBrowseWeb(
         }
       }
       removeAttr(snapshot, 'baseUri')
+      function removeEphemeral(obj) {
+        if (Array.isArray(obj)) {
+          obj = obj.filter(value => !value.ephemeral)
+          obj.forEach(value => {
+            if (typeof value === 'object') {
+              removeEphemeral(value)
+            }
+          })
+        } else {
+          for (const prop in obj) {
+            if (prop.ephemeral) {
+              delete obj[prop]
+            } else if (typeof obj[prop] === 'object') {
+              removeEphemeral(obj[prop])
+            }
+          }
+        }
+      }
+      removeEphemeral(snapshot)
       return snapshot
     },
   })
