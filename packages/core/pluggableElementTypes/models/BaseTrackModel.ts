@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import InfoIcon from '@material-ui/icons/Info'
 import { transaction } from 'mobx'
 import {
   getRoot,
