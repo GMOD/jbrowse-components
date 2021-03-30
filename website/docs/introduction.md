@@ -16,8 +16,9 @@ We provide
 - [Developer guide](developer_guide) - for developers of plugins and
   core codebase topics
 - [FAQ](faq) - Some Q&A for troubleshooting or other topics
+- [@jbrowse/linear-genome-view docs](https://jbrowse.org/storybook/lgv/main/) - Docs for the re-usable linear genome view react component
 
-We also keep a log of our previous training classes
+We also keep a log of our previous training classes in the sidebar
 
 ### Contact information
 

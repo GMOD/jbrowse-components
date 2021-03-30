@@ -73,7 +73,7 @@ function Home() {
                 <Link href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
                   Linear genome view React component on <tt>npm</tt>
                 </Link>{' '}
-                <Link href={storybookLink}>(docs)</Link>
+                also see <Link href={storybookLink}>storybook docs</Link>
               </li>
               <li>
                 <Link href="https://gmod.github.io/JBrowseR/">
