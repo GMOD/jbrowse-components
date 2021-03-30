@@ -1,5 +1,10 @@
-import { searchType } from '../../data_adapters/BaseAdapter'
+import {
+  searchType,
+  BaseTextSearchAdapter,
+} from '../../data_adapters/BaseAdapter'
 import * as data from './index/volvox/names/0.json'
+import MyConfigSchema from './configSchema'
+import { readConfObject } from '../../configuration'
 // import * as things from './index/volvox/names/index'
 
 export interface NameIndexEntry {
@@ -7,20 +12,21 @@ export interface NameIndexEntry {
   [prefix: string]: Array<string>
   [exact: string]: Array<string>
 }
-export default class JbrowseTextSearchAdapter {
+export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
   Allows search in Jbrowse 1 text index built by generate-names.pl
    */
-  constructor() {
+  public constructor(config: Instance<typeof MyConfigSchema>) {
     //  read data from generate-names.pl
-    this.name = 'Jbrowse1'
+    super(config)
     this.index = data.default
+    this.tracks = readConfObject(config, 'tracks')
   }
 
   private loadIndex() {
     // TODO: load index to search from
-    console.log(data.default)
+    // console.log(data.default)
     const nameKeys = Object.keys(this.index)
     const entries = new Map()
     nameKeys.forEach(nameKey => {

@@ -4,7 +4,7 @@ import PluginManager from '../PluginManager'
 
 export default (pluginManager: PluginManager) => {
   const TextSearchAdapterConfigSchema = ConfigurationSchema(
-    'TextSearchAdapter',
+    'JBrowse1TextSearchAdapter',
     {
       // metadata about tracks and assemblies covered by text search adapter
       tracks: {

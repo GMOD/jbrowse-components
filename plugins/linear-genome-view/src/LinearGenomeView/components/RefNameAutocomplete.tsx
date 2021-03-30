@@ -17,6 +17,7 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 // other
 import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
+import { configSchema } from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/index'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
@@ -58,11 +59,11 @@ function RefNameAutocomplete({
     return defaultOptions.concat(currentOptions)
   }, [regions, currentOptions])
 
-  // console.log(options)
   React.useEffect(() => {
     let active = true
     if (active) {
-      const test = new JbrowseTextSearchAdapter()
+      const test = new JbrowseTextSearchAdapter(configSchema)
+      console.log(test)
       // use controller to search users input query
       let results = test.searchIndex(currentSearch, 'exact')
       // display results
@@ -72,7 +73,7 @@ function RefNameAutocomplete({
         })
         setCurrentOptions(results)
       }
-      // console.log(currentSearch, ' : ', results)
+      console.log(currentSearch, ' : ', results)
     }
     return () => {
       active = false

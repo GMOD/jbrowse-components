@@ -1,3 +1,4 @@
+import Jbrowse1TextSearchPlugin from '@jbrowse/core/TextSearch/index'
 import Alignments from '@jbrowse/plugin-alignments'
 import Bed from '@jbrowse/plugin-bed'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
@@ -46,4 +47,5 @@ export default [
   SvInspectorPlugin,
   BreakpointSplitView,
   HicPlugin,
+  Jbrowse1TextSearchPlugin,
 ]
