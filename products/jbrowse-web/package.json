@@ -51,6 +51,7 @@
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "fontsource-roboto": "3.0.3",
     "json-stable-stringify": "^1.0.1",
+    "matrix-js": "^1.5.1",
     "merge-deep": "^3.0.2",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.0",

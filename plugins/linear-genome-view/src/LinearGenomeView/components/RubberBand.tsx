@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import ReactPropTypes from 'prop-types'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -14,6 +14,8 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn'
 
 import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
+
+import { fetchSequence } from './SequenceDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -198,6 +200,26 @@ function RubberBand({
     model.setOffsets(leftOffset, rightOffset)
   }
 
+  async function runBigsiQuery() {
+    if (startX === undefined || anchorPosition === undefined) {
+      return
+    }
+    let leftPx = startX
+    let rightPx = anchorPosition.offsetX
+    // handles clicking and draging to the left
+    if (rightPx < leftPx) {
+      ;[leftPx, rightPx] = [rightPx, leftPx]
+    }
+    const leftOffset = model.pxToBp(leftPx)
+    const rightOffset = model.pxToBp(rightPx)
+
+    const regionsSelected = model.getSelectedRegions(leftOffset, rightOffset)
+
+    if (regionsSelected.length > 0) {
+        const chunks = await fetchSequence(model, regionsSelected)
+    }
+  }
+
   function handleClose() {
     setAnchorPosition(undefined)
     setStartX(undefined)
@@ -230,6 +252,17 @@ function RubberBand({
       onClick: () => {
         getSequence()
         handleClose()
+      },
+    },
+    {
+      label: 'Query BIGSI',
+      disabled:
+        currentX !== undefined &&
+        startX !== undefined &&
+        Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
+      icon: MenuOpenIcon,
+      onClick: () => {
+        runBigsiQuery()
       },
     },
   ]
