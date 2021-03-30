@@ -99,6 +99,7 @@ const Node = ({ data, isOpen, style, toggle }) => {
       style={{
         ...style,
         marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
+        whiteSpace: 'nowrap',
         width: 500,
       }}
     >
