@@ -58,20 +58,21 @@ function RefNameAutocomplete({
     return defaultOptions.concat(currentOptions)
   }, [regions, currentOptions])
 
-  console.log(options)
+  // console.log(options)
   React.useEffect(() => {
     let active = true
     if (active) {
       const test = new JbrowseTextSearchAdapter()
-      if (currentSearch !== '') {
-        // use controller to search users input query
-        const results = test.searchIndex(currentSearch)
-        // display results
-        if (results.length > 0) {
-          setCurrentOptions(results)
-        }
-        console.log(currentSearch, ' : ', results)
+      // use controller to search users input query
+      let results = test.searchIndex(currentSearch, 'exact')
+      // display results
+      if (results.length > 0) {
+        results = results.map(option => {
+          return { type: 'text search adapter', value: `${option}` }
+        })
+        setCurrentOptions(results)
       }
+      // console.log(currentSearch, ' : ', results)
     }
     return () => {
       active = false

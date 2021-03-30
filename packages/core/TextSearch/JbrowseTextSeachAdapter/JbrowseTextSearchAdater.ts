@@ -1,6 +1,12 @@
 import { searchType } from '../../data_adapters/BaseAdapter'
-import * as data from './names/volvox/names/0.json'
+import * as data from './index/volvox/names/0.json'
+// import * as things from './index/volvox/names/index'
 
+export interface NameIndexEntry {
+  // key: {prefix: Array(0), exact: Array(0)}
+  [prefix: string]: Array<string>
+  [exact: string]: Array<string>
+}
 export default class JbrowseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
@@ -9,24 +15,28 @@ export default class JbrowseTextSearchAdapter {
   constructor() {
     //  read data from generate-names.pl
     this.name = 'Jbrowse1'
-    this.names = ['ctgA', 'ctgB']
-    this.data = [
-      { type: 'text search adapter', value: 'ctgA', start: 1, end: 1000 },
-      { type: 'text search adapter', value: 'ctgB', start: 1, end: 500 },
-    ]
+    this.index = data.default
   }
 
   private loadIndex() {
     // TODO: load index to search from
-    return []
+    console.log(data.default)
+    const nameKeys = Object.keys(this.index)
+    const entries = new Map()
+    nameKeys.forEach(nameKey => {
+      entries.set(nameKey, this.index[nameKey])
+    })
+    return entries
   }
 
   searchIndex(input: string, type: searchType) {
-    this.loadIndex()
+    const entries = this.loadIndex()
     if (input) {
-      return this.data.filter(elem => {
-        return elem.value.includes(input)
-      })
+      console.log(input, type)
+      console.log(entries.has(input))
+      if (entries.has(input)) {
+        return entries.get(input)[type]
+      }
     }
     return []
   }
