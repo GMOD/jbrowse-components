@@ -179,7 +179,7 @@ export default withContentRect('bounds')(
           {aboutTrack ? (
             <AboutDialog
               model={aboutTrack}
-              handleClose={() => session.setShowAboutConfig(undefined)}
+              handleClose={() => session.setShowAboutConfig?.(undefined)}
             />
           ) : null}
           <div ref={scrollRef} style={{ display: 'flex' }}>
