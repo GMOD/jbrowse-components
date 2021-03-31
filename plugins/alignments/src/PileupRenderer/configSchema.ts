@@ -57,8 +57,8 @@ export default ConfigurationSchema(
     },
     mismatchAlpha: {
       type: 'boolean',
-      defaultValue: true,
-      description: 'Color mismatches by their quality using alpha fade',
+      defaultValue: false,
+      description: 'Fade low quality mismatches',
     },
   },
   { explicitlyTyped: true },
