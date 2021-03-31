@@ -444,7 +444,7 @@ export default class PileupRenderer extends BoxRendererType {
         let color = baseColor
         if (mismatchQuality && mismatch.qual !== undefined) {
           color = Color(baseColor)
-            .alpha(mismatch.qual / 90)
+            .alpha(Math.min(1, mismatch.qual / 50))
             .hsl()
             .string()
         }
