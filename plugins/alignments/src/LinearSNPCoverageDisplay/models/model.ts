@@ -148,7 +148,9 @@ const stateModelFactory = (
           if (self.filterBy) {
             const { flagInclude, flagExclude } = self.filterBy
             filters = [
-              `jexl:get(feature,'snpinfo') != undefined ? true : (get(feature,'flags')&${flagInclude}==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
+              `jexl:get(feature,'snpinfo') != undefined ? true : ` +
+                `((get(feature,'flags')&${flagInclude})==${flagInclude}) && ` +
+                `!((get(feature,'flags')&${flagExclude}))`,
             ]
 
             if (self.filterBy.tagFilter) {
