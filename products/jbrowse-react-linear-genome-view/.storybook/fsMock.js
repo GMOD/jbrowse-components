@@ -1,3 +1,3 @@
 module.exports = {
-  tlsFunc: () => 'mocked file',
+  fsFunc: () => 'mocked file',
 }
