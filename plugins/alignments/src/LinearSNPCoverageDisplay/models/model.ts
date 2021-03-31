@@ -142,7 +142,7 @@ const stateModelFactory = (
         },
         // The SNPCoverage filters are called twice because the BAM/CRAM features
         // pass filters and then the SNPCoverage score features pass through
-        // here, and those have no name/flags/tags so those are passed thru
+        // here, and are already have 'snpinfo' are passed through
         get filters() {
           let filters: string[] = []
           if (self.filterBy) {
@@ -156,13 +156,16 @@ const stateModelFactory = (
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
               filters.push(
-                `jexl:get(feature,'snpinfo') != undefined ? true : "${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
+                `jexl:get(feature,'snpinfo') != undefined ? true : ` +
+                  `"${value}" =='*' ? getTag(feature,"${tag}") != undefined : ` +
+                  `getTag(feature,"${tag}") == "${value}"`,
               )
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
               filters.push(
-                `jexl:get(feature,'snpinfo') != undefined ? true : get(feature,'name') == "${readName}"`,
+                `jexl:get(feature,'snpinfo') != undefined ? true : ` +
+                  `get(feature,'name') == "${readName}"`,
               )
             }
           }
