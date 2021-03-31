@@ -1,0 +1,7 @@
+{
+  "format": "json",
+  "track_names": ["Genes"],
+  "lowercase_keys": 1,
+  "compress": 0,
+  "hash_bits": "4"
+}
