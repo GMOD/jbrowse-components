@@ -24,7 +24,7 @@ import { LinearGenomeViewModel } from '..'
 const filter = createFilterOptions<Option>({ trim: true, limit: 36 })
 
 export interface Option {
-  type: string
+  label: string
   value: string
   inputValue?: string
 }
@@ -46,15 +46,17 @@ function RefNameAutocomplete({
 }) {
   const [currentSearch, setCurrentSearch] = React.useState('')
   const [currentOptions, setCurrentOptions] = React.useState([])
+  const [, setError] = React.useState<Error>()
   const session = getSession(model)
   const { assemblyManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
+  // default region refNames and results from search
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
-      return { type: 'reference sequence', value: option.refName }
+      return { label: 'reference sequence', value: option.refName }
     })
     return defaultOptions.concat(currentOptions)
   }, [regions, currentOptions])
@@ -62,22 +64,66 @@ function RefNameAutocomplete({
   React.useEffect(() => {
     let active = true
     if (active) {
-      const test = new JbrowseTextSearchAdapter(configSchema)
-      // use controller to search users input query
-      let results = test.searchIndex(currentSearch, 'exact')
-      // display results
-      if (results.length > 0) {
-        results = results.map(option => {
-          return { type: 'text search adapter', value: `${option}` }
-        })
-        setCurrentOptions(results)
-      }
-      console.log(currentSearch, ' : ', results)
+      ;(async () => {
+        try {
+          // TODO, will be replaced once text search manager is implemented
+          const test = new JbrowseTextSearchAdapter(configSchema)
+          const results = await test.searchIndex(currentSearch, 'exact')
+          if (results.length > 0) {
+            setCurrentOptions(formatOptions(results))
+          }
+        } catch (e) {
+          console.error(e)
+          if (active) {
+            setError(e)
+          }
+        }
+      })()
     }
     return () => {
       active = false
+      setError(undefined)
     }
   }, [currentSearch])
+
+  // async function fetchResults(query: string) {
+  //   try {
+  //     const test = new JbrowseTextSearchAdapter(configSchema)
+  //     const results = await test.searchIndex(currentSearch, 'exact')
+  //     return results
+  //     console.log(results)
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  //   return []
+  // }
+
+  function formatOptions(results) {
+    // after fetching the options from adapters, format to place them in dropdown
+    // setCurrentOptions([])
+    if (results.length === 0) {
+      return []
+    }
+    const formattedOptions = results.map(result => {
+      if (result && typeof result === 'object' && result.length > 1) {
+        const val = result[0]
+        const refName = result[3]
+        const start = result[4]
+        const end = result[5]
+        const formattedResult: Option = {
+          label: 'text search adapter',
+          value: `${val} ${refName}:${start}-${end}`,
+        }
+        return formattedResult
+      }
+      const defaultOption: Option = {
+        label: 'text search adapter',
+        value: result,
+      }
+      return defaultOption
+    })
+    return formattedOptions
+  }
   function onChange(newRegionName: Option | string) {
     //
     let newRegionValue: string | undefined
@@ -107,13 +153,13 @@ function RefNameAutocomplete({
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       options={options}
-      groupBy={option => String(option.type)}
+      groupBy={option => String(option.label)}
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
           const newOption: Option = {
-            type: 'Search',
+            label: 'Search',
             inputValue: params.inputValue,
             value: params.inputValue,
           }
@@ -124,6 +170,9 @@ function RefNameAutocomplete({
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, newRegion) => {
         onChange(newRegion)
+      }}
+      onClose={() => {
+        setCurrentOptions([])
       }}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
@@ -147,6 +196,7 @@ function RefNameAutocomplete({
           <TextField
             {...params}
             {...TextFieldProps}
+            // error={!!error}
             helperText={helperText}
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
@@ -157,6 +207,7 @@ function RefNameAutocomplete({
       }}
       renderOption={option => <Typography noWrap>{option.value}</Typography>}
       getOptionLabel={option => {
+        // handles locstrings
         if (typeof option === 'string') {
           return option
         }

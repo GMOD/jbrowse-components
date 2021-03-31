@@ -27,6 +27,7 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
         return response.json()
       },
     )
+    // console.log(data)
     const nameKeys = Object.keys(data)
     const entries = new Map()
     nameKeys.forEach(nameKey => {
@@ -38,8 +39,8 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   public async searchIndex(input: string, type: searchType) {
     const entries = await this.loadIndex()
     if (entries.get(input)) {
-      console.log(input, type)
-      console.log('results', entries.get(input)[type])
+      // console.log(input, type)
+      // console.log('results', entries.get(input)[type])
       return entries.get(input)[type]
     }
     return []

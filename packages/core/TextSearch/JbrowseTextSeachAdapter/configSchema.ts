@@ -4,6 +4,7 @@ export default ConfigurationSchema(
   'JBrowse1TextSearchAdapter',
   {
     // metadata about tracks and assemblies covered by text search adapter
+    // TODO: URL path to the directory of the names
     tracks: {
       type: 'stringArray',
       defaultValue: [],
