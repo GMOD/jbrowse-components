@@ -2,10 +2,7 @@ import {
   searchType,
   BaseTextSearchAdapter,
 } from '../../data_adapters/BaseAdapter'
-import * as data from './index/volvox/names/0.json'
 import MyConfigSchema from './configSchema'
-import { readConfObject } from '../../configuration'
-// import * as things from './index/volvox/names/index'
 
 export interface NameIndexEntry {
   // key: {prefix: Array(0), exact: Array(0)}
@@ -20,29 +17,30 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   public constructor(config: Instance<typeof MyConfigSchema>) {
     //  read data from generate-names.pl
     super(config)
-    this.index = data.default
-    this.tracks = readConfObject(config, 'tracks')
+    this.name = 'test text search is connected'
   }
 
-  private loadIndex() {
+  private async loadIndex() {
     // TODO: load index to search from
-    // console.log(data.default)
-    const nameKeys = Object.keys(this.index)
+    const data = await fetch('/test_data/volvox/names/0.json').then(
+      response => {
+        return response.json()
+      },
+    )
+    const nameKeys = Object.keys(data)
     const entries = new Map()
     nameKeys.forEach(nameKey => {
-      entries.set(nameKey, this.index[nameKey])
+      entries.set(nameKey, data[nameKey])
     })
     return entries
   }
 
-  searchIndex(input: string, type: searchType) {
-    const entries = this.loadIndex()
-    if (input) {
+  public async searchIndex(input: string, type: searchType) {
+    const entries = await this.loadIndex()
+    if (entries.get(input)) {
       console.log(input, type)
-      console.log(entries.has(input))
-      if (entries.has(input)) {
-        return entries.get(input)[type]
-      }
+      console.log('results', entries.get(input)[type])
+      return entries.get(input)[type]
     }
     return []
   }

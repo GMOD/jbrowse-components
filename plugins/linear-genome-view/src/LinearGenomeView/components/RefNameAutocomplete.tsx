@@ -63,7 +63,6 @@ function RefNameAutocomplete({
     let active = true
     if (active) {
       const test = new JbrowseTextSearchAdapter(configSchema)
-      console.log(test)
       // use controller to search users input query
       let results = test.searchIndex(currentSearch, 'exact')
       // display results
