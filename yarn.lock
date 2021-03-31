@@ -15721,6 +15721,11 @@ jake@^10.6.1:
     filelist "^1.0.1"
     minimatch "^3.0.4"
 
+jbrowse-plugin-ucsc@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/jbrowse-plugin-ucsc/-/jbrowse-plugin-ucsc-1.0.3.tgz#1a71857657b8202ee29e8153001171242aed28ed"
+  integrity sha512-nhoyPjuGLwO7Iwfbe0xT40hEdZZodRfYykdNGpPqC9TfvisagbvVxmWRrKj67oo8NYQjZmeQsGpv32Xl9tXTdg==
+
 jest-changed-files@^24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/jest-changed-files/-/jest-changed-files-24.9.0.tgz#08d8c15eb79a7fa3fc98269bc14b451ee82f8039"

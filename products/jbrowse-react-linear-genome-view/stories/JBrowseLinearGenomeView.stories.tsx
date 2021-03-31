@@ -1,5 +1,6 @@
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import React, { useEffect, useState } from 'react'
+import UCSC from 'jbrowse-plugin-ucsc'
 import {
   createViewState,
   createJBrowseTheme,
@@ -230,6 +231,98 @@ export const WithRuntimePlugins = () => {
     location: '1:2,467,681..2,667,681',
     defaultSession: {
       name: 'Runtime plugins',
+      view: {
+        id: 'aU9Nqje1U',
+        type: 'LinearGenomeView',
+        offsetPx: 22654,
+        bpPerPx: 108.93300653594771,
+        displayedRegions: [
+          {
+            refName: '1',
+            start: 0,
+            end: 249250621,
+            reversed: false,
+            assemblyName: 'hg19',
+          },
+        ],
+        tracks: [
+          {
+            id: 'MbiRphmDa',
+            type: 'FeatureTrack',
+            configuration: 'segdups_ucsc_hg19',
+            displays: [
+              {
+                id: '8ovhuA5cFM',
+                type: 'LinearBasicDisplay',
+                height: 100,
+                configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
+              },
+            ],
+          },
+        ],
+        hideHeader: false,
+        hideHeaderOverview: false,
+        trackSelectorType: 'hierarchical',
+        trackLabels: 'overlapping',
+        showCenterLine: false,
+      },
+    },
+  })
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
+export const WithBuildTimePlugins = () => {
+  const state = createViewState({
+    assembly: {
+      name: 'hg19',
+      aliases: ['GRCh37'],
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId: 'Pd8Wh30ei9R',
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+          },
+          faiLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+          },
+          gziLocation: {
+            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+          },
+        },
+      },
+      refNameAliases: {
+        adapter: {
+          type: 'RefNameAliasAdapter',
+          location: {
+            uri:
+              'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+          },
+        },
+      },
+    },
+    plugins: [UCSC],
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'segdups_ucsc_hg19',
+        name: 'UCSC SegDups',
+        category: ['Annotation'],
+        assemblyNames: ['hg19'],
+        adapter: {
+          type: 'UCSCAdapter',
+          track: 'genomicSuperDups',
+        },
+      },
+    ],
+    location: '1:2,467,681..2,667,681',
+    defaultSession: {
+      name: 'Build-time plugins',
       view: {
         id: 'aU9Nqje1U',
         type: 'LinearGenomeView',
