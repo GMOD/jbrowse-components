@@ -31,7 +31,7 @@
     "prepare": "tsdx build",
     "storybook": "start-storybook -s ./public -p 6006",
     "prebuild-storybook": "node scripts/preBuild.js",
-    "build-storybook": "build-storybook -s public",
+    "build-storybook": "build-storybook --quiet -s public",
     "postbuild-storybook": "rimraf public/test_data && node scripts/postBuild.js"
   },
   "dependencies": {
