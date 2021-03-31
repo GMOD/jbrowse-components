@@ -62,7 +62,29 @@ export const OneLinearGenomeView = () => {
     assembly,
     tracks,
     defaultSession,
+
+    // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
+export const OneLinearGenomeViewUsingLocObject = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+
+    // use 0-based coordinates for "location object" here
+    location: { refName: 'ctgA', start: 10000, end: 20000 },
     onChange: patch => {
       // eslint-disable-next-line no-console
       console.log('patch', patch)
