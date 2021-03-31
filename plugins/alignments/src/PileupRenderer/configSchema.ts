@@ -55,6 +55,11 @@ export default ConfigurationSchema(
       description: 'remove spacing between features',
       defaultValue: false,
     },
+    mismatchAlpha: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Color mismatches by their quality using alpha fade',
+    },
   },
   { explicitlyTyped: true },
 )

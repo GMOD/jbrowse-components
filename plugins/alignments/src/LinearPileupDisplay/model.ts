@@ -63,6 +63,7 @@ const stateModelFactory = (
         featureHeight: types.maybe(types.number),
         noSpacing: types.maybe(types.boolean),
         trackMaxHeight: types.maybe(types.number),
+        mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -252,6 +253,9 @@ const stateModelFactory = (
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
+      toggleMismatchAlpha() {
+        self.mismatchAlpha = !self.mismatchAlpha
+      },
 
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
@@ -315,12 +319,18 @@ const stateModelFactory = (
           height: self.featureHeight,
           noSpacing: self.noSpacing,
           maxHeight: this.maxHeight,
+          mismatchAlpha: self.mismatchAlpha,
         })
       },
       get featureHeightSetting() {
         return (
           self.featureHeight || readConfObject(this.rendererConfig, 'height')
         )
+      },
+      get mismatchAlphaSetting() {
+        return self.mismatchAlpha !== undefined
+          ? self.mismatchAlpha
+          : readConfObject(this.rendererConfig, 'mismatchAlpha')
       },
     }))
     .views(self => {
@@ -490,12 +500,6 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Adjust mismatch visibility by quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mismatchQuality' })
-                  },
-                },
-                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })
@@ -544,6 +548,14 @@ const stateModelFactory = (
                   SetMaxHeightDlg,
                   self,
                 )
+              },
+            },
+            {
+              label: 'Fade mismatches by quality',
+              type: 'checkbox',
+              checked: self.mismatchAlphaSetting,
+              onClick: () => {
+                self.toggleMismatchAlpha()
               },
             },
           ]
