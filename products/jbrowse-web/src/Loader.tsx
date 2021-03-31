@@ -19,16 +19,14 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
+import queryString from 'query-string'
 import shortid from 'shortid'
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  readSessionFromDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -40,7 +38,6 @@ import SessionWarningModal from './sessionWarningModal'
 import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
-  const s = window.location.search
   const links = [
     ['test_data/volvox/config.json', 'Volvox sample data'],
     ['test_data/config.json', 'Human basic'],
@@ -52,6 +49,7 @@ function NoConfigMessage() {
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
+    ['test_data/config_wormbase.json', 'Wormbase'],
   ]
   return (
     <div>
@@ -71,11 +69,20 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            {links.map(([link, name]) => (
-              <li key={name}>
-                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
-              </li>
-            ))}
+            {links.map(([link, name]) => {
+              const { href, search } = window.location
+              const { config, ...rest } = queryString.parse(search)
+              const root = href.split('?')[0]
+              const params = queryString.stringify({
+                ...rest,
+                config: link,
+              })
+              return (
+                <li key={name}>
+                  <a href={`${root}?${params}`}>{name}</a>
+                </li>
+              )
+            })}
           </ul>
         </>
       ) : (
@@ -270,12 +277,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -289,12 +291,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async afterCreate() {
@@ -436,12 +433,15 @@ const Renderer = observer(
           )
 
           if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            const rootModel = JBrowseRootModel.create(
+              {
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              },
+              { pluginManager },
+            )
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default

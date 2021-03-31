@@ -1,6 +1,6 @@
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseJB1Json, parseJB1Conf, regularizeConf } from './jb1ConfigParse'
-import { clone, deepUpdate, evalHooks, fillTemplate } from './util'
+import { clone, deepUpdate, fillTemplate } from './util'
 import {
   JBLocation,
   UriLocation,
@@ -83,7 +83,6 @@ export async function createFinalConfig(
   let finalConfig = await loadIncludes(configWithDefaults)
   finalConfig = mergeConfigs(finalConfig, baseConfig) || finalConfig
   fillTemplates(finalConfig, finalConfig)
-  finalConfig = evalHooks(finalConfig)
   validateConfig(finalConfig)
   return finalConfig
 }

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
-import { stringToFunction, functionRegexp } from '../util/functionStrings'
-import { inDevelopment } from '../util'
+import { types, IAnyModelType, IAnyComplexType, getEnv } from 'mobx-state-tree'
+import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
 
 function isValidColorString(/* str */) {
@@ -126,10 +125,14 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
   }),
 }
 
-const FunctionStringType = types.refinement(
-  'FunctionString',
-  types.string,
-  str => functionRegexp.test(str),
+// const FunctionStringType = types.refinement(
+//   'FunctionString',
+//   types.string,
+//   str => functionRegexp.test(str),
+// )
+
+const JexlStringType = types.refinement('JexlString', types.string, str =>
+  str.startsWith('jexl:'),
 )
 
 export interface ConfigSlotDefinition {
@@ -141,7 +144,7 @@ export interface ConfigSlotDefinition {
   /** default value of the slot */
   defaultValue: any
   /** parameter names of the function callback */
-  functionSignature?: string[]
+  contextVariable?: string[]
 }
 
 /**
@@ -157,7 +160,7 @@ export default function ConfigSlot(
     model,
     type,
     defaultValue,
-    functionSignature = [],
+    contextVariable = [],
   }: ConfigSlotDefinition,
 ) {
   if (!type) throw new Error('type name required')
@@ -180,30 +183,26 @@ export default function ConfigSlot(
       name: types.literal(slotName),
       description: types.literal(description),
       type: types.literal(type),
-      value: types.optional(
-        types.union(FunctionStringType, model),
-        defaultValue,
-      ),
+      value: types.optional(types.union(JexlStringType, model), defaultValue),
     })
     .volatile(() => ({
-      functionSignature,
+      contextVariable,
     }))
     .views(self => ({
       get isCallback() {
-        return functionRegexp.test(String(self.value))
+        return String(self.value).startsWith('jexl:')
       },
     }))
     .views(self => ({
-      get func() {
+      get expr() {
         if (self.isCallback) {
-          // compile this as a function
-          return stringToFunction(String(self.value), {
-            verifyFunctionSignature: inDevelopment
-              ? functionSignature
-              : undefined,
-          })
+          // compile as jexl function
+          return stringToJexlExpression(
+            String(self.value),
+            getEnv(self).pluginManager?.jexl,
+          )
         }
-        return () => self.value
+        return { evalSync: () => self.value }
       },
 
       // JS representation of the value of this slot, suitable
@@ -215,7 +214,7 @@ export default function ConfigSlot(
           if (value && value.toJSON) {
             return value.toJSON()
           }
-          return `'${value}'`
+          return `"${value}"`
         }
         return json(self.value)
       },
@@ -253,16 +252,13 @@ export default function ConfigSlot(
       },
       convertToCallback() {
         if (self.isCallback) return
-        self.value = `function(${self.functionSignature.join(', ')}) {
-  return ${self.valueJSON}
-}
-`
+        self.value = `jexl:${self.valueJSON || "''"}`
       },
       convertToValue() {
         if (!self.isCallback) return
         // try calling it with no arguments
         try {
-          const funcResult = self.func()
+          const funcResult = self.expr.evalSync()
           if (funcResult !== undefined) {
             self.value = funcResult
             return
@@ -273,6 +269,8 @@ export default function ConfigSlot(
         self.value = defaultValue
         // if it is still a callback (happens if the defaultValue is a callback),
         // then use the last-resort fallback default
+
+        // if defaultValue has jexl: string, run this part
         if (self.isCallback) {
           if (!(type in fallbackDefaults)) {
             throw new Error(`no fallbackDefault defined for type ${type}`)

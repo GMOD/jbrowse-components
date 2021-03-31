@@ -809,6 +809,18 @@ Object {
       ],
       "displays": Array [
         Object {
+          "displayId": "volvox_bam_pileup_pileup",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
           "displayId": "volvox_bam_pileup-LinearAlignmentsDisplay",
           "pileupDisplay": Object {
             "displayId": "placeholderId",
@@ -832,18 +844,6 @@ Object {
             "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
-        },
-        Object {
-          "displayId": "volvox_bam_pileup-LinearPileupDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
-            },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
-          },
-          "type": "LinearPileupDisplay",
         },
         Object {
           "displayId": "volvox_bam_pileup-LinearSNPCoverageDisplay",
@@ -3043,6 +3043,45 @@ Object {
       "name": "wiggle_track (wrong assembly error)",
       "trackId": "volvox_wrong_assembly",
       "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
+          "renderer": Object {
+            "type": "StructuralVariantChordRenderer",
+          },
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
+          "renderer": Object {
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (green snp, purple indel)",
+      "trackId": "variant_colors",
+      "type": "VariantTrack",
     },
   ],
 }

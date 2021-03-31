@@ -9,10 +9,9 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
       mouseover: {
         type: 'string',
         description: 'what to display in a given mouseover',
-        defaultValue: `function(feature) {
-  return feature.get('name')
-}`,
-        functionSignature: ['feature'],
+        defaultValue: `jexl:get(feature,'name')`,
+
+        contextVariable: ['feature'],
       },
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
       // overrides base

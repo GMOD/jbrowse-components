@@ -14,15 +14,17 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
+import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { getSession } from '@jbrowse/core/util'
+import BreakendOptionDialog from './BreakendOptionDialog'
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const { feature } = props
 
   const { samples = {} } = feature
@@ -63,7 +65,9 @@ function VariantSamples(props: any) {
   } catch (e) {
     error = e
   }
-
+  // disableSelectionOnClick helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
@@ -105,6 +109,7 @@ function VariantSamples(props: any) {
           columns={infoFields}
           rowHeight={20}
           headerHeight={25}
+          disableSelectionOnClick
           disableColumnMenu
         />
       </div>
@@ -119,13 +124,16 @@ function BreakendPanel(props: {
 }) {
   const { model, locStrings, feature } = props
   const session = getSession(model)
-  const { pluginManager } = session
+  const { pluginManager } = getEnv(session)
+  const [breakpointDialog, setBreakpointDialog] = useState(false)
   let viewType: any
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // plugin not added
   }
+
+  const simpleFeature = new SimpleFeature(feature)
   return (
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
@@ -165,16 +173,7 @@ function BreakendPanel(props: {
                   <Link
                     href="#"
                     onClick={() => {
-                      const { view } = model
-                      // @ts-ignore
-                      const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                        new SimpleFeature(feature),
-                        view,
-                      )
-                      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.featureData = feature
-                      session.addView('BreakpointSplitView', viewSnapshot)
+                      setBreakpointDialog(true)
                     }}
                   >
                     {`${feature.refName}:${feature.start} // ${locString} (split view)`}
@@ -183,6 +182,16 @@ function BreakendPanel(props: {
               )
             })}
           </ul>
+          {breakpointDialog ? (
+            <BreakendOptionDialog
+              model={model}
+              feature={simpleFeature}
+              viewType={viewType}
+              handleClose={() => {
+                setBreakpointDialog(false)
+              }}
+            />
+          ) : null}
         </>
       ) : null}
     </BaseCard>

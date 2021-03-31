@@ -53,6 +53,10 @@ Or with [npm](https://npmjs.org/):
 $ npm install @jbrowse/react-linear-genome-view
 ```
 
+## Documentation
+
+The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/main).
+
 ### Note on fonts
 
 [Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for

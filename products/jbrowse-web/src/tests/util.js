@@ -15,10 +15,13 @@ export function getPluginManager(initialState, adminMode = true) {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = JBrowseRootModelFactory(pluginManager, adminMode)
-  const rootModel = JBrowseRootModel.create({
-    jbrowse: initialState || configSnapshot,
-    assemblyManager: {},
-  })
+  const rootModel = JBrowseRootModel.create(
+    {
+      jbrowse: initialState || configSnapshot,
+      assemblyManager: {},
+    },
+    { pluginManager },
+  )
   if (rootModel && rootModel.jbrowse.defaultSession.length) {
     const { name } = rootModel.jbrowse.defaultSession
     localStorage.setItem(

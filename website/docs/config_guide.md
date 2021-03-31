@@ -462,9 +462,7 @@ We just simply supply a hicLocation currently for the HicAdapter
   change it to blue so then the shading will be done in blue with #00f
 - `color` - this is a color callback that adapts the current Hi-C contact
   feature with the baseColor to generate a shaded block. The default color
-  callback function is `function(count, maxScore, baseColor) { return baseColor.alpha(Math.min(1,counts/(maxScore/20))).hsl().string() }` where it
-  receives the count for a particular block, the maxScore over the region, and
-  the baseColor from the baseColor config
+  callback function is `jexl:baseColor.alpha(Math.min(1,count/(maxScore/20))).hsl().string()` where it receives the count for a particular block, the maxScore over the region, and the baseColor from the baseColor config
 
 ### VariantTrack config
 
@@ -1125,4 +1123,90 @@ For example:
     "disableAnalytics": true
   }
 }
+```
+
+### Configuration callbacks
+
+We use Jexl (see https://github.com/TomFrost/Jexl) for defining configuration
+callbacks.
+
+An example of a Jexl configuration callback might look like this
+
+    "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
+
+The notation get(feature,'strand') is the same as feature.get('strand') in
+javascript code.
+
+We have a number of other functions such as
+
+Feature operations - get
+
+```
+
+jexl:get(feature,'start') // start coordinate, 0-based half open
+jexl:get(feature,'end') // end coordinate, 0-based half open
+jexl:get(feature,'refName') // chromosome or reference sequence name
+jexl:get(feature,'CIGAR') // BAM or CRAM feature CIGAR string
+jexl:get(feature,'seq') // BAM or CRAM feature sequence
+jexl:get(feature,'type') // feature type e.g. mRNA or gene
+
+```
+
+Feature operations - getTag
+
+The getTag function smooths over slight differences in BAM and CRAM features to access their tags
+
+```
+jexl:getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
+jexl:getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
+
+```
+
+String functions
+
+```
+jexl:charAt('abc',2) // c
+jexl:charCodeAt(' ',0) // 32
+jexl:codePointAt(' ',0) // 32
+jexl:startsWith('kittycat','kit') // true
+jexl:endsWith('kittycat','cat') // true
+jexl:padStart('cat', 8, 'kitty') // kittycat
+jexl:padEnd('kitty', 8, 'cat') // kittycat
+jexl:replace('kittycat','cat','') // kitty
+jexl:replaceAll('kittycatcat','cat','') // kitty
+jexl:slice('kittycat',5) // cat
+jexl:substring('kittycat',0,5) // kitty
+jexl:trim('  kitty ') // kitty, whitespace trimmed
+jexl:trimStart('  kitty ') // kitty, starting whitespace trimmed
+jexl:trimEnd('  kitty ') // kitty, ending whitespace trimmed
+jexl:toUpperCase('kitty') // KITTY
+jexl:toLowerCase('KITTY') // kitty
+```
+
+Math functions
+
+```
+
+jexl:min(0,2)
+jexl:max(0,2)
+jexl:abs(-5)
+jexl:ceil(0.5)
+jexl:floor(0.5)
+jexl:round(0.5)
+
+```
+
+Console logging
+
+```
+
+jexl:log(feature) // console.logs output and returns value
+jexl:cast({'mRNA':'green','pseudogene':'purple'})[get(feature,'type')] // returns either green or purple depending on feature type
+
+```
+
+Binary operators
+
+```
+jexl:get(feature,'flags')&2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```

@@ -43,6 +43,7 @@ class AlignmentsPlugin extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -52,6 +53,7 @@ class AlignmentsPlugin extends Plugin {
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          pluginManager,
         }),
     )
 
@@ -61,6 +63,7 @@ class AlignmentsPlugin extends Plugin {
           name: 'SNPCoverageRenderer',
           ReactComponent: SNPCoverageRendererReactComponent,
           configSchema: snpCoverageRendererConfigSchema,
+          pluginManager,
         }),
     )
 

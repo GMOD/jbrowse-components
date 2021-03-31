@@ -109,11 +109,9 @@ export default class PileupRenderer extends BoxRendererType {
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip && seq) {
       for (let i = 0; i < mismatches.length; i += 1) {
-        const mismatch = mismatches[i]
-        if (mismatch.type === 'softclip') {
-          mismatch.start === 0
-            ? (expansionBefore = mismatch.cliplen || 0)
-            : (expansionAfter = mismatch.cliplen || 0)
+        const { type, start, cliplen = 0 } = mismatches[i]
+        if (type === 'softclip') {
+          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
         }
       }
     }
@@ -125,8 +123,8 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    let heightPx = readConfObject(config, 'height', [feature])
-    const displayMode = readConfObject(config, 'displayMode', [feature])
+    let heightPx = readConfObject(config, 'height', { feature })
+    const displayMode = readConfObject(config, 'displayMode', { feature })
     if (displayMode === 'compact') {
       heightPx /= 3
     }
@@ -387,7 +385,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       case 'normal':
       default:
-        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        ctx.fillStyle = readConfObject(config, 'color', { feature })
         break
     }
 
@@ -670,7 +668,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       const { feature, topPx, heightPx } = feat
 
-      ctx.fillStyle = readConfObject(config, 'color', [feature])
+      ctx.fillStyle = readConfObject(config, 'color', { feature })
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
       this.drawMismatches(
         ctx,

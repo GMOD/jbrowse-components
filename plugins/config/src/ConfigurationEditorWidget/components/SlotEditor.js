@@ -400,7 +400,7 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
         <ValueComponent slot={slot} slotSchema={slotSchema} />
       </div>
       <div className={classes.slotModeSwitch}>
-        {slot.functionSignature.length ? (
+        {slot.contextVariable.length ? (
           <IconButton
             className={classes.slotModeIcon}
             onClick={() =>

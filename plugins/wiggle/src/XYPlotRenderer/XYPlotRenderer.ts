@@ -49,7 +49,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ? (_: Feature, score: number) =>
             score < pivotValue ? negColor : posColor
         : (feature: Feature, _score: number) =>
-            readConfObject(config, 'color', [feature])
+            readConfObject(config, 'color', { feature })
 
     const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
     for (const feature of features.values()) {

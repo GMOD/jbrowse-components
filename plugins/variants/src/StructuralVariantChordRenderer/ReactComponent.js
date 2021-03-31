@@ -72,13 +72,13 @@ export default ({ jbrequire }) => {
 
       let strokeColor
       if (selected) {
-        strokeColor = readConfObject(config, 'strokeColorSelected', [feature])
+        strokeColor = readConfObject(config, 'strokeColorSelected', { feature })
       } else {
-        strokeColor = readConfObject(config, 'strokeColor', [feature])
+        strokeColor = readConfObject(config, 'strokeColor', { feature })
       }
-      const hoverStrokeColor = readConfObject(config, 'strokeColorHover', [
+      const hoverStrokeColor = readConfObject(config, 'strokeColorHover', {
         feature,
-      ])
+      })
       return (
         <path
           data-testid={`chord-${feature.id()}`}
@@ -171,7 +171,7 @@ export default ({ jbrequire }) => {
     radius: PropTypes.number.isRequired,
     bezierRadius: PropTypes.number.isRequired,
     selectedFeatureId: PropTypes.string,
-    onChordClick: PropTypes.func,
+    onChordClick: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
   }
 
   StructuralVariantChords.defaultProps = {

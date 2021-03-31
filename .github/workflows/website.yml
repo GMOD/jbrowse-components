@@ -2,7 +2,7 @@
 on:
   push:
     branches:
-      - master
+      - main
 name: Upload website
 jobs:
   build:
@@ -11,7 +11,9 @@ jobs:
     if: "contains(github.event.head_commit.message, 'update docs')"
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12'
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -31,12 +33,13 @@ jobs:
           cp pdfcombined.md ../../
           cp title_rev_*.md ../../
           cp listings.tex ../../
+          cp disable_float.tex ../../
           cd ../../
           ln -s website/docs/img
           cat <<EOF > entrypoint.sh
           #!/bin/sh -l
           /opt/texlive/texdir/bin/x86_64-linuxmusl/tlmgr install pmboxdraw
-          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex --toc -o website/jbrowse2.pdf website/docs/title_rev_*.md pdfcombined.md
+          /usr/bin/pandoc --pdf-engine /opt/texlive/texdir/bin/x86_64-linuxmusl/pdflatex --listings -H listings.tex -H disable_float.tex --toc -o website/jbrowse2.pdf website/docs/title_rev_*.md pdfcombined.md
           EOF
           chmod +x entrypoint.sh
           cat entrypoint.sh

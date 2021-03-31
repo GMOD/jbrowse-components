@@ -130,7 +130,7 @@ users with the "Share" button
 The scale bars accept a click and drag action to select a region
 
 <!--
-https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
+https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
 -->
 
 ![](./img/rubberband.png)
@@ -287,6 +287,20 @@ With these features, we can create very expressive views of alignments tracks
 
 ![](./img/alignments/out-fs8.png)
 Figure showing a step-by-step of doing sort and color by HP tag to visualize the HP tagged reads showing haplotype
+
+### Color by orientation
+
+JBrowse uses the same color scheme as IGV for coloring by pair orientation.
+These pair orientations can be used to reveal complex patterns of structural
+variation
+
+See https://software.broadinstitute.org/software/igv/interpreting_pair_orientations for a good guide on interpreting these pair orientations
+
+![](img/inverted_duplication.png)
+This shows an inverted duplication, the tandem duplication can produce green
+arrows which have reads pointing in opposite directions e.g. <-- and -->, while
+blue arrows which can indicate an inversion point in the same direction e.g.
+--> and -->
 
 ## BigWig tracks
 

@@ -1,10 +1,8 @@
-import Typography from '@material-ui/core/Typography'
-import { observer } from 'mobx-react'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
-import Link from '@material-ui/core/Link'
+import { observer } from 'mobx-react'
+import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
+import { getSession } from '@jbrowse/core/util'
+import { makeStyles, Typography, Link } from '@material-ui/core'
 import { PluginMetaData } from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles(theme => ({
@@ -29,21 +27,20 @@ interface BasePlugin {
 
 function About({ model }: { model: IAnyStateTreeNode }) {
   const classes = useStyles()
-  const session = model
-    ? getSession(model)
-    : {
-        // this is a slot definition
-        version: '',
-        pluginManager: {
-          plugins: [],
-          pluginMetaData: {} as Record<string, PluginMetaData>,
-        },
-      }
-  const { pluginManager } = session
+  const slotDefinition = {
+    version: '',
+    pluginManager: {
+      plugins: [],
+      pluginMetaData: {} as Record<string, PluginMetaData>,
+    },
+  }
+  const { pluginManager } = model ? getEnv(model) : slotDefinition
   const { plugins } = pluginManager
   const corePlugins = plugins
-    .filter(p => Boolean(pluginManager.pluginMetaData[p.name]?.isCore))
-    .map(p => p.name)
+    .filter((p: BasePlugin) =>
+      Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
+    )
+    .map((p: BasePlugin) => p.name)
 
   const corePluginsRender = plugins
     .filter((plugin: BasePlugin) => {
@@ -52,7 +49,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
     .map((plugin: BasePlugin) => {
       return (
         <li key={plugin.name}>
-          {plugin.name} {plugin.version}
+          {plugin.name} {plugin.version || ''}
         </li>
       )
     })
@@ -62,7 +59,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       return !corePlugins.includes(plugin.name)
     })
     .map((plugin: BasePlugin) => {
-      const text = `${plugin.name} ${plugin.version}`
+      const text = `${plugin.name} ${plugin.version || ''}`
       return (
         <li key={plugin.name}>
           {plugin.url ? (
@@ -82,7 +79,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>
-        {session.version}
+        {model ? getSession(model).version : slotDefinition.version}
       </Typography>
       <Typography align="center" variant="body2">
         JBrowse is a{' '}

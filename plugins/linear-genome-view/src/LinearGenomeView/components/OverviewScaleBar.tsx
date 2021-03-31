@@ -306,6 +306,7 @@ function OverviewScaleBar({
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
     interRegionPaddingWidth: 0,
+    minimumBlockWidth: model.minimumBlockWidth,
   })
   overview.setVolatileWidth(width)
   overview.showAllRegions()

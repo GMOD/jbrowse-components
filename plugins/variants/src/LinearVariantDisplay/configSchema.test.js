@@ -28,6 +28,7 @@ class PileupRendererPlugin extends Plugin {
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,
           configSchema: pileupRendererConfigSchema,
+          pluginManager,
         }),
     )
   }
@@ -41,6 +42,7 @@ class SvgFeatureRendererPlugin extends Plugin {
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,
+          pluginManager,
         }),
     )
   }

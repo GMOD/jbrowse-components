@@ -7,45 +7,32 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the outer color of each lollipop',
       defaultValue: 'green',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     innerColor: {
       type: 'color',
       description: 'the inner color of each lollipop',
       defaultValue: '#7fc75f',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     strokeWidth: {
       type: 'number',
       description: 'width of the stroked border',
       defaultValue: 4,
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     radius: {
       type: 'number',
       description: 'radius in pixels of each lollipop body',
-      defaultValue: `
-function(feature) {
-  // this default function makes the
-  // area of each head be 10 times
-  // the feature score
-  const area = feature.get('score')*10
-  const radius = Math.sqrt(area/3.14)
-  return Math.max(3,radius)
-}
-`,
-      functionSignature: ['feature'],
+      defaultValue: `jexl:sqrt(max(3, (get(feature,'score')*10)/3.14))`,
+      contextVariable: ['feature'],
     },
     caption: {
       type: 'string',
       description:
         'the tooltip caption displayed when the mouse hovers over a lollipop',
-      defaultValue: `
-function(feature) {
-  return feature.get('name')
-}
-      `,
-      functionSignature: ['feature'],
+      defaultValue: `jexl:get(feature,'name')`,
+      contextVariable: ['feature'],
     },
     minStickLength: {
       type: 'number',
@@ -56,24 +43,20 @@ function(feature) {
       type: 'color',
       description: 'color of the lollipop stick',
       defaultValue: 'black',
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     stickWidth: {
       type: 'number',
       description: 'width in pixels of the lollipop stick',
       defaultValue: 2,
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     score: {
       type: 'number',
       description:
         'the "score" of each lollipop, displayed as a number in the center of the circle',
-      defaultValue: `
-function(feature) {
-  return feature.get('score')
-}
-      `,
-      functionSignature: ['feature'],
+      defaultValue: `jexl:get(feature,'score')`,
+      contextVariable: ['feature'],
     },
   },
   { explicitlyTyped: true },

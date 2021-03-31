@@ -378,25 +378,17 @@ const stateModelFactory = (
           if (self.filterBy) {
             const { flagInclude, flagExclude } = self.filterBy
             filters = [
-              `function(f) {
-                const flags = f.get('flags');
-                return ((flags&${flagInclude})===${flagInclude}) && !(flags&${flagExclude});
-              }`,
+              `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
-              // use eqeq instead of eqeqeq for number vs string comparison
-              filters.push(`function(f) {
-              const tags = f.get('tags');
-              const val = tags ? tags["${tag}"]:f.get("${tag}")
-              return "${value}"==='*'?val !== undefined:val == "${value}";
-              }`)
+              filters.push(
+                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}")`,
+              )
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
-              filters.push(`function(f) {
-              return f.get('name') === "${readName}";
-              }`)
+              filters.push(`jexl:get(feature,'name') == "${readName}"`)
             }
           }
           return filters

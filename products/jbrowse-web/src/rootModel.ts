@@ -515,12 +515,15 @@ export function createTestSession(snapshot = {}) {
   pluginManager.createPluggableElements()
 
   const JBrowseRootModel = RootModel(pluginManager)
-  const root = JBrowseRootModel.create({
-    jbrowse: {
-      configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+  const root = JBrowseRootModel.create(
+    {
+      jbrowse: {
+        configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
+      },
+      assemblyManager: {},
     },
-    assemblyManager: {},
-  })
+    { pluginManager },
+  )
   root.setSession({
     name: 'testSession',
     ...snapshot,

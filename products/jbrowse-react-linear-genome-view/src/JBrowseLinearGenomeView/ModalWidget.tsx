@@ -5,7 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { Instance, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import createSessionModel from '../createModel/createSessionModel'
 
@@ -24,7 +24,7 @@ const useStyles = makeStyles({
 })
 
 const ModalWidgetContents = observer(({ session }: { session: Session }) => {
-  const { pluginManager, visibleWidget } = session
+  const { visibleWidget } = session
   if (!visibleWidget) {
     return (
       <AppBar position="static">
@@ -32,11 +32,9 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
       </AppBar>
     )
   }
-  const {
-    ReactComponent,
-    HeadingComponent,
-    heading,
-  } = pluginManager.getWidgetType(visibleWidget.type)
+  const { ReactComponent, HeadingComponent, heading } = getEnv(
+    session,
+  ).pluginManager.getWidgetType(visibleWidget.type)
   return (
     <>
       <AppBar position="static">

@@ -7,10 +7,8 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of each feature in a pileup alignment',
-      defaultValue: `function(feature) {
-  return '#c8c8c8'
-}`,
-      functionSignature: ['feature'],
+      defaultValue: `#c8c8c8`,
+      contextVariable: ['feature'],
     },
 
     orientationType: {
@@ -47,10 +45,10 @@ export default ConfigurationSchema(
       defaultValue: 10000,
     },
     height: {
-      type: 'integer',
+      type: 'number',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
-      functionSignature: ['feature'],
+      contextVariable: ['feature'],
     },
     noSpacing: {
       type: 'boolean',
