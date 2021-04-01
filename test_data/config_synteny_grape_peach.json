@@ -104,7 +104,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "peach_genes_linear",
-          "renderer": { "type": "PileupRenderer" }
+          "renderer": { "type": "SvgFeatureRenderer" }
         },
         {
           "type": "LinearFilteringDisplay",
@@ -164,7 +164,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "grape_genes_linear",
-          "renderer": { "type": "PileupRenderer" }
+          "renderer": { "type": "SvgFeatureRenderer" }
         },
         {
           "type": "LinearFilteringDisplay",
@@ -265,7 +265,8 @@
                     "id": "kEG_a8qS22",
                     "type": "LinearBasicDisplay",
                     "height": 100,
-                    "configuration": "peach_genes_linear"
+                    "configuration": "peach_genes_linear",
+                    "trackShowLabels": false
                   }
                 ]
               }
@@ -300,7 +301,8 @@
                     "id": "z-bang1CRn",
                     "type": "LinearBasicDisplay",
                     "height": 100,
-                    "configuration": "grape_genes_linear"
+                    "configuration": "grape_genes_linear",
+                    "trackShowLabels": false
                   }
                 ]
               }

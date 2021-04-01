@@ -40,7 +40,10 @@ declare interface ReferringNode {
   key: string
 }
 
-export default function sessionModelFactory(pluginManager: PluginManager) {
+export default function sessionModelFactory(
+  pluginManager: PluginManager,
+  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+) {
   const minDrawerWidth = 128
   return types
     .model('JBrowseWebSessionModel', {
@@ -69,9 +72,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       sessionConnections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
+      minimized: types.optional(types.boolean, false),
     })
     .volatile((/* self */) => ({
-      pluginManager,
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
@@ -171,6 +175,17 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       setName(str: string) {
         self.name = str
+      },
+      addAssembly(assemblyConfig: any) {
+        self.sessionAssemblies.push(assemblyConfig)
+      },
+      removeAssembly(assemblyName: string) {
+        const index = self.sessionAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.sessionAssemblies.splice(index, 1)
+        }
       },
 
       makeConnection(
@@ -452,6 +467,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         if (self.activeWidgets.has(widget.id))
           self.activeWidgets.delete(widget.id)
         self.activeWidgets.set(widget.id, widget)
+        self.minimized = false
       },
 
       hasWidget(widget: any) {
@@ -461,7 +477,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
       },
-
+      minimizeWidgetDrawer() {
+        self.minimized = true
+      },
+      showWidgetDrawer() {
+        self.minimized = false
+      },
       hideAllWidgets() {
         self.activeWidgets.clear()
       },

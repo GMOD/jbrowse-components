@@ -1,19 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
-import Accordion from '@material-ui/core/Accordion'
-import AccordionDetails from '@material-ui/core/AccordionDetails'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import Typography from '@material-ui/core/Typography'
+import React from 'react'
+import ErrorBoundary from 'react-error-boundary'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+  Divider,
+  Tooltip,
+} from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import Divider from '@material-ui/core/Divider'
-import Paper from '@material-ui/core/Paper'
-import Tooltip from '@material-ui/core/Tooltip'
 import { makeStyles } from '@material-ui/core/styles'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
-import React, { FunctionComponent } from 'react'
 import isObject from 'is-object'
+import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { getConf } from '../configuration'
+import { measureText, getSession } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
+import SequenceFeatureDetails from './SequenceFeatureDetails'
+import { BaseCardProps, BaseProps } from './types'
+import { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 const globalOmit = [
   'name',
@@ -76,19 +84,22 @@ export const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
+
+  accordionBorder: {
+    marginTop: '4px',
+    border: '1px solid #444',
+  },
 }))
 
-interface BaseCardProps {
-  title?: string
-  defaultExpanded?: boolean
-}
-
-export const BaseCard: FunctionComponent<BaseCardProps> = props => {
+export function BaseCard({
+  children,
+  title,
+  defaultExpanded = true,
+}: BaseCardProps) {
   const classes = useStyles()
-  const { children, title, defaultExpanded = true } = props
   return (
     <Accordion
-      style={{ marginTop: '4px' }}
+      className={classes.accordionBorder}
       defaultExpanded={defaultExpanded}
       TransitionProps={{ unmountOnExit: true }}
     >
@@ -115,18 +126,14 @@ const FieldName = ({
 }) => {
   const classes = useStyles()
   const val = (prefix ? `${prefix}.` : '') + name
-  return (
-    <>
-      {description ? (
-        <Tooltip title={description} placement="left">
-          <div className={clsx(classes.fieldDescription, classes.fieldName)}>
-            {val}
-          </div>
-        </Tooltip>
-      ) : (
-        <div className={classes.fieldName}>{val}</div>
-      )}
-    </>
+  return description ? (
+    <Tooltip title={description} placement="left">
+      <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+        {val}
+      </div>
+    </Tooltip>
+  ) : (
+    <div className={classes.fieldName}>{val}</div>
   )
 }
 
@@ -146,6 +153,7 @@ const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
 }
 const SimpleValue = ({
   name,
+
   value,
   description,
   prefix,
@@ -192,26 +200,26 @@ const ArrayValue = ({
   )
 }
 
-interface BaseProps extends BaseCardProps {
-  feature: any
-  descriptions?: Record<string, React.ReactNode>
-}
-
-const CoreDetails = (props: BaseProps) => {
+function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature
+  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+    start: number
+    end: number
+    strand: number
+    refName: string
+  }
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayStart = (start + 1).toLocaleString('en-US')
   const displayEnd = end.toLocaleString('en-US')
   const displayRef = refName ? `${refName}:` : ''
   const displayedDetails: Record<string, any> = {
     ...feature,
-    length: end - start,
+    length: (end - start).toLocaleString('en-US'),
     position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
   }
 
@@ -234,21 +242,6 @@ const CoreDetails = (props: BaseProps) => {
   )
 }
 
-// xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
-function measureText(str: string, fontSize = 10) {
-  // prettier-ignore
-  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
-  const avg = 0.5279276315789471
-  return (
-    str
-      .split('')
-      .map(c =>
-        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
-      )
-      .reduce((cur, acc) => acc + cur) * fontSize
-  )
-}
-
 export const BaseCoreDetails = (props: BaseProps) => {
   return (
     <BaseCard {...props} title="Primary data">
@@ -260,12 +253,12 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown) => JSX.Element
+  formatter?: (val: unknown, key: string) => JSX.Element
   descriptions?: Record<string, React.ReactNode>
   prefix?: string
 }
 
-export const Attributes: FunctionComponent<AttributeProps> = props => {
+export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
     omit = [],
@@ -275,6 +268,9 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
   } = props
   const omits = [...omit, ...globalOmit]
 
+  // disableClickEventBubbling helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
+  // needs typescript fix to remove ts-ignore
   return (
     <>
       {Object.entries(attributes)
@@ -335,6 +331,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
                       }}
                     >
                       <DataGrid
+                        disableSelectionOnClick
                         rowHeight={20}
                         headerHeight={25}
                         rows={rows}
@@ -384,7 +381,7 @@ export const Attributes: FunctionComponent<AttributeProps> = props => {
             <SimpleValue
               key={key}
               name={key}
-              value={formatter(value)}
+              value={formatter(value, key)}
               description={description}
               prefix={prefix}
             />
@@ -407,27 +404,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown) => JSX.Element
-}
-
-const Subfeature = (props: BaseProps) => {
-  const { feature } = props
-  const { type, name, id } = feature
-  const displayName = name || id
-  return (
-    <BaseCard title={`${displayName ? `${displayName} - ` : ''}${type}`}>
-      <CoreDetails {...props} />
-      <Divider />
-      <Attributes attributes={feature} {...props} />
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures" defaultExpanded={false}>
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
-          ))}
-        </BaseCard>
-      ) : null}
-    </BaseCard>
-  )
+  formatter?: (val: unknown, key: string) => JSX.Element
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -435,29 +412,76 @@ function isEmpty(obj: Record<string, unknown>) {
 }
 
 export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const classes = useStyles()
   const { model } = props
+  const { featureData } = model
 
-  if (!model.featureData) {
+  if (!featureData) {
     return null
   }
-  const feature = JSON.parse(JSON.stringify(model.featureData))
+  const feature = JSON.parse(JSON.stringify(featureData))
 
   if (isEmpty(feature)) {
     return null
   }
+  return <FeatureDetails model={model} feature={feature} />
+})
+
+export const FeatureDetails = (props: {
+  model: IAnyStateTreeNode
+  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  depth?: number
+  omit?: string[]
+  formatter?: (val: unknown, key: string) => JSX.Element
+}) => {
+  const { model, feature, depth = 0 } = props
+  const { name, id, type, subfeatures } = feature
+  const displayName = (name || id) as string | undefined
+  const ellipsedDisplayName =
+    displayName && displayName.length > 20 ? '' : displayName
+  const session = getSession(model)
+  const defSeqTypes = ['mRNA', 'transcript']
+  const sequenceTypes =
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
+
   return (
-    <Paper className={classes.paperRoot}>
-      <BaseCoreDetails feature={feature} {...props} />
+    <BaseCard
+      title={
+        ellipsedDisplayName
+          ? `${ellipsedDisplayName} - ${type}`
+          : `${type || ''}`
+      }
+    >
+      <div>Core details</div>
+      <CoreDetails {...props} />
       <Divider />
-      <BaseAttributes feature={feature} {...props} />
-      {feature.subfeatures && feature.subfeatures.length ? (
-        <BaseCard title="Subfeatures">
-          {feature.subfeatures.map((subfeature: any) => (
-            <Subfeature key={JSON.stringify(subfeature)} feature={subfeature} />
+      <div>Attributes</div>
+      <Attributes attributes={feature} {...props} />
+      {sequenceTypes.includes(feature.type) ? (
+        <ErrorBoundary
+          FallbackComponent={({ error }) => (
+            <Typography color="error">
+              Failed to fetch sequence for feature: {`${error}`}
+            </Typography>
+          )}
+        >
+          <SequenceFeatureDetails {...props} />
+        </ErrorBoundary>
+      ) : null}
+      {subfeatures && subfeatures.length ? (
+        <BaseCard
+          title="Subfeatures"
+          defaultExpanded={!sequenceTypes.includes(feature.type)}
+        >
+          {subfeatures.map((sub: any) => (
+            <FeatureDetails
+              key={JSON.stringify(sub)}
+              feature={sub}
+              model={model}
+              depth={depth + 1}
+            />
           ))}
         </BaseCard>
       ) : null}
-    </Paper>
+    </BaseCard>
   )
-})
+}

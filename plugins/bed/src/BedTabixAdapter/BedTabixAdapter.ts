@@ -19,6 +19,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   protected bed: TabixIndexedFile
 
+  protected columnNames: string[]
+
+  protected scoreColumn: string
+
   public static capabilities = ['getFeatures', 'getRefNames']
 
   public constructor(config: Instance<typeof MyConfigSchema>) {
@@ -40,7 +44,8 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
       tbiFilehandle: indexType !== 'CSI' ? openLocation(location) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
     })
-
+    this.columnNames = readConfObject(config, 'columnNames')
+    this.scoreColumn = readConfObject(config, 'scoreColumn')
     this.parser = new BED({ autoSql })
   }
 
@@ -52,18 +57,48 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
     return this.bed.getHeader()
   }
 
+  defaultParser(fields: string[], line: string) {
+    return Object.fromEntries(line.split('\t').map((f, i) => [fields[i], f]))
+  }
+
+  async getNames() {
+    if (this.columnNames.length) {
+      return this.columnNames
+    }
+    const header = await this.bed.getHeader()
+    const defs = header.split('\n').filter(f => !!f)
+    const defline = defs[defs.length - 1]
+    return defline && defline.includes('\t')
+      ? defline
+          .slice(1)
+          .split('\t')
+          .map(field => field.trim())
+      : null
+  }
+
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
+      const meta = await this.bed.getMetadata()
+      const { columnNumbers } = meta
+      const colRef = columnNumbers.ref - 1
+      const colStart = columnNumbers.start - 1
+      const colEnd = columnNumbers.end - 1
+      // colSame handles special case for tabix where a single column is both
+      // the start and end, this is assumed to be covering the base at this
+      // position (e.g. tabix -s 1 -b 2 -e 2) begin and end are same
+      const colSame = colStart === colEnd ? 1 : 0
+      const names = await this.getNames()
       await this.bed.getLines(query.refName, query.start, query.end, {
         lineCallback: (line: string, fileOffset: number) => {
           const l = line.split('\t')
-          const refName = l[0]
-          const start = +l[1]
-          const end = +l[2]
-          const uniqueId = `bed-${fileOffset}`
-          const data = this.parser.parseLine(line, {
-            uniqueId,
-          })
+          const refName = l[colRef]
+          const start = +l[colStart]
+
+          const end = +l[colEnd] + colSame
+          const uniqueId = `${this.id}-${fileOffset}`
+          const data = names
+            ? this.defaultParser(names, line)
+            : this.parser.parseLine(line, { uniqueId })
 
           const { blockCount, blockSizes, blockStarts, chromStarts } = data
 
@@ -84,6 +119,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
               })
             }
           }
+
+          if (this.scoreColumn) {
+            data.score = data[this.scoreColumn]
+          }
           delete data.chrom
           delete data.chromStart
           delete data.chromEnd
@@ -92,6 +131,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
             start,
             end,
             refName,
+            uniqueId,
           })
           const r = f.get('thickStart') ? ucscProcessedTranscript(f) : f
           observer.next(r)

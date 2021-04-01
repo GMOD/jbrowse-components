@@ -13,7 +13,7 @@ function ScoreText({
     data: { anchorX, radiusPx, score },
   },
 }) {
-  const innerColor = readConfObject(config, 'innerColor', [feature])
+  const innerColor = readConfObject(config, 'innerColor', { feature })
 
   const scoreString = String(score)
   const fontWidth = (radiusPx * 2) / scoreString.length
@@ -111,21 +111,21 @@ function Lollipop(props) {
   } = props
 
   const styleOuter = {
-    fill: readConfObject(config, 'strokeColor', [feature]),
+    fill: readConfObject(config, 'strokeColor', { feature }),
   }
   if (String(selectedFeatureId) === String(feature.id())) {
     styleOuter.fill = 'red'
   }
 
   const styleInner = {
-    fill: readConfObject(config, 'innerColor', [feature]),
+    fill: readConfObject(config, 'innerColor', { feature }),
   }
 
-  const strokeWidth = readConfObject(config, 'strokeWidth', [feature])
+  const strokeWidth = readConfObject(config, 'strokeWidth', { feature })
 
   return (
     <g data-testid={feature.id()}>
-      <title>{readConfObject(config, 'caption', [feature])}</title>
+      <title>{readConfObject(config, 'caption', { feature })}</title>
       <circle
         cx={anchorLocation}
         cy={y + radiusPx}

@@ -91,6 +91,10 @@ export default class BamSlightlyLazyFeature implements Feature {
     return md
   }
 
+  qualRaw(): Buffer | undefined {
+    return this.record.qualRaw()
+  }
+
   set(): void {}
 
   tags() {
@@ -179,7 +183,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     if (cigarString) {
       cigarOps = parseCigar(cigarString)
       mismatches = mismatches.concat(
-        cigarToMismatches(cigarOps, this.get('seq')),
+        cigarToMismatches(cigarOps, this.get('seq'), this.qualRaw()),
       )
     }
     return mismatches
@@ -200,7 +204,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     if (cigarString) {
       cigarOps = parseCigar(cigarString)
       mismatches = mismatches.concat(
-        cigarToMismatches(cigarOps, this.get('seq')),
+        cigarToMismatches(cigarOps, this.get('seq'), this.qualRaw()),
       )
     }
 
@@ -208,7 +212,13 @@ export default class BamSlightlyLazyFeature implements Feature {
     const mdString = this.get(mdAttributeName)
     if (mdString) {
       mismatches = mismatches.concat(
-        mdToMismatches(mdString, cigarOps, mismatches, this.get('seq')),
+        mdToMismatches(
+          mdString,
+          cigarOps,
+          mismatches,
+          this.get('seq'),
+          this.qualRaw(),
+        ),
       )
     }
 

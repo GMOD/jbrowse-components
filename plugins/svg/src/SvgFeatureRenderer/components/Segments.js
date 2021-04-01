@@ -6,9 +6,20 @@ import PropTypes from 'prop-types'
 import React from 'react'
 
 function Segments(props) {
-  const { feature, featureLayout, selected, config, reversed } = props
+  const {
+    feature,
+    featureLayout,
+    selected,
+    config,
+    reversed,
+    // some subfeatures may be computed e.g. makeUTRs,
+    // so these are passed as a prop
+    // eslint-disable-next-line react/prop-types
+    subfeatures: subfeaturesProp,
+  } = props
 
-  const color2 = readConfObject(config, 'color2', [feature])
+  const subfeatures = subfeaturesProp || feature.get('subfeatures')
+  const color2 = readConfObject(config, 'color2', { feature })
   let emphasizedColor2
   try {
     emphasizedColor2 = emphasize(color2, 0.3)
@@ -40,22 +51,25 @@ function Segments(props) {
         points={points}
         stroke={selected ? emphasizedColor2 : color2}
       />
-      {feature.get('subfeatures').map(subfeature => {
-        const subfeatureId = String(subfeature.id())
-        const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
-        // This subfeature got filtered out
-        if (!subfeatureLayout) return null
-        const { GlyphComponent } = subfeatureLayout.data
-        return (
-          <GlyphComponent
-            key={`glyph-${subfeatureId}`}
-            {...props}
-            feature={subfeature}
-            featureLayout={subfeatureLayout}
-            selected={selected}
-          />
-        )
-      })}
+      {
+        // eslint-disable-next-line react/prop-types
+        subfeatures.map(subfeature => {
+          const subfeatureId = String(subfeature.id())
+          const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
+          // This subfeature got filtered out
+          if (!subfeatureLayout) return null
+          const { GlyphComponent } = subfeatureLayout.data
+          return (
+            <GlyphComponent
+              key={`glyph-${subfeatureId}`}
+              {...props}
+              feature={subfeature}
+              featureLayout={subfeatureLayout}
+              selected={selected}
+            />
+          )
+        })
+      }
     </>
   )
 }

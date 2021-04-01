@@ -19,7 +19,10 @@ describe('JBrowseWebSessionModel', () => {
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)
-    const session = sessionModel.create({ name: 'testSession' })
+    const session = sessionModel.create(
+      { name: 'testSession' },
+      { pluginManager },
+    )
     const { id, ...rest } = getSnapshot(session)
     expect(rest).toMatchSnapshot()
   })
@@ -33,7 +36,10 @@ describe('JBrowseWebSessionModel', () => {
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)
-    const session = sessionModel.create({ name: 'testSession' })
+    const session = sessionModel.create(
+      { name: 'testSession' },
+      { pluginManager },
+    )
 
     jest
       .spyOn(session, 'adminMode', 'get')

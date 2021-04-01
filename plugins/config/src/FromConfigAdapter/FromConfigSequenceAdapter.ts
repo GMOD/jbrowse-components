@@ -11,33 +11,32 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: NoAssemblyRegion) {
-    const { start, end } = region
     // TODO: restore commented version below once TSDX supports Rollup v2
     // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
+    // return ObservableCreate<Feature>(async observer => {
+    //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
     const superGetFeatures = super.getFeatures
     return ObservableCreate<Feature>(async observer => {
       const feats = await superGetFeatures
         .call(this, region)
         .pipe(toArray())
         .toPromise()
-      // return ObservableCreate<Feature>(async observer => {
-      //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
-      feats.forEach(feat => {
-        const featStart = feat.get('start')
-        const seqStart = start - featStart
-        const seqEnd = seqStart + (end - start)
-        const seq = feat
-          .get('seq')
-          .slice(Math.max(seqStart, 0), Math.max(seqEnd, 0))
-        observer.next(
-          new SimpleFeature({
-            ...feat.toJSON(),
-            seq,
-            end: featStart + seq.length,
-            start: featStart,
-          }),
-        )
-      })
+      const feat = feats[0]
+      observer.next(
+        new SimpleFeature({
+          ...feat.toJSON(),
+          uniqueId: `${feat.id()}:${region.start}-${region.end}`,
+          end: region.end,
+          start: region.start,
+          seq: feat
+            .get('seq')
+            .slice(
+              Math.max(region.start - feat.get('start'), 0),
+              Math.max(region.end - feat.get('start'), 0),
+            ),
+        }),
+      )
+
       observer.complete()
     })
   }

@@ -56,10 +56,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-
-        // this represents assemblies in the specialized
-        // read vs ref dotplot view
-        viewAssemblyConfigs: types.array(types.frozen()),
       }),
     )
     .volatile(() => ({
@@ -83,6 +79,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       // // Get a composite map of featureId->feature map for a track
       // // across multiple views
+      //
       // getTrackFeatures(trackIds: string[]) {
       //   // @ts-ignore
       //   const tracks = trackIds.map(t => resolveIdentifier(getSession(self), t))
@@ -110,6 +107,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             }
           }),
         )
+      },
+
+      // automatically removes session assemblies associated with this view
+      // e.g. read vs ref
+      beforeDestroy() {
+        const session = getSession(self)
+        self.assemblyNames.forEach(name => {
+          if (name.endsWith('-temp')) {
+            session.removeAssembly?.(name)
+          }
+        })
       },
 
       onSubviewAction(actionName: string, path: string, args: any[] = []) {

@@ -5,7 +5,6 @@ import {
   SnapshotIn,
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
-import PluginManager from '../../PluginManager'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
@@ -47,7 +46,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
-  pluginManager: PluginManager
   rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
@@ -57,12 +55,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
+  addAssembly?: Function
+  removeAssembly?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
     typeof thing === 'object' &&
     thing !== null &&
-    'pluginManager' in thing &&
+    'rpcManager' in thing &&
     'configuration' in thing
   )
 }
@@ -137,6 +137,23 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     'configuration' in thing &&
     // @ts-ignore
     thing.configuration.trackId
+  )
+}
+
+export interface AbstractDisplayModel {
+  id: string
+  parentTrack: AbstractTrackModel
+  renderDelay: number
+  rendererType: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  cannotBeRenderedReason?: string
+}
+export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    // @ts-ignore
+    thing.configuration.displayId
   )
 }
 

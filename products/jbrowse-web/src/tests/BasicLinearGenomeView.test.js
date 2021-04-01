@@ -47,7 +47,11 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
     const start = state.session.views[0].offsetPx
-    const track = await findByTestId('display-volvox_alignments_alignments')
+    const track = await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -55,7 +59,7 @@ describe('valid file tests', () => {
     await waitFor(() => {})
     const end = state.session.views[0].offsetPx
     expect(end - start).toEqual(150)
-  })
+  }, 10000)
 
   it('click and drag to rubberBand', async () => {
     const pluginManager = getPluginManager()
@@ -63,7 +67,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const track = await findByTestId('rubberBand_controls')
+    const track = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
@@ -72,7 +80,7 @@ describe('valid file tests', () => {
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
-  })
+  }, 15000)
 
   it('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
     const pluginManager = getPluginManager()
@@ -128,7 +136,7 @@ describe('valid file tests', () => {
     const { findByTestId, findAllByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    await findAllByText('ctgA')
+    await findAllByText('ctgA', {}, { timeout: 10000 })
     const before = state.session.views[0].bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await waitFor(
@@ -169,9 +177,13 @@ describe('valid file tests', () => {
     )
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
     state.session.views[0].setNewView(20, 0)
-    await findByTestId('display-volvox_refseq-LinearReferenceSequenceDisplay')
+    await findByTestId(
+      'display-volvox_refseq-LinearReferenceSequenceDisplay',
+      {},
+      { timeout: 10000 },
+    )
     expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
-  })
+  }, 10000)
 
   it('click to display center line with correct value', async () => {
     const pluginManager = getPluginManager()
@@ -206,6 +218,8 @@ describe('valid file tests', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
     )
 
     const autocomplete = await findByTestId('autocomplete')
@@ -233,5 +247,5 @@ describe('valid file tests', () => {
     expect((await findByPlaceholderText('Search for location')).value).toEqual(
       expect.stringContaining('ctgB'),
     )
-  })
+  }, 15000)
 })

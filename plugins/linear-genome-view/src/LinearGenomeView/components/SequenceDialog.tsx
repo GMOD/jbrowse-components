@@ -4,29 +4,25 @@ import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-// material ui
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import CloseIcon from '@material-ui/icons/Close'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Container,
+  Typography,
+  Divider,
+  IconButton,
+  TextField,
+} from '@material-ui/core'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import { Container, Typography } from '@material-ui/core'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Divider from '@material-ui/core/Divider'
-import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
-import TextField from '@material-ui/core/TextField'
-
-// core
 import { getSession } from '@jbrowse/core/util'
-import SimpleFeature, {
-  Feature,
-  SimpleFeatureSerialized,
-} from '@jbrowse/core/util/simpleFeature'
-// other
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
 
@@ -61,15 +57,10 @@ async function fetchSequence(
   const assemblyName =
     self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
   const { rpcManager, assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`Could not find assembly ${assemblyName}`)
-  }
+  const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+
   // assembly configuration
-  const adapterConfig = readConfObject(assembly.configuration, [
-    'sequence',
-    'adapter',
-  ])
+  const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
@@ -80,10 +71,10 @@ async function fetchSequence(
         sessionId,
       }),
     ),
-  )) as SimpleFeatureSerialized[][]
+  )) as Feature[][]
 
   // assumes that we get whole sequence in a single getFeatures call
-  return chunks.map(chunk => new SimpleFeature(chunk[0]))
+  return chunks.map(chunk => chunk[0])
 }
 
 function SequenceDialog({

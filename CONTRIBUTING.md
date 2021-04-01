@@ -66,11 +66,16 @@ There is a script `scripts/release.sh` that will publish the public packages in
 the monorepo to NPM and trigger the creation of a release on GitHub. To run this
 script:
 
-- Create a file outside the monorepo with a blog post about the release.
-  Usually this includes an overview of the major bugfixes and/or features being
-  released. The release script will automatically add download and detailed
-  changelog information to this post. You can see examples at
-  https://jbrowse.org/jb2/blog.
+- Ensure that there is an announcement file for this release in
+  `website/release_announcement_drafts/<tag>.md` containing a an overview of the
+  major features and bugfixes in the release, with as many nice screenshots or
+  movies as possible. The release script will automatically add download and
+  detailed changelog information to this post. You can see examples of the
+  finished posts at https://jbrowse.org/jb2/blog. If you want to preview the
+  changelog to help write the release announcement, you can use the command
+  `GITHUB_AUTH=<auth_token> yarn --silent lerna-changelog > tmp_changelog.md`
+  (make sure to run the command on the main branch). See the next step if you
+  need to generate an access token.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate
   one, go to https://github.com/settings/tokens, click "Generate new token,"
@@ -86,7 +91,7 @@ script:
 Run the script like this:
 
 ```
-scripts/release.sh /path/to/blogpost.md myGitHubAuthToken versionIncreaseLevel
+scripts/release.sh myGitHubAuthToken versionIncreaseLevel
 ```
 
 If you don't provide `versionIncreaseLevel`, it will default to "patch".
@@ -211,3 +216,18 @@ genomic translocations
 
 This is a "superview" type that contains a circular and spreadsheet view as
 child views
+
+## Internal plugin build system
+
+Plugins may be built as separate packages that can be distributed on NPM. In
+order to streamline development and avoid having to build every plugin before
+developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry for
+plugins in this monorepo by default points to the un-built code (e.g.
+`src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
+`products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
+
+When you want to use a built plugin, you can run `yarn useDist` in the plugin's
+`package.json`, and then run `yarn useSrc` to restore it when you're done. As an
+example, the root-level `yarn build` that builds all the packages does this to
+build all the plugins and then build JBrowse Web and JBrowse Desktop using the
+built plugins.

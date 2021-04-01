@@ -4,8 +4,8 @@ import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRe
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
+import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
-import { interpolateLab } from 'd3-interpolate'
 import {
   createCanvas,
   createImageBitmap,
@@ -16,6 +16,7 @@ import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { ThemeOptions } from '@material-ui/core'
+import { interpolateLab } from 'd3-interpolate'
 import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 import { orientationTypes } from './util'
@@ -84,7 +85,7 @@ interface LayoutFeature {
   feature: Feature
 }
 
-function getTag(feature, tag) {
+function getTag(feature: Feature, tag: string) {
   const tags = feature.get('tags')
   return tags ? tags[tag] : feature.get(tag)
 }
@@ -114,11 +115,9 @@ export default class PileupRenderer extends BoxRendererType {
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip && seq) {
       for (let i = 0; i < mismatches.length; i += 1) {
-        const mismatch = mismatches[i]
-        if (mismatch.type === 'softclip') {
-          mismatch.start === 0
-            ? (expansionBefore = mismatch.cliplen || 0)
-            : (expansionAfter = mismatch.cliplen || 0)
+        const { type, start, cliplen = 0 } = mismatches[i]
+        if (type === 'softclip') {
+          start === 0 ? (expansionBefore = cliplen) : (expansionAfter = cliplen)
         }
       }
     }
@@ -130,8 +129,8 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    let heightPx = readConfObject(config, 'height', [feature])
-    const displayMode = readConfObject(config, 'displayMode', [feature])
+    let heightPx = readConfObject(config, 'height', { feature })
+    const displayMode = readConfObject(config, 'displayMode', { feature })
     if (displayMode === 'compact') {
       heightPx /= 3
     }
@@ -257,7 +256,7 @@ export default class PileupRenderer extends BoxRendererType {
       bpPerPx,
     )
 
-    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2) {
+    for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
       const len = +cigarOps[i]
       const op = cigarOps[i + 1]
       if (op === 'S' || op === 'I') {
@@ -266,7 +265,8 @@ export default class PileupRenderer extends BoxRendererType {
         j += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         for (let m = 0; m < len; m++) {
-          ctx.fillStyle = `hsl(${scores[k + m]},55%,50%)`
+          const score = scores[k + m]
+          ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
           ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
         }
         j += len
@@ -449,7 +449,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       case 'normal':
       default:
-        ctx.fillStyle = readConfObject(config, 'color', [feature])
+        ctx.fillStyle = readConfObject(config, 'color', { feature })
         break
     }
 
@@ -472,19 +472,21 @@ export default class PileupRenderer extends BoxRendererType {
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
     props: PileupRenderProps,
+    mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
   ) {
     const { config, bpPerPx, regions } = props
-    const [region] = regions
     const { heightPx, topPx, feature } = feat
+    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const [region] = regions
     const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
+    const heightLim = charHeight - 2
 
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
@@ -506,10 +508,19 @@ export default class PileupRenderer extends BoxRendererType {
           colorForBase[
             mismatch.type === 'deletion' ? 'deletion' : mismatch.base
           ] || '#888'
-        ctx.fillStyle = baseColor
+
+        let color = baseColor
+        if (mismatchQuality && mismatch.qual !== undefined) {
+          color = Color(baseColor)
+            .alpha(mismatch.qual / 90)
+            .hsl()
+            .string()
+        }
+        ctx.fillStyle = color
+
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 5) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
           ctx.fillStyle = theme.palette.getContrastText(baseColor)
           ctx.fillText(
@@ -521,14 +532,14 @@ export default class PileupRenderer extends BoxRendererType {
       } else if (mismatch.type === 'insertion') {
         ctx.fillStyle = 'purple'
         const pos = mismatchLeftPx - 1
-
         const len = +mismatch.base || mismatch.length
-
         if (len < 10) {
-          ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
-          ctx.fillRect(pos - w, topPx, w * 3, 1)
-          ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-          if (1 / bpPerPx >= charWidth && heightPx >= charHeight - 2) {
+          ctx.fillRect(pos, topPx, w, heightPx)
+          if (1 / bpPerPx >= charWidth) {
+            ctx.fillRect(pos - w, topPx, w * 3, 1)
+            ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
+          }
+          if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
             ctx.fillText(
               `(${mismatch.base})`,
               mismatchLeftPx + 2,
@@ -542,7 +553,7 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillRect(pos, topPx + 1, w, heightPx - 2)
         ctx.fillRect(pos - w, topPx, w * 3, 1)
         ctx.fillRect(pos - w, topPx + heightPx - 1, w * 3, 1)
-        if (mismatchWidthPx >= charWidth && heightPx >= charHeight - 2) {
+        if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           ctx.fillText(
             `(${mismatch.base})`,
             mismatchLeftPx + 2,
@@ -582,8 +593,10 @@ export default class PileupRenderer extends BoxRendererType {
           rect.width + 2 * padding,
           heightPx,
         )
-        ctx.fillStyle = 'white'
-        ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        if (heightPx > charHeight) {
+          ctx.fillStyle = 'white'
+          ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+        }
       }
     }
   }
@@ -668,6 +681,7 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
+      colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
@@ -722,9 +736,16 @@ export default class PileupRenderer extends BoxRendererType {
 
       const { feature, topPx, heightPx } = feat
 
-      ctx.fillStyle = readConfObject(config, 'color', [feature])
+      ctx.fillStyle = readConfObject(config, 'color', { feature })
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      // this.drawMismatches(ctx, feat, props, colorForBase, theme)
+      this.drawMismatches(
+        ctx,
+        feat,
+        props,
+        colorBy.type === 'mismatchQuality',
+        colorForBase,
+        theme,
+      )
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }

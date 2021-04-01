@@ -28,6 +28,23 @@ export function checkAbortSignal(signal?: AbortSignal): void {
   }
 }
 
+function timeout(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+/**
+ * Skips to the next tick, then runs `checkAbortSignal`.
+ * Await this to inside an otherwise synchronous loop to
+ * provide a place to break when an abort signal is received.
+ */
+export async function abortBreakPoint(signal?: AbortSignal) {
+  // it was observed that an actual timeout is needed to get the aborting (wrap
+  // hicrenderer in a try catch, console.error the error, and rethrow the error
+  // to see). using await Promise.resolve() did not appear to allow aborting to
+  // occur
+  await timeout(1)
+  checkAbortSignal(signal)
+}
+
 export function makeAbortError() {
   if (typeof DOMException !== 'undefined') {
     return new DOMException('aborted', 'AbortError')

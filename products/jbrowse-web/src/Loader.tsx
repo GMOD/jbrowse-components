@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
+import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
@@ -19,16 +19,14 @@ import { FatalErrorDialog } from '@jbrowse/core/ui'
 import 'fontsource-roboto'
 import 'requestidlecallback-polyfill'
 import 'core-js/stable'
+import queryString from 'query-string'
 import shortid from 'shortid'
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  readSessionFromDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -37,9 +35,9 @@ import packagedef from '../package.json'
 import factoryReset from './factoryReset'
 import StartScreen from './StartScreen'
 import SessionWarningModal from './sessionWarningModal'
+import ConfigWarningModal from './configWarningModal'
 
 function NoConfigMessage() {
-  const s = window.location.search
   const links = [
     ['test_data/volvox/config.json', 'Volvox sample data'],
     ['test_data/config.json', 'Human basic'],
@@ -51,6 +49,7 @@ function NoConfigMessage() {
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
+    ['test_data/config_wormbase.json', 'Wormbase'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (
@@ -71,11 +70,20 @@ function NoConfigMessage() {
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
-            {links.map(([link, name]) => (
-              <li key={name}>
-                <a href={`${s}${s ? '&' : '?'}config=${link}`}>{name}</a>
-              </li>
-            ))}
+            {links.map(([link, name]) => {
+              const { href, search } = window.location
+              const { config, ...rest } = queryString.parse(search)
+              const root = href.split('?')[0]
+              const params = queryString.stringify({
+                ...rest,
+                config: link,
+              })
+              return (
+                <li key={name}>
+                  <a href={`${root}?${params}`}>{name}</a>
+                </li>
+              )
+            })}
           </ul>
         </>
       ) : (
@@ -109,7 +117,7 @@ const SessionLoader = types
     shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
-    plugins: [] as PluginConstructor[],
+    runtimePlugins: [] as PluginConstructor[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -149,7 +157,6 @@ const SessionLoader = types
         !!self.sessionError || !!self.sessionSnapshot || !!self.blankSession
       )
     },
-
     get configLoaded() {
       return !!self.configError || !!self.configSnapshot
     },
@@ -164,8 +171,8 @@ const SessionLoader = types
     setSessionError(error: Error) {
       self.sessionError = error
     },
-    setPlugins(plugins: PluginConstructor[]) {
-      self.plugins = plugins
+    setRuntimePlugins(plugins: PluginConstructor[]) {
+      self.runtimePlugins = plugins
     },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
@@ -187,7 +194,7 @@ const SessionLoader = types
         const pluginLoader = new PluginLoader(config.plugins)
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load()
-        self.setPlugins([...corePlugins, ...runtimePlugins])
+        self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -200,15 +207,14 @@ const SessionLoader = types
         }
         const location = openLocation(configLocation)
         const configText = (await location.readFile('utf8')) as string
-
         const config = JSON.parse(configText)
         const configUri = new URL(configLocation.uri, window.location.href)
         addRelativeUris(config, configUri)
-        await this.fetchPlugins(config)
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
           self.setSessionTriaged({ snap: config, origin: 'config' })
         } else {
+          await this.fetchPlugins(config)
           self.setConfigSnapshot(config)
         }
       } catch (e) {
@@ -272,12 +278,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -405,7 +406,7 @@ const Renderer = observer(
     useEffect(() => {
       try {
         const {
-          plugins,
+          runtimePlugins,
           adminKey,
           configSnapshot,
           sessionSnapshot,
@@ -416,8 +417,15 @@ const Renderer = observer(
           // it is ready when a session has loaded and when there is no config
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
-          const pluginManager = new PluginManager(plugins.map(P => new P()))
-
+          const pluginManager = new PluginManager([
+            ...corePlugins.map(P => {
+              return {
+                plugin: new P(),
+                metadata: { isCore: true },
+              } as PluginLoadRecord
+            }),
+            ...runtimePlugins.map(P => new P()),
+          ])
           pluginManager.createPluggableElements()
 
           const JBrowseRootModel = JBrowseRootModelFactory(
@@ -426,12 +434,15 @@ const Renderer = observer(
           )
 
           if (loader.configSnapshot) {
-            const rootModel = JBrowseRootModel.create({
-              jbrowse: configSnapshot,
-              assemblyManager: {},
-              version: packagedef.version,
-              configPath,
-            })
+            const rootModel = JBrowseRootModel.create(
+              {
+                jbrowse: configSnapshot,
+                assemblyManager: {},
+                version: packagedef.version,
+                configPath,
+              },
+              { pluginManager },
+            )
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default
@@ -458,7 +469,11 @@ const Renderer = observer(
                   .replace('[mobx-state-tree] ', '')
                   .replace(/\(.+/, '')
                 rootModel.session?.notify(
-                  `Session could not be loaded. ${errorMessage}`,
+                  `Session could not be loaded. ${
+                    errorMessage.length > 1000
+                      ? `${errorMessage.slice(0, 1000)}...see more in console`
+                      : errorMessage
+                  }`,
                 )
               }
             } else {
@@ -562,10 +577,37 @@ const Renderer = observer(
     }
 
     if (loader.sessionTriaged) {
-      return (
+      const handleClose = () => {
+        loader.setSessionTriaged(undefined)
+      }
+      return loader.sessionTriaged.origin === 'session' ? (
         <SessionWarningModal
-          loader={loader}
-          sessionTriaged={loader.sessionTriaged}
+          onConfirm={() => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            loader.setSessionSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            loader.setBlankSession(true)
+            handleClose()
+          }}
+        />
+      ) : (
+        <ConfigWarningModal
+          onConfirm={async () => {
+            const session = JSON.parse(
+              JSON.stringify(loader.sessionTriaged.snap),
+            )
+            await loader.fetchPlugins(session)
+            loader.setConfigSnapshot({ ...session, id: shortid() })
+            handleClose()
+          }}
+          onCancel={() => {
+            factoryReset()
+            handleClose()
+          }}
         />
       )
     }

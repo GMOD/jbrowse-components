@@ -8,6 +8,7 @@ export function generateHierarchy(trackConfigurations) {
   const hierarchy = new Map()
 
   trackConfigurations.forEach(trackConf => {
+    // console.log(readConfObject(trackConf, 'category'))
     const categories = [...(readConfObject(trackConf, 'category') || [])]
     if (trackConf.trackId.endsWith('sessionTrack')) {
       categories.unshift(' Session tracks')

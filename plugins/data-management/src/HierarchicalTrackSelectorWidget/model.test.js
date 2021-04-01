@@ -4,10 +4,10 @@ test('can generate hierarchy correctly', () => {
   const trackConfigurations = [
     {
       trackId: 'zonker',
-      category: { func: () => ['Bar', 'Baz'] },
+      category: { expr: { evalSync: () => ['Bar', 'Baz'] } },
     },
     { trackId: 'zoo' },
-    { trackId: 'bee', category: { func: () => ['Bar'] } },
+    { trackId: 'bee', category: { expr: { evalSync: () => ['Bar'] } } },
   ]
   expect(generateHierarchy(trackConfigurations)).toEqual(
     new Map([

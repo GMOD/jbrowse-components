@@ -23,6 +23,9 @@ const useStyles = makeStyles(theme => ({
   importFormEntry: {
     minWidth: 180,
   },
+  button: {
+    margin: theme.spacing(2),
+  },
 }))
 
 type LGV = LinearGenomeViewModel
@@ -62,6 +65,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
+      // we use showAllRegions after setDisplayedRegions to make the entire
+      // region visible, xref #1703
+      model.showAllRegions()
     } else {
       try {
         input && model.navToLocString(input, assemblyName)
@@ -136,6 +142,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         <Grid item>
           <Button
             disabled={!selectedRegion}
+            className={classes.button}
             onClick={() => {
               if (selectedRegion) {
                 handleSelectedRegion(selectedRegion)
@@ -145,6 +152,17 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             color="primary"
           >
             Open
+          </Button>
+          <Button
+            disabled={!selectedRegion}
+            className={classes.button}
+            onClick={() => {
+              model.showAllRegionsInAssembly(assemblyName)
+            }}
+            variant="contained"
+            color="secondary"
+          >
+            Show all regions in assembly
           </Button>
         </Grid>
       </Grid>

@@ -9,7 +9,6 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import CloudUploadIcon from '@material-ui/icons/CloudUpload'
-import WarningIcon from '@material-ui/icons/Warning'
 import ErrorIcon from '@material-ui/icons/Error'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
@@ -25,7 +24,6 @@ const useStyles = makeStyles(theme => ({
   paper: {
     display: 'flex',
     flexDirection: 'column',
-    marginBottom: 10,
   },
   dropZone: {
     textAlign: 'center',
@@ -72,29 +70,15 @@ const useStyles = makeStyles(theme => ({
   errorMessage: {
     padding: theme.spacing(2),
   },
-  confirmZone: {
-    textAlign: 'center',
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
-    borderWidth: 2,
-    borderRadius: 2,
-  },
-  confirmButtonsDiv: {
-    margin: theme.spacing(2),
-  },
 }))
 
 function ImportSession(props) {
   const [errorMessage, setErrorMessage] = useState('')
-  const [sessionToActivate, setSessionToActivate] = useState('')
-  const [displayConfirm, setDisplayConfirm] = useState(false)
   const { model } = props
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: 'application/json',
     maxSize: MAX_FILE_SIZE,
     multiple: false,
-    // potentially put preview on imported sessions
-    // so people will have to click ok to accept the session?
     onDrop: async (acceptedFiles, rejectedFiles) => {
       if (rejectedFiles.length) {
         if (acceptedFiles.length || rejectedFiles.length > 1) {
@@ -125,19 +109,17 @@ function ImportSession(props) {
       let sessionContents
       try {
         sessionContents = JSON.parse(sessionText).session
-        setSessionToActivate(JSON.stringify(sessionContents))
-        setDisplayConfirm(true)
       } catch (error) {
         console.error(error)
         sessionContents = { error: `Error parsing ${file.path}: ${error}` }
       }
-      // const session = getSession(model)
-      // try {
-      //   session.setSession(sessionContents)
-      // } catch (error) {
-      //   console.error(error)
-      //   setErrorMessage(`Error activating session: ${error} `)
-      // }
+      const session = getSession(model)
+      try {
+        session.setSession(sessionContents)
+      } catch (error) {
+        console.error(error)
+        setErrorMessage(`Error activating session: ${error} `)
+      }
     },
   })
   const classes = useStyles({ isDragActive })
@@ -159,45 +141,6 @@ function ImportSession(props) {
           </Button>
         </div>
       </Paper>
-      {displayConfirm ? (
-        <Paper className={classes.paper}>
-          <div className={classes.confirmZone}>
-            <WarningIcon className={classes.uploadIcon} fontSize="large" />
-            <Typography color="textPrimary" align="center" variant="body1">
-              About to import a session.
-            </Typography>
-            <Typography color="textPrimary" align="center" variant="body1">
-              Please confirm that you trust the imported file contents.
-            </Typography>
-            <div className={classes.confirmButtonsDiv}>
-              <Button
-                color="primary"
-                variant="contained"
-                style={{ marginRight: 5 }}
-                onClick={() => {
-                  const session = getSession(model)
-                  try {
-                    session.setSession(JSON.parse(sessionToActivate))
-                  } catch (error) {
-                    console.error(error)
-                    setErrorMessage(`Error activating session: ${error} `)
-                  }
-                  setDisplayConfirm(false)
-                }}
-              >
-                Confirm
-              </Button>
-              <Button
-                color="primary"
-                variant="contained"
-                onClick={() => setDisplayConfirm(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </Paper>
-      ) : null}
       {errorMessage ? (
         <Paper className={classes.error}>
           <div className={classes.errorHeader}>

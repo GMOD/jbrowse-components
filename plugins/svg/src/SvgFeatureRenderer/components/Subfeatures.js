@@ -55,7 +55,9 @@ Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
     let topOffset = 0
     subfeatures.forEach(subfeature => {
       const SubfeatureGlyphComponent = chooseGlyphComponent(subfeature)
-      const subfeatureHeight = readConfObject(config, 'height', [subfeature])
+      const subfeatureHeight = readConfObject(config, 'height', {
+        feature: subfeature,
+      })
 
       const subSubLayout = (SubfeatureGlyphComponent.layOut || layOut)({
         layout: subLayout,
@@ -66,8 +68,11 @@ Subfeatures.layOut = ({ layout, feature, bpPerPx, reversed, config }) => {
       })
       subSubLayout.move(0, topOffset)
       topOffset +=
-        (displayMode === 'compact' ? subfeatureHeight / 3 : subfeatureHeight) +
-        2
+        displayMode === 'collapse'
+          ? 0
+          : (displayMode === 'compact'
+              ? subfeatureHeight / 3
+              : subfeatureHeight) + 2
     })
   }
   return subLayout

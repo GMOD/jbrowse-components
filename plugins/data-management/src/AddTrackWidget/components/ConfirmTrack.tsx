@@ -1,13 +1,14 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-import { guessAdapter, UNKNOWN } from '@jbrowse/core/util/tracks'
 import Link from '@material-ui/core/Link'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import React, { useEffect } from 'react'
+import { getEnv } from 'mobx-state-tree'
+import React from 'react'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -20,26 +21,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
   let error = ''
-  const {
-    trackName,
-    trackData,
-    trackAdapter,
-    trackType,
-    indexTrackData,
-    assembly,
-  } = model
-
-  useEffect(() => {
-    if (trackData?.uri) {
-      const adapter = guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
-      model.setTrackAdapter(adapter)
-    }
-
-    if (trackData.localPath) {
-      const adapter = guessAdapter(trackData.localPath, 'localPath')
-      model.setTrackAdapter(adapter)
-    }
-  }, [model, trackData, indexTrackData])
+  const { trackName, trackData, trackAdapter, trackType, assembly } = model
 
   if (model.isFtp) {
     error = `Warning: JBrowse cannot access files using the ftp protocol`
@@ -117,18 +99,21 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
             SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
           }}
         >
-          {session.pluginManager.getElementTypesInGroup('adapter').map(
-            installedAdapterType =>
-              // Exclude SNPCoverageAdapter from primary adapter user selection
-              installedAdapterType.name !== 'SNPCoverageAdapter' && (
-                <MenuItem
-                  key={installedAdapterType.name}
-                  value={installedAdapterType.name}
-                >
-                  {installedAdapterType.name}
-                </MenuItem>
-              ),
-          )}
+          {getEnv(session)
+            .pluginManager.getElementTypesInGroup('adapter')
+            .map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (installedAdapterType: any) =>
+                // Exclude SNPCoverageAdapter from primary adapter user selection
+                installedAdapterType.name !== 'SNPCoverageAdapter' && (
+                  <MenuItem
+                    key={installedAdapterType.name}
+                    value={installedAdapterType.name}
+                  >
+                    {installedAdapterType.name}
+                  </MenuItem>
+                ),
+            )}
         </TextField>
       </>
     )
@@ -193,9 +178,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
             SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
           }}
         >
-          {session.pluginManager
-            .getElementTypesInGroup('track')
-            .map(installedTrackType => (
+          {getEnv(session)
+            .pluginManager.getElementTypesInGroup('track')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map((installedTrackType: any) => (
               <MenuItem
                 key={installedTrackType.name}
                 value={installedTrackType.name}

@@ -11,6 +11,7 @@ import {
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { AbstractDisplayModel } from '@jbrowse/core/util/types'
 import TimelineIcon from '@material-ui/icons/Timeline'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
@@ -130,6 +131,7 @@ export default class DotplotPlugin extends Plugin {
           name: 'DotplotRenderer',
           configSchema: dotplotRendererConfigSchema,
           ReactComponent: DotplotRendererReactComponent,
+          pluginManager,
         }),
     )
 
@@ -157,7 +159,11 @@ export default class DotplotPlugin extends Plugin {
       })
     }
 
-    const cb = (feature: Feature, display: IAnyStateTreeNode) => {
+    const cb = (
+      feature: Feature,
+      display: AbstractDisplayModel & IAnyStateTreeNode,
+    ) => {
+      const { parentTrack } = display
       return feature
         ? [
             {
@@ -174,11 +180,7 @@ export default class DotplotPlugin extends Plugin {
                     : feature.get('SA')) || ''
                 const readName = feature.get('name')
                 const readAssembly = `${readName}_assembly`
-                const trackAssembly = getConf(
-                  // @ts-ignore
-                  display.parentTrack,
-                  'assemblyNames',
-                )[0]
+                const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
                 const assemblyNames = [trackAssembly, readAssembly]
                 const trackId = `track-${Date.now()}`
                 const trackName = `${readName}_vs_${trackAssembly}`
@@ -191,7 +193,7 @@ export default class DotplotPlugin extends Plugin {
                     const saLengthSansClipping = getLengthSansClipping(saCigar)
                     const saStrandNormalized = saStrand === '-' ? -1 : 1
                     const saClipPos = getClip(saCigar, saStrandNormalized)
-                    const saRealStart = +saStart - 1 + saClipPos
+                    const saRealStart = +saStart - 1
                     return {
                       refName: saRef,
                       start: saRealStart,
@@ -217,9 +219,10 @@ export default class DotplotPlugin extends Plugin {
                   end: clipPos + getLengthSansClipping(cigar),
                 }
 
-                // if secondary alignment or supplementary, calculate length from SA[0]'s CIGAR
-                // which is the primary alignments. otherwise it is the primary alignment just use
-                // seq.length if primary alignment
+                // if secondary alignment or supplementary, calculate length
+                // from SA[0]'s CIGAR which is the primary alignments.
+                // otherwise it is the primary alignment just use seq.length if
+                // primary alignment
                 const totalLength =
                   // eslint-disable-next-line no-bitwise
                   flags & 2048
@@ -243,6 +246,8 @@ export default class DotplotPlugin extends Plugin {
                   hview: {
                     offsetPx: 0,
                     bpPerPx: refLength / 800,
+                    minimumBlockWidth: 0,
+                    interRegionPaddingWidth: 0,
                     displayedRegions: features.map(f => {
                       return {
                         start: f.start,
@@ -255,6 +260,8 @@ export default class DotplotPlugin extends Plugin {
                   vview: {
                     offsetPx: 0,
                     bpPerPx: totalLength / 400,
+                    minimumBlockWidth: 0,
+                    interRegionPaddingWidth: 0,
                     displayedRegions: [
                       {
                         assemblyName: readAssembly,

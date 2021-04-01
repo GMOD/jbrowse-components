@@ -1,6 +1,7 @@
 import ReactComponentFactory from './ReactComponent'
 
-export default ({ jbrequire }) => {
+export default pluginManager => {
+  const { jbrequire } = pluginManager
   const ChordRendererType = jbrequire(
     '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
   )
@@ -14,20 +15,20 @@ export default ({ jbrequire }) => {
         type: 'color',
         description: 'the line color of each arc',
         defaultValue: 'rgba(255,133,0,0.32)',
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       strokeColorSelected: {
         type: 'color',
         description: 'the line color of an arc that has been selected',
         defaultValue: 'black',
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
       strokeColorHover: {
         type: 'color',
         description:
           'the line color of an arc that is being hovered over with the mouse',
         defaultValue: '#555',
-        functionSignature: ['feature'],
+        contextVariable: ['feature'],
       },
     },
     { explicitlyTyped: true },
@@ -36,5 +37,6 @@ export default ({ jbrequire }) => {
     name: 'StructuralVariantChordRenderer',
     ReactComponent,
     configSchema,
+    pluginManager,
   })
 }

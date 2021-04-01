@@ -153,20 +153,6 @@ Object {
       },
       "type": "LinearBasicDisplay",
     },
-    Object {
-      "displayId": "trackId0-LinearFilteringDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
-      "type": "LinearFilteringDisplay",
-    },
-    Object {
-      "displayId": "trackId0-LinearLollipopDisplay",
-      "renderer": Object {
-        "type": "SvgFeatureRenderer",
-      },
-      "type": "LinearLollipopDisplay",
-    },
   ],
   "trackId": "trackId0",
   "type": "FeatureTrack",

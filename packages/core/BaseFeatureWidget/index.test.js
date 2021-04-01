@@ -1,12 +1,28 @@
 import { render } from '@testing-library/react'
 import React from 'react'
-import { stateModel } from '.'
+import { types } from 'mobx-state-tree'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import PluginManager from '../PluginManager'
+import { stateModelFactory } from '.'
 import { BaseFeatureDetails as ReactComponent } from './BaseFeatureDetail'
 
 test('open up a widget', () => {
-  const model = stateModel.create({ type: 'BaseFeatureWidget' })
-  const { container, getByText } = render(<ReactComponent model={model} />)
-  model.setFeatureData({
+  console.warn = jest.fn()
+  const pluginManager = new PluginManager([])
+
+  const Session = types.model({
+    pluginManager: types.optional(types.frozen(), {}),
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create({
+    widget: { type: 'BaseFeatureWidget' },
+  })
+  const { container, getByText } = render(
+    <ReactComponent model={model.widget} />,
+  )
+  model.widget.setFeatureData({
     start: 2,
     end: 102,
     strand: 1,
