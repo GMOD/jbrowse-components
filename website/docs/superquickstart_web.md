@@ -9,12 +9,13 @@ sites
 
 This is a quick overview to get started running JBrowse 2 from scratch
 
-This guide assumes you have
+This guide assumes you have:
 
-- a webserver that reads files from /var/www/html/ e.g. apache or nginx
-- Node 10+ installed
-- GenomeTools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`
-- samtools installed e.g. `sudo apt install samtools` or `brew install samtools`
+- a webserver that reads files from /var/www/html/ e.g. Apache or nginx
+- node 10+ installed
+- genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
+- samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
+- tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used for created tabix indexes for BED/VCF/GFF files
 
 ```bash
 ## Install jbrowse 2 CLI tools
@@ -32,21 +33,31 @@ jbrowse add-assembly genome.fa --out /var/www/html/jbrowse2 --load copy
 
 
 ## Copy file.bam and file.bam.bai to /var/www/html/jbrowse2 and adds track to
-## the config at /var/www/html/jbrowse2/config.json. Note that I can refer to a
-## folder name with --out, in which case it is foldername+'config.json' or a
-## specific filename for a config
+## the config at /var/www/html/jbrowse2/config.json. Assumes that file.bam and
+## file.bam.bai exist
 jbrowse add-track file.bam --out /var/www/html/jbrowse2/config.json --load copy
 
-## adds a url entry for a bam file to the  config.json, but no file operations
-## performed
+## Adds a url entry for a bam file to the  config.json, but no file operations
+## performed, assumes BAM file is at http://website.com/myfile.bam.bai
 jbrowse add-track http://website.com/myfile.bam --out /var/www/html/jbrowse2
 
 
+## If your BAM index (bai) is not filename+'.bai' then you can manually
+## specifies index location with --index flag
+jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2
+
+
+## Alternative loading syntax where I specify a config file, and then this can
+## be loaded via http://localhost/jbrowse2/?config=alt_config.json
+jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json
+
+
 ## add a BigWig track
-jbrowse add-track myfile.bw --out /var/www/html/jbrowse2
+jbrowse add-track myfile.bw --out /var/www/html/jbrowse2 --load copy
 
 
-## load gene annotations from a GFF
+## load gene annotations from a GFF, using "GenomeTools" (gt) to sort the gff
+## and tabix to index the GFF3
 gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
@@ -60,3 +71,9 @@ This guide is meant to be a super-quick conceptual overview for getting jbrowse
 2 setup, but if you are new to the command line or to jbrowse in general, you
 might want to start with the slightly-longer quick-start guide
 [quickstart_cli](here).
+
+Note that you can also upload your JBrowse instance to Amazon S3 or any other
+static site hosting. GitHub pages also works, but Github probably isn't as well
+suited for hosting large data files common in genomics. If you use a different
+server platform such as Django, you can put the JBrowse files in your "static"
+directory.
