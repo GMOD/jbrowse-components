@@ -22,6 +22,7 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
@@ -297,6 +298,19 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       renameCurrentSession(sessionName: string) {
         return getParent(self).renameCurrentSession(sessionName)
+      },
+    }))
+    .views(self => ({
+      getTrackActionMenuItems(config: any) {
+        return [
+          {
+            label: 'About track',
+            onClick: () => {
+              self.setShowAboutConfig(config)
+            },
+            icon: InfoIcon,
+          },
+        ]
       },
     }))
     .extend(() => {
