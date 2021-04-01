@@ -46,6 +46,29 @@ Yes! See [here](user_guide#navigating-the-ui)
 
 ### Setup
 
+#### What web server do I need to run JBrowse 2?
+
+JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
+statically hosted on a webserver without any backend services running.
+
+Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
+folder to your web server html folder e.g. `/var/www/html/`.
+
+If you use a different platform such as Django, you may want to put it in the
+static resources folder.
+
+Note that the server that you use should support byte-range requests (e.g. the
+Range HTTP header) so that JBrowse can get small slices of large binary data
+files.
+
+#### BAM files do not work on my server
+
+If you are using Apache then you will probably want to disable mime*magic. If
+mime_magic is enabled, you may see that your server responds with the HTTP
+header Content-Encoding: gzip which JBrowse does \_NOT* want, because this
+instructs the browser to unzip the data but JBrowse should be in charge of
+this.
+
 #### How can I start the JBrowse 2 app as a developer
 
 We recommend that you have the following
@@ -142,4 +165,4 @@ it's own track level menu.
 Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.
 
-These reads will display their soft-clipping indicator as black
+These reads will display their soft-clipping indicator as black3

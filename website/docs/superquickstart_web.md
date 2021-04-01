@@ -46,7 +46,9 @@ jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2
 
 ## Alternative loading syntax where I specify a config file, and then this can
 ## be loaded via http://localhost/jbrowse2/?config=alt_config.json
-jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json
+## Also demonstrates using --load symlink instead of --load copy to avoid
+## copying large files
+jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --load symlink
 
 
 ## add a BigWig track
@@ -67,11 +69,11 @@ with a bigwig, a GFF, and a BAM file!
 This guide is meant to be a super-quick conceptual overview for getting jbrowse
 2 setup, but if you are new to the command line or to jbrowse in general, you
 might want to start with the slightly-longer quick-start guide
-[quickstart_cli](here).
+[here](quickstart_cli).
 
 Footnote: JBrowse doesn't strictly need Apache or nginx, it is "static site
 compatible" meaning it uses no server side code and can run on any static
 website hosting. For example, you can upload the jbrowse folder that we
 prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
-too. Other types of servers that people use such as Django also should be ok,
-you may want to put your JBrowse files in the static folder for Django
+too. See the FAQ for [what webserver do I
+need](faq#what-web-server-do-i-need-to-run-jbrowse-2) for more info.
