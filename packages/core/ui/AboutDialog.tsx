@@ -82,10 +82,7 @@ export default function AboutDialog({
       <DialogTitle id="alert-dialog-title">{trackName}</DialogTitle>
       <DialogContent>
         <BaseCard title="Configuration">
-          <Attributes
-            attributes={conf}
-            omit={['displays', 'baseUri', 'refNames']}
-          />
+          <Attributes attributes={conf} omit={['displays', 'refNames']} />
         </BaseCard>
         {info !== null ? (
           <BaseCard title="File info">
