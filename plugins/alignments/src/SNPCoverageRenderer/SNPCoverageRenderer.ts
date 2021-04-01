@@ -1,9 +1,8 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
   getOrigin,
   getScale,
@@ -11,22 +10,17 @@ import {
   WiggleBaseRenderer,
   YSCALEBAR_LABEL_OFFSET,
 } from '@jbrowse/plugin-wiggle'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { ThemeOptions } from '@material-ui/core'
 
-interface SNPCoverageRendererProps {
-  features: Map<string, Feature>
-  config: AnyConfigurationModel
-  regions: Region[]
+export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
   height: number
   highResolutionScaling: number
-  blockKey: string
-  dataAdapter: BaseFeatureDataAdapter
   scaleOpts: ScaleOpts
-  sessionId: string
-  signal: AbortSignal
-  theme: ThemeOptions
+}
+
+export interface RenderArgsDeserializedWithFeatures
+  extends RenderArgsDeserialized {
+  features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
 }
@@ -42,7 +36,10 @@ interface BaseInfo {
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   // note: the snps are drawn on linear scale even if the data is drawn in log
   // scape hence the two different scales being used
-  draw(ctx: CanvasRenderingContext2D, props: SNPCoverageRendererProps) {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
     const {
       features,
       regions,

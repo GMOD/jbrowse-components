@@ -1,6 +1,13 @@
 /* eslint-disable no-bitwise */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import BoxRendererType, {
+  RenderArgs,
+  RenderArgsSerialized,
+  RenderArgsDeserialized as BoxRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
@@ -10,12 +17,9 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import { ThemeOptions } from '@material-ui/core'
 import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 import { orientationTypes } from './util'
@@ -24,27 +28,32 @@ import {
   PileupLayoutSessionProps,
 } from './PileupLayoutSession'
 
-export interface PileupRenderProps {
-  features: Map<string, Feature>
-  layout: BaseLayout<Feature>
-  config: AnyConfigurationModel
-  regions: Region[]
-  bpPerPx: number
-  colorBy?: {
-    type: string
-    tag?: string
-  }
-  colorTagMap?: { [key: string]: string }
-  height: number
-  width: number
-  highResolutionScaling: number
-  showSoftClip: boolean
-  sortedBy: {
+export type {
+  RenderArgs,
+  RenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+}
+
+export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
+  colorBy?: { type: string; tag?: string }
+  colorTagMap?: Record<string, string>
+  sortedBy?: {
     type: string
     pos: number
     refName: string
+    assemblyName: string
+    tag?: string
   }
-  theme: ThemeOptions
+  showSoftClip: boolean
+  highResolutionScaling: number
+}
+
+export interface RenderArgsDeserializedWithFeaturesAndLayout
+  extends RenderArgsDeserialized {
+  features: Map<string, Feature>
+  layout: BaseLayout<Feature>
 }
 
 interface LayoutRecord {
@@ -53,10 +62,6 @@ interface LayoutRecord {
   rightPx: number
   topPx: number
   heightPx: number
-}
-
-interface RenderArgsAugmented extends RenderArgsDeserialized {
-  showSoftClip?: boolean
 }
 
 const alignmentColoring: { [key: string]: string } = {
@@ -157,7 +162,7 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use. possible improvement: use average read
   // size to set the heuristic maxClippingSize expansion (e.g. short reads
   // don't have to expand a softclipping size a lot, but long reads might)
-  getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
@@ -271,7 +276,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserialized,
   ) {
     const { regions, bpPerPx } = props
     const { heightPx, topPx, feature } = feat
@@ -312,15 +317,10 @@ export default class PileupRenderer extends BoxRendererType {
   drawAlignmentRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
-    const {
-      config,
-      bpPerPx,
-      regions,
-      colorBy: { tag = '', type: colorType = '' } = {},
-      colorTagMap = {},
-    } = props
+    const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = props
+    const { tag = '', type: colorType = '' } = colorBy || {}
     const { feature } = feat
     const region = regions[0]
 
@@ -403,7 +403,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawMismatches(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -444,7 +444,7 @@ export default class PileupRenderer extends BoxRendererType {
         let color = baseColor
         if (mismatchQuality && mismatch.qual !== undefined) {
           color = Color(baseColor)
-            .alpha(mismatch.qual / 90)
+            .alpha(Math.min(1, mismatch.qual / 50))
             .hsl()
             .string()
         }
@@ -536,7 +536,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawSoftClipping(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     config: AnyConfigurationModel,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
@@ -603,7 +603,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async makeImageData(props: PileupRenderProps) {
+  async makeImageData(props: RenderArgsDeserializedWithFeaturesAndLayout) {
     const {
       features,
       layout,
@@ -613,7 +613,6 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
-      colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
@@ -653,6 +652,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+    const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
@@ -670,14 +670,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', { feature })
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(
-        ctx,
-        feat,
-        props,
-        colorBy.type === 'mismatchQuality',
-        colorForBase,
-        theme,
-      )
+      this.drawMismatches(ctx, feat, props, mismatchAlpha, colorForBase, theme)
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }
@@ -692,32 +685,31 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async render(renderProps: PileupRenderProps) {
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const layout = this.createLayoutInWorker(renderProps)
     const {
       height,
       width,
       imageData,
       maxHeightReached,
-    } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      {
-        ...renderProps,
-        region: renderProps.regions[0],
-        height,
-        width,
-        imageData,
-      },
-      null,
-    )
+    } = await this.makeImageData({ ...renderProps, features, layout })
+    const results = await super.render({
+      ...renderProps,
+      features,
+      layout,
+      height,
+      width,
+      imageData,
+    })
 
     return {
-      element,
+      ...results,
       imageData,
       height,
       width,
       maxHeightReached,
-      layout: renderProps.layout,
+      layout,
     }
   }
 

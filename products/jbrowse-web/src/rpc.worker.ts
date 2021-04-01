@@ -13,7 +13,6 @@ import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-// @ts-ignore
 if (typeof __webpack_require__ === 'function') useStaticRendering(true)
 
 interface WorkerConfiguration {
@@ -67,25 +66,34 @@ function flushLog() {
 }
 setInterval(flushLog, 1000)
 
+interface WrappedFuncArgs {
+  rpcDriverClassName: string
+  channel: string
+  [key: string]: unknown
+}
+
 let callCounter = 0
 function wrapForRpc(
-  func: (args: unknown) => unknown,
+  func: (args: unknown, rpcDriverClassName: string) => unknown,
   funcName: string = func.name,
 ) {
-  return (args: Record<string, unknown>) => {
+  return (args: WrappedFuncArgs) => {
     callCounter += 1
     const myId = callCounter
     // logBuffer.push(['rpc-call', myId, funcName, args])
     const retP = Promise.resolve()
       .then(() => getPluginManager())
       .then(() =>
-        func({
-          ...args,
-          statusCallback: (message: string) => {
-            // @ts-ignore
-            self.rpcServer.emit(args.channel, message)
+        func(
+          {
+            ...args,
+            statusCallback: (message: string) => {
+              // @ts-ignore
+              self.rpcServer.emit(args.channel, message)
+            },
           },
-        }),
+          args.rpcDriverClassName,
+        ),
       )
       .catch(error => {
         if (isAbortException(error)) {

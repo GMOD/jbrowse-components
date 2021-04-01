@@ -28,6 +28,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
+          rpcDriverName: self.rpcDriverName,
           config: self.configuration.renderer,
           showForward,
           showReverse,

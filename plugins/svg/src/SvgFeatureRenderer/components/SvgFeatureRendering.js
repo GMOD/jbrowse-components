@@ -185,7 +185,6 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onClick,
-    onContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -299,18 +298,6 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onClick],
   )
 
-  const contextMenu = useCallback(
-    event => {
-      if (movedDuringLastMouseDown) {
-        return
-      }
-      if (onContextMenu) {
-        onContextMenu(event)
-      }
-    },
-    [movedDuringLastMouseDown, onContextMenu],
-  )
-
   useEffect(() => {
     setHeight(layout.getTotalHeight())
   }, [layout])
@@ -332,7 +319,6 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
-        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures

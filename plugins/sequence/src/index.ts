@@ -1,7 +1,7 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { Region } from '@jbrowse/core/util/types'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -34,7 +34,7 @@ import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
 /* adjust in both directions */
-class DivSequenceRenderer extends ServerSideRendererType {
+class DivSequenceRenderer extends FeatureRendererType {
   getExpandedRegion(region: Region) {
     return {
       ...region,

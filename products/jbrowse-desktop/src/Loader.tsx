@@ -105,6 +105,13 @@ export default function Loader({
             },
             { pluginManager: pm },
           )
+          rootModel.jbrowse.configuration.rpc.addDriverConfig(
+            'ElectronRpcDriver',
+            { type: 'ElectronRpcDriver' },
+          )
+          rootModel.jbrowse.configuration.rpc.defaultDriver.set(
+            'ElectronRpcDriver',
+          )
           // make some things available globally for testing
           // e.g. window.MODEL.views[0] in devtools
           // @ts-ignore

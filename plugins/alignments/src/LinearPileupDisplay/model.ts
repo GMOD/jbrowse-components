@@ -32,6 +32,7 @@ import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
@@ -63,6 +64,7 @@ const stateModelFactory = (
         featureHeight: types.maybe(types.number),
         noSpacing: types.maybe(types.boolean),
         trackMaxHeight: types.maybe(types.number),
+        mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -252,6 +254,9 @@ const stateModelFactory = (
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
+      toggleMismatchAlpha() {
+        self.mismatchAlpha = !self.mismatchAlpha
+      },
 
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
@@ -315,12 +320,18 @@ const stateModelFactory = (
           height: self.featureHeight,
           noSpacing: self.noSpacing,
           maxHeight: this.maxHeight,
+          mismatchAlpha: self.mismatchAlpha,
         })
       },
       get featureHeightSetting() {
         return (
           self.featureHeight || readConfObject(this.rendererConfig, 'height')
         )
+      },
+      get mismatchAlphaSetting() {
+        return self.mismatchAlpha !== undefined
+          ? self.mismatchAlpha
+          : readConfObject(this.rendererConfig, 'mismatchAlpha')
       },
     }))
     .views(self => {
@@ -383,7 +394,7 @@ const stateModelFactory = (
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
               filters.push(
-                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}")`,
+                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
               )
             }
             if (self.filterBy.readName) {
@@ -391,7 +402,7 @@ const stateModelFactory = (
               filters.push(`jexl:get(feature,'name') == "${readName}"`)
             }
           }
-          return filters
+          return new SerializableFilterChain({ filters })
         },
 
         get renderProps() {
@@ -402,6 +413,7 @@ const stateModelFactory = (
             notReady:
               !self.ready ||
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
@@ -490,12 +502,6 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Adjust mismatch visibility by quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mismatchQuality' })
-                  },
-                },
-                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })
@@ -544,6 +550,14 @@ const stateModelFactory = (
                   SetMaxHeightDlg,
                   self,
                 )
+              },
+            },
+            {
+              label: 'Fade mismatches by quality',
+              type: 'checkbox',
+              checked: self.mismatchAlphaSetting,
+              onClick: () => {
+                self.toggleMismatchAlpha()
               },
             },
           ]
