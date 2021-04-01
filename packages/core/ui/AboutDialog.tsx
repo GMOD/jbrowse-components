@@ -73,16 +73,14 @@ export default function AboutDialog({
         }
       : info || {}
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">{trackName}</DialogTitle>
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>{trackName}</DialogTitle>
       <DialogContent>
         <BaseCard title="Configuration">
-          <Attributes attributes={conf} omit={['displays', 'refNames']} />
+          <Attributes
+            attributes={conf}
+            omit={['displays', 'baseUri', 'refNames']}
+          />
         </BaseCard>
         {info !== null ? (
           <BaseCard title="File info">

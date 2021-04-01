@@ -373,6 +373,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
           if (isObject(value)) {
             return (
               <Attributes
+                omit={omits}
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
