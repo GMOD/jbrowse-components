@@ -1,17 +1,14 @@
 ---
 id: superquickstart_web
-title: Super-quick start for jbrowse web
+title: Super-quick start guide for JBrowse web
 toplevel: true
 ---
 
-This guide assumes you have some familiarity with JBrowse and running static
-sites
+This is a quick overview to get started running JBrowse 2 from scratch. It is
+helpful if you have some familiarity with the command line in general to follow
+these steps. This guide also assumes you have:
 
-This is a quick overview to get started running JBrowse 2 from scratch
-
-This guide assumes you have:
-
-- a webserver that reads files from /var/www/html/ e.g. Apache or nginx
+- a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not strictly necessary for jbrowse to run, see footnote)
 - node 10+ installed
 - genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
 - samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
@@ -72,8 +69,9 @@ This guide is meant to be a super-quick conceptual overview for getting jbrowse
 might want to start with the slightly-longer quick-start guide
 [quickstart_cli](here).
 
-Note that you can also upload your JBrowse instance to Amazon S3 or any other
-static site hosting. GitHub pages also works, but Github probably isn't as well
-suited for hosting large data files common in genomics. If you use a different
-server platform such as Django, you can put the JBrowse files in your "static"
-directory.
+Footnote: JBrowse doesn't strictly need Apache or nginx, it is "static site
+compatible" meaning it uses no server side code and can run on any static
+website hosting. For example, you can upload the jbrowse folder that we
+prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
+too. Other types of servers that people use such as Django also should be ok,
+you may want to put your JBrowse files in the static folder for Django
