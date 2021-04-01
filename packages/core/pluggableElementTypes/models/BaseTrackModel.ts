@@ -43,7 +43,7 @@ export function createBaseTrackModel(
       DialogDisplay: undefined as any,
     }))
     .actions(self => ({
-      setDialogComponent(dlg: any, context?: any) {
+      setDialogComponent(dlg?: React.FC, context?: any) {
         self.DialogComponent = dlg
         self.DialogDisplay = context
       },
@@ -63,11 +63,13 @@ export function createBaseTrackModel(
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
         const { pluginManager: pm } = getEnv(self)
-        if (!adapterConfig)
+        if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
+        }
         const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType)
+        if (!adapterType) {
           throw new Error(`unknown adapter type ${adapterConfig.type}`)
+        }
         return adapterType
       },
 

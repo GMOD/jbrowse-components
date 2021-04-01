@@ -90,7 +90,7 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      showAboutConfig: undefined as any,
+      showAboutConfig: undefined as undefined | AnyConfigurationModel,
     }))
     .views(self => ({
       get shareURL() {
@@ -179,10 +179,10 @@ export default function sessionModelFactory(
       setName(str: string) {
         self.name = str
       },
-      setShowAboutConfig(showConfig: any) {
+      setShowAboutConfig(showConfig: AnyConfigurationModel) {
         self.showAboutConfig = showConfig
       },
-      addAssembly(assemblyConfig: any) {
+      addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
       removeAssembly(assemblyName: string) {

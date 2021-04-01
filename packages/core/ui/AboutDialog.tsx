@@ -9,6 +9,7 @@ import {
 import { readConfObject } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type FileInfo = Record<string, unknown> | string
 
@@ -16,7 +17,7 @@ export default function AboutDialog({
   model,
   handleClose,
 }: {
-  model: any
+  model: AnyConfigurationModel & { trackId: string }
   handleClose: () => void
 }) {
   const [info, setInfo] = useState<FileInfo>()
