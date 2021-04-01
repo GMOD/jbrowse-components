@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-nested-ternary */
+/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import {
   Dialog,
@@ -17,7 +17,7 @@ export default function AboutDialog({
   model,
   handleClose,
 }: {
-  model: AnyConfigurationModel & { trackId: string }
+  model: AnyConfigurationModel
   handleClose: () => void
 }) {
   const [info, setInfo] = useState<FileInfo>()
