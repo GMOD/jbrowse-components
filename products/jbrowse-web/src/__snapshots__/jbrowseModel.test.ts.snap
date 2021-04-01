@@ -3,7 +3,15 @@
 exports[`JBrowse model creates with empty snapshot 1`] = `
 Object {
   "assemblies": Array [],
-  "configuration": Object {},
+  "configuration": Object {
+    "rpc": Object {
+      "drivers": Object {
+        "MainThreadRpcDriver": Object {
+          "type": "MainThreadRpcDriver",
+        },
+      },
+    },
+  },
   "connections": Array [],
   "defaultSession": Object {
     "name": "New session",
@@ -90,7 +98,15 @@ Object {
       },
     },
   ],
-  "configuration": Object {},
+  "configuration": Object {
+    "rpc": Object {
+      "drivers": Object {
+        "MainThreadRpcDriver": Object {
+          "type": "MainThreadRpcDriver",
+        },
+      },
+    },
+  },
   "connections": Array [],
   "defaultSession": Object {
     "activeWidgets": Object {

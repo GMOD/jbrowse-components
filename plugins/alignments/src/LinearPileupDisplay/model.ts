@@ -32,6 +32,7 @@ import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import ColorByTagDlg from './components/ColorByTag'
@@ -391,7 +392,7 @@ const stateModelFactory = (
               filters.push(`jexl:get(feature,'name') == "${readName}"`)
             }
           }
-          return filters
+          return new SerializableFilterChain({ filters })
         },
 
         get renderProps() {
@@ -402,6 +403,7 @@ const stateModelFactory = (
             notReady:
               !self.ready ||
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,

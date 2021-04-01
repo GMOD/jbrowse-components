@@ -5,7 +5,10 @@ import {
 } from '../data_adapters/dataAdapterCache'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
 import ServerSideRendererType, {
-  RenderArgsSerialized as RendererTypeRenderArgsSerialized,
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsSerialized as ServerSideRenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
 import {
@@ -19,12 +22,18 @@ import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 export class CoreGetRefNames extends RpcMethodType {
   name = 'CoreGetRefNames'
 
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      sessionId: string
+      signal: RemoteAbortSignal
+      adapterConfig: {}
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
@@ -41,12 +50,18 @@ export class CoreGetRefNames extends RpcMethodType {
 export class CoreGetFileInfo extends RpcMethodType {
   name = 'CoreGetInfo'
 
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      sessionId: string
+      signal: RemoteAbortSignal
+      adapterConfig: {}
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
@@ -89,13 +104,19 @@ export class CoreGetFeatures extends RpcMethodType {
     })
   }
 
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    region: Region
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      sessionId: string
+      signal: RemoteAbortSignal
+      region: Region
+      adapterConfig: {}
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { sessionId, adapterConfig, region } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,
@@ -135,13 +156,16 @@ export class CoreFreeResources extends RpcMethodType {
   }
 }
 
-export interface RenderArgs {
-  assemblyName: string
-  regions: Region[]
-  sessionId: string
+export interface RenderArgs extends ServerSideRenderArgs {
   adapterConfig: {}
   rendererType: string
-  renderProps: RendererTypeRenderArgsSerialized
+}
+
+export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
+  assemblyName: string
+  regions: Region[]
+  adapterConfig: {}
+  rendererType: string
 }
 
 /**
@@ -150,27 +174,39 @@ export interface RenderArgs {
 export class CoreRender extends RpcMethodType {
   name = 'CoreRender'
 
-  async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback: Function },
-  ) {
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
     const assemblyManager = this.pluginManager.rootModel?.session
       ?.assemblyManager
-    if (!assemblyManager) {
-      return args
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return renamedArgs
     }
 
-    return renameRegionsIfNeeded(assemblyManager, args)
+    const { rendererType } = args
+
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    return RendererType.serializeArgsInClient(renamedArgs)
   }
 
-  async execute(args: RenderArgs & { signal?: RemoteAbortSignal }) {
-    const deserializedArgs = await this.deserializeArguments(args)
-    const {
-      sessionId,
-      adapterConfig,
-      rendererType,
-      renderProps,
-      signal,
-    } = deserializedArgs
+  async execute(
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    rpcDriverClassName: string,
+  ) {
+    let deserializedArgs = args
+    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(
+        args,
+        rpcDriverClassName,
+      )
+    }
+    const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
@@ -194,15 +230,36 @@ export class CoreRender extends RpcMethodType {
 
     const renderArgs = {
       ...deserializedArgs,
-      ...renderProps,
       dataAdapter,
     }
-    delete renderArgs.renderProps
 
-    const result = await RendererType.renderInWorker(renderArgs)
+    const result =
+      rpcDriverClassName === 'MainThreadRpcDriver'
+        ? await RendererType.render(renderArgs)
+        : await RendererType.renderInWorker(renderArgs)
 
     checkAbortSignal(signal)
     return result
+  }
+
+  async deserializeReturn(
+    serializedReturn: RenderResults | ResultsSerialized,
+    args: RenderArgs,
+    rpcDriverClassName: string,
+  ): Promise<unknown> {
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return serializedReturn
+    }
+
+    const { rendererType } = args
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+    return RendererType.deserializeResultsInClient(
+      serializedReturn as ResultsSerialized,
+      args,
+    )
   }
 }
 

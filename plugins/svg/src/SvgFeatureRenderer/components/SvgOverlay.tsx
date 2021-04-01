@@ -209,7 +209,6 @@ function SvgOverlay({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    event.stopPropagation()
     return handler(event, mouseoverFeatureId)
   }
 

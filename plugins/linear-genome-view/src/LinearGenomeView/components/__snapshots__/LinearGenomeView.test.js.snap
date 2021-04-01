@@ -532,19 +532,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1582,19 +1577,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1606,19 +1596,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="126"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="1000px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="1000px"
+                  />
                 </div>
               </div>
               <div
@@ -1746,19 +1731,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1770,19 +1750,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="126"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="1000px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="1000px"
+                  />
                 </div>
               </div>
               <div

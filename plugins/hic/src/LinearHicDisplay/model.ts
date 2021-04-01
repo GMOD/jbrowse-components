@@ -35,6 +35,7 @@ export default (configSchema: AnyConfigurationSchemaType) =>
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
           config,
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
         }
       },

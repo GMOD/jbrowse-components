@@ -6,7 +6,6 @@ import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -170,8 +169,7 @@ const ServerSideRenderedBlockContent = observer(
         </Repeater>
       )
     }
-
-    return <ServerSideRenderedContent model={model} />
+    return model.reactElement
   },
 )
 

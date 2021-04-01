@@ -1,7 +1,8 @@
 import PluginManager from '../PluginManager'
 import { checkAbortSignal } from '../util'
-import BaseRpcDriver, { watchWorker } from './BaseRpcDriver'
+import BaseRpcDriver, { watchWorker, WorkerHandle } from './BaseRpcDriver'
 import RpcMethodType from '../pluggableElementTypes/RpcMethodType'
+import { ConfigurationSchema } from '../configuration'
 
 function timeout(ms: number) {
   return new Promise(resolve => {
@@ -11,7 +12,7 @@ function timeout(ms: number) {
   })
 }
 
-class MockWorkerHandle {
+class MockWorkerHandle implements WorkerHandle {
   busy = false
 
   destroy() {}
@@ -19,7 +20,14 @@ class MockWorkerHandle {
   async call(
     name: string,
     _args = [],
-    opts: { timeout: number; signal?: AbortSignal } = { timeout: 3000 },
+    opts: {
+      timeout: number
+      signal?: AbortSignal
+      rpcDriverClassName: string
+    } = {
+      timeout: 3000,
+      rpcDriverClassName: 'MockRpcDriver',
+    },
   ) {
     const start = Date.now()
     if (name === 'ping') {
@@ -71,9 +79,10 @@ test('watch worker with long ping, generates timeout', async () => {
 
   expect.assertions(1)
   try {
-    const workerWatcher = watchWorker(worker, 200)
+    const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
     const result = worker.call('doWorkLongPingTime', undefined, {
       timeout: 100,
+      rpcDriverClassName: 'MockRpcDriver',
     })
     await Promise.race([result, workerWatcher])
   } catch (e) {
@@ -90,6 +99,7 @@ test('test worker abort', async () => {
     const resultP = worker.call('doWorkLongPingTime', undefined, {
       signal: controller.signal,
       timeout: 2000,
+      rpcDriverClassName: 'MockRpcDriver',
     })
     controller.abort()
     await resultP
@@ -100,33 +110,40 @@ test('test worker abort', async () => {
 
 test('watch worker generates multiple pings', async () => {
   const worker = new MockWorkerHandle()
-  const workerWatcher = watchWorker(worker, 200)
+  const workerWatcher = watchWorker(worker, 200, 'MockRpcDriver')
   const result = worker.call('doWorkShortPingTime')
   await Promise.race([result, workerWatcher])
 })
 
 class MockRpcDriver extends BaseRpcDriver {
+  name = 'MockRpcDriver'
+
   maxPingTime = 1000
 
   workerCheckFrequency = 500
 
-  makeWorker() {
+  makeWorker(_pluginManager: PluginManager) {
     return new MockWorkerHandle()
   }
 }
 
 export class MockRendererTimeout extends RpcMethodType {
   name = 'MockRenderTimeout'
+
+  async execute() {}
 }
 
 export class MockRendererShort extends RpcMethodType {
   name = 'MockRenderShort'
+
+  async execute() {}
 }
 
 test('test RPC driver operation timeout and worker replace', async () => {
   console.warn = jest.fn()
   expect.assertions(1)
-  const driver = new MockRpcDriver()
+  const config = ConfigurationSchema('Mock', {}).create()
+  const driver = new MockRpcDriver({ config })
   const pluginManager = new PluginManager()
 
   pluginManager.addRpcMethod(() => new MockRendererTimeout(pluginManager))
@@ -143,7 +160,8 @@ test('test RPC driver operation timeout and worker replace', async () => {
 test('remote abort', async () => {
   console.warn = jest.fn()
   expect.assertions(1)
-  const driver = new MockRpcDriver()
+  const config = ConfigurationSchema('Mock', {}).create()
+  const driver = new MockRpcDriver({ config })
   const pluginManager = new PluginManager()
 
   pluginManager.addRpcMethod(() => new MockRendererShort(pluginManager))

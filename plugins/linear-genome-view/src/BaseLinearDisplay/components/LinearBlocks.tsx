@@ -57,7 +57,7 @@ const RenderedBlocks = observer((props: { model: BaseLinearDisplayModel }) => {
                 <div
                   className={classes.heightOverflowed}
                   style={{
-                    top: state.data.layout.totalHeight - 16,
+                    top: state.layout.totalHeight - 16,
                     pointerEvents: 'none',
                     height: 16,
                   }}
