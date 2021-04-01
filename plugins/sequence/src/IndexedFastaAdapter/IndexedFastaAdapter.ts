@@ -45,7 +45,7 @@ export default class extends BaseFeatureDataAdapter implements SequenceAdapter {
   }
 
   public getRefNames() {
-    return this.fasta.getSequenceList()
+    return this.fasta.getSequenceNames()
   }
 
   public async getRegions(): Promise<NoAssemblyRegion[]> {
