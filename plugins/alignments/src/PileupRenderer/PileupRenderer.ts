@@ -444,7 +444,7 @@ export default class PileupRenderer extends BoxRendererType {
         let color = baseColor
         if (mismatchQuality && mismatch.qual !== undefined) {
           color = Color(baseColor)
-            .alpha(mismatch.qual / 90)
+            .alpha(Math.min(1, mismatch.qual / 50))
             .hsl()
             .string()
         }
@@ -613,7 +613,6 @@ export default class PileupRenderer extends BoxRendererType {
       sortedBy,
       highResolutionScaling = 1,
       showSoftClip,
-      colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
     const theme = createJBrowseTheme(configTheme)
@@ -653,6 +652,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+    const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
@@ -670,14 +670,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', { feature })
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(
-        ctx,
-        feat,
-        props,
-        colorBy.type === 'mismatchQuality',
-        colorForBase,
-        theme,
-      )
+      this.drawMismatches(ctx, feat, props, mismatchAlpha, colorForBase, theme)
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }
