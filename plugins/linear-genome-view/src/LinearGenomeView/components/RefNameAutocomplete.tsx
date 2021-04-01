@@ -113,6 +113,7 @@ function RefNameAutocomplete({
         const formattedResult: Option = {
           label: 'text search adapter',
           value: `${val} ${refName}:${start}-${end}`,
+          inputValue: `${refName}:${start}-${end}`,
         }
         return formattedResult
       }
