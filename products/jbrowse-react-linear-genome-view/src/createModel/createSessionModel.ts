@@ -55,6 +55,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+
+      // which config is being shown in the "About track" menu
+      showAboutConfig: undefined as undefined | AnyConfigurationModel,
     }))
     .views(self => ({
       get rpcManager() {
@@ -122,6 +125,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setShowAboutConfig(showConfig: AnyConfigurationModel) {
+        self.showAboutConfig = showConfig
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
