@@ -281,55 +281,59 @@ export default class PileupRenderer extends BoxRendererType {
     region: Region,
     bpPerPx: number,
   ) {
+    console.log('here')
     const { feature, topPx, heightPx } = feat
     const mm = (getTag(feature, 'MM') || '') as string
     const mp = (getTag(feature, 'MP') || '') as string
-
-    // adapted from https://github.com/wdecoster/methplotlib/blob/master/LICENSE
-    const [basemod, ...rest] = mm.split(',')
-    const deltas = rest.map(score => +score)
-    const deltaMods = [...deltas]
-    for (let i = 1; i < deltaMods.length; i++) {
-      deltaMods[i] += deltaMods[i - 1]
-    }
-    const probabilities = mp.split('').map(score => score.charCodeAt(0) - 33)
-    const cigarOps = parseCigar(feature.get('CIGAR'))
-    const width = 1 / bpPerPx
-    const [leftPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
-      region,
-      bpPerPx,
-    )
-    let counter = 0
-    const interpolate = interpolateLab('blue', 'red')
-    for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2) {
-      const len = +cigarOps[i]
-      const op = cigarOps[i + 1]
-      if (op === 'S' || op === 'I') {
-        while (deltaMods[counter] >= k && deltaMods[counter] < k + len) {
-          counter++
-        }
-
-        k += len
-      } else if (op === 'D' || op === 'N') {
-        j += len
-      } else if (op === 'M' || op === 'X' || op === '=') {
-        while (deltaMods[counter] >= k && deltaMods[counter] < k + len) {
-          const current = deltaMods[counter]
-          ctx.fillStyle = interpolate(probabilities[counter] / 100)
-          ctx.fillRect(
-            leftPx + (j + current - k) * width,
-            topPx,
-            width + 0.5,
-            heightPx,
-          )
-          counter++
-        }
-        j += len
-        k += len
+    console.log({ mm, mp })
+    const mods = mm.split(';')
+    const colors = ['red', 'green', 'blue', 'purple', 'brown']
+    mods.forEach((mod, index) => {
+      const [basemod, ...rest] = mod.split(',')
+      const deltas = rest.map(score => +score)
+      const deltaMods = [...deltas]
+      for (let i = 1; i < deltaMods.length; i++) {
+        deltaMods[i] += deltaMods[i - 1]
       }
-    }
+      const probabilities = mp.split('').map(score => score.charCodeAt(0) - 33)
+
+      console.log({ probabilities })
+      const CIGAR = feature.get('CIGAR')
+      const cigarOps = parseCigar(CIGAR)
+      const width = 1 / bpPerPx
+      const [leftPx] = bpSpanPx(
+        feature.get('start'),
+        feature.get('end'),
+        region,
+        bpPerPx,
+      )
+      const interpolate = interpolateLab('white', colors[index])
+      // for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2) {
+      //   const len = +cigarOps[i]
+      //   const op = cigarOps[i + 1]
+      //   if (op === 'S' || op === 'I') {
+      //     while (deltaMods[counter] >= k && deltaMods[counter] < k + len) {
+      //       deltaMods++
+      //     }
+
+      //     k += len
+      //   } else if (op === 'D' || op === 'N') {
+      //     j += len
+      //   } else if (op === 'M' || op === 'X' || op === '=') {
+      //     j += len
+      //     k += len
+      //   }
+      // }
+      for (let i = 0; i < deltaMods.length; i++) {
+        const current = deltaMods[i]
+        if (probabilities.length) {
+          ctx.fillStyle = interpolate(probabilities[i] / 100)
+        } else {
+          ctx.fillStyle = colors[index]
+        }
+        ctx.fillRect(leftPx + current * width, topPx, width + 0.5, heightPx)
+      }
+    })
   }
 
   drawRect(
