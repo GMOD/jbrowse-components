@@ -47,7 +47,7 @@ jbrowse add-track myfile.bw --out /var/www/html/jbrowse2
 
 
 ## load gene annotations from a GFF
-gt gff3 -sortlines -tidy myfile.gff > myfile.sorted.gff
+gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 jbrowse add-track myfile.sorted.gff.gz --out /var/www/html/jbrowse2 --load copy
