@@ -281,32 +281,42 @@ export default class PileupRenderer extends BoxRendererType {
     region: Region,
     bpPerPx: number,
   ) {
-    console.log('here')
     const { feature, topPx, heightPx } = feat
     const mm = (getTag(feature, 'MM') || '') as string
-    const mp = (getTag(feature, 'MP') || '') as string
-    console.log({ mm, mp })
+
+    // ML stores probabilities as array of numerics, used to be MP but this is
+    // in phred scale, see
+    // https://github.com/samtools/hts-specs/pull/418/files#diff-e765c6479316309f56b636f88189cdde8c40b854c7bdcce9ee7fe87a4e76febcR596
+    const ml = getTag(feature, 'ML') as string
+    let probabilities: number[] = []
+
+    // if no ML check MP which is phred encoded ASCII string
+    if (!ml) {
+      const mp = getTag(feature, 'MP') as string
+      if (mp) {
+        probabilities = mp
+          .split('')
+          .map(s => s.charCodeAt(0) - 33)
+          .map(elt => Math.min(1, elt / 50))
+      }
+    } else {
+      probabilities = ml.split(',').map(elt => +elt / 255)
+    }
     const mods = mm.split(';')
     const colors = ['red', 'green', 'blue', 'purple', 'brown']
+    let probIndex = 0
+    const cigar = feature.get('CIGAR')
+    const start = feature.get('start')
+    const end = feature.get('end')
+    const cigarOps = parseCigar(cigar)
+    const width = 1 / bpPerPx
+    const [leftPx] = bpSpanPx(start, end, region, bpPerPx)
     mods.forEach((mod, index) => {
       const [basemod, ...rest] = mod.split(',')
-      const deltas = rest.map(score => +score)
-      const deltaMods = [...deltas]
+      const deltaMods = rest.map(score => +score)
       for (let i = 1; i < deltaMods.length; i++) {
         deltaMods[i] += deltaMods[i - 1]
       }
-      const probabilities = mp.split('').map(score => score.charCodeAt(0) - 33)
-
-      console.log({ probabilities })
-      const CIGAR = feature.get('CIGAR')
-      const cigarOps = parseCigar(CIGAR)
-      const width = 1 / bpPerPx
-      const [leftPx] = bpSpanPx(
-        feature.get('start'),
-        feature.get('end'),
-        region,
-        bpPerPx,
-      )
       const interpolate = interpolateLab('white', colors[index])
       // for (let i = 0, j = 0, k = 0; i < cigarOps.length; i += 2) {
       //   const len = +cigarOps[i]
@@ -327,12 +337,13 @@ export default class PileupRenderer extends BoxRendererType {
       for (let i = 0; i < deltaMods.length; i++) {
         const current = deltaMods[i]
         if (probabilities.length) {
-          ctx.fillStyle = interpolate(probabilities[i] / 100)
+          ctx.fillStyle = interpolate(probabilities[probIndex + i])
         } else {
           ctx.fillStyle = colors[index]
         }
         ctx.fillRect(leftPx + current * width, topPx, width + 0.5, heightPx)
       }
+      probIndex += deltaMods.length
     })
   }
 
