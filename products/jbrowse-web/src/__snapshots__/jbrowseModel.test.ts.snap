@@ -241,16 +241,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_cram_alignments-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -317,16 +327,26 @@ Object {
         },
         Object {
           "displayId": "volvox_cram_pileup-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -381,16 +401,26 @@ Object {
         },
         Object {
           "displayId": "volvox_cram_snpcoverage-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -436,16 +466,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_cram_alignments_ctga-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -512,16 +552,26 @@ Object {
         },
         Object {
           "displayId": "volvox_cram_pileup_ctga-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -573,16 +623,26 @@ Object {
         },
         Object {
           "displayId": "volvox_cram_snpcoverage_ctga-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -624,18 +684,28 @@ Object {
       ],
       "displays": Array [
         Object {
-          "defaultRendering": "svg",
           "displayId": "volvox_alignments_alignments",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "defaultRendering": "svg",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -695,16 +765,26 @@ Object {
         },
         Object {
           "displayId": "volvox_bam_snpcoverage-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -758,16 +838,26 @@ Object {
         },
         Object {
           "displayId": "volvox_bam_pileup-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -806,16 +896,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -865,18 +965,28 @@ Object {
       ],
       "displays": Array [
         Object {
-          "defaultRendering": "svg",
           "displayId": "volvox_bam_altname_alignments",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "defaultRendering": "svg",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -927,17 +1037,27 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_bam_small_max_height_alignments",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "maxHeight": 10,
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "volvox_bam_small_max_height_alignments_pileup",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "maxHeight": 10,
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1052,16 +1172,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_alignments_bam_nonexist-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1112,16 +1242,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_alignments_bai_nonexist-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1488,16 +1628,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-long-reads-sv-bam-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1552,16 +1702,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-long-reads-sv-cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1616,16 +1776,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-long-reads-cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1676,16 +1846,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-long-reads-bam-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1740,16 +1920,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_samspec_cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1800,16 +1990,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_samspec-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1864,16 +2064,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_sv_cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -1924,16 +2134,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_sv-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -2019,16 +2239,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -2079,16 +2309,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox_bam-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -2663,16 +2903,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-rg-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
@@ -2727,16 +2977,26 @@ Object {
       "displays": Array [
         Object {
           "displayId": "volvox-rg-cram-LinearAlignmentsDisplay",
-          "renderers": Object {
-            "PileupRenderer": Object {
-              "type": "PileupRenderer",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
             },
-            "SNPCoverageRenderer": Object {
-              "type": "SNPCoverageRenderer",
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
             },
-            "SvgFeatureRenderer": Object {
-              "type": "SvgFeatureRenderer",
-            },
+            "type": "LinearSNPCoverageDisplay",
           },
           "type": "LinearAlignmentsDisplay",
         },
