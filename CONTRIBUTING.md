@@ -66,12 +66,16 @@ There is a script `scripts/release.sh` that will publish the public packages in
 the monorepo to NPM and trigger the creation of a release on GitHub. To run this
 script:
 
-- Ensure that there is a file for this release in
-  `website/release_announcement_drafts/` containing a an overview or the major
-  features and bugfixes in the release, with as many nice screenshots or movies
-  as possible. The release script will automatically add download and detailed
-  changelog information to this post. You can see examples of the finished
-  posts at https://jbrowse.org/jb2/blog.
+- Ensure that there is an announcement file for this release in
+  `website/release_announcement_drafts/<tag>.md` containing a an overview of the
+  major features and bugfixes in the release, with as many nice screenshots or
+  movies as possible. The release script will automatically add download and
+  detailed changelog information to this post. You can see examples of the
+  finished posts at https://jbrowse.org/jb2/blog. If you want to preview the
+  changelog to help write the release announcement, you can use the command
+  `GITHUB_AUTH=<auth_token> yarn --silent lerna-changelog > tmp_changelog.md`
+  (make sure to run the command on the main branch). See the next step if you
+  need to generate an access token.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate
   one, go to https://github.com/settings/tokens, click "Generate new token,"

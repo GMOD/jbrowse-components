@@ -10,9 +10,18 @@ import { PluginDefinition } from '../PluginLoader'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver | ElectronRpcDriver
 type BackendConfigurations = {
-  WebWorkerRpcDriver?: ConstructorParameters<typeof WebWorkerRpcDriver>[0]
-  MainThreadRpcDriver?: ConstructorParameters<typeof MainThreadRpcDriver>[0]
-  ElectronRpcDriver?: ConstructorParameters<typeof ElectronRpcDriver>[0]
+  WebWorkerRpcDriver?: Omit<
+    ConstructorParameters<typeof WebWorkerRpcDriver>[0],
+    'config'
+  >
+  MainThreadRpcDriver?: Omit<
+    ConstructorParameters<typeof MainThreadRpcDriver>[0],
+    'config'
+  >
+  ElectronRpcDriver?: Omit<
+    ConstructorParameters<typeof ElectronRpcDriver>[0],
+    'config'
+  >
 }
 const DriverClasses = {
   WebWorkerRpcDriver,
@@ -69,12 +78,14 @@ export default class RpcManager {
     return newDriver
   }
 
-  getDriverForCall(_sessionId: string, _functionName: string, _args: unknown) {
-    // TODO: add logic here so different sessions can have
-    // different RPC backends configured
-
-    // otherwise, if there is no specific backend for that session, use the default one
-    const backendName = readConfObject(this.mainConfiguration, 'defaultDriver')
+  getDriverForCall(
+    _sessionId: string,
+    _functionName: string,
+    args: { rpcDriverName?: string },
+  ) {
+    const backendName =
+      args.rpcDriverName ||
+      readConfObject(this.mainConfiguration, 'defaultDriver')
 
     return this.getDriver(backendName)
   }

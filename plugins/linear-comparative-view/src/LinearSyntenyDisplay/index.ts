@@ -53,6 +53,7 @@ export function stateModelFactory(
       get renderProps() {
         const parentView = getContainingView(self) as LinearSyntenyViewModel
         return {
+          rpcDriverName: self.rpcDriverName,
           displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,

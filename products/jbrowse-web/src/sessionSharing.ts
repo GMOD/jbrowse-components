@@ -2,7 +2,6 @@ import { toUrlSafeB64 } from '@jbrowse/core/util'
 
 import AES from 'crypto-js/aes'
 import Utf8 from 'crypto-js/enc-utf8'
-import { functionRegexp } from '@jbrowse/core/util/functionStrings'
 
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {
@@ -40,16 +39,6 @@ const decrypt = (text: string, password: string) => {
 //     })
 //   }
 // }
-
-// use function regex (without ^ so it works anywhere)
-// to check for function syntax in stringified session
-export async function scanSharedSessionForCallbacks(
-  session: Record<string, unknown>,
-) {
-  const anywhereFunctionRegexp = new RegExp(functionRegexp.toString().slice(2))
-  const stringedSession = JSON.stringify(session)
-  return anywhereFunctionRegexp.test(stringedSession)
-}
 
 function getErrorMsg(err: string) {
   try {

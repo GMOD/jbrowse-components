@@ -124,8 +124,7 @@ export const BaseLinearDisplay = types
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block.data && block.data.features)
-            featureMaps.push(block.data.features)
+          if (block && block.features) featureMaps.push(block.features)
         }
         stale = true
         return new CompositeMap<string, Feature>(featureMaps)
@@ -147,8 +146,8 @@ export const BaseLinearDisplay = types
       get blockLayoutFeatures() {
         const layoutMaps = new Map<string, Map<string, LayoutRecord>>()
         for (const block of self.blockState.values()) {
-          if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.set(block.key, block.data.layout.rectangles)
+          if (block && block.layout && block.layout.rectangles) {
+            layoutMaps.set(block.key, block.layout.getRectangles())
           }
         }
         stale = true
@@ -166,8 +165,8 @@ export const BaseLinearDisplay = types
       get layoutFeatures() {
         const layoutMaps = []
         for (const block of self.blockState.values()) {
-          if (block.data && block.data.layout && block.data.layout.rectangles) {
-            layoutMaps.push(block.data.layout.rectangles)
+          if (block && block.layout && block.layout.rectangles) {
+            layoutMaps.push(block.layout.getRectangles())
           }
         }
         stale = true // make rtree refresh
@@ -364,6 +363,7 @@ export const BaseLinearDisplay = types
     get composedRenderProps() {
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
         onFeatureClick(_: unknown, featureId: string | undefined) {
           const f = featureId || self.featureIdUnderMouse

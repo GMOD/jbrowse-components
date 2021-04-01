@@ -3,7 +3,6 @@ import LinearProgress from '@material-ui/core/LinearProgress'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles({
   loading: {
@@ -74,8 +73,7 @@ const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (!model.filled) {
     return <LoadingMessage />
   }
-
-  return <ServerSideRenderedContent model={model} />
+  return model.reactElement
 })
 
 export default ServerSideRenderedBlockContent

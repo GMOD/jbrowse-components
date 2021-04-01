@@ -42,8 +42,7 @@ export default class Create extends JBrowseCommand {
       description: 'Download a development build from a named git branch',
     }),
     nightly: flags.boolean({
-      description:
-        'Download the latest development build from the master branch',
+      description: 'Download the latest development build from the main branch',
     }),
     url: flags.string({
       char: 'u',
@@ -80,7 +79,7 @@ export default class Create extends JBrowseCommand {
 
     const locationUrl =
       url ||
-      (nightly ? await this.getBranch('master') : '') ||
+      (nightly ? await this.getBranch('main') : '') ||
       (branch ? await this.getBranch(branch) : '') ||
       (tag ? await this.getTag(tag) : await this.getLatest())
 

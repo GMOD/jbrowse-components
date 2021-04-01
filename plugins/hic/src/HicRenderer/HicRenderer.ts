@@ -1,19 +1,18 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Color from 'color'
 import ServerSideRendererType, {
-  RenderArgsDeserialized,
-  RenderArgs,
-  ResultsDeserialized,
-  ResultsSerialized,
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsSerialized,
+  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized as ServerSideResultsSerialized,
+  ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { abortBreakPoint } from '@jbrowse/core/util'
-import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -28,24 +27,31 @@ interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => number
 }
 
-export interface PileupRenderProps {
-  features: HicFeature[]
-  dataAdapter: HicDataAdapter
-  config: AnyConfigurationModel
+export interface RenderArgs extends ServerSideRenderArgs {
   regions: Region[]
-  bpPerPx: number
-  height: number
-  width: number
-  highResolutionScaling: number
-  signal?: AbortSignal
-  sortObject: {
-    position: number
-    by: string
-  }
 }
 
+export interface RenderArgsDeserialized
+  extends ServerSideRenderArgsDeserialized {
+  regions: Region[]
+  dataAdapter: HicDataAdapter
+  bpPerPx: number
+  highResolutionScaling: number
+}
+
+export interface RenderArgsDeserializedWithFeatures
+  extends RenderArgsDeserialized {
+  features: HicFeature[]
+}
+
+export type { RenderArgsSerialized, RenderResults }
+
+export type ResultsSerialized = ServerSideResultsSerialized
+
+export type ResultsDeserialized = ServerSideResultsDeserialized
+
 export default class HicRenderer extends ServerSideRendererType {
-  async makeImageData(props: PileupRenderProps) {
+  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
     const {
       features,
       config,
@@ -111,27 +117,26 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async render(renderProps: PileupRenderProps) {
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
     const {
       height,
       width,
       imageData,
       maxHeightReached,
-    } = await this.makeImageData(renderProps)
-    const element = React.createElement(
-      this.ReactComponent,
-      {
-        ...renderProps,
-        region: renderProps.regions[0],
-        height,
-        width,
-        imageData,
-      },
-      null,
-    )
+    } = await this.makeImageData({ ...renderProps, features })
+
+    const results = await super.render({
+      ...renderProps,
+      features,
+      region: renderProps.regions[0],
+      height,
+      width,
+      imageData,
+    })
 
     return {
-      element,
+      ...results,
       imageData,
       height,
       width,
@@ -154,23 +159,5 @@ export default class HicRenderer extends ServerSideRendererType {
     // different from the base interface
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return features as any
-  }
-
-  serializeResultsInWorker(result: { html: string }): ResultsSerialized {
-    const serialized = ({ ...result } as unknown) as ResultsSerialized
-    return serialized
-  }
-
-  deserializeResultsInClient(
-    result: ResultsSerialized,
-    args: RenderArgs,
-  ): ResultsDeserialized {
-    // deserialize some of the results that came back from the worker
-    const deserialized = ({ ...result } as unknown) as ResultsDeserialized
-    const featuresMap = new Map<string, SimpleFeature>()
-
-    deserialized.features = featuresMap
-    deserialized.blockKey = args.blockKey
-    return deserialized
   }
 }

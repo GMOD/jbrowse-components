@@ -777,13 +777,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             spellcheck="false"
             style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: absolute; top: 0px; left: 0px; height: 100%; width: 100%; resize: none; overflow: hidden; padding: 10px 10px 10px 10px;"
           >
-            feature|getData('name')
+            get(feature,'name')
           </textarea>
           <pre
             aria-hidden="true"
             style="margin: 0px; border: 0px; background: none; box-sizing: inherit; display: inherit; font-family: inherit; font-size: inherit; font-style: inherit; font-variant-ligatures: inherit; font-weight: inherit; letter-spacing: inherit; line-height: inherit; tab-size: inherit; text-indent: inherit; text-rendering: inherit; text-transform: inherit; white-space: inherit; word-break: inherit; position: relative; pointer-events: none; padding: 10px 10px 10px 10px;"
           >
-            feature|getData('name')
+            get(feature,'name')
             <br />
           </pre>
           <style
@@ -1328,6 +1328,63 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               class="MuiFormHelperText-root"
             >
               remove spacing between features
+            </p>
+          </div>
+        </div>
+        <div
+          class="makeStyles-slotModeSwitch"
+        />
+      </div>
+      <div
+        class="MuiPaper-root makeStyles-paper MuiPaper-elevation1 MuiPaper-rounded"
+      >
+        <div
+          class="makeStyles-paperContent"
+        >
+          <div
+            class="MuiFormControl-root"
+          >
+            <label
+              class="MuiFormControlLabel-root"
+            >
+              <span
+                aria-disabled="false"
+                class="MuiButtonBase-root MuiIconButton-root PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorSecondary MuiIconButton-colorSecondary"
+              >
+                <span
+                  class="MuiIconButton-label"
+                >
+                  <input
+                    class="PrivateSwitchBase-input"
+                    data-indeterminate="false"
+                    type="checkbox"
+                    value=""
+                  />
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                    />
+                  </svg>
+                </span>
+                <span
+                  class="MuiTouchRipple-root"
+                />
+              </span>
+              <span
+                class="MuiTypography-root MuiFormControlLabel-label MuiTypography-body1"
+              >
+                mismatchAlpha
+              </span>
+            </label>
+            <p
+              class="MuiFormHelperText-root"
+            >
+              Fade low quality mismatches
             </p>
           </div>
         </div>

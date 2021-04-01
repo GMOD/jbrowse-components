@@ -124,7 +124,7 @@ export default class AlignmentsPlugin extends Plugin {
       () =>
         new WidgetType({
           name: 'AlignmentsFeatureWidget',
-          heading: 'Feature Details',
+          heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
           ReactComponent: AlignmentsFeatureDetailReactComponent,
@@ -160,7 +160,6 @@ export default class AlignmentsPlugin extends Plugin {
     )
     pluginManager.addRendererType(
       () =>
-        // @ts-ignore error "expected 0 arguments, but got 1"?
         new PileupRenderer({
           name: 'PileupRenderer',
           ReactComponent: PileupRendererReactComponent,

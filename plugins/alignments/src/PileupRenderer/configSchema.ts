@@ -45,7 +45,7 @@ export default ConfigurationSchema(
       defaultValue: 10000,
     },
     height: {
-      type: 'integer',
+      type: 'number',
       description: 'the height of each feature in a pileup alignment',
       defaultValue: 7,
       contextVariable: ['feature'],
@@ -54,6 +54,11 @@ export default ConfigurationSchema(
       type: 'boolean',
       description: 'remove spacing between features',
       defaultValue: false,
+    },
+    mismatchAlpha: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Fade low quality mismatches',
     },
   },
   { explicitlyTyped: true },

@@ -155,7 +155,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -256,9 +256,9 @@
           "type": "LinearGDCDisplay",
           "displayId": "gdc_plugin_track_linear",
           "renderer": {
-            "color1": "jexl:{LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'}|cast[feature|getData('consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
+            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[get(feature,'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
             "labels": {
-              "name": "jexl:feature|getData('genomicDnaChange')"
+              "name": "jexl:get(feature,'genomicDnaChange')"
             },
             "type": "SvgFeatureRenderer"
           }
@@ -374,7 +374,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -425,7 +425,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('geneName2')"
+              "description": "jexl:get(feature,'geneName2')"
             }
           }
         }
@@ -2487,7 +2487,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "feature|getDate('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -2518,7 +2518,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -3084,7 +3084,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "f|getData('ucscLabel')"
+              "description": "jexl:get(feature,'ucscLabel')"
             }
           }
         }

@@ -308,6 +308,7 @@ const stateModelFactory = (
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,
@@ -395,7 +396,7 @@ const stateModelFactory = (
               },
             },
 
-            ...(Object.keys(getConf(self, 'renderers')).length > 1
+            ...(Object.keys(getConf(self, 'renderers') || {}).length > 1
               ? [
                   {
                     label: 'Renderer type',

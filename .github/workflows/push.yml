@@ -21,8 +21,25 @@ jobs:
       - name: Typecheck codebase
         run: yarn typecheck
 
-  build:
-    name: Build on node 10.x and ubuntu-latest
+  buildwebsite:
+    name: Build website on node 12.x and ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install website deps (with cache)
+        uses: bahmutov/npm-install@v1
+        with:
+          working-directory: website
+      - name: Build website
+        run: |
+          cd website/
+          yarn build
+  buildjbrowseweb:
+    name: Build jbrowse-web on node 10.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,14 +53,6 @@ jobs:
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Install website deps (with cache)
-        uses: bahmutov/npm-install@v1
-        with:
-          working-directory: website
-      - name: Build website
-        run: |
-          cd website/
-          yarn build
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -79,5 +88,5 @@ jobs:
       - name: Deploy Storybook for branch to S3
         run: |
           pwd
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/$(echo ${{github.ref}} | cut -d "/" -f3-)
+          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/$(echo ${{github.ref}} | cut -d "/" -f3-)
         working-directory: products/jbrowse-react-linear-genome-view

@@ -87,7 +87,6 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get trackName() {
-        // @ts-ignore
         const uri = self.trackData?.uri
         const localPath = self.trackData?.localPath
         return (

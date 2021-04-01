@@ -40,14 +40,11 @@ function Home() {
   const { currentLink } = siteConfig.customFields
   const pathArray = currentLink.split('/')
   const currentVersion = pathArray[pathArray.length - 2]
-  const storybookLink = `https://jbrowse.org/storybook/${currentVersion}/`
+  const storybookLink = `https://jbrowse.org/storybook/lgv/${currentVersion}/`
   const classes = useStyles()
 
   return (
-    <Layout
-      title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
+    <Layout title={`${siteConfig.title}`}>
       <div className={classes.body}>
         <div className={classes.container}>
           <div style={{ flexBasis: '50%' }}>
@@ -64,28 +61,22 @@ function Home() {
             <ul>
               <li>
                 {' '}
-                <Link href="/jb2/blog" variant="contained">
-                  Download latest web release
-                </Link>
+                <Link href="/jb2/blog">Download latest web release</Link>
               </li>
               <li>
-                <Link href={currentLink} variant="contained">
-                  Browse web demo instance
-                </Link>
+                <Link href={currentLink}>Browse web demo instance</Link>
               </li>
             </ul>
             <h3>Embedded</h3>
             <ul>
               <li>
-                <Link href={storybookLink} variant="contained">
+                <Link href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view">
                   Linear genome view React component on <tt>npm</tt>
-                </Link>
+                </Link>{' '}
+                also see <Link href={storybookLink}>storybook docs</Link>
               </li>
               <li>
-                <Link
-                  href="https://gmod.github.io/JBrowseR/"
-                  variant="contained"
-                >
+                <Link href="https://gmod.github.io/JBrowseR/">
                   JBrowseR R package on <tt>CRAN</tt>
                 </Link>
               </li>

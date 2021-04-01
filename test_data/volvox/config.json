@@ -265,7 +265,11 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_alignments_alignments",
-          "defaultRendering": "svg"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "defaultRendering": "svg"
+          }
         }
       ]
     },
@@ -356,7 +360,11 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_altname_alignments",
-          "defaultRendering": "svg"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "defaultRendering": "svg"
+          }
         }
       ]
     },
@@ -381,13 +389,14 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer",
-              "maxHeight": 10
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_small_max_height_alignments_pileup",
+            "renderers": {
+              "PileupRenderer": {
+                "type": "PileupRenderer",
+                "maxHeight": 10
+              }
             }
           }
         }
@@ -1217,7 +1226,7 @@
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
-            "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
           }
         }
       ]

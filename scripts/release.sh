@@ -15,11 +15,11 @@ GITHUB_AUTH=$1
 [[ -n "$2" ]] && SEMVER_LEVEL="$2" || SEMVER_LEVEL="patch"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+[[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
 NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
-MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
-[[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
+MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
+[[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
 
 # make sure packages are all up to date
 yarn
