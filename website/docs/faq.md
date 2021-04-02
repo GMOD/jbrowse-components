@@ -6,7 +6,7 @@ toplevel: true
 
 ### General
 
-#### What technologies does JBrowse 2 use?
+#### What technologies does JBrowse 2 use
 
 - React
 - mobx-state-tree
@@ -14,7 +14,7 @@ toplevel: true
 - Typescript
 - Electron (for desktop specifically)
 
-#### What is special about JBrowse 2?
+#### What is special about JBrowse 2
 
 One thing that makes JBrowse 2 special is that we can create new view
 types via our plugin system, e.g. circular, dotplot, etc. Anything you want can
@@ -23,7 +23,7 @@ be added as a view, and can be shown alongside our other views
 This makes JBrowse 2 more than just a genome browser-- it is really a platform
 that can be built on.
 
-#### What are new features in JBrowse 2?
+#### What are new features in JBrowse 2
 
 - Uses web workers for multi-core data parsing and rendering of tracks
 - Use ctrl+scroll to zoom in and out quickly
@@ -46,7 +46,7 @@ Yes! See [here](user_guide#navigating-the-ui)
 
 ### Setup
 
-#### What web server do I need to run JBrowse 2?
+#### What web server do I need to run JBrowse 2
 
 JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
 statically hosted on a webserver without any backend services running.
@@ -61,7 +61,7 @@ Note that the server that you use should support byte-range requests (e.g. the
 Range HTTP header) so that JBrowse can get small slices of large binary data
 files.
 
-#### BAM files do not work on my server?
+#### BAM files do not work on my server
 
 If you are using Apache then you will probably want to disable mime*magic. If
 mime_magic is enabled, you may see that your server responds with the HTTP
@@ -69,7 +69,7 @@ header Content-Encoding: gzip which JBrowse does \_NOT* want, because this
 instructs the browser to unzip the data but JBrowse should be in charge of
 this.
 
-#### How can I start the JBrowse 2 app as a developer?
+#### How can I start the JBrowse 2 app as a developer
 
 We recommend that you have the following
 
@@ -88,13 +88,13 @@ You can use `PORT=8080 yarn start` to manually specify a different port
 Note that this is a development server that gets started up. To install jbrowse
 2 in production on your webserver, see below
 
-#### Do you have any tips for learning React and mobx-state-tree?
+#### Do you have any tips for learning React and mobx-state-tree
 
 Here is a short guide to React and mobx-state-tree that could help get you oriented
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
-#### How can I setup JBrowse 2 in production?
+#### How can I setup JBrowse 2 in production
 
 We recommend following the steps in the [quickstart web](quickstart_web) guide.
 
@@ -104,7 +104,7 @@ will download the latest version of jbrowse to your web folder e.g. in
 
 You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version
 
-#### How can I setup JBrowse 2 without the CLI tools?
+#### How can I setup JBrowse 2 without the CLI tools
 
 The jbrowse CLI tools are basically a convenience, and are not strictly required
 
@@ -124,7 +124,7 @@ to understand errors, because our config system is strongly typed
 
 Feel free to message the team if you encounter these
 
-#### How do I load a track into JBrowse 2?
+#### How do I load a track into JBrowse 2
 
 If you have followed the above steps and installed jbrowse 2 on your webserver
 and loaded the assembly, and have the CLI tools installed
@@ -146,21 +146,21 @@ myfile.bam.bai
 
 ### Curiosities
 
-#### Why do all the tracks need an assembly specified?
+#### Why do all the tracks need an assembly specified
 
 We require that all tracks have a specific genome assembly specified in their
 config. This is because jbrowse 2 is a multi-genome-assembly browser (and can
 compare genomes given the data). This may be different to using say jbrowse 1
 where it knows which genome assembly you are working with at any given time
 
-#### How are the menus structured in the app?
+#### How are the menus structured in the app
 
 In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
 
-#### Why do some of my reads not display soft clipping?
+#### Why do some of my reads not display soft clipping
 
 Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.
