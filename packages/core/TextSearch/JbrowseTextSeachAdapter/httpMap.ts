@@ -20,16 +20,27 @@ export default class HTTPMap {
     return response.json()
   }
 
+  /**
+   * loads meta.json file from names directory and reads number of hash_bits used
+   */
   private async readMeta() {
     this.meta = await this.loadFile('meta.json')
     this.meta.hash_hex_characters = Math.ceil(this.meta.hash_bits / 4)
   }
 
+  /**
+   * Returns the contents of the bucket given a key
+   * @param key
+   */
   async get(key) {
     const bucket = await this.getBucket(key)
     return bucket[key]
   }
 
+  /**
+   * Returns a bucket given a key
+   * @param key
+   */
   async getBucket(key) {
     await this.ready
     const bucketIdent = this.hash(key)

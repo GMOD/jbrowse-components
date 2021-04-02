@@ -9,6 +9,12 @@ export interface NameIndexEntry {
   [prefix: string]: Array<string>
   [exact: string]: Array<string>
 }
+
+export interface Option {
+  label: string
+  value: string
+  inputValue?: string
+}
 export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
@@ -39,11 +45,35 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   public async searchIndex(input: string, type: searchType) {
     const entries = await this.loadIndex()
     if (entries.get(input)) {
-      // console.log(input, type)
-      // console.log('results', entries.get(input)[type])
-      return entries.get(input)[type]
+      return this.formatOptions(entries.get(input)[type])
     }
     return []
+  }
+
+  private formatOptions(results) {
+    if (results.length === 0) {
+      return []
+    }
+    const formattedOptions = results.map(result => {
+      if (result && typeof result === 'object' && result.length > 1) {
+        const val = result[0]
+        const refName = result[3]
+        const start = result[4]
+        const end = result[5]
+        const formattedResult: Option = {
+          label: 'text search adapter',
+          value: `${val} ${refName}:${start}-${end}`,
+          inputValue: `${refName}:${start}-${end}`,
+        }
+        return formattedResult
+      }
+      const defaultOption: Option = {
+        label: 'text search adapter',
+        value: result,
+      }
+      return defaultOption
+    })
+    return formattedOptions
   }
 
   public freeResources(/* { region } */) {}

@@ -21,7 +21,7 @@ import { configSchema } from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/i
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
-const filter = createFilterOptions<Option>({ trim: true, limit: 36 })
+const filter = createFilterOptions<Option>({ trim: true, limit: 15 })
 
 export interface Option {
   label: string
@@ -44,6 +44,7 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const [open, setOpen] = React.useState(false)
   const [currentSearch, setCurrentSearch] = React.useState('')
   const [currentOptions, setCurrentOptions] = React.useState([])
   const [, setError] = React.useState<Error>()
@@ -53,14 +54,16 @@ function RefNameAutocomplete({
   const regions: Region[] = (assembly && assembly.regions) || []
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
+  const loadingSearch = currentOptions.length === 0
   // default region refNames and results from search
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       return { label: 'reference sequence', value: option.refName }
     })
-    return defaultOptions.concat(currentOptions)
-  }, [regions, currentOptions])
+    return defaultOptions
+  }, [regions])
 
+  console.log('loading search', loadingSearch)
   React.useEffect(() => {
     let active = true
     if (active) {
@@ -70,7 +73,7 @@ function RefNameAutocomplete({
           const test = new JbrowseTextSearchAdapter(configSchema)
           const results = await test.searchIndex(currentSearch, 'exact')
           if (results.length > 0) {
-            setCurrentOptions(formatOptions(results))
+            setCurrentOptions(options.concat(results))
           }
         } catch (e) {
           console.error(e)
@@ -84,47 +87,13 @@ function RefNameAutocomplete({
       active = false
       setError(undefined)
     }
-  }, [currentSearch])
+  }, [currentSearch, options])
 
-  // async function fetchResults(query: string) {
-  //   try {
-  //     const test = new JbrowseTextSearchAdapter(configSchema)
-  //     const results = await test.searchIndex(currentSearch, 'exact')
-  //     return results
-  //     console.log(results)
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  //   return []
-  // }
-
-  function formatOptions(results) {
-    // after fetching the options from adapters, format to place them in dropdown
-    // setCurrentOptions([])
-    if (results.length === 0) {
-      return []
+  React.useEffect(() => {
+    if (!open) {
+      setCurrentOptions([])
     }
-    const formattedOptions = results.map(result => {
-      if (result && typeof result === 'object' && result.length > 1) {
-        const val = result[0]
-        const refName = result[3]
-        const start = result[4]
-        const end = result[5]
-        const formattedResult: Option = {
-          label: 'text search adapter',
-          value: `${val} ${refName}:${start}-${end}`,
-          inputValue: `${refName}:${start}-${end}`,
-        }
-        return formattedResult
-      }
-      const defaultOption: Option = {
-        label: 'text search adapter',
-        value: result,
-      }
-      return defaultOption
-    })
-    return formattedOptions
-  }
+  }, [open])
   function onChange(newRegionName: Option | string) {
     //
     let newRegionValue: string | undefined
@@ -143,6 +112,7 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
+      open={open}
       disabled={!assemblyName || !loaded}
       disableListWrap
       disableClearable
@@ -153,7 +123,7 @@ function RefNameAutocomplete({
       selectOnFocus
       style={style}
       value={coarseVisibleLocStrings || value || ''}
-      options={options}
+      options={currentOptions}
       groupBy={option => String(option.label)}
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
@@ -172,8 +142,11 @@ function RefNameAutocomplete({
       onChange={(_, newRegion) => {
         onChange(newRegion)
       }}
+      onOpen={() => {
+        setOpen(true)
+      }}
       onClose={() => {
-        setCurrentOptions([])
+        setOpen(false)
       }}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
@@ -182,7 +155,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {!loaded ? (
+              {!loaded && !loadingSearch ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <InputAdornment position="end" style={{ marginRight: 7 }}>
