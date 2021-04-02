@@ -14,46 +14,44 @@ these steps. This guide also assumes you have:
 - samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
 - tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used for created tabix indexes for BED/VCF/GFF files
 
+## Super-quick overview for CLI
+
+### Install the jbrowse CLI
+
 ```bash
 ## Install JBrowse 2 CLI tools
 npm install -g @jbrowse/cli
 
-## Downloads latest release and unpacks it to web server folder
+
+## Use the `jbrowse create` command to download the latest release
 jbrowse create /var/www/html/jbrowse2
 
-## Create indexed FASTA file for your genome
-samtools faidx genome.fa
 
+
+## Create indexed FASTA file and load it using the add-assembly command
 ## Add your genome assembly to the config at /var/www/html/jbrowse2/config.json
 ## Also copies the files to this directory
+samtools faidx genome.fa
 jbrowse add-assembly genome.fa --out /var/www/html/jbrowse2 --load copy
-
 
 ## Copy file.bam and file.bam.bai to /var/www/html/jbrowse2 and adds track to
 ## the config at /var/www/html/jbrowse2/config.json. Assumes that file.bam and
 ## file.bam.bai exist
-jbrowse add-track file.bam --out /var/www/html/jbrowse2/config.json --load copy
+samtools index file.bam
+jbrowse add-track file.bam --out /var/www/html/jbrowse2/ --load copy
 
-## Adds a url entry for a bam file to the  config.json, but no file operations
-## performed, assumes BAM file is at http://website.com/myfile.bam.bai
+## Adds a url entry for a bam file to the config.json, the URL is stored in the
+## config instead of downloading files
 jbrowse add-track http://website.com/myfile.bam --out /var/www/html/jbrowse2
 
+## If your BAM index (bai) is not filename+'.bai' then you can manually specify
+## the --index flag. The --index flag also works with loading tabix tracks too
+jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2 --load copy
 
-## If your BAM index (bai) is not filename+'.bai' then you can manually
-## specifies index location with --index flag
-jbrowse add-track myfile.bam --index myfile.bai --out /var/www/html/jbrowse2
-
-
+## Outputting to a specific config file instead of a config directory
 ## Alternative loading syntax where I specify a config file, and then this can
 ## be loaded via http://localhost/jbrowse2/?config=alt_config.json
-## Also demonstrates using --load symlink instead of --load copy to avoid
-## copying large files
-jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --load symlink
-
-
-## add a BigWig track
-jbrowse add-track myfile.bw --out /var/www/html/jbrowse2 --load copy
-
+jbrowse add-assembly mygenome.fa --out /var/www/html/jbrowse2/alt_config.json --load copy
 
 ## load gene annotations from a GFF, using "GenomeTools" (gt) to sort the gff
 ## and tabix to index the GFF3
@@ -61,7 +59,29 @@ gt gff3 -sortlines -tidy -retainids myfile.gff > myfile.sorted.gff
 bgzip myfile.sorted.gff
 tabix myfile.sorted.gff.gz
 jbrowse add-track myfile.sorted.gff.gz --out /var/www/html/jbrowse2 --load copy
+
+## Example of using --subDir to organize your data directory:
+## copies myfile.bam and myfile.bam.bai to /var/www/html/jbrowse2/my_bams
+## folder, which helps organize your data folder
+jbrowse add-track myfile.bam --subDir my_bams --out /var/www/html/jbrowse2 --load copy
+
+## Example without using the --out parameter:
+## If you are in a directory with a config.json file, you can omit the --out parameter
+cd /var/www/html/jbrowse2
+jbrowse add-track /path/to/my/file.bam --load copy
+
+## Loading a synteny track using a PAF file
+minimap2 grape.fa peach.fa > grape_peach_alignments.paf
+jbrowse add-track grape.fa --load copy
+jbrowse add-track peach.fa --load copy
+jbrowse add-track grape_peach_alignments.paf --assemblyNames grape,peach
+
+## After you've had jbrowse for awhile, you can upgrade to our latest release
+jbrowse upgrade /var/www/html/jbrowse2
+
 ```
+
+## Conclusion
 
 You can now visit http://localhost/jbrowse2 and your genome should be loaded
 with a bigwig, a GFF, and a BAM file!
@@ -71,7 +91,9 @@ This guide is meant to be a super-quick conceptual overview for getting jbrowse
 might want to start with the slightly-longer quick-start guide
 [here](quickstart_cli).
 
-Footnote: JBrowse doesn't strictly need Apache or nginx, it is "static site
+## Footnote
+
+JBrowse doesn't strictly need Apache or nginx, it is "static site
 compatible" meaning it uses no server side code and can run on any static
 website hosting. For example, you can upload the jbrowse folder that we
 prepared here in /var/www/html/jbrowse2 to Amazon S3, and it will work there
