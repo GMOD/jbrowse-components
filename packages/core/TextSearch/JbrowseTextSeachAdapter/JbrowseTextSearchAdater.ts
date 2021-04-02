@@ -3,6 +3,7 @@ import {
   BaseTextSearchAdapter,
 } from '../../data_adapters/BaseAdapter'
 import MyConfigSchema from './configSchema'
+import HttpMap from './HttpMap'
 
 export interface NameIndexEntry {
   // key: {prefix: Array(0), exact: Array(0)}
@@ -26,8 +27,15 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
     this.name = 'test text search is connected'
   }
 
-  private async loadIndex() {
+  private async loadIndex(query: string) {
     // TODO: load index to search from
+    const httpMap = new HttpMap({
+      url: '/test_data/volvox/names/',
+      isElectron: false,
+      browser: '',
+    })
+    const bucket=await httpMap.getBucket( query )
+    console.log(bucket)
     const data = await fetch('/test_data/volvox/names/0.json').then(
       response => {
         return response.json()
@@ -43,7 +51,7 @@ export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
   }
 
   public async searchIndex(input: string, type: searchType) {
-    const entries = await this.loadIndex()
+    const entries = await this.loadIndex(input)
     if (entries.get(input)) {
       return this.formatOptions(entries.get(input)[type])
     }

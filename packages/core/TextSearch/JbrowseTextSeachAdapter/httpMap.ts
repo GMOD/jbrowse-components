@@ -1,11 +1,10 @@
 // Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
-import { objectHash } from 'object-hash'
-
-export default class HTTPMap {
-  public constructor(args) {
+import objectHash from 'object-hash'
+import CRC32 from 'crc-32'
+export default class HttpMap {
+  constructor(args) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
-    this.meta = {}
 
     this.browser = args.browser
     //   const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
@@ -27,6 +26,7 @@ export default class HTTPMap {
   private async readMeta() {
     this.meta = await this.loadFile('meta.json')
     this.meta.hash_hex_characters = Math.ceil(this.meta.hash_bits / 4)
+    return true
   }
 
   /**
@@ -55,7 +55,7 @@ export default class HTTPMap {
     return {}
   }
 
-  private hexToDirPath(hex: string) {
+  public hexToDirPath(hex: string) {
     // zero-pad the hex string to be 8 chars if necessary
     while (hex.length < 8) hex = `0${hex}`
     hex = hex.substr(8 - this.meta.hash_hex_characters)
@@ -63,11 +63,13 @@ export default class HTTPMap {
     for (let i = 0; i < hex.length; i += 3) {
       dirpath.push(hex.substring(i, i + 3))
     }
+    console.log(`${dirpath.join('/')}.json${this.meta.compress ? 'z' : ''}`)
     return `${dirpath.join('/')}.json${this.meta.compress ? 'z' : ''}`
   }
 
-  private hash(data) {
+  public hash(data) {
     // TODO replace with crc32 from util in jbrowse1 legacy plugin once this gets moved to that plugin
-    return objectHash(data).toString(16).toLowerCase().replace('-', 'n')
+    const result = CRC32.str(data)
+    return result.toString(16).toLowerCase().replace('-', 'n')
   }
 }
