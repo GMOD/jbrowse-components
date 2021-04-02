@@ -4,7 +4,7 @@ title: Super-quick start guide for JBrowse web
 toplevel: true
 ---
 
-This is a quick overview to get started running JBrowse 2 from scratch. It is
+This is a quick overview to get started running JBrowse 2 from scratch using the command line. It is
 helpful if you have some familiarity with the command line in general to follow
 these steps. This guide also assumes you have:
 
@@ -15,7 +15,7 @@ these steps. This guide also assumes you have:
 - tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used for created tabix indexes for BED/VCF/GFF files
 
 ```bash
-## Install jbrowse 2 CLI tools
+## Install JBrowse 2 CLI tools
 npm install -g @jbrowse/cli
 
 ## Downloads latest release and unpacks it to web server folder
