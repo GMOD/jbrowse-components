@@ -63,7 +63,7 @@ function RefNameAutocomplete({
     return defaultOptions
   }, [regions])
 
-  console.log('loading search', loadingSearch)
+  // console.log('loading search', loadingSearch)
   React.useEffect(() => {
     let active = true
     if (active) {

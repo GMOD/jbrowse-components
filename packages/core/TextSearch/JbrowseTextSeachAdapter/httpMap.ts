@@ -1,3 +1,4 @@
+// Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
 import { objectHash } from 'object-hash'
 
 export default class HTTPMap {
@@ -30,7 +31,6 @@ export default class HTTPMap {
 
   /**
    * Returns the contents of the bucket given a key
-   * @param key
    */
   async get(key) {
     const bucket = await this.getBucket(key)
@@ -39,7 +39,6 @@ export default class HTTPMap {
 
   /**
    * Returns a bucket given a key
-   * @param key
    */
   async getBucket(key) {
     await this.ready
