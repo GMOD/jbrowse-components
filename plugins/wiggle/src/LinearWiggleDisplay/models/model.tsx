@@ -318,6 +318,7 @@ const stateModelFactory = (
             ...self.composedRenderProps,
             ...getParentRenderProps(self),
             notReady: !self.ready,
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,

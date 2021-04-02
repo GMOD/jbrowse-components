@@ -1,9 +1,15 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import { getDefaultValue } from '../../util/mst-reflection'
 import PluggableElementBase from '../PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../../configuration/configurationSchema'
 import { AnyReactComponentType } from '../../util'
 import PluginManager from '../../PluginManager'
+
+export type RenderProps = Record<string, unknown>
+
+export interface RenderResults {
+  reactElement: ReactElement
+}
 
 export default class RendererType extends PluggableElementBase {
   ReactComponent: AnyReactComponentType
@@ -36,10 +42,10 @@ export default class RendererType extends PluggableElementBase {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async render(props: Record<string, any>): Promise<Record<string, any>> {
-    const element = React.createElement(this.ReactComponent, props, null)
-    return { element }
+  async render(props: RenderProps): Promise<RenderResults> {
+    return {
+      reactElement: React.createElement(this.ReactComponent, props, null),
+    }
   }
 
   /**

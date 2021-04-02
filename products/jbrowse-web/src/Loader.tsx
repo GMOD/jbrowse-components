@@ -26,10 +26,7 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  readSessionFromDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
@@ -52,6 +49,7 @@ function NoConfigMessage() {
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
+    ['test_data/config_wormbase.json', 'Wormbase'],
   ]
   return (
     <div>
@@ -293,12 +291,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      self.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async afterCreate() {
@@ -449,6 +442,15 @@ const Renderer = observer(
               },
               { pluginManager },
             )
+            rootModel.jbrowse.configuration.rpc.addDriverConfig(
+              'WebWorkerRpcDriver',
+              { type: 'WebWorkerRpcDriver' },
+            )
+            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
+              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
+                'WebWorkerRpcDriver',
+              )
+            }
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default

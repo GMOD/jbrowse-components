@@ -22,15 +22,21 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     return renameRegionsIfNeeded(assemblyManager, args)
   }
 
-  async execute(args: {
-    adapterConfig: {}
-    signal?: RemoteAbortSignal
-    headers?: Record<string, string>
-    regions: Region[]
-    sessionId: string
-    tag: string
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      regions: Region[]
+      sessionId: string
+      tag: string
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { adapterConfig, sessionId, regions, tag } = deserializedArgs
     const dataAdapter = getAdapter(this.pluginManager, sessionId, adapterConfig)
       .dataAdapter as BaseFeatureDataAdapter

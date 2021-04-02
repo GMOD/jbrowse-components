@@ -9,7 +9,7 @@ function makeFilters(displayModel) {
   for (const attrName of filterOut.keys()) {
     for (const value of filterOut.get(attrName).keys()) {
       if (filterOut.get(attrName).get(value)) {
-        filters.push(`jexl:feature|getData('${attrName}') != '${value}'`)
+        filters.push(`jexl:get(feature,'${attrName}') != '${value}'`)
       }
     }
   }
@@ -36,6 +36,7 @@ export default configSchema => {
           return {
             ...getParentRenderProps(self),
             ...this.composedRenderProps,
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.configuration.renderer,
             filters,

@@ -1,10 +1,12 @@
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Color from 'color'
 import ServerSideRendererType, {
-  RenderArgsDeserialized,
-  RenderArgs,
-  ResultsDeserialized,
-  ResultsSerialized,
+  RenderArgs as ServerSideRenderArgs,
+  RenderArgsSerialized,
+  RenderArgsDeserialized as ServerSideRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized as ServerSideResultsSerialized,
+  ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
@@ -14,7 +16,7 @@ import {
   createImageBitmap,
   PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-
+import { abortBreakPoint } from '@jbrowse/core/util'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -30,26 +32,32 @@ interface HicDataAdapter extends BaseFeatureDataAdapter {
   getResolution: (bp: number) => number
 }
 
-export interface PileupRenderProps {
-  features: HicFeature[]
-  dataAdapter: HicDataAdapter
-  config: AnyConfigurationModel
+export interface RenderArgs extends ServerSideRenderArgs {
   regions: Region[]
-  forceSvg?: boolean
-  fullSvg?: boolean
-  bpPerPx: number
-  height: number
-  width: number
-  highResolutionScaling: number
-  signal?: AbortSignal
-  sortObject: {
-    position: number
-    by: string
-  }
 }
 
+export interface RenderArgsDeserialized
+  extends ServerSideRenderArgsDeserialized {
+  regions: Region[]
+  dataAdapter: HicDataAdapter
+  bpPerPx: number
+  highResolutionScaling: number
+}
+
+export interface RenderArgsDeserializedWithFeatures
+  extends RenderArgsDeserialized {
+  features: HicFeature[]
+}
+
+export type { RenderArgsSerialized, RenderResults }
+
+export type ResultsSerialized = ServerSideResultsSerialized
+
+export type ResultsDeserialized = ServerSideResultsDeserialized
+
+
 export default class HicRenderer extends ServerSideRendererType {
-  async makeImageData(ctx: CanvasRenderingContext2D, props: PileupRenderProps) {
+  async makeImageData(ctx: CanvasRenderingContext2D, props: RenderArgsDeserializedWithFeatures) {
     const { features, config, bpPerPx, signal, dataAdapter } = props
     const res = await dataAdapter.getResolution(bpPerPx)
     const w = res / (bpPerPx * Math.sqrt(2))
@@ -86,7 +94,7 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async render(renderProps: PileupRenderProps) {
+  async render(renderProps: RenderArgsDeserialized) {
     const {
       forceSvg,
       fullSvg,
@@ -172,28 +180,10 @@ export default class HicRenderer extends ServerSideRendererType {
       .getFeatures(regions[0], { signal, bpPerPx })
       .pipe(toArray())
       .toPromise()
-    // cast to any to avoid return-type conflict, because the types of features
-    // returned by our getFeatures are quite different from the base interface
-
+    // cast to any to avoid return-type conflict, because the
+    // types of features returned by our getFeatures are quite
+    // different from the base interface
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return features as any
-  }
-
-  serializeResultsInWorker(result: { html: string }): ResultsSerialized {
-    const serialized = ({ ...result } as unknown) as ResultsSerialized
-    return serialized
-  }
-
-  deserializeResultsInClient(
-    result: ResultsSerialized,
-    args: RenderArgs,
-  ): ResultsDeserialized {
-    // deserialize some of the results that came back from the worker
-    const deserialized = ({ ...result } as unknown) as ResultsDeserialized
-    const featuresMap = new Map<string, SimpleFeature>()
-
-    deserialized.features = featuresMap
-    deserialized.blockKey = args.blockKey
-    return deserialized
   }
 }

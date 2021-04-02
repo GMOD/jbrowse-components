@@ -60,6 +60,11 @@ export default ConfigurationSchema(
       description: 'scale at which to draw the large insertion indicators',
       defaultValue: 10,
     },
+    mismatchAlpha: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Fade low quality mismatches',
+    },
   },
   { explicitlyTyped: true },
 )

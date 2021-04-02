@@ -22,6 +22,7 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
@@ -55,6 +56,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+
+      // which config is being shown in the "About track" menu
+      showAboutConfig: undefined as undefined | AnyConfigurationModel,
     }))
     .views(self => ({
       get rpcManager() {
@@ -122,6 +126,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setShowAboutConfig(showConfig: AnyConfigurationModel) {
+        self.showAboutConfig = showConfig
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -291,6 +298,19 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       renameCurrentSession(sessionName: string) {
         return getParent(self).renameCurrentSession(sessionName)
+      },
+    }))
+    .views(self => ({
+      getTrackActionMenuItems(config: any) {
+        return [
+          {
+            label: 'About track',
+            onClick: () => {
+              self.setShowAboutConfig(config)
+            },
+            icon: InfoIcon,
+          },
+        ]
       },
     }))
     .extend(() => {

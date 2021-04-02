@@ -16,6 +16,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
+import React from 'react'
 import renderReactionFactory from './renderReaction'
 import { CircularViewModel } from '../../CircularView'
 
@@ -33,7 +34,7 @@ export const BaseChordDisplayModel = types
       // NOTE: all this volatile stuff has to be filled in at once
       // so that it stays consistent
       filled: false,
-      html: '',
+      reactElement: undefined as React.ReactElement | undefined,
       data: undefined,
       message: '',
       error: undefined as Error | undefined,
@@ -77,6 +78,7 @@ export const BaseChordDisplayModel = types
       const view = getContainingView(self) as CircularViewModel
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
         bezierRadius: view.radiusPx * self.bezierRadiusRatio,
         radius: view.radiusPx,
@@ -128,7 +130,7 @@ export const BaseChordDisplayModel = types
     renderStarted() {
       self.filled = false
       self.message = ''
-      self.html = ''
+      self.reactElement = undefined
       self.data = undefined
       self.error = undefined
       self.renderingComponent = undefined
@@ -136,26 +138,26 @@ export const BaseChordDisplayModel = types
     renderSuccess({
       message,
       data,
-      html,
+      reactElement,
       renderingComponent,
     }: {
       message: string
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: any
-      html: string
+      reactElement: React.ReactElement
       renderingComponent: AnyReactComponentType
     }) {
       if (message) {
         self.filled = false
         self.message = message
-        self.html = ''
+        self.reactElement = undefined
         self.data = undefined
         self.error = undefined
         self.renderingComponent = undefined
       } else {
         self.filled = true
         self.message = ''
-        self.html = html
+        self.reactElement = reactElement
         self.data = data
         self.error = undefined
         self.renderingComponent = renderingComponent
@@ -166,7 +168,7 @@ export const BaseChordDisplayModel = types
       // the rendering failed for some reason
       self.filled = false
       self.message = ''
-      self.html = ''
+      self.reactElement = undefined
       self.data = undefined
       self.error = error
       self.renderingComponent = undefined

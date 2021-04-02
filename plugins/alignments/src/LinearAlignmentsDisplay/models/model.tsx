@@ -6,13 +6,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'deep-equal'
 import { autorun, when } from 'mobx'
-import {
-  addDisposer,
-  getParent,
-  getSnapshot,
-  Instance,
-  types,
-} from 'mobx-state-tree'
+import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
 
@@ -61,14 +55,10 @@ const stateModelFactory = (
       const { trackMenuItems } = self
       return {
         get pileupDisplayConfig() {
-          const conf = getConf(self)
+          const conf = getConf(self, 'pileupDisplay')
           const track = getContainingTrack(self)
-          const { SNPCoverageRenderer, ...rest } = conf.renderers
           return {
             ...conf,
-            renderers: {
-              ...rest,
-            },
             type: 'LinearPileupDisplay',
             name: `${getConf(track, 'name')} pileup`,
             displayId: `${self.configuration.displayId}_pileup_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
@@ -98,15 +88,12 @@ const stateModelFactory = (
         },
 
         get snpCoverageDisplayConfig() {
-          const conf = getConf(self)
-          const { SNPCoverageRenderer } = conf.renderers
+          const conf = getConf(self, 'snpCoverageDisplay')
+          const track = getContainingTrack(self)
           return {
             ...conf,
-            renderers: {
-              SNPCoverageRenderer,
-            },
             type: 'LinearSNPCoverageDisplay',
-            name: `${getConf(getParent(self, 2), 'name')} pileup`,
+            name: `${getConf(track, 'name')} snp coverage`,
             displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
           }
         },

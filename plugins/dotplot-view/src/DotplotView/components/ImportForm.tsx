@@ -85,7 +85,7 @@ export default () => {
         assemblyNames[selected[1]],
       ])
 
-      if ('uri' in trackData) {
+      if ('uri' in trackData && trackData.uri) {
         const fileName = trackData.uri
           ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
           : null

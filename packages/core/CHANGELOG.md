@@ -1,3 +1,9 @@
+# [1.1.0](https://github.com/GMOD/jbrowse-components/compare/v1.0.4...v1.1.0) (2021-03-29)
+
+### Reverts
+
+- Revert "Test build with bumped type deps" ([946a4ce](https://github.com/GMOD/jbrowse-components/commit/946a4cef1241d976e204f6a0d3675f70f2d51a96))
+
 ## [1.0.4](https://github.com/GMOD/jbrowse-components/compare/v1.0.3...v1.0.4) (2021-03-08)
 
 ### Reverts

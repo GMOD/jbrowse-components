@@ -5,6 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 import DeleteIcon from '@material-ui/icons/Delete'
+import CloseIcon from '@material-ui/icons/Close'
 import MinimizeIcon from '@material-ui/icons/Minimize'
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
 import { makeStyles } from '@material-ui/core/styles'
@@ -19,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   components: {
     display: 'block',
   },
-  drawerCloseButton: {
+  drawerActions: {
     float: 'right',
     '&:hover': {
       backgroundColor: fade(
@@ -34,7 +35,7 @@ const useStyles = makeStyles(theme => ({
   drawerToolbar: {
     paddingLeft: theme.spacing(2),
   },
-  drawerToolbarCloseButton: {
+  spacer: {
     flexGrow: 1,
   },
   drawerSelect: {
@@ -124,17 +125,28 @@ const DrawerWidget = observer(props => {
                 )
               })}
             </Select>
-            <div className={classes.drawerToolbarCloseButton} />
-            <IconButton
-              className={classes.drawerCloseButton}
-              data-testid="drawer-minimize"
-              color="inherit"
-              onClick={() => {
-                session.minimizeWidgetDrawer()
-              }}
-            >
-              <MinimizeIcon />
-            </IconButton>
+            <div className={classes.spacer} />
+            <div className={classes.drawerCloseButton}>
+              <IconButton
+                className={classes.drawerCloseButton}
+                data-testid="drawer-minimize"
+                color="inherit"
+                onClick={() => {
+                  session.minimizeWidgetDrawer()
+                }}
+              >
+                <MinimizeIcon />
+              </IconButton>
+              <IconButton
+                data-testid="drawer-close"
+                color="inherit"
+                onClick={() => {
+                  session.hideWidget(visibleWidget)
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
           </Toolbar>
         </AppBar>
         <ReactComponent model={visibleWidget} session={session} />

@@ -1,6 +1,13 @@
 /* eslint-disable no-bitwise */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import BoxRendererType from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
+import BoxRendererType, {
+  RenderArgs,
+  RenderArgsSerialized,
+  RenderArgsDeserialized as BoxRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap, blobToDataURL } from '@jbrowse/core/util'
@@ -25,29 +32,34 @@ import {
   PileupLayoutSessionProps,
 } from './PileupLayoutSession'
 
-export interface PileupRenderProps {
-  features: Map<string, Feature>
-  layout: BaseLayout<Feature>
-  config: AnyConfigurationModel
-  regions: Region[]
-  bpPerPx: number
-  colorBy?: {
-    type: string
-    tag?: string
-  }
-  colorTagMap?: { [key: string]: string }
-  height: number
-  width: number
-  highResolutionScaling: number
-  showSoftClip: boolean
-  sortedBy: {
+export type {
+  RenderArgs,
+  RenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+}
+
+export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
+  colorBy?: { type: string; tag?: string }
+  colorTagMap?: Record<string, string>
+  sortedBy?: {
     type: string
     pos: number
     refName: string
+    assemblyName: string
+    tag?: string
   }
-  theme: ThemeOptions
-  forceSvg: boolean
-  fullSvg: boolean
+  showSoftClip: boolean
+  highResolutionScaling: number
+forceSvg:boolean
+fullSvg:boolean
+}
+
+export interface RenderArgsDeserializedWithFeaturesAndLayout
+  extends RenderArgsDeserialized {
+  features: Map<string, Feature>
+  layout: BaseLayout<Feature>
 }
 
 interface LayoutRecord {
@@ -160,7 +172,7 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use. possible improvement: use average read
   // size to set the heuristic maxClippingSize expansion (e.g. short reads
   // don't have to expand a softclipping size a lot, but long reads might)
-  getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
     const { config, showSoftClip } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
@@ -274,7 +286,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserialized,
   ) {
     const { regions, bpPerPx } = props
     const { heightPx, topPx, feature } = feat
@@ -315,15 +327,10 @@ export default class PileupRenderer extends BoxRendererType {
   drawAlignmentRect(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
-    const {
-      config,
-      bpPerPx,
-      regions,
-      colorBy: { tag = '', type: colorType = '' } = {},
-      colorTagMap = {},
-    } = props
+    const { config, bpPerPx, regions, colorBy, colorTagMap = {} } = props
+    const { tag = '', type: colorType = '' } = colorBy || {}
     const { feature } = feat
     const region = regions[0]
 
@@ -406,7 +413,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawMismatches(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     mismatchQuality: boolean,
     colorForBase: { [key: string]: string },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -451,7 +458,7 @@ export default class PileupRenderer extends BoxRendererType {
         let color = baseColor
         if (mismatchQuality && mismatch.qual !== undefined) {
           color = Color(baseColor)
-            .alpha(mismatch.qual / 90)
+            .alpha(Math.min(1, mismatch.qual / 50))
             .hsl()
             .string()
         }
@@ -562,7 +569,7 @@ export default class PileupRenderer extends BoxRendererType {
   drawSoftClipping(
     ctx: CanvasRenderingContext2D,
     feat: LayoutFeature,
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
     config: AnyConfigurationModel,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     theme: any,
@@ -632,7 +639,7 @@ export default class PileupRenderer extends BoxRendererType {
   async makeImageData(
     ctx: CanvasRenderingContext2D,
     layoutRecords: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    props: PileupRenderProps,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
     const {
       layout,
@@ -641,6 +648,7 @@ export default class PileupRenderer extends BoxRendererType {
       colorBy = {} as { type?: string },
       theme: configTheme,
     } = props
+    const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
     const theme = createJBrowseTheme(configTheme)
     const colorForBase: { [key: string]: string } = {
       A: theme.palette.bases.A.main,
@@ -670,7 +678,7 @@ export default class PileupRenderer extends BoxRendererType {
         ctx,
         feat,
         props,
-        colorBy.type === 'mismatchQuality',
+        mismatchAlpha,
         colorForBase,
         theme,
       )
@@ -682,7 +690,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   // we perform a full layout before render as a separate method because the
   // layout determines the height of the canvas that we use to render
-  layoutFeats(props: PileupRenderProps) {
+  layoutFeats(props: RenderArgsDeserialized) {
     const {
       layout,
       features,
@@ -721,7 +729,7 @@ export default class PileupRenderer extends BoxRendererType {
     return layoutRecords
   }
 
-  async render(props: PileupRenderProps) {
+  async render(props: RenderArgsDeserialized) {
     const { forceSvg, fullSvg, regions, layout, bpPerPx } = props
     let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
@@ -729,6 +737,7 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = this.layoutFeats(props)
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+
 
     let ret
 
