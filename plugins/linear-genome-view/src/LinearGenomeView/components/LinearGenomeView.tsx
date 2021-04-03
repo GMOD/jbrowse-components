@@ -34,8 +34,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const LinearGenomeView = observer((props: { model: LGV }) => {
-  const { model } = props
+const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
@@ -170,7 +169,7 @@ function SVGRuler({
   } = model
   const renderRuler = contentBlocks.length < 5
   return (
-    <g transform={`translate(0 ${rulerHeight})`}>
+    <>
       <defs>
         <clipPath id="clip-ruler">
           <rect x={0} y={0} width={width} height={20} />
@@ -205,31 +204,78 @@ function SVGRuler({
           </g>
         )
       })}
+    </>
+  )
+}
+
+const fontSize = 15
+const rulerHeight = 50
+const textHeight = fontSize + 5
+const paddingHeight = 20
+const headerHeight = textHeight + 20
+
+const SVGHeader = ({ model }: { model: LGV }) => {
+  const { width, assemblyNames } = model
+  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
+  return (
+    <g id="header">
+      <text x={0} y={fontSize} fontSize={fontSize}>
+        {assemblyName}
+      </text>
+      <g transform={`translate(0 ${fontSize})`}>
+        <ScaleBar model={model} fontSize={fontSize} />
+      </g>
+      <g transform={`translate(0 ${rulerHeight})`}>
+        <SVGRuler
+          model={model}
+          fontSize={fontSize}
+          rulerHeight={rulerHeight}
+          width={width}
+        />
+      </g>
     </g>
   )
 }
 
+const totalHeight = (tracks: { displays: { height: number }[] }[]) => {
+  return tracks.reduce((accum, track) => {
+    const display = track.displays[0]
+    return accum + display.height + paddingHeight + textHeight
+  }, 0)
+}
+const SVGRegionSeparators = ({ model }: { model: LGV }) => {
+  const { dynamicBlocks, tracks } = model
+  const initialOffset = headerHeight + rulerHeight + 20
+  const height = totalHeight(tracks)
+
+  return (
+    <>
+      {dynamicBlocks.contentBlocks.slice(1).map(block => (
+        <line
+          key={block.key}
+          x1={block.offsetPx - model.offsetPx}
+          x2={block.offsetPx - model.offsetPx}
+          y1={initialOffset}
+          y2={height}
+          stroke="black"
+          strokeOpacity={0.3}
+        />
+      ))}
+    </>
+  )
+}
+
+// render LGV to SVG
+// the xlink namespace is used for rendering <image> tag
 export async function renderToSvg(
   model: LGV,
   opts: { fullSvg: boolean } = { fullSvg: true },
 ) {
-  const fontSize = 15
-  const textHeight = fontSize + 5
-  const paddingHeight = 20
-  const headerHeight = textHeight + 20
-  const rulerHeight = 50
   await when(() => model.initialized)
-  const { width, tracks, assemblyNames, dynamicBlocks } = model
-  let offset = headerHeight + rulerHeight + 20
-  const initialOffset = headerHeight + rulerHeight + 20
-  const height =
-    tracks.reduce((accum, track) => {
-      const display = track.displays[0]
-      return accum + display.height + 20 + textHeight
-    }, 0) + offset
-
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
+  const { width, tracks } = model
+  const height = totalHeight(tracks)
   const shift = 50
+  let offset = headerHeight + rulerHeight + 20
   return renderToStaticMarkup(
     <svg
       width={width}
@@ -238,21 +284,11 @@ export async function renderToSvg(
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox={[0, 0, width + shift * 2, height].toString()}
     >
+      {/* background white */}
       <rect width={width + shift * 2} height={height} fill="white" />
-      <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
-        <text x={0} y={fontSize} fontSize={fontSize}>
-          {assemblyName}
-        </text>
-        <g transform={`translate(0 ${fontSize})`}>
-          <ScaleBar model={model} fontSize={fontSize} />
-        </g>
-        <SVGRuler
-          model={model}
-          fontSize={fontSize}
-          rulerHeight={rulerHeight}
-          width={width}
-        />
 
+      <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+        <SVGHeader model={model} />
         {
           await Promise.all(
             tracks.map(async track => {
@@ -285,19 +321,7 @@ export async function renderToSvg(
             }),
           )
         }
-        {dynamicBlocks.contentBlocks.slice(1).map(block => {
-          return (
-            <line
-              key={block.key}
-              x1={block.offsetPx - model.offsetPx}
-              x2={block.offsetPx - model.offsetPx}
-              y1={initialOffset}
-              y2={height}
-              stroke="black"
-              strokeOpacity={0.3}
-            />
-          )
-        })}
+        <SVGRegionSeparators model={model} />
       </g>
     </svg>,
   )

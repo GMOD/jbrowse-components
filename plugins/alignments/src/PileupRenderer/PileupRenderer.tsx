@@ -1,4 +1,5 @@
 /* eslint-disable no-bitwise */
+import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import BoxRendererType, {
   RenderArgs,
@@ -18,7 +19,6 @@ import {
   createImageBitmap,
   PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -639,13 +639,7 @@ export default class PileupRenderer extends BoxRendererType {
     layoutRecords: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
-    const {
-      layout,
-      config,
-      showSoftClip,
-      colorBy = {} as { type?: string },
-      theme: configTheme,
-    } = props
+    const { layout, config, showSoftClip, theme: configTheme } = props
     const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
     const theme = createJBrowseTheme(configTheme)
     const colorForBase: { [key: string]: string } = {
@@ -681,7 +675,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   // we perform a full layout before render as a separate method because the
   // layout determines the height of the canvas that we use to render
-  layoutFeats(props: RenderArgsDeserialized) {
+  layoutFeats(props: RenderArgsDeserializedWithFeaturesAndLayout) {
     const {
       layout,
       features,

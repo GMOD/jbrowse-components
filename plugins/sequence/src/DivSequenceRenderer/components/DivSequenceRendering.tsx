@@ -17,6 +17,7 @@ import {
 } from '@jbrowse/core/util'
 
 interface MyProps {
+  forceSvg: boolean
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
@@ -174,42 +175,32 @@ function DNA(props: {
   )
 }
 
-function Sequence(props: MyProps) {
-  const {
-    features = new Map(),
-    regions,
-    bpPerPx,
-    theme: configTheme,
-    showForward = true,
-    showReverse = true,
-    showTranslation = true,
-  } = props
-  const theme = createJBrowseTheme(configTheme)
+const SequenceSVG = ({
+  regions,
+  theme: configTheme,
+  features,
+  showReverse,
+  showForward,
+  showTranslation,
+  bpPerPx,
+}: any) => {
   const [region] = regions
-  const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 200
+  const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
-
   const [feature] = [...features.values()]
   if (!feature) {
     return null
   }
   const seq: string = feature.get('seq')
-  if (!seq) {
-    return null
-  }
+  if (!seq) return null
 
   // incrementer for the y-position of the current sequence being rendered
   // (applies to both translation rows and dna rows)
   let currY = -20
 
   return (
-    <svg
-      width={width}
-      height={totalHeight}
-      style={{ width, height: totalHeight }}
-    >
+    <>
       {/* the upper translation row. if the view is reversed, the reverse
         translation is on the top */}
       {showTranslation && (region.reversed ? showReverse : showForward)
@@ -271,7 +262,34 @@ function Sequence(props: MyProps) {
             />
           ))
         : null}
+    </>
+  )
+}
+
+const Wrapper = ({ width, totalHeight, children }: any) => {
+  return (
+    <svg
+      width={width}
+      height={totalHeight}
+      style={{ width, height: totalHeight }}
+    >
+      {children}
     </svg>
+  )
+}
+
+function Sequence(props: MyProps) {
+  const { regions, bpPerPx, forceSvg } = props
+  const [region] = regions
+  const width = (region.end - region.start) / bpPerPx
+  const totalHeight = 200
+
+  return forceSvg ? (
+    <SequenceSVG width={width} totalHeight={totalHeight} />
+  ) : (
+    <Wrapper totalHeight={totalHeight} width={width}>
+      <SequenceSVG {...props} />
+    </Wrapper>
   )
 }
 
