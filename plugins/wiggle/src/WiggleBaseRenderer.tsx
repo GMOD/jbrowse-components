@@ -6,35 +6,47 @@ import {
 
 import { blobToDataURL } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { Region } from '@jbrowse/core/util/types'
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import FeatureRendererType, {
+  RenderArgs as FeatureRenderArgs,
+  RenderArgsSerialized,
+  RenderArgsDeserialized as FeatureRenderArgsDeserialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+} from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
-export interface WiggleBaseRendererProps {
-  features: Map<string, Feature>
-  config: AnyConfigurationModel
-  regions: Region[]
+export interface RenderArgs extends FeatureRenderArgs {
+  scaleOpts: ScaleOpts
+}
+
+export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
   height: number
-  forceSvg: boolean
-  fullSvg: boolean
   highResolutionScaling: number
-  blockKey: string
-  dataAdapter: BaseFeatureDataAdapter
   scaleOpts: ScaleOpts
-  sessionId: string
-  signal: AbortSignal
   displayCrossHatches: boolean
   ticks: { values: number[] }
   theme: ThemeOptions
 }
 
-export default abstract class extends ServerSideRendererType {
-  async makeImageData(props: WiggleBaseRendererProps) {
+export interface RenderArgsDeserializedWithFeatures
+  extends RenderArgsDeserialized {
+  features: Map<string, Feature>
+}
+
+export type {
+  RenderArgsSerialized,
+  RenderResults,
+  ResultsSerialized,
+  ResultsDeserialized,
+}
+
+export default abstract class WiggleBaseRenderer extends FeatureRendererType {
+  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
     const { forceSvg, height, regions, bpPerPx, fullSvg } = props
     let highResolutionScaling = props.highResolutionScaling || 1
     const [region] = regions
@@ -91,26 +103,21 @@ export default abstract class extends ServerSideRendererType {
   /** draw features to context given props */
   abstract draw(
     ctx: CanvasRenderingContext2D,
-    props: WiggleBaseRendererProps,
+    props: RenderArgsDeserialized,
   ): void
 
-  async render(renderProps: WiggleBaseRendererProps) {
-    const { forceSvg } = renderProps
-    const { height, width, imageData } = await this.makeImageData(renderProps)
-
-    if (forceSvg) {
-      return { element: imageData, width, height }
-    }
-    const element = React.createElement(
-      this.ReactComponent,
-      { ...renderProps, height, width, imageData },
-      null,
-    )
-    return {
-      element,
-      imageData,
-      height,
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const { width, imageData } = await this.makeImageData({
+      ...renderProps,
+      features,
+    })
+    const results = await super.render({
+      ...renderProps,
+      features,
       width,
-    }
+      imageData,
+    })
+    return { ...results, imageData, width }
   }
 }
