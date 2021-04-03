@@ -1,4 +1,3 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Color from 'color'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
@@ -8,7 +7,6 @@ import ServerSideRendererType, {
   ResultsSerialized as ServerSideResultsSerialized,
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types'
 import { blobToDataURL, abortBreakPoint } from '@jbrowse/core/util'
 import {
@@ -16,7 +14,6 @@ import {
   createImageBitmap,
   PonyfillOffscreenCanvas,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { abortBreakPoint } from '@jbrowse/core/util'
 import React from 'react'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -55,9 +52,11 @@ export type ResultsSerialized = ServerSideResultsSerialized
 
 export type ResultsDeserialized = ServerSideResultsDeserialized
 
-
 export default class HicRenderer extends ServerSideRendererType {
-  async makeImageData(ctx: CanvasRenderingContext2D, props: RenderArgsDeserializedWithFeatures) {
+  async makeImageData(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
     const { features, config, bpPerPx, signal, dataAdapter } = props
     const res = await dataAdapter.getResolution(bpPerPx)
     const w = res / (bpPerPx * Math.sqrt(2))

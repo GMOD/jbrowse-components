@@ -22,8 +22,6 @@ import React from 'react'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { RenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
-import { ThemeOptions } from '@material-ui/core'
 import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 import { orientationTypes } from './util'
@@ -52,8 +50,8 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   }
   showSoftClip: boolean
   highResolutionScaling: number
-forceSvg:boolean
-fullSvg:boolean
+  forceSvg: boolean
+  fullSvg: boolean
 }
 
 export interface RenderArgsDeserializedWithFeaturesAndLayout
@@ -674,14 +672,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       ctx.fillStyle = readConfObject(config, 'color', { feature })
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(
-        ctx,
-        feat,
-        props,
-        mismatchAlpha,
-        colorForBase,
-        theme,
-      )
+      this.drawMismatches(ctx, feat, props, mismatchAlpha, colorForBase, theme)
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
       }
@@ -729,17 +720,25 @@ export default class PileupRenderer extends BoxRendererType {
     return layoutRecords
   }
 
-  async render(props: RenderArgsDeserialized) {
-    const { forceSvg, fullSvg, regions, layout, bpPerPx } = props
-    let highResolutionScaling = props.highResolutionScaling || 1
+  async render(renderProps: RenderArgsDeserialized) {
+    const {
+      forceSvg,
+      fullSvg,
+      regions,
+      bpPerPx,
+      highResolutionScaling = 1,
+    } = renderProps
+
+    const props = {
+      ...renderProps,
+      features: await this.getFeatures(renderProps),
+      layout: this.createLayoutInWorker(renderProps),
+    }
+    const layoutRecords = this.layoutFeats(props)
     const [region] = regions
 
-    const layoutRecords = this.layoutFeats(props)
     const width = (region.end - region.start) / bpPerPx
-    const height = Math.max(layout.getTotalHeight(), 1)
-
-
-    let ret
+    const height = Math.max(props.layout.getTotalHeight(), 1)
 
     // render to full SVG
     if (fullSvg) {
@@ -747,18 +746,16 @@ export default class PileupRenderer extends BoxRendererType {
       const fakeCtx = fakeCanvas.getContext('2d')
       this.makeImageData(fakeCtx, layoutRecords, props)
       const imageData = fakeCanvas.getSerializedSvg()
-      ret = { element: imageData, height, width }
+      return { element: imageData, height, width }
     }
 
     // render to <image> tag in svg, e.g. rasterized layer
-    else if (forceSvg) {
-      highResolutionScaling = 4
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
+    if (forceSvg) {
+      // override highResolutionScaling
+      const scale = 4
+      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
       const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
+      ctx.scale(scale, scale)
       this.makeImageData(ctx, layoutRecords, props)
       let imageData
       if (canvas.convertToBlob) {
@@ -772,35 +769,33 @@ export default class PileupRenderer extends BoxRendererType {
       const element = (
         <image width={width} height={height} xlinkHref={imageData as string} />
       )
-      ret = { element, height, width }
+      return { element, height, width }
     }
 
     // normal SSR
-    else {
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
-      const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      this.makeImageData(ctx, layoutRecords, props)
-      const imageData = await createImageBitmap(canvas)
 
-      const element = React.createElement(
-        this.ReactComponent,
-        { ...props, height, width, region, imageData },
-        null,
-      )
-      ret = {
-        element,
-        imageData,
-        height,
-        width,
-        maxHeightReached: layout.maxHeightReached,
-        layout,
-      }
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
+    const ctx = canvas.getContext('2d')
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    this.makeImageData(ctx, layoutRecords, props)
+    const imageData = await createImageBitmap(canvas)
+
+    const element = React.createElement(
+      this.ReactComponent,
+      { ...props, height, width, region, imageData },
+      null,
+    )
+    return {
+      ...props,
+      element,
+      imageData,
+      height,
+      width,
+      maxHeightReached: props.layout.maxHeightReached,
     }
-    return ret
   }
 
   createSession(args: PileupLayoutSessionProps) {
