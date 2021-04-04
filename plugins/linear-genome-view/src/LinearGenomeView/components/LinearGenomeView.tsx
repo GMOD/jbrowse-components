@@ -314,7 +314,10 @@ function SVGTracks({
 }
 
 // render LGV to SVG
-export async function renderToSvg(model: LGV, opts?: { fullSvg: boolean }) {
+export async function renderToSvg(
+  model: LGV,
+  opts: { fullSvg?: boolean } = {},
+) {
   await when(() => model.initialized)
   const { width, tracks } = model
   const shift = 50
