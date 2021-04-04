@@ -64,7 +64,6 @@ describe('<DivSequenceRendering />', () => {
     console.error = originalError
   })
 
-  // these tests do very little, let's try to expand them at some point
   it('renders with no features', () => {
     const { container } = render(
       <Rendering

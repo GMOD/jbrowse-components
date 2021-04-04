@@ -1,8 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`inverted mode and reversed 1`] = `
-Object {
-  "imageData": Any<Object>,
-  "width": 33,
-}
-`;

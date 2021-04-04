@@ -178,7 +178,7 @@ function DNA(props: {
 const SequenceSVG = ({
   regions,
   theme: configTheme,
-  features,
+  features = new Map(),
   showReverse,
   showForward,
   showTranslation,

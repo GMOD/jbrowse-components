@@ -808,8 +808,8 @@ export default class PileupRenderer extends BoxRendererType {
       imageData,
       height,
       width,
-      maxHeightReached: layout.maxHeightReached,
       layout,
+      maxHeightReached: layout.maxHeightReached,
     }
   }
 
