@@ -53,6 +53,8 @@ export type ResultsSerialized = ServerSideResultsSerialized
 export type ResultsDeserialized = ServerSideResultsDeserialized
 
 export default class HicRenderer extends ServerSideRendererType {
+  supportsSVG = true
+
   async makeImageData(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
@@ -94,6 +96,8 @@ export default class HicRenderer extends ServerSideRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+
     const {
       forceSvg,
       fullSvg,
@@ -113,9 +117,9 @@ export default class HicRenderer extends ServerSideRendererType {
     if (fullSvg) {
       const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
       const fakeCtx = fakeCanvas.getContext('2d')
-      await this.makeImageData(fakeCtx, renderProps)
+      await this.makeImageData(fakeCtx, { ...renderProps, features })
       const imageData = fakeCanvas.getSerializedSvg()
-      return { element: imageData, height, width }
+      return { reactElement: imageData, height, width }
     }
     if (forceSvg) {
       const canvas = createCanvas(
@@ -125,20 +129,27 @@ export default class HicRenderer extends ServerSideRendererType {
 
       const ctx = canvas.getContext('2d')
       ctx.scale(highResolutionScaling, highResolutionScaling)
-      await this.makeImageData(ctx, renderProps)
-      let imageData
-      if (canvas.convertToBlob) {
-        const imageBlob = await canvas.convertToBlob({
-          type: 'image/png',
-        })
-        imageData = await blobToDataURL(imageBlob)
-      } else {
-        imageData = canvas.toDataURL()
+      await this.makeImageData(ctx, { ...renderProps, features })
+
+      return {
+        reactElement: (
+          <image
+            width={width}
+            height={height}
+            xlinkHref={
+              canvas.convertToBlob
+                ? await blobToDataURL(
+                    await canvas.convertToBlob({
+                      type: 'image/png',
+                    }),
+                  )
+                : canvas.toDataURL()
+            }
+          />
+        ),
+        height,
+        width,
       }
-      const element = (
-        <image width={width} height={height} xlinkHref={imageData as string} />
-      )
-      return { element, height, width }
     }
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
@@ -147,22 +158,19 @@ export default class HicRenderer extends ServerSideRendererType {
 
     const ctx = canvas.getContext('2d')
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    await this.makeImageData(ctx, renderProps)
+    await this.makeImageData(ctx, { ...renderProps, features })
     const imageData = await createImageBitmap(canvas)
-    const element = React.createElement(
-      this.ReactComponent,
-      {
-        ...renderProps,
-        region: renderProps.regions[0],
-        height,
-        width,
-        imageData,
-      },
-      null,
-    )
 
     return {
-      element,
+      reactElement: (
+        <this.ReactComponent
+          {...renderProps}
+          region={renderProps.regions[0]}
+          height={height}
+          width={width}
+          imageData={imageData}
+        />
+      ),
       imageData,
       height,
       width,
