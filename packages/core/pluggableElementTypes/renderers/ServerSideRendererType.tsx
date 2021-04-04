@@ -1,7 +1,8 @@
+import React from 'react'
 import { ThemeOptions } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { renderToString } from 'react-dom/server'
-import React from 'react'
+
 import {
   SnapshotOrInstance,
   SnapshotIn,
@@ -69,7 +70,8 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    * Deserialize the render results from the worker in the client. Includes
-   * hydrating of the React HTML string.
+   * hydrating of the React HTML string, and not hydrating the result if SVG is
+   * being rendered
    *
    * @param results - the results of the render
    * @param args - the arguments passed to render
@@ -78,17 +80,35 @@ export default class ServerSideRenderer extends RendererType {
     results: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
+    const { html, ...rest } = results
+
+    console.log({ rest })
+    // if we are rendering svg, we skip hydration
+    // @ts-ignore
     if (args.forceSvg) {
-      // @ts-ignore
-      return results
+      // only return the results if the renderer explicitly has
+      // this.supportsSVG support to avoid garbage being rendered in SVG
+      // document
+      return {
+        ...results,
+        // @ts-ignore
+        html: this.supportsSVG
+          ? results.html
+          : '<text y="12" fill="black">SVG export not supported for this track</text>',
+      }
     }
-    const reactElement = React.createElement(ServerSideRenderedContent, {
-      ...args,
-      ...results,
-      RenderingComponent: this.ReactComponent,
-    })
-    delete results.html
-    return { ...results, reactElement }
+
+    // hydrate results using ServerSideRenderedContent
+    return {
+      ...rest,
+      reactElement: (
+        <ServerSideRenderedContent
+          {...args}
+          {...results}
+          RenderingComponent={this.ReactComponent}
+        />
+      ),
+    }
   }
 
   /**
@@ -123,12 +143,9 @@ export default class ServerSideRenderer extends RendererType {
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const html = renderToString(
-      React.createElement(
-        ThemeProvider,
-        // @ts-ignore
-        { theme: createJBrowseTheme(args.theme) },
-        results.reactElement,
-      ),
+      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
+        {results.reactElement}
+      </ThemeProvider>,
     )
     delete results.reactElement
     return { ...results, html }

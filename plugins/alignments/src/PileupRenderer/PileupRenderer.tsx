@@ -68,10 +68,6 @@ interface LayoutRecord {
   heightPx: number
 }
 
-interface RenderArgsAugmented extends RenderArgsDeserialized {
-  showSoftClip?: boolean
-}
-
 const alignmentColoring: { [key: string]: string } = {
   color_fwd_strand_not_proper: '#ECC8C8',
   color_rev_strand_not_proper: '#BEBED8',
@@ -98,6 +94,8 @@ interface LayoutFeature {
 }
 
 export default class PileupRenderer extends BoxRendererType {
+  supportsSVG = true
+
   // get width and height of chars the height is an approximation: width
   // letter M is approximately the height
   getCharWidthHeight(ctx: CanvasRenderingContext2D) {
@@ -195,19 +193,18 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   getOrientation(feature: Feature, config: AnyConfigurationModel) {
-    const orientationType = readConfObject(config, 'orientationType') as
-      | 'fr'
-      | 'ff'
-      | 'rf'
-    const type = orientationTypes[orientationType]
-    const orientation = type[feature.get('pair_orientation') as string]
-    const map: { [key: string]: string } = {
+    const orientationType =
+      orientationTypes[
+        readConfObject(config, 'orientationType') as 'fr' | 'ff' | 'rf'
+      ]
+    const orientation = orientationType[feature.get('pair_orientation')]
+    const map = {
       LR: 'color_pair_lr',
       RR: 'color_pair_rr',
       RL: 'color_pair_rl',
       LL: 'color_pair_ll',
     }
-    return map[orientation]
+    return map[orientation as keyof typeof map]
   }
 
   colorByInsertSize(feature: Feature, _config: AnyConfigurationModel) {
@@ -715,7 +712,13 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const { bpPerPx, regions, highResolutionScaling = 1 } = renderProps
+    const {
+      bpPerPx,
+      regions,
+      highResolutionScaling = 1,
+      forceSvg,
+      fullSvg,
+    } = renderProps
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
 
@@ -724,6 +727,59 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+
+    if (fullSvg) {
+      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
+      const fakeCtx = fakeCanvas.getContext('2d')
+      this.makeImageData(fakeCtx, layoutRecords, {
+        ...renderProps,
+        layout,
+        features,
+      })
+      return {
+        reactElement: fakeCanvas.getSerializedSvg(),
+        features,
+        layout,
+        height,
+        width,
+      }
+    }
+    // render to <image> tag in svg, e.g. rasterized layer
+    if (forceSvg) {
+      const scale = 4
+      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+      const ctx = canvas.getContext('2d')
+      ctx.scale(scale, scale)
+      this.makeImageData(ctx, layoutRecords, {
+        ...renderProps,
+        features,
+        layout,
+      })
+
+      // two methods needed for converting canvas to PNG, one for webworker
+      // offscreen canvas, one for main thread
+      return {
+        reactElement: (
+          <image
+            width={width}
+            height={height}
+            xlinkHref={
+              canvas.convertToBlob
+                ? await blobToDataURL(
+                    await canvas.convertToBlob({
+                      type: 'image/png',
+                    }),
+                  )
+                : canvas.toDataURL()
+            }
+          />
+        ),
+        features,
+        layout,
+        height,
+        width,
+      }
+    }
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),

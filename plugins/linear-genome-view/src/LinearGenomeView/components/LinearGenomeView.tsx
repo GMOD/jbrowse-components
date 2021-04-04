@@ -272,7 +272,7 @@ const SVGRegionSeparators = ({ model }: { model: LGV }) => {
 function SVGTracks({ displayResults, model, offset }: any) {
   return (
     <>
-      {displayResults.map(({ track, result }) => {
+      {displayResults.map(({ track, result }: any) => {
         const current = offset
         const trackName =
           getConf(track, 'name') ||
@@ -299,10 +299,7 @@ function SVGTracks({ displayResults, model, offset }: any) {
 }
 
 // render LGV to SVG
-export async function renderToSvg(
-  model: LGV,
-  opts: { fullSvg: boolean } = { fullSvg: true },
-) {
+export async function renderToSvg(model: LGV, opts?: { fullSvg: boolean }) {
   await when(() => model.initialized)
   const { width, tracks } = model
   const shift = 50

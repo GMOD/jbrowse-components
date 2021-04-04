@@ -46,15 +46,25 @@ export type {
 }
 
 export default abstract class WiggleBaseRenderer extends FeatureRendererType {
-  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
-    const { forceSvg, height, regions, bpPerPx, fullSvg } = props
-    let highResolutionScaling = props.highResolutionScaling || 1
+  supportsSVG = true
+
+  async render(renderProps: RenderArgsDeserialized) {
+    const features = await this.getFeatures(renderProps)
+    const {
+      forceSvg,
+      height,
+      regions,
+      bpPerPx,
+      fullSvg,
+      highResolutionScaling = 1,
+    } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
+
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0 }
     }
-    let ret
+
     if (!forceSvg) {
       const canvas = createCanvas(
         Math.ceil(width * highResolutionScaling),
@@ -62,62 +72,73 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
       )
       const ctx = canvas.getContext('2d')
       ctx.scale(highResolutionScaling, highResolutionScaling)
-      this.draw(ctx, props)
+      this.draw(ctx, { ...renderProps, features })
       const imageData = await createImageBitmap(canvas)
-      ret = { imageData, height, width }
-    } else if (fullSvg) {
-      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-      const fakeCtx = fakeCanvas.getContext('2d')
-      this.draw(fakeCtx, props)
-      const imageData = fakeCanvas.getSerializedSvg()
-      ret = { imageData, height, width }
-    } else {
-      // for high qual exports use 4 scale factor
-      highResolutionScaling = 6
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
-      const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      this.draw(ctx, props)
-      let imageData
-
-      // webworker has no toImageData while node has no convertToBlob
-      if (canvas.convertToBlob) {
-        const imageBlob = await canvas.convertToBlob({
-          type: 'image/png',
-        })
-        imageData = await blobToDataURL(imageBlob)
-      } else {
-        imageData = canvas.toDataURL()
+      return {
+        features,
+        reactElement: (
+          <this.ReactComponent
+            {...renderProps}
+            height={height}
+            width={width}
+            imageData={imageData}
+            features={features}
+          />
+        ),
+        height,
+        width,
+        imageData,
       }
-      const element = (
-        <image width={width} height={height} xlinkHref={imageData as string} />
-      )
-      ret = { imageData: element, height, width }
     }
-    return ret
+
+    if (fullSvg) {
+      const canvas = new PonyfillOffscreenCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+      this.draw(ctx, { ...renderProps, features })
+      return {
+        reactElement: canvas.getSerializedSvg(),
+        height,
+        width,
+        features,
+      }
+    }
+
+    const scale = 6
+    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+    const ctx = canvas.getContext('2d')
+    ctx.scale(scale, scale)
+    this.draw(ctx, { ...renderProps, features })
+
+    // webworker has no canvas.toImageData, while node has no convertToBlob
+    // so two methods needed for converting canvas to PNG
+    return {
+      features,
+      reactElement: (
+        <image
+          width={width}
+          height={height}
+          xlinkHref={
+            canvas.convertToBlob
+              ? await blobToDataURL(
+                  await canvas.convertToBlob({
+                    type: 'image/png',
+                  }),
+                )
+              : canvas.toDataURL()
+          }
+        />
+      ),
+      height,
+      width,
+    }
   }
 
-  /** draw features to context given props */
+  /*
+   * draw features to context given props, to be used by derived renderer
+   * classes
+   */
   abstract draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserialized,
   ): void
-
-  async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-    const { width, imageData } = await this.makeImageData({
-      ...renderProps,
-      features,
-    })
-    const results = await super.render({
-      ...renderProps,
-      features,
-      width,
-      imageData,
-    })
-    return { ...results, imageData, width }
-  }
 }
