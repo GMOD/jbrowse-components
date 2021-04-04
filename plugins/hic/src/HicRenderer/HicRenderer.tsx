@@ -110,10 +110,6 @@ export default class HicRenderer extends ServerSideRendererType {
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
 
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0, maxHeightReached: false }
-    }
-
     if (fullSvg) {
       const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
       const fakeCtx = fakeCanvas.getContext('2d')

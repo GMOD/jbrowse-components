@@ -14,7 +14,6 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import React from 'react'
 import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
@@ -60,10 +59,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
-
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0 }
-    }
 
     if (!forceSvg) {
       const canvas = createCanvas(

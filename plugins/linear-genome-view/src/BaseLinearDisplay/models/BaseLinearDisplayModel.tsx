@@ -467,8 +467,6 @@ export const BaseLinearDisplay = types
         }),
       )
 
-      console.log({ renderings })
-
       return (
         <>
           {renderings.map((rendering, index) => {

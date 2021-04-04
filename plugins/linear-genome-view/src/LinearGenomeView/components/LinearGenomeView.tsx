@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 import { getParent, Instance } from 'mobx-state-tree'
 import React from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -269,10 +270,24 @@ const SVGRegionSeparators = ({ model }: { model: LGV }) => {
 }
 
 // SVG component, tracks
-function SVGTracks({ displayResults, model, offset }: any) {
+function SVGTracks({
+  displayResults,
+  model,
+  offset,
+}: {
+  displayResults: {
+    track: {
+      configuration: AnyConfigurationModel
+      displays: { height: number }[]
+    }
+    result: string
+  }[]
+  model: LGV
+  offset: number
+}) {
   return (
     <>
-      {displayResults.map(({ track, result }: any) => {
+      {displayResults.map(({ track, result }) => {
         const current = offset
         const trackName =
           getConf(track, 'name') ||

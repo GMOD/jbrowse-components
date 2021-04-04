@@ -82,7 +82,6 @@ export default class ServerSideRenderer extends RendererType {
   ): ResultsDeserialized {
     const { html, ...rest } = results
 
-    console.log({ rest })
     // if we are rendering svg, we skip hydration
     // @ts-ignore
     if (args.forceSvg) {
