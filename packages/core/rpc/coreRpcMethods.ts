@@ -116,6 +116,7 @@ export class CoreGetFeatures extends RpcMethodType {
       signal: RemoteAbortSignal
       region: Region
       adapterConfig: {}
+      opts?: { signal?: AbortSignal }
     },
     rpcDriverClassName: string,
   ) {
@@ -123,18 +124,18 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { sessionId, adapterConfig, region } = deserializedArgs
+    const { sessionId, adapterConfig, region,opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (isFeatureAdapter(dataAdapter)) {
-      const ret = dataAdapter.getFeatures(region)
-      const r = await ret.pipe(toArray()).toPromise()
-      return r.map(f => f.toJSON())
+    if (!isFeatureAdapter(dataAdapter)) {
+      return []
     }
-    return []
+    const ret = dataAdapter.getFeatures(region, opts)
+    const r = await ret.pipe(toArray()).toPromise()
+    return r.map(f => f.toJSON())
   }
 }
 

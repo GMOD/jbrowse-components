@@ -46,21 +46,36 @@ const useStyles = makeStyles(theme => ({
 
 /**
  * Fetches and returns a list features for a given list of regions
- * @param selectedRegions - Region[]
- * @returns Features[]
  */
 async function fetchSequence(
-  self: LinearGenomeViewModel,
+  model: LinearGenomeViewModel,
   selectedRegions: Region[],
+  opts: {
+    signal?: AbortSignal
+  },
 ) {
-  const session = getSession(self)
-  const assemblyName =
-    self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
-  const { rpcManager, assemblyManager } = session
-  const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
+  const session = getSession(model)
+  const { leftOffset, rightOffset } = model
 
-  // assembly configuration
-  const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
+  if (!leftOffset || !rightOffset) {
+    throw new Error('no offsets on model to use for range')
+  }
+
+  if (leftOffset.assemblyName !== rightOffset.assemblyName) {
+    throw new Error(
+      'not able to fetch from multiple assemblies at once currently',
+    )
+  }
+  const { rpcManager, assemblyManager } = session
+  const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''
+  const assembly = assemblyManager.get(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly ${assemblyName} not found`)
+  }
+  const adapterConfig = readConfObject(assembly.configuration, [
+    'sequence',
+    'adapter',
+  ])
 
   const sessionId = 'getSequence'
   const chunks = (await Promise.all(
@@ -69,6 +84,7 @@ async function fetchSequence(
         adapterConfig,
         region,
         sessionId,
+        opts,
       }),
     ),
   )) as Feature[][]
@@ -101,41 +117,38 @@ function SequenceDialog({
 
   useEffect(() => {
     let active = true
+    const controller = new AbortController()
 
     function formatSequence(seqChunks: Feature[]) {
-      const sequenceChunks: SeqChunk[] = []
-      const incompleteSeqErrs: string[] = []
-      seqChunks.forEach((chunk: Feature) => {
-        const chunkSeq = chunk.get('seq')
-        const chunkRefName = chunk.get('refName')
-        const chunkStart = chunk.get('start') + 1
-        const chunkEnd = chunk.get('end')
-        const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-        if (chunkSeq) {
-          sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
-            incompleteSeqErrs.push(
+      return formatSeqFasta(
+        seqChunks.map(chunk => {
+          const chunkSeq = chunk.get('seq')
+          const chunkRefName = chunk.get('refName')
+          const chunkStart = chunk.get('start') + 1
+          const chunkEnd = chunk.get('end')
+          const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+            throw new Error(
               `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
                 chunkEnd - chunkStart
               ).toLocaleString()}`,
             )
           }
-        }
-      })
-      if (incompleteSeqErrs.length > 0) {
-        session.notify(
-          `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
-        )
-      }
-      setSequence(formatSeqFasta(sequenceChunks))
+          return { header: chunkLocstring, seq: chunkSeq }
+        }),
+      )
     }
 
     ;(async () => {
       try {
         if (regionsSelected.length > 0) {
-          const chunks = await fetchSequence(model, regionsSelected)
+          const chunks = await fetchSequence(
+            model,
+            regionsSelected,
+            controller.signal,
+          )
           if (active) {
-            formatSequence(chunks)
+            setSequence(formatSequence(chunks))
           }
         } else {
           throw new Error('Selected region is out of bounds')
@@ -149,6 +162,7 @@ function SequenceDialog({
     })()
 
     return () => {
+      controller.abort()
       active = false
     }
   }, [model, session, regionsSelected, setSequence])
@@ -161,10 +175,8 @@ function SequenceDialog({
       maxWidth="xl"
       open
       onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
+      <DialogTitle>
         Reference sequence
         {handleClose ? (
           <IconButton
