@@ -8,7 +8,7 @@ import {
   getSnapshot,
   isStateTreeNode,
 } from 'mobx-state-tree'
-import { checkAbortSignal } from '../../util'
+import { checkAbortSignal, updateStatus } from '../../util'
 import RendererType, { RenderProps, RenderResults } from './RendererType'
 import SerializableFilterChain, {
   SerializedFilterChain,
@@ -78,6 +78,10 @@ export default class ServerSideRenderer extends RendererType {
     results: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
+    if (args.forceSvg) {
+      // @ts-ignore
+      return results
+    }
     const reactElement = React.createElement(ServerSideRenderedContent, {
       ...args,
       ...results,
@@ -155,16 +159,19 @@ export default class ServerSideRenderer extends RendererType {
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
     checkAbortSignal(signal)
-    statusCallback('Rendering plot')
-    const results = await this.render(deserializedArgs)
+    const results = await updateStatus('Rendering plot', statusCallback, () =>
+      this.render(deserializedArgs),
+    )
     checkAbortSignal(signal)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    statusCallback('Serializing results')
-    const serialized = this.serializeResultsInWorker(results, deserializedArgs)
-    statusCallback('')
+    const serialized = await updateStatus(
+      'Serializing results',
+      statusCallback,
+      () => this.serializeResultsInWorker(results, deserializedArgs),
+    )
     return serialized
   }
 

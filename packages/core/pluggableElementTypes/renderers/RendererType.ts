@@ -43,6 +43,7 @@ export default class RendererType extends PluggableElementBase {
   }
 
   async render(props: RenderProps): Promise<RenderResults> {
+    console.log(this.ReactComponent, props)
     return {
       reactElement: React.createElement(this.ReactComponent, props, null),
     }

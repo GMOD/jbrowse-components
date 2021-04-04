@@ -32,6 +32,7 @@ export default function ExportSvgDlg({
 }) {
   const [rasterizeLayers, setRasterizeLayers] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error>()
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
@@ -42,7 +43,9 @@ export default function ExportSvgDlg({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {loading ? (
+        {error ? (
+          <div style={{ color: 'red' }}>{`${error}`}</div>
+        ) : loading ? (
           <div>
             <CircularProgress size={20} style={{ marginRight: 20 }} />
             <Typography display="inline">Creating SVG</Typography>
@@ -64,7 +67,14 @@ export default function ExportSvgDlg({
           type="submit"
           onClick={async () => {
             setLoading(true)
-            await model.exportSvg({ fullSvg: !rasterizeLayers })
+            setError(undefined)
+            try {
+              await model.exportSvg({ fullSvg: !rasterizeLayers })
+            } catch (e) {
+              setLoading(false)
+              setError(e)
+              return
+            }
             setLoading(false)
             handleClose()
           }}

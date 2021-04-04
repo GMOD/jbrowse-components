@@ -214,6 +214,14 @@ const textHeight = fontSize + 5
 const paddingHeight = 20
 const headerHeight = textHeight + 20
 
+const totalHeight = (tracks: { displays: { height: number }[] }[]) => {
+  return tracks.reduce((accum, track) => {
+    const display = track.displays[0]
+    return accum + display.height + paddingHeight + textHeight
+  }, 0)
+}
+
+// SVG component, ruler and assembly name
 const SVGHeader = ({ model }: { model: LGV }) => {
   const { width, assemblyNames } = model
   const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
@@ -237,12 +245,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
   )
 }
 
-const totalHeight = (tracks: { displays: { height: number }[] }[]) => {
-  return tracks.reduce((accum, track) => {
-    const display = track.displays[0]
-    return accum + display.height + paddingHeight + textHeight
-  }, 0)
-}
+// SVG component, region separator
 const SVGRegionSeparators = ({ model }: { model: LGV }) => {
   const { dynamicBlocks, tracks } = model
   const initialOffset = headerHeight + rulerHeight + 20
@@ -265,17 +268,56 @@ const SVGRegionSeparators = ({ model }: { model: LGV }) => {
   )
 }
 
+// SVG component, tracks
+function SVGTracks({ displayResults, model, offset }: any) {
+  return (
+    <>
+      {displayResults.map(({ track, result }) => {
+        const current = offset
+        const trackName =
+          getConf(track, 'name') ||
+          `Reference sequence (${readConfObject(
+            getParent(track.configuration),
+            'name',
+          )})`
+        const display = track.displays[0]
+        offset += display.height + paddingHeight + textHeight
+        return (
+          <g
+            key={track.configuration.trackId}
+            transform={`translate(0 ${current})`}
+          >
+            <text fontSize={fontSize} x={Math.max(-model.offsetPx, 0)}>
+              {trackName}
+            </text>
+            <g transform={`translate(0 ${textHeight})`}>{result}</g>
+          </g>
+        )
+      })}
+    </>
+  )
+}
+
 // render LGV to SVG
-// the xlink namespace is used for rendering <image> tag
 export async function renderToSvg(
   model: LGV,
   opts: { fullSvg: boolean } = { fullSvg: true },
 ) {
   await when(() => model.initialized)
   const { width, tracks } = model
-  const height = totalHeight(tracks)
   const shift = 50
-  let offset = headerHeight + rulerHeight + 20
+  const offset = headerHeight + rulerHeight + 20
+  const height = totalHeight(tracks) + offset
+  const displayResults = await Promise.all(
+    tracks.map(async track => {
+      const display = track.displays[0]
+      await when(() => (display.ready !== undefined ? display.ready : true))
+      const result = await display.renderSvg(opts)
+      return { track, result }
+    }),
+  )
+
+  // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <svg
       width={width}
@@ -289,38 +331,11 @@ export async function renderToSvg(
 
       <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
         <SVGHeader model={model} />
-        {
-          await Promise.all(
-            tracks.map(async track => {
-              const current = offset
-              const trackName =
-                getConf(track, 'name') ||
-                `Reference sequence (${readConfObject(
-                  getParent(track.configuration),
-                  'name',
-                )})`
-              const display = track.displays[0]
-              offset += display.height + paddingHeight + textHeight
-              await when(() =>
-                display.ready !== undefined ? display.ready : true,
-              )
-
-              return (
-                <g
-                  key={track.configuration.trackId}
-                  transform={`translate(0 ${current})`}
-                >
-                  <text fontSize={fontSize} x={Math.max(-model.offsetPx, 0)}>
-                    {trackName}
-                  </text>
-                  <g transform={`translate(0 ${textHeight})`}>
-                    {await display.renderSvg(opts)}
-                  </g>
-                </g>
-              )
-            }),
-          )
-        }
+        <SVGTracks
+          model={model}
+          displayResults={displayResults}
+          offset={offset}
+        />
         <SVGRegionSeparators model={model} />
       </g>
     </svg>,

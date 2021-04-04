@@ -266,8 +266,10 @@ const SequenceSVG = ({
   )
 }
 
-const Wrapper = ({ width, totalHeight, children }: any) => {
-  return (
+const Wrapper = ({ forceSvg, width, totalHeight, children }: any) => {
+  return forceSvg ? (
+    <>{children}</>
+  ) : (
     <svg
       width={width}
       height={totalHeight}
@@ -279,15 +281,13 @@ const Wrapper = ({ width, totalHeight, children }: any) => {
 }
 
 function Sequence(props: MyProps) {
-  const { regions, bpPerPx, forceSvg } = props
+  const { regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx
   const totalHeight = 200
 
-  return forceSvg ? (
-    <SequenceSVG width={width} totalHeight={totalHeight} />
-  ) : (
-    <Wrapper totalHeight={totalHeight} width={width}>
+  return (
+    <Wrapper {...props} totalHeight={totalHeight} width={width}>
       <SequenceSVG {...props} />
     </Wrapper>
   )

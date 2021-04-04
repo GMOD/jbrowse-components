@@ -466,6 +466,9 @@ export const BaseLinearDisplay = types
           })
         }),
       )
+
+      console.log({ renderings })
+
       return (
         <>
           {renderings.map((rendering, index) => {
@@ -483,9 +486,9 @@ export const BaseLinearDisplay = types
                     />
                   </clipPath>
                 </defs>
-                {React.isValidElement(rendering) ? (
+                {React.isValidElement(rendering.reactElement) ? (
                   <g key={key} transform={`translate(${offset} 0)`}>
-                    {rendering}
+                    {rendering.reactElement}
                   </g>
                 ) : (
                   <g

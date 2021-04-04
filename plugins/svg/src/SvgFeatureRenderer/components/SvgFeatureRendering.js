@@ -304,6 +304,7 @@ function SvgFeatureRendering(props) {
   }, [layout])
 
   if (forceSvg) {
+    console.log('test')
     return (
       <RenderedFeatures
         features={features}
