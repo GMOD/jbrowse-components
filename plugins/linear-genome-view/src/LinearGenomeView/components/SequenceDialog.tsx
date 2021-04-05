@@ -23,7 +23,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import GetAppIcon from '@material-ui/icons/GetApp'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
+import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -62,9 +62,7 @@ async function fetchSequence(
   }
 
   if (leftOffset.assemblyName !== rightOffset.assemblyName) {
-    throw new Error(
-      'not able to fetch from multiple assemblies at once currently',
-    )
+    throw new Error('not able to fetch sequences from multiple assemblies')
   }
   const { rpcManager, assemblyManager } = session
   const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''
