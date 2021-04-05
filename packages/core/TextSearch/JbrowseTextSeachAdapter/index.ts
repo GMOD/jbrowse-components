@@ -1,2 +1,2 @@
-export { default as AdapterClass } from './JbrowseTextSearchAdater'
+export { default as AdapterClass } from './JBrowse1TextSearchAdater'
 export { default as configSchema } from './configSchema'

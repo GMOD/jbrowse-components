@@ -16,61 +16,49 @@ export interface Option {
   value: string
   inputValue?: string
 }
-export default class JbrowseTextSearchAdapter extends BaseTextSearchAdapter {
+export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
-  Allows search in Jbrowse 1 text index built by generate-names.pl
+  Uses index built by generate-names.pl
    */
-  public constructor(config: Instance<typeof MyConfigSchema>) {
-    //  read data from generate-names.pl
+  constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
     this.name = 'test text search is connected'
   }
 
-  private async loadIndex(query: string) {
+  async loadIndex(query: string) {
     // TODO: load index to search from
     const httpMap = new HttpMap({
       url: '/test_data/volvox/names/',
       isElectron: false,
       browser: '',
     })
-    const bucket=await httpMap.getBucket( query )
-    console.log(bucket)
-    const data = await fetch('/test_data/volvox/names/0.json').then(
-      response => {
-        return response.json()
-      },
-    )
-    // console.log(data)
-    const nameKeys = Object.keys(data)
-    const entries = new Map()
-    nameKeys.forEach(nameKey => {
-      entries.set(nameKey, data[nameKey])
-    })
-    return entries
+
+    const readyCheck = await httpMap.ready
+    if (readyCheck) {
+      console.log('bucket content for: ', query, await httpMap.getBucket(query))
+    }
+    return {}
   }
 
-  public async searchIndex(input: string, type: searchType) {
+  async searchIndex(input: string, type: searchType) {
     const entries = await this.loadIndex(input)
-    if (entries.get(input)) {
-      return this.formatOptions(entries.get(input)[type])
-    }
     return []
   }
 
-  private formatOptions(results) {
+  formatOptions(results) {
     if (results.length === 0) {
       return []
     }
     const formattedOptions = results.map(result => {
       if (result && typeof result === 'object' && result.length > 1) {
-        const val = result[0]
+        const name = result[0]
         const refName = result[3]
         const start = result[4]
         const end = result[5]
         const formattedResult: Option = {
           label: 'text search adapter',
-          value: `${val} ${refName}:${start}-${end}`,
+          value: `${name} ${refName}:${start}-${end}`,
           inputValue: `${refName}:${start}-${end}`,
         }
         return formattedResult
