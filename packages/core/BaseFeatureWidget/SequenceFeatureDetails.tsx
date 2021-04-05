@@ -58,11 +58,7 @@ const utrColor = 'rgb(200,240,240)'
 function GeneCDS(props: { cds: Feat[]; sequence: string }) {
   const { cds, sequence } = props
 
-  return (
-    <span style={{ background: 'rgb(220,220,180)' }}>
-      {stitch(cds, sequence)}
-    </span>
-  )
+  return <span style={{ background: cdsColor }}>{stitch(cds, sequence)}</span>
 }
 
 function GeneProtein(props: {
@@ -259,6 +255,17 @@ export const SequencePanel = React.forwardRef<
           downstream={downstream}
           includeIntrons
         />
+      ) : mode === 'gene_updownstream_collapsed_intron' ? (
+        <GenecDNA
+          exons={exons}
+          cds={cds}
+          sequence={sequence}
+          utr={utr}
+          upstream={upstream}
+          downstream={downstream}
+          includeIntrons
+          collapseIntron
+        />
       ) : (
         <div>Unknown type</div>
       )}
@@ -354,6 +361,9 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         </MenuItem>
         <MenuItem value="gene_updownstream">
           Gene w/ 500bp up+down stream
+        </MenuItem>
+        <MenuItem value="gene_updownstream_collapsed_intron">
+          Gene w/ 500bp up+down stream w/ 10bp intron
         </MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
