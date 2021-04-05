@@ -74,6 +74,9 @@ export default class SetDefaultSession extends JBrowseCommand {
     out: flags.string({
       description: 'synonym for target',
     }),
+    delete: flags.boolean({
+      description: 'Delete any existing default session.',
+    }),
     help: flags.help({
       char: 'h',
     }),
@@ -81,11 +84,27 @@ export default class SetDefaultSession extends JBrowseCommand {
 
   async run() {
     const { flags: runFlags } = this.parse(SetDefaultSession)
-    const { session, name, tracks, currentSession, view, viewId } = runFlags
+    const {
+      session,
+      name,
+      tracks,
+      currentSession,
+      view,
+      viewId,
+      delete: deleteDefaultSession,
+    } = runFlags
     const output = runFlags.target || runFlags.out || '.'
     const isDir = (await fsPromises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
     const configContents: Config = await this.readJsonFile(this.target)
+
+    if (deleteDefaultSession) {
+      delete configContents.defaultSession
+      this.debug(`Writing configuration to file ${this.target}`)
+      await this.writeJsonFile(this.target, configContents)
+      this.log(`Deleted defaultSession from ${this.target}`)
+      return
+    }
 
     // if user passes current session flag, print out and exit
     if (currentSession) {
