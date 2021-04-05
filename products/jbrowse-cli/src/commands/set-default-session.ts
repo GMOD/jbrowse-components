@@ -174,8 +174,10 @@ export default class SetDefaultSession extends JBrowseCommand {
     }
 
     try {
-      const { defaultSession } = parseJSON(defaultSessionJson)
-      return defaultSession
+      const session = parseJSON(defaultSessionJson)
+      // return top-level "session" if it exists, such as in files created by
+      // "File -> Export session"
+      return session.session || session
     } catch (error) {
       return this.error('Could not parse the given default session file', {
         exit: 160,
