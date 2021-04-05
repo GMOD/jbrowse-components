@@ -16,7 +16,7 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
-import JbrowseTextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JbrowseTextSearchAdater'
+import JBrowse1TextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JBrowse1TextSearchAdater'
 import { configSchema } from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/index'
 import { LinearGenomeViewModel } from '..'
 
@@ -55,7 +55,6 @@ function RefNameAutocomplete({
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
   const loadingSearch = currentOptions.length === 0
-  // default region refNames and results from search
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       return { label: 'reference sequence', value: option.refName }
@@ -70,10 +69,12 @@ function RefNameAutocomplete({
       ;(async () => {
         try {
           // TODO, will be replaced once text search manager is implemented
-          const test = new JbrowseTextSearchAdapter(configSchema)
+          const test = new JBrowse1TextSearchAdapter(configSchema)
           const results = await test.searchIndex(currentSearch, 'exact')
           if (results.length > 0) {
             setCurrentOptions(options.concat(results))
+          } else {
+            setCurrentOptions(options)
           }
         } catch (e) {
           console.error(e)
@@ -95,7 +96,6 @@ function RefNameAutocomplete({
     }
   }, [open])
   function onChange(newRegionName: Option | string) {
-    //
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
@@ -130,7 +130,7 @@ function RefNameAutocomplete({
         // creates new option if user input does not match options
         if (params.inputValue !== '') {
           const newOption: Option = {
-            label: 'Search',
+            label: 'Navigating to...',
             inputValue: params.inputValue,
             value: params.inputValue,
           }
