@@ -1,7 +1,8 @@
-/* eslint-disable no-nested-ternary */
-import React, { useState, useEffect } from 'react'
+/* eslint-disable no-nested-ternary,react/prop-types */
+import React, { useRef, useState, useEffect } from 'react'
 import { Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
+import copy from 'copy-to-clipboard'
 import {
   defaultCodonTable,
   generateCodonTable,
@@ -48,24 +49,19 @@ function revlist(list: Feat[], seqlen: number) {
     .sort((a, b) => a.start - b.start)
 }
 
-const cdsColor = 'rgba(150,150,0,0.3)'
-const utrColor = 'rgba(0,150,150,0.3)'
-const proteinColor = 'rgba(150,0,150,0.3)'
-const intronColor = 'rgba(200,200,200,0.3)'
-const updownstreamColor = 'rgba(120,0,0,0.3)'
+const proteinColor = 'rgb(220,160,220)'
+const intronColor = undefined
+const cdsColor = 'rgb(220,220,180)'
+const updownstreamColor = 'rgba(250,200,200)'
+const utrColor = 'rgb(200,240,240)'
 
 function GeneCDS(props: { cds: Feat[]; sequence: string }) {
   const { cds, sequence } = props
 
   return (
-    <div
-      style={{
-        display: 'inline',
-        backgroundColor: cdsColor,
-      }}
-    >
+    <span style={{ background: 'rgb(220,220,180)' }}>
       {stitch(cds, sequence)}
-    </div>
+    </span>
   )
 }
 
@@ -82,16 +78,7 @@ function GeneProtein(props: {
     protein += codonTable[str.slice(i, i + 3)] || '&'
   }
 
-  return (
-    <div
-      style={{
-        display: 'inline',
-        backgroundColor: proteinColor,
-      }}
-    >
-      {protein}
-    </div>
-  )
+  return <span style={{ background: proteinColor }}>{protein}</span>
 }
 
 function GenecDNA(props: {
@@ -120,53 +107,31 @@ function GenecDNA(props: {
   return (
     <>
       {upstream ? (
-        <div
-          style={{
-            display: 'inline',
-            backgroundColor: updownstreamColor,
-          }}
-        >
-          {upstream}
-        </div>
+        <span style={{ background: updownstreamColor }}>{upstream}</span>
       ) : null}
 
       {chunks.map((chunk, index) => {
         const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
         return (
           <React.Fragment key={JSON.stringify(chunk)}>
-            <div
-              style={{
-                display: 'inline',
-                backgroundColor: chunk.type === 'CDS' ? cdsColor : utrColor,
-              }}
+            <span
+              style={{ background: chunk.type === 'CDS' ? cdsColor : utrColor }}
             >
               {sequence.slice(chunk.start, chunk.end)}
-            </div>
+            </span>
             {includeIntrons ? (
-              <div
-                style={{
-                  display: 'inline',
-                  backgroundColor: intronColor,
-                }}
-              >
+              <span style={{ background: intronColor }}>
                 {collapseIntron && intron.length > 20
                   ? `${intron.slice(0, 10)}...${intron.slice(-10)}`
                   : intron}
-              </div>
+              </span>
             ) : null}
           </React.Fragment>
         )
       })}
 
       {downstream ? (
-        <div
-          style={{
-            display: 'inline',
-            backgroundColor: updownstreamColor,
-          }}
-        >
-          {downstream}
-        </div>
+        <span style={{ background: updownstreamColor }}>{downstream}</span>
       ) : null}
     </>
   )
@@ -198,11 +163,14 @@ function calculateUTRs(cds: Feat[], exons: Feat[]) {
   return [...fiveUTRs, ...threeUTRs]
 }
 
-export function SequencePanel(props: {
-  sequence: { seq: string; upstream: string; downstream: string }
-  feature: ParentFeat
-  mode: string
-}) {
+export const SequencePanel = React.forwardRef<
+  HTMLDivElement,
+  {
+    sequence: { seq: string; upstream: string; downstream: string }
+    feature: ParentFeat
+    mode: string
+  }
+>((props, ref) => {
   const { feature, mode } = props
   let {
     sequence: { seq: sequence, upstream = '', downstream = '' },
@@ -225,9 +193,9 @@ export function SequencePanel(props: {
       }
     })
 
-  // we filter duplicate entries in cds and exon lists duplicate entries may
-  // be rare but was seen in Gencode v36 track NCList, likely a bug on GFF3
-  // or probably worth ignoring here (produces broken protein translations if
+  // we filter duplicate entries in cds and exon lists duplicate entries may be
+  // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
+  // probably worth ignoring here (produces broken protein translations if
   // included)
   //
   // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
@@ -257,11 +225,10 @@ export function SequencePanel(props: {
   }
 
   return (
-    <div data-testid="sequence_panel">
+    <div ref={ref} data-testid="sequence_panel">
       {mode === 'cds' ? (
         <GeneCDS cds={cds} sequence={sequence} />
       ) : mode === 'cdna' ? (
-        // utr's were supplied, no inference needed
         <GenecDNA exons={exons} cds={cds} utr={utr} sequence={sequence} />
       ) : mode === 'protein' ? (
         <GeneProtein cds={cds} codonTable={codonTable} sequence={sequence} />
@@ -297,17 +264,16 @@ export function SequencePanel(props: {
       )}
     </div>
   )
-}
+})
 
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
 export default function SequenceFeatureDetails(props: BaseProps) {
   const { model, feature } = props
-
   const parentFeature = (feature as unknown) as ParentFeat
-  const { subfeatures } = parentFeature
-  const hasCDS = subfeatures?.find(sub => sub.type === 'CDS')
+  const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
+  const seqPanelRef = useRef<HTMLDivElement>(null)
 
   const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<{
@@ -317,6 +283,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
   }>()
   const [error, setError] = useState<string>()
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     let finished = false
@@ -390,7 +357,21 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         </MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
-      <div data-testid="feature_sequence" style={{ display: 'inline' }}>
+      <button
+        type="button"
+        onClick={() => {
+          if (seqPanelRef.current) {
+            copy(seqPanelRef.current.innerHTML, { format: 'text/html' })
+            setCopied(true)
+            setTimeout(() => {
+              setCopied(false)
+            }, 1000)
+          }
+        }}
+      >
+        {copied ? 'Copied to clipboard!' : 'Copy'}
+      </button>
+      <div data-testid="feature_sequence">
         {error ? (
           <Typography color="error">{error}</Typography>
         ) : loading ? (
@@ -398,6 +379,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         ) : sequence ? (
           <div style={{ fontFamily: 'monospace', wordWrap: 'break-word' }}>
             <SequencePanel
+              ref={seqPanelRef}
               feature={parentFeature}
               mode={mode}
               sequence={sequence}
