@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary,react/prop-types */
 import React, { useRef, useState, useEffect } from 'react'
-import { Select, MenuItem, Typography } from '@material-ui/core'
+import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 import {
@@ -357,8 +357,9 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         </MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
-      <button
+      <Button
         type="button"
+        variant="contained"
         onClick={() => {
           if (seqPanelRef.current) {
             copy(seqPanelRef.current.innerHTML, { format: 'text/html' })
@@ -370,7 +371,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
         }}
       >
         {copied ? 'Copied to clipboard!' : 'Copy'}
-      </button>
+      </Button>
       <div data-testid="feature_sequence">
         {error ? (
           <Typography color="error">{error}</Typography>
