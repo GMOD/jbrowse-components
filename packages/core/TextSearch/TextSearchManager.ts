@@ -1,5 +1,5 @@
-import JBrowse1TextSearchAdapter from './JbrowseTextSeachAdapter/JBrowse1TextSearchAdater'
-import { configSchema } from './JbrowseTextSeachAdapter/index'
+import JBrowse1TextSearchAdapter from './JBrowse1TextSeachAdapter/JBrowse1TextSearchAdater'
+import { configSchema } from './JBrowse1TextSeachAdapter/index'
 import PluginManager from '../PluginManager'
 
 // export type searchType = 'full' | 'prefix' | 'exact'
