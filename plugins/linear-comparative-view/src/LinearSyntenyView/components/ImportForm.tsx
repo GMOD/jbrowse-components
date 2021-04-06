@@ -112,7 +112,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
 
     model.views.forEach(view => view.setWidth(model.width))
 
-    if ('uri' in trackData) {
+    if ('uri' in trackData && trackData.uri) {
       const fileName = trackData.uri
         ? trackData.uri.slice(trackData.uri.lastIndexOf('/') + 1)
         : null

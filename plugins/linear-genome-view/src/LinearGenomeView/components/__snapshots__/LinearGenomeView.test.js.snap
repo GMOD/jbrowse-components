@@ -479,9 +479,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -498,9 +499,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div
@@ -1524,9 +1522,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -1543,9 +1542,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div
@@ -1678,9 +1674,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -1697,9 +1694,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div

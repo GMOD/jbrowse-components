@@ -496,6 +496,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.pTotalHeight * this.pitchY
   }
 
+  get totalHeight() {
+    return this.getTotalHeight()
+  }
+
   getRectangles(): Map<string, RectTuple> {
     return new Map(
       Array.from(this.rectangles.entries()).map(([id, rect]) => {

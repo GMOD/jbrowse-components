@@ -37,7 +37,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         id: ElementId,
         type: types.literal('LinearComparativeView'),
         height: defaultHeight,
-        displayName: 'synteny detail',
         trackSelectorType: 'hierarchical',
         showIntraviewLinks: true,
         linkViews: false,
