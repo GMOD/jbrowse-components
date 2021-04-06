@@ -16,8 +16,6 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
-import JBrowse1TextSearchAdapter from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/JBrowse1TextSearchAdater'
-import { configSchema } from '@jbrowse/core/TextSearch/JbrowseTextSeachAdapter/index'
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
@@ -59,23 +57,21 @@ function RefNameAutocomplete({
     const defaultOptions = regions.map(option => {
       return { label: 'reference sequence', value: option.refName }
     })
-    return defaultOptions
-  }, [regions])
+    return defaultOptions.concat(currentOptions)
+  }, [regions, currentOptions])
 
-  // console.log('loading search', loadingSearch)
+  // console.log( session.textSearchManager )
   React.useEffect(() => {
     let active = true
     if (active) {
       ;(async () => {
         try {
           // TODO, will be replaced once text search manager is implemented
-          const test = new JBrowse1TextSearchAdapter(configSchema)
-          const results = await test.searchIndex(currentSearch, 'exact')
+          const results = await session.textSearchManager.search(currentSearch)
+          console.log(results)
           if (results.length > 0) {
-            setCurrentOptions(options.concat(results))
-          } else {
-            setCurrentOptions(options)
-          }
+            setCurrentOptions(results)
+          } 
         } catch (e) {
           console.error(e)
           if (active) {
@@ -88,7 +84,7 @@ function RefNameAutocomplete({
       active = false
       setError(undefined)
     }
-  }, [currentSearch, options])
+  }, [currentSearch, session.textSearchManager])
 
   React.useEffect(() => {
     if (!open) {
@@ -99,7 +95,7 @@ function RefNameAutocomplete({
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
-        newRegionValue = newRegionName.inputValue || newRegionName.value
+        newRegionValue = newRegionName.value || newRegionName.inputValue
       }
       if (typeof newRegionName === 'string') {
         newRegionValue = newRegionName
@@ -123,7 +119,7 @@ function RefNameAutocomplete({
       selectOnFocus
       style={style}
       value={coarseVisibleLocStrings || value || ''}
-      options={currentOptions}
+      options={options}
       groupBy={option => String(option.label)}
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
@@ -179,7 +175,9 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={option => <Typography noWrap>{option.value}</Typography>}
+      renderOption={option => (
+        <Typography noWrap>{option.inputValue || option.value}</Typography>
+      )}
       getOptionLabel={option => {
         // handles locstrings
         if (typeof option === 'string') {

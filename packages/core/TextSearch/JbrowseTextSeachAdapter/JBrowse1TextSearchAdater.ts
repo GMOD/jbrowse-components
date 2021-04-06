@@ -5,12 +5,6 @@ import {
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
-export interface NameIndexEntry {
-  // key: {prefix: Array(0), exact: Array(0)}
-  [prefix: string]: Array<string>
-  [exact: string]: Array<string>
-}
-
 export interface Option {
   label: string
   value: string
@@ -26,7 +20,12 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
     this.name = 'test text search is connected'
   }
 
-  async loadIndex(query: string) {
+  /**
+   * Returns the contents of the file containing the query if it exists
+   * else it returns empty
+   * @param query - string query
+   */
+  async loadIndexFile(query: string) {
     // TODO: load index to search from
     const httpMap = new HttpMap({
       url: '/test_data/volvox/names/',
@@ -36,13 +35,17 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
 
     const readyCheck = await httpMap.ready
     if (readyCheck) {
-      console.log('bucket content for: ', query, await httpMap.getBucket(query))
+      const bucketContents = await httpMap.getBucket(query)
+      return bucketContents
     }
     return {}
   }
 
   async searchIndex(input: string, type: searchType) {
-    const entries = await this.loadIndex(input)
+    const entries = await this.loadIndexFile(input)
+    if (entries && entries[input]) {
+      return this.formatOptions(entries[input][type])
+    }
     return []
   }
 
@@ -58,8 +61,8 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
         const end = result[5]
         const formattedResult: Option = {
           label: 'text search adapter',
-          value: `${name} ${refName}:${start}-${end}`,
-          inputValue: `${refName}:${start}-${end}`,
+          inputValue: `${name} ${refName}:${start}-${end}`,
+          value: `${refName}:${start}-${end}`,
         }
         return formattedResult
       }
