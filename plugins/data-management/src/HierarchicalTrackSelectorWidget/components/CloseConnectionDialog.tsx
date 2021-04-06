@@ -12,18 +12,10 @@ import {
 import { observer } from 'mobx-react'
 
 export default observer(
-  ({
-    open,
-    modalInfo = {},
-    setModalInfo,
-  }: {
-    open: boolean
-    modalInfo: any
-    setModalInfo: any
-  }) => {
+  ({ modalInfo = {}, setModalInfo }: { modalInfo: any; setModalInfo: any }) => {
     const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
     return (
-      <Dialog open={open}>
+      <Dialog open>
         <DialogTitle>Close connection &quot;{name}&quot;</DialogTitle>
         <DialogContent>
           {dereferenceTypeCount ? (

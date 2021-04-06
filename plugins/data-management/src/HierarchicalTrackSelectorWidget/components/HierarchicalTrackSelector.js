@@ -15,7 +15,6 @@ import ClearIcon from '@material-ui/icons/Clear'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-import CloseIcon from '@material-ui/icons/Close'
 import MenuIcon from '@material-ui/icons/Menu'
 
 // other
@@ -28,6 +27,7 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 
 import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
+import ManageConnectionsDialog from './ManageConnectionsDialog'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -236,6 +236,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const session = getSession(model)
     const [anchorEl, setAnchorEl] = useState()
     const [modalInfo, setModalInfo] = useState()
+    const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const { assemblyNames } = model
     const assemblyName = assemblyNames[assemblyIdx]
 
@@ -254,26 +255,21 @@ const HierarchicalTrackSelectorHeader = observer(
       }
     }
 
-    function breakConnection(connectionConf, deleting = false) {
+    function breakConnection(connectionConf) {
       const name = readConfObject(connectionConf, 'name')
       const result = session.prepareToBreakConnection(connectionConf)
       if (result) {
         const [safelyBreakConnection, dereferenceTypeCount] = result
-        // always popup a warning if deleting or tracks are going to be removed
-        // from view
-        if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
+        if (Object.keys(dereferenceTypeCount).length > 0) {
           setModalInfo({
             connectionConf,
             safelyBreakConnection,
             dereferenceTypeCount,
             name,
-            deleting,
           })
         } else {
           safelyBreakConnection()
         }
-      } else if (deleting) {
-        setModalInfo({ name, deleting, connectionConf })
       }
     }
 
@@ -299,6 +295,10 @@ const HierarchicalTrackSelectorHeader = observer(
           {
             label: 'Connections...',
             subMenu: connections,
+          },
+          {
+            label: 'Manage connections',
+            onClick: () => setConnectionManagerOpen(true),
           },
         ]
       : []
@@ -370,18 +370,22 @@ const HierarchicalTrackSelectorHeader = observer(
           }}
           menuItems={menuItems}
         />
-        <CloseConnectionDialog
-          modalInfo={modalInfo}
-          setModalInfo={setModalInfo}
-          open={Boolean(modalInfo) && !modalInfo.deleting}
-          session={session}
-        />
-        <DeleteConnectionDialog
-          modalInfo={modalInfo}
-          setModalInfo={setModalInfo}
-          open={Boolean(modalInfo) && modalInfo.deleting}
-          session={session}
-        />
+        {modalInfo ? (
+          <CloseConnectionDialog
+            modalInfo={modalInfo}
+            setModalInfo={setModalInfo}
+            session={session}
+          />
+        ) : null}
+        {connectionManagerOpen ? (
+          <ManageConnectionsDialog
+            modelInfo={modalInfo}
+            setModalInfo={setModalInfo}
+            handleClose={() => setConnectionManagerOpen(false)}
+            breakConnection={breakConnection}
+            session={session}
+          />
+        ) : null}
       </div>
     )
   },

@@ -1,9 +1,11 @@
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Divider,
   Grow,
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  IconButton,
   MenuProps as MUIMenuProps,
   MenuItem,
   MenuItemProps,
@@ -14,12 +16,15 @@ import {
   SvgIconProps,
   makeStyles,
 } from '@material-ui/core'
+// icons
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CheckBoxIcon from '@material-ui/icons/CheckBox'
+import CloseIcon from '@material-ui/icons/Close'
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
-import React, { useEffect, useRef, useState } from 'react'
+
+// other
 import { findLastIndex } from '../util'
 
 const useStyles = makeStyles({
