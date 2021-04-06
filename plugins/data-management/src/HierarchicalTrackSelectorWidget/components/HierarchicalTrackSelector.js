@@ -19,6 +19,7 @@ import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
 
 // other
 import { getSession } from '@jbrowse/core/util'
@@ -36,6 +37,9 @@ const useStyles = makeStyles(theme => ({
   },
   searchBox: {
     marginBottom: theme.spacing(2),
+  },
+  menuIcon: {
+    margin: theme.spacing(2),
   },
   fab: {
     position: 'absolute',
@@ -123,10 +127,10 @@ const Node = ({ data, isOpen, style, toggle }) => {
     </div>
   )
 }
-
-const Example = ({ tree, model, offset }) => {
-  // in JBrowse-web the toolbar is position="sticky" which means the autosizer
-  // includes the height of the toolbar, so we subtract the given offsets
+// this is the main tree component for the hierarchical track selector in note:
+// in jbrowse-web the toolbar is position="sticky" which means the autosizer
+// includes the height of the toolbar, so we subtract the given offsets
+const HierarchicalTree = ({ tree, model, offset }) => {
   return (
     <AutoSizer disableWidth>
       {({ height }) => {
@@ -261,12 +265,44 @@ const HierarchicalTrackSelectorContainer = observer(
 //       setModalInfo({ name, deleting, connectionConf })
 //     }
 //   }
+//
+const HierarchicalTrackSelectorHeader = observer(
+  ({ model, setHeaderHeight }) => {
+    const classes = useStyles()
+    return (
+      <div
+        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+      >
+        <div style={{ display: 'flex' }}>
+          <IconButton className={classes.menuIcon} onClick={() => {}}>
+            <MenuIcon />
+          </IconButton>
+          <TextField
+            className={classes.searchBox}
+            label="Filter tracks"
+            value={model.filterText}
+            onChange={event => model.setFilterText(event.target.value)}
+            fullWidth
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton color="secondary" onClick={model.clearFilterText}>
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </div>
+        <Menu />
+      </div>
+    )
+  },
+)
 const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
   const [assemblyIdx, setAssemblyIdx] = useState(0)
   const [modalInfo, setModalInfo] = useState()
   const [headerHeight, setHeaderHeight] = useState(0)
-  const classes = useStyles()
-  const session = getSession(model)
 
   const { assemblyNames } = model
   const assemblyName = assemblyNames[assemblyIdx]
@@ -277,27 +313,11 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
 
   return (
     <>
-      <div
-        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
-      >
-        <TextField
-          className={classes.searchBox}
-          label="Filter tracks"
-          value={model.filterText}
-          onChange={event => model.setFilterText(event.target.value)}
-          fullWidth
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton color="secondary" onClick={model.clearFilterText}>
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </div>
-      <Example
+      <HierarchicalTrackSelectorHeader
+        model={model}
+        setHeaderHeight={setHeaderHeight}
+      />
+      <HierarchicalTree
         tree={nodes}
         model={model}
         offset={toolbarHeight + headerHeight}
