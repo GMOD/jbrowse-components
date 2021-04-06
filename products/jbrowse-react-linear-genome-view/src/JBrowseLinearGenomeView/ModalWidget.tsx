@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   AppBar,
-  Modal,
+  Dialog,
   Paper,
   Toolbar,
   Typography,
@@ -15,12 +15,6 @@ type Session = Instance<ReturnType<typeof createSessionModel>>
 
 const useStyles = makeStyles({
   paper: {
-    position: 'absolute',
-    maxWidth: '75vh',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    maxHeight: '75vh',
     overflow: 'auto',
   },
 })
@@ -59,6 +53,7 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
           toolbarHeight={toolbarHeight}
           overrideDimensions={{
             height: (window.innerHeight * 5) / 8,
+            width: 800,
           }}
         />
       ) : null}
@@ -70,11 +65,15 @@ const ModalWidget = observer(({ session }: { session: Session }) => {
   const classes = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
-    <Modal open={Boolean(visibleWidget)} onClose={hideAllWidgets}>
+    <Dialog
+      open={Boolean(visibleWidget)}
+      onClose={hideAllWidgets}
+      maxWidth="xl"
+    >
       <Paper className={classes.paper}>
         <ModalWidgetContents session={session} />
       </Paper>
-    </Modal>
+    </Dialog>
   )
 })
 

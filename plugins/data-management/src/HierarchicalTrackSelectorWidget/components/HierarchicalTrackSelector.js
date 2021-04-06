@@ -145,8 +145,7 @@ const Example = ({
             )}
             itemSize={20}
             height={
-              // 2 is a fudge factor to avoid scrollbar from appearing
-              height - headerHeight - (overrideDimensions ? 2 : toolbarHeight)
+              height - headerHeight - (overrideDimensions ? 0 : toolbarHeight)
             }
             width="100%"
           >
@@ -160,7 +159,7 @@ const Example = ({
 
 const Wrapper = ({ overrideDimensions, children }) => {
   return overrideDimensions ? (
-    <div style={overrideDimensions}>{children}</div>
+    <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
     <>{children}</>
   )
