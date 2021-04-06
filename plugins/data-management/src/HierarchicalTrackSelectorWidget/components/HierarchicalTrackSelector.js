@@ -38,8 +38,7 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(2),
   },
   fab: {
-    float: 'right',
-    marginTop: theme.spacing(2),
+    position: 'absolute',
     bottom: theme.spacing(2),
     right: theme.spacing(2),
   },
@@ -126,7 +125,8 @@ const Node = ({ data, isOpen, style, toggle }) => {
 }
 
 const Example = ({ tree, model, offset }) => {
-  // in JBrowse-web the toolbar is position="sticky" which means the autosizer includes the height of the toolbar, so we subtract the given offsets
+  // in JBrowse-web the toolbar is position="sticky" which means the autosizer
+  // includes the height of the toolbar, so we subtract the given offsets
   return (
     <AutoSizer disableWidth>
       {({ height }) => {
@@ -163,21 +163,8 @@ const HierarchicalTrackSelectorContainer = observer(
     const session = getSession(model)
     const [anchorEl, setAnchorEl] = useState(null)
 
-    function addConnection() {
+    function handleFabClose() {
       setAnchorEl(null)
-      const widget = session.addWidget(
-        'AddConnectionWidget',
-        'addConnectionWidget',
-      )
-      session.showWidget(widget)
-    }
-
-    function addTrack() {
-      setAnchorEl(null)
-      const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
-        view: model.view.id,
-      })
-      session.showWidget(widget)
     }
     return (
       <Wrapper overrideDimensions={overrideDimensions}>
@@ -186,14 +173,47 @@ const HierarchicalTrackSelectorContainer = observer(
           toolbarHeight={toolbarHeight}
           overrideDimensions={overrideDimensions}
         />
-
+        <Fab
+          color="secondary"
+          className={classes.fab}
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+        >
+          <AddIcon />
+        </Fab>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
         >
-          <MenuItem onClick={addConnection}>Add connection</MenuItem>
-          <MenuItem onClick={addTrack}>Add track</MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              const widget = session.addWidget(
+                'AddConnectionWidget',
+                'addConnectionWidget',
+              )
+              session.showWidget(widget)
+            }}
+          >
+            Add connection
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleFabClose()
+              const widget = session.addWidget(
+                'AddTrackWidget',
+                'addTrackWidget',
+                {
+                  view: model.view.id,
+                },
+              )
+              session.showWidget(widget)
+            }}
+          >
+            Add track
+          </MenuItem>
         </Menu>
       </Wrapper>
     )
