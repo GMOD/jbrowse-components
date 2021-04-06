@@ -60,7 +60,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
   connections: AnyConfigurationModel[]
-  deleteConnection: Function
+  deleteConnection?: Function
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

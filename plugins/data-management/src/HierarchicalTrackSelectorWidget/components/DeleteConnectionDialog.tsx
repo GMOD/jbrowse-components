@@ -39,7 +39,7 @@ export default observer(
             color="primary"
             onClick={() => {
               if (connectionConf) {
-                session.deleteConnection(connectionConf)
+                session.deleteConnection?.(connectionConf)
               }
               handleClose()
             }}

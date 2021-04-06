@@ -33,7 +33,7 @@ export default observer(
                 <IconButton
                   onClick={() => {
                     breakConnection(conf)
-                    session.deleteConnection(conf)
+                    session.deleteConnection?.(conf)
                   }}
                 >
                   <CloseIcon />

@@ -140,6 +140,9 @@ const Node = ({ data, isOpen, style, toggle }) => {
                 onChange={() => onChange(id)}
                 color="primary"
                 style={{ padding: 0 }}
+                inputProps={{
+                  'data-testid': `htsTrackEntry-${id}`,
+                }}
               />
             }
             label={
@@ -180,9 +183,11 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
     onMoreInfo: setMoreInfo,
   })
 
-  const menuItems = session.getTrackActionMenuItems
-    ? session.getTrackActionMenuItems(info?.conf)
-    : []
+  const conf = info?.conf
+  const menuItems =
+    conf && session.getTrackActionMenuItems
+      ? session.getTrackActionMenuItems(conf)
+      : []
   return (
     <>
       <FixedSizeTree

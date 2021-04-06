@@ -12,6 +12,7 @@ import {
 import { observer } from 'mobx-react'
 
 export default observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ modalInfo = {}, setModalInfo }: { modalInfo: any; setModalInfo: any }) => {
     const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
     return (
