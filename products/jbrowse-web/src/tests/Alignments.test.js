@@ -1,5 +1,11 @@
 // library
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import {
+  cleanup,
+  waitFor,
+  fireEvent,
+  render,
+  within,
+} from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -277,11 +283,15 @@ describe('alignments track', () => {
     const { findAllByTestId } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
+
+    await waitFor(
+      async () => {
+        const canvases = await findAllByTestId('prerendered_canvas')
+        expect(canvases.length).toBe(2)
+      },
       { timeout: 10000 },
     )
+    const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
 
     // this block tests that softclip avoids decrementing the total block
     // e.g. this line is not called for softclip/hardclip
