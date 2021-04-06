@@ -97,6 +97,7 @@ function makeTreeWalker(nodes, onChange) {
 // improves usability for what can be clicked
 const Node = ({ data, isOpen, style, toggle }) => {
   const { isLeaf, nestingLevel, checked, id, name, onChange } = data
+
   return (
     <div
       style={{
@@ -133,30 +134,45 @@ const Node = ({ data, isOpen, style, toggle }) => {
     </div>
   )
 }
+
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
-const HierarchicalTree = ({ tree, model, offset }) => {
+const HierarchicalTree = observer(({ height, tree, model }) => {
   return (
+    <FixedSizeTree
+      treeWalker={makeTreeWalker(
+        { name: 'Tracks', id: 'Tracks', children: tree },
+        id => {
+          model.view.toggleTrack(id)
+        },
+      )}
+      itemSize={20}
+      height={height}
+      width="100%"
+    >
+      {Node}
+    </FixedSizeTree>
+  )
+})
+
+// Don't use autosizer in jest and instead hardcode a height, otherwise fails
+// jest tests
+const AutoSizedHierarchicalTree = ({ tree, model, offset }) => {
+  return typeof jest === 'undefined' ? (
     <AutoSizer disableWidth>
       {({ height }) => {
         return (
-          <FixedSizeTree
-            treeWalker={makeTreeWalker(
-              { name: 'Tracks', id: 'Tracks', children: tree },
-              id => {
-                model.view.toggleTrack(id)
-              },
-            )}
-            itemSize={20}
+          <HierarchicalTree
             height={height - offset}
-            width="100%"
-          >
-            {Node}
-          </FixedSizeTree>
+            model={model}
+            tree={tree}
+          />
         )
       }}
     </AutoSizer>
+  ) : (
+    <HierarchicalTree height={600 - offset} model={model} tree={tree} />
   )
 }
 
@@ -421,7 +437,7 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
         setAssemblyIdx={setAssemblyIdx}
         assemblyIdx={assemblyIdx}
       />
-      <HierarchicalTree
+      <AutoSizedHierarchicalTree
         tree={nodes}
         model={model}
         offset={toolbarHeight + headerHeight}

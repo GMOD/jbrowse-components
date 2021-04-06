@@ -10,7 +10,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default observer(
   ({
@@ -19,7 +19,7 @@ export default observer(
     breakConnection,
   }: {
     handleClose: () => void
-    session: any
+    session: AbstractSessionModel
     breakConnection: Function
   }) => {
     return (

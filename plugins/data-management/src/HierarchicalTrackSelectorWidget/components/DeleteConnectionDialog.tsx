@@ -5,12 +5,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  List,
-  ListItem,
   Button,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 export default observer(
   ({
@@ -19,7 +18,7 @@ export default observer(
     handleClose,
   }: {
     deleteDialogDetails: { name: string; connectionConf: AnyConfigurationModel }
-    session: any
+    session: AbstractSessionModel
     handleClose: Function
   }) => {
     const { connectionConf, name } = deleteDialogDetails

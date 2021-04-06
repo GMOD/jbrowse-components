@@ -5,7 +5,6 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  IconButton,
   MenuProps as MUIMenuProps,
   MenuItem,
   MenuItemProps,
@@ -19,7 +18,6 @@ import {
 // icons
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import CheckBoxIcon from '@material-ui/icons/CheckBox'
-import CloseIcon from '@material-ui/icons/Close'
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
