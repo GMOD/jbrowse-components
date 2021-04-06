@@ -1,12 +1,14 @@
-import AppBar from '@material-ui/core/AppBar'
-import Modal from '@material-ui/core/Modal'
-import Paper from '@material-ui/core/Paper'
-import Toolbar from '@material-ui/core/Toolbar'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
+import React, { useState } from 'react'
+import {
+  AppBar,
+  Modal,
+  Paper,
+  Toolbar,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { Instance, getEnv } from 'mobx-state-tree'
-import React from 'react'
 import createSessionModel from '../createModel/createSessionModel'
 
 type Session = Instance<ReturnType<typeof createSessionModel>>
@@ -24,6 +26,7 @@ const useStyles = makeStyles({
 })
 
 const ModalWidgetContents = observer(({ session }: { session: Session }) => {
+  const [toolbarHeight, setToolbarHeight] = useState(0)
   const { visibleWidget } = session
   if (!visibleWidget) {
     return (
@@ -37,7 +40,10 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
   ).pluginManager.getWidgetType(visibleWidget.type)
   return (
     <>
-      <AppBar position="static">
+      <AppBar
+        position="static"
+        ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
+      >
         <Toolbar>
           {HeadingComponent ? (
             <HeadingComponent model={visibleWidget} />
@@ -47,13 +53,20 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
         </Toolbar>
       </AppBar>
       {visibleWidget && ReactComponent ? (
-        <ReactComponent model={visibleWidget} session={session} />
+        <ReactComponent
+          model={visibleWidget}
+          session={session}
+          toolbarHeight={toolbarHeight}
+          overrideDimensions={{
+            height: (window.innerHeight * 5) / 8,
+          }}
+        />
       ) : null}
     </>
   )
 })
 
-function ModalWidget({ session }: { session: Session }) {
+const ModalWidget = observer(({ session }: { session: Session }) => {
   const classes = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
@@ -63,6 +76,6 @@ function ModalWidget({ session }: { session: Session }) {
       </Paper>
     </Modal>
   )
-}
+})
 
-export default observer(ModalWidget)
+export default ModalWidget
