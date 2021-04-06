@@ -7,9 +7,6 @@ import {
   Menu,
   MenuItem,
   makeStyles,
-  Switch,
-  Tab,
-  Tabs,
   TextField,
 } from '@material-ui/core'
 
@@ -23,6 +20,8 @@ import MenuIcon from '@material-ui/icons/Menu'
 
 // other
 import { getSession } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { observer } from 'mobx-react'
 import { FixedSizeTree } from 'react-vtree'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -36,7 +35,7 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(1),
   },
   searchBox: {
-    marginBottom: theme.spacing(2),
+    margin: theme.spacing(2),
   },
   menuIcon: {
     margin: theme.spacing(2),
@@ -94,6 +93,8 @@ function makeTreeWalker(nodes, onChange) {
   }
 }
 
+// An individual node in the track selector. Note: manually sets cursor: pointer
+// improves usability for what can be clicked
 const Node = ({ data, isOpen, style, toggle }) => {
   const { isLeaf, nestingLevel, checked, id, name, onChange } = data
   return (
@@ -102,11 +103,15 @@ const Node = ({ data, isOpen, style, toggle }) => {
         ...style,
         marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
         whiteSpace: 'nowrap',
+
+        // interesting note: width:100% here dynamically makes window wider
+        // while scrolling for long track labels, which means we don't need
+        // long track label wrapping necessarily
         width: '100%',
       }}
     >
       {!isLeaf ? (
-        <div onClick={toggle} role="presentation">
+        <div onClick={toggle} role="presentation" style={{ cursor: 'pointer' }}>
           {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
           {name}
         </div>
@@ -117,9 +122,10 @@ const Node = ({ data, isOpen, style, toggle }) => {
             data-testid={`htsTrackEntry-${id}`}
             type="checkbox"
             checked={checked}
+            style={{ cursor: 'pointer' }}
             onChange={() => onChange(id)}
           />
-          <label title={name} htmlFor={id}>
+          <label title={name} htmlFor={id} style={{ cursor: 'pointer' }}>
             {name}
           </label>
         </>
@@ -224,59 +230,116 @@ const HierarchicalTrackSelectorContainer = observer(
   },
 )
 
-//   function handleTabChange(event, newIdx) {
-//     setAssemblyIdx(newIdx)
-//   }
-
-//   function handleConnectionToggle(connectionConf) {
-//     const assemblyConnections = session.connectionInstances.get(assemblyName)
-//     const existingConnection =
-//       assemblyConnections &&
-//       !!assemblyConnections.find(
-//         connection =>
-//           connection.name === readConfObject(connectionConf, 'name'),
-//       )
-//     if (existingConnection) {
-//       breakConnection(connectionConf)
-//     } else {
-//       session.makeConnection(connectionConf)
-//     }
-//   }
-
-//   function breakConnection(connectionConf, deleting = false) {
-//     const name = readConfObject(connectionConf, 'name')
-//     const result = session.prepareToBreakConnection(connectionConf)
-//     if (result) {
-//       const [safelyBreakConnection, dereferenceTypeCount] = result
-//       // always popup a warning if deleting or tracks are going to be removed
-//       // from view
-//       if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
-//         setModalInfo({
-//           connectionConf,
-//           safelyBreakConnection,
-//           dereferenceTypeCount,
-//           name,
-//           deleting,
-//         })
-//       } else {
-//         safelyBreakConnection()
-//       }
-//     } else if (deleting) {
-//       setModalInfo({ name, deleting, connectionConf })
-//     }
-//   }
-//
 const HierarchicalTrackSelectorHeader = observer(
-  ({ model, setHeaderHeight }) => {
+  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
     const classes = useStyles()
+    const session = getSession(model)
+    const [anchorEl, setAnchorEl] = useState()
+    const [modalInfo, setModalInfo] = useState()
+    const { assemblyNames } = model
+    const assemblyName = assemblyNames[assemblyIdx]
+
+    function handleConnectionToggle(connectionConf) {
+      const assemblyConnections = session.connectionInstances.get(assemblyName)
+      const existingConnection =
+        assemblyConnections &&
+        !!assemblyConnections.find(
+          connection =>
+            connection.name === readConfObject(connectionConf, 'name'),
+        )
+      if (existingConnection) {
+        breakConnection(connectionConf)
+      } else {
+        session.makeConnection(connectionConf)
+      }
+    }
+
+    function breakConnection(connectionConf, deleting = false) {
+      const name = readConfObject(connectionConf, 'name')
+      const result = session.prepareToBreakConnection(connectionConf)
+      if (result) {
+        const [safelyBreakConnection, dereferenceTypeCount] = result
+        // always popup a warning if deleting or tracks are going to be removed
+        // from view
+        if (Object.keys(dereferenceTypeCount).length > 0 || deleting) {
+          setModalInfo({
+            connectionConf,
+            safelyBreakConnection,
+            dereferenceTypeCount,
+            name,
+            deleting,
+          })
+        } else {
+          safelyBreakConnection()
+        }
+      } else if (deleting) {
+        setModalInfo({ name, deleting, connectionConf })
+      }
+    }
+
+    const connections = session.connections
+      .filter(conf => readConfObject(conf, 'assemblyName') === assemblyName)
+      .map(conf => {
+        const name = readConfObject(conf, 'name')
+        return {
+          label: name,
+          type: 'checkbox',
+          checked:
+            session.connectionInstances.has(assemblyName) &&
+            !!session.connectionInstances
+              .get(assemblyName)
+              .find(connection => connection.name === name),
+          onClick: () => {
+            handleConnectionToggle(conf)
+          },
+        }
+      })
+    const connectionMenuItems = connections.length
+      ? [
+          {
+            label: 'Connections...',
+            subMenu: connections,
+          },
+        ]
+      : []
+    const assemblyMenuItems =
+      assemblyNames.length > 2
+        ? [
+            {
+              label: 'Assemblies...',
+              subMenu: assemblyNames.map((name, idx) => ({
+                label: name,
+                onClick: () => {
+                  setAssemblyIdx(idx)
+                },
+              })),
+            },
+          ]
+        : []
+
+    const menuItems = [...connectionMenuItems, ...assemblyMenuItems]
     return (
       <div
         ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
       >
         <div style={{ display: 'flex' }}>
-          <IconButton className={classes.menuIcon} onClick={() => {}}>
-            <MenuIcon />
-          </IconButton>
+          {
+            /*
+             * if there are no connections and not a multi-assembly drop down
+             * menu here may be unneeded and cause more confusion than help,  so
+             * conditionally renders
+             */
+            menuItems.length ? (
+              <IconButton
+                className={classes.menuIcon}
+                onClick={event => {
+                  setAnchorEl(event.currentTarget)
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
+            ) : null
+          }
           <TextField
             className={classes.searchBox}
             label="Filter tracks"
@@ -294,14 +357,37 @@ const HierarchicalTrackSelectorHeader = observer(
             }}
           />
         </div>
-        <Menu />
+
+        <JBrowseMenu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setAnchorEl(undefined)
+          }}
+          menuItems={menuItems}
+        />
+        <CloseConnectionDialog
+          modalInfo={modalInfo}
+          setModalInfo={setModalInfo}
+          open={Boolean(modalInfo) && !modalInfo.deleting}
+          session={session}
+        />
+        <DeleteConnectionDialog
+          modalInfo={modalInfo}
+          setModalInfo={setModalInfo}
+          open={Boolean(modalInfo) && modalInfo.deleting}
+          session={session}
+        />
       </div>
     )
   },
 )
 const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
   const [assemblyIdx, setAssemblyIdx] = useState(0)
-  const [modalInfo, setModalInfo] = useState()
   const [headerHeight, setHeaderHeight] = useState(0)
 
   const { assemblyNames } = model
@@ -316,6 +402,8 @@ const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
       <HierarchicalTrackSelectorHeader
         model={model}
         setHeaderHeight={setHeaderHeight}
+        setAssemblyIdx={setAssemblyIdx}
+        assemblyIdx={assemblyIdx}
       />
       <HierarchicalTree
         tree={nodes}

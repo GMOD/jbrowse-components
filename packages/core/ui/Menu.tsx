@@ -184,19 +184,15 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
 }
 
 const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
-  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<null | HTMLElement>(
-    null,
-  )
-  const [openSubMenuIdx, setOpenSubMenuIdx] = useState<null | number>(null)
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<HTMLElement>()
+  const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)
-  const [selectedMenuItemIdx, setSelectedMenuItemIdx] = useState<null | number>(
-    null,
-  )
-  const [position, setPosition] = useState<null | {
+  const [selectedMenuItemIdx, setSelectedMenuItemIdx] = useState<number>()
+  const [position, setPosition] = useState<{
     top?: number
     left?: number
-  }>(null)
-  const paperRef = useRef<null | HTMLDivElement>(null)
+  }>()
+  const paperRef = useRef<HTMLDivElement>()
   const classes = useStyles()
 
   const {
@@ -210,8 +206,8 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 
   useEffect(() => {
     if (!open) {
-      setSubMenuAnchorEl(null)
-      setOpenSubMenuIdx(null)
+      setSubMenuAnchorEl(undefined)
+      setOpenSubMenuIdx(undefined)
     }
   }, [open])
 
@@ -329,8 +325,8 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                       setOpenSubMenuIdx(idx)
                     }
                   } else {
-                    setSubMenuAnchorEl(null)
-                    setOpenSubMenuIdx(null)
+                    setSubMenuAnchorEl(undefined)
+                    setOpenSubMenuIdx(undefined)
                   }
                 }}
                 onKeyDown={e => {
@@ -372,7 +368,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
               open={isSubMenuOpen && openSubMenuIdx === idx}
               onClose={() => {
                 setIsSubMenuOpen(false)
-                setSubMenuAnchorEl(null)
+                setSubMenuAnchorEl(undefined)
               }}
               onMenuItemClick={onMenuItemClick}
               menuItems={menuItem.subMenu}
@@ -389,7 +385,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
   }
 
   return (
-    <Grow in={open} style={{ transformOrigin: '0 0 0' }} ref={ref}>
+    <Grow in={open} style={{ transformOrigin: `0 0 0` }} ref={ref}>
       <Paper
         elevation={8}
         ref={paperRef}
