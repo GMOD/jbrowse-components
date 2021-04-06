@@ -68,10 +68,9 @@ function RefNameAutocomplete({
         try {
           // TODO, will be replaced once text search manager is implemented
           const results = await session.textSearchManager.search(currentSearch)
-          console.log(results)
           if (results.length > 0) {
             setCurrentOptions(results)
-          } 
+          }
         } catch (e) {
           console.error(e)
           if (active) {
