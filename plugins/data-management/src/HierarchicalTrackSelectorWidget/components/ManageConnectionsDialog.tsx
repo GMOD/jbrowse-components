@@ -14,16 +14,12 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 
 export default observer(
   ({
-    modalInfo = {},
     session,
-    setModalInfo,
     handleClose,
     breakConnection,
   }: {
     handleClose: () => void
-    modalInfo: any
     session: any
-    setModalInfo: Function
     breakConnection: Function
   }) => {
     return (

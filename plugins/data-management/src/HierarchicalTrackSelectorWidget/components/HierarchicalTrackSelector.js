@@ -236,6 +236,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const session = getSession(model)
     const [anchorEl, setAnchorEl] = useState()
     const [modalInfo, setModalInfo] = useState()
+    const [deleteDialogDetails, setDeleteDialogDetails] = useState()
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const { assemblyNames } = model
     const assemblyName = assemblyNames[assemblyIdx]
@@ -255,7 +256,7 @@ const HierarchicalTrackSelectorHeader = observer(
       }
     }
 
-    function breakConnection(connectionConf) {
+    function breakConnection(connectionConf, deletingConnection) {
       const name = readConfObject(connectionConf, 'name')
       const result = session.prepareToBreakConnection(connectionConf)
       if (result) {
@@ -270,6 +271,9 @@ const HierarchicalTrackSelectorHeader = observer(
         } else {
           safelyBreakConnection()
         }
+      }
+      if (deletingConnection) {
+        setDeleteDialogDetails({ name, connectionConf })
       }
     }
 
@@ -377,10 +381,18 @@ const HierarchicalTrackSelectorHeader = observer(
             session={session}
           />
         ) : null}
+
+        {deleteDialogDetails ? (
+          <DeleteConnectionDialog
+            handleClose={() => {
+              setDeleteDialogDetails(undefined)
+            }}
+            deleteDialogDetails={deleteDialogDetails}
+            session={session}
+          />
+        ) : null}
         {connectionManagerOpen ? (
           <ManageConnectionsDialog
-            modelInfo={modalInfo}
-            setModalInfo={setModalInfo}
             handleClose={() => setConnectionManagerOpen(false)}
             breakConnection={breakConnection}
             session={session}

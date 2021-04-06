@@ -10,68 +10,40 @@ import {
   Button,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 export default observer(
   ({
-    open,
-    modalInfo = {},
+    deleteDialogDetails,
     session,
-    setModalInfo,
+    handleClose,
   }: {
-    open: boolean
-    modalInfo: any
+    deleteDialogDetails: { name: string; connectionConf: AnyConfigurationModel }
     session: any
-    setModalInfo: Function
+    handleClose: Function
   }) => {
-    const {
-      connectionConf,
-      name,
-      dereferenceTypeCount,
-      safelyBreakConnection,
-    } = modalInfo
+    const { connectionConf, name } = deleteDialogDetails
     return (
-      <Dialog
-        aria-labelledby="connection-modal-title"
-        aria-describedby="connection-modal-description"
-        open={open}
-      >
+      <Dialog open>
         <DialogTitle>Delete connection &quot;{name}&quot;</DialogTitle>
         <DialogContent>
-          {dereferenceTypeCount ? (
-            <>
-              Closing this connection will close
-              <List>
-                {Object.entries(dereferenceTypeCount).map(([key, value]) => (
-                  <ListItem key={key}>{`${value} ${key}`}</ListItem>
-                ))}
-              </List>
-            </>
-          ) : null}
           <DialogContentText>
             Are you sure you want to delete this connection?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => {
-              setModalInfo()
-            }}
-            color="primary"
-          >
+          <Button onClick={() => handleClose()} color="primary">
             Cancel
           </Button>
           <Button
             variant="contained"
-            onClick={
-              modalInfo
-                ? () => {
-                    if (safelyBreakConnection) safelyBreakConnection()
-                    session.deleteConnection(connectionConf)
-                    setModalInfo()
-                  }
-                : () => {}
-            }
             color="primary"
+            onClick={() => {
+              if (connectionConf) {
+                session.deleteConnection(connectionConf)
+              }
+              handleClose()
+            }}
           >
             OK
           </Button>
