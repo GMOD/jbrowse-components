@@ -20,11 +20,10 @@ const useStyles = makeStyles({
 })
 
 const ModalWidgetContents = observer(({ session }: { session: Session }) => {
-  const [toolbarHeight, setToolbarHeight] = useState(0)
   const { visibleWidget } = session
   if (!visibleWidget) {
     return (
-      <AppBar position="static">
+      <AppBar position="relative">
         <Toolbar />
       </AppBar>
     )
@@ -34,10 +33,7 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
   ).pluginManager.getWidgetType(visibleWidget.type)
   return (
     <>
-      <AppBar
-        position="static"
-        ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
-      >
+      <AppBar position="static">
         <Toolbar>
           {HeadingComponent ? (
             <HeadingComponent model={visibleWidget} />
@@ -50,7 +46,6 @@ const ModalWidgetContents = observer(({ session }: { session: Session }) => {
         <ReactComponent
           model={visibleWidget}
           session={session}
-          toolbarHeight={toolbarHeight}
           overrideDimensions={{
             height: (window.innerHeight * 5) / 8,
             width: 800,

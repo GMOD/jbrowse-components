@@ -153,6 +153,10 @@ export default observer(({ session }) => {
   const { visibleWidget, activeWidgets } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
+
+  // we track the toolbar height because components that use virtualized height
+  // want to be able to fill the contained, minus the toolbar height (the
+  // position static/sticky is included in AutoSizer estimates)
   const [toolbarHeight, setToolbarHeight] = useState(0)
 
   return (

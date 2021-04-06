@@ -125,13 +125,8 @@ const Node = ({ data, isOpen, style, toggle }) => {
   )
 }
 
-const Example = ({
-  tree,
-  model,
-  toolbarHeight,
-  headerHeight,
-  overrideDimensions,
-}) => {
+const Example = ({ tree, model, offset }) => {
+  // in JBrowse-web the toolbar is position="sticky" which means the autosizer includes the height of the toolbar, so we subtract the given offsets
   return (
     <AutoSizer disableWidth>
       {({ height }) => {
@@ -144,9 +139,7 @@ const Example = ({
               },
             )}
             itemSize={20}
-            height={
-              height - headerHeight - (overrideDimensions ? 0 : toolbarHeight)
-            }
+            height={height - offset}
             width="100%"
           >
             {Node}
@@ -248,54 +241,49 @@ const HierarchicalTrackSelectorContainer = observer(
 //       setModalInfo({ name, deleting, connectionConf })
 //     }
 //   }
-const HierarchicalTrackSelector = observer(
-  ({ model, toolbarHeight = 0, overrideDimensions }) => {
-    const [assemblyIdx, setAssemblyIdx] = useState(0)
-    const [modalInfo, setModalInfo] = useState()
-    const [headerHeight, setHeaderHeight] = useState(0)
-    const classes = useStyles()
-    const session = getSession(model)
+const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
+  const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const [modalInfo, setModalInfo] = useState()
+  const [headerHeight, setHeaderHeight] = useState(0)
+  const classes = useStyles()
+  const session = getSession(model)
 
-    const { assemblyNames } = model
-    const assemblyName = assemblyNames[assemblyIdx]
-    if (!assemblyName) {
-      return null
-    }
-    const nodes = model.hierarchy(assemblyNames[assemblyIdx])
-    console.log({ toolbarHeight })
+  const { assemblyNames } = model
+  const assemblyName = assemblyNames[assemblyIdx]
+  if (!assemblyName) {
+    return null
+  }
+  const nodes = model.hierarchy(assemblyNames[assemblyIdx])
 
-    return (
-      <>
-        <div
-          ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
-        >
-          <TextField
-            className={classes.searchBox}
-            label="Filter tracks"
-            value={model.filterText}
-            onChange={event => model.setFilterText(event.target.value)}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton color="secondary" onClick={model.clearFilterText}>
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </div>
-        <Example
-          tree={nodes}
-          model={model}
-          toolbarHeight={toolbarHeight}
-          headerHeight={headerHeight}
-          overrideDimensions={overrideDimensions}
+  return (
+    <>
+      <div
+        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+      >
+        <TextField
+          className={classes.searchBox}
+          label="Filter tracks"
+          value={model.filterText}
+          onChange={event => model.setFilterText(event.target.value)}
+          fullWidth
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton color="secondary" onClick={model.clearFilterText}>
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
-      </>
-    )
-  },
-)
+      </div>
+      <Example
+        tree={nodes}
+        model={model}
+        offset={toolbarHeight + headerHeight}
+      />
+    </>
+  )
+})
 
 export default HierarchicalTrackSelectorContainer
