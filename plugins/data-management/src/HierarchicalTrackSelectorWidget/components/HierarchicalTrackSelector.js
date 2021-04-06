@@ -1,13 +1,16 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import {
+  Checkbox,
   Fab,
+  FormControlLabel,
   IconButton,
   InputAdornment,
   Menu,
   MenuItem,
-  makeStyles,
   TextField,
+  Typography,
+  makeStyles,
 } from '@material-ui/core'
 
 // icons
@@ -16,14 +19,15 @@ import AddIcon from '@material-ui/icons/Add'
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import MenuIcon from '@material-ui/icons/Menu'
+import MoreIcon from '@material-ui/icons/MoreHoriz'
 
 // other
+import AutoSizer from 'react-virtualized-auto-sizer'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { observer } from 'mobx-react'
 import { FixedSizeTree } from 'react-vtree'
-import AutoSizer from 'react-virtualized-auto-sizer'
 
 import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
@@ -55,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 // adapted from react-vtree docs
-function makeTreeWalker(nodes, onChange) {
+function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
   return function* treeWalker(refresh) {
     const stack = []
 
@@ -66,7 +70,7 @@ function makeTreeWalker(nodes, onChange) {
 
     while (stack.length !== 0) {
       const { node, nestingLevel } = stack.pop()
-      const { id, name, selected } = node
+      const { id, name, conf, selected } = node
       const isOpened = yield refresh
         ? {
             id,
@@ -77,6 +81,8 @@ function makeTreeWalker(nodes, onChange) {
             checked: !!selected,
             nestingLevel,
             onChange,
+            onMoreInfo,
+            conf,
           }
         : id
 
@@ -96,7 +102,16 @@ function makeTreeWalker(nodes, onChange) {
 // An individual node in the track selector. Note: manually sets cursor: pointer
 // improves usability for what can be clicked
 const Node = ({ data, isOpen, style, toggle }) => {
-  const { isLeaf, nestingLevel, checked, id, name, onChange } = data
+  const {
+    isLeaf,
+    nestingLevel,
+    checked,
+    id,
+    name,
+    onChange,
+    conf,
+    onMoreInfo,
+  } = data
 
   return (
     <div
@@ -112,23 +127,37 @@ const Node = ({ data, isOpen, style, toggle }) => {
       }}
     >
       {!isLeaf ? (
-        <div onClick={toggle} role="presentation" style={{ cursor: 'pointer' }}>
+        <Typography onClick={toggle} style={{ cursor: 'pointer' }}>
           {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
           {name}
-        </div>
+        </Typography>
       ) : (
         <>
-          <input
-            id={id}
-            data-testid={`htsTrackEntry-${id}`}
-            type="checkbox"
-            checked={checked}
-            style={{ cursor: 'pointer' }}
-            onChange={() => onChange(id)}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={checked}
+                onChange={() => onChange(id)}
+                color="primary"
+                style={{ padding: 0 }}
+              />
+            }
+            label={
+              /* it is helpful for styling to keep this inside the label */
+              <>
+                {name}
+                <IconButton
+                  onClick={event => {
+                    onMoreInfo({ target: event.currentTarget, id, conf })
+                  }}
+                  color="secondary"
+                  data-testid={`htsTrackEntryMenu-${id}`}
+                >
+                  <MoreIcon />
+                </IconButton>
+              </>
+            }
           />
-          <label title={name} htmlFor={id} style={{ cursor: 'pointer' }}>
-            {name}
-          </label>
         </>
       )}
     </div>
@@ -139,20 +168,42 @@ const Node = ({ data, isOpen, style, toggle }) => {
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
 const HierarchicalTree = observer(({ height, tree, model }) => {
+  const [info, setMoreInfo] = useState()
+  const session = getSession(model)
+  const treeWalker = makeTreeWalker({
+    nodes: {
+      name: 'Tracks',
+      id: 'Tracks',
+      children: tree,
+    },
+    onChange: trackId => model.view.toggleTrack(trackId),
+    onMoreInfo: setMoreInfo,
+  })
+
+  const menuItems = session.getTrackActionMenuItems
+    ? session.getTrackActionMenuItems(info?.conf)
+    : []
   return (
-    <FixedSizeTree
-      treeWalker={makeTreeWalker(
-        { name: 'Tracks', id: 'Tracks', children: tree },
-        id => {
-          model.view.toggleTrack(id)
-        },
-      )}
-      itemSize={20}
-      height={height}
-      width="100%"
-    >
-      {Node}
-    </FixedSizeTree>
+    <>
+      <FixedSizeTree
+        treeWalker={treeWalker}
+        itemSize={20}
+        height={height}
+        width="100%"
+      >
+        {Node}
+      </FixedSizeTree>
+      <JBrowseMenu
+        anchorEl={info?.target}
+        menuItems={menuItems}
+        onMenuItemClick={(_event, callback) => {
+          callback()
+          setMoreInfo(undefined)
+        }}
+        open={Boolean(info)}
+        onClose={() => setMoreInfo(undefined)}
+      />
+    </>
   )
 })
 
@@ -172,7 +223,7 @@ const AutoSizedHierarchicalTree = ({ tree, model, offset }) => {
       }}
     </AutoSizer>
   ) : (
-    <HierarchicalTree height={600 - offset} model={model} tree={tree} />
+    <HierarchicalTree height={9000} model={model} tree={tree} />
   )
 }
 
@@ -341,13 +392,14 @@ const HierarchicalTrackSelectorHeader = observer(
     return (
       <div
         ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
+        data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
           {
             /*
-             * if there are no connections and not a multi-assembly drop down
-             * menu here may be unneeded and cause more confusion than help,  so
-             * conditionally renders
+             * if there are no connections and this is not a multi-assembly
+             * drop down menu here may be unneeded and cause more confusion than
+             * help,  so conditionally renders
              */
             menuItems.length ? (
               <IconButton
