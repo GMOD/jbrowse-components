@@ -67,7 +67,11 @@ function RefNameAutocomplete({
       ;(async () => {
         try {
           // TODO, will be replaced once text search manager is implemented
-          const results = await session.textSearchManager.search(currentSearch)
+          const results = await session.textSearchManager.search(
+            currentSearch,
+            'prefix',
+          )
+          console.log(results)
           if (results.length > 0) {
             setCurrentOptions(results)
           }
@@ -90,16 +94,26 @@ function RefNameAutocomplete({
       setCurrentOptions([])
     }
   }, [open])
-  function onChange(newRegionName: Option | string) {
+  async function onChange(newRegionName: Option | string) {
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
         newRegionValue = newRegionName.value || newRegionName.inputValue
       }
       if (typeof newRegionName === 'string') {
+        console.log('hi')
         newRegionValue = newRegionName
       }
-      onSelect(newRegionValue)
+      const exactResults = await session.textSearchManager.search(
+        newRegionValue.toLowerCase(),
+        'exact',
+      )
+      console.log('exact results', exactResults)
+      if (exactResults.length !== 0) {
+        console.log('Hey I have many results')
+      } else {
+        onSelect(newRegionValue)
+      }
     }
   }
 
@@ -123,6 +137,9 @@ function RefNameAutocomplete({
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
+        // /\w{1,}\u003A\d{1,}\u002d\d{1,}/
+        // /\w+\:\d+(\.{2}|\-)\d+/
+
         if (params.inputValue !== '') {
           const newOption: Option = {
             label: 'Navigating to...',

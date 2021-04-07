@@ -17,12 +17,14 @@ export default (pluginManager: PluginManager) => {
       return []
     }
 
-    async search(input: string) {
+    async search(input: string, type: string) {
       /* TODO: implement search
       search types: full, prefix, exact 
       implement search different adapters in parallel
       */
-      const results = await test.searchIndex(input, 'exact')
+      const results=await test.searchIndex( input,type )
+      console.log(results)
+      // if selected show exact matches
       return results
     }
 
@@ -31,6 +33,7 @@ export default (pluginManager: PluginManager) => {
      * @param results - array of results from all text search adapters
      */
     relevantResults(results: array) {
+      // TODO: matches
       return []
     }
   }
