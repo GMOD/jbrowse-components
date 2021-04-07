@@ -56,7 +56,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
         id: trackConf.trackId,
         name:
           readConfObject(trackConf, 'name') ||
-          `Reference sequecnce (${readConfObject(
+          `Reference sequence (${readConfObject(
             getParent(trackConf),
             'name',
           )})`,
