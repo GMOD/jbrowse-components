@@ -125,6 +125,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
+      searchResults: [] as any,
       DialogComponent: undefined as
         | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
         | undefined,
@@ -165,6 +166,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       get isSeqDialogDisplayed() {
         return self.leftOffset && self.rightOffset
+      },
+      get isSearchDialogDisplayed() {
+        return self.searchResults.length > 0
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -499,6 +503,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
+      },
+
+      setResults(results: Array) {
+        self.searchResults = results
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {
