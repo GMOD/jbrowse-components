@@ -16,6 +16,8 @@ import CardContent from '@material-ui/core/CardContent'
 import CardMedia from '@material-ui/core/CardMedia'
 import Button from '@material-ui/core/Button'
 
+import { plugins } from '../../plugins.json'
+
 const useStyles = makeStyles(theme => ({
   button: {
     textTransform: 'none',
@@ -46,6 +48,8 @@ function PluginStore() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
   const classes = useStyles()
+
+  console.log(plugins)
 
   return (
     <Layout title={`${siteConfig.title}`}>
