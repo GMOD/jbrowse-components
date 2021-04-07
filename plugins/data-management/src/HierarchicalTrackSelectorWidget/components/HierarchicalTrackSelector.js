@@ -74,7 +74,7 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
       const isOpened = yield refresh
         ? {
             id,
-            isLeaf: node.children.length === 0,
+            isLeaf: !!conf,
             isOpenByDefault: true,
             name,
             node,
