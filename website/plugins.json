@@ -1,0 +1,67 @@
+{
+  "plugins": [
+    {
+      "name": "msaview",
+      "authors": ["Colin Diesh"],
+      "description": "multiple sequence alignment browser plugin for JBrowse 2",
+      "location": "https://github.com/GMOD/jbrowse-plugin-msaview",
+      "url": "https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://imgbox.com/Wd3KVyvc"
+    },
+    {
+      "name": "gdc",
+      "authors": ["Garrett Stevens", "Colin Diesh", "Rob Buels"],
+      "description": "JBrowse 2 plugin for integrating with GDC resources",
+      "location": "https://github.com/GMOD/jbrowse-plugin-gdc",
+      "url": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js",
+      "license": "NONE",
+      "image": "https://imgbox.com/QincKisg"
+    },
+    {
+      "name": "quantseq",
+      "authors": ["Elliot Hershberg"],
+      "description": "External JB2 plugin implementing a QuantitativeSequence track for displaying base-resolution models.",
+      "location": "https://github.com/GMOD/jbrowse-plugin-quantseq",
+      "url": "https://unpkg.com/jbrowse-plugin-quantseq/dist/jbrowse-plugin-quantseq.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://imgbox.com/rZJ7XVM3"
+    },
+    {
+      "name": "gwas",
+      "authors": ["Colin Diesh"],
+      "description": "Plugin for displaying GWAS results such as manhattan plot renderings",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-gwas",
+      "url": "https://unpkg.com/jbrowse-plugin-gwas/dist/jbrowse-plugin-gwas.umd.production.min.js",
+      "license": "NONE",
+      "image": "https://imgbox.com/eKdxsJ26"
+    },
+    {
+      "name": "ucsc-api",
+      "authors": ["Colin Diesh"],
+      "description": "A JBrowse 2 plugin for accessing the UCSC API",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-ucsc-api",
+      "url": "https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js",
+      "license": "NONE",
+      "image": "https://imgbox.com/pjj940d6"
+    },
+    {
+      "name": "biothings-api",
+      "authors": ["Colin Diesh"],
+      "description": "Adapts to APIs like mygene.info to get super rich gene annotations",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-biothings-api",
+      "url": "https://unpkg.com/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js",
+      "license": "NONE",
+      "image": "https://imgbox.com/VtoSPBfz"
+    },
+    {
+      "name": "ideogram",
+      "authors": ["Colin Diesh"],
+      "description": "JBrowse 2 plugin for rendering ideograms",
+      "location": "https://github.com/cmdcolin/jbrowse-plugin-ideogram",
+      "url": "https://unpkg.com/jbrowse-plugin-ideogram/dist/jbrowse-plugin-ideogram.umd.production.min.js",
+      "license": "Apache License 2.0",
+      "image": "https://imgbox.com/MvRbn9jp"
+    }
+  ]
+}
