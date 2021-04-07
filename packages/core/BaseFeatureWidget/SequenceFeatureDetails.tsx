@@ -49,6 +49,8 @@ function revlist(list: Feat[], seqlen: number) {
     .sort((a, b) => a.start - b.start)
 }
 
+// note that these are currently put into the style section instead of being
+// defined in classes to aid copy and paste to an external document e.g. word
 const proteinColor = 'rgb(220,160,220)'
 const intronColor = undefined
 const cdsColor = 'rgb(220,220,180)'
