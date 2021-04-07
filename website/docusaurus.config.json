@@ -32,6 +32,11 @@
           "position": "left"
         },
         {
+          "to": "plugin_store",
+          "label": "Plugin Store",
+          "position": "left"
+        },
+        {
           "to": "features",
           "label": "Features",
           "position": "left"
