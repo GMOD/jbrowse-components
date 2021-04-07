@@ -61,6 +61,12 @@ const useStyles = makeStyles(theme => ({
     background: theme.palette.tertiary.main,
     color: theme.palette.tertiary.contrastText,
   },
+
+  checkbox: {
+    '&:hover': {
+      backgroundColor: '#ddd',
+    },
+  },
 }))
 
 // adapted from react-vtree docs
@@ -154,7 +160,7 @@ const Node = ({ data, isOpen, style, toggle }) => {
               label={
                 /* it is helpful for styling to keep this inside the label */
                 <>
-                  {name}
+                  <span className={classes.checkbox}>{name}</span>
                   <IconButton
                     onClick={event => {
                       onMoreInfo({ target: event.currentTarget, id, conf })
