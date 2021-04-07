@@ -56,6 +56,11 @@ const useStyles = makeStyles(theme => ({
   tabs: {
     marginBottom: theme.spacing(1),
   },
+  subheader: {
+    cursor: 'pointer',
+    background: theme.palette.tertiary.main,
+    color: theme.palette.tertiary.contrastText,
+  },
 }))
 
 // adapted from react-vtree docs
@@ -112,57 +117,59 @@ const Node = ({ data, isOpen, style, toggle }) => {
     conf,
     onMoreInfo,
   } = data
+  const classes = useStyles()
 
   return (
-    <div
-      style={{
-        ...style,
-        marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
-        whiteSpace: 'nowrap',
+    <div style={{ ...style, padding: 4 }}>
+      <div
+        style={{
+          marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
+          whiteSpace: 'nowrap',
 
-        // interesting note: width:100% here dynamically makes window wider
-        // while scrolling for long track labels, which means we don't need
-        // long track label wrapping necessarily
-        width: '100%',
-      }}
-    >
-      {!isLeaf ? (
-        <Typography onClick={toggle} style={{ cursor: 'pointer' }}>
-          {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-          {name}
-        </Typography>
-      ) : (
-        <>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={checked}
-                onChange={() => onChange(id)}
-                color="primary"
-                style={{ padding: 0 }}
-                inputProps={{
-                  'data-testid': `htsTrackEntry-${id}`,
-                }}
-              />
-            }
-            label={
-              /* it is helpful for styling to keep this inside the label */
-              <>
-                {name}
-                <IconButton
-                  onClick={event => {
-                    onMoreInfo({ target: event.currentTarget, id, conf })
+          // interesting note: width:100% here dynamically makes window wider
+          // while scrolling for long track labels, which means we don't need
+          // long track label wrapping necessarily
+          width: '100%',
+        }}
+      >
+        {!isLeaf ? (
+          <Typography onClick={toggle} className={classes.subheader}>
+            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+            {name}
+          </Typography>
+        ) : (
+          <>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={checked}
+                  onChange={() => onChange(id)}
+                  color="primary"
+                  style={{ padding: 0 }}
+                  inputProps={{
+                    'data-testid': `htsTrackEntry-${id}`,
                   }}
-                  color="secondary"
-                  data-testid={`htsTrackEntryMenu-${id}`}
-                >
-                  <MoreIcon />
-                </IconButton>
-              </>
-            }
-          />
-        </>
-      )}
+                />
+              }
+              label={
+                /* it is helpful for styling to keep this inside the label */
+                <>
+                  {name}
+                  <IconButton
+                    onClick={event => {
+                      onMoreInfo({ target: event.currentTarget, id, conf })
+                    }}
+                    color="secondary"
+                    data-testid={`htsTrackEntryMenu-${id}`}
+                  >
+                    <MoreIcon />
+                  </IconButton>
+                </>
+              }
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }
