@@ -7,7 +7,7 @@ export default (pluginManager: PluginManager) => {
   const test = new JBrowse1TextSearchAdapter(configSchema)
   return class TextSearchManager {
     constructor() {
-      this.textSearchAdapters = []
+      this.textSearchAdapters = [test]
     }
 
     parseText(searchText: string) {
@@ -22,9 +22,14 @@ export default (pluginManager: PluginManager) => {
       search types: full, prefix, exact 
       implement search different adapters in parallel
       */
-      const results=await test.searchIndex( input,type )
-      console.log(results)
-      // if selected show exact matches
+      // let results = []
+      // this.textSearchAdapters.forEach(adapter => {
+      //   // eslint-disable-next-line no-return-await
+      //   const currentResults = adapter.searchIndex(input, type)
+      //   results = results.concat(currentResults)
+      //   // console.log(adapter)
+      // })
+      const results = await test.searchIndex(input, type)
       return results
     }
 

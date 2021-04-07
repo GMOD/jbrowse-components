@@ -27,6 +27,10 @@ export interface Option {
   inputValue?: string
 }
 
+export interface Result {
+  option: Option
+  onSelect: (Option) => void
+}
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -60,20 +64,17 @@ function RefNameAutocomplete({
     return defaultOptions.concat(currentOptions)
   }, [regions, currentOptions])
 
-  // console.log( session.textSearchManager )
   React.useEffect(() => {
     let active = true
     if (active) {
       ;(async () => {
         try {
-          // TODO, will be replaced once text search manager is implemented
           const results = await session.textSearchManager.search(
             currentSearch,
             'prefix',
           )
-          console.log(results)
           if (results.length > 0) {
-            setCurrentOptions(results)
+            setCurrentOptions( results )
           }
         } catch (e) {
           console.error(e)
@@ -101,19 +102,18 @@ function RefNameAutocomplete({
         newRegionValue = newRegionName.value || newRegionName.inputValue
       }
       if (typeof newRegionName === 'string') {
-        console.log('hi')
         newRegionValue = newRegionName
       }
-      const exactResults = await session.textSearchManager.search(
-        newRegionValue.toLowerCase(),
-        'exact',
-      )
-      console.log('exact results', exactResults)
-      if (exactResults.length !== 0) {
-        console.log('Hey I have many results')
-      } else {
-        onSelect(newRegionValue)
-      }
+      // const exactResults = await session.textSearchManager.search(
+      //   newRegionValue.toLowerCase(),
+      //   'exact',
+      // )
+      // console.log('exact results', exactResults)
+      // if (exactResults.length !== 0) {
+      //   console.log( 'I have many results' )
+      //   model.setResults(exactResults)
+      // }
+      onSelect(newRegionValue)
     }
   }
 
@@ -146,6 +146,12 @@ function RefNameAutocomplete({
             inputValue: params.inputValue,
             value: params.inputValue,
           }
+          // const newResult: Result = {
+          //   option: newOption,
+          //   onSelect: selected => {
+          //     model.navToLocstring(selected.value)
+          //   }
+          // }
           filtered.push(newOption)
         }
         return filtered
