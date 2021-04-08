@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -5,7 +6,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   configSchema as ConfigurationEditorConfigSchema,
   HeadingComponent as ConfigurationEditorHeadingComponent,
-  ReactComponent as ConfigurationEditorReactComponent,
   stateModelFactory as ConfigurationEditorStateModelFactory,
 } from './ConfigurationEditorWidget'
 import {
@@ -64,7 +64,12 @@ export default class extends Plugin {
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
-        ReactComponent: ConfigurationEditorReactComponent,
+        ReactComponent: lazy(
+          () =>
+            import(
+              './ConfigurationEditorWidget/components/ConfigurationEditor'
+            ),
+        ),
       })
     })
   }

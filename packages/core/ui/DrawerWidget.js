@@ -1,18 +1,20 @@
-import Typography from '@material-ui/core/Typography'
-import AppBar from '@material-ui/core/AppBar'
-import IconButton from '@material-ui/core/IconButton'
-import Toolbar from '@material-ui/core/Toolbar'
-import Select from '@material-ui/core/Select'
-import MenuItem from '@material-ui/core/MenuItem'
+import React, { Suspense } from 'react'
+import {
+  AppBar,
+  IconButton,
+  ListItemSecondaryAction,
+  MenuItem,
+  Select,
+  Toolbar,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import DeleteIcon from '@material-ui/icons/Delete'
 import CloseIcon from '@material-ui/icons/Close'
 import MinimizeIcon from '@material-ui/icons/Minimize'
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
-import { makeStyles } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { observer, PropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React from 'react'
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -149,7 +151,9 @@ const DrawerWidget = observer(props => {
             </div>
           </Toolbar>
         </AppBar>
-        <ReactComponent model={visibleWidget} session={session} />
+        <Suspense fallback={<div>Loading</div>}>
+          <ReactComponent model={visibleWidget} session={session} />
+        </Suspense>
       </div>
     </Drawer>
   )
