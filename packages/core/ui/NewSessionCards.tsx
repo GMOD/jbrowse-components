@@ -64,6 +64,7 @@ function NewSessionCard({
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function NewEmptySession({ root }: { root: any }) {
   return (
     <NewSessionCard
@@ -76,6 +77,7 @@ export function NewEmptySession({ root }: { root: any }) {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function NewLinearGenomeViewSession({ root }: { root: any }) {
   return (
     <NewSessionCard
@@ -92,6 +94,7 @@ export function NewLinearGenomeViewSession({ root }: { root: any }) {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function NewSVInspectorSession({ root }: { root: any }) {
   return (
     <NewSessionCard

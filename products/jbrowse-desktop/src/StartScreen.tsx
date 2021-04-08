@@ -21,15 +21,15 @@ import {
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import { LogoFull } from './Logo'
-import { inDevelopment } from '../util'
+import { LogoFull } from '@jbrowse/core/ui/Logo'
+import { inDevelopment } from '@jbrowse/core/util'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
-} from './NewSessionCards'
-import RecentSessionCard from './RecentSessionCard'
-import FactoryResetDialog from './FactoryResetDialog'
+} from '@jbrowse/core/ui/NewSessionCards'
+import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
+import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 
 const blankIpc = { invoke: () => {} }
 const useStyles = makeStyles(theme => ({

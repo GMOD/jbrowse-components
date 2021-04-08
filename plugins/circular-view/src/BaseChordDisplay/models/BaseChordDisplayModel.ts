@@ -18,7 +18,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import renderReactionFactory from './renderReaction'
-import { CircularViewModel } from '../../CircularView'
+import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 export const BaseChordDisplayModel = types
   .compose(
