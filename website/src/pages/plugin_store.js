@@ -16,6 +16,10 @@ import CardContent from '@material-ui/core/CardContent'
 import CardMedia from '@material-ui/core/CardMedia'
 import Button from '@material-ui/core/Button'
 
+import PersonIcon from '@material-ui/icons/Person'
+import AccountBalanceIcon from '@material-ui/icons/AccountBalance'
+import GitHubIcon from '@material-ui/icons/GitHub'
+
 import { plugins } from '../../plugins.json'
 
 const useStyles = makeStyles(theme => ({
@@ -42,6 +46,19 @@ const useStyles = makeStyles(theme => ({
     },
     margin: '5em',
   },
+
+  card: {
+    margin: '1em auto',
+    width: 800,
+  },
+
+  icon: { marginLeft: '0.5em', marginRight: '0.5em' },
+
+  dataField: {
+    display: 'flex',
+    alignItems: 'center',
+    margin: '0.4em 0em',
+  },
 }))
 
 function PluginStore() {
@@ -49,13 +66,56 @@ function PluginStore() {
   const { siteConfig = {} } = context
   const classes = useStyles()
 
-  console.log(plugins)
+  // console.log(plugins)
 
   return (
     <Layout title={`${siteConfig.title}`}>
       <div className={classes.body}>
         <div style={{ flexBasis: '50%' }}>
           <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
+        </div>
+        <div style={{ flexBasis: '50%' }}>
+          {plugins.map(plugin => (
+            <Card variant="outlined" key={plugin.name} className={classes.card}>
+              <CardActionArea>
+                <CardMedia
+                  style={{ height: 200, width: 800 }}
+                  image={plugin.image}
+                  title={plugin.name}
+                />
+                <CardContent>
+                  <div className={classes.dataField}>
+                    <Typography variant="h4">{plugin.name}</Typography>
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      disableRipple="true"
+                      size="small"
+                      style={{ marginLeft: '1em' }}
+                    >
+                      Show configuration
+                    </Button>
+                  </div>
+                  <div className={classes.dataField}>
+                    <PersonIcon style={{ marginRight: '0.5em' }} />
+                    <Typography>{plugin.authors.join(', ')}</Typography>
+                    <AccountBalanceIcon className={classes.icon} />
+                    <Typography>
+                      {plugin.license === 'NONE'
+                        ? 'No license'
+                        : plugin.license}
+                    </Typography>
+                    <GitHubIcon className={classes.icon} />
+                    <Link href={plugin.location}>
+                      <Typography>{plugin.location}</Typography>
+                    </Link>
+                  </div>
+                  <Typography variant="h6">Description:</Typography>
+                  <Typography>{plugin.description}</Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          ))}
         </div>
       </div>
     </Layout>
