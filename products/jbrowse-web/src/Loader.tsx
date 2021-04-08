@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
@@ -33,9 +33,10 @@ import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
-import StartScreen from './StartScreen'
 import SessionWarningModal from './sessionWarningModal'
 import ConfigWarningModal from './configWarningModal'
+
+const StartScreen = lazy(() => import('./StartScreen'))
 
 function NoConfigMessage() {
   const links = [
@@ -621,7 +622,11 @@ const Renderer = observer(
     }
     if (pm) {
       if (!pm.rootModel?.session) {
-        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+          </Suspense>
+        )
       }
       return <JBrowse pluginManager={pm} />
     }

@@ -1,13 +1,12 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
-
+import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
-
 import { ThemeProvider } from '@material-ui/core/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
+import StartScreen from './StartScreen'
 import factoryReset from './factoryReset'
 
 const debounceMs = 1000
