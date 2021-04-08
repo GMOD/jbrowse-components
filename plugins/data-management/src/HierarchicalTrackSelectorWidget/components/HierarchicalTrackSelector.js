@@ -34,10 +34,6 @@ import DeleteConnectionDialog from './DeleteConnectionDialog'
 import ManageConnectionsDialog from './ManageConnectionsDialog'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    textAlign: 'left',
-    padding: theme.spacing(1),
-  },
   searchBox: {
     margin: theme.spacing(2),
   },
@@ -46,16 +42,19 @@ const useStyles = makeStyles(theme => ({
   },
   fab: {
     position: 'absolute',
-    bottom: theme.spacing(2),
-    right: theme.spacing(2),
+    bottom: theme.spacing(4),
+    right: theme.spacing(4),
   },
-  connectionsPaper: {
-    padding: theme.spacing(1),
-    marginTop: theme.spacing(1),
+  compactCheckbox: {
+    padding: 0,
   },
-  tabs: {
-    marginBottom: theme.spacing(1),
+
+  checkboxLabel: {
+    '&:hover': {
+      backgroundColor: '#ddd',
+    },
   },
+
   subheaderBase: {
     cursor: 'pointer',
     padding: 3,
@@ -70,12 +69,6 @@ const useStyles = makeStyles(theme => ({
   },
   subheaderText: {
     margin: 'auto 0',
-  },
-
-  checkbox: {
-    '&:hover': {
-      backgroundColor: '#ddd',
-    },
   },
 }))
 
@@ -121,8 +114,8 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
   }
 }
 
-// An individual node in the track selector. Note: manually sets cursor: pointer
-// improves usability for what can be clicked
+// An individual node in the track selector. Note: manually sets cursor:
+// pointer improves usability for what can be clicked
 const Node = props => {
   const { data, isOpen, style, toggle } = props
   const {
@@ -141,6 +134,8 @@ const Node = props => {
   return (
     <div
       className={!isLeaf ? classes.subheaderBase : undefined}
+      role="presentation"
+      onClick={toggle}
       style={{
         ...style,
         marginLeft,
@@ -155,7 +150,7 @@ const Node = props => {
       <div className={!isLeaf ? classes.subheaderColor : undefined}>
         {!isLeaf ? (
           <div className={classes.subheaderText}>
-            <Typography onClick={toggle} style={{}}>
+            <Typography style={{}}>
               {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
               {name}
             </Typography>
@@ -165,10 +160,10 @@ const Node = props => {
             <FormControlLabel
               control={
                 <Checkbox
+                  className={classes.compactCheckbox}
                   checked={checked}
                   onChange={() => onChange(id)}
                   color="primary"
-                  style={{ padding: 0 }}
                   inputProps={{
                     'data-testid': `htsTrackEntry-${id}`,
                   }}
@@ -177,7 +172,7 @@ const Node = props => {
               label={
                 /* it is helpful for styling to keep this inside the label */
                 <>
-                  <span className={classes.checkbox}>{name}</span>
+                  <span className={classes.checkboxLabel}>{name}</span>
                   <IconButton
                     onClick={event => {
                       onMoreInfo({ target: event.currentTarget, id, conf })
