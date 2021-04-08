@@ -16,7 +16,8 @@ export default class CircularViewPlugin extends Plugin {
           LazyReactComponent: lazy(
             () => import('./CircularView/components/CircularView'),
           ),
-          stateModel: load(stateModelFactory),
+          stateModel: stateModelFactory(pluginManager),
+          name: 'CircularView',
         }),
     )
   }
