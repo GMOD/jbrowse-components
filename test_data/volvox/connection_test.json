@@ -72,7 +72,7 @@
       "type": "JBrowse1Connection",
       "connectionId": "JB1_connection_volvox",
       "name": "JB1 (volvox)",
-      "assemblyName": "volvox",
+      "assemblyNames": ["volvox"],
       "dataDirLocation": {
         "uri": "http://jbrowse.org.s3.amazonaws.com/code/JBrowse-1.16.10/sample_data/json/volvox/"
       }
@@ -81,6 +81,7 @@
       "type": "UCSCTrackHubConnection",
       "connectionId": "UCSC_connection_volvox",
       "name": "UCSC (volvox and hg19)",
+      "assemblyNames": [],
       "hubTxtLocation": {
         "uri": "http://jbrowse.org.s3.amazonaws.com/testing/test_hub/hub.txt"
       }
@@ -89,6 +90,7 @@
       "type": "TheTrackHubRegistryConnection",
       "connectionId": "trackhub_registry_connection_GRCh37_dbvar",
       "name": "dbVar Hub (GRCh37)",
+      "assemblyNames": ["GRCh37"],
       "trackDbId": "Pi-vVnIBMbWBjSAQfVVA"
     }
   ]

@@ -106,6 +106,7 @@ type bigWig
       getByTestId,
       getAllByTestId,
       getAllByRole,
+      getAllByPlaceholderText,
       findByText,
       getAllByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
@@ -122,9 +123,10 @@ type bigWig
         target: { value: 'http://test.com/jbrowse/data/' },
       },
     )
-    fireEvent.change(getAllByDisplayValue('assemblyName')[1], {
+    fireEvent.change(getAllByPlaceholderText('add new')[1], {
       target: { value: 'volMyt1' },
     })
+    fireEvent.click(getAllByTestId('stringArrayAdd-assemblyNames')[1])
     fireEvent.click(getAllByTestId('addConnectionNext')[1])
     expect(session.sessionConnections.length).toBe(1)
   })

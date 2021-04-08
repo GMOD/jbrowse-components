@@ -30,7 +30,7 @@
       "type": "JBrowse1Connection",
       "connectionId": "JBrowse1Connection-GCF_000002985.6_WBcel235_genomic-1616618478254",
       "name": "wormbase",
-      "assemblyName": "C. elegans (N2)",
+      "assemblyNames": ["C. elegans (N2)"],
       "dataDirLocation": {
         "uri": "https://wormbase.org/tools/genome/jbrowse-simple/data/c_elegans_PRJNA13758"
       }

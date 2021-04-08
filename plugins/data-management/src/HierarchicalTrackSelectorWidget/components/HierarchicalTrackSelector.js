@@ -259,6 +259,32 @@ function HierarchicalTrackSelector({ model }) {
     model.trackConfigurations(assemblyName, session.tracks).filter(filter)
       .length === 0
 
+  const relevantConnections = session.connections.filter(connection => {
+    const connectionAssemblyNames = readConfObject(connection, 'assemblyNames')
+    if (connectionAssemblyNames.length === 0) {
+      return true
+    }
+    const allRefNames = []
+    connectionAssemblyNames.forEach(connectionAssemblyName => {
+      allRefNames.push(
+        ...(session.assemblyManager.get(connectionAssemblyName)?.allAliases ||
+          []),
+      )
+    })
+    return allRefNames.includes(assemblyName)
+  })
+
+  const relevantConnectionIds = relevantConnections.map(
+    connection => connection.connectionId,
+  )
+
+  const relevantConnectionInstances = session.connectionInstances.filter(
+    connectionInstance =>
+      relevantConnectionIds.includes(
+        connectionInstance.configuration.connectionId,
+      ),
+  )
+
   return (
     <div
       key={model.view.id}
@@ -301,7 +327,7 @@ function HierarchicalTrackSelector({ model }) {
         top
       />
       <FormGroup>
-        {session.connections.map(connectionConf => {
+        {relevantConnections.map(connectionConf => {
           const name = readConfObject(connectionConf, 'name')
           const id = connectionConf.connectionId
           return (
@@ -331,10 +357,10 @@ function HierarchicalTrackSelector({ model }) {
           )
         })}
       </FormGroup>
-      {session.connectionInstances.length ? (
+      {relevantConnectionInstances.length ? (
         <>
           <Typography variant="h5">Connections</Typography>
-          {session.connectionInstances.map(connection => (
+          {relevantConnectionInstances.map(connection => (
             <Paper
               key={connection.name}
               className={classes.connectionsPaper}
