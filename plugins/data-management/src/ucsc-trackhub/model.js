@@ -48,12 +48,22 @@ export default function (pluginManager) {
             .then(([hubFile, genomesFile]) => {
               const trackDbData = []
               for (const [genomeName, genome] of genomesFile) {
+                const assemblyNames = readConfObject(
+                  self.configuration,
+                  'assemblyNames',
+                )
+                if (
+                  assemblyNames.length > 0 &&
+                  !assemblyNames.includes(genomeName)
+                ) {
+                  break
+                }
                 const assemblyConf = session.assemblies.find(
                   assembly => readConfObject(assembly, 'name') === genomeName,
                 )
                 if (!assemblyConf) {
                   throw new Error(
-                    `Assembly "${genomeName}" not in genomes file from connection "${connectionName}"`,
+                    `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
                   )
                 }
                 let trackDbFileLocation

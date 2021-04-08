@@ -102,8 +102,8 @@ test('delete connection', async () => {
   await findByText('Help')
 
   const deleteButtons = await findAllByTestId('delete-connection')
-  expect(deleteButtons.length).toBe(3)
+  expect(deleteButtons.length).toBe(2)
   fireEvent.click(deleteButtons[0])
   fireEvent.click(await findByText('OK'))
-  expect((await findAllByTestId('delete-connection')).length).toBe(2)
+  expect((await findAllByTestId('delete-connection')).length).toBe(1)
 })

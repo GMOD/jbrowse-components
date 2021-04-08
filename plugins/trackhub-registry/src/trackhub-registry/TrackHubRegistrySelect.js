@@ -155,6 +155,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     const newHub = event.target.value
     setSelectedHub(newHub)
     model.target.name.set(hubs.get(newHub).hub.shortLabel)
+    model.target.assemblyNames.set([selectedAssembly])
     model.target.trackDbId.set(newHub)
   }
 
