@@ -1,15 +1,23 @@
+import { lazy } from 'react'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import DataUsageIcon from '@material-ui/icons/DataUsage'
-import CircularViewFactory from './CircularView'
+import stateModelFactory from './CircularView/models/CircularView'
 
 export default class CircularViewPlugin extends Plugin {
   name = 'CircularViewPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() =>
-      pluginManager.jbrequire(CircularViewFactory),
+    pluginManager.addViewType(
+      () =>
+        new ViewType({
+          LazyReactComponent: lazy(
+            () => import('./CircularView/components/CircularView'),
+          ),
+          stateModel: load(stateModelFactory),
+        }),
     )
   }
 

@@ -10,21 +10,35 @@ type ViewReactComponent = React.ComponentType<{
 }>
 
 export default class ViewType extends PluggableElementBase {
-  ReactComponent: ViewReactComponent
+  ReactComponent?: ViewReactComponent
+
+  LazyReactComponent?: ViewReactComponent
 
   stateModel: IAnyModelType
 
   displayTypes: DisplayType[] = []
 
-  constructor(stuff: {
-    name: string
-    ReactComponent: ViewReactComponent
-    stateModel: IAnyModelType
-  }) {
+  constructor(
+    stuff:
+      | {
+          name: string
+          ReactComponent: ViewReactComponent
+          stateModel: IAnyModelType
+        }
+      | {
+          name: string
+          LazyReactComponent: ViewReactComponent
+          stateModel: IAnyModelType
+        },
+  ) {
     super(stuff)
-    this.ReactComponent = stuff.ReactComponent
+    if ('ReactComponent' in stuff) {
+      this.ReactComponent = stuff.ReactComponent
+    } else {
+      this.LazyReactComponent = stuff.LazyReactComponent
+    }
     this.stateModel = stuff.stateModel
-    if (!this.ReactComponent) {
+    if (!this.ReactComponent && !this.LazyReactComponent) {
       throw new Error(`no ReactComponent defined for view ${this.name}`)
     }
     if (!this.stateModel) {

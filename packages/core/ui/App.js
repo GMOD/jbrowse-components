@@ -1,11 +1,7 @@
 /* eslint-disable react/prop-types */
-import React from 'react'
-import AppBar from '@material-ui/core/AppBar'
-import { makeStyles } from '@material-ui/core/styles'
-import Fab from '@material-ui/core/Fab'
+import React, { Suspense } from 'react'
+import { AppBar, Fab, Toolbar, Tooltip, makeStyles } from '@material-ui/core'
 import LaunchIcon from '@material-ui/icons/Launch'
-import Toolbar from '@material-ui/core/Toolbar'
-import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import DrawerWidget from './DrawerWidget'
@@ -148,18 +144,28 @@ function App({ session, HeaderButtons }) {
             if (!viewType) {
               throw new Error(`unknown view type ${view.type}`)
             }
-            const { ReactComponent } = viewType
+            const { LazyReactComponent, ReactComponent } = viewType
             return (
               <ViewContainer
                 key={`view-${view.id}`}
                 view={view}
                 onClose={() => session.removeView(view)}
               >
-                <ReactComponent
-                  model={view}
-                  session={session}
-                  getTrackType={pluginManager.getTrackType}
-                />
+                {LazyReactComponent ? (
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <LazyReactComponent
+                      model={view}
+                      session={session}
+                      getTrackType={pluginManager.getTrackType}
+                    />
+                  </Suspense>
+                ) : (
+                  <ReactComponent
+                    model={view}
+                    session={session}
+                    getTrackType={pluginManager.getTrackType}
+                  />
+                )}
               </ViewContainer>
             )
           })}

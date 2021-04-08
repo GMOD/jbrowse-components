@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   configSchema as baseFeatureWidgetConfigSchema,
   ReactComponent as BaseFeatureWidgetReactComponent,
@@ -29,7 +30,6 @@ import {
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView'
 
@@ -117,7 +117,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
         new ViewType({
           name: 'LinearGenomeView',
           stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          ReactComponent: LinearGenomeViewReactComponent,
+          LazyReactComponent: lazy(
+            () => import('./LinearGenomeView/components/LinearGenomeView'),
+          ),
         }),
     )
     pluginManager.addWidgetType(
