@@ -13,14 +13,20 @@ export default (pluginManager: PluginManager) => {
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
-    CSV: import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
-    TSV: import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
-    VCF: import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
-    BED: import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
-    BEDPE: import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
-    'STAR-Fusion': import('../importAdapters/STARFusionImport').then(
-      r => r.parseSTARFusionBuffer,
-    ),
+    CSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
+    TSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
+    VCF: () =>
+      import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
+    BED: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
+    BEDPE: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
+    'STAR-Fusion': () =>
+      import('../importAdapters/STARFusionImport').then(
+        r => r.parseSTARFusionBuffer,
+      ),
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(
@@ -150,7 +156,7 @@ export default (pluginManager: PluginManager) => {
           self.loading = true
           const typeParser = await fileTypeParsers[
             self.fileType as keyof typeof fileTypeParsers
-          ]
+          ]()
           if (!typeParser) {
             throw new Error(`cannot open files of type '${self.fileType}'`)
           }
