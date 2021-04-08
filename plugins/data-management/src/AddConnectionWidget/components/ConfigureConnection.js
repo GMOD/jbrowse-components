@@ -1,9 +1,8 @@
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import React from 'react'
 
-function ConfigureConnection(props) {
+export default observer(props => {
   const { connectionType, model, setModelReady } = props
   const ConfigEditorComponent =
     connectionType.configEditorComponent || ConfigurationEditor
@@ -14,12 +13,4 @@ function ConfigureConnection(props) {
       setModelReady={setModelReady}
     />
   )
-}
-
-ConfigureConnection.propTypes = {
-  connectionType: PropTypes.shape().isRequired,
-  model: MobxPropTypes.observableObject.isRequired,
-  setModelReady: PropTypes.func.isRequired,
-}
-
-export default observer(ConfigureConnection)
+})
