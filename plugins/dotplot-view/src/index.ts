@@ -1,6 +1,9 @@
+import { lazy } from 'react'
 import Plugin from '@jbrowse/core/Plugin'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import AddIcon from '@material-ui/icons/Add'
 import { autorun } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -9,6 +12,7 @@ import {
   isAbstractMenuManager,
   getSession,
 } from '@jbrowse/core/util'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AbstractDisplayModel } from '@jbrowse/core/util/types'
@@ -24,13 +28,13 @@ import DotplotRenderer, {
   configSchema as dotplotRendererConfigSchema,
   ReactComponent as DotplotRendererReactComponent,
 } from './DotplotRenderer'
+import stateModelFactory from './DotplotView/model'
 
 import {
   configSchema as PAFAdapterConfigSchema,
   AdapterClass as PAFAdapter,
 } from './PAFAdapter'
 import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
-import DotplotViewFactory from './DotplotView'
 
 const { parseCigar } = MismatchParser
 
@@ -111,7 +115,15 @@ export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() => pluginManager.jbrequire(DotplotViewFactory))
+    pluginManager.addViewType(() => {
+      return new ViewType({
+        name: 'DotplotView',
+        stateModel: stateModelFactory(pluginManager),
+        LazyReactComponent: lazy(
+          () => import('./DotplotView/components/DotplotView'),
+        ),
+      })
+    })
 
     pluginManager.addDisplayType(() => {
       const configSchema = dotplotDisplayConfigSchemaFactory(pluginManager)
