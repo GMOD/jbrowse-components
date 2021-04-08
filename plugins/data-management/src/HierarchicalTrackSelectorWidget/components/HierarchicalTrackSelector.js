@@ -33,6 +33,8 @@ import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
 import ManageConnectionsDialog from './ManageConnectionsDialog'
 
+const rowHeight = 22
+const accordionHeight = 40
 const useStyles = makeStyles(theme => ({
   searchBox: {
     margin: theme.spacing(2),
@@ -55,19 +57,27 @@ const useStyles = makeStyles(theme => ({
     },
   },
 
-  subheaderBase: {
+  // this accordionBase element's small padding is used to give a margin to
+  // accordionColor it a "margin" because the virtualized elements can't really
+  // use margin in a conventional way (it doesn't affect layout)
+  accordionBase: {
     cursor: 'pointer',
     padding: 3,
     display: 'flex',
   },
-  subheaderColor: {
+
+  // accordionColor set's display:flex so that the child accordionText use
+  // vertically centered text
+  accordionColor: {
     background: theme.palette.tertiary.main,
     color: theme.palette.tertiary.contrastText,
     width: '100%',
     display: 'flex',
     paddingLeft: 5,
   },
-  subheaderText: {
+
+  // margin:auto 0 to center text vertically
+  accordionText: {
     margin: 'auto 0',
   },
 }))
@@ -97,7 +107,7 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
             onChange,
             onMoreInfo,
             conf,
-            defaultHeight: conf ? 22 : 40,
+            defaultHeight: conf ? rowHeight : accordionHeight,
           }
         : id
 
@@ -133,7 +143,7 @@ const Node = props => {
 
   return (
     <div
-      className={!isLeaf ? classes.subheaderBase : undefined}
+      className={!isLeaf ? classes.accordionBase : undefined}
       role="presentation"
       onClick={toggle}
       style={{
@@ -147,9 +157,9 @@ const Node = props => {
         width: '100%',
       }}
     >
-      <div className={!isLeaf ? classes.subheaderColor : undefined}>
+      <div className={!isLeaf ? classes.accordionColor : undefined}>
         {!isLeaf ? (
-          <div className={classes.subheaderText}>
+          <div className={classes.accordionText}>
             <Typography style={{}}>
               {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
               {name}
@@ -215,12 +225,7 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
       : []
   return (
     <>
-      <VariableSizeTree
-        treeWalker={treeWalker}
-        itemData={22}
-        height={height}
-        width="100%"
-      >
+      <VariableSizeTree treeWalker={treeWalker} height={height} width="100%">
         {Node}
       </VariableSizeTree>
       <JBrowseMenu
