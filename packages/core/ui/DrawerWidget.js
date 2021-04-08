@@ -9,12 +9,13 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import CloseIcon from '@material-ui/icons/Close'
-import MinimizeIcon from '@material-ui/icons/Minimize'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 import { observer, PropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
+import DeleteIcon from '@material-ui/icons/Delete'
+import CloseIcon from '@material-ui/icons/Close'
+import MinimizeIcon from '@material-ui/icons/Minimize'
+
 import Drawer from './Drawer'
 
 const useStyles = makeStyles(theme => ({
@@ -54,9 +55,8 @@ const useStyles = makeStyles(theme => ({
 const DrawerWidget = observer(props => {
   const { session } = props
   const { visibleWidget, activeWidgets } = session
-  const { ReactComponent } = getEnv(session).pluginManager.getWidgetType(
-    visibleWidget.type,
-  )
+  const { pluginManager } = getEnv(session)
+  const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
   const classes = useStyles()
 
   const handleChange = (e, option) => {
@@ -151,7 +151,7 @@ const DrawerWidget = observer(props => {
             </div>
           </Toolbar>
         </AppBar>
-        <Suspense fallback={<div>Loading</div>}>
+        <Suspense fallback={<div>Loading...</div>}>
           <ReactComponent model={visibleWidget} session={session} />
         </Suspense>
       </div>

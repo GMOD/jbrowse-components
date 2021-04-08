@@ -21,7 +21,7 @@ import {
   configSchema as refNameAliasAdapterConfigSchema,
 } from './RefNameAliasAdapter'
 
-const ConfigurationEditor = lazy(
+const ConfigurationEditorComponent = lazy(
   () => import('./ConfigurationEditorWidget/components/ConfigurationEditor'),
 )
 
@@ -68,7 +68,7 @@ export default class extends Plugin {
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
-        ReactComponent: ConfigurationEditor,
+        ReactComponent: ConfigurationEditorComponent,
       })
     })
   }
@@ -76,4 +76,4 @@ export default class extends Plugin {
 
 export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'
 
-export { ConfigurationEditor }
+export { ConfigurationEditorComponent as ConfigurationEditor }

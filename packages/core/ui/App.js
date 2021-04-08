@@ -78,16 +78,22 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function App({ session, HeaderButtons }) {
+export default observer(({ session, HeaderButtons }) => {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
-  const { visibleWidget, drawerWidth, minimized, activeWidgets } = session
+  const {
+    visibleWidget,
+    drawerWidth,
+    minimized,
+    activeWidgets,
+    savedSessionNames,
+    name,
+    menus,
+    views,
+  } = session
 
   function handleNameChange(newName) {
-    if (
-      session.savedSessionNames &&
-      session.savedSessionNames.includes(newName)
-    ) {
+    if (savedSessionNames && savedSessionNames.includes(newName)) {
       session.notify(
         `Cannot rename session to "${newName}", a saved session with that name already exists`,
         'warning',
@@ -109,7 +115,7 @@ function App({ session, HeaderButtons }) {
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">
             <Toolbar>
-              {session.menus.map(menu => (
+              {menus.map(menu => (
                 <DropDownMenu
                   key={menu.label}
                   menuTitle={menu.label}
@@ -120,7 +126,7 @@ function App({ session, HeaderButtons }) {
               <div className={classes.grow} />
               <Tooltip title="Rename Session" arrow>
                 <EditableTypography
-                  value={session.name}
+                  value={name}
                   setValue={handleNameChange}
                   variant="body1"
                   classes={{
@@ -139,7 +145,7 @@ function App({ session, HeaderButtons }) {
           </AppBar>
         </div>
         <div className={classes.components}>
-          {session.views.map(view => {
+          {views.map(view => {
             const viewType = pluginManager.getViewType(view.type)
             if (!viewType) {
               throw new Error(`unknown view type ${view.type}`)
@@ -161,6 +167,8 @@ function App({ session, HeaderButtons }) {
               </ViewContainer>
             )
           })}
+
+          {/* blank space at the bottom of screen allows scroll */}
           <div style={{ height: 300 }} />
         </div>
       </div>
@@ -187,6 +195,4 @@ function App({ session, HeaderButtons }) {
       <Snackbar session={session} />
     </div>
   )
-}
-
-export default observer(App)
+})

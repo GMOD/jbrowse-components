@@ -94,7 +94,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function ConfigurationEditor({ model }) {
+export default observer(({ model }) => {
   const classes = useStyles()
   // key forces a re-render, otherwise the same field can end up being used
   // for different tracks since only the backing model changes for example
@@ -105,9 +105,4 @@ function ConfigurationEditor({ model }) {
       {!model.target ? 'no target set' : <Schema schema={model.target} />}
     </div>
   )
-}
-ConfigurationEditor.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-}
-
-export default observer(ConfigurationEditor)
+})
