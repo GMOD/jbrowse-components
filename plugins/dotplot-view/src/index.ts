@@ -119,7 +119,7 @@ export default class DotplotPlugin extends Plugin {
       return new ViewType({
         name: 'DotplotView',
         stateModel: stateModelFactory(pluginManager),
-        LazyReactComponent: lazy(
+        ReactComponent: lazy(
           () => import('./DotplotView/components/DotplotView'),
         ),
       })

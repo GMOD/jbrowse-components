@@ -144,28 +144,20 @@ function App({ session, HeaderButtons }) {
             if (!viewType) {
               throw new Error(`unknown view type ${view.type}`)
             }
-            const { LazyReactComponent, ReactComponent } = viewType
+            const { ReactComponent } = viewType
             return (
               <ViewContainer
                 key={`view-${view.id}`}
                 view={view}
                 onClose={() => session.removeView(view)}
               >
-                {LazyReactComponent ? (
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <LazyReactComponent
-                      model={view}
-                      session={session}
-                      getTrackType={pluginManager.getTrackType}
-                    />
-                  </Suspense>
-                ) : (
+                <Suspense fallback={<div>Loading...</div>}>
                   <ReactComponent
                     model={view}
                     session={session}
                     getTrackType={pluginManager.getTrackType}
                   />
-                )}
+                </Suspense>
               </ViewContainer>
             )
           })}

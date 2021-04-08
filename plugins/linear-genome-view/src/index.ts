@@ -117,7 +117,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         new ViewType({
           name: 'LinearGenomeView',
           stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          LazyReactComponent: lazy(
+          ReactComponent: lazy(
             () => import('./LinearGenomeView/components/LinearGenomeView'),
           ),
         }),

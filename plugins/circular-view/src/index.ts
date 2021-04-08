@@ -13,7 +13,7 @@ export default class CircularViewPlugin extends Plugin {
     pluginManager.addViewType(
       () =>
         new ViewType({
-          LazyReactComponent: lazy(
+          ReactComponent: lazy(
             () => import('./CircularView/components/CircularView'),
           ),
           stateModel: stateModelFactory(pluginManager),

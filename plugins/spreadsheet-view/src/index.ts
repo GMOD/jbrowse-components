@@ -14,7 +14,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
       return new ViewType({
         name: 'SpreadsheetView',
         stateModel: stateModelFactory(pluginManager),
-        LazyReactComponent: lazy(
+        ReactComponent: lazy(
           () => import('./SpreadsheetView/components/SpreadsheetView'),
         ),
       })
