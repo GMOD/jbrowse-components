@@ -27,7 +27,7 @@ import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { FixedSizeTree } from 'react-vtree'
+import { VariableSizeTree } from 'react-vtree'
 
 import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
@@ -56,10 +56,20 @@ const useStyles = makeStyles(theme => ({
   tabs: {
     marginBottom: theme.spacing(1),
   },
-  subheader: {
+  subheaderBase: {
     cursor: 'pointer',
+    padding: 3,
+    display: 'flex',
+  },
+  subheaderColor: {
     background: theme.palette.tertiary.main,
     color: theme.palette.tertiary.contrastText,
+    width: '100%',
+    display: 'flex',
+    paddingLeft: 5,
+  },
+  subheaderText: {
+    margin: 'auto 0',
   },
 
   checkbox: {
@@ -94,6 +104,7 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
             onChange,
             onMoreInfo,
             conf,
+            defaultHeight: conf ? 22 : 40,
           }
         : id
 
@@ -112,7 +123,8 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
 
 // An individual node in the track selector. Note: manually sets cursor: pointer
 // improves usability for what can be clicked
-const Node = ({ data, isOpen, style, toggle }) => {
+const Node = props => {
+  const { data, isOpen, style, toggle } = props
   const {
     isLeaf,
     nestingLevel,
@@ -124,25 +136,30 @@ const Node = ({ data, isOpen, style, toggle }) => {
     onMoreInfo,
   } = data
   const classes = useStyles()
+  const marginLeft = nestingLevel * 10 + (isLeaf ? 10 : 0)
 
   return (
-    <div style={{ ...style, padding: 4 }}>
-      <div
-        style={{
-          marginLeft: nestingLevel * 10 + (isLeaf ? 10 : 0),
-          whiteSpace: 'nowrap',
+    <div
+      className={!isLeaf ? classes.subheaderBase : undefined}
+      style={{
+        ...style,
+        marginLeft,
+        whiteSpace: 'nowrap',
 
-          // interesting note: width:100% here dynamically makes window wider
-          // while scrolling for long track labels, which means we don't need
-          // long track label wrapping necessarily
-          width: '100%',
-        }}
-      >
+        // interesting note: width:100% here dynamically makes window wider
+        // while scrolling for long track labels, which means we don't need
+        // long track label wrapping necessarily
+        width: '100%',
+      }}
+    >
+      <div className={!isLeaf ? classes.subheaderColor : undefined}>
         {!isLeaf ? (
-          <Typography onClick={toggle} className={classes.subheader}>
-            {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-            {name}
-          </Typography>
+          <div className={classes.subheaderText}>
+            <Typography onClick={toggle} style={{}}>
+              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+              {name}
+            </Typography>
+          </div>
         ) : (
           <>
             <FormControlLabel
@@ -203,14 +220,14 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
       : []
   return (
     <>
-      <FixedSizeTree
+      <VariableSizeTree
         treeWalker={treeWalker}
-        itemSize={20}
+        itemData={22}
         height={height}
         width="100%"
       >
         {Node}
-      </FixedSizeTree>
+      </VariableSizeTree>
       <JBrowseMenu
         anchorEl={info?.target}
         menuItems={menuItems}
