@@ -14,7 +14,7 @@ async function makeQueryFragsMinimizers(querySeq, fragmentSize=2500){
 
     const querySize = querySeq.length
 
-    let queryFragmentsMinimizers = []
+    const queryFragmentsMinimizers = []
 
     if (querySize <= 300000 && querySize >= 5000){
 
@@ -63,8 +63,9 @@ function getQueryBloomFilterOnesIndices(queryBloomFilter){
 function initBigsiHits(seqSize, seqName, numBuckets=10, overhang=300000){
     /* Inputs:
      *  seqSize -- size of the sequence
-     *  overhang -- bucket overhangs (equal to upper bound of query sequence length)
+     *  seqName -- name of sequence
      *  numBuckets -- number of buckets for reference
+     *  overhang -- bucket overhangs (equal to upper bound of query sequence length)
      *
      * Outputs:
      *  bigsiHits -- object containing information for each bucket
@@ -84,6 +85,7 @@ function initBigsiHits(seqSize, seqName, numBuckets=10, overhang=300000){
                     start: 0,
                     end: bucketSize,
                     hits: 0,
+                    score: 0,
                 }, 
                 bigsiHits[bucketNum])
         } else {
@@ -100,6 +102,7 @@ function initBigsiHits(seqSize, seqName, numBuckets=10, overhang=300000){
                     start: intervalStart,
                     end: intervalEnd,
                     hits: 0,
+                    score: 0,
                 }, 
                 bigsiHits[bucketNum]
             )
@@ -107,6 +110,25 @@ function initBigsiHits(seqSize, seqName, numBuckets=10, overhang=300000){
     }
 
     return bigsiHits
+}
+
+/**
+ * @param { IndexedFasta} genome - IndexedFasta seq object of genome
+ *
+ * @returns { array of objects } genomeBigsiHits - array of empty objects for storing query hits
+ */
+async function initGenomeBigsiHits(genome){
+    const filteredSeqNames = await commonFunc.getFilteredGenomeSeqs(genome)
+    const genomeBigsiHits = []
+    for (let i=0; i < filteredSeqNames.length; i++){
+        const seqName = filteredSeqNames[i]
+        const seqSize = await genome.getSequenceSize(seqName)
+        const seqBigsiHits = initBigsiHits(seqSize, parseInt(i+1))
+
+        genomeBigsiHits.push(seqBigsiHits)
+    }
+
+    return genomeBigsiHits
 }
 
 function getBigsiSubmatrix(bigsi, rowFilter){
@@ -166,6 +188,7 @@ async function queryBigsi(bigsi, queryFragmentsBloomFilters, bigsiHits){
      *  
      */
 
+    const numFragments = queryFragmentsBloomFilters.length
     console.log('number of query BFs: ', queryFragmentsBloomFilters.length)
 
     for (let m = 0; m < queryFragmentsBloomFilters.length; m++){
@@ -173,15 +196,42 @@ async function queryBigsi(bigsi, queryFragmentsBloomFilters, bigsiHits){
         
         const querySubmatrix = getBigsiSubmatrix(bigsi, queryBFOnesIndices)
         computeSubmatrixHits(querySubmatrix, bigsiHits)
-        
-        
+    }
+
+    for (let bucketId in bigsiHits) {
+        if (bigsiHits.hasOwnProperty(bucketId)) {
+            bigsiHits[bucketId]['score'] = bigsiHits[bucketId]['hits']/numFragments;
+        }
     }
 
     const filteredBigsiHits = Object.fromEntries(
-        Object.entries(bigsiHits).filter(([key, value]) => value.hits > 0) 
+        Object.entries(bigsiHits).filter(([key, value]) => value.score > 0) 
     )
 
     return filteredBigsiHits
+}
+
+/**
+ * @param { function } genomeBigsi - matrix containing bigsi of entire genome
+ * @param { array of objects } genomeBigsiHits - array of empty objects for 
+ *  storing query hits
+ * @param { number } numBuckets - number of buckets
+ *
+ * @returns { array of objects } filteredGenomeBigsiHits - array of filtered 
+ *  objects containing query hits 
+ */
+async function queryGenomeBigsis(genomeBigsi, queryFragmentsBloomFilters, genomeBigsiHits, numBuckets=10){
+    let filteredGenomeBigsiHits = []
+    for (let i=0; i < genomeBigsiHits.length; i++){
+        const bigsiStartColumn = i*numBuckets
+        const bigsiEndColumn = (bigsiStartColumn + numBuckets - 1)
+        const seqBigsi = matrix(genomeBigsi([],[bigsiStartColumn,bigsiEndColumn]))
+        const seqBigsiHits = genomeBigsiHits[i]
+        const filteredSeqHits = await queryBigsi(seqBigsi, queryFragmentsBloomFilters, seqBigsiHits, numBuckets)
+        filteredGenomeBigsiHits.push(filteredSeqHits)
+    }
+
+    return filteredGenomeBigsiHits
 }
 
 async function main(bigsi, querySeq){
@@ -190,7 +240,7 @@ async function main(bigsi, querySeq){
      *  querySeq -- query sequence string
      *
      * Outputs: 
-     *  filteredBigsiHits -- object containing buckets with hits > 0
+     *  filteredBigsiHits -- object containing buckets with score > 0
      *
      */
 
@@ -212,8 +262,10 @@ module.exports = {
     makeQueryFragsBloomFilters: makeQueryFragsBloomFilters,
     getQueryBloomFilterOnesIndices: getQueryBloomFilterOnesIndices,
     initBigsiHits: initBigsiHits,
+    initGenomeBigsiHits: initGenomeBigsiHits,
     getBigsiSubmatrix: getBigsiSubmatrix,
     computeSubmatrixHits: computeSubmatrixHits,
     queryBigsi: queryBigsi,
+    queryGenomeBigsis: queryGenomeBigsis,
     main: main,
 }

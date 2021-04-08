@@ -12,6 +12,27 @@ async function loadFasta(fastaPath, faiPath){
     return seq
 }
 
+/**
+ * @param { IndexedFasta } genome -  sequence object for the genome
+ * @param { number } seqSizeThreshold - minimum size of sequence to filter
+ *
+ * @returns { array of strings } seqNames - filtered seq names
+ */
+async function getFilteredGenomeSeqs(genome, seqSizeThreshold=10**7){
+    const seqNames = await genome.getSequenceList()
+
+    const filteredSeqNames = []
+    for (let i=0; i < seqNames.length; i++){
+        const seqSize = await genome.getSequenceSize(seqNames[i])
+        if (seqSize >= seqSizeThreshold){
+            filteredSeqNames.push(seqNames[i])
+        }
+    }
+
+    return filteredSeqNames
+    
+}
+
 function reverseComplement(sequence){
     var reverseSeq=sequence.split('').reverse().join('')
 
