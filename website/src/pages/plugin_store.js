@@ -1,4 +1,5 @@
-import React from 'react'
+/* eslint-disable react/prop-types */
+import React, { useState } from 'react'
 // eslint-disable-next-line import/no-unresolved
 import Layout from '@theme/Layout'
 
@@ -61,12 +62,60 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function PluginCard(props) {
+  const classes = useStyles()
+  const { plugin } = props
+
+  const [showConfig, setShowConfig] = useState(false)
+
+  return (
+    <Card variant="outlined" key={plugin.name} className={classes.card}>
+      <CardActionArea>
+        <CardMedia
+          style={{ height: 200, width: 800 }}
+          image={plugin.image}
+          title={plugin.name}
+        />
+        <CardContent>
+          <div className={classes.dataField}>
+            <Typography variant="h4">{plugin.name}</Typography>
+          </div>
+          <div className={classes.dataField}>
+            <PersonIcon style={{ marginRight: '0.5em' }} />
+            <Typography>{plugin.authors.join(', ')}</Typography>
+            <AccountBalanceIcon className={classes.icon} />
+            <Typography>
+              {plugin.license === 'NONE' ? 'No license' : plugin.license}
+            </Typography>
+            <GitHubIcon className={classes.icon} />
+            <Link href={plugin.location}>
+              <Typography>{plugin.location}</Typography>
+            </Link>
+          </div>
+          <Typography variant="h6">Description:</Typography>
+          <Typography>{plugin.description}</Typography>
+        </CardContent>
+      </CardActionArea>
+      <CardActions>
+        <Button
+          color="primary"
+          variant="contained"
+          disableRipple
+          size="small"
+          style={{ marginLeft: '1em' }}
+          onClick={() => setShowConfig(!showConfig)}
+        >
+          {showConfig ? 'Hide configuration' : 'Show configuration'}
+        </Button>
+      </CardActions>
+    </Card>
+  )
+}
+
 function PluginStore() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
   const classes = useStyles()
-
-  // console.log(plugins)
 
   return (
     <Layout title={`${siteConfig.title}`}>
@@ -76,45 +125,7 @@ function PluginStore() {
         </div>
         <div style={{ flexBasis: '50%' }}>
           {plugins.map(plugin => (
-            <Card variant="outlined" key={plugin.name} className={classes.card}>
-              <CardActionArea>
-                <CardMedia
-                  style={{ height: 200, width: 800 }}
-                  image={plugin.image}
-                  title={plugin.name}
-                />
-                <CardContent>
-                  <div className={classes.dataField}>
-                    <Typography variant="h4">{plugin.name}</Typography>
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      disableRipple="true"
-                      size="small"
-                      style={{ marginLeft: '1em' }}
-                    >
-                      Show configuration
-                    </Button>
-                  </div>
-                  <div className={classes.dataField}>
-                    <PersonIcon style={{ marginRight: '0.5em' }} />
-                    <Typography>{plugin.authors.join(', ')}</Typography>
-                    <AccountBalanceIcon className={classes.icon} />
-                    <Typography>
-                      {plugin.license === 'NONE'
-                        ? 'No license'
-                        : plugin.license}
-                    </Typography>
-                    <GitHubIcon className={classes.icon} />
-                    <Link href={plugin.location}>
-                      <Typography>{plugin.location}</Typography>
-                    </Link>
-                  </div>
-                  <Typography variant="h6">Description:</Typography>
-                  <Typography>{plugin.description}</Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+            <PluginCard plugin={plugin} key={plugin.name} />
           ))}
         </div>
       </div>
