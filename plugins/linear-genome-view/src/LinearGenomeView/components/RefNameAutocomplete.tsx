@@ -9,9 +9,11 @@ import { getSession } from '@jbrowse/core/util'
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+// import Typography from '@material-ui/core/Typography'
+import Tooltip from '@material-ui/core/Tooltip'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
@@ -20,17 +22,19 @@ import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
 const filter = createFilterOptions<Option>({ trim: true, limit: 15 })
-
+const helperSearchText = `Use syntax chr1:1-100 or chr1:1..100 or {hg19}chr1:1-100 to navigate. Or search for features or names`
 export interface Option {
-  label: string
+  group: string
   value: string
-  inputValue?: string
+  location?: string
 }
 
-export interface Result {
-  option: Option
-  onSelect: (Option) => void
-}
+const useStyles = makeStyles(theme => ({
+  customWidth: {
+    maxWidth: 150,
+  },
+}))
+
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -46,6 +50,7 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+  const classes = useStyles()
   const [open, setOpen] = React.useState(false)
   const [currentSearch, setCurrentSearch] = React.useState('')
   const [currentOptions, setCurrentOptions] = React.useState([])
@@ -59,7 +64,11 @@ function RefNameAutocomplete({
   const loadingSearch = currentOptions.length === 0
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
-      return { label: 'reference sequence', value: option.refName }
+      const defaultOption: Option = {
+        group: 'reference sequence',
+        value: option.refName,
+      }
+      return defaultOption
     })
     return defaultOptions.concat(currentOptions)
   }, [regions, currentOptions])
@@ -74,7 +83,7 @@ function RefNameAutocomplete({
             'prefix',
           )
           if (results.length > 0) {
-            setCurrentOptions( results )
+            setCurrentOptions(results)
           }
         } catch (e) {
           console.error(e)
@@ -90,11 +99,6 @@ function RefNameAutocomplete({
     }
   }, [currentSearch, session.textSearchManager])
 
-  React.useEffect(() => {
-    if (!open) {
-      setCurrentOptions([])
-    }
-  }, [open])
   async function onChange(newRegionName: Option | string) {
     let newRegionValue: string | undefined
     if (newRegionName) {
@@ -121,19 +125,20 @@ function RefNameAutocomplete({
     <Autocomplete
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
-      open={open}
-      disabled={!assemblyName || !loaded}
+      freeSolo // user input is not bound to provided options ... needed for locstring navigation
       disableListWrap
       disableClearable
-      freeSolo
       includeInputInList
       clearOnBlur
+      selectOnFocus // used to select the user input or highlight the locstring default value
+      open={open}
+      disabled={!assemblyName || !loaded} // needs to have assembly set and default options
       loading={loaded}
-      selectOnFocus
+      loadingText="Loading results..." // used for when we fetch results from adapter
       style={style}
-      value={coarseVisibleLocStrings || value || ''}
-      options={options}
-      groupBy={option => String(option.label)}
+      value={coarseVisibleLocStrings || value || ''} // defaults to visible locstring
+      options={options} // the options to display in listbox of options
+      groupBy={option => String(option.group)} // to show categories of options
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
@@ -142,21 +147,14 @@ function RefNameAutocomplete({
 
         if (params.inputValue !== '') {
           const newOption: Option = {
-            label: 'Navigating to...',
-            inputValue: params.inputValue,
+            group: 'Navigating to...',
             value: params.inputValue,
           }
-          // const newResult: Result = {
-          //   option: newOption,
-          //   onSelect: selected => {
-          //     model.navToLocstring(selected.value)
-          //   }
-          // }
           filtered.push(newOption)
         }
         return filtered
       }}
-      ListboxProps={{ style: { maxHeight: 250 } }}
+      ListboxProps={{ style: { maxHeight: 250 } }} // styling for listbox
       onChange={(_, newRegion) => {
         onChange(newRegion)
       }}
@@ -164,6 +162,9 @@ function RefNameAutocomplete({
         setOpen(true)
       }}
       onClose={() => {
+        //  we need to clear the results
+        setCurrentSearch('')
+        setCurrentOptions([])
         setOpen(false)
       }}
       renderInput={params => {
@@ -176,9 +177,16 @@ function RefNameAutocomplete({
               {!loaded && !loadingSearch ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
-                <InputAdornment position="end" style={{ marginRight: 7 }}>
-                  <SearchIcon />
-                </InputAdornment>
+                <Tooltip
+                  title={helperSearchText}
+                  leaveDelay={300}
+                  placement="top"
+                  classes={{ tooltip: classes.customWidth }}
+                >
+                  <InputAdornment position="end" style={{ marginRight: 7 }}>
+                    <SearchIcon />
+                  </InputAdornment>
+                </Tooltip>
               )}
               {params.InputProps.endAdornment}
             </>
@@ -188,7 +196,6 @@ function RefNameAutocomplete({
           <TextField
             {...params}
             {...TextFieldProps}
-            // error={!!error}
             helperText={helperText}
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
@@ -197,16 +204,13 @@ function RefNameAutocomplete({
           />
         )
       }}
-      renderOption={option => (
-        <Typography noWrap>{option.inputValue || option.value}</Typography>
-      )}
+      // renderOption={option => (
+      //   <Typography noWrap>{option.inputValue || option.value}</Typography>
+      // )}
       getOptionLabel={option => {
         // handles locstrings
         if (typeof option === 'string') {
           return option
-        }
-        if (option.inputValue) {
-          return option.inputValue
         }
         return option.value
       }}
