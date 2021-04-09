@@ -103,14 +103,24 @@ function RefNameAutocomplete({
     let newRegionValue: string | undefined
     if (newRegionName) {
       if (typeof newRegionName === 'object') {
-        newRegionValue = newRegionName.location || newRegionName.value
+        newRegionValue = newRegionName.value
+        if (newRegionName.group === 'text search adapter') {
+          const results = await session.textSearchManager.search(
+            newRegionValue.toLocaleLowerCase(),
+            'exact',
+          )
+          if (results.length > 0) {
+            model.setSearchResults(results)
+          }
+        } else {
+          onSelect(newRegionValue)
+        }
       }
       if (typeof newRegionName === 'string') {
         // handles locstrings when you press enter
         newRegionValue = newRegionName
+        onSelect(newRegionValue)
       }
-      // check if there are exact results
-      onSelect(newRegionValue)
     }
   }
 
