@@ -20,7 +20,7 @@ We provide
   core codebase topics
 - [FAQ](faq) - Some Q&A for troubleshooting or other topics
 - [@jbrowse/linear-genome-view docs](https://jbrowse.org/storybook/lgv/main/) -
-  Docs for the re-usable linear genome view react component
+  Docs for the reusable linear genome view React component
 
 We also keep a log of our previous training classes in the sidebar
 
