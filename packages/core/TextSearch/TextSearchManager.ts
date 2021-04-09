@@ -1,3 +1,4 @@
+/*  text-searching controller */
 import JBrowse1TextSearchAdapter from './JBrowse1TextSeachAdapter/JBrowse1TextSearchAdater'
 import { configSchema } from './JBrowse1TextSeachAdapter/index'
 import PluginManager from '../PluginManager'
@@ -12,16 +13,15 @@ export default (pluginManager: PluginManager) => {
 
     parseText(searchText: string) {
       // TODO: implement parse search input
-      // tokenize, relevant worrds
       //  :description
       return []
     }
 
     async search(input: string, type: string) {
       /* TODO: implement search
-      search types: full, prefix, exact 
-      implement search different adapters in parallel
-      */
+       *implement search different adapters in parallel
+       *search options that specify the scope of the search
+       */
       // let results = []
       // this.textSearchAdapters.forEach(adapter => {
       //   // eslint-disable-next-line no-return-await

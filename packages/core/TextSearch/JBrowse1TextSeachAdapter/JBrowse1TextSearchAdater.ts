@@ -6,9 +6,9 @@ import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
 export interface Option {
-  label: string
+  group: string
   value: string
-  inputValue?: string
+  location?: string
 }
 export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   /*
@@ -60,14 +60,14 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
         const start = result[4]
         const end = result[5]
         const formattedResult: Option = {
-          label: 'text search adapter',
-          inputValue: `${name} ${refName}:${start}-${end}`,
-          value: `${refName}:${start}-${end}`,
+          group: 'text search adapter',
+          value: name,
+          location: `${refName}:${start}-${end}`,
         }
         return formattedResult
       }
       const defaultOption: Option = {
-        label: 'text search adapter',
+        group: 'text search adapter',
         value: result,
       }
       return defaultOption
