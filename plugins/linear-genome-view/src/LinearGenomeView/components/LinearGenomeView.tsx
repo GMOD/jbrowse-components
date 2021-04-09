@@ -87,7 +87,7 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
         <SearchResultsDialog
           model={model}
           handleClose={() => {
-            model.setResults([])
+            model.setSearchResults([])
           }}
         />
       ) : null}

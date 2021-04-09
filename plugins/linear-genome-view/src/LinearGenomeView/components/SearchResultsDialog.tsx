@@ -62,11 +62,7 @@ export default function SearchResultsDialog({
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
-  const session = getSession(model)
-  // function handleClick(str) {
-  //   model.navToLocString(str)
-  //   handleClose()
-  // }
+  // const session = getSession(model)
 
   return (
     <Dialog
@@ -78,8 +74,14 @@ export default function SearchResultsDialog({
       <DialogContent>
         <List>
           {model.searchResults.map((result, index) => (
-            <ListItem key={`${result.value}-${index}`}>
-              {`${result.inputValue}`}
+            <ListItem
+              key={`${result.value}-${index}`}
+              onClick={() => {
+                model.navToLocString(result.location || result.value)
+                handleClose()
+              }}
+            >
+              {`${result.value} ${result.location}`}
             </ListItem>
           ))}
         </List>

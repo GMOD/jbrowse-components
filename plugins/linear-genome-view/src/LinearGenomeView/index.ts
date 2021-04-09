@@ -505,7 +505,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.rightOffset = right
       },
 
-      setResults(results: Array) {
+      setSearchResults(results: Array) {
         self.searchResults = results
       },
 
