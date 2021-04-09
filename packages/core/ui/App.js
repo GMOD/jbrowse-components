@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { Suspense } from 'react'
 import { AppBar, Fab, Toolbar, Tooltip, makeStyles } from '@material-ui/core'
 import LaunchIcon from '@material-ui/icons/Launch'

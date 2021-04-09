@@ -80,9 +80,7 @@ export default function sessionModelFactory(
       // which config is being shown in the "About track" menu
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       DialogComponent: undefined as React.FC<any> | undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       DialogProps: undefined as any,
     }))
     .views(self => ({
