@@ -59,7 +59,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeAssembly?: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
-  setDialogComponent(dlg: React.FC<unknown>, props: unknown): void
+  setDialogComponent: (dlg: React.FC<any>, props?: any) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

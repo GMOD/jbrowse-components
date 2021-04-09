@@ -1160,9 +1160,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDialogComponent(
-                  ReturnToImportFormDlg as React.FC<unknown>,
-                )
+                getSession(self).setDialogComponent(ReturnToImportFormDlg)
               },
               icon: FolderOpenIcon,
             },

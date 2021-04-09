@@ -30,7 +30,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   getSession,
-  getContainingTrack,
   getContainingView,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
@@ -624,7 +623,7 @@ export default class extends Plugin {
               label: 'Linear read vs ref',
               icon: AddIcon,
               onClick: () => {
-                getContainingView(display).setDialogComponent(WindowSizeDlg, {
+                getSession(display).setDialogComponent(WindowSizeDlg, {
                   feature,
                 })
               },

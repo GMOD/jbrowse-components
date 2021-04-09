@@ -1,6 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { types, Instance } from 'mobx-state-tree'
@@ -112,10 +112,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetMaxHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetMaxHeightDlg, self)
               },
             },
           ]
