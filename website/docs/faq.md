@@ -165,4 +165,4 @@ it's own track level menu.
 Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.
 
-These soft clipping indicators on these reads will appear black.
+The soft clipping indicators on these reads will appear black.
