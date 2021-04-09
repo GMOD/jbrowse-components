@@ -73,11 +73,24 @@ jbrowse add-track myfile.bam --subDir my_bams --out /var/www/html/jbrowse2 --loa
 cd /var/www/html/jbrowse2
 jbrowse add-track /path/to/my/file.bam --load copy
 
-## Loading a synteny track using a PAF file
-minimap2 grape.fa peach.fa > grape_peach_alignments.paf
-jbrowse add-track grape.fa --load copy
-jbrowse add-track peach.fa --load copy
-jbrowse add-track grape_peach_alignments.paf --assemblyNames grape,peach --out load copy
+## Demo for loading synteny data, both assemblies are outputted to a single
+## config.json in /var/www/html/jbrowse2/config.json
+minimap2 grape.fa peach.fa > peach_vs_grape.paf
+jbrowse add-assembly grape.fa --load copy --out /var/www/html/jbrowse2/ -n grape
+jbrowse add-assembly peach.fa --load copy --out /var/www/html/jbrowse2/ -n peach
+
+## Use gt gff3 to make sorted tabixed gffs for each assembly, and then load to
+## their respective ## assembly
+jbrowse add-track grape.sorted.gff.gz -a grape --load copy --out /var/www/html/jbrowse2
+jbrowse add-track peach.sorted.gff.gz -a peach --load copy --out /var/www/html/jbrowse2
+
+## Load the synteny "track" from a PAF file. Note the order matters here for
+## the --assemblyNames parameter. If minimap2 is run like `minimap2 grape.fa
+## peach.fa` then you load --assemblyNames peach,grape
+jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --out load copy
+
+
+
 
 ## After you've had jbrowse for awhile, you can upgrade to our latest release
 jbrowse upgrade /var/www/html/jbrowse2
