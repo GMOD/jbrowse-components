@@ -83,22 +83,16 @@ type bigWig
     fireEvent.mouseDown(getAllByRole('button')[1])
     fireEvent.click(await findByText('UCSC Track Hub'))
     fireEvent.click(await findByTestId('addConnectionNext'))
-    const res = await findAllByDisplayValue('nameOfConnection')
-    fireEvent.change(res[1], {
+    fireEvent.change((await findAllByDisplayValue('nameOfConnection'))[0], {
       target: { value: 'Test UCSC connection name' },
     })
 
-    // await waitFor(async () => {
-    //   const r = await findAllByDisplayValue('http://mysite.com/path/to/hub.txt')
-    //   expect(r.length).toBe(2)
-    // })
-    const res2 = await findAllByDisplayValue(
-      'http://mysite.com/path/to/hub.txt',
+    fireEvent.change(
+      (await findAllByDisplayValue('http://mysite.com/path/to/hub.txt'))[0],
+      {
+        target: { value: 'http://test.com/hub.txt' },
+      },
     )
-
-    fireEvent.change(res2[0], {
-      target: { value: 'http://test.com/hub.txt' },
-    })
     fireEvent.click((await findAllByTestId('addConnectionNext'))[0])
     expect(session.sessionConnections.length).toBe(1)
   })
