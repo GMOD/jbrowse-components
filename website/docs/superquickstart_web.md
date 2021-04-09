@@ -4,15 +4,18 @@ title: Super-quick start guide for JBrowse web
 toplevel: true
 ---
 
-This is a quick overview to get started running JBrowse 2 from scratch using the command line. It is
-helpful if you have some familiarity with the command line in general to follow
+This is a quick overview to get started running JBrowse 2 from scratch using
+the command line. It is helpful if you have some familiarity with the command
+line and with some bioinformatics tools like samtools in general to follow
 these steps. This guide also assumes you have:
 
-- a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not strictly necessary for jbrowse to run, see footnote)
+- a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not
+  strictly necessary for jbrowse to run, see footnote)
 - node 10+ installed
 - genometools installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools`, used for sorting GFF3 for creating tabix GFF
 - samtools installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
-- tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used for created tabix indexes for BED/VCF/GFF files
+- tabix installed e.g. `sudo apt install tabix` or `brew install htslib`, used
+  for created tabix indexes for BED/VCF/GFF files
 
 ## Super-quick overview for CLI
 
@@ -34,14 +37,14 @@ jbrowse create /var/www/html/jbrowse2
 samtools faidx genome.fa
 jbrowse add-assembly genome.fa --out /var/www/html/jbrowse2 --load copy
 
-## Copy file.bam and file.bam.bai to /var/www/html/jbrowse2 and adds track to
+## Copies file.bam and file.bam.bai to /var/www/html/jbrowse2 and adds track to
 ## the config at /var/www/html/jbrowse2/config.json. Assumes that file.bam and
 ## file.bam.bai exist
 samtools index file.bam
 jbrowse add-track file.bam --out /var/www/html/jbrowse2/ --load copy
 
 ## Adds a url entry for a bam file to the config.json, the URL is stored in the
-## config instead of downloading files
+## config instead of downloading files, so no --load flag is needed
 jbrowse add-track http://website.com/myfile.bam --out /var/www/html/jbrowse2
 
 ## If your BAM index (bai) is not filename+'.bai' then you can manually specify
@@ -74,7 +77,7 @@ jbrowse add-track /path/to/my/file.bam --load copy
 minimap2 grape.fa peach.fa > grape_peach_alignments.paf
 jbrowse add-track grape.fa --load copy
 jbrowse add-track peach.fa --load copy
-jbrowse add-track grape_peach_alignments.paf --assemblyNames grape,peach
+jbrowse add-track grape_peach_alignments.paf --assemblyNames grape,peach --out load copy
 
 ## After you've had jbrowse for awhile, you can upgrade to our latest release
 jbrowse upgrade /var/www/html/jbrowse2

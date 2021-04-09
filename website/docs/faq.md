@@ -16,9 +16,9 @@ toplevel: true
 
 #### What is special about JBrowse 2
 
-One thing that makes JBrowse 2 special is that we can create new view
-types via our plugin system, e.g. circular, dotplot, etc. Anything you want can
-be added as a view, and can be shown alongside our other views
+One thing that makes JBrowse 2 special is that we can create new view types via
+our plugin system, e.g. circular, dotplot, etc. Anything you want can be added
+as a view, and can be shown alongside our other views
 
 This makes JBrowse 2 more than just a genome browser-- it is really a platform
 that can be built on.
@@ -32,12 +32,14 @@ that can be built on.
 - Can display multiple chromosomes or discontinuous regions on a single linear
   genome view
 - Can connect to UCSC trackhubs
-- Alignments track has both coverage and pileup display integrated in a single track
+- Alignments track has both coverage and pileup display integrated in a single
+  track
 - Read pileups can be sorted by various attributes
 - Has ability to show soft clipped bases on reads
 - Interactively edit the configuration using the GUI
 - Circular, dotplot, stacked synteny views
-- SV inspector, that gives tabular and circular overview of data in a single view
+- SV inspector, that gives tabular and circular overview of data in a single
+  view
 - Linear genome view can be reverse complemented
 
 #### Can the linear genome view be reverse complemented
@@ -58,14 +60,15 @@ If you use a different platform such as Django, you may want to put it in the
 static resources folder.
 
 Note that the server that you use should support byte-range requests (e.g. the
-Range HTTP header) so that JBrowse can get small slices of large binary data
-files.
+[Range HTTP
+header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range) so
+that JBrowse can get small slices of large binary data files.
 
 #### BAM files do not work on my server
 
-If you are using Apache then you will probably want to disable mime*magic. If
+If you are using Apache then you will probably want to disable mime_magic. If
 mime_magic is enabled, you may see that your server responds with the HTTP
-header Content-Encoding: gzip which JBrowse does \_NOT* want, because this
+header Content-Encoding: gzip which JBrowse does NOT want, because this
 instructs the browser to unzip the data but JBrowse should be in charge of
 this.
 
