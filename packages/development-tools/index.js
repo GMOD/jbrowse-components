@@ -24,8 +24,8 @@ function createJBrowsePluginTsdxConfig(config, options, globals) {
 
     // xref https://github.com/rollup/rollup/issues/2616 we use code splitting
     // but plugins want single file output
-    config.inlineDynamicImports = true
   }
+  config.inlineDynamicImports = true
   return config
 }
 

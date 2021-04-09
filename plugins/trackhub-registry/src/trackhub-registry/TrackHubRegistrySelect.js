@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   FormControl,
