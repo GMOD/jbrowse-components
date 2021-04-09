@@ -1,0 +1,39 @@
+import { customFields } from '../../docusaurus.config.json'
+
+export const Link = () => {
+  const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${customFields.currentVersion}`
+  return (
+    <div style={{ margin: 50 }}>
+      <a href={curr}>{curr}</a>
+    </div>
+  )
+}
+
+## JBrowse 2 web
+
+To get started with JBrowse Web, we recommend using the jbrowse CLI tools.
+You can also use the jbrowse CLI for things like adding tracks too.
+
+```
+npm install -g @jbrowse/cli
+
+## Downloads the latest release of jbrowse from github releases
+jbrowse create jbrowse_folder
+```
+
+Alternatively, manually download this release as a zip file from GitHub here:
+
+<Link />
+
+To get it set up, check out our [super-quick start
+guide](/docs/superquickstart_web) or slightly-longer [quick-start
+guide](/docs/quickstart_web) for setting up JBrowse Web.
+
+## JBrowse 2 embedded components
+
+We also have our embedded components, such as
+@jbrowse/react-linear-genome-view, which is the React component for the linear
+genome browser view (no circular, dotplot, etc).
+
+See https://www.npmjs.com/package/@jbrowse/react-linear-genome-view for
+instructions on downloading this with npm or yarn.
