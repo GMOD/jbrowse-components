@@ -11,7 +11,7 @@ We provide
 
 - [Super-quick start guide](superquickstart_web) - super brief setup
   instructions e.g. 10 lines of CLI commands to help admins who are familiar
-  with jbrowse with getting setup
+  with jbrowse with getting set up
 - [Quick start guide](quickstart_web) - a more thourough quick-start guide to
   help admins setting up JBrowse 2 on their website
 - [User guide](user_guide) - screenshots of the app and general usage
