@@ -8,7 +8,7 @@
     "start": "npm run fetchPlugins && docusaurus start",
     "prebuild": "npm run make combined.md && npm run fetchPlugins",
     "build": "docusaurus build",
-    "fetchPlugins": "wget https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
+    "fetchPlugins": "rimraf plugins.json && wget https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
     "swizzle": "docusaurus swizzle",
     "predeploy": "npm run build && npm run make",
     "deploy": "aws s3 sync --delete build s3://jbrowse.org/jb2/ && aws s3 cp docs/jbrowse2.pdf s3://jbrowse.org/jb2/",
