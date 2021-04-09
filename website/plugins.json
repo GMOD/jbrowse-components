@@ -7,7 +7,7 @@
       "location": "https://github.com/GMOD/jbrowse-plugin-msaview",
       "url": "https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js",
       "license": "Apache License 2.0",
-      "image": "https://imgbox.com/Wd3KVyvc"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png"
     },
     {
       "name": "gdc",
@@ -16,7 +16,7 @@
       "location": "https://github.com/GMOD/jbrowse-plugin-gdc",
       "url": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js",
       "license": "NONE",
-      "image": "https://imgbox.com/QincKisg"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png"
     },
     {
       "name": "quantseq",
@@ -25,7 +25,7 @@
       "location": "https://github.com/GMOD/jbrowse-plugin-quantseq",
       "url": "https://unpkg.com/jbrowse-plugin-quantseq/dist/jbrowse-plugin-quantseq.umd.production.min.js",
       "license": "Apache License 2.0",
-      "image": "https://imgbox.com/rZJ7XVM3"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/quantseq-screenshot-fs8.png"
     },
     {
       "name": "gwas",
@@ -34,7 +34,7 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-gwas",
       "url": "https://unpkg.com/jbrowse-plugin-gwas/dist/jbrowse-plugin-gwas.umd.production.min.js",
       "license": "NONE",
-      "image": "https://imgbox.com/eKdxsJ26"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gwas-screenshot-fs8.png"
     },
     {
       "name": "ucsc-api",
@@ -43,7 +43,7 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-ucsc-api",
       "url": "https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js",
       "license": "NONE",
-      "image": "https://imgbox.com/pjj940d6"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ucsc-screenshot-fs8.png"
     },
     {
       "name": "biothings-api",
@@ -52,7 +52,7 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-biothings-api",
       "url": "https://unpkg.com/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js",
       "license": "NONE",
-      "image": "https://imgbox.com/VtoSPBfz"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/biothings-screenshot-fs8.png"
     },
     {
       "name": "ideogram",
@@ -61,7 +61,7 @@
       "location": "https://github.com/cmdcolin/jbrowse-plugin-ideogram",
       "url": "https://unpkg.com/jbrowse-plugin-ideogram/dist/jbrowse-plugin-ideogram.umd.production.min.js",
       "license": "Apache License 2.0",
-      "image": "https://imgbox.com/MvRbn9jp"
+      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ideogram-screenshot-fs8.png"
     }
   ]
 }
