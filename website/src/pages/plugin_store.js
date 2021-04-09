@@ -82,11 +82,13 @@ function PluginCard(props) {
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
       <CardActionArea>
-        <CardMedia
-          style={{ height: 200, width: 800 }}
-          image={plugin.image}
-          title={plugin.name}
-        />
+        {plugin.image ? (
+          <CardMedia
+            style={{ height: 200, width: 800 }}
+            image={plugin.image}
+            title={plugin.name}
+          />
+        ) : null}
         <CardContent>
           <div className={classes.dataField}>
             <Typography variant="h4">{plugin.name}</Typography>
