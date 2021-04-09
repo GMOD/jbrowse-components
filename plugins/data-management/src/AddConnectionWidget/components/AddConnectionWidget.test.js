@@ -1,5 +1,5 @@
+import React, { Suspense } from 'react'
 import { render, cleanup, fireEvent } from '@testing-library/react'
-import React from 'react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddConnectionWidget from './AddConnectionWidget'
 
@@ -37,7 +37,11 @@ describe('<AddConnectionWidget />', () => {
   afterEach(cleanup)
 
   it('renders', () => {
-    const { container } = render(<AddConnectionWidget model={model} />)
+    const { container } = render(
+      <Suspense fallback={<div>Loading...</div>}>
+        <AddConnectionWidget model={model} />
+      </Suspense>,
+    )
     expect(container.firstChild).toMatchSnapshot()
   })
 
@@ -74,7 +78,11 @@ type bigWig
       getAllByRole,
       findByText,
       getAllByDisplayValue,
-    } = render(<AddConnectionWidget model={model} />)
+    } = render(
+      <Suspense fallback={<div>Loading...</div>}>
+        <AddConnectionWidget model={model} />
+      </Suspense>,
+    )
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
     fireEvent.click(await findByText('volMyt1'))
@@ -109,7 +117,11 @@ type bigWig
       getAllByRole,
       findByText,
       getAllByDisplayValue,
-    } = render(<AddConnectionWidget model={model} />)
+    } = render(
+      <Suspense fallback={<div>Loading...</div>}>
+        <AddConnectionWidget model={model} />
+      </Suspense>,
+    )
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
     fireEvent.click(await findByText('volMyt1'))
