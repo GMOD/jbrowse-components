@@ -1,21 +1,13 @@
 import Paper from '@material-ui/core/Paper'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { FunctionComponent } from 'react'
+import { observer } from 'mobx-react'
+import React from 'react'
 import {
   BaseCoreDetails,
   BaseAttributes,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 
-interface AlnCardProps {
-  title?: string
-}
-
-interface AlnInputProps extends AlnCardProps {
-  model: any // eslint-disable-line @typescript-eslint/no-explicit-any
-}
-
-const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
-  const { model } = props
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default observer(({ model }: { model: any }) => {
   const { feature1, feature2 } = JSON.parse(JSON.stringify(model.featureData))
   return (
     <Paper data-testid="alignment-side-drawer">
@@ -25,9 +17,4 @@ const AlignmentFeatureDetails: FunctionComponent<AlnInputProps> = props => {
       <BaseAttributes title="Feature 2 attributes" feature={feature2} />
     </Paper>
   )
-}
-AlignmentFeatureDetails.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-}
-
-export default observer(AlignmentFeatureDetails)
+})

@@ -1,9 +1,5 @@
 import { lazy } from 'react'
-import {
-  configSchema as baseFeatureWidgetConfigSchema,
-  ReactComponent as BaseFeatureWidgetReactComponent,
-  stateModelFactory as baseFeatureWidgetStateModelFactory,
-} from '@jbrowse/core/BaseFeatureWidget'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -120,16 +116,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
           ReactComponent: lazy(
             () => import('./LinearGenomeView/components/LinearGenomeView'),
           ),
-        }),
-    )
-    pluginManager.addWidgetType(
-      () =>
-        new WidgetType({
-          name: 'BaseFeatureWidget',
-          heading: 'Feature details',
-          configSchema: baseFeatureWidgetConfigSchema,
-          stateModel: baseFeatureWidgetStateModelFactory(pluginManager),
-          ReactComponent: BaseFeatureWidgetReactComponent,
         }),
     )
   }

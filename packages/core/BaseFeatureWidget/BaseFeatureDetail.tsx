@@ -421,21 +421,6 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
-export const BaseFeatureDetails = observer((props: BaseInputProps) => {
-  const { model } = props
-  const { featureData } = model
-
-  if (!featureData) {
-    return null
-  }
-  const feature = JSON.parse(JSON.stringify(featureData))
-
-  if (isEmpty(feature)) {
-    return null
-  }
-  return <FeatureDetails model={model} feature={feature} />
-})
-
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerialized & { name?: string; id?: string }
@@ -499,3 +484,18 @@ export const FeatureDetails = (props: {
     </BaseCard>
   )
 }
+
+export default observer((props: BaseInputProps) => {
+  const { model } = props
+  const { featureData } = model
+
+  if (!featureData) {
+    return null
+  }
+  const feature = JSON.parse(JSON.stringify(featureData))
+
+  if (isEmpty(feature)) {
+    return null
+  }
+  return <FeatureDetails model={model} feature={feature} />
+})

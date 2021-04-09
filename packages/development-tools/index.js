@@ -21,6 +21,10 @@ function createJBrowsePluginTsdxConfig(config, options, globals) {
     globals.forEach(global => {
       config.output.globals[global] = `JBrowseExports.${global}`
     })
+
+    // xref https://github.com/rollup/rollup/issues/2616 we use code splitting
+    // but plugins want single file output
+    config.inlineDynamicImports = true
   }
   return config
 }

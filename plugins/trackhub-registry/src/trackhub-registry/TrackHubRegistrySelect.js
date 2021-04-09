@@ -1,15 +1,16 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import FormControl from '@material-ui/core/FormControl'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormLabel from '@material-ui/core/FormLabel'
-import LinearProgress from '@material-ui/core/LinearProgress'
-import Radio from '@material-ui/core/Radio'
-import RadioGroup from '@material-ui/core/RadioGroup'
-import { makeStyles } from '@material-ui/core/styles'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
+import {
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  LinearProgress,
+  Radio,
+  RadioGroup,
+  Tooltip,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import HubDetails from './HubDetails'
@@ -311,11 +312,6 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     )
 
   return <>{renderItems}</>
-}
-
-TrackHubRegistrySelect.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  setModelReady: PropTypes.func.isRequired,
 }
 
 export default TrackHubRegistrySelect
