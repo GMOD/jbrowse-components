@@ -10,6 +10,7 @@ export default [
   '@material-ui/core/SvgIcon',
   '@material-ui/core/utils',
   '@material-ui/lab',
+  '@material-ui/data-grid',
 
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes/ViewType',
