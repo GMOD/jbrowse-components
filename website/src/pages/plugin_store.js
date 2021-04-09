@@ -1,15 +1,15 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
+import copy from 'copy-to-clipboard'
+
 // eslint-disable-next-line import/no-unresolved
 import Layout from '@theme/Layout'
-
 // eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { makeStyles } from '@material-ui/core/styles'
 
+import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
-
 import Card from '@material-ui/core/Card'
 import CardActionArea from '@material-ui/core/CardActionArea'
 import CardActions from '@material-ui/core/CardActions'
@@ -20,6 +20,8 @@ import Button from '@material-ui/core/Button'
 import PersonIcon from '@material-ui/icons/Person'
 import AccountBalanceIcon from '@material-ui/icons/AccountBalance'
 import GitHubIcon from '@material-ui/icons/GitHub'
+import AssignmentIcon from '@material-ui/icons/Assignment'
+import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn'
 
 import { plugins } from '../../plugins.json'
 
@@ -108,7 +110,65 @@ function PluginCard(props) {
           {showConfig ? 'Hide configuration' : 'Show configuration'}
         </Button>
       </CardActions>
+      {showConfig ? <ConfigBlock plugin={plugin} /> : null}
     </Card>
+  )
+}
+
+// snagged from https://stackoverflow.com/a/53952925
+function toPascalCase(string) {
+  return `${string}`
+    .replace(new RegExp(/[-_]+/, 'g'), ' ')
+    .replace(new RegExp(/[^\w\s]/, 'g'), '')
+    .replace(
+      new RegExp(/\s+(.)(\w+)/, 'g'),
+      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`,
+    )
+    .replace(new RegExp(/\s/, 'g'), '')
+    .replace(new RegExp(/\w/), s => s.toUpperCase())
+}
+
+function ConfigBlock(props) {
+  const { plugin } = props
+  const [clickedCopy, setClickedCopy] = useState(false)
+
+  let pluginName = plugin.name
+  if (pluginName.endsWith('-api')) {
+    pluginName = pluginName.replace(/-api/, '')
+  }
+  pluginName = toPascalCase(pluginName)
+
+  const configString = JSON.stringify(
+    {
+      name: pluginName,
+      url: plugin.url,
+    },
+    null,
+    4,
+  )
+
+  return (
+    <CardContent>
+      <pre>
+        <code>{configString}</code>
+      </pre>
+      <Button
+        color="primary"
+        variant="contained"
+        disableRipple
+        size="small"
+        startIcon={
+          clickedCopy ? <AssignmentTurnedInIcon /> : <AssignmentIcon />
+        }
+        onClick={() => {
+          copy(configString)
+          setClickedCopy(true)
+          setTimeout(() => setClickedCopy(false), 1000)
+        }}
+      >
+        {clickedCopy ? 'Copied!' : 'Copy'}
+      </Button>
+    </CardContent>
   )
 }
 
