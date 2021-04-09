@@ -1,6 +1,6 @@
+import React, { Suspense } from 'react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { observer } from 'mobx-react'
-import React from 'react'
 
 export default observer(props => {
   const { connectionType, model, setModelReady } = props
@@ -8,9 +8,11 @@ export default observer(props => {
     connectionType.configEditorComponent || ConfigurationEditor
 
   return (
-    <ConfigEditorComponent
-      model={{ target: model }}
-      setModelReady={setModelReady}
-    />
+    <Suspense fallback={<div>Loading...</div>}>
+      <ConfigEditorComponent
+        model={{ target: model }}
+        setModelReady={setModelReady}
+      />
+    </Suspense>
   )
 })
