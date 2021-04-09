@@ -92,10 +92,10 @@ export default function SetMinMaxDlg(props: {
             style={{ marginLeft: 20 }}
             disabled={!ok}
             onClick={() => {
-              display.setMinScore(
+              model.setMinScore(
                 min !== '' && !Number.isNaN(+min) ? +min : undefined,
               )
-              display.setMaxScore(
+              model.setMaxScore(
                 max !== '' && !Number.isNaN(+max) ? +max : undefined,
               )
               handleClose()

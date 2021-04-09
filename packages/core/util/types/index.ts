@@ -59,6 +59,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeAssembly?: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
+  setDialogComponent(dlg: React.FC<unknown>, props: unknown): void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -119,7 +120,6 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
-  setDialogComponent(dlg: unknown, display?: unknown): void
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (
@@ -131,8 +131,9 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 }
 
 export interface AbstractTrackModel {
-  setDialogComponent(dlg: unknown, display?: unknown): void
+  id: string
 }
+
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&

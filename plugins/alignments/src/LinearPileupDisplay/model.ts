@@ -457,7 +457,7 @@ const stateModelFactory = (
                 {
                   label: 'Sort by tag...',
                   onClick: () =>
-                    getContainingView(self).setDialogComponent(SortByTagDlg, {
+                    getSession(self).setDialogComponent(SortByTagDlg, {
                       model: self,
                     }),
                 },
@@ -516,7 +516,7 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getContainingView(self).setDialogComponent(ColorByTagDlg, {
+                    getSession(self).setDialogComponent(ColorByTagDlg, {
                       model: self,
                     })
                   },
@@ -527,7 +527,7 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getContainingView(self).setDialogComponent(FilterByTagDlg, {
+                getSession(self).setDialogComponent(FilterByTagDlg, {
                   model: self,
                 })
               },
@@ -535,16 +535,15 @@ const stateModelFactory = (
             {
               label: 'Set feature height',
               onClick: () => {
-                getContainingView(self).setDialogComponent(
-                  SetFeatureHeightDlg,
-                  { model: self },
-                )
+                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingView(self).setDialogComponent(SetMaxHeightDlg, {
+                getSession(self).setDialogComponent(SetMaxHeightDlg, {
                   model: self,
                 })
               },

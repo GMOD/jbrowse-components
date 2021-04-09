@@ -91,6 +91,11 @@ export default function sessionModelFactory(
       task: undefined,
 
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogComponent: undefined as React.FC<any> | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get shareURL() {
@@ -176,6 +181,10 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: React.FC<any>, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       setName(str: string) {
         self.name = str
       },

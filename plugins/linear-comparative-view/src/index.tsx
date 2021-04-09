@@ -624,8 +624,7 @@ export default class extends Plugin {
               label: 'Linear read vs ref',
               icon: AddIcon,
               onClick: () => {
-                const track = getContainingTrack(display)
-                track.setDialogComponent(WindowSizeDlg, {
+                getContainingView(display).setDialogComponent(WindowSizeDlg, {
                   feature,
                 })
               },

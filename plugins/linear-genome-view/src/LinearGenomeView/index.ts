@@ -125,8 +125,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as React.FC<unknown> | undefined,
-      DialogProps: undefined as unknown,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogComponent: undefined as React.FC<any> | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get width(): number {
@@ -441,10 +443,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<unknown>, props?: unknown) {
-        self.DialogComponent = comp
-        self.DialogProps = props
-      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },

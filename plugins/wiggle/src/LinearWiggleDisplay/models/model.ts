@@ -8,7 +8,6 @@ import {
   isAbortException,
   getSession,
   getContainingView,
-  getContainingTrack,
   isSelectionContainer,
 } from '@jbrowse/core/util'
 import {
@@ -431,7 +430,7 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getContainingView(self).setDialogComponent(SetMinMaxDlg, {
+                getSession(self).setDialogComponent(SetMinMaxDlg, {
                   model: self,
                 })
               },
@@ -439,7 +438,7 @@ const stateModelFactory = (
             {
               label: 'Set color',
               onClick: () => {
-                getContainingView(self).setDialogComponent(SetColorDlg, {
+                getSession(self).setDialogComponent(SetColorDlg, {
                   model: self,
                 })
               },

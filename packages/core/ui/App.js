@@ -111,6 +111,14 @@ export default observer(({ session, HeaderButtons }) => {
         }`,
       }}
     >
+      {session.DialogComponent ? (
+        <Suspense fallback={<div />}>
+          <session.DialogComponent
+            handleClose={() => session.setDialogComponent(undefined, undefined)}
+            {...session.DialogProps}
+          />
+        </Suspense>
+      ) : null}
       <div className={classes.menuBarAndComponents}>
         <div className={classes.menuBar}>
           <AppBar className={classes.appBar} position="static">

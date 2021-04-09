@@ -34,8 +34,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
-  const dialogTrack = model.tracks.find(track => track.DialogComponent)
-
   if (!initialized) {
     return null
   }
@@ -44,15 +42,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   }
   return (
     <div style={{ position: 'relative' }}>
-      {model.DialogComponent ? (
-        <Suspense fallback={<div />}>
-          <model.DialogComponent
-            handleClose={() => model.setDialogComponent(undefined, undefined)}
-            {...model.DialogProps}
-          />
-        </Suspense>
-      ) : null}
-
       {model.isSeqDialogDisplayed ? (
         <SequenceDialog
           model={model}
