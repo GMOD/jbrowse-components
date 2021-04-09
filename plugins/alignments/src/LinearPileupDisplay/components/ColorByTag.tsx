@@ -22,11 +22,11 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function ColorByTagDlg(props: {
-  display: { setColorScheme: Function }
+  model: { setColorScheme: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { display, handleClose } = props
+  const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
@@ -75,7 +75,7 @@ export default function ColorByTagDlg(props: {
             color="primary"
             style={{ marginLeft: 20 }}
             onClick={() => {
-              display.setColorScheme({
+              model.setColorScheme({
                 type: 'tag',
                 tag,
               })

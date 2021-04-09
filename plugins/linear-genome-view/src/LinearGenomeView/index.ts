@@ -125,9 +125,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as
-        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
-        | undefined,
+      DialogComponent: undefined as React.FC<unknown> | undefined,
+      DialogProps: undefined as unknown,
     }))
     .views(self => ({
       get width(): number {
@@ -442,13 +441,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(
-        comp?: React.FC<{
-          handleClose: () => void
-          model: { clearView: Function }
-        }>,
-      ) {
+      setDialogComponent(comp?: React.FC<unknown>, props?: unknown) {
         self.DialogComponent = comp
+        self.DialogProps = props
       },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
@@ -1167,7 +1162,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDialogComponent(ReturnToImportFormDlg)
+                self.setDialogComponent(
+                  ReturnToImportFormDlg as React.FC<unknown>,
+                )
               },
               icon: FolderOpenIcon,
             },

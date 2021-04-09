@@ -82,7 +82,7 @@ function Bitmask(props: { flag?: number; setFlag: Function }) {
 
 export default observer(
   (props: {
-    display: {
+    model: {
       filterBy?: {
         flagExclude: number
         flagInclude: number
@@ -93,9 +93,9 @@ export default observer(
     }
     handleClose: () => void
   }) => {
-    const { display, handleClose } = props
+    const { model, handleClose } = props
     const classes = useStyles()
-    const { filterBy } = display
+    const { filterBy } = model
     const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
     const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)
     const [tag, setTag] = useState(filterBy?.tagFilter?.tag || '')
@@ -196,7 +196,7 @@ export default observer(
               variant="contained"
               color="primary"
               onClick={() => {
-                display.setFilterBy({
+                model.setFilterBy({
                   flagInclude,
                   flagExclude,
                   readName,

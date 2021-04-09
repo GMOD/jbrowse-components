@@ -119,6 +119,7 @@ export interface AbstractViewModel {
   type: string
   width: number
   setWidth(width: number): void
+  setDialogComponent(dlg: unknown, display?: unknown): void
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (

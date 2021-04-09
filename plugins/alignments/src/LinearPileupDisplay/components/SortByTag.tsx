@@ -23,11 +23,11 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function SortByTagDlg(props: {
-  display: { setSortedBy: Function }
+  model: { setSortedBy: Function }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { display, handleClose } = props
+  const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
   return (
@@ -72,7 +72,7 @@ export default function SortByTagDlg(props: {
             variant="contained"
             color="primary"
             onClick={() => {
-              display.setSortedBy('tag', tag)
+              model.setSortedBy('tag', tag)
               handleClose()
             }}
           >

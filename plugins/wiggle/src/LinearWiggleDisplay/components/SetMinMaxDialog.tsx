@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function SetMinMaxDlg(props: {
-  display: {
+  model: {
     minScore: number
     maxScore: number
     setMinScore: Function
@@ -29,8 +29,8 @@ export default function SetMinMaxDlg(props: {
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { display, handleClose } = props
-  const { minScore, maxScore } = display
+  const { model, handleClose } = props
+  const { minScore, maxScore } = model
 
   const [min, setMin] = useState(
     `${minScore !== Number.MIN_VALUE ? minScore : ''}`,

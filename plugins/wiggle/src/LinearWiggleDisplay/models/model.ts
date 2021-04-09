@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
@@ -22,7 +23,6 @@ import {
 import { autorun, observable } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import React from 'react'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { FeatureStats } from '@jbrowse/core/util/stats'
@@ -31,8 +31,9 @@ import { axisPropsFromTickScale } from 'react-d3-axis'
 import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import SetMinMaxDlg from '../components/SetMinMaxDialog'
-import SetColorDlg from '../components/SetColorDialog'
+
+const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
+const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // fudge factor for making all labels on the YScalebar visible
 export const YSCALEBAR_LABEL_OFFSET = 5
@@ -430,13 +431,17 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(SetMinMaxDlg, self)
+                getContainingView(self).setDialogComponent(SetMinMaxDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(SetColorDlg, self)
+                getContainingView(self).setDialogComponent(SetColorDlg, {
+                  model: self,
+                })
               },
             },
           ]
