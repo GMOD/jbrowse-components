@@ -588,6 +588,15 @@ export function iterMap<T, U>(
   return results
 }
 
+/**
+ *  Option interface as the base format for text search adapter results
+ *  and options in the refNameAutocomplete
+ */
+export interface Option {
+  group: string
+  value: string
+  location?: string
+}
 interface Assembly {
   name: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

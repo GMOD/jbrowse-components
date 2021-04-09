@@ -4,12 +4,8 @@ import {
 } from '../../data_adapters/BaseAdapter'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
+import { Option } from '../../util'
 
-export interface Option {
-  group: string
-  value: string
-  location?: string
-}
 export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
@@ -27,6 +23,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
    */
   async loadIndexFile(query: string) {
     // TODO: load index to search from
+    // TODO: needs to handle different assemblies or organisms
     const httpMap = new HttpMap({
       url: '/test_data/volvox/names/',
       isElectron: false,

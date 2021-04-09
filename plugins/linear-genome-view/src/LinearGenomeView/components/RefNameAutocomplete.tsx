@@ -20,7 +20,7 @@ import Autocomplete, {
 import { LinearGenomeViewModel } from '..'
 
 // filter for options that were fetched
-const filter=createFilterOptions<Option>( {trim: true,limit: 15} )
+const filter = createFilterOptions<Option>({ trim: true, limit: 15 })
 
 const helperSearchText = `Syntax chr1:1-100 or chr1:1..100 or {hg19}chr1:1-100 to navigate. Or search for features or names`
 const useStyles = makeStyles(theme => ({
