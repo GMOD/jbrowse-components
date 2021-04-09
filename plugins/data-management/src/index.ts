@@ -22,8 +22,10 @@ import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
-import AssemblyManager from './AssemblyManager'
-import SetDefaultSession from './SetDefaultSession'
+
+const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
+
+const AssemblyManager = lazy(() => import('./AssemblyManager'))
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
@@ -123,3 +125,5 @@ export default class extends Plugin {
     }
   }
 }
+
+export { AssemblyManager, SetDefaultSession }

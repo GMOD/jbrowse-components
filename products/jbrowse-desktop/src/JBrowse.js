@@ -1,3 +1,4 @@
+import React, { useEffect, useState, Suspense } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -5,7 +6,7 @@ import { ThemeProvider } from '@material-ui/core/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import StartScreen from './StartScreen'
 import factoryReset from './factoryReset'
 
@@ -89,9 +90,6 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { AssemblyManager } = pluginManager.getPlugin(
-    'DataManagementPlugin',
-  ).exports
 
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
@@ -99,13 +97,15 @@ const JBrowse = observer(({ pluginManager }) => {
       {rootModel.session ? (
         <>
           <App session={rootModel.session} />
-          <AssemblyManager
-            rootModel={rootModel}
-            open={rootModel.isAssemblyEditing}
-            onClose={() => {
-              rootModel.setAssemblyEditing(false)
-            }}
-          />
+          <Suspense fallback={<div />}>
+            <AssemblyManager
+              rootModel={rootModel}
+              open={rootModel.isAssemblyEditing}
+              onClose={() => {
+                rootModel.setAssemblyEditing(false)
+              }}
+            />
+          </Suspense>
         </>
       ) : (
         <StartScreen

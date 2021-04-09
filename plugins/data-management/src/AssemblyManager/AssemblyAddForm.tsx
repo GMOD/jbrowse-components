@@ -1,11 +1,17 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import TextField from '@material-ui/core/TextField'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { Grid, MenuItem, Paper } from '@material-ui/core'
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
+import {
+  Button,
+  Grid,
+  MenuItem,
+  Paper,
+  TextField,
+  Theme,
+  makeStyles,
+  createStyles,
+} from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add'
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -133,7 +139,7 @@ const AdapterInput = observer(
   },
 )
 
-const AssemblyAddForm = observer(
+export default observer(
   ({
     rootModel,
     setFormOpen,
@@ -252,5 +258,3 @@ const AssemblyAddForm = observer(
     )
   },
 )
-
-export default AssemblyAddForm
