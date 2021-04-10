@@ -30,9 +30,7 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
-    // @ts-ignore
     window.JBrowseRootModel = rootModel
-    // @ts-ignore
     window.JBrowseSession = session
   }, [currentSessionId, rootModel, session, setSessionId])
 

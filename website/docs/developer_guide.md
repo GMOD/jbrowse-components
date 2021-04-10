@@ -1180,7 +1180,6 @@ export default class ArcRendererPlugin extends Plugin {
   install(pluginManager) {
     pluginManager.addRendererType(
       () =>
-        // @ts-ignore error "expected 0 arguments, but got 1"?
         new ArcRenderer({
           name: 'ArcRenderer',
           ReactComponent: ArcRendererReactComponent,
@@ -1271,7 +1270,7 @@ export default class ArcRenderer extends ServerSideRendererType {
       ctx.stroke()
     }
     const imageData = await createImageBitmap(canvas)
-    const element = React.createElement(
+    const reactElement = React.createElement(
       this.ReactComponent,
       {
         ...renderProps,
@@ -1281,7 +1280,7 @@ export default class ArcRenderer extends ServerSideRendererType {
       },
       null,
     )
-    return { element, imageData, width, height }
+    return { reactElement, imageData, width, height }
   }
 }
 ```
@@ -1358,7 +1357,7 @@ class MyRenderer implements ServerSideRendererType {
     ctx.drawRect(0, 0, 100, 100)
     const imageData = createImageBitmap(canvas)
     return {
-      element: React.createElement(this.ReactComponent, { ...props }),
+      reactElement: React.createElement(this.ReactComponent, { ...props }),
       imageData,
       height,
       width,

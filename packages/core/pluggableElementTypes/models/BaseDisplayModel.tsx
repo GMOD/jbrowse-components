@@ -10,6 +10,7 @@ export const BaseDisplay = types
   .model('BaseDisplay', {
     id: ElementId,
     type: types.string,
+    rpcDriverName: types.maybe(types.string),
   })
   .volatile(() => ({
     rendererTypeName: '',
@@ -56,6 +57,7 @@ export const BaseDisplay = types
     get renderProps() {
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
       }
     },
@@ -105,6 +107,9 @@ export const BaseDisplay = types
   .actions(self => ({
     setError(error?: Error) {
       self.error = error
+    },
+    setRpcDriverName(rpcDriverName: string) {
+      self.rpcDriverName = rpcDriverName
     },
     // base display reload does nothing, see specialized displays for details
     reload() {},

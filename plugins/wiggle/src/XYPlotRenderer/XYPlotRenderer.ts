@@ -4,12 +4,15 @@ import Color from 'color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
-  WiggleBaseRendererProps,
+  RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
-  draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
     const {
       features,
       bpPerPx,

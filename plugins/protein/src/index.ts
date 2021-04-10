@@ -1,4 +1,4 @@
-import ServerSideRendererType from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
+import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
@@ -12,7 +12,7 @@ export default class extends Plugin {
   install(pluginManager: PluginManager) {
     pluginManager.addRendererType(
       () =>
-        new ServerSideRendererType({
+        new FeatureRendererType({
           name: 'ProteinReferenceSequenceTrackRenderer',
           ReactComponent: ProteinReferenceSequenceTrackRendererReactComponent,
           configSchema: proteinReferenceSequenceTrackRendererConfigSchema,

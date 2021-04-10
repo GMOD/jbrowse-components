@@ -1,3 +1,4 @@
+import { ObservableMap } from 'mobx'
 import { objectFromEntries } from '../index'
 import {
   RectTuple,
@@ -292,7 +293,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: Map<string, Rectangle<T>>
+  private rectangles: ObservableMap<string, Rectangle<T>>
 
   public maxHeightReached: boolean
 
@@ -331,7 +332,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     this.bitmap = []
-    this.rectangles = new Map()
+    this.rectangles = new ObservableMap()
     this.maxHeight = Math.ceil(maxHeight / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
@@ -493,6 +494,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getTotalHeight(): number {
     return this.pTotalHeight * this.pitchY
+  }
+
+  get totalHeight() {
+    return this.getTotalHeight()
   }
 
   getRectangles(): Map<string, RectTuple> {

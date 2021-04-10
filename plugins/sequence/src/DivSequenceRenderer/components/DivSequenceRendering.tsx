@@ -144,7 +144,6 @@ function DNA(props: {
   return (
     <>
       {seq.split('').map((letter, index) => {
-        // @ts-ignore
         const color = theme.palette.bases[letter.toUpperCase()]
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (

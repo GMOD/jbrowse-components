@@ -443,6 +443,15 @@ const Renderer = observer(
               },
               { pluginManager },
             )
+            rootModel.jbrowse.configuration.rpc.addDriverConfig(
+              'WebWorkerRpcDriver',
+              { type: 'WebWorkerRpcDriver' },
+            )
+            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
+              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
+                'WebWorkerRpcDriver',
+              )
+            }
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default

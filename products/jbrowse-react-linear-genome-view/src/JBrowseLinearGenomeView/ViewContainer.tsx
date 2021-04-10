@@ -1,5 +1,6 @@
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import IconButton, {
   IconButtonProps as IconButtonPropsType,
 } from '@material-ui/core/IconButton'
@@ -13,6 +14,7 @@ import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useState } from 'react'
 import useDimensions from 'react-use-dimensions'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -54,13 +56,21 @@ const ViewMenu = observer(
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
+    const session = getSession(model)
 
     if (!model.menuItems?.length) {
       return null
     }
 
+    const aboutTrack = session.showAboutConfig
     return (
       <>
+        {aboutTrack ? (
+          <AboutDialog
+            model={aboutTrack}
+            handleClose={() => session.setShowAboutConfig?.(undefined)}
+          />
+        ) : null}
         <IconButton
           {...IconButtonProps}
           aria-label="more"

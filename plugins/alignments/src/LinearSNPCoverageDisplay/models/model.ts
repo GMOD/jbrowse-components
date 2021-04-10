@@ -6,6 +6,7 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import Tooltip from '../components/Tooltip'
 
 // using a map because it preserves order
@@ -169,7 +170,7 @@ const stateModelFactory = (
               )
             }
           }
-          return filters
+          return new SerializableFilterChain({ filters })
         },
       }
     })

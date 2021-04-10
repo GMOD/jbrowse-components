@@ -58,6 +58,11 @@ module.exports = {
       },
     )
 
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      fs: path.resolve(__dirname, 'fsMock.js'),
+    }
+
     config.resolve.extensions.push('.ts', '.tsx')
 
     return config
