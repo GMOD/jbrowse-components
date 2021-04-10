@@ -10,6 +10,7 @@ import { getSession, Option } from '@jbrowse/core/util'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
 import Tooltip from '@material-ui/core/Tooltip'
+import Typography from '@material-ui/core/Typography'
 import SearchIcon from '@material-ui/icons/Search'
 import { InputAdornment } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
@@ -203,6 +204,17 @@ function RefNameAutocomplete({
             onChange={e => setCurrentSearch(e.target.value.toLocaleLowerCase())}
           />
         )
+      }}
+      renderOption={(option, { inputValue }) => {
+        if (currentSearch !== '') {
+          return (
+            <Typography noWrap>
+              <b>{option.value.slice(0, inputValue.length)}</b>
+              {option.value.slice(inputValue.length)}
+            </Typography>
+          )
+        }
+        return <Typography noWrap>{option.value}</Typography>
       }}
       getOptionLabel={option => {
         // Note: needed to handle locstrings on enter
