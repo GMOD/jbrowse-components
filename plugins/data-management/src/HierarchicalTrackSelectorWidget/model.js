@@ -7,7 +7,9 @@ const hasAnyOverlap = (a1 = [], a2 = []) =>
   !!a1.find(value => a2.includes(value))
 
 function passesFilter(filter, config) {
-  const name = readConf(config, 'name') || readConf(getParent(config), 'name')
+  const name =
+    readConf(config, 'name') ||
+    `Reference sequence (${readConf(getParent(config), 'name')})`
   const categories = readConf(config, 'category') || []
   const regexp = new RegExp(filter, 'i')
   return (
