@@ -61,8 +61,12 @@ const useStyles = makeStyles(theme => ({
   // accordionColor it a "margin" because the virtualized elements can't really
   // use margin in a conventional way (it doesn't affect layout)
   accordionBase: {
-    cursor: 'pointer',
+    display: 'flex',
+  },
+
+  accordionCard: {
     padding: 3,
+    cursor: 'pointer',
     display: 'flex',
   },
 
@@ -139,64 +143,77 @@ const Node = props => {
     onMoreInfo,
   } = data
   const classes = useStyles()
-  const marginLeft = nestingLevel * 10 + (isLeaf ? 10 : 0)
+  const width = 10
+  const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
 
   return (
-    <div
-      className={!isLeaf ? classes.accordionBase : undefined}
-      role="presentation"
-      onClick={toggle}
-      style={{
-        ...style,
-        marginLeft,
-        whiteSpace: 'nowrap',
+    <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
+      {new Array(nestingLevel).fill(0).map((_, idx) => (
+        <div
+          key={`mark-${idx}`}
+          style={{
+            position: 'absolute',
+            left: idx * width + 4,
+            borderLeft: '1.5px solid #555',
+            height: style.height,
+          }}
+        />
+      ))}
+      <div
+        className={!isLeaf ? classes.accordionCard : undefined}
+        role="presentation"
+        onClick={toggle}
+        style={{
+          marginLeft,
+          whiteSpace: 'nowrap',
 
-        // interesting note: width:100% here dynamically makes window wider
-        // while scrolling for long track labels, which means we don't need
-        // long track label wrapping necessarily
-        width: '100%',
-      }}
-    >
-      <div className={!isLeaf ? classes.accordionColor : undefined}>
-        {!isLeaf ? (
-          <div className={classes.accordionText}>
-            <Typography style={{}}>
-              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-              {name}
-            </Typography>
-          </div>
-        ) : (
-          <>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  className={classes.compactCheckbox}
-                  checked={checked}
-                  onChange={() => onChange(id)}
-                  color="primary"
-                  inputProps={{
-                    'data-testid': `htsTrackEntry-${id}`,
-                  }}
-                />
-              }
-              label={
-                /* it is helpful for styling to keep this inside the label */
-                <>
-                  <span className={classes.checkboxLabel}>{name}</span>
-                  <IconButton
-                    onClick={event => {
-                      onMoreInfo({ target: event.currentTarget, id, conf })
+          // interesting note: width:100% here dynamically makes window wider
+          // while scrolling for long track labels, which means we don't need
+          // long track label wrapping necessarily
+          width: '100%',
+        }}
+      >
+        <div className={!isLeaf ? classes.accordionColor : undefined}>
+          {!isLeaf ? (
+            <div className={classes.accordionText}>
+              <Typography style={{}}>
+                {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+                {name}
+              </Typography>
+            </div>
+          ) : (
+            <>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    className={classes.compactCheckbox}
+                    checked={checked}
+                    onChange={() => onChange(id)}
+                    color="primary"
+                    inputProps={{
+                      'data-testid': `htsTrackEntry-${id}`,
                     }}
-                    color="secondary"
-                    data-testid={`htsTrackEntryMenu-${id}`}
-                  >
-                    <MoreIcon />
-                  </IconButton>
-                </>
-              }
-            />
-          </>
-        )}
+                  />
+                }
+                label={
+                  /* it is helpful for styling to keep this inside the label */
+                  <>
+                    <span className={classes.checkboxLabel}>{name}</span>
+                    <IconButton
+                      onClick={event => {
+                        onMoreInfo({ target: event.currentTarget, id, conf })
+                      }}
+                      color="secondary"
+                      data-testid={`htsTrackEntryMenu-${id}`}
+                    >
+                      <MoreIcon />
+                    </IconButton>
+                  </>
+                }
+              />
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
