@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import InfoIcon from '@material-ui/icons/Info'
 import { transaction } from 'mobx'
 import {
   getRoot,
@@ -41,15 +40,11 @@ export function createBaseTrackModel(
       ),
     })
     .volatile(() => ({
-      showAbout: false,
       DialogComponent: undefined as React.FC | undefined,
       DialogDisplay: undefined as any,
     }))
     .actions(self => ({
-      setShowAbout(show: boolean) {
-        self.showAbout = show
-      },
-      setDialogComponent(dlg: any, context?: any) {
+      setDialogComponent(dlg?: React.FC, context?: any) {
         self.DialogComponent = dlg
         self.DialogDisplay = context
       },
@@ -69,11 +64,13 @@ export function createBaseTrackModel(
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
         const { pluginManager: pm } = getEnv(self)
-        if (!adapterConfig)
+        if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
+        }
         const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType)
+        if (!adapterType) {
           throw new Error(`unknown adapter type ${adapterConfig.type}`)
+        }
         return adapterType
       },
 
@@ -96,12 +93,11 @@ export function createBaseTrackModel(
             }))
         )
       },
-      // distinct set of track items that are particular to this track type. for
-      // base, there are none
+      // distinct set of track items that are particular to this track type.
+      // for base, there are none
       //
       // note: this attribute is helpful when composing together multiple
-      // subtracks so that you don't repeat the "about this track" from each
-      // child track
+      // subtracks
       get composedTrackMenuItems(): MenuItem[] {
         return []
       },
@@ -223,18 +219,7 @@ export function createBaseTrackModel(
             })
           })
         }
-        return [
-          {
-            label: 'About this track',
-            icon: InfoIcon,
-            priority: 10,
-            onClick: () => {
-              self.setShowAbout(true)
-            },
-          },
-          ...menuItems,
-          ...displayChoices,
-        ]
+        return [...menuItems, ...displayChoices]
       },
     }))
 }

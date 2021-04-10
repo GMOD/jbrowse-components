@@ -29,6 +29,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
+import InfoIcon from '@material-ui/icons/Info'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -75,6 +76,9 @@ export default function sessionModelFactory(
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+
+      // which config is being shown in the "About track" menu
+      showAboutConfig: undefined as undefined | AnyConfigurationModel,
     }))
     .views(self => ({
       get rpcManager() {
@@ -149,6 +153,9 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setShowAboutConfig(showConfig: AnyConfigurationModel) {
+        self.showAboutConfig = showConfig
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -515,6 +522,13 @@ export default function sessionModelFactory(
       getTrackActionMenuItems(config: any) {
         const session = self
         return [
+          {
+            label: 'About track',
+            onClick: () => {
+              session.setShowAboutConfig(config)
+            },
+            icon: InfoIcon,
+          },
           {
             label: 'Settings',
             onClick: () => {

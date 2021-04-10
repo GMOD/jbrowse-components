@@ -23,22 +23,27 @@ import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
 
+// these are always omitted as too detailed
 const globalOmit = [
-  'name',
-  'start',
-  'end',
-  'strand',
-  'refName',
-  'type',
   'length',
   'position',
   'subfeatures',
-  'description',
   'uniqueId',
   'exonFrames',
   'parentId',
   'thickStart',
   'thickEnd',
+]
+
+// coreDetails are omitted in some circumstances
+const coreDetails = [
+  'name',
+  'start',
+  'end',
+  'strand',
+  'refName',
+  'description',
+  'type',
 ]
 
 export const useStyles = makeStyles(theme => ({
@@ -373,6 +378,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
           if (isObject(value)) {
             return (
               <Attributes
+                omit={omits}
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
@@ -437,7 +443,7 @@ export const FeatureDetails = (props: {
   omit?: string[]
   formatter?: (val: unknown, key: string) => JSX.Element
 }) => {
-  const { model, feature, depth = 0 } = props
+  const { omit = [], model, feature, depth = 0 } = props
   const { name, id, type, subfeatures } = feature
   const displayName = (name || id) as string | undefined
   const ellipsedDisplayName =
@@ -459,7 +465,11 @@ export const FeatureDetails = (props: {
       <CoreDetails {...props} />
       <Divider />
       <div>Attributes</div>
-      <Attributes attributes={feature} {...props} />
+      <Attributes
+        attributes={feature}
+        {...props}
+        omit={[...omit, ...coreDetails]}
+      />
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (

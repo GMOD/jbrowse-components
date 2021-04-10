@@ -77,12 +77,18 @@ export class CoreGetFileInfo extends RpcMethodType {
 export class CoreGetMetadata extends RpcMethodType {
   name = 'CoreGetMetadata'
 
-  async execute(args: {
-    sessionId: string
-    signal: RemoteAbortSignal
-    adapterConfig: {}
-  }) {
-    const deserializedArgs = await this.deserializeArguments(args)
+  async execute(
+    args: {
+      sessionId: string
+      signal: RemoteAbortSignal
+      adapterConfig: {}
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { sessionId, adapterConfig } = deserializedArgs
     const { dataAdapter } = getAdapter(
       this.pluginManager,

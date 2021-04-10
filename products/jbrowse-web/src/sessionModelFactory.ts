@@ -33,6 +33,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
+import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
 
 declare interface ReferringNode {
@@ -88,6 +89,8 @@ export default function sessionModelFactory(
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+
+      showAboutConfig: undefined as undefined | AnyConfigurationModel,
     }))
     .views(self => ({
       get shareURL() {
@@ -175,7 +178,10 @@ export default function sessionModelFactory(
       setName(str: string) {
         self.name = str
       },
-      addAssembly(assemblyConfig: any) {
+      setShowAboutConfig(showConfig: AnyConfigurationModel) {
+        self.showAboutConfig = showConfig
+      },
+      addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
       removeAssembly(assemblyName: string) {
@@ -597,7 +603,7 @@ export default function sessionModelFactory(
         const session = self
         const canEdit =
           session.adminMode ||
-          session.sessionTracks.find((track: AnyConfigurationModel) => {
+          session.sessionTracks.find(track => {
             return track.trackId === config.trackId
           })
 
@@ -605,6 +611,13 @@ export default function sessionModelFactory(
         const isRefSeqTrack =
           readConfObject(config, 'type') === 'ReferenceSequenceTrack'
         return [
+          {
+            label: 'About track',
+            onClick: () => {
+              session.setShowAboutConfig(config)
+            },
+            icon: InfoIcon,
+          },
           {
             label: 'Settings',
             disabled: !canEdit,
