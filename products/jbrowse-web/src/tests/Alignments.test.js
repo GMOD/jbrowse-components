@@ -1,5 +1,11 @@
 // library
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import {
+  cleanup,
+  waitFor,
+  fireEvent,
+  render,
+  within,
+} from '@testing-library/react'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -26,7 +32,7 @@ beforeEach(() => {
 })
 
 describe('alignments track', () => {
-  xit('opens an alignments track', async () => {
+  it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText, findAllByTestId } = render(
@@ -260,7 +266,7 @@ describe('alignments track', () => {
     await findAllByText('Max height reached', {}, { timeout: 10000 })
   }, 15000)
 
-  it('test snpcoverage doesnt count softclipping', async () => {
+  it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByText, findByTestId } = render(
@@ -277,11 +283,15 @@ describe('alignments track', () => {
     const { findAllByTestId } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
+
+    await waitFor(
+      async () => {
+        const canvases = await findAllByTestId('prerendered_canvas')
+        expect(canvases.length).toBe(2)
+      },
       { timeout: 10000 },
     )
+    const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
 
     // this block tests that softclip avoids decrementing the total block
     // e.g. this line is not called for softclip/hardclip
@@ -296,13 +306,13 @@ describe('alignments track', () => {
     ).toMatchImageSnapshot()
 
     // test that softclip doesn't contibute to coverage
-    // expect(
-    //   Buffer.from(
-    //     snpCoverageCanvas[1]
-    //       .toDataURL()
-    //       .replace(/^data:image\/\w+;base64,/, ''),
-    //     'base64',
-    //   ),
-    // ).toMatchImageSnapshot()
+    expect(
+      Buffer.from(
+        snpCoverageCanvas[1]
+          .toDataURL()
+          .replace(/^data:image\/\w+;base64,/, ''),
+        'base64',
+      ),
+    ).toMatchImageSnapshot()
   }, 15000)
 })

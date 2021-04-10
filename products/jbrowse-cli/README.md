@@ -388,6 +388,8 @@ OPTIONS
                          DotplotView.
                          Must be provided if no default session file provided
 
+  --delete               Delete any existing default session.
+
   --out=out              synonym for target
 
   --target=target        path to config file in JB2 installation directory to write out to

@@ -193,6 +193,30 @@ describe('set-default-session', () => {
         path.join(ctx.dir, 'config.json'),
       )
     })
+    .command(['set-default-session', '--delete'])
+    .it('deletes a default session', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents)).toEqual({
+        ...defaultConfig,
+        tracks: [],
+        defaultSession: undefined,
+      })
+    })
+  setup
+    .do(async ctx => {
+      await fsPromises.copyFile(
+        testConfig,
+        path.join(ctx.dir, path.basename(testConfig)),
+      )
+
+      await fsPromises.rename(
+        path.join(ctx.dir, path.basename(testConfig)),
+        path.join(ctx.dir, 'config.json'),
+      )
+    })
     .command(['set-default-session', '--session', simpleDefaultSession])
     .it('adds a default session from a file', async ctx => {
       const contents = await fsPromises.readFile(

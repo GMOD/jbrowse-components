@@ -64,7 +64,7 @@ const DrawerWidget = observer(props => {
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <div className={classes.defaultDrawer}>
-        <AppBar position="static" color="secondary">
+        <AppBar position="sticky" color="secondary">
           <Toolbar disableGutters className={classes.drawerToolbar}>
             <Select
               value={visibleWidget || ''}

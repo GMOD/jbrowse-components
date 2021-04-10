@@ -877,7 +877,7 @@ export function blobToDataURL(blob: Blob) {
 export const rIC =
   // eslint-disable-next-line no-nested-ternary
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined'
+    ? typeof window !== 'undefined' && window.requestIdleCallback
       ? window.requestIdleCallback
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
