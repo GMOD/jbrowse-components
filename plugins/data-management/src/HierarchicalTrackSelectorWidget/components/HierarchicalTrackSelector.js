@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   Checkbox,
   Fab,
@@ -206,8 +206,11 @@ const Node = props => {
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
 const HierarchicalTree = observer(({ height, tree, model }) => {
+  const treeRef = useRef(null)
   const [info, setMoreInfo] = useState()
   const session = getSession(model)
+  const { filterText } = model
+
   const treeWalker = makeTreeWalker({
     nodes: {
       name: 'Tracks',
@@ -223,9 +226,21 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
     conf && session.getTrackActionMenuItems
       ? session.getTrackActionMenuItems(conf)
       : []
+
+  useEffect(() => {
+    treeRef.current.recomputeTree({
+      refreshNodes: true,
+      useDefaultHeight: true,
+    })
+  }, [tree, filterText])
   return (
     <>
-      <VariableSizeTree treeWalker={treeWalker} height={height} width="100%">
+      <VariableSizeTree
+        ref={treeRef}
+        treeWalker={treeWalker}
+        height={height}
+        width="100%"
+      >
         {Node}
       </VariableSizeTree>
       <JBrowseMenu
