@@ -3,7 +3,8 @@ import { readConfObject as readConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 
-const hasAnyOverlap = (a1, a2) => !!a1.find(value => a2.includes(value))
+const hasAnyOverlap = (a1 = [], a2 = []) =>
+  !!a1.find(value => a2.includes(value))
 
 function passesFilter(filter, config) {
   const name = readConf(config, 'name') || readConf(getParent(config), 'name')
