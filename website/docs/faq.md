@@ -16,28 +16,30 @@ toplevel: true
 
 #### What is special about JBrowse 2
 
-One thing that makes JBrowse 2 special is that we can create new view
-types via our plugin system, e.g. circular, dotplot, etc. Anything you want can
-be added as a view, and can be shown alongside our other views
+One thing that makes JBrowse 2 special is that we can create new view types via
+our plugin system, e.g. circular, dotplot, etc. Anything you want can be added
+as a view, and can be shown alongside our other views
 
 This makes JBrowse 2 more than just a genome browser-- it is really a platform
 that can be built on.
 
-#### What are new features in jbrowse 2
+#### What are new features in JBrowse 2
 
-- Uses webworkers for data parsing and rendering tracks
+- Uses web workers for multi-core data parsing and rendering of tracks
 - Use ctrl+scroll to zoom in and out quickly
 - Status updates while track is loading (e.g. Downloading BAM index...)
 - Hi-C visualization from .hic format files
 - Can display multiple chromosomes or discontinuous regions on a single linear
   genome view
 - Can connect to UCSC trackhubs
-- Alignments track has both coverage and pileup display integrated in a single track
+- Alignments track has both coverage and pileup display integrated in a single
+  track
 - Read pileups can be sorted by various attributes
 - Has ability to show soft clipped bases on reads
 - Interactively edit the configuration using the GUI
 - Circular, dotplot, stacked synteny views
-- SV inspector, that gives tabular and circular overview of data in a single view
+- SV inspector, that gives tabular and circular overview of data in a single
+  view
 - Linear genome view can be reverse complemented
 
 #### Can the linear genome view be reverse complemented
@@ -45,6 +47,30 @@ that can be built on.
 Yes! See [here](user_guide#navigating-the-ui)
 
 ### Setup
+
+#### What web server do I need to run JBrowse 2
+
+JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
+statically hosted on a webserver without any backend services running.
+
+Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
+folder to your web server html folder e.g. `/var/www/html/`.
+
+If you use a different platform such as Django, you may want to put it in the
+static resources folder.
+
+Note that the server that you use should support byte-range requests (e.g. the
+[Range HTTP
+header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range) so
+that JBrowse can get small slices of large binary data files.
+
+#### BAM files do not work on my server
+
+If you are using Apache then you will probably want to disable mime_magic. If
+mime_magic is enabled, you may see that your server responds with the HTTP
+header Content-Encoding: gzip which JBrowse does NOT want, because this
+instructs the browser to unzip the data but JBrowse should be in charge of
+this.
 
 #### How can I start the JBrowse 2 app as a developer
 
@@ -137,9 +163,9 @@ with JBrowse 2, the top level menu only performs global operations and the
 linear genome view has it's own hamburger menu. Note that each track also has
 it's own track level menu.
 
-#### Why do some of my reads not display soft clipping?
+#### Why do some of my reads not display soft clipping
 
 Some reads, such as secondary reads, do not have a SEQ field on their records,
 so they will not display softclipping.
 
-These reads will display their soft-clipping indicator as black
+The soft clipping indicators on these reads will appear black.
