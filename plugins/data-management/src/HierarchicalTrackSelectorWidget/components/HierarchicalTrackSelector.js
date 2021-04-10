@@ -70,6 +70,11 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
   },
 
+  nestingLevelMarker: {
+    position: 'absolute',
+
+    borderLeft: '1.5px solid #555',
+  },
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
@@ -151,12 +156,8 @@ const Node = props => {
       {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
           key={`mark-${idx}`}
-          style={{
-            position: 'absolute',
-            left: idx * width + 4,
-            borderLeft: '1.5px solid #555',
-            height: style.height,
-          }}
+          style={{ left: idx * width + 4, height: style.height }}
+          className={classes.nestingLevelMarker}
         />
       ))}
       <div
@@ -166,10 +167,6 @@ const Node = props => {
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
-
-          // interesting note: width:100% here dynamically makes window wider
-          // while scrolling for long track labels, which means we don't need
-          // long track label wrapping necessarily
           width: '100%',
         }}
       >
@@ -182,36 +179,33 @@ const Node = props => {
               </Typography>
             </div>
           ) : (
-            <>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    className={classes.compactCheckbox}
-                    checked={checked}
-                    onChange={() => onChange(id)}
-                    color="primary"
-                    inputProps={{
-                      'data-testid': `htsTrackEntry-${id}`,
+            <FormControlLabel
+              control={
+                <Checkbox
+                  className={classes.compactCheckbox}
+                  checked={checked}
+                  onChange={() => onChange(id)}
+                  color="primary"
+                  inputProps={{
+                    'data-testid': `htsTrackEntry-${id}`,
+                  }}
+                />
+              }
+              label={
+                <>
+                  <span className={classes.checkboxLabel}>{name}</span>
+                  <IconButton
+                    onClick={event => {
+                      onMoreInfo({ target: event.currentTarget, id, conf })
                     }}
-                  />
-                }
-                label={
-                  /* it is helpful for styling to keep this inside the label */
-                  <>
-                    <span className={classes.checkboxLabel}>{name}</span>
-                    <IconButton
-                      onClick={event => {
-                        onMoreInfo({ target: event.currentTarget, id, conf })
-                      }}
-                      color="secondary"
-                      data-testid={`htsTrackEntryMenu-${id}`}
-                    >
-                      <MoreIcon />
-                    </IconButton>
-                  </>
-                }
-              />
-            </>
+                    color="secondary"
+                    data-testid={`htsTrackEntryMenu-${id}`}
+                  >
+                    <MoreIcon />
+                  </IconButton>
+                </>
+              }
+            />
           )}
         </div>
       </div>
