@@ -1,14 +1,13 @@
 import { types, getParent } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject as readConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import intersect from 'array-intersection'
 
-function passesFilter(filter, trackConf) {
-  const name =
-    readConfObject(trackConf, 'name') ||
-    readConfObject(getParent(trackConf), 'name')
-  const categories = readConfObject(trackConf, 'category') || []
+const hasAnyOverlap = (a1, a2) => !!a1.find(value => a2.includes(value))
+
+function passesFilter(filter, config) {
+  const name = readConf(config, 'name') || readConf(getParent(config), 'name')
+  const categories = readConf(config, 'category') || []
   const regexp = new RegExp(filter, 'i')
   return (
     !!name.match(regexp) || categories.filter(cat => !!cat.match(regexp)).length
@@ -22,7 +21,8 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
   trackConfigurations
     .filter(trackConf => passesFilter(filterText, trackConf))
     .forEach(trackConf => {
-      const categories = [...(readConfObject(trackConf, 'category') || [])]
+      // copy the categories since this array can be mutated downstream
+      const categories = [...(readConf(trackConf, 'category') || [])]
 
       // silly thing where if trackId ends with sessionTrack, then push it to
       // a category that starts with a space to force sort to the top...
@@ -55,11 +55,8 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
       currLevel.children.push({
         id: trackConf.trackId,
         name:
-          readConfObject(trackConf, 'name') ||
-          `Reference sequence (${readConfObject(
-            getParent(trackConf),
-            'name',
-          )})`,
+          readConf(trackConf, 'name') ||
+          `Reference sequence (${readConf(getParent(trackConf), 'name')})`,
         conf: trackConf,
         selected: view.tracks.find(f => f.configuration === trackConf),
         children: [],
@@ -130,9 +127,9 @@ export default pluginManager =>
         return (refseq ? [refseq] : []).concat([
           ...trackConfigurations
             .filter(conf => {
-              const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+              const trackConfAssemblies = readConf(conf, 'assemblyNames')
               const { allAliases } = assembly
-              return intersect(allAliases, trackConfAssemblies).length > 0
+              return hasAnyOverlap(allAliases, trackConfAssemblies)
             })
             .filter(conf => {
               const { displayTypes } = pluginManager.getViewType(self.view.type)
@@ -140,7 +137,7 @@ export default pluginManager =>
                 display => display.name,
               )
               const trackDisplays = conf.displays.map(display => display.type)
-              return intersect(compatibleDisplays, trackDisplays).length > 0
+              return hasAnyOverlap(compatibleDisplays, trackDisplays)
             }),
         ])
       },
@@ -160,7 +157,7 @@ export default pluginManager =>
           const { displayTypes } = pluginManager.getViewType(self.view.type)
           const compatibleDisplays = displayTypes.map(display => display.name)
           const trackDisplays = conf.displays.map(display => display.type)
-          return intersect(compatibleDisplays, trackDisplays).length > 0
+          return hasAnyOverlap(compatibleDisplays, trackDisplays)
         })
       },
 
@@ -177,7 +174,7 @@ export default pluginManager =>
             const c = session.connections[index]
             return {
               id: c.connectionId,
-              name: readConfObject(c, 'name'),
+              name: readConf(c, 'name'),
               children: this.connectionHierarchy(conn),
               state: {
                 expanded: true,
