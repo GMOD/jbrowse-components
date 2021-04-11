@@ -88,7 +88,6 @@ const stateModelFactory = (
           : readConfObject(this.rendererConfig, 'drawIndicators')
       },
       get renderProps() {
-        console.log({ c: self.colorBy })
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),

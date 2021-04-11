@@ -285,3 +285,62 @@ export function generateMD(target: string, query: string, cigar: string) {
   }
   return str
 }
+
+// get relative reference sequence positions for positions given relative to
+// the read sequence
+export function* getNextRefPos(cigarOps: string[], positions: number[]) {
+  let cigarIdx = 0
+  let readPos = 0
+  let refPos = 0
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i]
+    for (; cigarIdx < cigarOps.length && readPos < pos; cigarIdx += 2) {
+      const len = +cigarOps[cigarIdx]
+      const op = cigarOps[cigarIdx + 1]
+      if (op === 'S' || op === 'I') {
+        readPos += len
+      } else if (op === 'D' || op === 'N') {
+        refPos += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        readPos += len
+        refPos += len
+      }
+    }
+
+    yield positions[i] - readPos + refPos
+  }
+}
+
+export function getModificationPositions(mm: string, seq: string) {
+  const mods = mm.split(';')
+  return mods.map(mod => {
+    const [basemod, ...rest] = mod.split(',')
+
+    const [base, strand, ...type] = basemod.split('')
+    if (strand === '-') {
+      console.warn('unsupported negative strand modifications')
+      return []
+    }
+
+    let i = 0
+
+    // based on parse_mm.pl from hts-specs
+    // the logic is that in the sequence of the read, if we have a modification
+    // type e.g. C+m;2 and a sequence ACGTACGTAC we skip the two instances of C
+    // and go to the last C
+    return rest
+      .map(score => +score)
+      .map(delta => {
+        i++
+        do {
+          if (base === 'N' || base === seq[i]) {
+            delta--
+          }
+          i++
+        } while (delta >= 0 && i < seq.length)
+        i--
+        return i
+      })
+  })
+}

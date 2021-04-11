@@ -22,7 +22,12 @@ import {
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
+import {
+  Mismatch,
+  parseCigar,
+  getModificationPositions,
+  getNextRefPos,
+} from '../BamAdapter/MismatchParser'
 import { sortFeature } from './sortUtil'
 import { orientationTypes } from './util'
 import {
@@ -112,34 +117,6 @@ function getTag(feature: Feature, tag: string) {
 // exist e.g. Mm/MM for base modifications
 function getTagAlt(feature: Feature, tag: string, alt: string) {
   return getTag(feature, tag) || getTag(feature, alt)
-}
-
-// get relative reference sequence positions for positions given relative to
-// the read sequence
-function* getNextRefPos(cigarOps: string[], positions: number[], n) {
-  let cigarIdx = 0
-  let readPos = 0
-  let refPos = 0
-
-  for (let i = 0; i < positions.length; i++) {
-    for (
-      ;
-      cigarIdx < cigarOps.length && readPos < positions[i];
-      cigarIdx += 2
-    ) {
-      const len = +cigarOps[cigarIdx]
-      const op = cigarOps[cigarIdx + 1]
-      if (op === 'S' || op === 'I') {
-        readPos += len
-      } else if (op === 'D' || op === 'N') {
-        refPos += len
-      } else if (op === 'M' || op === 'X' || op === '=') {
-        readPos += len
-        refPos += len
-      }
-    }
-    yield positions[i] - readPos + refPos
-  }
 }
 
 export default class PileupRenderer extends BoxRendererType {
@@ -357,7 +334,6 @@ export default class PileupRenderer extends BoxRendererType {
           .map(s => s.charCodeAt(0) - 33)
           .map(elt => Math.min(1, elt / 50))
 
-    const mods = mm.split(';')
     const colors = ['red', 'green', 'blue', 'purple', 'brown']
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
@@ -367,38 +343,13 @@ export default class PileupRenderer extends BoxRendererType {
     const width = 1 / bpPerPx
     const [leftPx, rightPx] = bpSpanPx(start, end, region, bpPerPx)
 
-    const modifications = mods.map(mod => {
-      const [basemod, ...rest] = mod.split(',')
-
-      const [base, strand, ...type] = basemod.split('')
-      if (strand === '-') {
-        console.warn('unsupported negative strand modifications')
-        return []
-      }
-
-      let i = 0
-      return rest
-        .map(score => +score)
-        .map(delta => {
-          do {
-            if (base === 'N' || base === seq[i]) {
-              delta--
-            }
-            i++
-          } while (delta >= 0)
-          return --i
-        })
-    })
+    const modifications = getModificationPositions(mm, seq)
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
     modifications.forEach((positions, index) => {
       const interpolater = interpolateLab('white', colors[index])
-      for (const readPos of getNextRefPos(
-        cigarOps,
-        positions,
-        feature.get('name'),
-      )) {
+      for (const readPos of getNextRefPos(cigarOps, positions)) {
         const px = leftPx + readPos * width
         if (px > leftPx && px < rightPx) {
           ctx.fillStyle = interpolater(probabilities[probIndex++])

@@ -11,38 +11,11 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
-
-import NestedFrequencyTable from '../NestedFrequencyTable'
-
-// get relative reference sequence positions for positions given relative to
-// the read sequence
-function* getNextRefPos(cigarOps: string[], positions: number[]) {
-  let cigarIdx = 0
-  let readPos = 0
-  let refPos = 0
-
-  for (let i = 0; i < positions.length; i++) {
-    for (
-      ;
-      cigarIdx < cigarOps.length && readPos < positions[i];
-      cigarIdx += 2
-    ) {
-      const len = +cigarOps[cigarIdx]
-      const op = cigarOps[cigarIdx + 1]
-      if (op === 'S' || op === 'I') {
-        readPos += len
-      } else if (op === 'D' || op === 'N') {
-        refPos += len
-      } else if (op === 'M' || op === 'X' || op === '=') {
-        readPos += len
-        refPos += len
-      }
-    }
-
-    yield positions[i] - readPos + refPos
-  }
-}
+import {
+  parseCigar,
+  getNextRefPos,
+  getModificationPositions,
+} from '../BamAdapter/MismatchParser'
 
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
@@ -56,36 +29,6 @@ function getTag(feature: Feature, tag: string) {
 function getTagAlt(feature: Feature, tag: string, alt: string) {
   return getTag(feature, tag) || getTag(feature, alt)
 }
-
-function getModificationPositions(feature: Feature) {
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  const mods = mm.split(';')
-  const seq = feature.get('seq')
-
-  return mods.map(mod => {
-    const [basemod, ...rest] = mod.split(',')
-
-    const [base, strand, ...type] = basemod.split('')
-    if (strand === '-') {
-      console.warn('unsupported negative strand modifications')
-      return []
-    }
-
-    let i = 0
-    return rest
-      .map(score => +score)
-      .map(delta => {
-        do {
-          if (base === 'N' || base === seq[i]) {
-            delta--
-          }
-          i++
-        } while (delta >= 0)
-        return --i
-      })
-  })
-}
-
 export default (_: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
@@ -186,7 +129,9 @@ export default (_: PluginManager) => {
         }
 
         if (colorBy?.type === 'modifications') {
-          getModificationPositions(feature).forEach((positions, idx) => {
+          const seq = feature.get('seq')
+          const mm = getTagAlt(feature, 'MM', 'Mm')
+          getModificationPositions(mm, seq).forEach((positions, idx) => {
             const mod = `mod_${idx}`
             for (const pos of getNextRefPos(cigarOps, positions)) {
               const epos = pos + feature.get('start') - leftBase
