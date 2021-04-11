@@ -116,12 +116,10 @@ function getTagAlt(feature: Feature, tag: string, alt: string) {
 
 // get relative reference sequence positions for positions given relative to
 // the read sequence
-function* getNextRefPos(cigarOps: string[], positions: number[]) {
+function* getNextRefPos(cigarOps: string[], positions: number[], n) {
   let cigarIdx = 0
   let readPos = 0
   let refPos = 0
-
-  const currPos = 0
 
   for (let i = 0; i < positions.length; i++) {
     for (
@@ -133,16 +131,14 @@ function* getNextRefPos(cigarOps: string[], positions: number[]) {
       const op = cigarOps[cigarIdx + 1]
       if (op === 'S' || op === 'I') {
         readPos += len
-        positions[i] -= len
       } else if (op === 'D' || op === 'N') {
         refPos += len
-        positions[i] += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         readPos += len
         refPos += len
       }
     }
-    yield positions[i]
+    yield positions[i] - readPos + refPos
   }
 }
 
@@ -380,17 +376,17 @@ export default class PileupRenderer extends BoxRendererType {
         return []
       }
 
+      let i = 0
       return rest
         .map(score => +score)
         .map(delta => {
-          let i = 0
           do {
             if (base === 'N' || base === seq[i]) {
               delta--
             }
             i++
           } while (delta >= 0)
-          return i - 1
+          return --i
         })
     })
 
@@ -398,14 +394,17 @@ export default class PileupRenderer extends BoxRendererType {
     let probIndex = 0
     modifications.forEach((positions, index) => {
       const interpolater = interpolateLab('white', colors[index])
-      for (const readPos of getNextRefPos(cigarOps, positions)) {
+      for (const readPos of getNextRefPos(
+        cigarOps,
+        positions,
+        feature.get('name'),
+      )) {
         const px = leftPx + readPos * width
         if (px > leftPx && px < rightPx) {
           ctx.fillStyle = interpolater(probabilities[probIndex++])
           ctx.fillRect(px, topPx, width + 0.5, heightPx)
         }
       }
-      // probIndex += positions.length
     })
   }
 
