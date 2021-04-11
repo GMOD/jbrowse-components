@@ -372,7 +372,7 @@ export default class PileupRenderer extends BoxRendererType {
 
       const [base, strand, ...type] = basemod.split('')
       if (strand === '-') {
-        console.warn('unsupproted negative strand modifications')
+        console.warn('unsupported negative strand modifications')
         return []
       }
 

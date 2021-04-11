@@ -10,45 +10,82 @@ import { getSnapshot } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import PluginManager from '@jbrowse/core/PluginManager'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { Mismatch, parseCigar } from '../BamAdapter/MismatchParser'
+
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
-interface Mismatch {
-  start: number
-  length: number
-  type: string
-  base: string
-  altbase?: string
-  seq?: string
-  cliplen?: number
+// get relative reference sequence positions for positions given relative to
+// the read sequence
+function* getNextRefPos(cigarOps: string[], positions: number[]) {
+  let cigarIdx = 0
+  let readPos = 0
+  let refPos = 0
+
+  for (let i = 0; i < positions.length; i++) {
+    for (
+      ;
+      cigarIdx < cigarOps.length && readPos < positions[i];
+      cigarIdx += 2
+    ) {
+      const len = +cigarOps[cigarIdx]
+      const op = cigarOps[cigarIdx + 1]
+      if (op === 'S' || op === 'I') {
+        readPos += len
+      } else if (op === 'D' || op === 'N') {
+        refPos += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        readPos += len
+        refPos += len
+      }
+    }
+
+    yield positions[i] - readPos + refPos
+  }
 }
 
-export interface StatsRegion {
-  refName: string
-  start: number
-  end: number
-  bpPerPx?: number
+// get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
+// BAM does not
+function getTag(feature: Feature, tag: string) {
+  const tags = feature.get('tags')
+  return tags ? tags[tag] : feature.get(tag)
 }
 
-function generateInfoList(table: NestedFrequencyTable) {
-  const infoList = Object.entries(table.categories).map(([base, strand]) => {
-    const strands = strand.categories as {
-      [key: string]: number
+// use fallback alt tag, used in situations where upper case/lower case tags
+// exist e.g. Mm/MM for base modifications
+function getTagAlt(feature: Feature, tag: string, alt: string) {
+  return getTag(feature, tag) || getTag(feature, alt)
+}
+
+function getModificationPositions(feature: Feature) {
+  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+  const mods = mm.split(';')
+  const seq = feature.get('seq')
+
+  return mods.map(mod => {
+    const [basemod, ...rest] = mod.split(',')
+
+    const [base, strand, ...type] = basemod.split('')
+    if (strand === '-') {
+      console.warn('unsupported negative strand modifications')
+      return []
     }
-    const score = Object.values(strands).reduce((a, b) => a + b, 0)
-    return {
-      base,
-      score,
-      strands,
-    }
+
+    let i = 0
+    return rest
+      .map(score => +score)
+      .map(delta => {
+        do {
+          if (base === 'N' || base === seq[i]) {
+            delta--
+          }
+          i++
+        } while (delta >= 0)
+        return --i
+      })
   })
-
-  // sort so higher scores get drawn last, reference always first
-  infoList.sort((a, b) =>
-    a.score < b.score || b.base === 'reference' ? 1 : -1,
-  )
-
-  return [...infoList, { base: 'total', score: table.total() }]
 }
+
 export default (_: PluginManager) => {
   return class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     private subadapter: BaseFeatureDataAdapter
@@ -69,47 +106,35 @@ export default (_: PluginManager) => {
       }
     }
 
-    getFeatures(region: Region, opts: BaseOptions = {}) {
+    getFeatures(
+      region: Region,
+      opts: BaseOptions & { filters?: SerializableFilterChain } = {},
+    ) {
       return ObservableCreate<Feature>(async observer => {
-        const features = await this.subadapter
-          .getFeatures(region, opts)
-          .pipe(
-            filter(feature => {
-              // @ts-ignore
-              return opts.filters ? opts.filters.passes(feature, opts) : true
+        let stream = this.subadapter.getFeatures(region, opts)
+
+        if (opts.filters) {
+          stream = stream.pipe(
+            filter(feature => opts.filters?.passes(feature, opts) || true),
+          )
+        }
+        const features = await stream.pipe(toArray()).toPromise()
+
+        const bins = this.generateCoverageBins(features, region, opts)
+
+        bins.forEach((bin, index) => {
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${region.start}-${index}`,
+              data: {
+                score: bin.total,
+                snpinfo: bin,
+                start: region.start + index,
+                end: region.start + index + 1,
+                refName: region.refName,
+              },
             }),
           )
-          .pipe(toArray())
-          .toPromise()
-
-        const coverageBins = this.generateCoverageBins(
-          features,
-          region,
-          opts.bpPerPx || 1,
-        )
-
-        // avoid having the softclip and hardclip count towards score
-        const score = (bin: NestedFrequencyTable) =>
-          bin.total() -
-          (bin.categories.softclip?.total() || 0) -
-          (bin.categories.hardclip?.total() || 0) -
-          (bin.categories.deletion?.total() || 0)
-
-        coverageBins.forEach((bin, index) => {
-          if (bin.total()) {
-            observer.next(
-              new SimpleFeature({
-                id: `${this.id}-${region.start}-${index}`,
-                data: {
-                  score: score(bin),
-                  snpinfo: generateInfoList(bin),
-                  start: region.start + index,
-                  end: region.start + index + 1,
-                  refName: region.refName,
-                },
-              }),
-            )
-          }
         })
 
         observer.complete()
@@ -132,149 +157,54 @@ export default (_: PluginManager) => {
      */
     generateCoverageBins(
       features: Feature[],
-      region: StatsRegion,
-      bpPerPx: number,
-    ): NestedFrequencyTable[] {
+      region: Region,
+      opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } },
+    ) {
+      const { colorBy } = opts
       const leftBase = region.start
       const rightBase = region.end
-      const scale = 1 / bpPerPx
-      const binWidth = bpPerPx <= 10 ? 1 : Math.ceil(scale)
-      const binMax = Math.ceil((rightBase - leftBase) / binWidth)
+      const binMax = Math.ceil(rightBase - leftBase)
 
-      const coverageBins = new Array(binMax).fill(0)
-
-      for (let i = 0; i < binMax; i++) {
-        coverageBins[i] = new NestedFrequencyTable()
-        if (binWidth === 1) {
-          coverageBins[i].snpsCounted = true
-        }
+      const bins = new Array(binMax)
+      for (let i = 0; i < bins.length; i++) {
+        bins[i] = { total: 0, ref: 0, cov: {}, noncov: {} }
       }
 
-      const forEachBin = (
-        start: number,
-        end: number,
-        callback: (bin: number, overlap: number) => void,
-      ) => {
-        let s = (start - leftBase) / binWidth
-        let e = (end - 1 - leftBase) / binWidth
-        let sb = Math.floor(s)
-        let eb = Math.floor(e)
-
-        if (sb >= binMax || eb < 0) {
-          // does not overlap this block
-          return
-        }
-
-        // enforce 0 <= bin < binMax
-        if (sb < 0) {
-          s = 0
-          sb = 0
-        }
-        if (eb >= binMax) {
-          eb = binMax - 1
-          e = binMax
-        }
-        // now iterate
-        if (sb === eb) {
-          // if in the same bin, just one call
-          callback(sb, e - s)
-        } else {
-          // if in different bins, two or more calls
-          callback(sb, sb + 1 - s)
-          for (let i = sb + 1; i < eb; i++) {
-            callback(i, 1)
-          }
-          callback(eb, e - eb)
-        }
-      }
-
-      function getStrand(feature: Feature) {
-        const result = feature.get('strand')
-        let strand = ''
-        switch (result) {
-          case -1:
-            strand = '-'
-            break
-          case 1:
-            strand = '+'
-            break
-          default:
-            strand = 'unstranded'
-            break
-        }
-        return strand
-      }
-
-      for (const feature of features.values()) {
-        const strand = getStrand(feature)
+      for (let i = 0; i < features.length; i++) {
+        const feature = features[i]
         const start = feature.get('start')
         const end = feature.get('end')
+        const cigarOps = parseCigar(feature.get('CIGAR'))
 
-        // increment start and end partial-overlap bins by proportion of
-        // overlap
-        forEachBin(start, end, (bin, overlap) => {
-          coverageBins[bin].getNested('reference').increment(strand, overlap)
-        })
-
-        // Calculate SNP coverage
-        if (binWidth === 1) {
-          const mismatches: Mismatch[] = feature.get('mismatches')
-
-          // loops through mismatches and updates coverage variables
-          // accordingly.
-          if (mismatches) {
-            for (let i = 0; i < mismatches.length; i++) {
-              const mismatch = mismatches[i]
-              const len = (base: Mismatch) => {
-                return base.type !== 'insertion' &&
-                  base.type !== 'softclip' &&
-                  base.type !== 'hardclip'
-                  ? base.length
-                  : 1
-              }
-
-              forEachBin(
-                start + mismatch.start,
-                start + mismatch.start + len(mismatch),
-                (binNum, overlap) => {
-                  // Note: we decrement 'reference' so that total of the score
-                  // is the total coverage
-                  const bin = coverageBins[binNum]
-                  if (
-                    mismatch.type !== 'softclip' &&
-                    mismatch.type !== 'hardclip'
-                  ) {
-                    bin.getNested('reference').decrement(strand, overlap)
-                  }
-
-                  let { base } = mismatch
-
-                  if (mismatch.type === 'insertion') {
-                    base = `insertion`
-                  } else if (mismatch.type === 'skip') {
-                    base = 'skip'
-                  } else if (mismatch.type === 'softclip') {
-                    base = 'softclip'
-                  } else if (mismatch.type === 'hardclip') {
-                    base = 'hardclip'
-                  } else if (mismatch.type === 'deletion') {
-                    base = 'deletion'
-                  }
-
-                  if (base === 'skip') {
-                    bin.getNested(base).decrement('reference', overlap)
-                  }
-
-                  if (base && base !== '*' && base !== 'skip') {
-                    bin.getNested(base).increment(strand, overlap)
-                  }
-                },
-              )
-            }
+        for (let j = start; j < end; j++) {
+          const pos = j - leftBase
+          const bin = bins[pos]
+          if (pos >= 0 && pos < bins.length) {
+            bin.total++
+            bin.ref++
           }
         }
+
+        if (colorBy?.type === 'modifications') {
+          getModificationPositions(feature).forEach((positions, idx) => {
+            const mod = `mod_${idx}`
+            for (const pos of getNextRefPos(cigarOps, positions)) {
+              const epos = pos + feature.get('start') - leftBase
+              const bin = bins[epos]
+              if (epos >= 0 && epos < bins.length) {
+                bin.ref--
+                if (!bin.cov[mod]) {
+                  bin.cov[mod] = 1
+                } else {
+                  bin.cov[mod]++
+                }
+              }
+            }
+          })
+        }
       }
-      return coverageBins
+
+      return bins
     }
   }
 }

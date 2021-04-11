@@ -25,14 +25,6 @@ export interface RenderArgsDeserializedWithFeatures
   displayCrossHatches: boolean
 }
 
-interface BaseInfo {
-  base: string
-  score: number
-  strands?: {
-    [key: string]: number
-  }
-}
-
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   // note: the snps are drawn on linear scale even if the data is drawn in log
   // scape hence the two different scales being used
@@ -88,6 +80,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       insertion: 'purple',
       softclip: 'blue',
       hardclip: 'red',
+      mod_0: 'red',
+      mod_1: 'green',
+      mod_2: 'blue',
     }
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
@@ -95,8 +90,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     ctx.fillStyle = colorForBase.total
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const w = rightPx - leftPx + 0.3
       const score = feature.get('score') as number
-      ctx.fillRect(leftPx, toY(score), rightPx - leftPx + 0.3, toHeight(score))
+      ctx.fillRect(leftPx, toY(score), w, toHeight(score))
     }
     ctx.fillStyle = 'grey'
     ctx.beginPath()
@@ -109,71 +105,57 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const infoArray: BaseInfo[] = feature.get('snpinfo') || []
-      const totalScore =
-        infoArray.find(info => info.base === 'total')?.score || 0
-
+      const snpinfo = feature.get('snpinfo')
       const w = Math.max(rightPx - leftPx + 0.3, 1)
-      infoArray
-        .filter(
-          ({ base }) =>
-            base !== 'reference' &&
-            base !== 'total' &&
-            base !== 'deletion' &&
-            base !== 'insertion' &&
-            base !== 'softclip' &&
-            base !== 'hardclip',
-        )
-        .reduce((curr, info) => {
-          const { base, score } = info
-          ctx.fillStyle = colorForBase[base]
-          ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
-          return curr + info.score
-        }, 0)
+      Object.entries(snpinfo.cov).reduce((curr, [base, score]) => {
+        ctx.fillStyle = colorForBase[base] || 'red'
+        ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
+        return curr + score
+      }, 0)
 
-      const interbaseEvents = infoArray.filter(
-        ({ base }) =>
-          base === 'insertion' || base === 'softclip' || base === 'hardclip',
-      )
+      // const interbaseEvents = infoArray.filter(
+      //   ({ base }) =>
+      //     base === 'insertion' || base === 'softclip' || base === 'hardclip',
+      // )
 
-      const indicatorHeight = 4.5
-      if (drawInterbaseCounts) {
-        interbaseEvents.reduce((curr, info) => {
-          const { score, base } = info
-          ctx.fillStyle = colorForBase[base]
-          ctx.fillRect(
-            leftPx - 0.6,
-            indicatorHeight + snpToHeight(curr),
-            1.2,
-            snpToHeight(score),
-          )
-          return curr + info.score
-        }, 0)
-      }
+      // const indicatorHeight = 4.5
+      // if (drawInterbaseCounts) {
+      //   interbaseEvents.reduce((curr, info) => {
+      //     const { score, base } = info
+      //     ctx.fillStyle = colorForBase[base]
+      //     ctx.fillRect(
+      //       leftPx - 0.6,
+      //       indicatorHeight + snpToHeight(curr),
+      //       1.2,
+      //       snpToHeight(score),
+      //     )
+      //     return curr + info.score
+      //   }, 0)
+      // }
 
-      if (drawIndicators) {
-        let accum = 0
-        let max = 0
-        let maxBase = ''
-        interbaseEvents.forEach(({ score, base }) => {
-          accum += score
-          if (score > max) {
-            max = score
-            maxBase = base
-          }
-        })
+      // if (drawIndicators) {
+      //   let accum = 0
+      //   let max = 0
+      //   let maxBase = ''
+      //   interbaseEvents.forEach(({ score, base }) => {
+      //     accum += score
+      //     if (score > max) {
+      //       max = score
+      //       maxBase = base
+      //     }
+      //   })
 
-        // avoid drawing a bunch of indicators if coverage is very low e.g.
-        // less than 7
-        if (accum > totalScore * indicatorThreshold && totalScore > 7) {
-          ctx.fillStyle = colorForBase[maxBase]
-          ctx.beginPath()
-          ctx.moveTo(leftPx - 3, 0)
-          ctx.lineTo(leftPx + 3, 0)
-          ctx.lineTo(leftPx, indicatorHeight)
-          ctx.fill()
-        }
-      }
+      //   // avoid drawing a bunch of indicators if coverage is very low e.g.
+      //   // less than 7
+      //   if (accum > totalScore * indicatorThreshold && totalScore > 7) {
+      //     ctx.fillStyle = colorForBase[maxBase]
+      //     ctx.beginPath()
+      //     ctx.moveTo(leftPx - 3, 0)
+      //     ctx.lineTo(leftPx + 3, 0)
+      //     ctx.lineTo(leftPx, indicatorHeight)
+      //     ctx.fill()
+      //   }
+      // }
     }
 
     if (displayCrossHatches) {
