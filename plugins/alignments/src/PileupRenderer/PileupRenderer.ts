@@ -120,20 +120,29 @@ function* getNextRefPos(cigarOps: string[], positions: number[]) {
   let cigarIdx = 0
   let readPos = 0
   let refPos = 0
+
+  const currPos = 0
+
   for (let i = 0; i < positions.length; i++) {
-    for (; cigarIdx < cigarOps.length && refPos < positions[i]; cigarIdx += 2) {
+    for (
+      ;
+      cigarIdx < cigarOps.length && readPos < positions[i];
+      cigarIdx += 2
+    ) {
       const len = +cigarOps[cigarIdx]
       const op = cigarOps[cigarIdx + 1]
       if (op === 'S' || op === 'I') {
         readPos += len
+        positions[i] -= len
       } else if (op === 'D' || op === 'N') {
         refPos += len
+        positions[i] += len
       } else if (op === 'M' || op === 'X' || op === '=') {
         readPos += len
         refPos += len
       }
     }
-    yield { readPos: positions[i] + readPos, refPos: positions[i] + refPos }
+    yield positions[i]
   }
 }
 
@@ -360,42 +369,41 @@ export default class PileupRenderer extends BoxRendererType {
     const seq = feature.get('seq')
     const cigarOps = parseCigar(cigar)
     const width = 1 / bpPerPx
-    const [leftPx] = bpSpanPx(start, end, region, bpPerPx)
+    const [leftPx, rightPx] = bpSpanPx(start, end, region, bpPerPx)
 
-    const positionMap = mods.map(mod => {
-      let current = 0
+    const modifications = mods.map(mod => {
       const [basemod, ...rest] = mod.split(',')
-      const base = basemod[0]
-      const strand = basemod[1]
+
+      const [base, strand, ...type] = basemod.split('')
       if (strand === '-') {
         console.warn('unsupproted negative strand modifications')
         return []
       }
-      const deltaMods = rest.map(score => +score)
-      const positions = []
-      for (let i = 0; i < deltaMods.length; i++) {
-        if (base === 'N') {
-          current += deltaMods[i]
-        } else {
-          for (let j = 0, k = 0; j < deltaMods[i] && k < 1000; k++) {
-            if (seq[current] === base) {
-              j++
+
+      return rest
+        .map(score => +score)
+        .map(delta => {
+          let i = 0
+          do {
+            if (base === 'N' || base === seq[i]) {
+              delta--
             }
-            current++
-          }
-        }
-        positions.push(current)
-      }
-      return positions
+            i++
+          } while (delta >= 0)
+          return i - 1
+        })
     })
 
+    // probIndex applies across multiple modifications e.g.
     let probIndex = 0
-    positionMap.forEach((positions, index) => {
+    modifications.forEach((positions, index) => {
       const interpolater = interpolateLab('white', colors[index])
-      for (const { refPos, readPos } of getNextRefPos(cigarOps, positions)) {
-        console.log({ refPos, readPos })
-        ctx.fillStyle = interpolater(probabilities[probIndex++])
-        ctx.fillRect(leftPx + readPos * width, topPx, width + 0.5, heightPx)
+      for (const readPos of getNextRefPos(cigarOps, positions)) {
+        const px = leftPx + readPos * width
+        if (px > leftPx && px < rightPx) {
+          ctx.fillStyle = interpolater(probabilities[probIndex++])
+          ctx.fillRect(px, topPx, width + 0.5, heightPx)
+        }
       }
       // probIndex += positions.length
     })
