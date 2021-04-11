@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '../../configuration'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export default ConfigurationSchema(
   'JBrowse1TextSearchAdapter',

@@ -7,6 +7,10 @@ import {
   configSchema as ncListAdapterConfigSchema,
 } from './NCListAdapter'
 import {
+  AdapterClass as JBrowse1TextSearchAdapterClass,
+  configSchema as jbrowse1AdapterConfigSchema,
+} from './JBrowse1TextSeachAdapter'
+import {
   configSchema as jbrowse1ConfigSchema,
   modelFactory as jbrowse1ModelFactory,
 } from './JBrowse1Connection'
@@ -21,6 +25,15 @@ export default class LegacyJBrowsePlugin extends Plugin {
           name: 'NCListAdapter',
           configSchema: ncListAdapterConfigSchema,
           AdapterClass: NCListAdapterClass,
+        }),
+    )
+
+    pluginManager.addTextSearchAdapterType(
+      () =>
+        new AdapterType({
+          name: 'JBrowse1TextSearchAdapter',
+          configSchema: jbrowse1AdapterConfigSchema,
+          AdapterClass: JBrowse1TextSearchAdapterClass,
         }),
     )
 

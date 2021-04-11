@@ -1,14 +1,14 @@
 /*  text-searching controller */
-import JBrowse1TextSearchAdapter from './JBrowse1TextSeachAdapter/JBrowse1TextSearchAdater'
-import { configSchema } from './JBrowse1TextSeachAdapter/index'
+// import JBrowse1TextSearchAdapter from './JBrowse1TextSeachAdapter/JBrowse1TextSearchAdater'
+// import { configSchema } from './JBrowse1TextSeachAdapter/index'
 import PluginManager from '../PluginManager'
 
 // export type searchType = 'full' | 'prefix' | 'exact'
 export default (pluginManager: PluginManager) => {
-  const test = new JBrowse1TextSearchAdapter(configSchema)
+  // const test = new JBrowse1TextSearchAdapter(configSchema)
   return class TextSearchManager {
     constructor() {
-      this.textSearchAdapters = [test]
+      this.textSearchAdapters = []
     }
 
     parseText(searchText: string) {
@@ -29,7 +29,17 @@ export default (pluginManager: PluginManager) => {
       //   results = results.concat(currentResults)
       //   // console.log(adapter)
       // })
-      const results = await test.searchIndex(input, type)
+      // const test2 = pluginManager.pluggableConfigSchemaType('text search adapter')[0]
+      // const results = await test.searchIndex(input, type)
+      // console.log(
+      //   pluginManager.getTextSearchAdapterType('JBrowse1TextSearchAdapter'),
+      // )
+      const {
+        AdapterClass,
+        configSchema,
+      } = pluginManager.getTextSearchAdapterType('JBrowse1TextSearchAdapter')
+      const test2 = new AdapterClass(configSchema)
+      const results = await test2.searchIndex(input, type)
       return results
     }
 

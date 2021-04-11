@@ -1,10 +1,10 @@
 import {
   searchType,
   BaseTextSearchAdapter,
-} from '../../data_adapters/BaseAdapter'
+} from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Option } from '@jbrowse/core/util/index'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
-import { Option } from '../../util'
 
 export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   /*
