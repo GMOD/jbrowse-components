@@ -504,7 +504,7 @@ const stateModelFactory = (
                 {
                   label: 'Base modifications (MM+MP/ML)',
                   onClick: () => {
-                    self.setColorScheme({ type: 'methylation' })
+                    self.setColorScheme({ type: 'modifications' })
                   },
                 },
                 {
