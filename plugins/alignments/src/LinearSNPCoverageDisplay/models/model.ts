@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Tooltip from '../components/Tooltip'
 
 // using a map because it preserves order
@@ -35,6 +36,12 @@ const stateModelFactory = (
           }),
           {},
         ),
+        colorBy: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        ),
       }),
     )
     .actions(self => ({
@@ -48,6 +55,9 @@ const stateModelFactory = (
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
+      },
+      setColorBy(colorBy: any) {
+        self.colorBy = colorBy
       },
     }))
     .views(self => ({
@@ -76,6 +86,24 @@ const stateModelFactory = (
         return self.drawIndicators !== undefined
           ? self.drawIndicators
           : readConfObject(this.rendererConfig, 'drawIndicators')
+      },
+      get renderProps() {
+        console.log({ c: self.colorBy })
+        return {
+          ...self.composedRenderProps,
+          ...getParentRenderProps(self),
+          notReady: !self.ready,
+          rpcDriverName: self.rpcDriverName,
+          displayModel: self,
+          config: self.rendererConfig,
+          scaleOpts: self.scaleOpts,
+          resolution: self.resolution,
+          height: self.height,
+          ticks: self.ticks,
+          displayCrossHatches: self.displayCrossHatches,
+          filters: self.filters,
+          colorBy: self.colorBy,
+        }
       },
     }))
     .actions(self => ({

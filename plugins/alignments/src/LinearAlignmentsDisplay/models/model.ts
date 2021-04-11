@@ -183,6 +183,18 @@ const stateModelFactory = (
                 getSnapshot(self.PileupDisplay.filterBy),
               )
             }
+            if (
+              !deepEqual(
+                getSnapshot(self.PileupDisplay.colorBy),
+                self.SNPCoverageDisplay.colorBy
+                  ? getSnapshot(self.SNPCoverageDisplay.colorBy)
+                  : {},
+              )
+            ) {
+              self.SNPCoverageDisplay.setColorBy(
+                getSnapshot(self.PileupDisplay.colorBy),
+              )
+            }
           }),
         )
         addDisposer(
