@@ -39,14 +39,22 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
 
+  protected config: any
+
+  protected getSubAdapter: any
+
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
+    this.config = config
+    this.getSubAdapter = getSubAdapter
+  }
 
-    const cramLocation = readConfObject(config, 'cramLocation')
-    const craiLocation = readConfObject(config, 'craiLocation')
+  public async configure() {
+    const cramLocation = readConfObject(this.config, 'cramLocation')
+    const craiLocation = readConfObject(this.config, 'craiLocation')
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')
     }
@@ -58,17 +66,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       index: new CraiIndex({ filehandle: openLocation(craiLocation) }),
       seqFetch: this.seqFetch.bind(this),
       checkSequenceMD5: false,
-      fetchSizeLimit: config.fetchSizeLimit || 600000000,
+      fetchSizeLimit: this.config.fetchSizeLimit || 600000000,
     })
     // instantiate the sequence adapter
-    const sequenceAdapterType = readConfObject(config, [
+    const sequenceAdapterType = readConfObject(this.config, [
       'sequenceAdapter',
       'type',
     ])
 
-    const dataAdapter = getSubAdapter?.(
-      readConfObject(config, 'sequenceAdapter'),
-    ).dataAdapter
+    const { dataAdapter } = await this.getSubAdapter?.(
+      readConfObject(this.config, 'sequenceAdapter'),
+    )
     // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       this.sequenceAdapter = dataAdapter
@@ -133,6 +141,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
+      await this.configure()
       statusCallback('Downloading index')
       const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
