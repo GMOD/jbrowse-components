@@ -104,19 +104,31 @@ export default pluginManager =>
         return self.view ? self.view.assemblyNames : []
       },
 
-      connectionTrackConfigurations(connection) {
+      connectionTrackConfigurations(assemblyName, connection) {
         if (!self.view) {
           return []
         }
         const trackConfigurations = connection.tracks
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!(assembly && assembly.initialized)) {
+          return []
+        }
 
         // filter out tracks that don't match the current display types
-        return trackConfigurations.filter(conf => {
-          const { displayTypes } = pluginManager.getViewType(self.view.type)
-          const compatibleDisplays = displayTypes.map(display => display.name)
-          const trackDisplays = conf.displays.map(display => display.type)
-          return intersect(compatibleDisplays, trackDisplays).length > 0
-        })
+        return trackConfigurations
+          .filter(conf => {
+            const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+            const { allAliases } = assembly
+            return intersect(allAliases, trackConfAssemblies).length > 0
+          })
+          .filter(conf => {
+            const { displayTypes } = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = displayTypes.map(display => display.name)
+            const trackDisplays = conf.displays.map(display => display.type)
+            return intersect(compatibleDisplays, trackDisplays).length > 0
+          })
       },
 
       hierarchy(assemblyName) {
@@ -126,14 +138,16 @@ export default pluginManager =>
         )
       },
 
-      connectionHierarchy(connection) {
-        return generateHierarchy(self.connectionTrackConfigurations(connection))
+      connectionHierarchy(assemblyName, connection) {
+        return generateHierarchy(
+          self.connectionTrackConfigurations(assemblyName, connection),
+        )
       },
 
       // This recursively gets tracks from lower paths
       allTracksInCategoryPath(path, connection, assemblyName) {
         let currentHier = connection
-          ? self.connectionHierarchy(connection)
+          ? self.connectionHierarchy(assemblyName, connection)
           : self.hierarchy(assemblyName)
         path.forEach(pathItem => {
           currentHier = currentHier.get(pathItem) || new Map()
