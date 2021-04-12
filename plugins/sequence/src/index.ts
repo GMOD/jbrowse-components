@@ -6,30 +6,18 @@ import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import {
-  AdapterClass as BgzipFastaAdapterClass,
-  configSchema as bgzipFastaAdapterConfigSchema,
-} from './BgzipFastaAdapter'
-import {
-  AdapterClass as ChromSizesAdapterClass,
-  configSchema as chromSizesAdapterConfigSchema,
-} from './ChromSizesAdapter'
+import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
+import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {
   configSchema as divSequenceRendererConfigSchema,
   ReactComponent as DivSequenceRendererReactComponent,
 } from './DivSequenceRenderer'
-import {
-  AdapterClass as IndexedFastaAdapterClass,
-  configSchema as indexedFastaAdapterConfigSchema,
-} from './IndexedFastaAdapter'
+import { configSchema as indexedFastaAdapterConfigSchema } from './IndexedFastaAdapter'
 import {
   configSchema as linearReferenceSequenceDisplayConfigSchema,
   modelFactory as linearReferenceSequenceDisplayModelFactory,
 } from './LinearReferenceSequenceDisplay'
-import {
-  AdapterClass as TwoBitAdapterClass,
-  configSchema as twoBitAdapterConfigSchema,
-} from './TwoBitAdapter'
+import { configSchema as twoBitAdapterConfigSchema } from './TwoBitAdapter'
 import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
@@ -53,7 +41,7 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
-          AdapterClass: TwoBitAdapterClass,
+          getAdapterClass: () => import('./TwoBitAdapter/TwoBitAdapter'),
         }),
     )
 
@@ -62,7 +50,8 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
-          AdapterClass: ChromSizesAdapterClass,
+          getAdapterClass: () =>
+            import('./ChromSizesAdapter/ChromSizesAdapter'),
         }),
     )
 
@@ -71,7 +60,8 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'IndexedFastaAdapter',
           configSchema: indexedFastaAdapterConfigSchema,
-          AdapterClass: IndexedFastaAdapterClass,
+          getAdapterClass: () =>
+            import('./IndexedFastaAdapter/IndexedFastaAdapter'),
         }),
     )
 
@@ -80,7 +70,8 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'BgzipFastaAdapter',
           configSchema: bgzipFastaAdapterConfigSchema,
-          AdapterClass: BgzipFastaAdapterClass,
+          getAdapterClass: () =>
+            import('./BgzipFastaAdapter/BgzipFastaAdapter'),
         }),
     )
 
