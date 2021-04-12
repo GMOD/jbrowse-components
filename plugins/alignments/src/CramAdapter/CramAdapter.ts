@@ -25,7 +25,7 @@ interface Header {
   readGroups?: number[]
 }
 
-export class CramAdapter extends BaseFeatureDataAdapter {
+export default class CramAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
 
@@ -247,8 +247,4 @@ export class CramAdapter extends BaseFeatureDataAdapter {
   cramRecordToFeature(record: any): Feature {
     return new CramSlightlyLazyFeature(record, this)
   }
-}
-
-export default () => {
-  return CramAdapter
 }

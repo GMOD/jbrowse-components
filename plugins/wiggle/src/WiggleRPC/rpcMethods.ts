@@ -38,7 +38,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       rpcDriverClassName,
     )
     const { adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -102,7 +102,7 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
       rpcDriverClassName,
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,

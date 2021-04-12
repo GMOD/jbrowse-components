@@ -321,19 +321,19 @@ const stateModelFactory = (
         },
 
         get hasResolution() {
-          const { AdapterClass } = pluginManager.getAdapterType(
+          const { adapterCapabilities } = pluginManager.getAdapterType(
             self.adapterTypeName,
           )
           // @ts-ignore
-          return AdapterClass.capabilities.includes('hasResolution')
+          return adapterCapabilities.includes('hasResolution')
         },
 
         get hasGlobalStats() {
-          const { AdapterClass } = pluginManager.getAdapterType(
+          const { adapterCapabilities } = pluginManager.getAdapterType(
             self.adapterTypeName,
           )
           // @ts-ignore
-          return AdapterClass.capabilities.includes('hasGlobalStats')
+          return adapterCapabilities.includes('hasGlobalStats')
         },
 
         get composedTrackMenuItems() {

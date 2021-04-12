@@ -32,28 +32,27 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   private samHeader: Header = {}
 
+  protected config: any
+
+  protected getSubAdapter: any
+
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
   ) {
     super(config)
-
-    // note that derived classes may not provide a BAM directly
-    // so this is conditional
-    this.configure(config, getSubAdapter)
+    this.config = config
+    this.getSubAdapter = getSubAdapter
   }
 
   // derived classes may not use the same configuration so a custom
   // configure method allows derived classes to override this behavior
-  protected configure(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    const bamLocation = readConfObject(config, 'bamLocation')
-    const location = readConfObject(config, ['index', 'location'])
-    const indexType = readConfObject(config, ['index', 'indexType'])
-    const chunkSizeLimit = readConfObject(config, 'chunkSizeLimit')
-    const fetchSizeLimit = readConfObject(config, 'fetchSizeLimit')
+  protected async configure() {
+    const bamLocation = readConfObject(this.config, 'bamLocation')
+    const location = readConfObject(this.config, ['index', 'location'])
+    const indexType = readConfObject(this.config, ['index', 'indexType'])
+    const chunkSizeLimit = readConfObject(this.config, 'chunkSizeLimit')
+    const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
     this.bam = new BamFile({
       bamFilehandle: openLocation(bamLocation),
       csiFilehandle: indexType === 'CSI' ? openLocation(location) : undefined,
@@ -62,9 +61,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       fetchSizeLimit,
     })
 
-    const adapterConfig = readConfObject(config, 'sequenceAdapter')
-    if (adapterConfig && getSubAdapter) {
-      const { dataAdapter } = getSubAdapter(adapterConfig)
+    const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
+    if (adapterConfig && this.getSubAdapter) {
+      const { dataAdapter } = await this.getSubAdapter(adapterConfig)
       this.sequenceAdapter = dataAdapter as BaseFeatureDataAdapter
     }
   }
@@ -74,8 +73,11 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   }
 
   private async setup(opts?: BaseOptions) {
+    // note that derived classes may not provide a BAM directly
+    // so this is conditional
     const { statusCallback = () => {} } = opts || {}
     if (Object.keys(this.samHeader).length === 0) {
+      await this.configure()
       statusCallback('Downloading index')
       const samHeader = await this.bam.getHeader(opts)
 
@@ -164,6 +166,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         end,
         opts,
       )
+
       checkAbortSignal(signal)
 
       for (const record of records) {
