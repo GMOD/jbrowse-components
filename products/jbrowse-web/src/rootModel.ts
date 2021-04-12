@@ -128,9 +128,6 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
-      textSearchAdapters: types.array(
-        pluginManager.pluggableConfigSchemaType('text search adapter'),
-      ), // list of text search adapters for aggregated indexes
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
