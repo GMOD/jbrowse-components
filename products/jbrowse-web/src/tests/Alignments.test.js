@@ -125,6 +125,8 @@ describe('alignments track', () => {
 
     const pileupCanvas = await findAllByTestId1(
       'prerendered_canvas_softclipped',
+      {},
+      { timeout: 10000 },
     )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')

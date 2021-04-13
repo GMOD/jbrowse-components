@@ -123,6 +123,8 @@ export default class extends Plugin {
   exports = {
     LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
+    XYPlotRenderer,
+    xyPlotRendererConfigSchema,
     utils,
     WiggleBaseRenderer,
     linearWiggleDisplayModelFactory,
