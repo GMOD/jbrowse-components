@@ -83,16 +83,36 @@ const Base1DView = types
       let offsetBp = 0
 
       const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-      const index = self.displayedRegions.findIndex((r, idx) => {
-        if (refName === r.refName && coord >= r.start && coord <= r.end) {
+      const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+      const index = self.displayedRegions.findIndex((region, idx) => {
+        const len = region.end - region.start
+        if (
+          refName === region.refName &&
+          coord >= region.start &&
+          coord <= region.end
+        ) {
           if (regionNumber ? regionNumber === idx : true) {
-            offsetBp += r.reversed ? r.end - coord : coord - r.start
+            offsetBp += region.reversed
+              ? region.end - coord
+              : coord - region.start
             return true
           }
         }
-        offsetBp += r.end - r.start + interRegionPaddingBp
+
+        // add the interRegionPaddingWidth if the boundary is in the screen
+        // e.g. offset>0 && offset<width
+        if (
+          region.end - region.start > minimumBlockBp &&
+          offsetBp / self.bpPerPx > 0 &&
+          offsetBp / self.bpPerPx < this.width
+        ) {
+          offsetBp += len + interRegionPaddingBp
+        } else {
+          offsetBp += len
+        }
         return false
       })
+
       const foundRegion = self.displayedRegions[index]
       if (foundRegion) {
         return Math.round(offsetBp / self.bpPerPx)
