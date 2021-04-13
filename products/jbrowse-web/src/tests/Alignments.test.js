@@ -31,6 +31,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
     const pluginManager = getPluginManager()
@@ -47,11 +49,7 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId1 } = within(
       await findByTestId('Blockset-pileup'),
     )
-    const pileupCanvas = await findAllByTestId1(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
+    const pileupCanvas = await findAllByTestId1('prerendered_canvas', {}, delay)
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
     const pileupBuf = Buffer.from(pileupData, 'base64')
@@ -63,34 +61,30 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId2 } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    const snpCoverageCanvas = await findAllByTestId2(
-      'prerendered_canvas',
-      {},
-      { timeout: 10000 },
-    )
-    const snpCoverageImg = snpCoverageCanvas[0].toDataURL()
-    const snpCoverageData = snpCoverageImg.replace(
-      /^data:image\/\w+;base64,/,
-      '',
-    )
-    const snpCoverageBuf = Buffer.from(snpCoverageData, 'base64')
-    expect(snpCoverageBuf).toMatchImageSnapshot({
+    function timeout(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms))
+    }
+    await timeout(1000)
+    const snpCovCanvas = await findAllByTestId2('prerendered_canvas', {}, delay)
+    console.log(snpCovCanvas.length)
+    const snpCovImg = snpCovCanvas[1].toDataURL()
+    const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
+    const snpCovBuf = Buffer.from(snpCovData, 'base64')
+    expect(snpCovBuf).toMatchImageSnapshot({
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
 
     const track = await findAllByTestId('pileup_overlay_canvas')
     fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
-
     fireEvent.click(track[0], { clientX: 200, clientY: 40 })
-
     fireEvent.mouseDown(track[0], { clientX: 200, clientY: 20 })
     fireEvent.mouseMove(track[0], { clientX: 300, clientY: 20 })
     fireEvent.mouseUp(track[0], { clientX: 300, clientY: 20 })
     fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
     // this is to confirm a alignment detail widget opened
-    await expect(findAllByTestId('alignment-side-drawer')).resolves.toBeTruthy()
+    await findByTestId('alignment-side-drawer')
   }, 15000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
@@ -113,9 +107,7 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
-    const trackMenu = await findByTestId('track_menu_icon')
-    fireEvent.click(trackMenu)
-
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Show soft clipping'))
 
     // wait for block to rerender
@@ -159,7 +151,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Read strand'))
 
     // wait for pileup track to render with sort
-    await findAllByTestId('pileup-Read strand', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-Read strand', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -195,7 +187,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Strand'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-strand', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-strand', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
