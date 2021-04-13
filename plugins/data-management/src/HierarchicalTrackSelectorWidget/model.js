@@ -149,19 +149,31 @@ export default pluginManager =>
         return self.view ? self.view.assemblyNames : []
       },
 
-      connectionTrackConfigurations(connection) {
+      connectionTrackConfigurations(assemblyName, connection) {
         if (!self.view) {
           return []
         }
         const trackConfigurations = connection.tracks
+        const session = getSession(self)
+        const { assemblyManager } = session
+        const assembly = assemblyManager.get(assemblyName)
+        if (!(assembly && assembly.initialized)) {
+          return []
+        }
 
         // filter out tracks that don't match the current display types
-        return trackConfigurations.filter(conf => {
-          const { displayTypes } = pluginManager.getViewType(self.view.type)
-          const compatibleDisplays = displayTypes.map(display => display.name)
-          const trackDisplays = conf.displays.map(display => display.type)
-          return hasAnyOverlap(compatibleDisplays, trackDisplays)
-        })
+        return trackConfigurations
+          .filter(conf => {
+            const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+            const { allAliases } = assembly
+            return hasAnyOverlap(allAliases, trackConfAssemblies).length > 0
+          })
+          .filter(conf => {
+            const { displayTypes } = pluginManager.getViewType(self.view.type)
+            const compatibleDisplays = displayTypes.map(display => display.name)
+            const trackDisplays = conf.displays.map(display => display.type)
+            return hasAnyOverlap(compatibleDisplays, trackDisplays).length > 0
+          })
       },
 
       hierarchy(assemblyName) {

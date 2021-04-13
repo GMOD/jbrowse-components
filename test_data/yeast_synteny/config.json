@@ -488,7 +488,6 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     },
-    "connectionInstances": {},
     "sessionTracks": [],
     "sessionConnections": [],
     "sessionAssemblies": [],
