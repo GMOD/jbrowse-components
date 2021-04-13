@@ -150,6 +150,8 @@ const Node = props => {
   const classes = useStyles()
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
+  const unsupported =
+    name && (name.endsWith('(Unsupported)') || name.endsWith('(Unknown)'))
 
   return (
     <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
@@ -186,6 +188,7 @@ const Node = props => {
                   checked={checked}
                   onChange={() => onChange(id)}
                   color="primary"
+                  disabled={unsupported}
                   inputProps={{
                     'data-testid': `htsTrackEntry-${id}`,
                   }}
