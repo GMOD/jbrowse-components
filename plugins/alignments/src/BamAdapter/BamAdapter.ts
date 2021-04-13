@@ -24,9 +24,9 @@ interface Header {
 export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
-  private setupP?: Promise<any>
+  private setupP?: Promise<Header>
 
-  private configured?: Promise<{
+  protected configured?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
@@ -51,9 +51,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
       if (adapterConfig && this.getSubAdapter) {
         this.configured = this.getSubAdapter(adapterConfig).then(
-          dataAdapter => ({
+          ({ dataAdapter }) => ({
             bam,
-            sequenceAdapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
+            sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
           }),
         )
       } else {

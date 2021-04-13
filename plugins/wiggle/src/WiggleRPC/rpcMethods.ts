@@ -6,7 +6,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { FeatureStats, blankStats } from '@jbrowse/core/util/stats'
+import { FeatureStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
@@ -38,13 +38,15 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       rpcDriverClassName,
     )
     const { adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter, adapterCapabilities } = await getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
+
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      if (adapterCapabilities.includes('hasGlobalStats')) {
+      // @ts-ignore
+      if (dataAdapter.capabilities.includes('hasGlobalStats')) {
         // @ts-ignore
         return dataAdapter.getGlobalStats(deserializedArgs)
       }
