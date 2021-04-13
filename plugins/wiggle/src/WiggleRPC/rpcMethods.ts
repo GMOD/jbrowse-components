@@ -38,20 +38,19 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       rpcDriverClassName,
     )
     const { adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
+    const { dataAdapter, adapterCapabilities } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (
-      dataAdapter instanceof BaseFeatureDataAdapter &&
-      // @ts-ignore
-      dataAdapter.constructor.capabilities.includes('hasGlobalStats')
-    ) {
-      // @ts-ignore
-      return dataAdapter.getGlobalStats(deserializedArgs)
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      if (adapterCapabilities.includes('hasGlobalStats')) {
+        // @ts-ignore
+        return dataAdapter.getGlobalStats(deserializedArgs)
+      }
+      throw new Error('Data adapter does not support global stats')
     }
-    return blankStats()
+    throw new Error('Data adapter not found')
   }
 }
 
@@ -111,6 +110,6 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
     }
-    return blankStats()
+    throw new Error('Data adapter not found')
   }
 }

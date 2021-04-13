@@ -11,7 +11,10 @@ import {
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
-import { configSchema as bigWigAdapterConfigSchema } from './BigWigAdapter'
+import {
+  configSchema as bigWigAdapterConfigSchema,
+  adapterCapabilities,
+} from './BigWigAdapter'
 import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
   ReactComponent as DensityRendererReactComponent,
@@ -77,6 +80,7 @@ export default class extends Plugin {
         new AdapterType({
           name: 'BigWigAdapter',
           configSchema: bigWigAdapterConfigSchema,
+          adapterCapabilities,
           getAdapterClass: () =>
             import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),

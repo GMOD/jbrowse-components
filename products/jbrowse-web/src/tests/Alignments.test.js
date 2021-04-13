@@ -66,8 +66,7 @@ describe('alignments track', () => {
     }
     await timeout(1000)
     const snpCovCanvas = await findAllByTestId2('prerendered_canvas', {}, delay)
-    console.log(snpCovCanvas.length)
-    const snpCovImg = snpCovCanvas[1].toDataURL()
+    const snpCovImg = snpCovCanvas[0].toDataURL()
     const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
     const snpCovBuf = Buffer.from(snpCovData, 'base64')
     expect(snpCovBuf).toMatchImageSnapshot({

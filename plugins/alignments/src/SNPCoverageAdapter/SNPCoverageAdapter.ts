@@ -19,13 +19,6 @@ interface Mismatch {
   cliplen?: number
 }
 
-export interface StatsRegion {
-  refName: string
-  start: number
-  end: number
-  bpPerPx?: number
-}
-
 function generateInfoList(table: NestedFrequencyTable) {
   const infoList = Object.entries(table.categories).map(([base, strand]) => {
     const strands = strand.categories as {
@@ -49,11 +42,10 @@ function generateInfoList(table: NestedFrequencyTable) {
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
-    const dataAdapter = await this.getSubAdapter?.(
-      readConfObject(this.config, 'subadapter'),
-    )
+    const subadapterConfig = readConfObject(this.config, 'subadapter')
+    const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
     if (!dataAdapter) {
-      throw new Error('getSubAdapter failed')
+      throw new Error('Failed to get subadapter')
     }
 
     return dataAdapter.dataAdapter as BaseFeatureDataAdapter
@@ -124,7 +116,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
    */
   generateCoverageBins(
     features: Feature[],
-    region: StatsRegion,
+    region: Region,
     bpPerPx: number,
   ): NestedFrequencyTable[] {
     const leftBase = region.start
