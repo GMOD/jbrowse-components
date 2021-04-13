@@ -61,10 +61,6 @@ describe('alignments track', () => {
     const { findAllByTestId: findAllByTestId2 } = within(
       await findByTestId('Blockset-snpcoverage'),
     )
-    function timeout(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms))
-    }
-    await timeout(1000)
     const snpCovCanvas = await findAllByTestId2('prerendered_canvas', {}, delay)
     const snpCovImg = snpCovCanvas[0].toDataURL()
     const snpCovData = snpCovImg.replace(/^data:image\/\w+;base64,/, '')
