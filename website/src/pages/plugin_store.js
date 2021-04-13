@@ -21,8 +21,6 @@ import AccountBalanceIcon from '@material-ui/icons/AccountBalance'
 import GitHubIcon from '@material-ui/icons/GitHub'
 import AssignmentIcon from '@material-ui/icons/Assignment'
 import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn'
-import CodeIcon from '@material-ui/icons/Code'
-import AddIcon from '@material-ui/icons/Add'
 
 import { plugins } from '../../plugins.json'
 
@@ -51,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     margin: '5em',
   },
 
-  topButtons: {
+  topLinks: {
     margin: '0 auto',
     display: 'flex',
     alignItems: 'space-between',
@@ -191,29 +189,19 @@ function PluginStore() {
         <div style={{ flexBasis: '50%' }}>
           <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
         </div>
-        <div className={classes.topButtons}>
-          <Button
-            disableRipple
-            color="primary"
+        <div className={classes.topLinks}>
+          <Link
             style={{ margin: '1em' }}
-            variant="contained"
-            size="large"
-            startIcon={<CodeIcon />}
             href="https://github.com/GMOD/jbrowse-plugin-template"
           >
-            Create a plugin
-          </Button>
-          <Button
-            disableRipple
-            color="primary"
+            Create a new plugin
+          </Link>
+          <Link
             style={{ margin: '1em' }}
-            variant="contained"
-            size="large"
-            startIcon={<AddIcon />}
             href="https://github.com/GMOD/jbrowse-plugin-list"
           >
             Add plugin to store
-          </Button>
+          </Link>
         </div>
         <div style={{ flexBasis: '50%' }}>
           {plugins.map(plugin => (
