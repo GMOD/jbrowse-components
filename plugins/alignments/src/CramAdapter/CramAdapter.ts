@@ -10,8 +10,6 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface HeaderLine {
@@ -29,7 +27,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
 
-  private sequenceAdapter: BaseFeatureDataAdapter
+  private sequenceAdapter?: BaseFeatureDataAdapter
 
   public samHeader: Header = {}
 
@@ -38,19 +36,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
-
-  protected config: any
-
-  protected getSubAdapter: any
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-    this.config = config
-    this.getSubAdapter = getSubAdapter
-  }
 
   public async configure() {
     const cramLocation = readConfObject(this.config, 'cramLocation')

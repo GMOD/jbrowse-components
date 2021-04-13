@@ -7,9 +7,6 @@ import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray, filter } from 'rxjs/operators'
-import { getSnapshot } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import NestedFrequencyTable from '../NestedFrequencyTable'
 
 interface Mismatch {
@@ -51,23 +48,13 @@ function generateInfoList(table: NestedFrequencyTable) {
 }
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
-  protected config: any
-
-  protected getSubAdapter: any
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-    this.config = config
-    this.getSubAdapter = getSubAdapter
-  }
-
   protected async configure() {
     const dataAdapter = await this.getSubAdapter?.(
       readConfObject(this.config, 'subadapter'),
     )
+    if (!dataAdapter) {
+      throw new Error('getSubAdapter failed')
+    }
 
     return dataAdapter.dataAdapter
   }

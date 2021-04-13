@@ -4,7 +4,10 @@ import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  ConfigurationSchema,
+} from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
@@ -56,11 +59,20 @@ export abstract class BaseAdapter {
 
   static capabilities = [] as string[]
 
-  constructor(args: unknown = {}) {
+  config: AnyConfigurationModel
+
+  getSubAdapter?: getSubAdapterType
+
+  constructor(
+    config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
+    getSubAdapter?: getSubAdapterType,
+  ) {
+    this.config = config
+    this.getSubAdapter = getSubAdapter
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(args) ? getSnapshot(args) : args
+      const data = isStateTreeNode(config) ? getSnapshot(config) : config
       this.id = idMaker(data)
     } else {
       this.id = 'test'

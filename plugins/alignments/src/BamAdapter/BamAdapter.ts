@@ -9,9 +9,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
@@ -31,19 +28,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   protected sequenceAdapter?: BaseFeatureDataAdapter
 
   private samHeader: Header = {}
-
-  protected config: any
-
-  protected getSubAdapter: any
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-    this.config = config
-    this.getSubAdapter = getSubAdapter
-  }
 
   // derived classes may not use the same configuration so a custom
   // configure method allows derived classes to override this behavior
