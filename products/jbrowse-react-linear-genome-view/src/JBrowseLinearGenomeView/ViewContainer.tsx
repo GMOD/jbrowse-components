@@ -1,18 +1,20 @@
+import React, { useEffect, useState, Suspense } from 'react'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import IconButton, {
+import {
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
+  Paper,
+  makeStyles,
+  useTheme,
+  SvgIconProps,
+  fade,
+} from '@material-ui/core'
 import Typography from '@material-ui/core/Typography'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
 import useDimensions from 'react-use-dimensions'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 
@@ -122,34 +124,36 @@ function ViewContainer({
   }, [padWidth, view, width])
 
   return (
-    <Paper
-      elevation={12}
-      ref={measureRef}
-      className={classes.viewContainer}
-      style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
-    >
-      <div style={{ display: 'flex' }}>
-        <ViewMenu
-          model={view}
-          IconButtonProps={{
-            classes: { root: classes.iconRoot },
-            edge: 'start',
-          }}
-          IconProps={{ className: classes.icon }}
-        />
-        <div className={classes.grow} />
-        {view.displayName ? (
-          <Typography variant="body2" className={classes.displayName}>
-            {view.displayName}
-          </Typography>
-        ) : null}
-        <div className={classes.grow} />
-        <div style={{ width: 20, height: 20 }}>
-          <Logomark variant="white" />
+    <Suspense fallback={<div>Loading...</div>}>
+      <Paper
+        elevation={12}
+        ref={measureRef}
+        className={classes.viewContainer}
+        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+      >
+        <div style={{ display: 'flex' }}>
+          <ViewMenu
+            model={view}
+            IconButtonProps={{
+              classes: { root: classes.iconRoot },
+              edge: 'start',
+            }}
+            IconProps={{ className: classes.icon }}
+          />
+          <div className={classes.grow} />
+          {view.displayName ? (
+            <Typography variant="body2" className={classes.displayName}>
+              {view.displayName}
+            </Typography>
+          ) : null}
+          <div className={classes.grow} />
+          <div style={{ width: 20, height: 20 }}>
+            <Logomark variant="white" />
+          </div>
         </div>
-      </div>
-      <Paper>{children}</Paper>
-    </Paper>
+        <Paper>{children}</Paper>
+      </Paper>
+    </Suspense>
   )
 }
 
