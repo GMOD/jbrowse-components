@@ -180,6 +180,16 @@ export interface AbstractRootModel {
   adminMode?: boolean
 }
 
+/** root model with more included for the heavier JBrowse web and desktop app */
+export interface AppRootModel extends AbstractRootModel {
+  isAssemblyEditing: boolean
+  isDefaultSessionEditing: boolean
+  isPluginGuiEditing: boolean
+  setAssemblyEditing: (arg: boolean) => boolean
+  setDefaultSessionEditing: (arg: boolean) => boolean
+  setPluginGuiEditing: (arg: boolean) => boolean
+}
+
 /** a root model that manages global menus */
 export interface AbstractMenuManager {
   appendMenu(menuName: string): void

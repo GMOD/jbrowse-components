@@ -26,6 +26,7 @@ import {
 } from './HierarchicalTrackSelectorWidget'
 import AssemblyManager from './AssemblyManager'
 import SetDefaultSession from './SetDefaultSession'
+import PluginGUI from './PluginGUI'
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
@@ -33,6 +34,7 @@ export default class extends Plugin {
   exports = {
     AssemblyManager,
     SetDefaultSession,
+    PluginGUI,
   }
 
   install(pluginManager: PluginManager) {

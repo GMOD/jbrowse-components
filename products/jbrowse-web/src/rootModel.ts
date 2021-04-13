@@ -122,6 +122,7 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
+      isPluginGuiEditing: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
@@ -232,6 +233,9 @@ export default function RootModel(
       },
       setDefaultSessionEditing(flag: boolean) {
         self.isDefaultSessionEditing = flag
+      },
+      setPluginGuiEditing(flag: boolean) {
+        self.isPluginGuiEditing = flag
       },
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
@@ -355,6 +359,15 @@ export default function RootModel(
                     onClick: (session: any) => {
                       const rootModel = getParent(session)
                       rootModel.setDefaultSessionEditing(true)
+                    },
+                  },
+                  {
+                    label: 'Open plugin manager',
+                    icon: SettingsIcon,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    onClick: (session: any) => {
+                      const rootModel = getParent(session)
+                      rootModel.setPluginGuiEditing(true)
                     },
                   },
                 ],
