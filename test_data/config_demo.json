@@ -1180,7 +1180,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "variants_hg002",
       "name": "HG002 GIAB consensus SV (VCF)",
       "assemblyNames": ["hg19"],

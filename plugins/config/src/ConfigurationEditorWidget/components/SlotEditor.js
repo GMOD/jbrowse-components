@@ -101,6 +101,7 @@ const StringArrayEditor = observer(({ slot }) => {
                     }}
                     disabled={value === ''}
                     color="secondary"
+                    data-testid={`stringArrayAdd-${slot.name}`}
                   >
                     <AddIcon />
                   </IconButton>

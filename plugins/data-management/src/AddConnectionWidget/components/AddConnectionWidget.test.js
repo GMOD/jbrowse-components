@@ -1,6 +1,6 @@
 /* eslint curly:error*/
-import React from 'react'
 import { render, cleanup, fireEvent } from '@testing-library/react'
+import React from 'react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddConnectionWidget from './AddConnectionWidget'
 
@@ -72,28 +72,25 @@ type bigWig
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       findByTestId,
-      findAllByTestId,
       getAllByRole,
-      findAllByDisplayValue,
-      findByText,
+      findAllByText,
+      findByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    fireEvent.click(await findByText('volMyt1'))
-    fireEvent.mouseDown(getAllByRole('button')[1])
-    fireEvent.click(await findByText('UCSC Track Hub'))
+    const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
+    fireEvent.click(ucscTrackHubSelection[ucscTrackHubSelection.length - 1])
     fireEvent.click(await findByTestId('addConnectionNext'))
-    fireEvent.change((await findAllByDisplayValue('nameOfConnection'))[0], {
+    fireEvent.change(await findByDisplayValue('nameOfConnection'), {
       target: { value: 'Test UCSC connection name' },
     })
-
     fireEvent.change(
-      (await findAllByDisplayValue('http://mysite.com/path/to/hub.txt'))[0],
+      await findByDisplayValue('http://mysite.com/path/to/hub.txt'),
       {
         target: { value: 'http://test.com/hub.txt' },
       },
     )
-    fireEvent.click((await findAllByTestId('addConnectionNext'))[0])
+    fireEvent.click(await findByTestId('addConnectionNext'))
     expect(session.sessionConnections.length).toBe(1)
   })
 
@@ -111,27 +108,29 @@ type bigWig
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
     const {
       findByTestId,
-      getAllByTestId,
       getAllByRole,
+      findByPlaceholderText,
       findByText,
-      findAllByDisplayValue,
+      findByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
     fireEvent.mouseDown(getAllByRole('button')[0])
-    fireEvent.click(await findByText('volMyt1'))
-    fireEvent.mouseDown(getAllByRole('button')[1])
     fireEvent.click(await findByText('JBrowse 1 Data'))
     fireEvent.click(await findByTestId('addConnectionNext'))
-    fireEvent.change((await findAllByDisplayValue('nameOfConnection'))[1], {
+    fireEvent.change(await findByDisplayValue('nameOfConnection'), {
       target: { value: 'Test JBrowse 1 connection name' },
     })
     fireEvent.change(
-      (await findAllByDisplayValue('http://mysite.com/jbrowse/data/'))[0],
+      await findByDisplayValue('http://mysite.com/jbrowse/data/'),
       {
         target: { value: 'http://test.com/jbrowse/data/' },
       },
     )
-    fireEvent.click(getAllByTestId('addConnectionNext')[0])
+    fireEvent.change(await findByPlaceholderText('add new'), {
+      target: { value: 'volMyt1' },
+    })
+    fireEvent.click(await findByTestId('stringArrayAdd-assemblyNames'))
+    fireEvent.click(await findByTestId('addConnectionNext'))
     expect(session.sessionConnections.length).toBe(1)
   })
 })

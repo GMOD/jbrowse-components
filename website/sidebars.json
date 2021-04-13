@@ -7,6 +7,7 @@
       "type": "category",
       "label": "Quickstart guides",
       "items": [
+        "superquickstart_web",
         "quickstart_web",
         "quickstart_cli",
         "quickstart_gui",

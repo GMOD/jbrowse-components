@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import React, { useEffect, useState } from 'react'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   FormControl,
@@ -11,9 +12,9 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+import { isAbortException } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
 import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
 
@@ -63,9 +64,13 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
   }, [selectedHub, setModelReady])
 
   useEffect(() => {
+    const controller = new AbortController()
+    const { signal } = controller
     async function getAssemblies() {
       const pingResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/ping',
+        undefined,
+        { signal },
       )
       if (!pingResponse) {
         return
@@ -76,6 +81,8 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
       }
       const assembliesResponse = await doGet(
         'https://www.trackhubregistry.org/api/info/assemblies',
+        undefined,
+        { signal },
       )
       if (assembliesResponse) {
         setAssemblies(assembliesResponse)
@@ -83,22 +90,33 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     }
 
     getAssemblies()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   useEffect(() => {
-    if (errorMessage) return
-    if (selectedAssembly && !hubs.size) getHubs(true)
-    else if (hubs.size && !allHubsRetrieved) getHubs()
+    const controller = new AbortController()
+    const { signal } = controller
+    if (!errorMessage) {
+      if (selectedAssembly && !hubs.size) getHubs(signal, true)
+      else if (hubs.size && !allHubsRetrieved) getHubs(signal)
+    }
+
+    return () => {
+      controller.abort()
+    }
   })
 
-  async function getHubs(reset) {
+  async function getHubs(signal, reset) {
     const entriesPerPage = 10
     const newHubs = reset ? new Map() : new Map(hubs)
     const page = Math.floor(hubs.size / entriesPerPage) + 1
     const response = await doPost(
       'https://www.trackhubregistry.org/api/search',
-      { assembly: selectedAssembly },
       { page, entries_per_page: entriesPerPage },
+      { body: JSON.stringify({ assembly: selectedAssembly }), signal },
     )
     if (response) {
       for (const item of response.items) {
@@ -139,24 +157,30 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     const newHub = event.target.value
     setSelectedHub(newHub)
     model.target.name.set(hubs.get(newHub).hub.shortLabel)
+    model.target.assemblyNames.set([selectedAssembly])
     model.target.trackDbId.set(newHub)
   }
 
-  async function doGet(url, params = {}) {
+  async function doGet(url, params = {}, options = {}) {
     let rawResponse
     const urlParams = Object.keys(params)
       .map(param => `${param}=${params[param]}`)
       .join(';')
     try {
-      rawResponse = await fetch(`${url}${urlParams ? `?${urlParams}` : ''}`)
-    } catch (error) {
-      setErrorMessage(
-        <span>
-          <strong>Network connection error.</strong> <br />
-          {error.message} <br />
-          {url}
-        </span>,
+      rawResponse = await fetch(
+        `${url}${urlParams ? `?${urlParams}` : ''}`,
+        options,
       )
+    } catch (error) {
+      if (!isAbortException(error)) {
+        setErrorMessage(
+          <span>
+            <strong>Network connection error.</strong> <br />
+            {error.message} <br />
+            {url}
+          </span>,
+        )
+      }
       return null
     }
     if (!rawResponse.ok) {
@@ -172,24 +196,26 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     return rawResponse.json()
   }
 
-  async function doPost(url, data = {}, params = {}) {
+  async function doPost(url, params = {}, options = {}) {
     let rawResponse
     const urlParams = Object.keys(params)
       .map(param => `${param}=${params[param]}`)
       .join(';')
     try {
       rawResponse = await fetch(`${url}${urlParams ? `?${urlParams}` : ''}`, {
+        ...options,
         method: 'POST',
-        body: JSON.stringify(data),
       })
     } catch (error) {
-      setErrorMessage(
-        <span>
-          <strong>Network connection error.</strong> <br />
-          {error.message} <br />
-          {url}
-        </span>,
-      )
+      if (!isAbortException(error)) {
+        setErrorMessage(
+          <span>
+            <strong>Network connection error.</strong> <br />
+            {error.message} <br />
+            {url}
+          </span>,
+        )
+      }
       return null
     }
     if (!rawResponse.ok) {
