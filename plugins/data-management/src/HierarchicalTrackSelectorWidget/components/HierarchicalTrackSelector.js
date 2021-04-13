@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,no-nested-ternary */
 import React, { useState, useRef, useEffect } from 'react'
 import {
   Checkbox,
@@ -505,9 +505,7 @@ const HierarchicalTrackSelectorHeader = observer(
             setModalInfo={setModalInfo}
             session={session}
           />
-        ) : null}
-
-        {deleteDialogDetails ? (
+        ) : deleteDialogDetails ? (
           <DeleteConnectionDialog
             handleClose={() => {
               setDeleteDialogDetails(undefined)

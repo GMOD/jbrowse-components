@@ -26,16 +26,11 @@ export default observer(
       <Dialog open onClose={handleClose}>
         <DialogTitle>Manage connections</DialogTitle>
         <DialogContent>
-          {session.connections.map((conf, idx) => {
+          {session.connections.map(conf => {
             const name = readConfObject(conf, 'name')
             return (
-              <div key={`${name}-${idx}`}>
-                <IconButton
-                  onClick={() => {
-                    breakConnection(conf)
-                    session.deleteConnection?.(conf)
-                  }}
-                >
+              <div key="name">
+                <IconButton onClick={() => breakConnection(conf, true)}>
                   <CloseIcon />
                 </IconButton>
                 {name}
