@@ -55,18 +55,23 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
         }
       }
 
-      currLevel.children.push({
-        id: trackConf.trackId,
-        name:
-          readConfObject(trackConf, 'name') ||
-          `Reference sequence (${readConfObject(
-            getParent(trackConf),
-            'name',
-          )})`,
-        conf: trackConf,
-        selected: view.tracks.find(f => f.configuration === trackConf),
-        children: [],
-      })
+      // this adds a leaf (track checkbox entry) before any hierarchy
+      currLevel.children.splice(
+        currLevel.children.findIndex(elt => elt.children.length),
+        0,
+        {
+          id: trackConf.trackId,
+          name:
+            readConfObject(trackConf, 'name') ||
+            `Reference sequence (${readConfObject(
+              getParent(trackConf),
+              'name',
+            )})`,
+          conf: trackConf,
+          selected: view.tracks.find(f => f.configuration === trackConf),
+          children: [],
+        },
+      )
     })
 
   return hierarchy.children
