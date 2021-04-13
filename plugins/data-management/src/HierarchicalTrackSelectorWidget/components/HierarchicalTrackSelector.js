@@ -370,8 +370,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const assemblyName = assemblyNames[assemblyIdx]
 
     function handleConnectionToggle(connectionConf) {
-      const connections = session.connectionInstances.get(assemblyName)
-      const existingConnection = !!connections?.find(
+      const existingConnection = !!session.connectionInstances.find(
         conn => conn.name === readConfObject(connectionConf, 'name'),
       )
       if (existingConnection) {
