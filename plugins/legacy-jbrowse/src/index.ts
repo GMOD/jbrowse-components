@@ -17,7 +17,8 @@ export default class LegacyJBrowsePlugin extends Plugin {
         new AdapterType({
           name: 'NCListAdapter',
           configSchema: ncListAdapterConfigSchema,
-          getAdapterClass: () => import('./NCListAdapter/NCListAdapter'),
+          getAdapterClass: () =>
+            import('./NCListAdapter/NCListAdapter').then(r => r.default),
         }),
     )
 

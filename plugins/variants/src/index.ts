@@ -32,7 +32,8 @@ export default class VariantsPlugin extends Plugin {
         new AdapterType({
           name: 'VcfTabixAdapter',
           configSchema: vcfTabixAdapterConfigSchema,
-          getAdapterClass: () => import('./VcfTabixAdapter/VcfTabixAdapter'),
+          getAdapterClass: () =>
+            import('./VcfTabixAdapter/VcfTabixAdapter').then(r => r.default),
         }),
     )
 

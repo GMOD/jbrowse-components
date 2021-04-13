@@ -56,7 +56,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       throw new Error('getSubAdapter failed')
     }
 
-    return dataAdapter.dataAdapter
+    return dataAdapter.dataAdapter as BaseFeatureDataAdapter
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {

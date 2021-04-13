@@ -331,7 +331,10 @@ async function loadAssemblyReaction(
     sequenceAdapterConfig.type,
   )
   const { AdapterClass, getAdapterClass } = dataAdapterType
-  const CLASS = AdapterClass || (await getAdapterClass()).default
+  const CLASS = (AdapterClass || (await getAdapterClass?.())) as any
+  if (!CLASS) {
+    throw new Error('Failed to get adapter class')
+  }
   const adapter = new CLASS(sequenceAdapterConfig) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
@@ -349,7 +352,10 @@ async function loadAssemblyReaction(
       AdapterClass: RefAdapterClass,
       getAdapterClass: getRefAdapterClass,
     } = refAliasAdapterType
-    const REFCLASS = RefAdapterClass || (await getRefAdapterClass()).default
+    const REFCLASS = (RefAdapterClass || (await getRefAdapterClass?.())) as any
+    if (!REFCLASS) {
+      throw new Error('Failed to get REFCLASS')
+    }
     const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
     ) as BaseRefNameAliasAdapter

@@ -77,7 +77,8 @@ export default class extends Plugin {
         new AdapterType({
           name: 'BigWigAdapter',
           configSchema: bigWigAdapterConfigSchema,
-          getAdapterClass: () => import('./BigWigAdapter/BigWigAdapter'),
+          getAdapterClass: () =>
+            import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),
     )
 

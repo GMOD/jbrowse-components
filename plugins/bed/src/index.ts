@@ -13,7 +13,8 @@ export default class BedPlugin extends Plugin {
         new AdapterType({
           name: 'BigBedAdapter',
           configSchema: bigBedAdapterConfigSchema,
-          getAdapterClass: () => import('./BigBedAdapter/BigBedAdapter'),
+          getAdapterClass: () =>
+            import('./BigBedAdapter/BigBedAdapter').then(r => r.default),
         }),
     )
     pluginManager.addAdapterType(
@@ -21,7 +22,8 @@ export default class BedPlugin extends Plugin {
         new AdapterType({
           name: 'BedTabixAdapter',
           configSchema: bedTabixAdapterConfigSchema,
-          getAdapterClass: () => import('./BedTabixAdapter/BedTabixAdapter'),
+          getAdapterClass: () =>
+            import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
         }),
     )
   }

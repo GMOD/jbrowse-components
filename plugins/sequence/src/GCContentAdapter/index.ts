@@ -4,6 +4,6 @@ import configSchemaF from './configSchema'
 export default (pluginManager: PluginManager) => {
   return {
     configSchema: pluginManager.load(configSchemaF),
-    getAdapterClass: () => import('./GCContentAdapter'),
+    getAdapterClass: () => import('./GCContentAdapter').then(r => r.default),
   }
 }

@@ -59,10 +59,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       'type',
     ])
 
-    const { dataAdapter } = await this.getSubAdapter?.(
+    if (!this.getSubAdapter) {
+      throw new Error('Error getting subadapter')
+    }
+
+    const { dataAdapter } = await this.getSubAdapter(
       readConfObject(this.config, 'sequenceAdapter'),
     )
-    // TODO: BaseFeatureDataAdapter is different inside of the plugin build, needs to be gotten from pluginManager.lib
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       this.sequenceAdapter = dataAdapter
     } else {
@@ -82,7 +85,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const refSeqStore = this.sequenceAdapter
     if (!refSeqStore) return undefined
     const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
-    // console.log(`CRAM seq ID ${seqId} -> ${refName}`)
     if (!refName) return undefined
 
     const features = refSeqStore.getFeatures(

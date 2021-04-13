@@ -4,7 +4,7 @@ import { capabilities } from './SNPCoverageAdapter'
 
 export default (pm: PluginManager) => {
   return {
-    getAdapterClass: () => import('./SNPCoverageAdapter'),
+    getAdapterClass: () => import('./SNPCoverageAdapter').then(r => r.default),
     configSchema: configSchemaF(pm),
     adapterCapabilities: capabilities,
   }

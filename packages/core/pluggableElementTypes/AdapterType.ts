@@ -1,12 +1,12 @@
 /* eslint curly:error */
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
-import { AdapterConstructor } from '../data_adapters/BaseAdapter'
+import { BaseAdapter } from '../data_adapters/BaseAdapter'
 
 export default class AdapterType extends PluggableElementBase {
-  AdapterClass?: AdapterConstructor
+  AdapterClass?: typeof BaseAdapter
 
-  getAdapterClass?: () => Promise<AdapterConstructor>
+  getAdapterClass?: () => Promise<typeof BaseAdapter>
 
   configSchema: AnyConfigurationSchemaType
 
@@ -18,8 +18,8 @@ export default class AdapterType extends PluggableElementBase {
       configSchema: AnyConfigurationSchemaType
       adapterCapabilities?: string[]
     } & (
-      | { AdapterClass: AdapterConstructor }
-      | { getAdapterClass: () => Promise<AdapterConstructor> }
+      | { AdapterClass: typeof BaseAdapter }
+      | { getAdapterClass: () => Promise<typeof BaseAdapter> }
     ),
   ) {
     super(stuff)

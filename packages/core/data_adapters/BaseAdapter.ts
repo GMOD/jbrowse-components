@@ -21,13 +21,6 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export interface AdapterConstructor {
-  new (
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ): AnyDataAdapter
-}
-
 export type AnyDataAdapter =
   | BaseAdapter
   | BaseFeatureDataAdapter

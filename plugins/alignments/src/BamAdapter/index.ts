@@ -3,6 +3,6 @@ import configSchema from './configSchema'
 export default (/* pluginManager: PluginManager */) => {
   return {
     configSchema,
-    getAdapterClass: () => import('./BamAdapter'),
+    getAdapterClass: () => import('./BamAdapter').then(r => r.default),
   }
 }

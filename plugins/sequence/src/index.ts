@@ -41,7 +41,8 @@ export default class SequencePlugin extends Plugin {
         new AdapterType({
           name: 'TwoBitAdapter',
           configSchema: twoBitAdapterConfigSchema,
-          getAdapterClass: () => import('./TwoBitAdapter/TwoBitAdapter'),
+          getAdapterClass: () =>
+            import('./TwoBitAdapter/TwoBitAdapter').then(r => r.default),
         }),
     )
 
@@ -51,7 +52,9 @@ export default class SequencePlugin extends Plugin {
           name: 'ChromSizesAdapter',
           configSchema: chromSizesAdapterConfigSchema,
           getAdapterClass: () =>
-            import('./ChromSizesAdapter/ChromSizesAdapter'),
+            import('./ChromSizesAdapter/ChromSizesAdapter').then(
+              r => r.default,
+            ),
         }),
     )
 
@@ -61,7 +64,9 @@ export default class SequencePlugin extends Plugin {
           name: 'IndexedFastaAdapter',
           configSchema: indexedFastaAdapterConfigSchema,
           getAdapterClass: () =>
-            import('./IndexedFastaAdapter/IndexedFastaAdapter'),
+            import('./IndexedFastaAdapter/IndexedFastaAdapter').then(
+              r => r.default,
+            ),
         }),
     )
 
@@ -71,7 +76,9 @@ export default class SequencePlugin extends Plugin {
           name: 'BgzipFastaAdapter',
           configSchema: bgzipFastaAdapterConfigSchema,
           getAdapterClass: () =>
-            import('./BgzipFastaAdapter/BgzipFastaAdapter'),
+            import('./BgzipFastaAdapter/BgzipFastaAdapter').then(
+              r => r.default,
+            ),
         }),
     )
 
