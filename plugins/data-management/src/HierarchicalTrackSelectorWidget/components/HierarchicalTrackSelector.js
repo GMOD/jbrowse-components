@@ -370,13 +370,10 @@ const HierarchicalTrackSelectorHeader = observer(
     const assemblyName = assemblyNames[assemblyIdx]
 
     function handleConnectionToggle(connectionConf) {
-      const assemblyConnections = session.connectionInstances.get(assemblyName)
-      const existingConnection =
-        assemblyConnections &&
-        !!assemblyConnections.find(
-          connection =>
-            connection.name === readConfObject(connectionConf, 'name'),
-        )
+      const connections = session.connectionInstances.get(assemblyName)
+      const existingConnection = !!connections?.find(
+        conn => conn.name === readConfObject(connectionConf, 'name'),
+      )
       if (existingConnection) {
         breakConnection(connectionConf)
       } else {
@@ -406,17 +403,17 @@ const HierarchicalTrackSelectorHeader = observer(
     }
 
     const connections = session.connections
-      .filter(conf => readConfObject(conf, 'assemblyName') === assemblyName)
+      .filter(conf =>
+        readConfObject(conf, 'assemblyNames').includes(assemblyName),
+      )
       .map(conf => {
         const name = readConfObject(conf, 'name')
         return {
           label: name,
           type: 'checkbox',
-          checked:
-            session.connectionInstances.has(assemblyName) &&
-            !!session.connectionInstances
-              .get(assemblyName)
-              .find(connection => connection.name === name),
+          checked: !!session.connectionInstances.find(
+            connection => connection.name === name,
+          ),
           onClick: () => {
             handleConnectionToggle(conf)
           },

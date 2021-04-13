@@ -1,5 +1,5 @@
 import { types, getParent } from 'mobx-state-tree'
-import { readConfObject as readConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 
@@ -8,9 +8,9 @@ const hasAnyOverlap = (a1 = [], a2 = []) =>
 
 function passesFilter(filter, config) {
   const name =
-    readConf(config, 'name') ||
-    `Reference sequence (${readConf(getParent(config), 'name')})`
-  const categories = readConf(config, 'category') || []
+    readConfObject(config, 'name') ||
+    `Reference sequence (${readConfObject(getParent(config), 'name')})`
+  const categories = readConfObject(config, 'category') || []
   const regexp = new RegExp(filter, 'i')
   return (
     !!name.match(regexp) || categories.filter(cat => !!cat.match(regexp)).length
@@ -25,7 +25,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
     .filter(trackConf => passesFilter(filterText, trackConf))
     .forEach(trackConf => {
       // copy the categories since this array can be mutated downstream
-      const categories = [...(readConf(trackConf, 'category') || [])]
+      const categories = [...(readConfObject(trackConf, 'category') || [])]
 
       // silly thing where if trackId ends with sessionTrack, then push it to
       // a category that starts with a space to force sort to the top...
@@ -58,8 +58,11 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
       currLevel.children.push({
         id: trackConf.trackId,
         name:
-          readConf(trackConf, 'name') ||
-          `Reference sequence (${readConf(getParent(trackConf), 'name')})`,
+          readConfObject(trackConf, 'name') ||
+          `Reference sequence (${readConfObject(
+            getParent(trackConf),
+            'name',
+          )})`,
         conf: trackConf,
         selected: view.tracks.find(f => f.configuration === trackConf),
         children: [],
@@ -130,7 +133,7 @@ export default pluginManager =>
         return (refseq ? [refseq] : []).concat([
           ...trackConfigurations
             .filter(conf => {
-              const trackConfAssemblies = readConf(conf, 'assemblyNames')
+              const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
               const { allAliases } = assembly
               return hasAnyOverlap(allAliases, trackConfAssemblies)
             })
@@ -157,6 +160,7 @@ export default pluginManager =>
         const session = getSession(self)
         const { assemblyManager } = session
         const assembly = assemblyManager.get(assemblyName)
+
         if (!(assembly && assembly.initialized)) {
           return []
         }
@@ -166,13 +170,13 @@ export default pluginManager =>
           .filter(conf => {
             const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
             const { allAliases } = assembly
-            return hasAnyOverlap(allAliases, trackConfAssemblies).length > 0
+            return hasAnyOverlap(allAliases, trackConfAssemblies)
           })
           .filter(conf => {
             const { displayTypes } = pluginManager.getViewType(self.view.type)
             const compatibleDisplays = displayTypes.map(display => display.name)
             const trackDisplays = conf.displays.map(display => display.type)
-            return hasAnyOverlap(compatibleDisplays, trackDisplays).length > 0
+            return hasAnyOverlap(compatibleDisplays, trackDisplays)
           })
       },
 
@@ -184,19 +188,23 @@ export default pluginManager =>
         )
 
         const session = getSession(self)
-        const conns = (session.connectionInstances.get(assemblyName) || []).map(
-          (conn, index) => {
+        const conns = session.connectionInstances
+          .filter(conn =>
+            readConfObject(conn.configuration, 'assemblyNames').includes(
+              assemblyName,
+            ),
+          )
+          .map((conn, index) => {
             const c = session.connections[index]
             return {
               id: c.connectionId,
-              name: readConf(c, 'name'),
-              children: this.connectionHierarchy(conn),
+              name: readConfObject(c, 'name'),
+              children: this.connectionHierarchy(assemblyName, conn),
               state: {
                 expanded: true,
               },
             }
-          },
-        )
+          })
 
         conns.forEach(conn => {
           hier.push(conn)
@@ -205,10 +213,10 @@ export default pluginManager =>
         return hier
       },
 
-      connectionHierarchy(connection) {
+      connectionHierarchy(assemblyName, connection) {
         return generateHierarchy(
           self,
-          self.connectionTrackConfigurations(connection),
+          self.connectionTrackConfigurations(assemblyName, connection),
           self.collapsed,
         )
       },
