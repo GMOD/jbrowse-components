@@ -331,7 +331,7 @@ async function loadAssemblyReaction(
     sequenceAdapterConfig.type,
   )
   const { AdapterClass, getAdapterClass } = dataAdapterType
-  const CLASS = (AdapterClass || (await getAdapterClass?.())) as any
+  const CLASS = AdapterClass || (await getAdapterClass?.())
   if (!CLASS) {
     throw new Error('Failed to get adapter class')
   }
@@ -352,7 +352,7 @@ async function loadAssemblyReaction(
       AdapterClass: RefAdapterClass,
       getAdapterClass: getRefAdapterClass,
     } = refAliasAdapterType
-    const REFCLASS = (RefAdapterClass || (await getRefAdapterClass?.())) as any
+    const REFCLASS = RefAdapterClass || (await getRefAdapterClass?.())
     if (!REFCLASS) {
       throw new Error('Failed to get REFCLASS')
     }

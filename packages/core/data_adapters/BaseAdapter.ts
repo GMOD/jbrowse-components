@@ -28,6 +28,16 @@ export type AnyDataAdapter =
   | RegionsAdapter
   | SequenceAdapter
 
+// see
+// https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
+// for why this is the abstract construct signature
+export interface AnyAdapter {
+  new (
+    config: AnyConfigurationModel,
+    getSubAdapter?: getSubAdapterType,
+  ): AnyDataAdapter
+}
+
 // generates a short "id fingerprint" from the config passed to the base
 // feature adapter by recursively enumerating props up to an ID of length 100
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

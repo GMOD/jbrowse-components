@@ -60,7 +60,7 @@ export async function getAdapter(
     const { AdapterClass, getAdapterClass } = dataAdapterType
 
     // @ts-ignore
-    const CLASS = AdapterClass || ((await getAdapterClass()) as any)
+    const CLASS = AdapterClass || (await getAdapterClass())
     if (!CLASS) {
       throw new Error('Failed to get adapter')
     }

@@ -76,6 +76,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   }
 
   async getHeader(opts?: BaseOptions) {
+    await this.configure()
     return this.cram.cram.getHeaderText(opts)
   }
 

@@ -9,9 +9,10 @@ import BamAdapterF from '../BamAdapter'
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters'
 
 const pluginManager = new PluginManager()
-const { AdapterClass: SNPCoverageAdapter, configSchema } = pluginManager.load(
-  AdapterF,
-)
+const {
+  getAdapterClass: getSNPCoverageAdapter,
+  configSchema,
+} = pluginManager.load(AdapterF)
 const {
   getAdapterClass: getCramAdapter,
   configSchema: CramConfigSchema,
@@ -27,6 +28,7 @@ async function newSNPCoverageWithBam(
   bamConf: SnapshotIn<typeof BamConfigSchema>,
 ) {
   const BamAdapter = await getBamAdapter()
+  const SNPCoverageAdapter = await getSNPCoverageAdapter()
   return new SNPCoverageAdapter(configSchema.create({}), async () => {
     return {
       dataAdapter: new BamAdapter(BamConfigSchema.create(bamConf)),
@@ -145,6 +147,7 @@ async function newSNPCoverageWithCram(
   sequenceFileName: string,
 ) {
   const CramAdapter = await getCramAdapter()
+  const SNPCoverageAdapter = await getSNPCoverageAdapter()
   return new SNPCoverageAdapter(configSchema.create({}), async () => {
     return {
       dataAdapter: new CramAdapter(
