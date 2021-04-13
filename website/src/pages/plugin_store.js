@@ -11,7 +11,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
 import Card from '@material-ui/core/Card'
-import CardActionArea from '@material-ui/core/CardActionArea'
 import CardActions from '@material-ui/core/CardActions'
 import CardContent from '@material-ui/core/CardContent'
 import CardMedia from '@material-ui/core/CardMedia'
@@ -81,34 +80,32 @@ function PluginCard(props) {
 
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
-      <CardActionArea>
-        {plugin.image ? (
-          <CardMedia
-            style={{ height: 200, width: 800 }}
-            image={plugin.image}
-            title={plugin.name}
-          />
-        ) : null}
-        <CardContent>
-          <div className={classes.dataField}>
-            <Typography variant="h4">{plugin.name}</Typography>
-          </div>
-          <div className={classes.dataField}>
-            <PersonIcon style={{ marginRight: '0.5em' }} />
-            <Typography>{plugin.authors.join(', ')}</Typography>
-            <AccountBalanceIcon className={classes.icon} />
-            <Typography>
-              {plugin.license === 'NONE' ? 'No license' : plugin.license}
-            </Typography>
-            <GitHubIcon className={classes.icon} />
-            <Link href={plugin.location}>
-              <Typography>{plugin.location}</Typography>
-            </Link>
-          </div>
-          <Typography variant="h6">Description:</Typography>
-          <Typography>{plugin.description}</Typography>
-        </CardContent>
-      </CardActionArea>
+      {plugin.image ? (
+        <CardMedia
+          style={{ height: 200, width: 800 }}
+          image={plugin.image}
+          title={plugin.name}
+        />
+      ) : null}
+      <CardContent>
+        <div className={classes.dataField}>
+          <Typography variant="h4">{plugin.name}</Typography>
+        </div>
+        <div className={classes.dataField}>
+          <PersonIcon style={{ marginRight: '0.5em' }} />
+          <Typography>{plugin.authors.join(', ')}</Typography>
+          <AccountBalanceIcon className={classes.icon} />
+          <Typography>
+            {plugin.license === 'NONE' ? 'No license' : plugin.license}
+          </Typography>
+          <GitHubIcon className={classes.icon} />
+          <Link href={plugin.location}>
+            <Typography>{plugin.location}</Typography>
+          </Link>
+        </div>
+        <Typography variant="h6">Description:</Typography>
+        <Typography>{plugin.description}</Typography>
+      </CardContent>
       <CardActions>
         <Button
           color="primary"
