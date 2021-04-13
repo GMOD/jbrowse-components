@@ -6,7 +6,7 @@ toplevel: true
 
 This is a quick overview to get started running JBrowse 2 from scratch using
 the command line. It is helpful if you have some familiarity with the command
-line and with some bioinformatics tools like samtools in general to follow
+line, and with some bioinformatics tools like samtools in general to follow
 these steps. This guide also assumes you have:
 
 - a webserver that reads files from /var/www/html/ e.g. Apache or nginx (not
@@ -19,15 +19,22 @@ these steps. This guide also assumes you have:
 
 ## Super-quick overview for CLI
 
-### Install the jbrowse CLI
-
 ```bash
-## Install JBrowse 2 CLI tools
+## Install JBrowse 2 CLI tools, note: if you want to use the jbrowse command
+## under the sudo user, change this to `sudo npm install -g @jbrowse/cli`, but
+## sometimes it is better to work under the principle of least priviledge and
+## operate under a normal user so this guide does not use this
 npm install -g @jbrowse/cli
 
 
-## Use the `jbrowse create` command to download the latest release
+## Use the `jbrowse create` command to download the latest release, and put it
+## in a web server directory
 jbrowse create /var/www/html/jbrowse2
+
+## Alternatively, you may download to a directory, and then move it to the web
+## directory
+jbrowse create ~/mylocaljbrowse
+mv ~/mylocaljbrowse /var/www/html/jbrowse2
 
 
 
@@ -99,8 +106,7 @@ jbrowse upgrade /var/www/html/jbrowse2
 
 ## Conclusion
 
-You can now visit http://localhost/jbrowse2 and your genome should be loaded
-with a bigwig, a GFF, and a BAM file!
+You can now visit http://localhost/jbrowse2 and your genome should be ready!
 
 This guide is meant to be a super-quick conceptual overview for getting jbrowse
 2 setup, but if you are new to the command line or to jbrowse in general, you

@@ -239,6 +239,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                  data-testid="stringArrayAdd-stringArrayTest"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -444,6 +445,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                      data-testid="stringArrayAdd-undefined"
                       disabled=""
                       tabindex="-1"
                       type="button"

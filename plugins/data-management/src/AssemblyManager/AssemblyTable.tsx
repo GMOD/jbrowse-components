@@ -9,6 +9,7 @@ import TableContainer from '@material-ui/core/TableContainer'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
+import Typography from '@material-ui/core/Typography'
 import CreateIcon from '@material-ui/icons/Create'
 import DeleteIcon from '@material-ui/icons/Delete'
 
@@ -17,7 +18,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles(() => ({
   table: {
-    minWidth: 650,
+    minWidth: 500,
+    minHeight: 150,
   },
   buttonCell: {
     padding: 3,
@@ -83,12 +85,18 @@ const AssemblyTable = observer(
 
     return (
       <TableContainer component={Paper}>
-        <Table>
+        <Table className={classes.table}>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Aliases</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>
+                <Typography variant="h5">Name</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h5">Aliases</Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="h5">Actions</Typography>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>{rows}</TableBody>

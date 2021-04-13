@@ -26,6 +26,15 @@ const baseSequence = {
   adapter: {},
 }
 
+const twobitPath = path.join(
+  __dirname,
+  '..',
+  '..',
+  'test',
+  'data',
+  'simple.2bit',
+)
+
 describe('add-assembly', () => {
   setup
     .command(['add-assembly', '{}'])
@@ -867,5 +876,28 @@ describe('add-assembly', () => {
           },
         ],
       })
+    })
+
+  setup
+    .do(ctx =>
+      fs.copyFileSync(
+        twobitPath,
+        path.join(ctx.dir, path.basename(twobitPath)),
+      ),
+    )
+    .command([
+      'add-assembly',
+      'simple.2bit',
+      '--load',
+      'copy',
+      '--out',
+      'testing',
+    ])
+    .it('can use --out to make a new directory', async ctx => {
+      const contents = await fsPromises.readFile(
+        path.join(ctx.dir, 'testing', 'config.json'),
+        { encoding: 'utf8' },
+      )
+      expect(JSON.parse(contents).assemblies.length).toBe(1)
     })
 })
