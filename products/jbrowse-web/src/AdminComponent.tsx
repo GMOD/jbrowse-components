@@ -21,15 +21,12 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
   const {
     AssemblyManager,
     SetDefaultSession,
-    PluginGUI,
   } = (DataManagementPlugin as DataManagementPluginType).exports
 
   const {
     isAssemblyEditing,
     isDefaultSessionEditing,
-    isPluginGuiEditing,
     setDefaultSessionEditing,
-    setPluginGuiEditing,
     setAssemblyEditing,
     jbrowse,
   } = rootModel as AppRootModel
@@ -50,13 +47,6 @@ function AdminComponent({ pluginManager }: { pluginManager: PluginManager }) {
           setDefaultSessionEditing(false)
         }}
         currentDefault={(jbrowse as JBrowse).defaultSession.name}
-      />
-      <PluginGUI
-        rootModel={rootModel}
-        open={isPluginGuiEditing}
-        onClose={() => {
-          setPluginGuiEditing(false)
-        }}
       />
     </>
   )
