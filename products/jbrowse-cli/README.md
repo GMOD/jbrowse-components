@@ -40,6 +40,7 @@ It is likely preferable in most cases to install the tools first however
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
+- [`jbrowse text-index`](#jbrowse-text-index)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
 
 ## `jbrowse add-assembly SEQUENCE`
@@ -405,6 +406,27 @@ EXAMPLES
 ```
 
 _See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/set-default-session.ts)_
+
+## `jbrowse text-index`
+
+Make a single-track text index for the given track.
+
+```
+USAGE
+  $ jbrowse text-index
+
+OPTIONS
+  -h, --help       show CLI help
+  --individual     Only make a single-track text index for the given track
+  --tracks=tracks  Specify the tracks to index, formatted as comma separated trackIds
+
+EXAMPLES
+  $ jbrowse text-index
+  $ jbrowse text-index --tracks track1,track2,track3
+  $ jbrowse text-index --individual --tracks my_track_id
+```
+
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
