@@ -7,13 +7,21 @@ const hasAnyOverlap = (a1 = [], a2 = []) =>
   !!a1.find(value => a2.includes(value))
 
 function passesFilter(filter, config) {
-  const name =
-    readConfObject(config, 'name') ||
-    `Reference sequence (${readConfObject(getParent(config), 'name')})`
+  const name = getTrackName(config)
   const categories = readConfObject(config, 'category') || []
   const regexp = new RegExp(filter, 'i')
   return (
     !!name.match(regexp) || categories.filter(cat => !!cat.match(regexp)).length
+  )
+}
+
+function getTrackName(config) {
+  if (!config.trackId) {
+    throw new Error('not a track')
+  }
+  return (
+    readConfObject(config, 'name') ||
+    `Reference sequence (${readConfObject(getParent(config), 'name')})`
   )
 }
 
@@ -61,12 +69,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
         0,
         {
           id: trackConf.trackId,
-          name:
-            readConfObject(trackConf, 'name') ||
-            `Reference sequence (${readConfObject(
-              getParent(trackConf),
-              'name',
-            )})`,
+          name: getTrackName(trackConf),
           conf: trackConf,
           selected: view.tracks.find(f => f.configuration === trackConf),
           children: [],
