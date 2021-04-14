@@ -6,12 +6,21 @@ import {
 } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from '.'
 
-export async function renderToAbstractCanvas(width, height, opts, cb) {
-  const { fullSvg, forceSvg, highResolutionScaling } = opts
+export async function renderToAbstractCanvas(
+  width: number,
+  height: number,
+  opts: {
+    fullSvg?: boolean
+    forceSvg?: boolean
+    highResolutionScaling: number
+  },
+  cb: Function,
+) {
+  const { fullSvg, forceSvg, highResolutionScaling = 1 } = opts
   if (fullSvg) {
     const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
     const fakeCtx = fakeCanvas.getContext('2d')
-    cb(fakeCtx)
+    await cb(fakeCtx)
     return {
       reactElement: fakeCanvas.getSerializedSvg(),
     }
@@ -21,7 +30,7 @@ export async function renderToAbstractCanvas(width, height, opts, cb) {
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')
     ctx.scale(scale, scale)
-    cb(ctx)
+    await cb(ctx)
 
     // two methods needed for converting canvas to PNG, one for webworker
     // offscreen canvas, one for main thread

@@ -97,7 +97,7 @@ export default class HicRenderer extends ServerSideRendererType {
     const height = readConfObject(config, 'maxHeight')
     const features = await this.getFeatures(renderProps)
 
-    const { imageData } = await renderToAbstractCanvas(
+    const res = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
@@ -110,19 +110,18 @@ export default class HicRenderer extends ServerSideRendererType {
     )
     const results = await super.render({
       ...renderProps,
+      ...res,
       features,
       region: renderProps.regions[0],
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
+      ...res,
       height,
       width,
-      maxHeightReached: false,
     }
   }
 
