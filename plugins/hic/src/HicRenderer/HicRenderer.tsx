@@ -21,7 +21,7 @@ interface HicFeature {
 }
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => number
+  getResolution: (bp: number) => Promise<number>
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
