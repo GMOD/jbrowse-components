@@ -1,4 +1,5 @@
 import Color from 'color'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized,
@@ -98,76 +99,29 @@ export default class HicRenderer extends ServerSideRendererType {
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
 
-    const {
-      forceSvg,
-      fullSvg,
-      regions,
-      bpPerPx,
-      highResolutionScaling,
-      config,
-    } = renderProps
+    const { regions, bpPerPx, config } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
 
-    if (fullSvg) {
-      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-      const fakeCtx = fakeCanvas.getContext('2d')
-      await this.makeImageData(fakeCtx, { ...renderProps, features })
-      const imageData = fakeCanvas.getSerializedSvg()
-      return { reactElement: imageData, height, width }
-    }
-    if (forceSvg) {
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
+    console.log({ width, height })
 
-      const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      await this.makeImageData(ctx, { ...renderProps, features })
-
-      return {
-        reactElement: (
-          <image
-            width={width}
-            height={height}
-            xlinkHref={
-              canvas.convertToBlob
-                ? await blobToDataURL(
-                    await canvas.convertToBlob({
-                      type: 'image/png',
-                    }),
-                  )
-                : canvas.toDataURL()
-            }
-          />
-        ),
-        height,
-        width,
-      }
-    }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) =>
+        this.makeImageData(ctx, {
+          ...renderProps,
+          features,
+        }),
     )
 
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    await this.makeImageData(ctx, { ...renderProps, features })
-    const imageData = await createImageBitmap(canvas)
-
+    const result = await super.render({ ...res, height, width })
+    console.log({ res, result })
     return {
-      reactElement: (
-        <this.ReactComponent
-          {...renderProps}
-          region={renderProps.regions[0]}
-          height={height}
-          width={width}
-          imageData={imageData}
-        />
-      ),
-      imageData,
+      ...result,
+      ...res,
       height,
       width,
     }

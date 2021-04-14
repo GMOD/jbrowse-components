@@ -1,10 +1,3 @@
-import {
-  createCanvas,
-  createImageBitmap,
-  PonyfillOffscreenCanvas,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
-
-import { blobToDataURL } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
@@ -14,7 +7,7 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import React from 'react'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
@@ -49,80 +42,33 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const {
-      forceSvg,
-      height,
-      regions,
-      bpPerPx,
-      fullSvg,
-      highResolutionScaling = 1,
-    } = renderProps
+    const { height, regions, bpPerPx } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
 
-    if (!forceSvg) {
-      const canvas = createCanvas(
-        Math.ceil(width * highResolutionScaling),
-        height * highResolutionScaling,
-      )
-      const ctx = canvas.getContext('2d')
-      ctx.scale(highResolutionScaling, highResolutionScaling)
-      this.draw(ctx, { ...renderProps, features })
-      const imageData = await createImageBitmap(canvas)
-      return {
-        features,
-        reactElement: (
-          <this.ReactComponent
-            {...renderProps}
-            height={height}
-            width={width}
-            imageData={imageData}
-            features={features}
-          />
-        ),
-        height,
-        width,
-        imageData,
-      }
-    }
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) =>
+        this.draw(ctx, {
+          ...renderProps,
+          features,
+        }),
+    )
 
-    if (fullSvg) {
-      const canvas = new PonyfillOffscreenCanvas(width, height)
-      const ctx = canvas.getContext('2d')
-      this.draw(ctx, { ...renderProps, features })
-      return {
-        reactElement: canvas.getSerializedSvg(),
-        height,
-        width,
-        features,
-      }
-    }
-
-    const scale = 6
-    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
-    const ctx = canvas.getContext('2d')
-    ctx.scale(scale, scale)
-    this.draw(ctx, { ...renderProps, features })
-
-    // webworker has no canvas.toImageData, while node has no convertToBlob
-    // so two methods needed for converting canvas to PNG
-    return {
+    const results = await super.render({
+      ...renderProps,
+      ...res,
       features,
-      reactElement: (
-        <image
-          width={width}
-          height={height}
-          xlinkHref={
-            canvas.convertToBlob
-              ? await blobToDataURL(
-                  await canvas.convertToBlob({
-                    type: 'image/png',
-                  }),
-                )
-              : canvas.toDataURL()
-          }
-        />
-      ),
+      height,
+      width,
+    })
+
+    return {
+      ...results,
+      ...res,
+      features,
       height,
       width,
     }

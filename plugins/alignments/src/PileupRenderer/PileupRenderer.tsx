@@ -1,5 +1,4 @@
 /* eslint-disable no-bitwise */
-import React from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import BoxRendererType, {
   RenderArgs,
@@ -11,14 +10,10 @@ import BoxRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { bpSpanPx, iterMap, blobToDataURL } from '@jbrowse/core/util'
+import { bpSpanPx, iterMap } from '@jbrowse/core/util'
 import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
-import {
-  createCanvas,
-  createImageBitmap,
-  PonyfillOffscreenCanvas,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -598,7 +593,8 @@ export default class PileupRenderer extends BoxRendererType {
           for (let k = 0; k < softClipLength; k += 1) {
             const base = seq.charAt(k + mismatch.start)
 
-            // If softclip length+start is longer than sequence, no need to continue showing base
+            // If softclip length+start is longer than sequence, no need to
+            // continue showing base
             if (!base) return
 
             const [softClipLeftPx, softClipRightPx] = bpSpanPx(
@@ -712,13 +708,7 @@ export default class PileupRenderer extends BoxRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const {
-      bpPerPx,
-      regions,
-      highResolutionScaling = 1,
-      forceSvg,
-      fullSvg,
-    } = renderProps
+    const { bpPerPx, regions } = renderProps
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
 
@@ -728,87 +718,34 @@ export default class PileupRenderer extends BoxRendererType {
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
-    if (fullSvg) {
-      const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-      const fakeCtx = fakeCanvas.getContext('2d')
-      this.makeImageData(fakeCtx, layoutRecords, {
-        ...renderProps,
-        layout,
-        features,
-      })
-      return {
-        reactElement: fakeCanvas.getSerializedSvg(),
-        features,
-        layout,
-        height,
-        width,
-      }
-    }
-    // render to <image> tag in svg, e.g. rasterized layer
-    if (forceSvg) {
-      const scale = 4
-      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
-      const ctx = canvas.getContext('2d')
-      ctx.scale(scale, scale)
-      this.makeImageData(ctx, layoutRecords, {
-        ...renderProps,
-        features,
-        layout,
-      })
-
-      // two methods needed for converting canvas to PNG, one for webworker
-      // offscreen canvas, one for main thread
-      return {
-        reactElement: (
-          <image
-            width={width}
-            height={height}
-            xlinkHref={
-              canvas.convertToBlob
-                ? await blobToDataURL(
-                    await canvas.convertToBlob({
-                      type: 'image/png',
-                    }),
-                  )
-                : canvas.toDataURL()
-            }
-          />
-        ),
-        features,
-        layout,
-        height,
-        width,
-      }
-    }
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) =>
+        this.makeImageData(ctx, layoutRecords, {
+          ...renderProps,
+          layout,
+          features,
+        }),
     )
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
 
-    await this.makeImageData(ctx, layoutRecords, {
-      ...renderProps,
-      features,
-      layout,
-    })
-    const imageData = await createImageBitmap(canvas)
     const results = await super.render({
       ...renderProps,
+      ...res,
       features,
       layout,
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
+      ...res,
+      features,
+      layout,
       height,
       width,
-      layout,
       maxHeightReached: layout.maxHeightReached,
     }
   }
