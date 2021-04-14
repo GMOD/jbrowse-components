@@ -1,5 +1,4 @@
 import Color from 'color'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized,
@@ -9,13 +8,8 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { Region } from '@jbrowse/core/util/types'
-import { blobToDataURL, abortBreakPoint } from '@jbrowse/core/util'
-import {
-  createCanvas,
-  createImageBitmap,
-  PonyfillOffscreenCanvas,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import React from 'react'
+import { abortBreakPoint } from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -97,33 +91,38 @@ export default class HicRenderer extends ServerSideRendererType {
   }
 
   async render(renderProps: RenderArgsDeserialized) {
-    const features = await this.getFeatures(renderProps)
-
-    const { regions, bpPerPx, config } = renderProps
+    const { config, regions, bpPerPx } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
+    const features = await this.getFeatures(renderProps)
 
-    console.log({ width, height })
-
-    const res = await renderToAbstractCanvas(
+    const { imageData } = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
-      (ctx: CanvasRenderingContext2D) =>
-        this.makeImageData(ctx, {
+      (ctx: CanvasRenderingContext2D) => {
+        return this.makeImageData(ctx, {
           ...renderProps,
           features,
-        }),
+        })
+      },
     )
-
-    const result = await super.render({ ...res, height, width })
-    console.log({ res, result })
-    return {
-      ...result,
-      ...res,
+    const results = await super.render({
+      ...renderProps,
+      features,
+      region: renderProps.regions[0],
       height,
       width,
+      imageData,
+    })
+
+    return {
+      ...results,
+      imageData,
+      height,
+      width,
+      maxHeightReached: false,
     }
   }
 

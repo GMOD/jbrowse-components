@@ -7,7 +7,7 @@ import {
 import { blobToDataURL } from '.'
 
 export async function renderToAbstractCanvas(width, height, opts, cb) {
-  const { fullSvg, forceSvg, highResolutionScaling = 1 } = opts
+  const { fullSvg, forceSvg, highResolutionScaling } = opts
   if (fullSvg) {
     const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
     const fakeCtx = fakeCanvas.getContext('2d')
@@ -43,13 +43,14 @@ export async function renderToAbstractCanvas(width, height, opts, cb) {
       ),
     }
   }
+
   const canvas = createCanvas(
     Math.ceil(width * highResolutionScaling),
     height * highResolutionScaling,
   )
   const ctx = canvas.getContext('2d')
   ctx.scale(highResolutionScaling, highResolutionScaling)
-  cb(ctx)
+  await cb(ctx)
 
   return { imageData: await createImageBitmap(canvas) }
 }
