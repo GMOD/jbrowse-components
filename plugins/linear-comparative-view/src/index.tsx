@@ -31,6 +31,7 @@ import {
   AbstractSessionModel,
   getSession,
   getContainingView,
+  getContainingTrack,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
 
@@ -163,11 +164,7 @@ function WindowSizeDlg(props: {
   track: any
 }) {
   const classes = useStyles()
-  const {
-    track,
-    display: { feature: preFeature },
-    handleClose,
-  } = props
+  const { track, feature: preFeature, handleClose } = props
   const [window, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
   const windowSize = +window
@@ -624,6 +621,7 @@ export default class extends Plugin {
               icon: AddIcon,
               onClick: () => {
                 getSession(display).setDialogComponent(WindowSizeDlg, {
+                  track: getContainingTrack(display),
                   feature,
                 })
               },
