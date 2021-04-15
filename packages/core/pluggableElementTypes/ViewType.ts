@@ -10,7 +10,7 @@ type ViewReactComponent = React.ComponentType<{
 }>
 
 export default class ViewType extends PluggableElementBase {
-  ReactComponent?: ViewReactComponent
+  ReactComponent: ViewReactComponent
 
   stateModel: IAnyModelType
 

@@ -27,15 +27,15 @@ const useStyles = makeStyles(theme => ({
 
 export default observer(
   (props: {
-    display: {
+    model: {
       maxHeight?: number
       setMaxHeight: Function
     }
     handleClose: () => void
   }) => {
-    const { display, handleClose } = props
+    const { model, handleClose } = props
     const classes = useStyles()
-    const { maxHeight = '' } = display
+    const { maxHeight = '' } = model
     const [max, setMax] = useState(`${maxHeight}`)
 
     return (
@@ -71,7 +71,7 @@ export default observer(
               type="submit"
               style={{ marginLeft: 20 }}
               onClick={() => {
-                display.setMaxHeight(
+                model.setMaxHeight(
                   max !== '' && !Number.isNaN(+max) ? +max : undefined,
                 )
                 handleClose()

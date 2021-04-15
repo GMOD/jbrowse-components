@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
@@ -6,7 +7,8 @@ import VisibilityIcon from '@material-ui/icons/Visibility'
 import { types, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+
+const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -112,7 +114,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).setDialogComponent(SetMaxHeightDlg, self)
+                getSession(self).setDialogComponent(SetMaxHeightDlg, {
+                  model: self,
+                })
               },
             },
           ]
