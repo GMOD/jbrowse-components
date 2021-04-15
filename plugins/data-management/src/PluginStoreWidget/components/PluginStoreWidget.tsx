@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 
+import { makeStyles } from '@material-ui/core/styles'
 import { Typography } from '@material-ui/core'
 
+import PluginCard from './PluginCard'
+
+import type { JBrowsePlugin } from '../types'
 import { PluginStoreModel } from '../model'
 
+const useStyles = makeStyles(() => ({
+  sectionHeader: {
+    margin: '1em',
+  },
+}))
+
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
+  const classes = useStyles()
+
   const [pluginArray, setPluginArray] = useState([])
 
   useEffect(() => {
@@ -27,7 +39,16 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
 
   console.log(pluginArray)
 
-  return <Typography>Plugin Store lol</Typography>
+  return (
+    <div>
+      <Typography className={classes.sectionHeader} variant="h5">
+        Available plugins
+      </Typography>
+      {pluginArray.map(plugin => (
+        <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
+      ))}
+    </div>
+  )
 }
 
 PluginStoreWidget.propTypes = {
