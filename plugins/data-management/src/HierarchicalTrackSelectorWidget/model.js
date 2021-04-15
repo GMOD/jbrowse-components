@@ -63,7 +63,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
         }
       }
 
-      // this adds a leaf (track checkbox entry) before any hierarchy
+      // using splice here tries to group leaf nodes above hierarchical nodes
       currLevel.children.splice(
         currLevel.children.findIndex(elt => elt.children.length),
         0,
@@ -71,7 +71,7 @@ export function generateHierarchy(model, trackConfigurations, collapsed) {
           id: trackConf.trackId,
           name: getTrackName(trackConf),
           conf: trackConf,
-          selected: view.tracks.find(f => f.configuration === trackConf),
+          checked: !!view.tracks.find(f => f.configuration === trackConf),
           children: [],
         },
       )

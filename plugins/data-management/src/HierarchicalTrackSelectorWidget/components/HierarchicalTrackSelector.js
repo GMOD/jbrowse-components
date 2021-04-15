@@ -33,14 +33,12 @@ import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
 import ManageConnectionsDialog from './ManageConnectionsDialog'
 
-const rowHeight = 22
-const accordionHeight = 40
 const useStyles = makeStyles(theme => ({
   searchBox: {
     margin: theme.spacing(2),
   },
   menuIcon: {
-    margin: theme.spacing(2),
+    margin: theme.spacing(1),
   },
   fab: {
     position: 'absolute',
@@ -52,8 +50,9 @@ const useStyles = makeStyles(theme => ({
   },
 
   checkboxLabel: {
+    marginRight: 0,
     '&:hover': {
-      backgroundColor: '#ddd',
+      backgroundColor: '#eee',
     },
   },
 
@@ -90,48 +89,6 @@ const useStyles = makeStyles(theme => ({
     margin: 'auto 0',
   },
 }))
-
-// adapted from react-vtree docs
-function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
-  return function* treeWalker(refresh) {
-    const stack = []
-
-    stack.push({
-      nestingLevel: 0,
-      node: nodes,
-    })
-
-    while (stack.length !== 0) {
-      const { node, nestingLevel } = stack.pop()
-      const { id, name, conf, selected } = node
-      const isOpened = yield refresh
-        ? {
-            id,
-            isLeaf: !!conf,
-            isOpenByDefault: true,
-            name,
-            node,
-            checked: !!selected,
-            nestingLevel,
-            onChange,
-            onMoreInfo,
-            conf,
-            defaultHeight: conf ? rowHeight : accordionHeight,
-          }
-        : id
-
-      if (node.children.length !== 0 && isOpened) {
-        for (let i = node.children.length - 1; i >= 0; i--) {
-          stack.push({
-            nestingLevel: nestingLevel + 1,
-            node: node.children[i],
-            onChange,
-          })
-        }
-      }
-    }
-  }
-}
 
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
@@ -181,34 +138,37 @@ const Node = props => {
               </Typography>
             </div>
           ) : (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  className={classes.compactCheckbox}
-                  checked={checked}
-                  onChange={() => onChange(id)}
-                  color="primary"
-                  disabled={unsupported}
-                  inputProps={{
-                    'data-testid': `htsTrackEntry-${id}`,
-                  }}
-                />
-              }
-              label={
-                <>
-                  <span className={classes.checkboxLabel}>{name}</span>
-                  <IconButton
-                    onClick={event => {
-                      onMoreInfo({ target: event.currentTarget, id, conf })
+            <>
+              <FormControlLabel
+                className={classes.checkboxLabel}
+                control={
+                  <Checkbox
+                    className={classes.compactCheckbox}
+                    checked={checked}
+                    onChange={() => onChange(id)}
+                    color="primary"
+                    disabled={unsupported}
+                    inputProps={{
+                      'data-testid': `htsTrackEntry-${id}`,
                     }}
-                    color="secondary"
-                    data-testid={`htsTrackEntryMenu-${id}`}
-                  >
-                    <MoreIcon />
-                  </IconButton>
-                </>
-              }
-            />
+                  />
+                }
+                label={
+                  <>
+                    <span>{name}</span>
+                  </>
+                }
+              />
+              <IconButton
+                onClick={event => {
+                  onMoreInfo({ target: event.currentTarget, id, conf })
+                }}
+                color="secondary"
+                data-testid={`htsTrackEntryMenu-${id}`}
+              >
+                <MoreIcon />
+              </IconButton>
+            </>
           )}
         </div>
       </div>
@@ -218,16 +178,13 @@ const Node = props => {
 
 const getNodeData = (node, nestingLevel, extra) => {
   const isLeaf = !!node.conf
-  const defaultHeight = isLeaf ? 22 : 40
   return {
     data: {
-      id: node.id.toString(),
-      defaultHeight,
+      defaultHeight: isLeaf ? 22 : 40,
       isLeaf,
       isOpenByDefault: true,
-      name: node.name,
       nestingLevel,
-      conf: node.conf,
+      ...node,
       ...extra,
     },
     nestingLevel,
@@ -480,7 +437,29 @@ const HierarchicalTrackSelectorHeader = observer(
           ]
         : []
 
-    const menuItems = [...connectionMenuItems, ...assemblyMenuItems]
+    const menuItems = [
+      {
+        label: 'Add track',
+        onClick: () => {
+          const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
+            view: model.view.id,
+          })
+          session.showWidget(widget)
+        },
+      },
+      {
+        label: 'Add connection',
+        onClick: () => {
+          const widget = session.addWidget(
+            'AddConnectionWidget',
+            'addConnectionWidget',
+          )
+          session.showWidget(widget)
+        },
+      },
+      ...connectionMenuItems,
+      ...assemblyMenuItems,
+    ]
     return (
       <div
         ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
