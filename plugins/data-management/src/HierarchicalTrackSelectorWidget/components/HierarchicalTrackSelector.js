@@ -386,18 +386,20 @@ const HierarchicalTrackSelectorHeader = observer(
         onClick: () => setConnectionManagerOpen(true),
       },
     ]
-    const assemblyMenuItems = [
-      {
-        label: 'Select assembly...',
-        subMenu: assemblyNames.map((name, idx) => ({
-          label: name,
-          onClick: () => {
-            setAssemblyIdx(idx)
-          },
-        })),
-        disabled: assemblyNames.length < 2,
-      },
-    ]
+    const assemblyMenuItems =
+      assemblyNames.length > 1
+        ? [
+            {
+              label: 'Select assembly...',
+              subMenu: assemblyNames.map((name, idx) => ({
+                label: name,
+                onClick: () => {
+                  setAssemblyIdx(idx)
+                },
+              })),
+            },
+          ]
+        : []
 
     const menuItems = [
       {

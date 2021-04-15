@@ -5,6 +5,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  FormControlLabel,
+  Checkbox,
   IconButton,
   Tooltip,
   Typography,
@@ -14,6 +16,7 @@ import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const useStyles = makeStyles(theme => ({
   closeButton: {
@@ -24,8 +27,8 @@ const useStyles = makeStyles(theme => ({
   },
 
   connectionContainer: {
-    margin: theme.spacing(4),
     width: 500,
+    margin: theme.spacing(4),
   },
 }))
 
@@ -40,7 +43,18 @@ export default observer(
     breakConnection: Function
   }) => {
     const classes = useStyles()
-    const { adminMode, connections, sessionConnections } = session
+    const { connections, connectionInstances } = session
+
+    function handleConnectionToggle(connectionConf: AnyConfigurationModel) {
+      const existingConnection = !!connectionInstances?.find(
+        conn => conn.name === readConfObject(connectionConf, 'name'),
+      )
+      if (existingConnection) {
+        breakConnection(connectionConf)
+      } else {
+        session.makeConnection?.(connectionConf)
+      }
+    }
     return (
       <Dialog open onClose={handleClose} maxWidth="lg">
         <DialogTitle>
@@ -53,33 +67,30 @@ export default observer(
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          <Typography>
-            Click the X icon to delete the connection from your config
-            completely
-          </Typography>
+          <Typography>Use the checkbox to turn on/off connections</Typography>
           <div className={classes.connectionContainer}>
             {connections.map(conf => {
               const name = readConfObject(conf, 'name')
               return (
-                <div key={`conn-${name}`}>
-                  {adminMode || sessionConnections?.includes(conf) ? (
-                    <IconButton onClick={() => breakConnection(conf, true)}>
-                      <CloseIcon color="error" />
-                    </IconButton>
-                  ) : (
-                    <Tooltip title="Unable to delete connection in config file as non-admin user">
-                      <IconButton>
-                        <CloseIcon color="disabled" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {name}
+                <div>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={
+                          !!connectionInstances?.find(
+                            conn => name === conn.name,
+                          )
+                        }
+                        onChange={() => handleConnectionToggle(conf)}
+                        color="primary"
+                      />
+                    }
+                    label={name}
+                  />
                 </div>
               )
             })}
-            {!connections.length ? (
-              <Typography>No connections found</Typography>
-            ) : null}
+            {!connections.length ? 'No connections found' : null}
           </div>
         </DialogContent>
         <DialogActions>
