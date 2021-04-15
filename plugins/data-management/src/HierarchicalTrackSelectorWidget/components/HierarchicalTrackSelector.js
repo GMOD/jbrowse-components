@@ -20,6 +20,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import ArrowRightIcon from '@material-ui/icons/ArrowRight'
 import MenuIcon from '@material-ui/icons/Menu'
 import MoreIcon from '@material-ui/icons/MoreHoriz'
+import PowerOutlinedIcon from '@material-ui/icons/PowerOutlined'
 
 // other
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -343,7 +344,8 @@ const HierarchicalTrackSelectorHeader = observer(
   ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
     const classes = useStyles()
     const session = getSession(model)
-    const [anchorEl, setAnchorEl] = useState()
+    const [connectionAnchorEl, setConnectionAnchorEl] = useState()
+    const [menuAnchorEl, setMenuAnchorEl] = useState()
     const [modalInfo, setModalInfo] = useState()
     const [deleteDialogDetails, setDeleteDialogDetails] = useState()
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
@@ -406,24 +408,22 @@ const HierarchicalTrackSelectorHeader = observer(
           },
         ]
       : []
-    const assemblyMenuItems =
-      assemblyNames.length >= 2
-        ? [
-            {
-              label: 'Assemblies...',
-              subMenu: assemblyNames.map((name, idx) => ({
-                label: name,
-                onClick: () => {
-                  setAssemblyIdx(idx)
-                },
-              })),
-            },
-          ]
-        : []
+    const assemblyMenuItems = [
+      {
+        label: 'Select assembly...',
+        subMenu: assemblyNames.map((name, idx) => ({
+          label: name,
+          onClick: () => {
+            setAssemblyIdx(idx)
+          },
+        })),
+        disabled: assemblyNames.length < 2,
+      },
+    ]
 
     const menuItems = [
       {
-        label: 'Add track',
+        label: 'Add track...',
         onClick: () => {
           session.showWidget(
             session.addWidget('AddTrackWidget', 'addTrackWidget', {
@@ -432,17 +432,10 @@ const HierarchicalTrackSelectorHeader = observer(
           )
         },
       },
-      {
-        label: 'Add connection',
-        onClick: () => {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
-        },
-      },
-      ...connectionMenuItems,
+
       ...assemblyMenuItems,
     ]
+
     return (
       <div
         ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
@@ -452,10 +445,18 @@ const HierarchicalTrackSelectorHeader = observer(
           <IconButton
             className={classes.menuIcon}
             onClick={event => {
-              setAnchorEl(event.currentTarget)
+              setMenuAnchorEl(event.currentTarget)
             }}
           >
             <MenuIcon />
+          </IconButton>
+          <IconButton
+            className={classes.menuIcon}
+            onClick={event => {
+              setConnectionAnchorEl(event.currentTarget)
+            }}
+          >
+            <PowerOutlinedIcon />
           </IconButton>
           <TextField
             className={classes.searchBox}
@@ -476,14 +477,40 @@ const HierarchicalTrackSelectorHeader = observer(
         </div>
 
         <JBrowseMenu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
+          anchorEl={connectionAnchorEl}
+          open={Boolean(connectionAnchorEl)}
           onMenuItemClick={(_, callback) => {
             callback()
-            setAnchorEl(undefined)
+            setConnectionAnchorEl(undefined)
           }}
           onClose={() => {
-            setAnchorEl(undefined)
+            setConnectionAnchorEl(undefined)
+          }}
+          menuItems={[
+            {
+              label: 'Add connection',
+              onClick: () => {
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
+                )
+              },
+            },
+            ...connectionMenuItems,
+          ]}
+        />
+
+        <JBrowseMenu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onMenuItemClick={(_, callback) => {
+            callback()
+            setMenuAnchorEl(undefined)
+          }}
+          onClose={() => {
+            setMenuAnchorEl(undefined)
           }}
           menuItems={menuItems}
         />
