@@ -68,6 +68,21 @@ const useStyles = makeStyles(theme => ({
     width: 800,
   },
 
+  cardMedia: {
+    height: 200,
+    width: 800,
+  },
+
+  '@media (max-width: 800px)': {
+    cardMedia: {
+      display: 'none',
+    },
+
+    card: {
+      width: 'auto',
+    },
+  },
+
   icon: {
     marginLeft: '0.5em',
     marginRight: '0.5em',
@@ -220,7 +235,7 @@ function PluginCard(props) {
     <Card variant="outlined" key={plugin.name} className={classes.card}>
       {plugin.image ? (
         <CardMedia
-          style={{ height: 200, width: 800 }}
+          className={classes.cardMedia}
           image={plugin.image}
           title={plugin.name}
         />
