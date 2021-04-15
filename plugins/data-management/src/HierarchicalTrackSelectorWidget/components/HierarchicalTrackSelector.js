@@ -33,6 +33,7 @@ import { VariableSizeTree } from 'react-vtree'
 import CloseConnectionDialog from './CloseConnectionDialog'
 import DeleteConnectionDialog from './DeleteConnectionDialog'
 import ManageConnectionsDialog from './ManageConnectionsDialog'
+import ToggleConnectionsDialog from './ToggleConnectionsDialog'
 
 const useStyles = makeStyles(theme => ({
   searchBox: {
@@ -349,20 +350,10 @@ const HierarchicalTrackSelectorHeader = observer(
     const [modalInfo, setModalInfo] = useState()
     const [deleteDialogDetails, setDeleteDialogDetails] = useState()
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
+    const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
     const { assemblyNames } = model
     const { connectionInstances } = session
     const assemblyName = assemblyNames[assemblyIdx]
-
-    function handleConnectionToggle(connectionConf) {
-      const existingConnection = !!session.connectionInstances.find(
-        conn => conn.name === readConfObject(connectionConf, 'name'),
-      )
-      if (existingConnection) {
-        breakConnection(connectionConf)
-      } else {
-        session.makeConnection(connectionConf)
-      }
-    }
 
     function breakConnection(connectionConf, deletingConnection) {
       const name = readConfObject(connectionConf, 'name')
@@ -385,29 +376,16 @@ const HierarchicalTrackSelectorHeader = observer(
       }
     }
 
-    const connections = session.connections
-      .filter(c => readConfObject(c, 'assemblyNames').includes(assemblyName))
-      .map(conf => {
-        const name = readConfObject(conf, 'name')
-        return {
-          label: name,
-          type: 'checkbox',
-          checked: !!connectionInstances.find(inst => inst.name === name),
-          onClick: () => handleConnectionToggle(conf),
-        }
-      })
-    const connectionMenuItems = connections.length
-      ? [
-          {
-            label: 'Connections...',
-            subMenu: connections,
-          },
-          {
-            label: 'Manage connections',
-            onClick: () => setConnectionManagerOpen(true),
-          },
-        ]
-      : []
+    const connectionMenuItems = [
+      {
+        label: 'Turn on/off connections...',
+        onClick: () => setConnectionToggleOpen(true),
+      },
+      {
+        label: 'Manage connections',
+        onClick: () => setConnectionManagerOpen(true),
+      },
+    ]
     const assemblyMenuItems = [
       {
         label: 'Select assembly...',
@@ -534,6 +512,13 @@ const HierarchicalTrackSelectorHeader = observer(
             handleClose={() => setConnectionManagerOpen(false)}
             breakConnection={breakConnection}
             session={session}
+          />
+        ) : null}
+        {connectionToggleOpen ? (
+          <ToggleConnectionsDialog
+            handleClose={() => setConnectionToggleOpen(false)}
+            session={session}
+            breakConnection={breakConnection}
           />
         ) : null}
       </div>
