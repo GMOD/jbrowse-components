@@ -252,7 +252,7 @@ function PluginCard(props) {
             {plugin.license === 'NONE' ? 'No license' : plugin.license}
           </Typography>
           <GitHubIcon className={classes.icon} />
-          <Link href={plugin.location}>
+          <Link href={plugin.location} target="_blank" rel="noopener">
             <Typography>{plugin.location}</Typography>
           </Link>
         </div>
