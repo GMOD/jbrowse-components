@@ -7,6 +7,7 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
@@ -47,14 +48,18 @@ export default observer(
           </IconButton>
         </DialogTitle>
         <DialogContent>
+          <Typography>
+            Click the X icon to delete the connection from your config
+            completely
+          </Typography>
           <div style={{ width: 500 }}>
             {connections.map(conf => {
               const name = readConfObject(conf, 'name')
               return (
                 <div key={`conn-${name}`}>
-                  {adminMode && sessionConnections?.includes(conf) ? (
+                  {adminMode || sessionConnections?.includes(conf) ? (
                     <IconButton onClick={() => breakConnection(conf, true)}>
-                      <CloseIcon />
+                      <CloseIcon color="error" />
                     </IconButton>
                   ) : (
                     <Tooltip title="Unable to delete connection in config file as non-admin user">
@@ -67,6 +72,7 @@ export default observer(
                 </div>
               )
             })}
+            {!connections.length ? 'No connections found' : null}
           </div>
         </DialogContent>
         <DialogActions>
