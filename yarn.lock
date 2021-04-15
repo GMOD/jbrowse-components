@@ -21223,6 +21223,11 @@ react-measure@^2.3.0:
     prop-types "^15.6.2"
     resize-observer-polyfill "^1.5.0"
 
+react-merge-refs@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/react-merge-refs/-/react-merge-refs-1.1.0.tgz#73d88b892c6c68cbb7a66e0800faa374f4c38b06"
+  integrity sha512-alTKsjEL0dKH/ru1Iyn7vliS2QRcBp9zZPGoWxUOvRGWPUYgjo+V01is7p04It6KhgrzhJGnIj9GgX8W4bZoCQ==
+
 react-popper-tooltip@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/react-popper-tooltip/-/react-popper-tooltip-3.1.1.tgz#329569eb7b287008f04fcbddb6370452ad3f9eac"
@@ -21371,12 +21376,13 @@ react-virtualized-auto-sizer@^1.0.2:
   resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.2.tgz#a61dd4f756458bbf63bd895a92379f9b70f803bd"
   integrity sha512-MYXhTY1BZpdJFjUovvYHVBmkq79szK/k7V3MO+36gJkWGkrXKtyr4vCPtpphaTLRAdDNoYEYFZWE8LjN+PIHNg==
 
-react-vtree@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/react-vtree/-/react-vtree-2.0.4.tgz#340e64255f5f4ec6f4c35dc44a7036f7fcd98bc5"
-  integrity sha512-UOld0VqyAZrryF06K753X4bcEVN6/wW831exvVlMZeZAVHk9KXnlHs4rpqDAeoiBgUwJqoW/rtn0hwsokRRxPA==
+react-vtree@^3.0.0-beta.1:
+  version "3.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/react-vtree/-/react-vtree-3.0.0-beta.1.tgz#b7c063558361a7f230764617f6cfc19e90685079"
+  integrity sha512-7YrIoqKhi6khk2aJCjCpOikQxZEiethhfrOm80EOzaxGo6h+aaYrp8ZAGHPqVs3PN28qSMzvaYbu38UgymB55A==
   dependencies:
     "@babel/runtime" "^7.11.0"
+    react-merge-refs "^1.1.0"
 
 react-window@^1.8.5:
   version "1.8.5"

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types,no-nested-ternary */
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useCallback, useState, useRef, useEffect } from 'react'
 import {
   Checkbox,
   Fab,
@@ -136,7 +136,7 @@ function makeTreeWalker({ nodes, onChange, onMoreInfo }) {
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
 const Node = props => {
-  const { data, isOpen, style, toggle } = props
+  const { data, isOpen, style, setOpen } = props
   const {
     isLeaf,
     nestingLevel,
@@ -165,7 +165,7 @@ const Node = props => {
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
         role="presentation"
-        onClick={toggle}
+        onClick={() => setOpen(!isOpen)}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
@@ -216,6 +216,25 @@ const Node = props => {
   )
 }
 
+const getNodeData = (node, nestingLevel, extra) => {
+  const isLeaf = !!node.conf
+  const defaultHeight = isLeaf ? 22 : 40
+  return {
+    data: {
+      id: node.id.toString(),
+      defaultHeight,
+      isLeaf,
+      isOpenByDefault: true,
+      name: node.name,
+      nestingLevel,
+      conf: node.conf,
+      ...extra,
+    },
+    nestingLevel,
+    node,
+  }
+}
+
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
@@ -225,15 +244,41 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   const session = getSession(model)
   const { filterText } = model
 
-  const treeWalker = makeTreeWalker({
-    nodes: {
-      name: 'Tracks',
-      id: 'Tracks',
-      children: tree,
-    },
+  const rootNode = {
+    name: 'Tracks',
+    id: 'Tracks',
+    children: tree,
+  }
+
+  const extra = {
     onChange: trackId => model.view.toggleTrack(trackId),
     onMoreInfo: setMoreInfo,
-  })
+  }
+  const treeWalker = useCallback(
+    function* treeWalker() {
+      yield getNodeData(rootNode, 0, extra)
+
+      while (true) {
+        const parentMeta = yield
+
+        for (let i = 0; i < parentMeta.node.children.length; i++) {
+          const curr = parentMeta.node.children[i]
+          yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+        }
+      }
+    },
+    [rootNode, extra],
+  )
+
+  // const treeWalker = makeTreeWalker({
+  //   nodes: {
+  //     name: 'Tracks',
+  //     id: 'Tracks',
+  //     children: tree,
+  //   },
+  //   onChange: trackId => model.view.toggleTrack(trackId),
+  //   onMoreInfo: setMoreInfo,
+  // })
 
   const conf = info?.conf
   const menuItems =
