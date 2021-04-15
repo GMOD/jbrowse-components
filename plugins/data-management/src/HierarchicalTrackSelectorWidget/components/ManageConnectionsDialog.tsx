@@ -6,11 +6,22 @@ import {
   DialogActions,
   Button,
   IconButton,
+  Tooltip,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+
+const useStyles = makeStyles(theme => ({
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+}))
 
 export default observer(
   ({
@@ -22,21 +33,41 @@ export default observer(
     session: AbstractSessionModel
     breakConnection: Function
   }) => {
+    const classes = useStyles()
+    const { adminMode, connections, sessionConnections } = session
     return (
-      <Dialog open onClose={handleClose}>
-        <DialogTitle>Manage connections</DialogTitle>
+      <Dialog open onClose={handleClose} maxWidth="lg">
+        <DialogTitle>
+          Manage connections
+          <IconButton
+            className={classes.closeButton}
+            onClick={() => handleClose()}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
-          {session.connections.map(conf => {
-            const name = readConfObject(conf, 'name')
-            return (
-              <div key="name">
-                <IconButton onClick={() => breakConnection(conf, true)}>
-                  <CloseIcon />
-                </IconButton>
-                {name}
-              </div>
-            )
-          })}
+          <div style={{ width: 500 }}>
+            {connections.map(conf => {
+              const name = readConfObject(conf, 'name')
+              return (
+                <div key={`conn-${name}`}>
+                  {adminMode && sessionConnections?.includes(conf) ? (
+                    <IconButton onClick={() => breakConnection(conf, true)}>
+                      <CloseIcon />
+                    </IconButton>
+                  ) : (
+                    <Tooltip title="Unable to delete connection in config file as non-admin user">
+                      <IconButton>
+                        <CloseIcon color="disabled" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {name}
+                </div>
+              )
+            })}
+          </div>
         </DialogContent>
         <DialogActions>
           <Button

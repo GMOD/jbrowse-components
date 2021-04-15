@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,no-nested-ternary */
+/* eslint-disable react/prop-types,no-nested-ternary,jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */
 import React, { useCallback, useState, useRef, useEffect } from 'react'
 import {
   Checkbox,
@@ -122,7 +122,6 @@ const Node = props => {
       ))}
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
-        role="presentation"
         onClick={() => setOpen(!isOpen)}
         style={{
           marginLeft,
@@ -133,7 +132,7 @@ const Node = props => {
         <div className={!isLeaf ? classes.accordionColor : undefined}>
           {!isLeaf ? (
             <div className={classes.accordionText}>
-              <Typography style={{}}>
+              <Typography>
                 {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
                 {name}
               </Typography>
@@ -233,12 +232,7 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   }, [tree, filterText])
   return (
     <>
-      <VariableSizeTree
-        ref={treeRef}
-        treeWalker={treeWalker}
-        height={height}
-        width="100%"
-      >
+      <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
         {Node}
       </VariableSizeTree>
       <JBrowseMenu

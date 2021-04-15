@@ -61,6 +61,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   setShowAboutConfig?: Function
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
+  sessionConnections?: AnyConfigurationModel[]
+  adminMode?: boolean
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
