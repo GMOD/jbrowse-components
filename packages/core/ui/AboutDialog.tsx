@@ -4,14 +4,26 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  IconButton,
   Typography,
+  makeStyles,
 } from '@material-ui/core'
+import CloseIcon from '@material-ui/icons/Close'
 import { readConfObject } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type FileInfo = Record<string, unknown> | string
+
+const useStyles = makeStyles(theme => ({
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+}))
 
 export default function AboutDialog({
   model,
@@ -20,11 +32,11 @@ export default function AboutDialog({
   model: AnyConfigurationModel
   handleClose: () => void
 }) {
+  const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()
   const [error, setError] = useState<Error>()
   const session = getSession(model)
   const { rpcManager } = session
-  const sessionId = model.trackId
   const conf = readConfObject(model)
 
   useEffect(() => {
@@ -34,7 +46,7 @@ export default function AboutDialog({
     ;(async () => {
       try {
         const adapterConfig = readConfObject(model, 'adapter')
-        const result = await rpcManager.call(sessionId, 'CoreGetInfo', {
+        const result = await rpcManager.call(model.trackId, 'CoreGetInfo', {
           adapterConfig,
           signal,
         })
@@ -52,7 +64,7 @@ export default function AboutDialog({
       aborter.abort()
       cancelled = true
     }
-  }, [model, rpcManager, sessionId])
+  }, [model, rpcManager])
 
   let trackName = readConfObject(model, 'name')
   if (readConfObject(model, 'type') === 'ReferenceSequenceTrack') {
@@ -74,7 +86,15 @@ export default function AboutDialog({
       : info || {}
   return (
     <Dialog open onClose={handleClose}>
-      <DialogTitle>{trackName}</DialogTitle>
+      <DialogTitle>
+        {trackName}
+        <IconButton
+          className={classes.closeButton}
+          onClick={() => handleClose()}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <BaseCard title="Configuration">
           <Attributes
