@@ -1,7 +1,7 @@
 {
   "plugins": [
     {
-      "name": "msaview",
+      "name": "MsaView",
       "authors": ["Colin Diesh"],
       "description": "multiple sequence alignment browser plugin for JBrowse 2",
       "location": "https://github.com/GMOD/jbrowse-plugin-msaview",
@@ -10,7 +10,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png"
     },
     {
-      "name": "gdc",
+      "name": "GDC",
       "authors": ["Garrett Stevens", "Colin Diesh", "Rob Buels"],
       "description": "JBrowse 2 plugin for integrating with GDC resources",
       "location": "https://github.com/GMOD/jbrowse-plugin-gdc",
@@ -19,7 +19,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png"
     },
     {
-      "name": "quantseq",
+      "name": "Quantseq",
       "authors": ["Elliot Hershberg"],
       "description": "External JB2 plugin implementing a QuantitativeSequence track for displaying base-resolution models.",
       "location": "https://github.com/GMOD/jbrowse-plugin-quantseq",
@@ -28,7 +28,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/quantseq-screenshot-fs8.png"
     },
     {
-      "name": "gwas",
+      "name": "GWAS",
       "authors": ["Colin Diesh"],
       "description": "Plugin for displaying GWAS results such as manhattan plot renderings",
       "location": "https://github.com/cmdcolin/jbrowse-plugin-gwas",
@@ -37,7 +37,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gwas-screenshot-fs8.png"
     },
     {
-      "name": "ucsc-api",
+      "name": "UCSC",
       "authors": ["Colin Diesh"],
       "description": "A JBrowse 2 plugin for accessing the UCSC API",
       "location": "https://github.com/cmdcolin/jbrowse-plugin-ucsc-api",
@@ -46,7 +46,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ucsc-screenshot-fs8.png"
     },
     {
-      "name": "biothings-api",
+      "name": "Biothings",
       "authors": ["Colin Diesh"],
       "description": "Adapts to APIs like mygene.info to get super rich gene annotations",
       "location": "https://github.com/cmdcolin/jbrowse-plugin-biothings-api",
@@ -55,7 +55,7 @@
       "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/biothings-screenshot-fs8.png"
     },
     {
-      "name": "ideogram",
+      "name": "Ideogram",
       "authors": ["Colin Diesh"],
       "description": "JBrowse 2 plugin for rendering ideograms",
       "location": "https://github.com/cmdcolin/jbrowse-plugin-ideogram",
