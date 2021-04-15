@@ -74,7 +74,6 @@ const useStyles = makeStyles(theme => ({
 
   nestingLevelMarker: {
     position: 'absolute',
-
     borderLeft: '1.5px solid #555',
   },
   // accordionColor set's display:flex so that the child accordionText use
@@ -197,11 +196,11 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   const session = getSession(model)
   const { filterText } = model
 
-  const rootNode = {
-    name: 'Tracks',
-    id: 'Tracks',
-    children: tree,
-  }
+  //   const rootNode = {
+  //     name: 'Tracks',
+  //     id: 'Tracks',
+  //     children: tree,
+  //   }
 
   const extra = {
     onChange: trackId => model.view.toggleTrack(trackId),
@@ -209,7 +208,9 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   }
   const treeWalker = useCallback(
     function* treeWalker() {
-      yield getNodeData(rootNode, 0, extra)
+      for (let i = 0; i < tree.children.length; i++) {
+        yield getNodeData(tree.children[i], 0, extra)
+      }
 
       while (true) {
         const parentMeta = yield
@@ -220,7 +221,7 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
         }
       }
     },
-    [rootNode, extra],
+    [tree, extra],
   )
 
   const conf = info?.conf

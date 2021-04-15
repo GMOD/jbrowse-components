@@ -214,11 +214,14 @@ export default pluginManager =>
             }
           })
 
-        conns.forEach(conn => {
-          hier.push(conn)
-        })
-
-        return hier
+        return {
+          name: 'Root',
+          id: 'Root',
+          children: [
+            { name: 'Tracks', id: 'Tracks', children: hier },
+            ...conns,
+          ],
+        }
       },
 
       connectionHierarchy(assemblyName, connection) {
