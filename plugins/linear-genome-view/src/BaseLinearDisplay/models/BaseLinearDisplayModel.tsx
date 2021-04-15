@@ -427,7 +427,6 @@ export const BaseLinearDisplay = types
         roundedDynamicBlocks: dynamicBlocks,
         width,
       } = view
-      console.log({ opts })
 
       const renderings = await Promise.all(
         dynamicBlocks.map(block => {
@@ -442,7 +441,6 @@ export const BaseLinearDisplay = types
             self.regionCannotBeRenderedText(block) ||
             self.regionCannotBeRendered(block)
 
-          console.log({ cannotBeRenderedReason })
           if (cannotBeRenderedReason) {
             return {
               reactElement: (

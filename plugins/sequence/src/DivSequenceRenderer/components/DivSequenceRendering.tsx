@@ -267,7 +267,6 @@ const SequenceSVG = ({
 }
 
 const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
-  console.log({ exportSVG })
   return exportSVG ? (
     <>{children}</>
   ) : (
@@ -282,7 +281,6 @@ const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
 }
 
 function Sequence(props: MyProps) {
-  console.log({ props })
   const { regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx

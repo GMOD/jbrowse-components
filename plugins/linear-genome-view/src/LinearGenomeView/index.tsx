@@ -58,7 +58,7 @@ export interface BpOffset {
   oob?: boolean
 }
 
-interface ExportSvgOptions {
+export interface ExportSvgOptions {
   rasterizeLayers?: boolean
 }
 

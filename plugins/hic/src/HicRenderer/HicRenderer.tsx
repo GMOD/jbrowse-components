@@ -34,6 +34,7 @@ export interface RenderArgsDeserialized
   dataAdapter: HicDataAdapter
   bpPerPx: number
   highResolutionScaling: number
+  resolution: number
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -54,8 +55,8 @@ export default class HicRenderer extends ServerSideRendererType {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { features, config, bpPerPx, signal, dataAdapter } = props
-    const res = await dataAdapter.getResolution(bpPerPx)
+    const { features, config, bpPerPx, signal, dataAdapter, resolution } = props
+    const res = await dataAdapter.getResolution(bpPerPx / resolution)
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
