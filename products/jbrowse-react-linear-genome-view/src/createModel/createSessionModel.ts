@@ -334,6 +334,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
+export type SessionModel = Instance<SessionStateModel>
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore

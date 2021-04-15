@@ -1,22 +1,22 @@
-import React, { useEffect, useState, Suspense } from 'react'
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Menu, Logomark } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import React, { useEffect, useState } from 'react'
 import {
   IconButton,
   IconButtonProps as IconButtonPropsType,
   Paper,
+  SvgIconProps,
+  Typography,
   makeStyles,
   useTheme,
-  SvgIconProps,
   fade,
 } from '@material-ui/core'
-import Typography from '@material-ui/core/Typography'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useDimensions from 'react-use-dimensions'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { Menu, Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -102,29 +102,23 @@ const ViewMenu = observer(
   },
 )
 
-function ViewContainer({
-  view,
-  children,
-}: {
-  view: IBaseViewModel
-  children: React.ReactNode
-}) {
-  const classes = useStyles()
-  const theme = useTheme()
-  const [measureRef, { width }] = useDimensions()
+export default observer(
+  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+    const classes = useStyles()
+    const theme = useTheme()
+    const [measureRef, { width }] = useDimensions()
 
-  const padWidth = theme.spacing(1)
+    const padWidth = theme.spacing(1)
 
-  useEffect(() => {
-    if (width) {
-      if (isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+    useEffect(() => {
+      if (width) {
+        if (isAlive(view)) {
+          view.setWidth(width - padWidth * 2)
+        }
       }
-    }
-  }, [padWidth, view, width])
+    }, [padWidth, view, width])
 
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
+    return (
       <Paper
         elevation={12}
         ref={measureRef}
@@ -153,8 +147,6 @@ function ViewContainer({
         </div>
         <Paper>{children}</Paper>
       </Paper>
-    </Suspense>
-  )
-}
-
-export default observer(ViewContainer)
+    )
+  },
+)
