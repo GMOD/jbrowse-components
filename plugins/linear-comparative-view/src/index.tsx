@@ -160,11 +160,15 @@ function getTag(f: Feature, tag: string) {
 
 function WindowSizeDlg(props: {
   display: any
+  feature: Feature
   handleClose: () => void
   track: any
 }) {
   const classes = useStyles()
   const { track, feature: preFeature, handleClose } = props
+
+  // window size stored as string, because it corresponds to a textfield which
+  // is parsed as number on submit
   const [window, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
   const windowSize = +window

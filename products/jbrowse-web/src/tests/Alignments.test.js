@@ -125,6 +125,8 @@ describe('alignments track', () => {
 
     const pileupCanvas = await findAllByTestId1(
       'prerendered_canvas_softclipped',
+      {},
+      { timeout: 10000 },
     )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
@@ -188,9 +190,7 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
-    const trackMenu = await findByTestId('track_menu_icon')
-
-    fireEvent.click(trackMenu)
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Color scheme'))
     fireEvent.click(await findByText('Strand'))
 
