@@ -125,14 +125,10 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async getFeatures({
-    dataAdapter,
-    signal,
-    bpPerPx,
-    regions,
-  }: RenderArgsDeserialized) {
+  async getFeatures(args: RenderArgsDeserialized) {
+    const { dataAdapter, regions } = args
     const features = await dataAdapter
-      .getFeatures(regions[0], { signal, bpPerPx })
+      .getFeatures(regions[0], args)
       .pipe(toArray())
       .toPromise()
     // cast to any to avoid return-type conflict, because the

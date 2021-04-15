@@ -14588,10 +14588,10 @@ hex-color-regex@^1.1.0:
   resolved "https://registry.yarnpkg.com/hex-color-regex/-/hex-color-regex-1.1.0.tgz#4c06fccb4602fe2602b3c93df82d7e7dbf1a8a8e"
   integrity sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==
 
-hic-straw@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/hic-straw/-/hic-straw-2.0.2.tgz#4c989ca14f35755d14923c576a7a4c76405ca63d"
-  integrity sha512-buA/yLxHNbV6POP79gzOwSk1QhOBBlqt728sP7smJwbOe9K3k9fyBbPMI8sdWmbVtdV6wyC6dxn3/EnunpddcA==
+hic-straw@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/hic-straw/-/hic-straw-2.0.3.tgz#4abacaa3edcdc227932c26ac55c2556b74bc5c8a"
+  integrity sha512-vudFB4e726w3s2UGO5mXueCsVF3rssdIka34WCQh2ZzQKRmo5d1S2jQiXOkwMMfSNK6XDSUtmfMrs2VJkzdAtw==
 
 highlight.js@^10.1.1, highlight.js@~10.2.0:
   version "10.2.1"
