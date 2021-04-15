@@ -652,7 +652,7 @@ export default function sessionModelFactory(
       },
     }))
 
-  types.snapshotProcessor(sessionModel, {
+  return types.snapshotProcessor(sessionModel, {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {
