@@ -84,7 +84,7 @@ export default class ServerSideRenderer extends RendererType {
 
     // if we are rendering svg, we skip hydration
     // @ts-ignore
-    if (args.forceSvg) {
+    if (args.exportSVG) {
       // only return the results if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document

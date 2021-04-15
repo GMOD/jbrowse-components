@@ -17,7 +17,7 @@ import {
 } from '@jbrowse/core/util'
 
 interface MyProps {
-  forceSvg: boolean
+  exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
@@ -266,8 +266,9 @@ const SequenceSVG = ({
   )
 }
 
-const Wrapper = ({ forceSvg, width, totalHeight, children }: any) => {
-  return forceSvg ? (
+const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
+  console.log({ exportSVG })
+  return exportSVG ? (
     <>{children}</>
   ) : (
     <svg
@@ -281,6 +282,7 @@ const Wrapper = ({ forceSvg, width, totalHeight, children }: any) => {
 }
 
 function Sequence(props: MyProps) {
+  console.log({ props })
   const { regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx

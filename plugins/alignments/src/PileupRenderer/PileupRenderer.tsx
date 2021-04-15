@@ -45,8 +45,6 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   }
   showSoftClip: boolean
   highResolutionScaling: number
-  forceSvg: boolean
-  fullSvg: boolean
 }
 
 export interface RenderArgsDeserializedWithFeaturesAndLayout

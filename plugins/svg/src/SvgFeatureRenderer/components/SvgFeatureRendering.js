@@ -165,7 +165,7 @@ function SvgFeatureRendering(props) {
     features,
     config,
     displayModel,
-    forceSvg,
+    exportSVG,
   } = props
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -303,7 +303,7 @@ function SvgFeatureRendering(props) {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
-  if (forceSvg) {
+  if (exportSVG) {
     return (
       <RenderedFeatures
         features={features}
@@ -377,12 +377,12 @@ SvgFeatureRendering.propTypes = {
   onFeatureClick: ReactPropTypes.func,
   onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
-  forceSvg: ReactPropTypes.bool,
+  exportSVG: ReactPropTypes.shape({}),
 }
 
 SvgFeatureRendering.defaultProps = {
   displayModel: {},
-  forceSvg: false,
+  exportSVG: undefined,
 
   features: new Map(),
   blockKey: undefined,

@@ -10,14 +10,13 @@ export async function renderToAbstractCanvas(
   width: number,
   height: number,
   opts: {
-    fullSvg?: boolean
-    forceSvg?: boolean
+    exportSVG?: { rasterizeLayers?: boolean }
     highResolutionScaling: number
   },
   cb: Function,
 ) {
-  const { fullSvg, forceSvg, highResolutionScaling = 1 } = opts
-  if (fullSvg) {
+  const { exportSVG, highResolutionScaling = 1 } = opts
+  if (exportSVG && !exportSVG.rasterizeLayers) {
     const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
     const fakeCtx = fakeCanvas.getContext('2d')
     await cb(fakeCtx)
@@ -25,7 +24,7 @@ export async function renderToAbstractCanvas(
       reactElement: fakeCanvas.getSerializedSvg(),
     }
   }
-  if (forceSvg) {
+  if (exportSVG && exportSVG.rasterizeLayers) {
     const scale = 4
     const canvas = createCanvas(Math.ceil(width * scale), height * scale)
     const ctx = canvas.getContext('2d')

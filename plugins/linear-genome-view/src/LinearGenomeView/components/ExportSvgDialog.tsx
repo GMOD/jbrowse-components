@@ -70,7 +70,7 @@ export default function ExportSvgDlg({
             setLoading(true)
             setError(undefined)
             try {
-              await model.exportSvg({ fullSvg: !rasterizeLayers })
+              await model.exportSvg({ rasterizeLayers })
               handleClose()
             } catch (e) {
               setError(e)

@@ -58,6 +58,10 @@ export interface BpOffset {
   oob?: boolean
 }
 
+interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+}
+
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
   if (!contentBlocks.length) {
     return ''
@@ -97,8 +101,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(MUIRegion),
-      // we use an array for the tracks because the tracks are displayed in a specific
-      // order that we need to keep.
+      // we use an array for the tracks because the tracks are displayed in a
+      // specific order that we need to keep.
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -1344,7 +1348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg(opts: { fullSvg: boolean }) {
+      async exportSvg(opts: ExportSvgOptions) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })

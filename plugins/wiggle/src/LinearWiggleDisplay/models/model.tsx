@@ -593,7 +593,7 @@ const stateModelFactory = (
             ),
           )
         },
-        async renderSvg(opts: { fullSvg: boolean }) {
+        async renderSvg(opts: unknown) {
           await when(() => self.ready && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV

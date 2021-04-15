@@ -197,7 +197,7 @@ const stateModelFactory = (
           }),
         )
       },
-      async renderSvg(opts: { fullSvg: boolean }) {
+      async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height
         await when(() => self.PileupDisplay.ready)
         return (

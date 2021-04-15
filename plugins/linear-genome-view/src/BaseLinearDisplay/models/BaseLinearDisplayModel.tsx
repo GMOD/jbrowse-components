@@ -23,7 +23,7 @@ import React from 'react'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
-import { LinearGenomeViewModel } from '../../LinearGenomeView'
+import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 
 export interface Layout {
   minX: number
@@ -418,15 +418,16 @@ export const BaseLinearDisplay = types
     },
   }))
   .actions(self => ({
-    async renderSvg(opts: { fullSvg: boolean; overrideHeight?: number }) {
+    async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
       const { height, id } = self
-      const { fullSvg, overrideHeight } = opts
+      const { overrideHeight } = opts
       const view = getContainingView(self) as LinearGenomeViewModel
       const {
         offsetPx: viewOffsetPx,
-        width,
         roundedDynamicBlocks: dynamicBlocks,
+        width,
       } = view
+      console.log({ opts })
 
       const renderings = await Promise.all(
         dynamicBlocks.map(block => {
@@ -440,15 +441,19 @@ export const BaseLinearDisplay = types
           const cannotBeRenderedReason =
             self.regionCannotBeRenderedText(block) ||
             self.regionCannotBeRendered(block)
+
+          console.log({ cannotBeRenderedReason })
           if (cannotBeRenderedReason) {
-            return (
-              <>
-                <rect x={0} y={0} width={width} height={20} fill="#aaa" />
-                <text x={0} y={15}>
-                  {cannotBeRenderedReason}
-                </text>
-              </>
-            )
+            return {
+              reactElement: (
+                <>
+                  <rect x={0} y={0} width={width} height={20} fill="#aaa" />
+                  <text x={0} y={15}>
+                    {cannotBeRenderedReason}
+                  </text>
+                </>
+              ),
+            }
           }
 
           const {
@@ -461,8 +466,7 @@ export const BaseLinearDisplay = types
           return rendererType.renderInClient(rpcManager, {
             ...renderArgs,
             ...renderProps,
-            forceSvg: true,
-            fullSvg,
+            exportSVG: opts,
           })
         }),
       )
@@ -470,7 +474,7 @@ export const BaseLinearDisplay = types
       return (
         <>
           {renderings.map((rendering, index) => {
-            const { offsetPx, key } = dynamicBlocks[index]
+            const { offsetPx } = dynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
             return (
               <React.Fragment key={`frag-${index}`}>
@@ -484,18 +488,16 @@ export const BaseLinearDisplay = types
                     />
                   </clipPath>
                 </defs>
-                {React.isValidElement(rendering.reactElement) ? (
-                  <g key={key} transform={`translate(${offset} 0)`}>
-                    {rendering.reactElement}
-                  </g>
-                ) : (
-                  <g
-                    key={key}
-                    transform={`translate(${offset} 0)`}
-                    dangerouslySetInnerHTML={{ __html: rendering.html }}
-                    clipPath={`url(#clip-${id}-${index})`}
-                  />
-                )}
+                <g transform={`translate(${offset} 0)`}>
+                  {React.isValidElement(rendering.reactElement) ? (
+                    rendering.reactElement
+                  ) : (
+                    <g
+                      dangerouslySetInnerHTML={{ __html: rendering.html }}
+                      clipPath={`url(#clip-${id}-${index})`}
+                    />
+                  )}
+                </g>
               </React.Fragment>
             )
           })}

@@ -13,7 +13,7 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 // locals
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewStateModel, ExportSvgOptions } from '..'
 import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
@@ -314,10 +314,7 @@ function SVGTracks({
 }
 
 // render LGV to SVG
-export async function renderToSvg(
-  model: LGV,
-  opts: { fullSvg?: boolean } = {},
-) {
+export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const { width, tracks } = model
   const shift = 50
