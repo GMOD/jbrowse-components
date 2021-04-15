@@ -32,27 +32,34 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async run() {
-    const { args, flags: runFlags } = this.parse(TextIndex)
+    const { flags: runFlags } = this.parse(TextIndex)
 
     this.debug(`Command loaded`)
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
-        this.log('TODO: implement individual text index')
+        const trackIds: string = runFlags.tracks
+        if (trackIds.split(',').length > 1) {
+          this.log(
+            'Error, --individual flag only allows one track to be indexed',
+          )
+        } else {
+          this.log(
+            `TODO: implement individual indexing for this track: ${runFlags.tracks}`,
+          )
+        }
       } else {
         this.log('Error, please specify a track to index.')
       }
     } else if (runFlags.tracks) {
+      const trackIds: Array<string> = runFlags.tracks.split(',')
       this.log(
-        `TODO: implement aggregate text indexing for these tracks: ${runFlags.tracks}`,
+        `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
       )
     } else {
       this.log(
         'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
       )
     }
-
-    // TODO: Throw an error if --individual is specified with more than one track
-
   }
 }
