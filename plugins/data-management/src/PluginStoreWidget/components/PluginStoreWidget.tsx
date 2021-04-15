@@ -3,6 +3,11 @@ import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 
 import { makeStyles } from '@material-ui/core/styles'
 import { Typography } from '@material-ui/core'
+import Accordion from '@material-ui/core/Accordion'
+import AccordionSummary from '@material-ui/core/AccordionSummary'
+import AccordionDetails from '@material-ui/core/AccordionDetails'
+
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 import PluginCard from './PluginCard'
 
@@ -10,8 +15,8 @@ import type { JBrowsePlugin } from '../types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({
-  sectionHeader: {
-    margin: '1em',
+  accordion: {
+    marginTop: '1em',
   },
 }))
 
@@ -41,12 +46,14 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
 
   return (
     <div>
-      <Typography className={classes.sectionHeader} variant="h5">
-        Available plugins
-      </Typography>
-      {pluginArray.map(plugin => (
-        <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
-      ))}
+      <Accordion defaultExpanded>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h5">Available plugins</Typography>
+        </AccordionSummary>
+        {pluginArray.map(plugin => (
+          <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
+        ))}
+      </Accordion>
     </div>
   )
 }
