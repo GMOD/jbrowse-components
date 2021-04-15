@@ -276,32 +276,13 @@ function PluginCard(props) {
   )
 }
 
-// snagged from https://stackoverflow.com/a/53952925
-function toPascalCase(string) {
-  return `${string}`
-    .replace(new RegExp(/[-_]+/, 'g'), ' ')
-    .replace(new RegExp(/[^\w\s]/, 'g'), '')
-    .replace(
-      new RegExp(/\s+(.)(\w+)/, 'g'),
-      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`,
-    )
-    .replace(new RegExp(/\s/, 'g'), '')
-    .replace(new RegExp(/\w/), s => s.toUpperCase())
-}
-
 function ConfigBlock(props) {
   const { plugin } = props
   const [clickedCopy, setClickedCopy] = useState(false)
 
-  let pluginName = plugin.name
-  if (pluginName.endsWith('-api')) {
-    pluginName = pluginName.replace(/-api/, '')
-  }
-  pluginName = toPascalCase(pluginName)
-
   const configString = JSON.stringify(
     {
-      name: pluginName,
+      name: plugin.name,
       url: plugin.url,
     },
     null,
