@@ -8,7 +8,6 @@ import {
   FormControlLabel,
   Checkbox,
   IconButton,
-  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core'

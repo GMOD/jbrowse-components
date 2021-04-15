@@ -342,7 +342,7 @@ const HierarchicalTrackSelectorContainer = observer(
 )
 
 const HierarchicalTrackSelectorHeader = observer(
-  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
+  ({ model, setHeaderHeight, setAssemblyIdx }) => {
     const classes = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] = useState()
@@ -352,8 +352,6 @@ const HierarchicalTrackSelectorHeader = observer(
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
     const { assemblyNames } = model
-    const { connectionInstances } = session
-    const assemblyName = assemblyNames[assemblyIdx]
 
     function breakConnection(connectionConf, deletingConnection) {
       const name = readConfObject(connectionConf, 'name')
