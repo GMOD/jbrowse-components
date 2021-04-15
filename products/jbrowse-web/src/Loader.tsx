@@ -8,8 +8,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import ErrorBoundary from 'react-error-boundary'
 import {
   StringParam,
-  useQueryParam,
   QueryParamProvider,
+  useQueryParam,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
@@ -33,8 +33,9 @@ import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
-import SessionWarningModal from './sessionWarningModal'
-import ConfigWarningModal from './configWarningModal'
+
+const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
 
 const StartScreen = lazy(() => import('./StartScreen'))
 
@@ -566,7 +567,6 @@ const Renderer = observer(
               {`${err}`}
               {snapshotError ? (
                 <>
-                  {' '}
                   ... Failed element had snapshot:
                   <pre
                     style={{
@@ -590,34 +590,38 @@ const Renderer = observer(
         loader.setSessionTriaged(undefined)
       }
       return loader.sessionTriaged.origin === 'session' ? (
-        <SessionWarningModal
-          onConfirm={() => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            loader.setSessionSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            loader.setBlankSession(true)
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <SessionWarningDialog
+            onConfirm={() => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              loader.setSessionSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              loader.setBlankSession(true)
+              handleClose()
+            }}
+          />
+        </Suspense>
       ) : (
-        <ConfigWarningModal
-          onConfirm={async () => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            await loader.fetchPlugins(session)
-            loader.setConfigSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            factoryReset()
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <ConfigWarningDialog
+            onConfirm={async () => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              await loader.fetchPlugins(session)
+              loader.setConfigSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              factoryReset()
+              handleClose()
+            }}
+          />
+        </Suspense>
       )
     }
     if (pm) {
