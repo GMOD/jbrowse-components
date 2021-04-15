@@ -15,7 +15,7 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
-import { fetchSequence } from './SequenceDialog'
+import { fetchSequence } from './BigsiDialog'
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -212,11 +212,13 @@ function RubberBand({
     }
     const leftOffset = model.pxToBp(leftPx)
     const rightOffset = model.pxToBp(rightPx)
+    //model.setOffsets(leftOffset, rightOffset)
 
     const regionsSelected = model.getSelectedRegions(leftOffset, rightOffset)
+    console.log(leftOffset, rightOffset)
 
     if (regionsSelected.length > 0) {
-        const chunks = await fetchSequence(model, regionsSelected)
+      const chunks = await fetchSequence(model, leftOffset, rightOffset, regionsSelected)
     }
   }
 
@@ -263,6 +265,7 @@ function RubberBand({
       icon: MenuOpenIcon,
       onClick: () => {
         runBigsiQuery()
+        handleClose()
       },
     },
   ]

@@ -25,8 +25,6 @@ import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
 import { LinearGenomeViewModel } from '..'
-import queryBigsi from './bigsi/query_bigsi'
-import bigsi from './bigsi/bigsis/hg38_chr1_bigsi.json'
 
 const useStyles = makeStyles(theme => ({
   loadingMessage: {
@@ -51,7 +49,7 @@ const useStyles = makeStyles(theme => ({
  * @param selectedRegions - Region[]
  * @returns Features[]
  */
-export async function fetchSequence(
+async function fetchSequence(
   self: LinearGenomeViewModel,
   selectedRegions: Region[],
 ) {
@@ -60,8 +58,6 @@ export async function fetchSequence(
     self.leftOffset?.assemblyName || self.rightOffset?.assemblyName || ''
   const { rpcManager, assemblyManager } = session
   const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
-
-  console.log(assemblyName)
 
   // assembly configuration
   const adapterConfig = readConfObject(assemblyConfig, ['sequence', 'adapter'])
@@ -76,30 +72,6 @@ export async function fetchSequence(
       }),
     ),
   )) as Feature[][]
-
-  // console.log(chunks[0][0].data.seq)
-  const response = await queryBigsi.main(bigsi, chunks[0][0].data.seq)
-  const bigsiFeatures = Object.values(response)
-  console.log(bigsiFeatures)
-  for (let i=0; i < bigsiFeatures.length; i++){
-      console.log(i)
-      bigsiFeatures[i]['uniqueId'] = parseInt(i)
-      bigsiFeatures[i]['name'] = bigsiFeatures[i]['hits']
-  }
-
-
-    session.addTrackConf({
-            trackId: `track-${Date.now()}`,
-            name: "My track",
-            assemblyNames: ['hg38'],
-            type: 'FeatureTrack',
-            adapter: {
-                type: 'FromConfigAdapter',
-                features: bigsiFeatures,
-                //features: [ { "refName": "1", "start":1, "end":200000, "uniqueId": "id1" }],
-            },
-            })
-  //console.log(response)
 
   // assumes that we get whole sequence in a single getFeatures call
   return chunks.map(chunk => chunk[0])

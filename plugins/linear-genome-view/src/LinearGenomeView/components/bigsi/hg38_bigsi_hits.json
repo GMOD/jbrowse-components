@@ -1,0 +1,1730 @@
+[
+    {
+        "0": {
+            "refName": 1,
+            "start": 0,
+            "end": 27661825,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 1,
+            "start": 27361826,
+            "end": 55023651,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 1,
+            "start": 54723651,
+            "end": 82385476,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 1,
+            "start": 82085476,
+            "end": 109747301,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 1,
+            "start": 109447301,
+            "end": 137109126,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 1,
+            "start": 136809126,
+            "end": 164470951,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 1,
+            "start": 164170951,
+            "end": 191832776,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 1,
+            "start": 191532776,
+            "end": 219194601,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 1,
+            "start": 218894601,
+            "end": 246556426,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 1,
+            "start": 246256426,
+            "end": 248956422,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 2,
+            "start": 0,
+            "end": 26910392,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 2,
+            "start": 26610393,
+            "end": 53520785,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 2,
+            "start": 53220785,
+            "end": 80131177,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 2,
+            "start": 79831177,
+            "end": 106741569,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 2,
+            "start": 106441569,
+            "end": 133351961,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 2,
+            "start": 133051961,
+            "end": 159962353,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 2,
+            "start": 159662353,
+            "end": 186572745,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 2,
+            "start": 186272745,
+            "end": 213183137,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 2,
+            "start": 212883137,
+            "end": 239793529,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 2,
+            "start": 239493529,
+            "end": 242193529,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 3,
+            "start": 0,
+            "end": 22032840,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 3,
+            "start": 21732841,
+            "end": 43765681,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 3,
+            "start": 43465681,
+            "end": 65498521,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 3,
+            "start": 65198521,
+            "end": 87231361,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 3,
+            "start": 86931361,
+            "end": 108964201,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 3,
+            "start": 108664201,
+            "end": 130697041,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 3,
+            "start": 130397041,
+            "end": 152429881,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 3,
+            "start": 152129881,
+            "end": 174162721,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 3,
+            "start": 173862721,
+            "end": 195895561,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 3,
+            "start": 195595561,
+            "end": 198295559,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 4,
+            "start": 0,
+            "end": 21134951,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 4,
+            "start": 20834952,
+            "end": 41969903,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 4,
+            "start": 41669903,
+            "end": 62804854,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 4,
+            "start": 62504854,
+            "end": 83639805,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 4,
+            "start": 83339805,
+            "end": 104474756,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 4,
+            "start": 104174756,
+            "end": 125309707,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 4,
+            "start": 125009707,
+            "end": 146144658,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 4,
+            "start": 145844658,
+            "end": 166979609,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 4,
+            "start": 166679609,
+            "end": 187814560,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 4,
+            "start": 187514560,
+            "end": 190214555,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 5,
+            "start": 0,
+            "end": 20170918,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 5,
+            "start": 19870919,
+            "end": 40041837,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 5,
+            "start": 39741837,
+            "end": 59912755,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 5,
+            "start": 59612755,
+            "end": 79783673,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 5,
+            "start": 79483673,
+            "end": 99654591,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 5,
+            "start": 99354591,
+            "end": 119525509,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 5,
+            "start": 119225509,
+            "end": 139396427,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 5,
+            "start": 139096427,
+            "end": 159267345,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 5,
+            "start": 158967345,
+            "end": 179138263,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 5,
+            "start": 178838263,
+            "end": 181538259,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 6,
+            "start": 0,
+            "end": 18978442,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 6,
+            "start": 18678443,
+            "end": 37656885,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 6,
+            "start": 37356885,
+            "end": 56335327,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 6,
+            "start": 56035327,
+            "end": 75013769,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 6,
+            "start": 74713769,
+            "end": 93692211,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 6,
+            "start": 93392211,
+            "end": 112370653,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 6,
+            "start": 112070653,
+            "end": 131049095,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 6,
+            "start": 130749095,
+            "end": 149727537,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 6,
+            "start": 149427537,
+            "end": 168405979,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 6,
+            "start": 168105979,
+            "end": 170805979,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 7,
+            "start": 0,
+            "end": 17705108,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 7,
+            "start": 17405109,
+            "end": 35110217,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 7,
+            "start": 34810217,
+            "end": 52515325,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 7,
+            "start": 52215325,
+            "end": 69920433,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 7,
+            "start": 69620433,
+            "end": 87325541,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 7,
+            "start": 87025541,
+            "end": 104730649,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 7,
+            "start": 104430649,
+            "end": 122135757,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 7,
+            "start": 121835757,
+            "end": 139540865,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 7,
+            "start": 139240865,
+            "end": 156945973,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 7,
+            "start": 156645973,
+            "end": 159345973,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 8,
+            "start": 0,
+            "end": 16126515,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 8,
+            "start": 15826516,
+            "end": 31953031,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 8,
+            "start": 31653031,
+            "end": 47779546,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 8,
+            "start": 47479546,
+            "end": 63606061,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 8,
+            "start": 63306061,
+            "end": 79432576,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 8,
+            "start": 79132576,
+            "end": 95259091,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 8,
+            "start": 94959091,
+            "end": 111085606,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 8,
+            "start": 110785606,
+            "end": 126912121,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 8,
+            "start": 126612121,
+            "end": 142738636,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 8,
+            "start": 142438636,
+            "end": 145138636,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 9,
+            "start": 0,
+            "end": 15377191,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 9,
+            "start": 15077192,
+            "end": 30454383,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 9,
+            "start": 30154383,
+            "end": 45531574,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 9,
+            "start": 45231574,
+            "end": 60608765,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 9,
+            "start": 60308765,
+            "end": 75685956,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 9,
+            "start": 75385956,
+            "end": 90763147,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 9,
+            "start": 90463147,
+            "end": 105840338,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 9,
+            "start": 105540338,
+            "end": 120917529,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 9,
+            "start": 120617529,
+            "end": 135994720,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 9,
+            "start": 135694720,
+            "end": 138394717,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 10,
+            "start": 0,
+            "end": 14866380,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 10,
+            "start": 14566381,
+            "end": 29432761,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 10,
+            "start": 29132761,
+            "end": 43999141,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 10,
+            "start": 43699141,
+            "end": 58565521,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 10,
+            "start": 58265521,
+            "end": 73131901,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 10,
+            "start": 72831901,
+            "end": 87698281,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 10,
+            "start": 87398281,
+            "end": 102264661,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 10,
+            "start": 101964661,
+            "end": 116831041,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 10,
+            "start": 116531041,
+            "end": 131397421,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 10,
+            "start": 131097421,
+            "end": 133797422,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 11,
+            "start": 0,
+            "end": 15009625,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 11,
+            "start": 14709626,
+            "end": 29719251,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 11,
+            "start": 29419251,
+            "end": 44428876,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 11,
+            "start": 44128876,
+            "end": 59138501,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 11,
+            "start": 58838501,
+            "end": 73848126,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 11,
+            "start": 73548126,
+            "end": 88557751,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 11,
+            "start": 88257751,
+            "end": 103267376,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 11,
+            "start": 102967376,
+            "end": 117977001,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 11,
+            "start": 117677001,
+            "end": 132686626,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 11,
+            "start": 132386626,
+            "end": 135086622,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 12,
+            "start": 0,
+            "end": 14808368,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 12,
+            "start": 14508369,
+            "end": 29316737,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 12,
+            "start": 29016737,
+            "end": 43825105,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 12,
+            "start": 43525105,
+            "end": 58333473,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 12,
+            "start": 58033473,
+            "end": 72841841,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 12,
+            "start": 72541841,
+            "end": 87350209,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 12,
+            "start": 87050209,
+            "end": 101858577,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 12,
+            "start": 101558577,
+            "end": 116366945,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 12,
+            "start": 116066945,
+            "end": 130875313,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 12,
+            "start": 130575313,
+            "end": 133275309,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 13,
+            "start": 0,
+            "end": 12707148,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 13,
+            "start": 12407149,
+            "end": 25114297,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 13,
+            "start": 24814297,
+            "end": 37521445,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 13,
+            "start": 37221445,
+            "end": 49928593,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 13,
+            "start": 49628593,
+            "end": 62335741,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 13,
+            "start": 62035741,
+            "end": 74742889,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 13,
+            "start": 74442889,
+            "end": 87150037,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 13,
+            "start": 86850037,
+            "end": 99557185,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 13,
+            "start": 99257185,
+            "end": 111964333,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 13,
+            "start": 111664333,
+            "end": 114364328,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 14,
+            "start": 0,
+            "end": 11893746,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 14,
+            "start": 11593747,
+            "end": 23487493,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 14,
+            "start": 23187493,
+            "end": 35081239,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 14,
+            "start": 34781239,
+            "end": 46674985,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 14,
+            "start": 46374985,
+            "end": 58268731,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 14,
+            "start": 57968731,
+            "end": 69862477,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 14,
+            "start": 69562477,
+            "end": 81456223,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 14,
+            "start": 81156223,
+            "end": 93049969,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 14,
+            "start": 92749969,
+            "end": 104643715,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 14,
+            "start": 104343715,
+            "end": 107043718,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 15,
+            "start": 0,
+            "end": 11332354,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 15,
+            "start": 11032355,
+            "end": 22364709,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 15,
+            "start": 22064709,
+            "end": 33397063,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 15,
+            "start": 33097063,
+            "end": 44429417,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 15,
+            "start": 44129417,
+            "end": 55461771,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 15,
+            "start": 55161771,
+            "end": 66494125,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 15,
+            "start": 66194125,
+            "end": 77526479,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 15,
+            "start": 77226479,
+            "end": 88558833,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 15,
+            "start": 88258833,
+            "end": 99591187,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 15,
+            "start": 99291187,
+            "end": 101991189,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 16,
+            "start": 0,
+            "end": 10037594,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 16,
+            "start": 9737595,
+            "end": 19775189,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 16,
+            "start": 19475189,
+            "end": 29512783,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 16,
+            "start": 29212783,
+            "end": 39250377,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 16,
+            "start": 38950377,
+            "end": 48987971,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 16,
+            "start": 48687971,
+            "end": 58725565,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 16,
+            "start": 58425565,
+            "end": 68463159,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 16,
+            "start": 68163159,
+            "end": 78200753,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 16,
+            "start": 77900753,
+            "end": 87938347,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 16,
+            "start": 87638347,
+            "end": 90338345,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 17,
+            "start": 0,
+            "end": 9250827,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 17,
+            "start": 8950828,
+            "end": 18201655,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 17,
+            "start": 17901655,
+            "end": 27152482,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 17,
+            "start": 26852482,
+            "end": 36103309,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 17,
+            "start": 35803309,
+            "end": 45054136,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 17,
+            "start": 44754136,
+            "end": 54004963,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 17,
+            "start": 53704963,
+            "end": 62955790,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 17,
+            "start": 62655790,
+            "end": 71906617,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 17,
+            "start": 71606617,
+            "end": 80857444,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 17,
+            "start": 80557444,
+            "end": 83257441,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 18,
+            "start": 0,
+            "end": 8930365,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 18,
+            "start": 8630366,
+            "end": 17560731,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 18,
+            "start": 17260731,
+            "end": 26191096,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 18,
+            "start": 25891096,
+            "end": 34821461,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 18,
+            "start": 34521461,
+            "end": 43451826,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 18,
+            "start": 43151826,
+            "end": 52082191,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 18,
+            "start": 51782191,
+            "end": 60712556,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 18,
+            "start": 60412556,
+            "end": 69342921,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 18,
+            "start": 69042921,
+            "end": 77973286,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 18,
+            "start": 77673286,
+            "end": 80373285,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 19,
+            "start": 0,
+            "end": 6513068,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 19,
+            "start": 6213069,
+            "end": 12726137,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 19,
+            "start": 12426137,
+            "end": 18939205,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 19,
+            "start": 18639205,
+            "end": 25152273,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 19,
+            "start": 24852273,
+            "end": 31365341,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 19,
+            "start": 31065341,
+            "end": 37578409,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 19,
+            "start": 37278409,
+            "end": 43791477,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 19,
+            "start": 43491477,
+            "end": 50004545,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 19,
+            "start": 49704545,
+            "end": 56217613,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 19,
+            "start": 55917613,
+            "end": 58617616,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 20,
+            "start": 0,
+            "end": 7160463,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 20,
+            "start": 6860464,
+            "end": 14020927,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 20,
+            "start": 13720927,
+            "end": 20881390,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 20,
+            "start": 20581390,
+            "end": 27741853,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 20,
+            "start": 27441853,
+            "end": 34602316,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 20,
+            "start": 34302316,
+            "end": 41462779,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 20,
+            "start": 41162779,
+            "end": 48323242,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 20,
+            "start": 48023242,
+            "end": 55183705,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 20,
+            "start": 54883705,
+            "end": 62044168,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 20,
+            "start": 61744168,
+            "end": 64444167,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 21,
+            "start": 0,
+            "end": 5189998,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 21,
+            "start": 4889999,
+            "end": 10079997,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 21,
+            "start": 9779997,
+            "end": 14969995,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 21,
+            "start": 14669995,
+            "end": 19859993,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 21,
+            "start": 19559993,
+            "end": 24749991,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 21,
+            "start": 24449991,
+            "end": 29639989,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 21,
+            "start": 29339989,
+            "end": 34529987,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 21,
+            "start": 34229987,
+            "end": 39419985,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 21,
+            "start": 39119985,
+            "end": 44309983,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 21,
+            "start": 44009983,
+            "end": 46709983,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 22,
+            "start": 0,
+            "end": 5646496,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 22,
+            "start": 5346497,
+            "end": 10992993,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 22,
+            "start": 10692993,
+            "end": 16339489,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 22,
+            "start": 16039489,
+            "end": 21685985,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 22,
+            "start": 21385985,
+            "end": 27032481,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 22,
+            "start": 26732481,
+            "end": 32378977,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 22,
+            "start": 32078977,
+            "end": 37725473,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 22,
+            "start": 37425473,
+            "end": 43071969,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 22,
+            "start": 42771969,
+            "end": 48418465,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 22,
+            "start": 48118465,
+            "end": 50818468,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 23,
+            "start": 0,
+            "end": 17337877,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 23,
+            "start": 17037878,
+            "end": 34375755,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 23,
+            "start": 34075755,
+            "end": 51413632,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 23,
+            "start": 51113632,
+            "end": 68451509,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 23,
+            "start": 68151509,
+            "end": 85489386,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 23,
+            "start": 85189386,
+            "end": 102527263,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 23,
+            "start": 102227263,
+            "end": 119565140,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 23,
+            "start": 119265140,
+            "end": 136603017,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 23,
+            "start": 136303017,
+            "end": 153640894,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 23,
+            "start": 153340894,
+            "end": 156040895,
+            "hits": 0,
+            "score": 0
+        }
+    },
+    {
+        "0": {
+            "refName": 24,
+            "start": 0,
+            "end": 6358602,
+            "hits": 0,
+            "score": 0
+        },
+        "1": {
+            "refName": 24,
+            "start": 6058603,
+            "end": 12417205,
+            "hits": 0,
+            "score": 0
+        },
+        "2": {
+            "refName": 24,
+            "start": 12117205,
+            "end": 18475807,
+            "hits": 0,
+            "score": 0
+        },
+        "3": {
+            "refName": 24,
+            "start": 18175807,
+            "end": 24534409,
+            "hits": 0,
+            "score": 0
+        },
+        "4": {
+            "refName": 24,
+            "start": 24234409,
+            "end": 30593011,
+            "hits": 0,
+            "score": 0
+        },
+        "5": {
+            "refName": 24,
+            "start": 30293011,
+            "end": 36651613,
+            "hits": 0,
+            "score": 0
+        },
+        "6": {
+            "refName": 24,
+            "start": 36351613,
+            "end": 42710215,
+            "hits": 0,
+            "score": 0
+        },
+        "7": {
+            "refName": 24,
+            "start": 42410215,
+            "end": 48768817,
+            "hits": 0,
+            "score": 0
+        },
+        "8": {
+            "refName": 24,
+            "start": 48468817,
+            "end": 54827419,
+            "hits": 0,
+            "score": 0
+        },
+        "9": {
+            "refName": 24,
+            "start": 54527419,
+            "end": 57227415,
+            "hits": 0,
+            "score": 0
+        }
+    }
+]

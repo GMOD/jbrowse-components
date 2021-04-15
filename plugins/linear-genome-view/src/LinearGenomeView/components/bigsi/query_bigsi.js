@@ -1,6 +1,16 @@
 const cdf = require('binomial-cdf')
 const matrix = require('matrix-js')
+const { IndexedFasta } = require('@gmod/indexedfasta')
 const commonFunc = require('./common_func.js')
+const genomeBigsiHits = require('./hg38_bigsi_hits.json')
+
+// const genomeFastaPath = '/Users/shihabdider/Research/Flashmap/bigsi_ui/public/javascripts/tests/data/GCF_000001405.26_GRCh38_genomic.fna'
+// const genomeFaiPath = '/Users/shihabdider/Research/Flashmap/bigsi_ui/public/javascripts/tests/data/GCF_000001405.26_GRCh38_genomic.fna.fai'
+// const genomeSeq = new IndexedFasta({
+//     path: genomeFastaPath,
+//     faiPath: genomeFaiPath,
+//     chunkSizeLimit: 50000000
+// });
 
 async function makeQueryFragsMinimizers(querySeq, fragmentSize=2500){
     /* Inputs:
@@ -247,12 +257,12 @@ async function main(bigsi, querySeq){
     const queryFragmentsMinimizers = await makeQueryFragsMinimizers(querySeq)
     const queryBloomFilter = await makeQueryFragsBloomFilters(queryFragmentsMinimizers)
 
-    const refSeqName = '1'
-    const refSeqSize = 248956422
-    const bigsiHits = initBigsiHits(refSeqSize, refSeqName, numBuckets=10, overhang=30000)
 
-    const bigsiMatrix = matrix(bigsi)
-    const filteredBigsiHits = await queryBigsi(bigsiMatrix, queryBloomFilter, bigsiHits)
+    //const genomeBigsiHits = await queryBigsi.initGenomeBigsiHits(genomeSeq)
+
+    const genomeBigsi = matrix(bigsi)
+    const filteredBigsiHits = await queryGenomeBigsis(genomeBigsi, queryBloomFilter, genomeBigsiHits)
+    //const filteredBigsiHits = await queryBigsi(bigsiMatrix, queryBloomFilter, bigsiHits)
 
     return filteredBigsiHits
 }
