@@ -270,21 +270,8 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
     [rootNode, extra],
   )
 
-  // const treeWalker = makeTreeWalker({
-  //   nodes: {
-  //     name: 'Tracks',
-  //     id: 'Tracks',
-  //     children: tree,
-  //   },
-  //   onChange: trackId => model.view.toggleTrack(trackId),
-  //   onMoreInfo: setMoreInfo,
-  // })
-
   const conf = info?.conf
-  const menuItems =
-    conf && session.getTrackActionMenuItems
-      ? session.getTrackActionMenuItems(conf)
-      : []
+  const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
 
   useEffect(() => {
     treeRef.current.recomputeTree({
