@@ -35,10 +35,11 @@ import ManageConnectionsDialog from './ManageConnectionsDialog'
 
 const useStyles = makeStyles(theme => ({
   searchBox: {
-    margin: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   menuIcon: {
-    margin: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    marginBottom: 0,
   },
   fab: {
     position: 'absolute',
@@ -153,16 +154,10 @@ const Node = props => {
                     }}
                   />
                 }
-                label={
-                  <>
-                    <span>{name}</span>
-                  </>
-                }
+                label={name}
               />
               <IconButton
-                onClick={event => {
-                  onMoreInfo({ target: event.currentTarget, id, conf })
-                }}
+                onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
                 color="secondary"
                 data-testid={`htsTrackEntryMenu-${id}`}
               >
@@ -359,6 +354,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const [deleteDialogDetails, setDeleteDialogDetails] = useState()
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const { assemblyNames } = model
+    const { connectionInstances } = session
     const assemblyName = assemblyNames[assemblyIdx]
 
     function handleConnectionToggle(connectionConf) {
@@ -394,20 +390,14 @@ const HierarchicalTrackSelectorHeader = observer(
     }
 
     const connections = session.connections
-      .filter(conf =>
-        readConfObject(conf, 'assemblyNames').includes(assemblyName),
-      )
+      .filter(c => readConfObject(c, 'assemblyNames').includes(assemblyName))
       .map(conf => {
         const name = readConfObject(conf, 'name')
         return {
           label: name,
           type: 'checkbox',
-          checked: !!session.connectionInstances.find(
-            connection => connection.name === name,
-          ),
-          onClick: () => {
-            handleConnectionToggle(conf)
-          },
+          checked: !!connectionInstances.find(inst => inst.name === name),
+          onClick: () => handleConnectionToggle(conf),
         }
       })
     const connectionMenuItems = connections.length
@@ -423,7 +413,7 @@ const HierarchicalTrackSelectorHeader = observer(
         ]
       : []
     const assemblyMenuItems =
-      assemblyNames.length > 2
+      assemblyNames.length >= 2
         ? [
             {
               label: 'Assemblies...',
@@ -441,20 +431,19 @@ const HierarchicalTrackSelectorHeader = observer(
       {
         label: 'Add track',
         onClick: () => {
-          const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
-            view: model.view.id,
-          })
-          session.showWidget(widget)
+          session.showWidget(
+            session.addWidget('AddTrackWidget', 'addTrackWidget', {
+              view: model.view.id,
+            }),
+          )
         },
       },
       {
         label: 'Add connection',
         onClick: () => {
-          const widget = session.addWidget(
-            'AddConnectionWidget',
-            'addConnectionWidget',
+          session.showWidget(
+            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
           )
-          session.showWidget(widget)
         },
       },
       ...connectionMenuItems,
@@ -466,23 +455,14 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          {
-            /*
-             * if there are no connections and this is not a multi-assembly
-             * drop down menu here may be unneeded and cause more confusion than
-             * help,  so conditionally renders
-             */
-            menuItems.length ? (
-              <IconButton
-                className={classes.menuIcon}
-                onClick={event => {
-                  setAnchorEl(event.currentTarget)
-                }}
-              >
-                <MenuIcon />
-              </IconButton>
-            ) : null
-          }
+          <IconButton
+            className={classes.menuIcon}
+            onClick={event => {
+              setAnchorEl(event.currentTarget)
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
           <TextField
             className={classes.searchBox}
             label="Filter tracks"
