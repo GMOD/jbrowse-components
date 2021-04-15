@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import isObject from 'is-object'
 import {
   readConfObject,
   isConfigurationModel,
@@ -41,7 +42,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  return types
+  const sessionModel = types
     .model('JBrowseDesktopSessionModel', {
       name: types.identifier,
       margin: 0,
@@ -132,6 +133,10 @@ export default function sessionModelFactory(
           ]
         return undefined
       },
+
+      get adminMode() {
+        return true
+      },
       /**
        * See if any MST nodes currently have a types.reference to this object.
        * @param object - object
@@ -168,10 +173,14 @@ export default function sessionModelFactory(
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
@@ -559,6 +568,23 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  return types.snapshotProcessor(sessionModel, {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (snapshot) {
+        // @ts-ignore
+        const { connectionInstances, ...rest } = snapshot || {}
+        // connectionInstances schema changed from object to an array, so any
+        // old connectionInstances as object is in snapshot, filter it out
+        // https://github.com/GMOD/jbrowse-components/issues/1903
+        if (isObject(connectionInstances)) {
+          return rest
+        }
+      }
+      return snapshot
+    },
+  })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

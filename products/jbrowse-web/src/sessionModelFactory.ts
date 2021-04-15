@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import isObject from 'is-object'
 import {
   readConfObject,
   getConf,
@@ -46,7 +47,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  return types
+  const sessionModel = types
     .model('JBrowseWebSessionModel', {
       id: types.optional(types.identifier, shortid()),
       name: types.string,
@@ -657,6 +658,23 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  return types.snapshotProcessor(sessionModel, {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (snapshot) {
+        // @ts-ignore
+        const { connectionInstances, ...rest } = snapshot || {}
+        // connectionInstances schema changed from object to an array, so any
+        // old connectionInstances as object is in snapshot, filter it out
+        // https://github.com/GMOD/jbrowse-components/issues/1903
+        if (isObject(connectionInstances)) {
+          return rest
+        }
+      }
+      return snapshot
+    },
+  })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

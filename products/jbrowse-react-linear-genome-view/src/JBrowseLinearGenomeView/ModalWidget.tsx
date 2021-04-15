@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import {
   AppBar,
-  Modal,
+  Dialog,
   Paper,
   Toolbar,
   Typography,
@@ -13,12 +13,6 @@ import { SessionModel } from '../createModel/createSessionModel'
 
 const useStyles = makeStyles({
   paper: {
-    position: 'absolute',
-    maxWidth: '75vh',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    maxHeight: '75vh',
     overflow: 'auto',
   },
 })
@@ -28,7 +22,7 @@ const ModalWidgetContents = observer(
     const { visibleWidget } = session
     if (!visibleWidget) {
       return (
-        <AppBar position="static">
+        <AppBar position="relative">
           <Toolbar />
         </AppBar>
       )
@@ -49,7 +43,14 @@ const ModalWidgetContents = observer(
         </AppBar>
         {visibleWidget && ReactComponent ? (
           <Suspense fallback={<div>Loading...</div>}>
-            <ReactComponent model={visibleWidget} session={session} />
+            <ReactComponent
+              model={visibleWidget}
+              session={session}
+              overrideDimensions={{
+                height: (window.innerHeight * 5) / 8,
+                width: 800,
+              }}
+            />
           </Suspense>
         ) : null}
       </>
@@ -61,10 +62,14 @@ export default observer(({ session }: { session: SessionModel }) => {
   const classes = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
-    <Modal open={Boolean(visibleWidget)} onClose={hideAllWidgets}>
+    <Dialog
+      open={Boolean(visibleWidget)}
+      onClose={hideAllWidgets}
+      maxWidth="xl"
+    >
       <Paper className={classes.paper}>
         <ModalWidgetContents session={session} />
       </Paper>
-    </Modal>
+    </Dialog>
   )
 })
