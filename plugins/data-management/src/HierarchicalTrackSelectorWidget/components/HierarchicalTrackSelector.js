@@ -45,8 +45,8 @@ const useStyles = makeStyles(theme => ({
   },
   fab: {
     position: 'absolute',
-    bottom: theme.spacing(4),
-    right: theme.spacing(4),
+    bottom: theme.spacing(6),
+    right: theme.spacing(6),
   },
   compactCheckbox: {
     padding: 0,
@@ -343,7 +343,7 @@ const HierarchicalTrackSelectorContainer = observer(
 )
 
 const HierarchicalTrackSelectorHeader = observer(
-  ({ model, setHeaderHeight, setAssemblyIdx }) => {
+  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
     const classes = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] = useState()
@@ -353,6 +353,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
     const { assemblyNames } = model
+    const assemblyName = assemblyNames[assemblyIdx]
 
     function breakConnection(connectionConf, deletingConnection) {
       const name = readConfObject(connectionConf, 'name')
@@ -520,6 +521,7 @@ const HierarchicalTrackSelectorHeader = observer(
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
+            assemblyName={assemblyName}
           />
         ) : null}
       </div>

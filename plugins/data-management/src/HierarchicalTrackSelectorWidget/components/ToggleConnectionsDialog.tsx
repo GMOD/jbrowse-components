@@ -15,7 +15,6 @@ import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const useStyles = makeStyles(theme => ({
   closeButton: {
@@ -35,29 +34,23 @@ export default observer(
   ({
     session,
     handleClose,
+    assemblyName,
     breakConnection,
   }: {
     handleClose: () => void
     session: AbstractSessionModel
+    assemblyName: string
     breakConnection: Function
   }) => {
     const classes = useStyles()
     const { connections, connectionInstances } = session
-
-    function handleConnectionToggle(connectionConf: AnyConfigurationModel) {
-      const existingConnection = !!connectionInstances?.find(
-        conn => conn.name === readConfObject(connectionConf, 'name'),
-      )
-      if (existingConnection) {
-        breakConnection(connectionConf)
-      } else {
-        session.makeConnection?.(connectionConf)
-      }
-    }
+    const assemblySpecificConnections = connections.filter(c =>
+      readConfObject(c, 'assemblyNames').includes(assemblyName),
+    )
     return (
       <Dialog open onClose={handleClose} maxWidth="lg">
         <DialogTitle>
-          Manage connections
+          Turn on/off connections
           <IconButton
             className={classes.closeButton}
             onClick={() => handleClose()}
@@ -68,7 +61,7 @@ export default observer(
         <DialogContent>
           <Typography>Use the checkbox to turn on/off connections</Typography>
           <div className={classes.connectionContainer}>
-            {connections.map(conf => {
+            {assemblySpecificConnections.map(conf => {
               const name = readConfObject(conf, 'name')
               return (
                 <div>
@@ -80,7 +73,18 @@ export default observer(
                             conn => name === conn.name,
                           )
                         }
-                        onChange={() => handleConnectionToggle(conf)}
+                        onChange={() => {
+                          if (
+                            connectionInstances?.find(
+                              conn =>
+                                conn.name === readConfObject(conf, 'name'),
+                            )
+                          ) {
+                            breakConnection(conf)
+                          } else {
+                            session.makeConnection?.(conf)
+                          }
+                        }}
                         color="primary"
                       />
                     }
@@ -89,7 +93,9 @@ export default observer(
                 </div>
               )
             })}
-            {!connections.length ? 'No connections found' : null}
+            {!assemblySpecificConnections.length ? (
+              <Typography>No connections found for {assemblyName}</Typography>
+            ) : null}
           </div>
         </DialogContent>
         <DialogActions>
