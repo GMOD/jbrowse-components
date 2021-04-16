@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { observer } from 'mobx-react'
 import {
   Button,
   TextField,
@@ -10,6 +10,7 @@ import {
   DialogTitle,
   Checkbox,
   FormControlLabel,
+  makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 
@@ -25,7 +26,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function SetMinMaxDlg(props: {
+function SetFeatureHeightDlg(props: {
   model: {
     minScore: number
     maxScore: number
@@ -48,13 +49,8 @@ export default function SetMinMaxDlg(props: {
   const ok = height !== '' && !Number.isNaN(+height)
 
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
         Set feature height
         <IconButton
           aria-label="close"
@@ -110,3 +106,5 @@ export default function SetMinMaxDlg(props: {
     </Dialog>
   )
 }
+
+export default observer(SetFeatureHeightDlg)

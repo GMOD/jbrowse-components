@@ -195,7 +195,7 @@ const RegionRulerArc = observer(({ model, slice }) => {
   )
 })
 
-export default observer(function Ruler({ model, slice }) {
+const CircularRuler = observer(function Ruler({ model, slice }) {
   if (slice.region.elided) {
     return (
       <ElisionRulerArc
@@ -213,3 +213,5 @@ export default observer(function Ruler({ model, slice }) {
     />
   )
 })
+
+export default CircularRuler

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react'
 import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { observer } from 'mobx-react'
 
-export default observer(props => {
+const ConfigureConnection = observer(props => {
   const { connectionType, model, setModelReady } = props
   const ConfigEditorComponent =
     connectionType.configEditorComponent || ConfigurationEditor
@@ -16,3 +16,5 @@ export default observer(props => {
     </Suspense>
   )
 })
+
+export default ConfigureConnection
