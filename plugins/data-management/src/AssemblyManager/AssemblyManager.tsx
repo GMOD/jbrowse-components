@@ -57,7 +57,7 @@ const AssemblyManager = observer(
     const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
     return (
-      <Dialog open={open} onClose={onClose}>
+      <Dialog open={open} onClose={() => onClose(false)}>
         <DialogTitle className={classes.titleBox}>
           {showAssemblyTable ? 'Assembly manager' : null}
           {isFormOpen ? (
@@ -87,7 +87,7 @@ const AssemblyManager = observer(
           <IconButton
             aria-label="close"
             className={classes.closeButton}
-            onClick={onClose}
+            onClick={() => onClose(false)}
           >
             <CloseIcon />
           </IconButton>
@@ -118,9 +118,7 @@ const AssemblyManager = observer(
               <Button
                 color="secondary"
                 variant="contained"
-                onClick={() => {
-                  onClose(false)
-                }}
+                onClick={() => onClose(false)}
               >
                 Close
               </Button>
@@ -128,9 +126,7 @@ const AssemblyManager = observer(
                 variant="contained"
                 color="secondary"
                 startIcon={<AddIcon />}
-                onClick={() => {
-                  setFormOpen(true)
-                }}
+                onClick={() => setFormOpen(true)}
               >
                 Add new assembly
               </Button>
