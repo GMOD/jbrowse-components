@@ -62,8 +62,10 @@ const TextFilter = observer(({ textFilter }) => {
   )
 })
 
-export default observer(({ model }) => {
+const GlobalFilterControls = observer(({ model }) => {
   // const classes = useStyles()
   const textFilter = model.filterControls.rowFullText
   return <TextFilter textFilter={textFilter} />
 })
+
+export default GlobalFilterControls

@@ -125,7 +125,7 @@ const RowCountMessage = observer(({ spreadsheet }) => {
   return null
 })
 
-export default observer(({ model }) => {
+const SpreadsheetView = observer(({ model }) => {
   const classes = useStyles()
 
   const { spreadsheet, filterControls } = model
@@ -243,3 +243,5 @@ export default observer(({ model }) => {
     </div>
   )
 })
+
+export default SpreadsheetView

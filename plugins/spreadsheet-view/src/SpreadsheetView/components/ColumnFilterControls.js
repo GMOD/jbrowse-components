@@ -32,40 +32,44 @@ function FilterOperations({ filterModel }) {
   return null
 }
 
-export default observer(({ viewModel, filterModel, columnNumber, height }) => {
-  const classes = useStyles()
+const ColumnFilterControls = observer(
+  ({ viewModel, filterModel, columnNumber, height }) => {
+    const classes = useStyles()
 
-  const removeFilter = () => {
-    const filterControls = getParent(filterModel, 2)
-    filterControls.removeColumnFilter(filterModel)
-  }
+    const removeFilter = () => {
+      const filterControls = getParent(filterModel, 2)
+      filterControls.removeColumnFilter(filterModel)
+    }
 
-  const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
-  if (!columnDefinition)
-    throw new Error('no column definition! filters are probably out of date')
-  return (
-    <Grid
-      container
-      direction="row"
-      className={classes.columnFilter}
-      style={{ height }}
-    >
-      <Grid item className={classes.filterIconBg}>
-        <FilterIcon className={classes.filterIcon} />
+    const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
+    if (!columnDefinition)
+      throw new Error('no column definition! filters are probably out of date')
+    return (
+      <Grid
+        container
+        direction="row"
+        className={classes.columnFilter}
+        style={{ height }}
+      >
+        <Grid item className={classes.filterIconBg}>
+          <FilterIcon className={classes.filterIcon} />
+        </Grid>
+        <Grid item>
+          <IconButton
+            onClick={removeFilter}
+            title="remove filter"
+            color="secondary"
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography className={classes.columnName} component="span">
+            {columnDefinition.name}
+          </Typography>{' '}
+          <FilterOperations filterModel={filterModel} />
+        </Grid>
       </Grid>
-      <Grid item>
-        <IconButton
-          onClick={removeFilter}
-          title="remove filter"
-          color="secondary"
-        >
-          <CloseIcon />
-        </IconButton>
-        <Typography className={classes.columnName} component="span">
-          {columnDefinition.name}
-        </Typography>{' '}
-        <FilterOperations filterModel={filterModel} />
-      </Grid>
-    </Grid>
-  )
-})
+    )
+  },
+)
+
+export default ColumnFilterControls

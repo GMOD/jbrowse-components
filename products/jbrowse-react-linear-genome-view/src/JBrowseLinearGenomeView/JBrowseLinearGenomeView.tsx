@@ -13,7 +13,8 @@ const useStyles = makeStyles(() => ({
     all: 'initial',
   },
 }))
-export default observer(
+
+const JBrowseLinearGenomeView = observer(
   ({ viewState }: { viewState: { session: SessionModel } }) => {
     const classes = useStyles()
     const { session } = viewState
@@ -36,3 +37,5 @@ export default observer(
     )
   },
 )
+
+export default JBrowseLinearGenomeView

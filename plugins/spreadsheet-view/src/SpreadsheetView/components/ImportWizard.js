@@ -202,7 +202,7 @@ const ErrorDisplay = observer(({ errorMessage }) => {
   )
 })
 
-export default observer(({ model }) => {
+const ImportWizard = observer(({ model }) => {
   const classes = useStyles()
   return (
     <>
@@ -215,3 +215,5 @@ export default observer(({ model }) => {
     </>
   )
 })
+
+export default ImportWizard

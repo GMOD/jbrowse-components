@@ -16,17 +16,22 @@ import React from 'react'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
-const useMemberStyles = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
   subSchemaContainer: {
     marginLeft: theme.spacing(1),
     borderLeft: `1px solid ${theme.palette.secondary.main}`,
     paddingLeft: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  root: {
+    padding: theme.spacing(1, 3, 1, 1),
+    background: theme.palette.background.default,
+    overflowX: 'hidden',
+  },
 }))
 
 const Member = observer(props => {
-  const classes = useMemberStyles()
+  const classes = useStyles()
   const { slotName, slotSchema, schema, slot = schema[slotName] } = props
   let typeSelector
   if (isConfigurationSchemaType(slotSchema)) {
@@ -86,15 +91,7 @@ const Schema = observer(({ schema }) => {
   )
 })
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: theme.spacing(1, 3, 1, 1),
-    background: theme.palette.background.default,
-    overflowX: 'hidden',
-  },
-}))
-
-export default observer(({ model }) => {
+const ConfigurationEditor = observer(({ model }) => {
   const classes = useStyles()
   // key forces a re-render, otherwise the same field can end up being used
   // for different tracks since only the backing model changes for example
@@ -106,3 +103,5 @@ export default observer(({ model }) => {
     </div>
   )
 })
+
+export default ConfigurationEditor

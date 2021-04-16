@@ -58,7 +58,7 @@ const ModalWidgetContents = observer(
   },
 )
 
-export default observer(({ session }: { session: SessionModel }) => {
+const ModalWidget = observer(({ session }: { session: SessionModel }) => {
   const classes = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
@@ -73,3 +73,5 @@ export default observer(({ session }: { session: SessionModel }) => {
     </Dialog>
   )
 })
+
+export default ModalWidget
