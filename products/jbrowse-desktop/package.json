@@ -71,6 +71,7 @@
     "electron-debug": "^3.0.1",
     "electron-is-dev": "^1.1.0",
     "fontsource-roboto": "3.0.3",
+    "is-object": "^1.0.2",
     "json-stable-stringify": "^1.0.1",
     "mobx": "^6.1.7",
     "mobx-react": "^7.1.0",

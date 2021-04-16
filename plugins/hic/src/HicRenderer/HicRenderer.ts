@@ -24,7 +24,7 @@ interface HicFeature {
 }
 
 interface HicDataAdapter extends BaseFeatureDataAdapter {
-  getResolution: (bp: number) => number
+  getResolution: (bp: number) => Promise<number>
 }
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -37,6 +37,7 @@ export interface RenderArgsDeserialized
   dataAdapter: HicDataAdapter
   bpPerPx: number
   highResolutionScaling: number
+  resolution: number
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -60,12 +61,14 @@ export default class HicRenderer extends ServerSideRendererType {
       highResolutionScaling = 1,
       dataAdapter,
       signal,
+      resolution,
     } = props
 
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
     const height = readConfObject(config, 'maxHeight')
-    const res = await dataAdapter.getResolution(bpPerPx)
+    const res = await dataAdapter.getResolution(bpPerPx / resolution)
+
     if (!(width > 0) || !(height > 0)) {
       return { height: 0, width: 0, maxHeightReached: false }
     }
@@ -144,14 +147,11 @@ export default class HicRenderer extends ServerSideRendererType {
     }
   }
 
-  async getFeatures({
-    dataAdapter,
-    signal,
-    bpPerPx,
-    regions,
-  }: RenderArgsDeserialized) {
+  async getFeatures(args: RenderArgsDeserialized) {
+    const { dataAdapter, regions } = args
     const features = await dataAdapter
-      .getFeatures(regions[0], { signal, bpPerPx })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .getFeatures(regions[0], args as any)
       .pipe(toArray())
       .toPromise()
     // cast to any to avoid return-type conflict, because the

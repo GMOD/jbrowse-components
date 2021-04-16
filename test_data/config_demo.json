@@ -859,42 +859,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "na12878_highcov",
-      "name": "NA12878 high-coverage",
-      "assemblyNames": ["hg38"],
-      "category": ["NA12878"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-        },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": ["hg19"],
