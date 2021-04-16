@@ -7,3 +7,15 @@ export interface JBrowsePlugin {
   license: string
   image?: string
 }
+
+export interface BasePlugin {
+  version?: string
+  name: string
+  url?: string
+}
+
+export interface TextUpdateEvent {
+  target: {
+    value: string
+  }
+}
