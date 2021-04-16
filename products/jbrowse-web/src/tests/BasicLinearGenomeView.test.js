@@ -193,7 +193,11 @@ describe('valid file tests', () => {
     )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('display-volvox_alignments_alignments')
+    await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
 
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')
