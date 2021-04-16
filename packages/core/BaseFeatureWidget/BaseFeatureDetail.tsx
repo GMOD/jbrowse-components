@@ -430,9 +430,9 @@ export const FeatureDetails = (props: {
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name, id, type = '', subfeatures } = feature
-  const slug = name || id
-  const shortName = slug && slug.length > 20 ? `${slug}...` : slug
-  const title = `${shortName ? `${shortName} - ` : ''} - ${type}`
+  const slug = name || id || ''
+  const shortName = slug.length > 20 ? `${slug}...` : slug
+  const title = `${shortName}${type ? ` - ${type}` : ''}`
   const session = getSession(model)
   const defSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
