@@ -88,7 +88,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const rubberBandComponent = await findByTestId('rubberBand_controls')
+    const rubberBandComponent = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
