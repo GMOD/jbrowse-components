@@ -1,13 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { saveAs } from 'file-saver'
 import { Region } from '@jbrowse/core/util/types'
 import { readConfObject } from '@jbrowse/core/configuration'
-import copy from 'copy-to-clipboard'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,9 +15,7 @@ import {
   IconButton,
   TextField,
 } from '@material-ui/core'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
 import { getSession } from '@jbrowse/core/util'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { formatSeqFasta, SeqChunk } from '@jbrowse/core/util/formatFastaStrings'
@@ -53,17 +48,13 @@ const useStyles = makeStyles(theme => ({
  */
 export async function fetchSequence(
   self: LinearGenomeViewModel,
-  leftOffset: undefined | BpOffset,
-  rightOffset: undefined | BpOffset,
   selectedRegions: Region[],
 ) {
-  // setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
   const session = getSession(self)
-  //const assemblyName = "hg38"
   const assemblyName =
-    leftOffset?.assemblyName || rightOffset?.assemblyName || ''
+    self.leftBigsiOffset?.assemblyName || self.rightBigsiOffset?.assemblyName || ''
   const refName =
-    leftOffset?.refName || rightOffset?.refName || ''
+    self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
   const { rpcManager, assemblyManager } = session
   const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
 
@@ -85,15 +76,15 @@ export async function fetchSequence(
   const response = await queryBigsi.main(bigsi, chunks[0][0].data.seq)
   console.log('response: ', response)
     
-  let allFeatures = []
+  const allFeatures = []
   for (let i=0; i < response.length; i++){
     const bigsiFeatures = Object.values(response[i])
     console.log('bigsiFeatures: ', bigsiFeatures)
     for (let i=0; i < bigsiFeatures.length; i++){
         bigsiFeatures[i]['uniqueId'] = parseInt(i)
         bigsiFeatures[i]['name'] = `${bigsiFeatures[i]['refName']}:${bigsiFeatures[i]['start']}-${bigsiFeatures[i]['end']}`
-        bigsiFeatures[i]['start'] = leftOffset.coord
-        bigsiFeatures[i]['end'] = rightOffset.coord
+        bigsiFeatures[i]['start'] = self.leftBigsiOffset.coord
+        bigsiFeatures[i]['end'] = self.rightBigsiOffset.coord
         bigsiFeatures[i]['refName'] = refName
         allFeatures.push(bigsiFeatures[i])
         }
@@ -101,7 +92,7 @@ export async function fetchSequence(
 
     const bigsiQueryTrack = {
             trackId: `track-${Date.now()}`,
-            name: `BIGSI Query ${assemblyName}:Chr${refName}:${leftOffset.coord}-${rightOffset.coord}`,
+            name: `BIGSI Query ${assemblyName}:Chr${refName}:${self.leftBigsiOffset.coord}-${self.rightBigsiOffset.coord}`,
             assemblyNames: ['hg38'],
             type: 'FeatureTrack',
             adapter: {
@@ -120,7 +111,7 @@ export async function fetchSequence(
   return chunks.map(chunk => chunk[0])
 }
 
-function SequenceDialog({
+function BigsiDialog({
   model,
   handleClose,
 }: {
@@ -132,15 +123,17 @@ function SequenceDialog({
   const [error, setError] = useState<Error>()
   const [sequence, setSequence] = useState('')
   const loading = Boolean(!sequence) || Boolean(error)
-  const { leftOffset, rightOffset } = model
+  const { leftBigsiOffset, rightBigsiOffset } = model
 
   // avoid infinite looping of useEffect
   // random note: the current selected region can't be a computed because it
   // uses action on base1dview even though it's on the ephemeral base1dview
   const regionsSelected = useMemo(
-    () => model.getSelectedRegions(leftOffset, rightOffset),
-    [model, leftOffset, rightOffset],
+    () => model.getSelectedRegions(leftBigsiOffset, rightBigsiOffset),
+    [model, leftBigsiOffset, rightBigsiOffset],
   )
+
+  console.log('regionsSelected', regionsSelected)
 
   useEffect(() => {
     let active = true
@@ -196,11 +189,11 @@ function SequenceDialog({
     }
   }, [model, session, regionsSelected, setSequence])
 
-  const sequenceTooLarge = sequence.length > 1_000_000
+  const sequenceTooLarge = sequence.length > 300_000
 
   return (
     <Dialog
-      data-testid="sequence-dialog"
+      data-testid="bigsi-dialog"
       maxWidth="xl"
       open
       onClose={handleClose}
@@ -208,14 +201,14 @@ function SequenceDialog({
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        Reference sequence
+        Bigsi Query
         {handleClose ? (
           <IconButton
-            data-testid="close-seqDialog"
+            data-testid="close-BigsiDialog"
             className={classes.closeButton}
             onClick={() => {
               handleClose()
-              model.setOffsets(undefined, undefined)
+              model.setBigsiOffsets(undefined, undefined)
             }}
           >
             <CloseIcon />
@@ -228,69 +221,15 @@ function SequenceDialog({
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {loading && !error ? (
           <Container>
-            Retrieving reference sequence...
-            <CircularProgress
-              style={{
-                marginLeft: 10,
-              }}
-              size={20}
-              disableShrink
-            />
+            Select reference sequences to query
           </Container>
-        ) : null}
-        {sequence !== undefined ? (
-          <TextField
-            data-testid="rubberband-sequence"
-            variant="outlined"
-            multiline
-            rows={3}
-            rowsMax={5}
-            disabled={sequenceTooLarge}
-            className={classes.dialogContent}
-            fullWidth
-            value={
-              sequenceTooLarge
-                ? 'Reference sequence too large to display, use the download FASTA button'
-                : sequence
-            }
-            InputProps={{
-              readOnly: true,
-              classes: {
-                input: classes.textAreaFont,
-              },
-            }}
-          />
         ) : null}
       </DialogContent>
       <DialogActions>
         <Button
           onClick={() => {
-            copy(sequence || '')
-            session.notify('Copied to clipboard', 'success')
-          }}
-          disabled={loading || sequenceTooLarge}
-          color="primary"
-          startIcon={<ContentCopyIcon />}
-        >
-          Copy to clipboard
-        </Button>
-        <Button
-          onClick={() => {
-            const seqFastaFile = new Blob([sequence || ''], {
-              type: 'text/x-fasta;charset=utf-8',
-            })
-            saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
-          }}
-          disabled={loading}
-          color="primary"
-          startIcon={<GetAppIcon />}
-        >
-          Download FASTA
-        </Button>
-        <Button
-          onClick={() => {
             handleClose()
-            model.setOffsets(undefined, undefined)
+            model.setBigsiOffsets(undefined, undefined)
           }}
           color="primary"
           autoFocus
@@ -302,4 +241,4 @@ function SequenceDialog({
   )
 }
 
-export default observer(SequenceDialog)
+export default observer(BigsiDialog)

@@ -15,8 +15,6 @@ import ZoomInIcon from '@material-ui/icons/ZoomIn'
 import { stringify } from '@jbrowse/core/util'
 import { LinearGenomeViewStateModel } from '..'
 
-import { fetchSequence } from './BigsiDialog'
-
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const useStyles = makeStyles(theme => {
@@ -200,7 +198,7 @@ function RubberBand({
     model.setOffsets(leftOffset, rightOffset)
   }
 
-  async function runBigsiQuery() {
+  async function getBigsiQuerySequence() {
     if (startX === undefined || anchorPosition === undefined) {
       return
     }
@@ -210,16 +208,9 @@ function RubberBand({
     if (rightPx < leftPx) {
       ;[leftPx, rightPx] = [rightPx, leftPx]
     }
-    const leftOffset = model.pxToBp(leftPx)
-    const rightOffset = model.pxToBp(rightPx)
-    //model.setOffsets(leftOffset, rightOffset)
-
-    const regionsSelected = model.getSelectedRegions(leftOffset, rightOffset)
-    console.log(leftOffset, rightOffset)
-
-    if (regionsSelected.length > 0) {
-      const chunks = await fetchSequence(model, leftOffset, rightOffset, regionsSelected)
-    }
+    const leftBigsiOffset = model.pxToBp(leftPx)
+    const rightBigsiOffset = model.pxToBp(rightPx)
+    model.setBigsiOffsets(leftBigsiOffset, rightBigsiOffset)
   }
 
   function handleClose() {
@@ -264,7 +255,7 @@ function RubberBand({
         Math.abs(currentX - startX) * model.bpPerPx > 500_000_000,
       icon: MenuOpenIcon,
       onClick: () => {
-        runBigsiQuery()
+        getBigsiQuerySequence()
         handleClose()
       },
     },

@@ -4016,6 +4016,16 @@
     "@gmod/bgzf-filehandle" "^1.2.4"
     es6-promisify "^6.0.1"
 
+"@gmod/indexedfasta@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/indexedfasta/-/indexedfasta-2.0.0.tgz#05798ce8e825fcb9bcc03c63163a423267d4cdaa"
+  integrity sha512-72dlTolCr3zmCI8bjYRJNyXn7n7hJbXaT5yoM02UqgqYH3ilUS+tWsRITzvRfLEidrKmDqOf1u3fq3iyyQB/Ag==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+    "@gmod/bgzf-filehandle" "^1.2.4"
+    browser-or-node "^1.3.0"
+    es6-promisify "^6.0.1"
+
 "@gmod/nclist@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@gmod/nclist/-/nclist-0.1.1.tgz#9038c4d809f825edc2a4dceb43754aa3dfb6d090"
@@ -9164,6 +9174,11 @@ brorand@^1.0.1, brorand@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/brorand/-/brorand-1.1.0.tgz#12c25efe40a45e3c323eb8675a0a0ce57b22371f"
   integrity sha1-EsJe/kCkXjwyPrhnWgoM5XsiNx8=
+
+browser-or-node@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/browser-or-node/-/browser-or-node-1.3.0.tgz#f2a4e8568f60263050a6714b2cc236bb976647a7"
+  integrity sha512-0F2z/VSnLbmEeBcUrSuDH5l0HxTXdQQzLjkmBR4cYfvg1zJrKSlmIZFqyFR8oX0NrwPhy3c3HQ6i3OxMbew4Tg==
 
 browser-process-hrtime@^1.0.0:
   version "1.0.0"

@@ -35,6 +35,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@gmod/indexedfasta": "^2.0.0",
     "@material-ui/icons": "^4.9.1",
     "binomial-cdf": "^1.0.4",
     "bloom-filters": "^1.3.2",
