@@ -4,6 +4,8 @@ title: Config editing quick start — command-line interface
 toplevel: true
 ---
 
+import Figure from './figure'
+
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that
 reference your data sources. This guide will show you how to set those up using
@@ -90,7 +92,7 @@ If you have your JBrowse 2
 quickstart, you can refresh the page and an add a linear genome view. You will
 now see your config in the Assembly dropdown.
 
-![JBrowse 2 linear genome view setup with volvox in assembly dropdown](./img/lgv_assembly.png)
+<Figure caption="JBrowse 2 linear genome view setup with volvox in assembly dropdown" src="/img/lgv_assembly.png"/>
 
 ## Adding a track
 
@@ -154,7 +156,7 @@ quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the alignments
 track.
 
-![JBrowse 2 linear genome view with alignments track](./img/volvox_alignments.png)
+<Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
 
 ### Adding a variant track
 
@@ -209,7 +211,7 @@ If you have your JBrowse 2
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the variant track.
 
-![JBrowse 2 linear genome view with variant track](./img/volvox_variants.png)
+<Figure caption="JBrowse 2 linear genome view with variant track" src="/img/volvox_variants.png"/>
 
 ### Adding a BigWig/BigBed track
 

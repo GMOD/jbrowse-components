@@ -316,7 +316,7 @@ all the calls that were made in a multi-sample VCF. Some VCF files, like the
 1000 genomes VCF, can contain thousands of samples in a single file. This
 table can display the details
 
-<Figure caption="Figure showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes" src="/img/variant_panel.png" />
+<Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes" src="/img/variant_panel.png" />
 
 ## Linear synteny and dotplot views
 
@@ -369,7 +369,7 @@ displayed in different contexts.
 Here is a short demo that shows opening a synteny view from a dotplot view
 selection
 
-<Figure caption="Figure showing the click and drag selection over the dotplot view prompts you to open up a linear synteny view from the selected region" src="/img/synteny_from_dotplot_view.png" />
+<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view prompts you to open up a linear synteny view from the selected region" src="/img/synteny_from_dotplot_view.png" />
 
 ### Long read vs reference plots
 
@@ -454,4 +454,4 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-<Figure caption="Figure showing 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />
+<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />

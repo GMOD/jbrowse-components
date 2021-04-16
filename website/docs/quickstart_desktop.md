@@ -4,6 +4,8 @@ title: Quick start for JBrowse desktop
 toplevel: true
 ---
 
+import Figure from './figure'
+
 **_Important note on JBrowse desktop_**
 
 We do not have downloads of JBrowse 2 Desktop yet, it is expecting a release
@@ -35,8 +37,7 @@ latest MacOS release artifact in our latest builds
 You can then unzip this download and the "JBrowse 2" app will be unzipped to
 this folder. You can then run JBrowse 2 from clicking this file.
 
-![](./img/installation_mac_download.png)
-Finder window showing the downloaded zip file and unzipped contents
+<Figure caption="Screenshot of the Finder window showing the downloaded zip file and unzipped contents" src="/img/installation_mac_download.png"/>
 
 To run JBrowse 2, you can launch the unzipped app, however if you double click
 on the file it may give you a warning about running a program from an
@@ -51,8 +52,7 @@ In order to properly launch JBrowse 2
 Reference
 https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac
 
-![](./img/installation_mac_protect2.png)
-The 'open app from unauthorized developer' after right-clicking and selecting 'open'
+<Figure caption="Screenshot of the 'open app from unauthorized developer' after right-clicking and selecting 'open'" src="/img/installation_mac_protect2.png"/>
 
 #### Installing on Windows
 
@@ -62,12 +62,12 @@ You can then unzip this file and run the file that comes from unzipping it.
 Moving this file to the Applications folder is also equivalent to "installing"
 JBrowse 2
 
-![](./img/installation_win_unzip.png)
-![](./img/installation_win_run.png)
+<Figure caption="Unzip the zip archive" src="/img/installation_win_unzip.png"/>
+<Figure caption="You can then double click the exe application in the unzipped archive" src="/img/installation_win_run.png"/>
 
 Then open up the Windows Explorer in the unzipped directory and run "JBrowse
 2.exe". This may give a "Windows protected your PC" warning, but select "More
 info..." and then "Run anyway"
 
-![](./img/installation_win_protect2.png)
-![](./img/installation_win_protect.png)
+<Figure caption="You can skip windows protection to run the app by clicking the 'More info...' link" src="/img/installation_win_protect2.png"/>
+<Figure caption="After clicking 'More info...' the button to run is revealed" src="/img/installation_win_protect.png"/>
