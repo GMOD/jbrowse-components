@@ -11,10 +11,14 @@ let topLevel = false
 
 ;(async () => {
   for await (const line of rl) {
+    if (line.startsWith('import Figure')) {
+      continue
+    }
     if (!readingHeader && line === '---') {
       readingHeader = true
       continue
     }
+
     if (readingHeader && line.startsWith('title')) {
       title = line.replace('title: ', '')
       continue
