@@ -16,7 +16,7 @@ import ClearIcon from '@material-ui/icons/Clear'
 import InstalledPlugins from './InstalledPlugins'
 import PluginCard from './PluginCard'
 
-import type { JBrowsePlugin, TextUpdateEvent } from '../types'
+import type { JBrowsePlugin, BasePlugin, TextUpdateEvent } from '../types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -85,7 +85,10 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
         <div style={{ margin: '1em' }}>
-          <InstalledPlugins pluginManager={pluginManager} />
+          <InstalledPlugins
+            pluginManager={pluginManager}
+            filterText={model.filterText}
+          />
         </div>
       </Accordion>
       <Accordion defaultExpanded>
@@ -94,9 +97,15 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         >
           <Typography variant="h5">Available plugins</Typography>
         </AccordionSummary>
-        {pluginArray.map(plugin => (
-          <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
-        ))}
+        {pluginArray
+          .filter((plugin: BasePlugin) => {
+            return plugin.name
+              .toLowerCase()
+              .includes(model.filterText.toLowerCase())
+          })
+          .map(plugin => (
+            <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
+          ))}
       </Accordion>
     </div>
   )

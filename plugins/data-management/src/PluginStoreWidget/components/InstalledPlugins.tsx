@@ -2,7 +2,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import { makeStyles } from '@material-ui/core/styles'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
 import Typography from '@material-ui/core/Typography'
@@ -13,24 +12,26 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 import type { BasePlugin } from '../types'
 
-const useStyles = makeStyles(() => ({
-  card: {
-    margin: '1em',
-  },
-}))
-
-function PluginCard({ pluginManager }: { pluginManager: PluginManager }) {
-  const classes = useStyles()
-
+function PluginCard({
+  pluginManager,
+  filterText,
+}: {
+  pluginManager: PluginManager
+  filterText: string
+}) {
   const { plugins } = pluginManager
   const corePlugins = plugins
     .filter((p: BasePlugin) =>
       Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
     )
     .map((p: BasePlugin) => p.name)
-  const externalPluginsRender = plugins
+  const externalPlugins = plugins.filter((plugin: BasePlugin) => {
+    return !corePlugins.includes(plugin.name)
+  })
+
+  const externalPluginsRender = externalPlugins
     .filter((plugin: BasePlugin) => {
-      return !corePlugins.includes(plugin.name)
+      return plugin.name.toLowerCase().includes(filterText.toLowerCase())
     })
     .map((plugin: BasePlugin) => {
       return (
@@ -45,7 +46,7 @@ function PluginCard({ pluginManager }: { pluginManager: PluginManager }) {
 
   return (
     <List>
-      {externalPluginsRender.length ? (
+      {externalPlugins.length ? (
         externalPluginsRender
       ) : (
         <Typography>No plugins currently installed</Typography>
