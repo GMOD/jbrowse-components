@@ -71,7 +71,10 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton color="secondary">
+              <IconButton
+                color="secondary"
+                onClick={() => model.clearFilterText()}
+              >
                 <ClearIcon />
               </IconButton>
             </InputAdornment>
