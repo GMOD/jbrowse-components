@@ -63,7 +63,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "jbrowse-plugin-ucsc": "^1.0.3"
-  }
+  "devDependencies": {}
 }
