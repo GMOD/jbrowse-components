@@ -2,6 +2,13 @@
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 
+interface BaseArgs {
+  searchType: searchType
+  queryString: string
+  signal?: AbortSignal
+  limit?: number
+  pageNumber?: number
+}
 export default (pluginManager: PluginManager) => {
   return class TextSearchManager {
     constructor() {
@@ -47,7 +54,7 @@ export default (pluginManager: PluginManager) => {
      * query: {'search string, page number', limit: number of results, abortsignal, type_of_search}
      * args: unknown = {}
      */
-    async search(args: unknown = {}) {
+    async search(args: BaseArgs = {}) {
       /* TODO: implement search      
         1) figure out which text search adapters are relevant
         2) instantiate if necessary...look in cache, have I instantiated if not instantiate
@@ -60,10 +67,7 @@ export default (pluginManager: PluginManager) => {
       this.textSearchAdapters = this.loadTextSearchAdapters()
       const results = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
-          const currentResults = await adapter.searchIndex(
-            args.queryString,
-            args.searchType,
-          )
+          const currentResults = await adapter.searchIndex(args)
           return currentResults
         }),
       )

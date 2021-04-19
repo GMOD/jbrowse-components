@@ -77,7 +77,7 @@ function RefNameAutocomplete({
         group: 'reference sequence',
         result: new RefSequenceResult({
           refName: option.refName,
-          value: option.refName,
+          rendering: option.refName,
         }),
       }
       return defaultOption
@@ -127,7 +127,7 @@ function RefNameAutocomplete({
     let newRegionValue: string | undefined
     if (selectedOption) {
       if (typeof selectedOption === 'object') {
-        newRegionValue = selectedOption.result?.getValue()
+        newRegionValue = selectedOption.result?.getRendering()
         if (selectedOption.result instanceof BaseResult) {
           const results = await session.textSearchManager.search({
             queryString: newRegionValue.toLocaleLowerCase(),
@@ -190,7 +190,7 @@ function RefNameAutocomplete({
           const newOption: Option = {
             group: 'Navigating to...',
             result: new LocationResult({
-              value: params.inputValue,
+              rendering: params.inputValue,
               location: params.inputValue,
             }),
             inputValue: params.inputValue,
@@ -243,7 +243,7 @@ function RefNameAutocomplete({
       renderOption={(option, { inputValue }) => {
         // TODO fix when matched string is not at the beginning
         if (currentSearch !== '') {
-          const val = option.inputValue || option?.result?.getValue() || ''
+          const val = option.inputValue || option?.result?.getRendering() || ''
           return (
             <Typography noWrap>
               <b>{val.slice(0, inputValue.length)}</b>
@@ -253,7 +253,7 @@ function RefNameAutocomplete({
         }
         return (
           <Typography noWrap>
-            {option.inputValue || option?.result?.getValue() || ''}
+            {option.inputValue || option?.result?.getRendering() || ''}
             {/* {option.inputValue || 'hi'} */}
           </Typography>
         )
@@ -263,7 +263,7 @@ function RefNameAutocomplete({
         if (typeof option === 'string') {
           return option
         }
-        return option.inputValue || option?.result?.getValue() || ''
+        return option.inputValue || option?.result?.getRendering() || ''
       }}
     />
   )

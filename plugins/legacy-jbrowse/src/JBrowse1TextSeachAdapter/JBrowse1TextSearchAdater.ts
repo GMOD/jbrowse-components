@@ -1,5 +1,5 @@
 import {
-  searchType,
+  BaseArgs,
   BaseTextSearchAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -43,10 +43,10 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
     return {}
   }
 
-  async searchIndex(input: string, type: searchType) {
-    const entries = await this.loadIndexFile(input)
-    if (entries && entries[input]) {
-      return this.formatResults(entries[input][type])
+  async searchIndex(args: BaseArgs = {}) {
+    const entries = await this.loadIndexFile(args.queryString)
+    if (entries && entries[args.queryString]) {
+      return this.formatResults(entries[args.queryString][args.searchType])
     }
     return []
   }
@@ -64,12 +64,12 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
         const location = `${refName}:${start}-${end}`
         const formattedResult = new LocationResult({
           location,
-          value: name,
+          rendering: name,
         })
         return formattedResult
       }
       const defaultResult = new BaseResult({
-        value: result,
+        rendering: result,
       })
       return defaultResult
     })

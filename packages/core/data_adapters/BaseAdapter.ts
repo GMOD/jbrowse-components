@@ -18,6 +18,14 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
+export type searchType = 'full' | 'prefix' | 'exact'
+export interface BaseArgs {
+  searchType: searchType
+  queryString: string
+  signal?: AbortSignal
+  limit?: number
+  pageNumber?: number
+}
 export interface AdapterConstructor {
   new (
     config: AnyConfigurationModel,
@@ -286,12 +294,8 @@ export function isRefNameAliasAdapter(
   return 'getRefNameAliases' in thing
 }
 
-export type searchType = 'full' | 'prefix' | 'exact'
 export class BaseTextSearchAdapter extends BaseAdapter {
-  public abstract async searchIndex(
-    query: string,
-    type: searchType,
-  ): Promise<string[]>
+  public abstract async searchIndex(args: BaseArgs): Promise<string[]>
 }
 
 export function isTextSearchAdapter(

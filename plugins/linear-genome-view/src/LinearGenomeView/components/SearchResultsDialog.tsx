@@ -6,17 +6,18 @@ import {
   DialogActions,
   List,
   ListItem,
-  ListItemText,
+  // ListItemText,
   DialogContent,
-  DialogTitle,
-  Container,
-  Typography,
-  Divider,
-  IconButton,
-  TextField,
+  // DialogTitle,
+  // Container,
+  // Typography,
+  // Divider,
+  // IconButton,
+  // TextField,
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { getSession } from '@jbrowse/core/util'
+// import { getSession } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { LinearGenomeViewModel } from '../..'
 
 export const useStyles = makeStyles(theme => ({
@@ -73,15 +74,15 @@ export default function SearchResultsDialog({
     >
       <DialogContent>
         <List>
-          {model.searchResults.map((result, index) => (
+          {model.searchResults.map((result: BaseResult, index) => (
             <ListItem
-              key={`${result.value}-${index}`}
+              key={`${result.rendering}-${index}`}
               onClick={() => {
                 model.navToLocString(result.location || result.value)
                 handleClose()
               }}
             >
-              {`${result.value} ${result.location}`}
+              {`${result.getRendering()} ${result.location}`}
             </ListItem>
           ))}
         </List>
