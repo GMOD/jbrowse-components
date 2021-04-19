@@ -1,11 +1,11 @@
 import Path from 'svg-path-generator'
+import { getSession } from '@jbrowse/core/util'
 import { BreakpointViewModel, LayoutRecord } from '../model'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (pluginManager: any) => {
   const { jbrequire } = pluginManager
-  const { getSession } = jbrequire('@jbrowse/core/util')
   const { observer } = jbrequire('mobx-react')
   const React = jbrequire('react')
   const { useState } = jbrequire('react')
@@ -35,6 +35,11 @@ export default (pluginManager: any) => {
       const [mouseoverElt, setMouseoverElt] = useState()
       const snap = getSnapshot(model)
       useNextFrame(snap)
+      const { assemblyManager } = session
+      const assembly = assemblyManager.get(views[0].assemblyNames[0])
+      if (!assembly) {
+        return null
+      }
 
       let yOffset = 0
       if (ref.current) {
@@ -42,11 +47,10 @@ export default (pluginManager: any) => {
         yOffset = rect.top
       }
 
-      // we hardcode the TRA to go to the "other view" and
-      // if there is none, we just return null here
-      // note: would need to do processing of the INFO CHR2/END
-      // and see which view could contain those coordinates
-      // to really do it properly
+      // we hardcode the TRA to go to the "other view" and if there is none, we
+      // just return null here note: would need to do processing of the INFO
+      // CHR2/END and see which view could contain those coordinates to really
+      // do it properly
       if (views.length < 2) {
         return null
       }
@@ -60,8 +64,8 @@ export default (pluginManager: any) => {
           }
         >
           {layoutMatches.map(chunk => {
-            // we follow a path in the list of chunks, not from top to bottom, just in series
-            // following x1,y1 -> x2,y2
+            // we follow a path in the list of chunks, not from top to bottom,
+            // just in series following x1,y1 -> x2,y2
             const ret = []
             for (let i = 0; i < chunk.length; i += 1) {
               const { layout: c1, feature: f1, level: level1 } = chunk[i]
@@ -117,7 +121,7 @@ export default (pluginManager: any) => {
                     key={JSON.stringify(path)}
                     strokeWidth={id === mouseoverElt ? 10 : 5}
                     onClick={() => {
-                      const featureWidget = session.addWidget(
+                      const featureWidget = session.addWidget?.(
                         'VariantFeatureWidget',
                         'variantFeature',
                         {
@@ -126,7 +130,7 @@ export default (pluginManager: any) => {
                           ).toJSON(),
                         },
                       )
-                      session.showWidget(featureWidget)
+                      session.showWidget?.(featureWidget)
                     }}
                     onMouseOver={() => setMouseoverElt(id)}
                     onMouseOut={() => setMouseoverElt(undefined)}

@@ -81,12 +81,12 @@ describe('AssemblyManager GUI', () => {
     )
   })
 
-  it('closes when the return button is clicked', () => {
+  it('closes when the Close button is clicked', () => {
     const onClose = jest.fn()
     const { getByText } = render(
       <AssemblyManager rootModel={mockRootModel} open onClose={onClose} />,
     )
-    fireEvent.click(getByText('Return'))
+    fireEvent.click(getByText('Close'))
     expect(onClose).toHaveBeenCalled()
   })
 })

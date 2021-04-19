@@ -4,7 +4,7 @@ One of the biggest features of JBrowse 2 is the ability to have multiple views
 on the same screen, or to compose multiple views together (e.g. a synteny view
 combines multiple single linear genome views)
 
-![](./img/linear_longread.png)
+![](/img/linear_longread.png)
 Example showing multiple views on the same screen, an alignments track on top
 and a long read vs reference comparison with the "synteny" view
 
