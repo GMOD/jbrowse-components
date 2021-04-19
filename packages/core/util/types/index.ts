@@ -188,7 +188,7 @@ export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
   setDefaultSession?(): void
-  setSession?(session: Record<string, any>): void
+  setSession?(arg: { name: string; [key: string]: any }): void
   adminMode?: boolean
 }
 

@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget'
 import shortid from 'shortid'
 import { when } from 'mobx'
-import isArray from 'is-array'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -171,7 +170,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
         await when(() => !!assemblyManager.allPossibleRefNames?.length)
 
-        if (isArray(parsed.loc) || isArray(parsed.assembly)) {
+        if (Array.isArray(parsed.loc) || Array.isArray(parsed.assembly)) {
           throw new Error('Unable to handle multiple locations')
         }
         view.navToLocString(parsed.loc as string, parsed.assembly as string)
