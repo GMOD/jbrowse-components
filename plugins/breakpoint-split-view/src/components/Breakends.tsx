@@ -1,5 +1,6 @@
 import Path from 'svg-path-generator'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession } from '@jbrowse/core/util'
 import { BreakpointViewModel, Breakend } from '../model'
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 
@@ -32,6 +33,10 @@ export default (pluginManager: any) => {
       parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views } = model
+      const session = getSession(model)
+      const { assemblyManager } = session
+
+      const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.getMatchedBreakendFeatures(trackConfigId)
       const layoutMatches = model.getMatchedFeaturesInLayout(
         trackConfigId,
@@ -40,12 +45,17 @@ export default (pluginManager: any) => {
       const [mouseoverElt, setMouseoverElt] = useState()
       const snap = getSnapshot(model)
       useNextFrame(snap)
+      const assembly = assemblyManager.get(views[0].assemblyNames[0])
+      if (!assembly) {
+        return null
+      }
 
-      let yOffset = 0
+      let yoff = 0
       if (ref.current) {
         const rect = ref.current.getBoundingClientRect()
-        yOffset = rect.top
+        yoff = rect.top
       }
+
       return (
         <g
           stroke="green"
@@ -62,27 +72,25 @@ export default (pluginManager: any) => {
             for (let i = 0; i < chunk.length - 1; i += 1) {
               const { layout: c1, feature: f1, level: level1 } = chunk[i]
               const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
-              const id = `${f1.id()}-${f2.id()}`
+              const id = f1.id()
+
               const relevantAlt = findMatchingAlt(f1, f2)
-              if (!c1 || !c2) return null
-              const x1 = getPxFromCoordinate(
-                views[level1],
-                f1.get('refName'),
-                c1[LEFT],
-              )
-              const x2 = getPxFromCoordinate(
-                views[level2],
-                f2.get('refName'),
-                c2[LEFT],
-              )
+              if (!c1 || !c2) {
+                return null
+              }
+              const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
+              const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
+              if (!f1ref || !f2ref) {
+                throw new Error(`unable to find ref for ${f1ref || f2ref}`)
+              }
+              const x1 = getPxFromCoordinate(views[level1], f1ref, c1[LEFT])
+              const x2 = getPxFromCoordinate(views[level2], f2ref, c2[LEFT])
               const reversed1 = views[level1].pxToBp(x1).reversed
               const reversed2 = views[level2].pxToBp(x2).reversed
 
               const tracks = views.map(v => v.getTrack(trackConfigId))
-              const y1 =
-                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
-              const y2 =
-                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
+              const y1 = yPos(trackConfigId, level1, views, tracks, c1) - yoff
+              const y2 = yPos(trackConfigId, level2, views, tracks, c2) - yoff
               if (!relevantAlt) {
                 console.warn(
                   'the relevant ALT allele was not found, cannot render',
@@ -111,6 +119,16 @@ export default (pluginManager: any) => {
                     d={path}
                     key={JSON.stringify(path)}
                     strokeWidth={id === mouseoverElt ? 10 : 5}
+                    onClick={() => {
+                      const featureWidget = session.addWidget?.(
+                        'VariantFeatureWidget',
+                        'variantFeature',
+                        {
+                          featureData: totalFeatures.get(id),
+                        },
+                      )
+                      session.showWidget?.(featureWidget)
+                    }}
                     onMouseOver={() => setMouseoverElt(id)}
                     onMouseOut={() => setMouseoverElt(undefined)}
                   />,

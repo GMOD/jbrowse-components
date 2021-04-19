@@ -1348,7 +1348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg(opts: ExportSvgOptions) {
+      async exportSvg(opts: ExportSvgOptions = {}) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })

@@ -593,7 +593,8 @@ const stateModelFactory = (
             ),
           )
         },
-        async renderSvg(opts: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async renderSvg(opts: any) {
           await when(() => self.ready && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
