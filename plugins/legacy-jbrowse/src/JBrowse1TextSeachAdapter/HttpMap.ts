@@ -9,11 +9,13 @@ export default class HttpMap {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
     this.browser = args.browser
+    this.meta = {}
     //   const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
     this.isElectron = args.isElectron
 
     // this.ready is a Deferred that will be resolved when we have
     // read the meta.json file with the params of this hashstore
+    // this.ready = this.readMeta()
     this.ready = this.readMeta()
   }
 

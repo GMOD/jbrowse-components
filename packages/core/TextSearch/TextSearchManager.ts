@@ -1,23 +1,36 @@
 /*  text-searching controller */
 import PluginManager from '../PluginManager'
+import QuickLRU from '../util/QuickLRU'
 
 export default (pluginManager: PluginManager) => {
   return class TextSearchManager {
     constructor() {
-      this.textSearchAdapters = this.loadTextSearchAdapters()
+      this.textSearchAdapters = []
+      this.lruCache = new QuickLRU({
+        maxSize: 15,
+      })
     }
 
     /**
-     * Instantiate/initialize list adapters
+     * Instantiate/initialize list of relevant adapters
      */
     loadTextSearchAdapters() {
       const initialAdapters = []
+      //  get list of relevant adapters
       const schemas = pluginManager.getElementTypesInGroup(
         'text search adapter',
       )
+      // check if in lru cache, else instantiate it
       schemas.forEach(schema => {
-        const { AdapterClass, configSchema } = schema
-        initialAdapters.push(new AdapterClass(configSchema))
+        const { AdapterClass, configSchema, name } = schema
+        if (this.lruCache.has(name)) {
+          const adapterFromCache = this.lruCache.get(name)
+          initialAdapters.push(adapterFromCache)
+        } else {
+          const newAdapter = new AdapterClass(configSchema)
+          initialAdapters.push(newAdapter)
+          this.lruCache.set(name, newAdapter)
+        }
       })
       // const {
       //   AdapterClass,
@@ -25,13 +38,9 @@ export default (pluginManager: PluginManager) => {
       // } = pluginManager.getTextSearchAdapterType('JBrowse1TextSearchAdapter')
       // const test = new AdapterClass(configSchema)
       // return initialAdapters.concat(test)
+      // console.log(this.lruCache)
+      // console.log(initialAdapters)
       return initialAdapters
-    }
-
-    parseText(searchText: string) {
-      // TODO: implement parse search input
-      //  :description
-      return []
     }
 
     /*  search options that specify the scope of the search
@@ -43,17 +52,21 @@ export default (pluginManager: PluginManager) => {
         2) instantiate if necessary...look in cache, have I instantiated if not instantiate
         3) get key, do I have it..if not make it...store it and use it etc.
         4) parallel search to all the adapters
+        create a queue of calls to adapters, as one gets resolved start another
         5) rank and sort based on relevancy
         6) return relevant results 
        */
-      // parallel search to all adapters
+      this.textSearchAdapters = this.loadTextSearchAdapters()
       const results = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
           const currentResults = await adapter.searchIndex(input, type)
           return currentResults
         }),
       )
-      return [].concat(...results)
+
+      // console.log( results )
+
+      return this.relevantResults([].concat(...results)) // flattening the results
     }
 
     /**
@@ -61,8 +74,8 @@ export default (pluginManager: PluginManager) => {
      * @param results - array of results from all text search adapters
      */
     relevantResults(results: array) {
-      // TODO: matches
-      return []
+      // TODO: implement rank system
+      return results
     }
   }
 }

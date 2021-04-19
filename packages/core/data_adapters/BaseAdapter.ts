@@ -287,7 +287,7 @@ export function isRefNameAliasAdapter(
 }
 
 export type searchType = 'full' | 'prefix' | 'exact'
-export abstract class BaseTextSearchAdapter extends BaseAdapter {
+export class BaseTextSearchAdapter extends BaseAdapter {
   public abstract async searchIndex(
     query: string,
     type: searchType,
