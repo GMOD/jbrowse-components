@@ -150,17 +150,24 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 
   async initFromQueryString(pluginManager: PluginManager) {
-    const parsed = queryString.parse(window.location.search)
-    if (pluginManager.rootModel && parsed.loc) {
+    const {
+      loc,
+      assembly: assemblyName,
+      preserveSession,
+      ...rest
+    } = queryString.parse(window.location.search)
+    const { rootModel } = pluginManager
+
+    if (rootModel && loc) {
       try {
         // will clear out any defaultSession or similar things unless this flag
         // is set
-        if (!parsed.preserveSession || !pluginManager.rootModel.session) {
-          pluginManager.rootModel.setSession?.({ name: 'New session' })
+        if (!preserveSession || !rootModel.session) {
+          rootModel.setSession?.({ name: 'New session' })
         }
 
         // type assertion since we know from above this will be non-undefined
-        const session = pluginManager.rootModel.session as AbstractSessionModel
+        const session = rootModel.session as AbstractSessionModel
 
         const { assemblyManager } = session
         const view = (session.addView('LinearGenomeView', {
@@ -170,15 +177,25 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
         await when(() => !!assemblyManager.allPossibleRefNames?.length)
 
-        if (Array.isArray(parsed.loc) || Array.isArray(parsed.assembly)) {
-          throw new Error('Unable to handle multiple locations')
+        if (!assemblyName) {
+          throw new Error("URL didn't contain an assembly")
         }
-        view.navToLocString(parsed.loc as string, parsed.assembly as string)
 
-        // remove these params from URL
-        const { loc, assembly, preserveSession, ...rest } = queryString.parse(
-          window.location.search,
-        )
+        const normalizedLoc: string = Array.isArray(loc) ? loc[0] : loc
+        const normalizedAsm: string = Array.isArray(assemblyName)
+          ? assemblyName[0]
+          : assemblyName
+
+        if (Array.isArray(loc)) {
+          session.notify(`URL contained multiple loc strings, using the first`)
+        }
+        if (Array.isArray(assemblyName)) {
+          session.notify(
+            `URL contained multiple assembly strings, using the first`,
+          )
+        }
+        view.navToLocString(normalizedLoc, normalizedAsm)
+
         window.history.replaceState(
           {},
           '',
@@ -188,7 +205,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
         )
       } catch (e) {
         console.error(e)
-        pluginManager.rootModel.session?.notify(
+        rootModel.session?.notify(
           `failed to init from query strings: ${e.message}`,
         )
       }
