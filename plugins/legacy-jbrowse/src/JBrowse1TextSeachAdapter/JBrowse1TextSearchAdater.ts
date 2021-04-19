@@ -2,7 +2,12 @@ import {
   searchType,
   BaseTextSearchAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { Option } from '@jbrowse/core/util/index'
+import {
+  BaseResult,
+  LocationResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
@@ -13,7 +18,9 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
    */
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    this.name = 'test text search is connected'
+    this.tracks = readConfObject(config, 'tracks')
+    this.assemblies = readConfObject(config, 'assemblies')
+    this.namesDirPath = readConfObject(config, 'namesIndexDirLocation')
   }
 
   /**
@@ -56,12 +63,19 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
         const refName = result[3]
         const start = result[4]
         const end = result[5]
-        const formattedResult: Option = {
+        const location = `${refName}:${start}-${end}`
+        const formattedResult: BaseResult = new LocationResult({
+          refName,
+          location,
+          value: name,
+        } )
+        console.log("formattedResult", formattedResult )
+        const formattedOption: Option = {
           group: 'text search adapter',
           value: name,
           location: `${refName}:${start}-${end}`,
         }
-        return formattedResult
+        return formattedOption
       }
       const defaultOption: Option = {
         group: 'text search adapter',
