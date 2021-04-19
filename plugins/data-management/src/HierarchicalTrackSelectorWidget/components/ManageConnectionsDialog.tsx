@@ -43,7 +43,7 @@ function ManageConnectionsDlg({
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">
       <DialogTitle>
-        Manage connections
+        Delete connections
         <IconButton
           className={classes.closeButton}
           onClick={() => handleClose()}
