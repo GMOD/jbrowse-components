@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget'
 import shortid from 'shortid'
 import { when } from 'mobx'
-import { getSnapshot } from 'mobx-state-tree'
+import isArray from 'is-array'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -147,49 +147,52 @@ export default class LinearGenomeViewPlugin extends Plugin {
       })
     }
 
-    this.initFromLocString(pluginManager)
+    this.initFromQueryString(pluginManager)
   }
 
-  async initFromLocString(pluginManager: PluginManager) {
+  async initFromQueryString(pluginManager: PluginManager) {
     const parsed = queryString.parse(window.location.search)
     if (pluginManager.rootModel && parsed.loc) {
-      if (!pluginManager.rootModel.session) {
-        // @ts-ignore types are not accurate here, they are stub abstracts
-        pluginManager.rootModel.setSession({ name: 'New session' })
-      }
-      const { session } = pluginManager.rootModel
+      try {
+        // will clear out any defaultSession or similar things unless this flag
+        // is set
+        if (!parsed.preserveSession || !pluginManager.rootModel.session) {
+          pluginManager.rootModel.setSession?.({ name: 'New session' })
+        }
 
-      // @ts-ignore types are not accurate here, they are stub abstracts
-      const { assemblyManager } = session
-      // @ts-ignore types are not accurate here, they are stub abstracts
-      const view = session.addView('LinearGenomeView', {
-        id: shortid(),
-        type: 'LinearGenomeView',
-      })
-      await when(() => {
-        return (
-          assemblyManager.allPossibleRefNames &&
-          assemblyManager.allPossibleRefNames.length
+        // type assertion since we know from above this will be non-undefined
+        const session = pluginManager.rootModel.session as AbstractSessionModel
+
+        const { assemblyManager } = session
+        const view = (session.addView('LinearGenomeView', {
+          id: shortid(),
+          type: 'LinearGenomeView',
+        }) as unknown) as LinearGenomeViewModel
+
+        await when(() => !!assemblyManager.allPossibleRefNames?.length)
+
+        if (isArray(parsed.loc) || isArray(parsed.assembly)) {
+          throw new Error('Unable to handle multiple locations')
+        }
+        view.navToLocString(parsed.loc as string, parsed.assembly as string)
+
+        // remove these params from URL
+        const { loc, assembly, preserveSession, ...rest } = queryString.parse(
+          window.location.search,
         )
-      })
-      const assembly = assemblyManager.assemblies[0]
-      const region = assembly && assembly.regions && assembly.regions[0]
-      // @ts-ignore types are not accurate here, they are stub abstracts
-      view.setDisplayedRegions([getSnapshot(region)])
-      await when(() => {
-        return (
-          assemblyManager.allPossibleRefNames &&
-          assemblyManager.allPossibleRefNames.length &&
-          // @ts-ignore types are not accurate here, they are stub abstracts
-          view.initialized
+        window.history.replaceState(
+          {},
+          '',
+          `${window.location.href.split('?')[0]}?${queryString.stringify(
+            rest,
+          )}`,
         )
-      })
-      // @ts-ignore types are not accurate here, they are stub abstracts
-      view.navToLocString(parsed.loc)
-      const root = window.location.href.split('?')[0]
-      const { loc, ...rest } = queryString.parse(window.location.search)
-      const pageUrl = `${root}?${queryString.stringify(rest)}`
-      window.history.replaceState({}, '', pageUrl)
+      } catch (e) {
+        console.error(e)
+        pluginManager.rootModel.session?.notify(
+          `failed to init from query strings: ${e.message}`,
+        )
+      }
     }
   }
 }
