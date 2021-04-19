@@ -3,7 +3,6 @@ import {
   BaseTextSearchAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Option } from '@jbrowse/core/util/index'
 import BaseResult, {
   LocationResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
@@ -47,41 +46,34 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   async searchIndex(input: string, type: searchType) {
     const entries = await this.loadIndexFile(input)
     if (entries && entries[input]) {
-      return this.formatOptions(entries[input][type])
+      return this.formatResults(entries[input][type])
     }
     return []
   }
 
-  formatOptions(results) {
+  formatResults(results) {
     if (results.length === 0) {
       return []
     }
-    const formattedOptions = results.map(result => {
+    const formattedResults = results.map(result => {
       if (result && typeof result === 'object' && result.length > 1) {
         const name = result[0]
         const refName = result[3]
         const start = result[4]
         const end = result[5]
         const location = `${refName}:${start}-${end}`
-        // const formattedResult: BaseResult = new LocationResult({
-        //   refName,
-        //   location,
-        //   value: name,
-        // })
-        const formattedOption: Option = {
-          group: 'text search adapter',
-          value: name,
+        const formattedResult = new LocationResult({
           location,
-        }
-        return formattedOption
+          value: name,
+        })
+        return formattedResult
       }
-      const defaultOption: Option = {
-        group: 'text search adapter',
+      const defaultResult = new BaseResult({
         value: result,
-      }
-      return defaultOption
+      })
+      return defaultResult
     })
-    return formattedOptions
+    return formattedResults
   }
 
   public freeResources(/* { region } */) {}

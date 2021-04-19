@@ -5,7 +5,7 @@
 import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, Option } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
@@ -18,8 +18,21 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
+import {
+  LocationResult,
+  RefSequenceResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 import { LinearGenomeViewModel } from '..'
 
+/**
+ *  Option interface as the base format for text search adapter results
+ *  and options in the refNameAutocomplete
+ */
+export interface Option {
+  group: string
+  result: BaseResult
+  inputValue?: string
+}
 // filter for options that were fetched
 const filter = createFilterOptions<Option>({ trim: true, limit: 15 })
 
@@ -62,7 +75,10 @@ function RefNameAutocomplete({
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
         group: 'reference sequence',
-        value: option.refName,
+        result: new RefSequenceResult({
+          refName: option.refName,
+          value: option.refName,
+        }),
       }
       return defaultOption
     })
@@ -79,7 +95,14 @@ function RefNameAutocomplete({
             'prefix',
           )
           if (results.length > 0) {
-            setCurrentOptions(results)
+            const adapterResults = results.map(result => {
+              const newOption: Option = {
+                group: 'text search adapter',
+                result,
+              }
+              return newOption
+            })
+            setCurrentOptions(adapterResults)
           }
         } catch (e) {
           console.error(e)
@@ -100,12 +123,12 @@ function RefNameAutocomplete({
       setCurrentOptions([])
     }
   }, [open])
-  async function onChange(newRegionName: Option | string) {
+  async function onChange(selectedOption: Option | string) {
     let newRegionValue: string | undefined
-    if (newRegionName) {
-      if (typeof newRegionName === 'object') {
-        newRegionValue = newRegionName.value
-        if (newRegionName.group === 'text search adapter') {
+    if (selectedOption) {
+      if (typeof selectedOption === 'object') {
+        newRegionValue = selectedOption.result?.getValue()
+        if (selectedOption.result.type === 'baseResult') {
           const results = await session.textSearchManager.search(
             newRegionValue.toLocaleLowerCase(),
             'exact',
@@ -116,10 +139,11 @@ function RefNameAutocomplete({
         } else {
           onSelect(newRegionValue)
         }
+        // onSelect(newRegionValue)
       }
-      if (typeof newRegionName === 'string') {
+      if (typeof selectedOption === 'string') {
         // handles locstrings when you press enter
-        newRegionValue = newRegionName
+        newRegionValue = selectedOption
         onSelect(newRegionValue)
       }
     }
@@ -155,10 +179,21 @@ function RefNameAutocomplete({
         // /\w{1,}\u003A\d{1,}\u002d\d{1,}/
         // /\w+\:\d+(\.{2}|\-)\d+/
 
+        // if (params.inputValue !== '') {
+        //   const newOption: Option = {
+        //     group: 'Navigating to...',
+        //     value: params.inputValue,
+        //   }
+        //   filtered.push(newOption)
+        // }
         if (params.inputValue !== '') {
           const newOption: Option = {
             group: 'Navigating to...',
-            value: params.inputValue,
+            result: new LocationResult({
+              value: params.inputValue,
+              location: params.inputValue,
+            }),
+            inputValue: params.inputValue,
           }
           filtered.push(newOption)
         }
@@ -206,22 +241,29 @@ function RefNameAutocomplete({
         )
       }}
       renderOption={(option, { inputValue }) => {
+        // TODO fix when matched string is not at the beginning
         if (currentSearch !== '') {
+          const val = option.inputValue || option?.result?.getValue() || ''
           return (
             <Typography noWrap>
-              <b>{option.value.slice(0, inputValue.length)}</b>
-              {option.value.slice(inputValue.length)}
+              <b>{val.slice(0, inputValue.length)}</b>
+              {val.slice(inputValue.length)}
             </Typography>
           )
         }
-        return <Typography noWrap>{option.value}</Typography>
+        return (
+          <Typography noWrap>
+            {option.inputValue || option?.result?.getValue() || ''}
+            {/* {option.inputValue || 'hi'} */}
+          </Typography>
+        )
       }}
       getOptionLabel={option => {
         // Note: needed to handle locstrings on enter
         if (typeof option === 'string') {
           return option
         }
-        return option.value
+        return option.inputValue || option?.result?.getValue() || ''
       }}
     />
   )
