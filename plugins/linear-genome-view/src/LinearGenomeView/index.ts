@@ -348,7 +348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            ...getSnapshot(region),
+            ...(getSnapshot(region) as any),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -367,7 +367,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              ...getSnapshot(region),
+              ...(getSnapshot(region) as any),
               oob: false,
               offset,
               coord: region.reversed
