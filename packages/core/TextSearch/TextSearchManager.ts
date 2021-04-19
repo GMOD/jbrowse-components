@@ -45,8 +45,9 @@ export default (pluginManager: PluginManager) => {
 
     /*  search options that specify the scope of the search
      * query: {'search string, page number', limit: number of results, abortsignal, type_of_search}
+     * args: unknown = {}
      */
-    async search(input: string, type: string) {
+    async search(args: unknown = {}) {
       /* TODO: implement search      
         1) figure out which text search adapters are relevant
         2) instantiate if necessary...look in cache, have I instantiated if not instantiate
@@ -59,14 +60,21 @@ export default (pluginManager: PluginManager) => {
       this.textSearchAdapters = this.loadTextSearchAdapters()
       const results = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
-          const currentResults = await adapter.searchIndex(input, type)
+          const currentResults = await adapter.searchIndex(
+            args.queryString,
+            args.searchType,
+          )
           return currentResults
         }),
       )
 
-      // console.log( results )
+      const relevantResults = this.relevantResults([].concat(...results)) // flattening the results
 
-      return this.relevantResults([].concat(...results)) // flattening the results
+      if (args.limit && relevantResults.length > 0) {
+        return relevantResults.slice(0, args.limit)
+      }
+
+      return relevantResults
     }
 
     /**

@@ -18,7 +18,7 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
-import {
+import BaseResult, {
   LocationResult,
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
@@ -90,10 +90,10 @@ function RefNameAutocomplete({
     if (active) {
       ;(async () => {
         try {
-          const results = await session.textSearchManager.search(
-            currentSearch,
-            'prefix',
-          )
+          const results = await session.textSearchManager.search({
+            queryString: currentSearch,
+            searchType: 'prefix',
+          })
           if (results.length > 0) {
             const adapterResults = results.map(result => {
               const newOption: Option = {
@@ -128,11 +128,11 @@ function RefNameAutocomplete({
     if (selectedOption) {
       if (typeof selectedOption === 'object') {
         newRegionValue = selectedOption.result?.getValue()
-        if (selectedOption.result.type === 'baseResult') {
-          const results = await session.textSearchManager.search(
-            newRegionValue.toLocaleLowerCase(),
-            'exact',
-          )
+        if (selectedOption.result instanceof BaseResult) {
+          const results = await session.textSearchManager.search({
+            queryString: newRegionValue.toLocaleLowerCase(),
+            searchType: 'exact',
+          })
           if (results.length > 0) {
             model.setSearchResults(results)
           }
