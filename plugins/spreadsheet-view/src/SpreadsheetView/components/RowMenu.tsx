@@ -11,7 +11,7 @@ export interface Props {
   spreadsheetModel: InstanceOfModelReturnedBy<typeof SpreadsheetModelF>
 }
 
-export default observer(({ viewModel, spreadsheetModel }: Props) => {
+const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
   const currentRowMenu = spreadsheetModel.rowMenuPosition
   const { setRowMenuPosition } = spreadsheetModel
 
@@ -57,3 +57,5 @@ export default observer(({ viewModel, spreadsheetModel }: Props) => {
     />
   )
 })
+
+export default RowMenu

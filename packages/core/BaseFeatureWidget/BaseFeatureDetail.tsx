@@ -429,23 +429,17 @@ export const FeatureDetails = (props: {
   formatter?: (val: unknown, key: string) => JSX.Element
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
-  const { name, id, type, subfeatures } = feature
-  const displayName = (name || id) as string | undefined
-  const ellipsedDisplayName =
-    displayName && displayName.length > 20 ? '' : displayName
+  const { name, id, type = '', subfeatures } = feature
+  const slug = name || id || ''
+  const shortName = slug.length > 20 ? `${slug}...` : slug
+  const title = `${shortName}${type ? ` - ${type}` : ''}`
   const session = getSession(model)
   const defSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
     getConf(session, ['featureDetails', 'sequenceTypes']) || defSeqTypes
 
   return (
-    <BaseCard
-      title={
-        ellipsedDisplayName
-          ? `${ellipsedDisplayName} - ${type}`
-          : `${type || ''}`
-      }
-    >
+    <BaseCard title={title}>
       <div>Core details</div>
       <CoreDetails {...props} />
       <Divider />
@@ -485,7 +479,7 @@ export const FeatureDetails = (props: {
   )
 }
 
-export default observer((props: BaseInputProps) => {
+const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const { model } = props
   const { featureData } = model
 
@@ -499,3 +493,5 @@ export default observer((props: BaseInputProps) => {
   }
   return <FeatureDetails model={model} feature={feature} />
 })
+
+export default BaseFeatureDetails

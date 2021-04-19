@@ -31,7 +31,7 @@ const useStyles = makeStyles({
   },
 })
 
-export default observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   return (
     <div className={classes.controls}>
@@ -105,3 +105,5 @@ export default observer(({ model }: { model: DotplotViewModel }) => {
     </div>
   )
 })
+
+export default DotplotControls

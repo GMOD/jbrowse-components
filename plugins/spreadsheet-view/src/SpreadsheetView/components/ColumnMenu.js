@@ -9,7 +9,7 @@ import FilterListIcon from '@material-ui/icons/FilterList'
 import PermDataSettingIcon from '@material-ui/icons/PermDataSetting'
 import SortIcon from '@material-ui/icons/Sort'
 
-export default observer(
+const ColumnMenu = observer(
   ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {
     const columnMenuClose = () => {
       setColumnMenu(null)
@@ -171,3 +171,5 @@ export default observer(
     )
   },
 )
+
+export default ColumnMenu

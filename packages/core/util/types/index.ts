@@ -65,6 +65,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   connectionInstances?: { name: string }[]
   makeConnection?: Function
   adminMode?: boolean
+  showWidget?: Function
+  addWidget?: Function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setDialogComponent: (dlg: React.FC<any>, props?: any) => void
 }
@@ -138,9 +140,8 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
 }
 
 export interface AbstractTrackModel {
-  id: string
+  setDialogComponent(dlg: unknown, display?: unknown): void
 }
-
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&

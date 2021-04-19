@@ -7,11 +7,14 @@ import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 
 const useStyles = makeStyles(() => ({
+  // avoid parent styles getting into this div
+  // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
     all: 'initial',
   },
 }))
-export default observer(
+
+const JBrowseLinearGenomeView = observer(
   ({ viewState }: { viewState: { session: SessionModel } }) => {
     const classes = useStyles()
     const { session } = viewState
@@ -23,11 +26,9 @@ export default observer(
     const { ReactComponent } = viewType
 
     return (
-      // avoid parent styles getting into this div
-      // https://css-tricks.com/almanac/properties/a/all/
       <div className={classes.avoidParentStyle}>
         <ViewContainer key={`view-${view.id}`} view={view}>
-          <Suspense fallback={<div>Wow</div>}>
+          <Suspense fallback={<div>Loading...</div>}>
             <ReactComponent model={view} session={session} />
           </Suspense>
         </ViewContainer>
@@ -36,3 +37,5 @@ export default observer(
     )
   },
 )
+
+export default JBrowseLinearGenomeView

@@ -102,7 +102,7 @@ const ViewMenu = observer(
   },
 )
 
-export default observer(
+const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
@@ -150,3 +150,5 @@ export default observer(
     )
   },
 )
+
+export default ViewContainer

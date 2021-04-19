@@ -342,7 +342,7 @@ const DataTable = observer(({ model, page, rowsPerPage }) => {
   )
 })
 
-export default observer(({ model, height, page, rowsPerPage }) => {
+const Spreadsheet = observer(({ model, height, page, rowsPerPage }) => {
   const classes = useStyles()
 
   return (
@@ -355,3 +355,5 @@ export default observer(({ model, height, page, rowsPerPage }) => {
     </div>
   )
 })
+
+export default Spreadsheet

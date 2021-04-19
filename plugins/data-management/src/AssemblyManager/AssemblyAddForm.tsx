@@ -139,7 +139,7 @@ const AdapterInput = observer(
   },
 )
 
-export default observer(
+const AssemblyAddForm = observer(
   ({
     rootModel,
     setFormOpen,
@@ -258,3 +258,5 @@ export default observer(
     )
   },
 )
+
+export default AssemblyAddForm

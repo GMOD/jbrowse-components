@@ -422,10 +422,12 @@ const Grid = observer(
     )
   },
 )
-// produces offsetX/offsetY coordinates from a clientX and an element's getBoundingClientRect
+// produces offsetX/offsetY coordinates from a clientX and an element's
+// getBoundingClientRect
 function getOffset(coord: Coord, rect: Rect) {
   return coord && ([coord[0] - rect.left, coord[1] - rect.top] as Coord)
 }
+
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const { hview, vview, viewHeight } = model
@@ -694,7 +696,7 @@ const DotplotViewInternal = observer(
     )
   },
 )
-export default observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
   const { initialized, loading, error } = model
   const classes = useStyles()
 
@@ -716,3 +718,5 @@ export default observer(({ model }: { model: DotplotViewModel }) => {
 
   return <DotplotViewInternal model={model} />
 })
+
+export default DotplotView

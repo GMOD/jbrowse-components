@@ -25,9 +25,15 @@ export default (pluginManager: any) => {
       parentRef: React.RefObject<SVGSVGElement>
     }) => {
       const { views, showIntraviewLinks } = model
+      const { assemblyManager } = getSession(model)
+
       const session = getSession(model)
       const snap = getSnapshot(model)
       useNextFrame(snap)
+      const assembly = assemblyManager.get(views[0].assemblyNames[0])
+      if (!assembly) {
+        return null
+      }
 
       const totalFeatures = model.getTrackFeatures(trackConfigId)
       const features = model.hasPairedReads(trackConfigId)
@@ -72,7 +78,11 @@ export default (pluginManager: any) => {
               if (!showIntraviewLinks && level1 === level2) {
                 return null
               }
-
+              const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
+              const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
+              if (!f1ref || !f2ref) {
+                throw new Error(`unable to find ref for ${f1ref || f2ref}`)
+              }
               const x1 = getPxFromCoordinate(
                 views[level1],
                 f1.get('refName'),

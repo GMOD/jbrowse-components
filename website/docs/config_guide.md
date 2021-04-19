@@ -1052,11 +1052,9 @@ This is done via a top-level configuration in the config file. For example:
 JBrowse uses 4 colors that can be changed. For example, this is the default
 theme:
 
-![JBrowse using the default theme](./img/default_theme.png)
-Example of the default theme
+<Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
-![JBrowse using a customized theme](./img/customized_theme.png)
-Example of a customized theme
+<Figure src="/img/default_theme.png" caption="Example screenshot showing the customized theme"/>
 
 The customized theme screenshot uses the below configuration
 

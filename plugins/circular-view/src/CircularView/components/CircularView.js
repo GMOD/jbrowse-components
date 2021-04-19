@@ -231,7 +231,7 @@ const ImportForm = observer(({ model }) => {
   )
 })
 
-export default observer(({ model }) => {
+const CircularView = observer(({ model }) => {
   const classes = useStyles()
   const initialized =
     !!model.displayedRegions.length && model.figureWidth && model.figureHeight
@@ -311,3 +311,5 @@ export default observer(({ model }) => {
     </div>
   )
 })
+
+export default CircularView

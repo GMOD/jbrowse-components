@@ -180,7 +180,6 @@ const SessionLoader = types
     },
     setSessionSnapshot(snap: unknown) {
       self.sessionSnapshot = snap
-      sessionStorage.setItem('current', JSON.stringify(snap))
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag

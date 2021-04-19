@@ -77,7 +77,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default observer(({ session, HeaderButtons }) => {
+const App = observer(({ session, HeaderButtons }) => {
   const classes = useStyles()
   const { pluginManager } = getEnv(session)
   const {
@@ -203,3 +203,5 @@ export default observer(({ session, HeaderButtons }) => {
     </div>
   )
 })
+
+export default App

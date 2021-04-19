@@ -1,11 +1,12 @@
 import { makeStyles } from '@material-ui/core/styles'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { BreakpointViewModel, VIEW_DIVIDER_HEIGHT } from '../model'
 import AlignmentConnectionsFactory from './AlignmentConnections'
 import BreakendsFactory from './Breakends'
 import HeaderFactory from './Header'
 import TranslocationsFactory from './Translocations'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default (pluginManager: any) => {
+
+export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')

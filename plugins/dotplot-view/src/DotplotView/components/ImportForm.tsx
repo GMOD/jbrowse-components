@@ -65,7 +65,7 @@ const FormRow = observer(
     )
   },
 )
-export default observer(({ model }: { model: DotplotViewModel }) => {
+const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const [numRows] = useState(2)
   const [selected, setSelected] = useState([0, 0])
@@ -176,3 +176,5 @@ export default observer(({ model }: { model: DotplotViewModel }) => {
     </Container>
   )
 })
+
+export default DotplotImportForm

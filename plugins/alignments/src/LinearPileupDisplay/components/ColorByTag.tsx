@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import IconButton from '@material-ui/core/IconButton'
+import { observer } from 'mobx-react'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
@@ -21,7 +24,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function ColorByTagDlg(props: {
+function ColorByTagDlg(props: {
   model: { setColorScheme: Function }
   handleClose: () => void
 }) {
@@ -31,13 +34,8 @@ export default function ColorByTagDlg(props: {
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
 
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
         Color by tag
         <IconButton
           aria-label="close"
@@ -90,3 +88,5 @@ export default function ColorByTagDlg(props: {
     </Dialog>
   )
 }
+
+export default observer(ColorByTagDlg)
