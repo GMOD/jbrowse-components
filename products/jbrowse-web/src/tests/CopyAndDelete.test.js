@@ -94,7 +94,7 @@ test('copy and delete track to session tracks', async () => {
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
 })
 
-test('delete connection', async () => {
+xtest('delete connection', async () => {
   const pluginManager = getPluginManager(masterConfig, true)
   const { findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,

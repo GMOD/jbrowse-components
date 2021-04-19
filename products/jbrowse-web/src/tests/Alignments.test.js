@@ -190,9 +190,7 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
-    const trackMenu = await findByTestId('track_menu_icon')
-
-    fireEvent.click(trackMenu)
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Color scheme'))
     fireEvent.click(await findByText('Strand'))
 
