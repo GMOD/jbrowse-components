@@ -7,7 +7,6 @@ import {
   hasParent,
   addDisposer,
   isStateTreeNode,
-  Instance,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import { inflate, deflate } from 'pako'
@@ -24,7 +23,6 @@ import {
   Region,
   AssemblyManager,
 } from './types'
-import { Region as IRegion } from './types/mst'
 import { isAbortException, checkAbortSignal } from './aborting'
 
 export * from './types'
@@ -732,7 +730,7 @@ export function makeAbortableReaction<T, U, V>(
 
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string>,
-  region: Region | Instance<typeof IRegion>,
+  region: Region,
 ): Region & { originalRefName?: string } {
   if (isStateTreeNode(region) && !isAlive(region)) {
     return getSnapshot(region)

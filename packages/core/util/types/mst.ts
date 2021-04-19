@@ -20,6 +20,7 @@ export const PropTypes = {
   }),
 }
 
+// if you change this, please cross-reference with ./index.ts
 export const NoAssemblyRegion = types
   .model('NoAssemblyRegion', {
     refName: types.string,
@@ -33,6 +34,7 @@ export const NoAssemblyRegion = types
     },
   }))
 
+// if you change this, please cross-reference with ./index.ts
 export const Region = types.compose(
   'Region',
   NoAssemblyRegion,

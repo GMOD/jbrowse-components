@@ -46,7 +46,7 @@ export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
     assemblyName: string
     tag?: string
   }
-  showSoftClip: boolean
+  showSoftClip?: boolean
   highResolutionScaling: number
 }
 
@@ -166,10 +166,7 @@ export default class PileupRenderer extends BoxRendererType {
   // expands region for clipping to use. possible improvement: use average read
   // size to set the heuristic maxClippingSize expansion (e.g. short reads
   // don't have to expand a softclipping size a lot, but long reads might)
-  //
-  // Avoid "Return type of public method from exported class has or is using name '$nonEmptyObject' from external module"
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getExpandedRegion(region: any, renderArgs: RenderArgsAugmented) {
+  getExpandedRegion(region: Region, renderArgs: RenderArgsAugmented) {
     const { config, showSoftClip } = renderArgs
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')

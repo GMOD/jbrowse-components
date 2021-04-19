@@ -348,8 +348,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[0]
           const offset = bp
           return {
-            // cast to any to avoid Return type of exported function has or is using name '$nonEmptyObject'
-            ...(getSnapshot(region) as any),
+            ...getSnapshot(region),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -368,8 +367,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
             return {
-              // cast to any to avoid Return type of exported function has or is using name '$nonEmptyObject'
-              ...(getSnapshot(region) as any),
+              ...getSnapshot(region),
               oob: false,
               offset,
               coord: region.reversed
