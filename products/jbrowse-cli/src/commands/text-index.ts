@@ -13,14 +13,6 @@ export default class TextIndex extends JBrowseCommand {
     '$ jbrowse text-index --individual --tracks my_track_id',
   ]
 
-  static args = [
-    // {
-    //   name: 'tracks',
-    //   required: false,
-    //   description: `comma separated trackIds`,
-    // },
-  ]
-
   static flags = {
     help: flags.help({ char: 'h' }),
     tracks: flags.string({
