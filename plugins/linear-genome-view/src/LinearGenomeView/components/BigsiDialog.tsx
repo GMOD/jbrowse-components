@@ -5,6 +5,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,7 +14,6 @@ import {
   Typography,
   Divider,
   IconButton,
-  TextField,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { getSession } from '@jbrowse/core/util'
@@ -41,6 +41,61 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+async function getBigsiHitsFeatures(
+  self: LinearGenomeViewModel,
+  query: string,
+) {
+    
+  // console.log(chunks[0][0].data.seq)
+  const response = await queryBigsi.main(bigsi, query)
+  console.log('response: ', response)
+    
+  const refName =
+    self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
+
+  const allFeatures = []
+  for (let h = 0; h < response.length; h++) {
+    const bigsiFeatures = Object.values(response[h])
+    console.log('bigsiFeatures: ', bigsiFeatures)
+    for (let i = 0; i < bigsiFeatures.length; i++) {
+      bigsiFeatures[i].uniqueId = parseInt(i)
+      bigsiFeatures[i].bucketStart = bigsiFeatures[i].start
+      bigsiFeatures[i].bucketEnd = bigsiFeatures[i].end
+      bigsiFeatures[i].name = `${bigsiFeatures[i].refName}:${bigsiFeatures[i].bucketStart}-${bigsiFeatures[i].bucketEnd}`
+      //bigsiFeatures[i].start = self.leftBigsiOffset.coord
+      //bigsiFeatures[i].end = self.rightBigsiOffset.coord
+      bigsiFeatures[i].refName = refName
+      allFeatures.push(bigsiFeatures[i])
+    }
+  }
+  return allFeatures
+}
+
+function constructBigsiTrack(
+    self: LinearGenomeViewModel,
+    allFeatures: Array<Record<string, any>>,
+){
+    const bigsiQueryTrack = {
+            trackId: `track-${Date.now()}`,
+            name: 'BIGSI Query',
+            //`BIGSI Query ${assemblyName}:Chr${refName}:${self.leftBigsiOffset.coord}-${self.rightBigsiOffset.coord}`,
+            assemblyNames: ['hg38'],
+            type: 'FeatureTrack',
+            adapter: {
+                type: 'FromConfigAdapter',
+                features: allFeatures,
+                //features: [ { "refName": "1", "start":1, "end":200000, "uniqueId": "id1" }],
+                },
+            }
+
+    const session = getSession(self)
+    session.addTrackConf(bigsiQueryTrack)
+
+    self.showTrack(bigsiQueryTrack.trackId)
+    //console.log(response)
+
+}
+
 /**
  * Fetches and returns a list features for a given list of regions
  * @param selectedRegions - Region[]
@@ -53,8 +108,6 @@ export async function fetchSequence(
   const session = getSession(self)
   const assemblyName =
     self.leftBigsiOffset?.assemblyName || self.rightBigsiOffset?.assemblyName || ''
-  const refName =
-    self.leftBigsiOffset?.refName || self.rightBigsiOffset?.refName || ''
   const { rpcManager, assemblyManager } = session
   const assemblyConfig = assemblyManager.get(assemblyName)?.configuration
 
@@ -72,40 +125,6 @@ export async function fetchSequence(
     ),
   )) as Feature[][]
 
-  // console.log(chunks[0][0].data.seq)
-  const response = await queryBigsi.main(bigsi, chunks[0][0].data.seq)
-  console.log('response: ', response)
-    
-  const allFeatures = []
-  for (let i=0; i < response.length; i++){
-    const bigsiFeatures = Object.values(response[i])
-    console.log('bigsiFeatures: ', bigsiFeatures)
-    for (let i=0; i < bigsiFeatures.length; i++){
-        bigsiFeatures[i]['uniqueId'] = parseInt(i)
-        bigsiFeatures[i]['name'] = `${bigsiFeatures[i]['refName']}:${bigsiFeatures[i]['start']}-${bigsiFeatures[i]['end']}`
-        bigsiFeatures[i]['start'] = self.leftBigsiOffset.coord
-        bigsiFeatures[i]['end'] = self.rightBigsiOffset.coord
-        bigsiFeatures[i]['refName'] = refName
-        allFeatures.push(bigsiFeatures[i])
-        }
-    }
-
-    const bigsiQueryTrack = {
-            trackId: `track-${Date.now()}`,
-            name: `BIGSI Query ${assemblyName}:Chr${refName}:${self.leftBigsiOffset.coord}-${self.rightBigsiOffset.coord}`,
-            assemblyNames: ['hg38'],
-            type: 'FeatureTrack',
-            adapter: {
-                type: 'FromConfigAdapter',
-                features: allFeatures,
-                //features: [ { "refName": "1", "start":1, "end":200000, "uniqueId": "id1" }],
-                },
-            }
-
-    session.addTrackConf(bigsiQueryTrack)
-
-    self.showTrack(bigsiQueryTrack.trackId)
-  //console.log(response)
 
   // assumes that we get whole sequence in a single getFeatures call
   return chunks.map(chunk => chunk[0])
@@ -138,40 +157,16 @@ function BigsiDialog({
   useEffect(() => {
     let active = true
 
-    function formatSequence(seqChunks: Feature[]) {
-      const sequenceChunks: SeqChunk[] = []
-      const incompleteSeqErrs: string[] = []
-      seqChunks.forEach((chunk: Feature) => {
-        const chunkSeq = chunk.get('seq')
-        const chunkRefName = chunk.get('refName')
-        const chunkStart = chunk.get('start') + 1
-        const chunkEnd = chunk.get('end')
-        const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-        if (chunkSeq) {
-          sequenceChunks.push({ header: chunkLocstring, seq: chunkSeq })
-          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
-            incompleteSeqErrs.push(
-              `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                chunkEnd - chunkStart
-              ).toLocaleString()}`,
-            )
-          }
-        }
-      })
-      if (incompleteSeqErrs.length > 0) {
-        session.notify(
-          `Unable to retrieve complete reference sequence from regions:${incompleteSeqErrs.join()}`,
-        )
-      }
-      setSequence(formatSeqFasta(sequenceChunks))
-    }
 
     ;(async () => {
       try {
         if (regionsSelected.length > 0) {
-          const chunks = await fetchSequence(model, regionsSelected)
+          const chunks = (await fetchSequence(model, regionsSelected))[0].data.seq
           if (active) {
-            formatSequence(chunks)
+            const allFeatures = await getBigsiHitsFeatures(model, chunks)
+            console.log('allFeatures ', allFeatures)
+            constructBigsiTrack(model, allFeatures)
+            setSequence(chunks)
           }
         } else {
           throw new Error('Selected region is out of bounds')
@@ -220,10 +215,18 @@ function BigsiDialog({
       <DialogContent>
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {loading && !error ? (
-          <Container>
-            Select reference sequences to query
+          <Container> 
+            Retrieving BIGSI hits...
+
+            <CircularProgress
+              style={{
+                marginLeft: 10,
+              }}
+              size={20}
+              disableShrink={true}
+            />
           </Container>
-        ) : null}
+        ) : <Container> Query complete! </Container> }
       </DialogContent>
       <DialogActions>
         <Button
