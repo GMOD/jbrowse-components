@@ -41,7 +41,11 @@ function PluginCard({ plugin }: { plugin: JBrowsePlugin }) {
       <CardContent>
         <div className={classes.dataField}>
           <Typography variant="h5">
-            <Link href={plugin.location} target="_blank" rel="noopener">
+            <Link
+              href={`${plugin.location}#readme`}
+              target="_blank"
+              rel="noopener"
+            >
               {plugin.name}
             </Link>
           </Typography>
