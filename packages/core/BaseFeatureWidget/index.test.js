@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
@@ -20,9 +20,7 @@ test('open up a widget', () => {
     widget: { type: 'BaseFeatureWidget' },
   })
   const { container, getByText } = render(
-    <Suspense fallback={<div>Loading...</div>}>
-      <BaseFeatureDetails model={model.widget} />
-    </Suspense>,
+    <BaseFeatureDetails model={model.widget} />,
   )
   model.widget.setFeatureData({
     start: 2,
