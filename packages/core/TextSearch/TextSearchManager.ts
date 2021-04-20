@@ -1,4 +1,5 @@
 /*  text-searching controller */
+import { readConfObject } from '../configuration'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 
@@ -23,22 +24,24 @@ export default (pluginManager: PluginManager) => {
      */
     loadTextSearchAdapters() {
       const initialAdapters = []
-      //  get list of relevant adapters
-      const schemas = pluginManager.getElementTypesInGroup(
-        'text search adapter',
+      // initialize necessary adapters
+      pluginManager.rootModel.jbrowse.textSearchAdapters.forEach(
+        adapterConfig => {
+          const id = readConfObject(adapterConfig, 'textSearchAdapterId')
+          if (this.lruCache.has(id)) {
+            const adapterFromCache = this.lruCache.get(id)
+            initialAdapters.push(adapterFromCache)
+          } else {
+            const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
+              adapterConfig.type,
+            )
+            const textSearchAdapter = new textSearchAdapterType.AdapterClass(
+              adapterConfig,
+            )
+            this.lruCache.set(id, textSearchAdapter)
+          }
+        },
       )
-      // check if in lru cache, else instantiate it
-      schemas.forEach(schema => {
-        const { AdapterClass, configSchema, name } = schema
-        if (this.lruCache.has(name)) {
-          const adapterFromCache = this.lruCache.get(name)
-          initialAdapters.push(adapterFromCache)
-        } else {
-          const newAdapter = new AdapterClass(configSchema)
-          initialAdapters.push(newAdapter)
-          this.lruCache.set(name, newAdapter)
-        }
-      })
       // const {
       //   AdapterClass,
       //   configSchema,

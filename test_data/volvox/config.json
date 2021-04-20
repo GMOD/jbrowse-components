@@ -48,6 +48,17 @@
       }
     }
   ],
+  "textSearchAdapters": [
+    {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
+      "namesIndexDirLocation": {
+        "uri": "names/"
+      },
+      "tracks": [],
+      "assemblies": []
+    }
+  ],
   "tracks": [
     {
       "type": "VariantTrack",

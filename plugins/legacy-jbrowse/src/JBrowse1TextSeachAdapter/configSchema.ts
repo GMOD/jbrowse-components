@@ -21,5 +21,5 @@ export default ConfigurationSchema(
       description: 'List of assemblies covered by text search adapter',
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, explicitIdentifier: 'textSearchAdapterId' },
 )

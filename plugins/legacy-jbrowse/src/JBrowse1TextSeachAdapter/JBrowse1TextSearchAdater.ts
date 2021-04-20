@@ -14,8 +14,15 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   Jbrowse1 text search adapter
   Uses index built by generate-names.pl
    */
+  // httpMap: HttpMap
+
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
+    // this.httpMap = new HttpMap({
+    //   url: '/test_data/volvox/names/',
+    //   isElectron: false,
+    //   browser: '',
+    // })
     this.tracks = readConfObject(config, 'tracks')
     this.assemblies = readConfObject(config, 'assemblies')
     this.namesDirPath = readConfObject(config, 'namesIndexDirLocation')
@@ -29,12 +36,17 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   async loadIndexFile(query: string) {
     // TODO: load index to search from
     // TODO: needs to handle different assemblies or organisms
+    const path = this.namesDirPath.baseUri
+      ? new URL(this.namesDirPath.uri, this.namesDirPath.baseUri).href
+      : this.namesDirPath.uri
+    // console.log(path)
     const httpMap = new HttpMap({
-      url: '/test_data/volvox/names/',
+      url: path,
       isElectron: false,
       browser: '',
     })
-
+    // console.log(httpMap)
+    // console.log(this.namesDirPath.uri)
     const readyCheck = await httpMap.ready
     if (readyCheck) {
       const bucketContents = await httpMap.getBucket(query)
