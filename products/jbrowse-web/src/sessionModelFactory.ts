@@ -35,6 +35,8 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
+// import { JBrowsePlugin } from '@jbrowse/plugin-data-management/src/PluginStoreWidget/types'
+import { PluginConstructor } from '@jbrowse/core/Plugin'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -74,6 +76,7 @@ export default function sessionModelFactory(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
     })
     .volatile((/* self */) => ({
@@ -184,6 +187,12 @@ export default function sessionModelFactory(
       },
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
+      },
+      addSessionPlugin(plugin: PluginConstructor) {
+        self.sessionPlugins.push(plugin)
+        window.setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       },
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(
