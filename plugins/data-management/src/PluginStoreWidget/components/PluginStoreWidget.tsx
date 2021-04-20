@@ -16,7 +16,7 @@ import ClearIcon from '@material-ui/icons/Clear'
 import InstalledPlugins from './InstalledPlugins'
 import PluginCard from './PluginCard'
 
-import type { JBrowsePlugin, BasePlugin, TextUpdateEvent } from '../types'
+import type { JBrowsePlugin, BasePlugin } from '../types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -53,7 +53,9 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     setPluginArray(array.plugins)
   }
 
-  const handleInputChange = (event: TextUpdateEvent) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
     model.setFilterText(event.target.value)
   }
 

@@ -13,9 +13,3 @@ export interface BasePlugin {
   name: string
   url?: string
 }
-
-export interface TextUpdateEvent {
-  target: {
-    value: string
-  }
-}
