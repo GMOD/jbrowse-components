@@ -7,11 +7,8 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-// @ts-ignore
 import emptyIcon from './emptyIcon.png'
-// @ts-ignore
 import linearGenomeViewIcon from './linearGenomeViewIcon.png'
-// @ts-ignore
 import svInspectorIcon from './svInspectorIcon.png'
 
 const useStyles = makeStyles(theme => ({
@@ -64,8 +61,11 @@ function NewSessionCard({
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function NewEmptySession({ root }: { root: any }) {
+interface RootModel {
+  setSession: Function
+}
+
+export function NewEmptySession({ root }: { root: RootModel }) {
   return (
     <NewSessionCard
       name="Empty"
@@ -77,8 +77,7 @@ export function NewEmptySession({ root }: { root: any }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function NewLinearGenomeViewSession({ root }: { root: any }) {
+export function NewLinearGenomeViewSession({ root }: { root: RootModel }) {
   return (
     <NewSessionCard
       name="Linear Genome View"
@@ -94,8 +93,7 @@ export function NewLinearGenomeViewSession({ root }: { root: any }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function NewSVInspectorSession({ root }: { root: any }) {
+export function NewSVInspectorSession({ root }: { root: RootModel }) {
   return (
     <NewSessionCard
       name="Structural Variant Inspector"
