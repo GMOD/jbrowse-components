@@ -13,6 +13,8 @@ import Button from '@material-ui/core/Button'
 import PersonIcon from '@material-ui/icons/Person'
 import AddIcon from '@material-ui/icons/Add'
 
+import { getSession } from '@jbrowse/core/util'
+import type { PluginStoreModel } from '../model'
 import type { JBrowsePlugin } from '../types'
 
 const useStyles = makeStyles(() => ({
@@ -33,8 +35,15 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
-function PluginCard({ plugin }: { plugin: JBrowsePlugin }) {
+function PluginCard({
+  plugin,
+  model,
+}: {
+  plugin: JBrowsePlugin
+  model: PluginStoreModel
+}) {
   const classes = useStyles()
+  const session = getSession(model)
 
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
@@ -58,7 +67,13 @@ function PluginCard({ plugin }: { plugin: JBrowsePlugin }) {
         <Typography>{plugin.description}</Typography>
       </CardContent>
       <CardActions>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />}>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          // @ts-ignore
+          onClick={() => session.addSessionPlugin(plugin)}
+        >
           Install
         </Button>
       </CardActions>

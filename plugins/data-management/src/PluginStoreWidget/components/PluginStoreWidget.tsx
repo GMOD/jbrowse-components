@@ -109,7 +109,11 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
               .includes(model.filterText.toLowerCase())
           })
           .map(plugin => (
-            <PluginCard key={(plugin as JBrowsePlugin).name} plugin={plugin} />
+            <PluginCard
+              key={(plugin as JBrowsePlugin).name}
+              plugin={plugin}
+              model={model}
+            />
           ))}
       </Accordion>
     </div>
