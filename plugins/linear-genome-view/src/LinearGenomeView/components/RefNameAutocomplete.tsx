@@ -242,8 +242,9 @@ function RefNameAutocomplete({
       }}
       renderOption={(option, { inputValue }) => {
         // TODO fix when matched string is not at the beginning
+        const { result } = option
         if (currentSearch !== '') {
-          const val = option.inputValue || option?.result?.getRendering() || ''
+          const val = option.inputValue || result?.getRendering() || ''
           return (
             <Typography noWrap>
               <b>{val.slice(0, inputValue.length)}</b>
@@ -253,8 +254,7 @@ function RefNameAutocomplete({
         }
         return (
           <Typography noWrap>
-            {option.inputValue || option?.result?.getRendering() || ''}
-            {/* {option.inputValue || 'hi'} */}
+            {option.inputValue || result?.getRendering() || ''}
           </Typography>
         )
       }}
