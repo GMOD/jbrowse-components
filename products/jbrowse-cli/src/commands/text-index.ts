@@ -9,8 +9,8 @@ export default class TextIndex extends JBrowseCommand {
 
   static examples = [
     '$ jbrowse text-index',
-    '$ jbrowse text-index --tracks track1,track2,track3',
-    '$ jbrowse text-index --individual --tracks my_track_id',
+    '$ jbrowse text-index --tracks=track1,track2,track3',
+    '$ jbrowse text-index --individual --tracks=my_track_id',
   ]
 
   static flags = {

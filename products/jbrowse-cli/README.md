@@ -422,8 +422,8 @@ OPTIONS
 
 EXAMPLES
   $ jbrowse text-index
-  $ jbrowse text-index --tracks track1,track2,track3
-  $ jbrowse text-index --individual --tracks my_track_id
+  $ jbrowse text-index --tracks=track1,track2,track3
+  $ jbrowse text-index --individual --tracks=my_track_id
 ```
 
 _See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/text-index.ts)_
