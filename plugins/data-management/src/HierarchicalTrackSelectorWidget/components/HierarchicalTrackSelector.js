@@ -383,7 +383,7 @@ const HierarchicalTrackSelectorHeader = observer(
         onClick: () => setConnectionToggleOpen(true),
       },
       {
-        label: 'Manage connections',
+        label: 'Delete connections...',
         onClick: () => setConnectionManagerOpen(true),
       },
     ]
