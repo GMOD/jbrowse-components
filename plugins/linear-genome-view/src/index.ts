@@ -16,7 +16,11 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+import {
+  AbstractRootModel,
+  AbstractSessionModel,
+  isAbstractMenuManager,
+} from '@jbrowse/core/util'
 import LineStyleIcon from '@material-ui/icons/LineStyle'
 import queryString from 'query-string'
 import {
@@ -40,6 +44,17 @@ import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+
+function getNewSession(
+  rootModel: AbstractRootModel,
+  preserve: boolean,
+): AbstractSessionModel {
+  // will clear out any defaultSession or similar things unless `&preserve=true`
+  if (!preserve || !rootModel.session) {
+    rootModel.setSession?.({ name: 'New session' })
+  }
+  return rootModel.session as AbstractSessionModel
+}
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -150,24 +165,14 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 
   async initFromQueryString(pluginManager: PluginManager) {
-    const {
-      loc,
-      assembly: assemblyName,
-      preserveSession,
-      ...rest
-    } = queryString.parse(window.location.search)
+    const { loc, assembly, preserve, ...rest } = queryString.parse(
+      window.location.search,
+    )
     const { rootModel } = pluginManager
 
     if (rootModel && loc) {
       try {
-        // will clear out any defaultSession or similar things unless this flag
-        // is set
-        if (!preserveSession || !rootModel.session) {
-          rootModel.setSession?.({ name: 'New session' })
-        }
-
-        // type assertion since we know from above this will be non-undefined
-        const session = rootModel.session as AbstractSessionModel
+        const session = getNewSession(rootModel, !!preserve)
 
         const { assemblyManager } = session
         const view = (session.addView('LinearGenomeView', {
@@ -177,30 +182,40 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
         await when(() => !!assemblyManager.allPossibleRefNames?.length)
 
-        if (!assemblyName) {
+        if (!assembly) {
           throw new Error("URL didn't contain an assembly")
         }
 
         const normalizedLoc: string = Array.isArray(loc) ? loc[0] : loc
-        const normalizedAsm: string = Array.isArray(assemblyName)
-          ? assemblyName[0]
-          : assemblyName
+        const normalizedAsm: string = Array.isArray(assembly)
+          ? assembly[0]
+          : assembly
 
         if (Array.isArray(loc)) {
           session.notify(`URL contained multiple loc strings, using the first`)
         }
-        if (Array.isArray(assemblyName)) {
+        if (Array.isArray(assembly)) {
           session.notify(
             `URL contained multiple assembly strings, using the first`,
           )
         }
         view.navToLocString(normalizedLoc, normalizedAsm)
 
+        // reparse url querystring after adding view, since the process of
+        // adding view and navToLocString updates &session=local- so we want to
+        // get that param after these operations and then remove &loc,
+        // &assembly, &preserve to allow page refresh
+        const {
+          loc: unused1,
+          assembly: unused2,
+          preserve: unused3,
+          ...result
+        } = queryString.parse(window.location.search)
         window.history.replaceState(
           {},
           '',
           `${window.location.href.split('?')[0]}?${queryString.stringify(
-            rest,
+            result,
           )}`,
         )
       } catch (e) {
