@@ -169,7 +169,7 @@ const SimpleValue = ({
   prefix?: string[]
 }) => {
   const classes = useStyles()
-  return value ? (
+  return value !== null && value !== undefined ? (
     <div className={classes.field}>
       <FieldName prefix={prefix} description={description} name={name} />
       <BasicValue value={value} />
