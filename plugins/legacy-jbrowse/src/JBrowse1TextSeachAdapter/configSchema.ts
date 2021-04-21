@@ -5,7 +5,7 @@ export default ConfigurationSchema(
   {
     // metadata about tracks and assemblies covered by text search adapter
     // TODO: URL path to the directory of the names
-    namesIndexDirLocation: {
+    namesIndexLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '' },
       description: 'the location of the JBrowse1 names index data directory',

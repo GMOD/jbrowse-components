@@ -24,57 +24,47 @@ export default (pluginManager: PluginManager) => {
      */
     loadTextSearchAdapters() {
       const initialAdapters = []
-      // initialize necessary adapters
-      pluginManager.rootModel.jbrowse.textSearchAdapters.forEach(
-        adapterConfig => {
-          const id = readConfObject(adapterConfig, 'textSearchAdapterId')
-          if (this.lruCache.has(id)) {
-            const adapterFromCache = this.lruCache.get(id)
-            initialAdapters.push(adapterFromCache)
-          } else {
-            const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
-              adapterConfig.type,
-            )
-            const textSearchAdapter = new textSearchAdapterType.AdapterClass(
-              adapterConfig,
-            )
-            this.lruCache.set(id, textSearchAdapter)
-          }
-        },
-      )
-      // const {
-      //   AdapterClass,
-      //   configSchema,
-      // } = pluginManager.getTextSearchAdapterType('JBrowse1TextSearchAdapter')
-      // const test = new AdapterClass(configSchema)
-      // return initialAdapters.concat(test)
-      // console.log(this.lruCache)
-      // console.log(initialAdapters)
+      // initialize relevant adapters
+      this.relevantAdapters().forEach(adapterConfig => {
+        const id = readConfObject(adapterConfig, 'textSearchAdapterId')
+        if (this.lruCache.has(id)) {
+          const adapterFromCache = this.lruCache.get(id)
+          initialAdapters.push(adapterFromCache)
+        } else {
+          const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
+            adapterConfig.type,
+          )
+          const textSearchAdapter = new textSearchAdapterType.AdapterClass(
+            adapterConfig,
+          )
+          this.lruCache.set(id, textSearchAdapter)
+        }
+      })
       return initialAdapters
     }
 
-    /*  search options that specify the scope of the search
-     * query: {'search string, page number', limit: number of results, abortsignal, type_of_search}
-     * args: unknown = {}
+    relevantAdapters() {
+      // TODO: figure out how to determine relevant adapters
+      return pluginManager.rootModel.jbrowse.textSearchAdapters
+    }
+
+    /**
+     * Returns list of relevant results given a search query and options
+     * @param args - search options/arguments include: search query
+     * limit of results to return, searchType...preffix | full | exact", etc.
      */
     async search(args: BaseArgs = {}) {
-      /* TODO: implement search      
-        1) figure out which text search adapters are relevant
-        2) instantiate if necessary...look in cache, have I instantiated if not instantiate
-        3) get key, do I have it..if not make it...store it and use it etc.
-        4) parallel search to all the adapters
-        create a queue of calls to adapters, as one gets resolved start another
-        5) rank and sort based on relevancy
-        6) return relevant results 
-       */
+      // determine list of relevant adapters
       this.textSearchAdapters = this.loadTextSearchAdapters()
       const results = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
+          // search with given options
           const currentResults = await adapter.searchIndex(args)
           return currentResults
         }),
       )
 
+      // aggregate and return relevant results
       const relevantResults = this.relevantResults([].concat(...results)) // flattening the results
 
       if (args.limit && relevantResults.length > 0) {

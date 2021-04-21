@@ -52,7 +52,7 @@
     {
       "type": "JBrowse1TextSearchAdapter",
       "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
-      "namesIndexDirLocation": {
+      "namesIndexLocation": {
         "uri": "names/"
       },
       "tracks": [],

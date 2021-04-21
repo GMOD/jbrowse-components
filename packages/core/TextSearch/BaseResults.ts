@@ -2,7 +2,7 @@ import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterTyp
 import { searchType } from '../data_adapters/BaseAdapter'
 
 export default class BaseResult {
-  rendering: string // todo add | react component here 
+  rendering: string // todo add | react component here
 
   matchedAttribute: string
 
