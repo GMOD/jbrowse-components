@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
@@ -12,6 +13,7 @@ import Button from '@material-ui/core/Button'
 
 import PersonIcon from '@material-ui/icons/Person'
 import AddIcon from '@material-ui/icons/Add'
+import CheckIcon from '@material-ui/icons/Check'
 
 import { getSession } from '@jbrowse/core/util'
 import type { PluginStoreModel } from '../model'
@@ -44,6 +46,10 @@ function PluginCard({
 }) {
   const classes = useStyles()
   const session = getSession(model)
+  const { pluginManager } = getEnv(model)
+  const isInstalled = pluginManager.hasPlugin(`${plugin.name}Plugin`)
+  const [tempDisabled, setTempDisabled] = useState(false)
+  const disableButton = isInstalled || tempDisabled
 
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
@@ -70,11 +76,14 @@ function PluginCard({
         <Button
           variant="contained"
           color="primary"
-          startIcon={<AddIcon />}
-          // @ts-ignore
-          onClick={() => session.addSessionPlugin(plugin)}
+          disabled={disableButton}
+          startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
+          onClick={() => {
+            session.addSessionPlugin(plugin)
+            setTempDisabled(true)
+          }}
         >
-          Install
+          {isInstalled ? 'Installed' : 'Install'}
         </Button>
       </CardActions>
     </Card>
