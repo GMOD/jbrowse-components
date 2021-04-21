@@ -169,7 +169,7 @@ const SimpleValue = ({
   prefix?: string[]
 }) => {
   const classes = useStyles()
-  return value ? (
+  return value !== null && value !== undefined ? (
     <div className={classes.field}>
       <FieldName prefix={prefix} description={description} name={name} />
       <BasicValue value={value} />
@@ -263,6 +263,95 @@ interface AttributeProps {
   prefix?: string[]
 }
 
+const DataGridDetails = ({
+  value,
+  prefix,
+  name,
+}: {
+  name: string
+  prefix?: string[]
+  value: Record<string, any>
+}) => {
+  const keys = Object.keys(value[0]).sort()
+  const unionKeys = new Set(keys)
+  value.forEach((val: any) => Object.keys(val).forEach(k => unionKeys.add(k)))
+  if (unionKeys.size < keys.length + 5) {
+    // avoids key 'id' from being used in row data
+    const rows = Object.entries(value).map(([k, val]) => {
+      const { id, ...rest } = val
+      return {
+        id: k, // used by material UI
+        identifier: id, // renamed from id to identifier
+        ...rest,
+      }
+    })
+
+    // avoids key 'id' from being used in column names, and tries
+    // to make it at the start of the colNames array
+    let colNames
+    if (unionKeys.has('id')) {
+      unionKeys.delete('id')
+      colNames = ['identifier', ...unionKeys]
+    } else {
+      colNames = [...unionKeys]
+    }
+
+    const columns = colNames.map(val => ({
+      field: val,
+      width: Math.max(
+        ...rows.map(row => {
+          const result = String(row[val])
+          return Math.min(Math.max(measureText(result, 14) + 50, 80), 1000)
+        }),
+      ),
+    }))
+
+    // disableSelection on click helps avoid
+    // https://github.com/mui-org/material-ui-x/issues/1197
+    return (
+      <>
+        <FieldName prefix={prefix} name={name} />
+        <div
+          style={{
+            height:
+              Math.min(rows.length, 100) * 20 +
+              50 +
+              (rows.length < 100 ? 0 : 50),
+            width: '100%',
+          }}
+        >
+          <DataGrid
+            disableSelectionOnClick
+            rowHeight={20}
+            headerHeight={25}
+            rows={rows}
+            rowsPerPageOptions={[]}
+            hideFooterRowCount
+            hideFooterSelectedRowCount
+            columns={columns}
+            hideFooter={rows.length < 100}
+          />
+        </div>
+      </>
+    )
+  }
+  return null
+}
+
+// arr = ['a','b'], obj = {a:{b:'hello}}, returns hello (with special addition to grab description also)
+function accessNested(arr: string[], obj: Record<string, any> = {}) {
+  arr.forEach(elt => {
+    if (obj) {
+      obj = obj[elt]
+    }
+  })
+  return typeof obj === 'string'
+    ? obj
+    : typeof obj?.Description === 'string'
+    ? obj.Description
+    : undefined
+}
+
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
@@ -273,96 +362,26 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   } = props
   const omits = [...omit, ...globalOmit]
 
-  // disableClickEventBubbling helps avoid
-  // https://github.com/mui-org/material-ui-x/issues/1197
   return (
     <>
       {Object.entries(attributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
-          if (Array.isArray(value) && value.length) {
-            if (value.length > 2 && value.every(val => isObject(val))) {
-              const keys = Object.keys(value[0]).sort()
-              const unionKeys = new Set(keys)
-              value.forEach(val =>
-                Object.keys(val).forEach(k => unionKeys.add(k)),
-              )
-              if (unionKeys.size < keys.length + 5) {
-                // avoids key 'id' from being used in row data
-                const rows = Object.entries(value).map(([k, val]) => {
-                  const { id, ...rest } = val
-                  return {
-                    id: k, // used by material UI
-                    identifier: id, // renamed from id to identifier
-                    ...rest,
-                  }
-                })
-
-                // avoids key 'id' from being used in column names, and tries
-                // to make it at the start of the colNames array
-                let colNames
-                if (unionKeys.has('id')) {
-                  unionKeys.delete('id')
-                  colNames = ['identifier', ...unionKeys]
-                } else {
-                  colNames = [...unionKeys]
-                }
-
-                const columns = colNames.map(val => ({
-                  field: val,
-                  width: Math.max(
-                    ...rows.map(row => {
-                      const result = String(row[val])
-                      return Math.min(
-                        Math.max(measureText(result, 14) + 50, 80),
-                        1000,
-                      )
-                    }),
-                  ),
-                }))
-
-                return (
-                  <React.Fragment key={key}>
-                    <FieldName prefix={prefix} name={key} />
-                    <div
-                      key={key}
-                      style={{
-                        height:
-                          Math.min(rows.length, 100) * 20 +
-                          50 +
-                          (rows.length < 100 ? 0 : 50),
-                        width: '100%',
-                      }}
-                    >
-                      <DataGrid
-                        disableSelectionOnClick
-                        rowHeight={20}
-                        headerHeight={25}
-                        rows={rows}
-                        rowsPerPageOptions={[]}
-                        hideFooterRowCount
-                        hideFooterSelectedRowCount
-                        columns={columns}
-                        hideFooter={rows.length < 100}
-                      />
-                    </div>
-                  </React.Fragment>
-                )
-              }
-            }
+          if (
+            Array.isArray(value) &&
+            value.length > 2 &&
+            value.every(val => isObject(val))
+          ) {
+            return (
+              <DataGridDetails
+                key={key}
+                prefix={prefix}
+                name={key}
+                value={value}
+              />
+            )
           }
-          function accessNested(arr: string[], obj: Record<string, any> = {}) {
-            arr.forEach(elt => {
-              if (obj) {
-                obj = obj[elt]
-              }
-            })
-            return typeof obj === 'string'
-              ? obj
-              : typeof obj?.Description === 'string'
-              ? obj.Description
-              : undefined
-          }
+
           const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
             return (
