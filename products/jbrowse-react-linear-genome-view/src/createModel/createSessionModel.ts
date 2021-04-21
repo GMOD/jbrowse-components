@@ -223,6 +223,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           ...initialState,
           type: typeName,
         }
+        return self.view
       },
 
       removeView() {},

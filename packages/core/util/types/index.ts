@@ -24,7 +24,10 @@ export * from './util'
 export interface AbstractViewContainer {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
-  addView(typeName: string, initialState: Record<string, unknown>): void
+  addView(
+    typeName: string,
+    initialState: Record<string, unknown>,
+  ): AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,
@@ -185,6 +188,7 @@ export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
   setDefaultSession?(): void
+  setSession?(arg: { name: string; [key: string]: any }): void
   adminMode?: boolean
 }
 
