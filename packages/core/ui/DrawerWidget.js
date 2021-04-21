@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { Suspense, useState } from 'react'
 import {
   AppBar,
   IconButton,
@@ -149,7 +149,7 @@ const DrawerHeader = observer(props => {
   )
 })
 
-export default observer(({ session }) => {
+const DrawerWidget = observer(({ session }) => {
   const { visibleWidget, activeWidgets } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getWidgetType(visibleWidget.type)
@@ -162,11 +162,15 @@ export default observer(({ session }) => {
   return (
     <Drawer session={session} open={Boolean(activeWidgets.size)}>
       <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
-      <ReactComponent
-        model={visibleWidget}
-        session={session}
-        toolbarHeight={toolbarHeight}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ReactComponent
+          model={visibleWidget}
+          session={session}
+          toolbarHeight={toolbarHeight}
+        />
+      </Suspense>
     </Drawer>
   )
 })
+
+export default DrawerWidget

@@ -148,7 +148,11 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    await findByTestId(
+      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+      {},
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu

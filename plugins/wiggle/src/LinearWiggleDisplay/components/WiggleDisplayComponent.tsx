@@ -24,7 +24,7 @@ export const YScaleBar = observer(
   },
 )
 
-export default observer((props: { model: WiggleDisplayModel }) => {
+const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { ready, stats, height, needsScalebar } = model
   return (
@@ -47,3 +47,5 @@ export default observer((props: { model: WiggleDisplayModel }) => {
     </div>
   )
 })
+
+export default LinearWiggleDisplay

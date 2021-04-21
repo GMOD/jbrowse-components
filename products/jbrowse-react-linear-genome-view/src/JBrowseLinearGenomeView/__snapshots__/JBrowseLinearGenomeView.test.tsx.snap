@@ -2,7 +2,7 @@
 
 exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
 <div
-  style="all: initial;"
+  class="makeStyles-avoidParentStyle"
 >
   <div
     class="MuiPaper-root makeStyles-viewContainer MuiPaper-elevation12 MuiPaper-rounded"

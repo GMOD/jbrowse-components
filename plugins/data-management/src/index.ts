@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -10,22 +11,21 @@ import {
   modelFactory as ucscModelFactory,
 } from './ucsc-trackhub'
 import {
-  ReactComponent as AddTrackReactComponent,
   stateModelFactory as AddTrackStateModelFactory,
   configSchema as AddTrackConfigSchema,
 } from './AddTrackWidget'
 import {
-  ReactComponent as AddConnectionReactComponent,
   stateModel as AddConnectionStateModel,
   configSchema as AddConnectionConfigSchema,
 } from './AddConnectionWidget'
 import {
-  ReactComponent as HierarchicalTrackSelectorReactComponent,
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
-import AssemblyManager from './AssemblyManager'
-import SetDefaultSession from './SetDefaultSession'
+
+const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
+
+const AssemblyManager = lazy(() => import('./AssemblyManager'))
 
 export default class extends Plugin {
   name = 'DataManagementPlugin'
@@ -54,7 +54,12 @@ export default class extends Plugin {
         heading: 'Available tracks',
         configSchema: HierarchicalTrackSelectorConfigSchema,
         stateModel: HierarchicalTrackSelectorStateModelFactory(pluginManager),
-        ReactComponent: HierarchicalTrackSelectorReactComponent,
+        ReactComponent: lazy(
+          () =>
+            import(
+              './HierarchicalTrackSelectorWidget/components/HierarchicalTrackSelector'
+            ),
+        ),
       })
     })
 
@@ -64,7 +69,9 @@ export default class extends Plugin {
         heading: 'Add a track',
         configSchema: AddTrackConfigSchema,
         stateModel: AddTrackStateModelFactory(pluginManager),
-        ReactComponent: AddTrackReactComponent,
+        ReactComponent: lazy(
+          () => import('./AddTrackWidget/components/AddTrackWidget'),
+        ),
       })
     })
 
@@ -74,7 +81,9 @@ export default class extends Plugin {
         heading: 'Add a connection',
         configSchema: AddConnectionConfigSchema,
         stateModel: AddConnectionStateModel,
-        ReactComponent: AddConnectionReactComponent,
+        ReactComponent: lazy(
+          () => import('./AddConnectionWidget/components/AddConnectionWidget'),
+        ),
       })
     })
   }
@@ -116,3 +125,5 @@ export default class extends Plugin {
     }
   }
 }
+
+export { AssemblyManager, SetDefaultSession }

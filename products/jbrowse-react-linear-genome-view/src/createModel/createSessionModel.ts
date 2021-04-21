@@ -59,6 +59,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       // which config is being shown in the "About track" menu
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
+
+      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get rpcManager() {
@@ -126,6 +129,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: React.FC<any>, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       setShowAboutConfig(showConfig: AnyConfigurationModel) {
         self.showAboutConfig = showConfig
       },
@@ -327,6 +334,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
+export type SessionModel = Instance<SessionStateModel>
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore

@@ -92,6 +92,9 @@ export default function sessionModelFactory(
       task: undefined,
 
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
+
+      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get shareURL() {
@@ -177,6 +180,10 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: React.FC<any>, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       setName(str: string) {
         self.name = str
       },

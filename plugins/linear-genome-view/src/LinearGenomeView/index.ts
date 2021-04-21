@@ -125,9 +125,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as
-        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
-        | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogComponent: undefined as React.FC<any> | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get width(): number {
@@ -461,14 +462,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(
-        comp?: React.FC<{
-          handleClose: () => void
-          model: { clearView: Function }
-        }>,
-      ) {
-        self.DialogComponent = comp
-      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -1186,7 +1179,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDialogComponent(ReturnToImportFormDlg)
+                getSession(self).setDialogComponent(ReturnToImportFormDlg, {
+                  model: self,
+                })
               },
               icon: FolderOpenIcon,
             },
