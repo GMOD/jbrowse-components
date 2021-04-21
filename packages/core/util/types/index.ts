@@ -56,6 +56,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   version: string
   getTrackActionMenuItems?: Function
   addAssembly?: Function
+  addSessionPlugin: Function
   removeAssembly?: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
