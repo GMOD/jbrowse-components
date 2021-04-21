@@ -1,35 +1,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Container from '@material-ui/core/Container'
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/DialogActions'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Grid from '@material-ui/core/Grid'
+import React, { useEffect, useState } from 'react'
+import {
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  IconButton,
+  Input,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import WarningIcon from '@material-ui/icons/Warning'
 import SettingsIcon from '@material-ui/icons/Settings'
-import IconButton from '@material-ui/core/IconButton'
-import Input from '@material-ui/core/Input'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListSubheader from '@material-ui/core/ListSubheader'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
-import { LogoFull } from './Logo'
-import { inDevelopment } from '../util'
+import { LogoFull } from '@jbrowse/core/ui/Logo'
+import { inDevelopment } from '@jbrowse/core/util'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
-} from './NewSessionCards'
-import RecentSessionCard from './RecentSessionCard'
-import FactoryResetDialog from './FactoryResetDialog'
+} from '@jbrowse/core/ui/NewSessionCards'
+import RecentSessionCard from '@jbrowse/core/ui/RecentSessionCard'
+import FactoryResetDialog from '@jbrowse/core/ui/FactoryResetDialog'
 
 const blankIpc = { invoke: () => {} }
 const useStyles = makeStyles(theme => ({
@@ -73,13 +73,9 @@ const DeleteSessionDialog = ({
 
   return (
     <Dialog open={!!sessionToDelete} onClose={() => onClose(false)}>
-      <DialogTitle id="alert-dialog-title">
-        {`Delete session "${sessionToDelete}"?`}
-      </DialogTitle>
+      <DialogTitle>{`Delete session "${sessionToDelete}"?`}</DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          This action cannot be undone
-        </DialogContentText>
+        <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={() => onClose(false)} color="primary">
@@ -352,9 +348,4 @@ export default function StartScreen({
       </Menu>
     </>
   )
-}
-
-StartScreen.propTypes = {
-  root: MobxPropTypes.objectOrObservableObject.isRequired,
-  bypass: PropTypes.bool.isRequired,
 }

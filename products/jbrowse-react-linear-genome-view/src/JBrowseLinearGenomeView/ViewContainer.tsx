@@ -1,20 +1,22 @@
-import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { Menu, Logomark } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
-import IconButton, {
+import React, { useEffect, useState } from 'react'
+import {
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
-import { fade } from '@material-ui/core/styles/colorManipulator'
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import Typography from '@material-ui/core/Typography'
+  Paper,
+  SvgIconProps,
+  Typography,
+  makeStyles,
+  useTheme,
+  fade,
+} from '@material-ui/core'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
 import useDimensions from 'react-use-dimensions'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
+import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { Menu, Logomark } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(theme => ({
   viewContainer: {
@@ -100,57 +102,53 @@ const ViewMenu = observer(
   },
 )
 
-function ViewContainer({
-  view,
-  children,
-}: {
-  view: IBaseViewModel
-  children: React.ReactNode
-}) {
-  const classes = useStyles()
-  const theme = useTheme()
-  const [measureRef, { width }] = useDimensions()
+const ViewContainer = observer(
+  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+    const classes = useStyles()
+    const theme = useTheme()
+    const [measureRef, { width }] = useDimensions()
 
-  const padWidth = theme.spacing(1)
+    const padWidth = theme.spacing(1)
 
-  useEffect(() => {
-    if (width) {
-      if (isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+    useEffect(() => {
+      if (width) {
+        if (isAlive(view)) {
+          view.setWidth(width - padWidth * 2)
+        }
       }
-    }
-  }, [padWidth, view, width])
+    }, [padWidth, view, width])
 
-  return (
-    <Paper
-      elevation={12}
-      ref={measureRef}
-      className={classes.viewContainer}
-      style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
-    >
-      <div style={{ display: 'flex' }}>
-        <ViewMenu
-          model={view}
-          IconButtonProps={{
-            classes: { root: classes.iconRoot },
-            edge: 'start',
-          }}
-          IconProps={{ className: classes.icon }}
-        />
-        <div className={classes.grow} />
-        {view.displayName ? (
-          <Typography variant="body2" className={classes.displayName}>
-            {view.displayName}
-          </Typography>
-        ) : null}
-        <div className={classes.grow} />
-        <div style={{ width: 20, height: 20 }}>
-          <Logomark variant="white" />
+    return (
+      <Paper
+        elevation={12}
+        ref={measureRef}
+        className={classes.viewContainer}
+        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+      >
+        <div style={{ display: 'flex' }}>
+          <ViewMenu
+            model={view}
+            IconButtonProps={{
+              classes: { root: classes.iconRoot },
+              edge: 'start',
+            }}
+            IconProps={{ className: classes.icon }}
+          />
+          <div className={classes.grow} />
+          {view.displayName ? (
+            <Typography variant="body2" className={classes.displayName}>
+              {view.displayName}
+            </Typography>
+          ) : null}
+          <div className={classes.grow} />
+          <div style={{ width: 20, height: 20 }}>
+            <Logomark variant="white" />
+          </div>
         </div>
-      </div>
-      <Paper>{children}</Paper>
-    </Paper>
-  )
-}
+        <Paper>{children}</Paper>
+      </Paper>
+    )
+  },
+)
 
-export default observer(ViewContainer)
+export default ViewContainer

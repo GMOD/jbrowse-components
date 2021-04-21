@@ -23,3 +23,6 @@ yarn-error.log*
 titlemod.md
 combined.md
 cli.md
+
+# plugin data from AWS
+plugins.json

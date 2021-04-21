@@ -325,7 +325,9 @@ export default class PluginManager {
           pluggableTypes.push(thing)
         }
       })
-    // try to smooth over the case when no types are registered, mostly encountered in tests
+
+    // try to smooth over the case when no types are registered, mostly
+    // encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
         `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}')`,

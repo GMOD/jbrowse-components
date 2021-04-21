@@ -101,8 +101,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       offsetPx: 0,
       bpPerPx: 1,
       displayedRegions: types.array(MUIRegion),
-      // we use an array for the tracks because the tracks are displayed in a
-      // specific order that we need to keep.
+      // we use an array for the tracks because the tracks are displayed in a specific
+      // order that we need to keep.
       tracks: types.array(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
@@ -131,9 +131,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        | React.FC<{ handleClose: () => void; model: any }>
-        | undefined,
     }))
     .views(self => ({
       get width(): number {
@@ -467,15 +464,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(
-        comp?: React.FC<{
-          handleClose: () => void
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          model: any
-        }>,
-      ) {
-        self.DialogComponent = comp
-      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -1194,14 +1182,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDialogComponent(ReturnToImportFormDlg)
+                getSession(self).setDialogComponent(ReturnToImportFormDlg, {
+                  model: self,
+                })
               },
               icon: FolderOpenIcon,
             },
             {
               label: 'Export SVG',
               onClick: () => {
-                self.setDialogComponent(ExportSvgDlg)
+                getSession(self).setDialogComponent(ExportSvgDlg, {
+                  model: self,
+                })
               },
             },
             {

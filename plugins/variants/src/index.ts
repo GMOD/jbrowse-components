@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -18,7 +19,6 @@ import {
 import StructuralVariantChordRendererFactory from './StructuralVariantChordRenderer'
 import {
   configSchema as variantFeatureWidgetConfigSchema,
-  ReactComponent as VariantFeatureWidgetReactComponent,
   stateModelFactory as variantFeatureWidgetStateModelFactory,
 } from './VariantFeatureWidget'
 import {
@@ -84,7 +84,9 @@ export default class VariantsPlugin extends Plugin {
           heading: 'Feature details',
           configSchema: variantFeatureWidgetConfigSchema,
           stateModel: variantFeatureWidgetStateModelFactory(pluginManager),
-          ReactComponent: VariantFeatureWidgetReactComponent,
+          ReactComponent: lazy(
+            () => import('./VariantFeatureWidget/VariantFeatureWidget'),
+          ),
         }),
     )
   }

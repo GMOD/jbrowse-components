@@ -1,10 +1,10 @@
-import { render } from '@testing-library/react'
 import React from 'react'
+import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
-import { BaseFeatureDetails as ReactComponent } from './BaseFeatureDetail'
+import BaseFeatureDetails from './BaseFeatureDetail'
 
 test('open up a widget', () => {
   console.warn = jest.fn()
@@ -20,7 +20,7 @@ test('open up a widget', () => {
     widget: { type: 'BaseFeatureWidget' },
   })
   const { container, getByText } = render(
-    <ReactComponent model={model.widget} />,
+    <BaseFeatureDetails model={model.widget} />,
   )
   model.widget.setFeatureData({
     start: 2,

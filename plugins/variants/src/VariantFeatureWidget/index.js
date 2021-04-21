@@ -24,5 +24,3 @@ export function stateModelFactory(pluginManager) {
       },
     }))
 }
-
-export { default as ReactComponent } from './VariantFeatureWidget'

@@ -1,5 +1,12 @@
 /* eslint-disable react/prop-types,no-nested-ternary,jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */
-import React, { useCallback, useState, useRef, useEffect } from 'react'
+import React, {
+  Suspense,
+  lazy,
+  useCallback,
+  useState,
+  useRef,
+  useEffect,
+} from 'react'
 import {
   Checkbox,
   Fab,
@@ -30,10 +37,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 
-import CloseConnectionDialog from './CloseConnectionDialog'
-import DeleteConnectionDialog from './DeleteConnectionDialog'
-import ManageConnectionsDialog from './ManageConnectionsDialog'
-import ToggleConnectionsDialog from './ToggleConnectionsDialog'
+const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
+const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
+const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
+const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
 
 const useStyles = makeStyles(theme => ({
   searchBox: {
@@ -195,12 +202,6 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
   const [info, setMoreInfo] = useState()
   const session = getSession(model)
   const { filterText } = model
-
-  //   const rootNode = {
-  //     name: 'Tracks',
-  //     id: 'Tracks',
-  //     children: tree,
-  //   }
 
   const extra = {
     onChange: trackId => model.view.toggleTrack(trackId),
@@ -382,7 +383,7 @@ const HierarchicalTrackSelectorHeader = observer(
         onClick: () => setConnectionToggleOpen(true),
       },
       {
-        label: 'Manage connections',
+        label: 'Delete connections...',
         onClick: () => setConnectionManagerOpen(true),
       },
     ]
@@ -494,36 +495,39 @@ const HierarchicalTrackSelectorHeader = observer(
           }}
           menuItems={menuItems}
         />
-        {modalInfo ? (
-          <CloseConnectionDialog
-            modalInfo={modalInfo}
-            setModalInfo={setModalInfo}
-            session={session}
-          />
-        ) : deleteDialogDetails ? (
-          <DeleteConnectionDialog
-            handleClose={() => {
-              setDeleteDialogDetails(undefined)
-            }}
-            deleteDialogDetails={deleteDialogDetails}
-            session={session}
-          />
-        ) : null}
-        {connectionManagerOpen ? (
-          <ManageConnectionsDialog
-            handleClose={() => setConnectionManagerOpen(false)}
-            breakConnection={breakConnection}
-            session={session}
-          />
-        ) : null}
-        {connectionToggleOpen ? (
-          <ToggleConnectionsDialog
-            handleClose={() => setConnectionToggleOpen(false)}
-            session={session}
-            breakConnection={breakConnection}
-            assemblyName={assemblyName}
-          />
-        ) : null}
+
+        <Suspense fallback={<div />}>
+          {modalInfo ? (
+            <CloseConnectionDialog
+              modalInfo={modalInfo}
+              setModalInfo={setModalInfo}
+              session={session}
+            />
+          ) : deleteDialogDetails ? (
+            <DeleteConnectionDialog
+              handleClose={() => {
+                setDeleteDialogDetails(undefined)
+              }}
+              deleteDialogDetails={deleteDialogDetails}
+              session={session}
+            />
+          ) : null}
+          {connectionManagerOpen ? (
+            <ManageConnectionsDialog
+              handleClose={() => setConnectionManagerOpen(false)}
+              breakConnection={breakConnection}
+              session={session}
+            />
+          ) : null}
+          {connectionToggleOpen ? (
+            <ToggleConnectionsDialog
+              handleClose={() => setConnectionToggleOpen(false)}
+              session={session}
+              breakConnection={breakConnection}
+              assemblyName={assemblyName}
+            />
+          ) : null}
+        </Suspense>
       </div>
     )
   },

@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
-import React, { useEffect, useState } from 'react'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
@@ -29,9 +29,10 @@ const Tooltip = ({
   timeout?: number
 }) => {
   const classes = useStyles()
-  // only show the loading message after 400ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
   useEffect(() => {
+    // only show the loading message after short timeout to prevent excessive
+    // flickering
     const handle = setTimeout(() => setShown(true), timeout)
     return () => clearTimeout(handle)
   })
@@ -48,4 +49,5 @@ const Tooltip = ({
   }
   return null
 }
+
 export default observer(Tooltip)

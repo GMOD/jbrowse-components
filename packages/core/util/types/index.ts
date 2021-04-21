@@ -67,6 +67,8 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDialogComponent: (dlg: React.FC<any>, props?: any) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

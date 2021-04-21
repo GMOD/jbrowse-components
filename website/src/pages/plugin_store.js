@@ -29,6 +29,8 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 
 import { DialogContent } from '@material-ui/core'
+
+// eslint-disable-next-line import/no-unresolved
 import { plugins } from '../../plugins.json'
 
 const useStyles = makeStyles(theme => ({

@@ -94,7 +94,17 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-export default observer(({ model }: { model: LGV }) => {
+const RegionWidth = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const { coarseTotalBp } = model
+  return (
+    <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
+    </Typography>
+  )
+})
+
+const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
@@ -107,11 +117,12 @@ export default observer(({ model }: { model: LGV }) => {
           const newRegion: Region | undefined = model.displayedRegions.find(
             region => newRegionValue === region.refName,
           )
-          // navigate to region or if region not found try navigating to locstring
+          // navigate to region or if region not found try navigating to
+          // locstring. note: we use showAllRegions after setDisplayedRegions
+          // to make the entire region visible, xref #1703
           if (newRegion) {
             model.setDisplayedRegions([newRegion])
-            // we use showAllRegions after setDisplayedRegions to make the entire
-            // region visible, xref #1703
+
             model.showAllRegions()
           } else {
             newRegionValue && model.navToLocString(newRegionValue)
@@ -165,12 +176,4 @@ export default observer(({ model }: { model: LGV }) => {
   return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
 })
 
-const RegionWidth = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const { coarseTotalBp } = model
-  return (
-    <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
-    </Typography>
-  )
-})
+export default LinearGenomeViewHeader
