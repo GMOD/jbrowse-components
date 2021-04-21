@@ -35,8 +35,7 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
-// import { JBrowsePlugin } from '@jbrowse/plugin-data-management/src/PluginStoreWidget/types'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
+import { JBrowsePlugin } from '@jbrowse/plugin-data-management/src/PluginStoreWidget/types'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -188,8 +187,12 @@ export default function sessionModelFactory(
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
-      addSessionPlugin(plugin: PluginConstructor) {
+      addSessionPlugin(plugin: JBrowsePlugin) {
+        if (self.sessionPlugins.find(p => p.name === plugin.name)) {
+          throw new Error('session plugin cannot be installed twice')
+        }
         self.sessionPlugins.push(plugin)
+        // wait for autorun on rootModel to update session storage
         window.setTimeout(() => {
           window.location.reload()
         }, 1000)
