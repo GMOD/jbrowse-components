@@ -1365,7 +1365,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
             <p
               class="MuiFormHelperText-root MuiFormHelperText-filled"
             >
-              scale at which to draw the large insertion indicators
+              scale at which to draw the large insertion indicators (bp/pixel)
             </p>
           </div>
         </div>
