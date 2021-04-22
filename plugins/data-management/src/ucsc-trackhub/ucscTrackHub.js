@@ -1,4 +1,4 @@
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import { GenomesFile, HubFile, TrackDbFile } from '@gmod/ucsc-hub'
 import { openLocation } from '@jbrowse/core/util/io'
 import {

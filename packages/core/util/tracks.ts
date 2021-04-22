@@ -1,5 +1,5 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import objectHash from 'object-hash'
+import { objectHash } from '..'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { UriLocation, LocalPathLocation } from './types'
 import { readConfObject } from '../configuration'

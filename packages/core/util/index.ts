@@ -982,3 +982,23 @@ export function generateCodonTable(table: any) {
   })
   return tempCodonTable
 }
+
+export function hashCode(str: string) {
+  let hash = 0
+  let i
+  let chr
+  if (str.length === 0) return hash
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i)
+    // eslint-disable-next-line no-bitwise
+    hash = (hash << 5) - hash + chr
+
+    // eslint-disable-next-line no-bitwise
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
+}
+
+export function objectHash(obj: Record<string, unknown>) {
+  return hashCode(JSON.stringify(obj))
+}

@@ -1,5 +1,5 @@
 import getValue from 'get-value'
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import { Track, Source } from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,8 +42,7 @@ export function deepUpdate(
 /**
  * Does a (deep) crc32 of any object.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function objectFingerprint(obj: Record<string, any>) {
+export function objectFingerprint(obj: Record<string, unknown>) {
   return objectHash(obj)
 }
 

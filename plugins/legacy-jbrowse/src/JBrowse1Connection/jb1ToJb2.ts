@@ -1,5 +1,5 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import {
   generateUnknownTrackConf,
   generateUnsupportedTrackConf,
