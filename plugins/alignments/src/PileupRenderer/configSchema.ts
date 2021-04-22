@@ -57,7 +57,8 @@ export default ConfigurationSchema(
     },
     largeInsertionIndicatorScale: {
       type: 'number',
-      description: 'scale at which to draw the large insertion indicators',
+      description:
+        'scale at which to draw the large insertion indicators (bp/pixel)',
       defaultValue: 10,
     },
     mismatchAlpha: {
