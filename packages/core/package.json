@@ -59,8 +59,7 @@
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0",
     "tenacious-fetch": "^2.1.0",
-    "util.promisify": "^1.0.0",
-    "whatwg-fetch": "^3.0.0"
+    "util.promisify": "^1.0.0"
   },
   "peerDependencies": {
     "@material-ui/core": "^4.0.0",
