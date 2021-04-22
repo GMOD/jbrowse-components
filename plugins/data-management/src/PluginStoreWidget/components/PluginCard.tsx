@@ -16,8 +16,9 @@ import AddIcon from '@material-ui/icons/Add'
 import CheckIcon from '@material-ui/icons/Check'
 
 import { getSession } from '@jbrowse/core/util'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+
 import type { PluginStoreModel } from '../model'
-import type { JBrowsePlugin } from '../types'
 
 const useStyles = makeStyles(() => ({
   card: {

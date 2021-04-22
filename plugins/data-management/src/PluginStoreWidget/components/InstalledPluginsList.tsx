@@ -3,21 +3,20 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
 import Typography from '@material-ui/core/Typography'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BasePlugin } from '@jbrowse/core/util/types'
 
-import type { BasePlugin } from '../types'
+import { PluginStoreModel } from '../model'
+import InstalledPlugin from './InstalledPlugin'
 
-function PluginCard({
+function InstalledPluginsList({
   pluginManager,
-  filterText,
+  model,
 }: {
   pluginManager: PluginManager
-  filterText: string
+  model: PluginStoreModel
 }) {
   const { plugins } = pluginManager
   const corePlugins = plugins
@@ -31,17 +30,10 @@ function PluginCard({
 
   const externalPluginsRender = externalPlugins
     .filter((plugin: BasePlugin) => {
-      return plugin.name.toLowerCase().includes(filterText.toLowerCase())
+      return plugin.name.toLowerCase().includes(model.filterText.toLowerCase())
     })
     .map((plugin: BasePlugin) => {
-      return (
-        <ListItem key={plugin.name}>
-          <IconButton aria-label="remove">
-            <CloseIcon />
-          </IconButton>
-          <Typography>{plugin.name}</Typography>
-        </ListItem>
-      )
+      return <InstalledPlugin plugin={plugin} model={model} />
     })
 
   return (
@@ -55,4 +47,4 @@ function PluginCard({
   )
 }
 
-export default observer(PluginCard)
+export default observer(InstalledPluginsList)

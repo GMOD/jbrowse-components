@@ -13,10 +13,11 @@ import IconButton from '@material-ui/core/IconButton'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import ClearIcon from '@material-ui/icons/Clear'
 
-import InstalledPlugins from './InstalledPlugins'
+import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
+
+import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
 
-import type { JBrowsePlugin, BasePlugin } from '../types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
@@ -90,10 +91,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
         <div style={{ margin: '1em' }}>
-          <InstalledPlugins
-            pluginManager={pluginManager}
-            filterText={model.filterText}
-          />
+          <InstalledPluginsList pluginManager={pluginManager} model={model} />
         </div>
       </Accordion>
       <Accordion defaultExpanded>

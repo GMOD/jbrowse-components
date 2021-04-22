@@ -10,6 +10,7 @@ import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
+  JBrowsePlugin,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -35,7 +36,6 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
-import { JBrowsePlugin } from '@jbrowse/plugin-data-management/src/PluginStoreWidget/types'
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
