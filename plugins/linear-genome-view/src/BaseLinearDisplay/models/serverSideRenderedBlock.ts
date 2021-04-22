@@ -3,6 +3,7 @@ import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types/mst'
+import { AbstractDisplayModel } from '@jbrowse/core/util/types'
 import React from 'react'
 
 import {
@@ -184,7 +185,7 @@ export type BlockModel = Instance<BlockStateModel>
 // this, because the flow doesn't work with autorun
 export function renderBlockData(
   self: Instance<BlockStateModel>,
-  optDisplay?: any,
+  optDisplay?: AbstractDisplayModel,
 ) {
   try {
     const display = optDisplay || (getContainingDisplay(self) as any)

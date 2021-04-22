@@ -25,6 +25,7 @@ interface BaseRenderArgs extends RenderProps {
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
   theme: ThemeOptions
+  exportSVG: { rasterizeLayers?: boolean }
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -83,14 +84,12 @@ export default class ServerSideRenderer extends RendererType {
     const { html, ...rest } = results
 
     // if we are rendering svg, we skip hydration
-    // @ts-ignore
     if (args.exportSVG) {
       // only return the results if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document
       return {
         ...results,
-        // @ts-ignore
         html: this.supportsSVG
           ? results.html
           : '<text y="12" fill="black">SVG export not supported for this track</text>',

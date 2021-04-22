@@ -464,6 +464,8 @@ const stateModelFactory = (
       const superReload = self.reload
       const superRenderSvg = self.renderSvg
 
+      type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
+
       async function getStats(opts: {
         headers?: Record<string, string>
         signal?: AbortSignal
@@ -596,8 +598,7 @@ const stateModelFactory = (
             ),
           )
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        async renderSvg(opts: any) {
+        async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.ready && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
