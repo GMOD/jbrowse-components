@@ -326,7 +326,6 @@ test('looks at about this track dialog', async () => {
 }, 15000)
 
 test('export svg', async () => {
-  console.error = jest.fn()
   const pluginManager = getPluginManager()
   const state = pluginManager.rootModel
   const { findByTestId, findByText } = render(
@@ -346,7 +345,6 @@ test('export svg', async () => {
 
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
-  console.log({ dir })
   fs.writeFileSync(`${dir}/__image_snapshots__/snapshot.svg`, svg)
-  expect(svg.slice(0, 1000)).toMatchSnapshot()
+  expect(svg).toMatchSnapshot()
 }, 25000)

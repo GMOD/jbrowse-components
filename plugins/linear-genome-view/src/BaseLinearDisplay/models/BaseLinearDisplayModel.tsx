@@ -474,10 +474,14 @@ export const BaseLinearDisplay = types
           {renderings.map((rendering, index) => {
             const { offsetPx } = dynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
+            // stabalize clipid under test for snapshot
+            const clipid = `clip-${
+              typeof jest === 'undefined' ? id : 'jest'
+            }-${index}`
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>
-                  <clipPath id={`clip-${id}-${index}`}>
+                  <clipPath id={clipid}>
                     <rect
                       x={0}
                       y={0}
@@ -487,14 +491,13 @@ export const BaseLinearDisplay = types
                   </clipPath>
                 </defs>
                 <g transform={`translate(${offset} 0)`}>
-                  {React.isValidElement(rendering.reactElement) ? (
-                    rendering.reactElement
-                  ) : (
-                    <g
-                      dangerouslySetInnerHTML={{ __html: rendering.html }}
-                      clipPath={`url(#clip-${id}-${index})`}
-                    />
-                  )}
+                  <g clipPath={`url(#${clipid})`}>
+                    {React.isValidElement(rendering.reactElement) ? (
+                      rendering.reactElement
+                    ) : (
+                      <g dangerouslySetInnerHTML={{ __html: rendering.html }} />
+                    )}
+                  </g>
                 </g>
               </React.Fragment>
             )
