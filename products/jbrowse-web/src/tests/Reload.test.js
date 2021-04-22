@@ -32,7 +32,7 @@ beforeEach(() => {
 // this tests reloading after an initial track error
 // it performs a full image snapshot test to ensure that the features are rendered and not
 // just that an empty canvas is rendered (empty canvas can result if ref name renaming failed)
-xdescribe('reload tests', () => {
+describe('reload tests', () => {
   it('reloads alignments track (CRAI 404)', async () => {
     console.error = jest.fn()
 
@@ -178,7 +178,7 @@ xdescribe('reload tests', () => {
     })
   }, 10000)
 
-  xit('reloads bigwig (BW 404)', async () => {
+  it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
 
     const pluginManager = getPluginManager()
