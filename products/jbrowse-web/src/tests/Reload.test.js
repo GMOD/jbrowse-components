@@ -67,7 +67,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 
   it('reloads alignments track (CRAM 404)', async () => {
     console.error = jest.fn()
@@ -105,7 +105,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
   it('reloads alignments track (BAI 404)', async () => {
     console.error = jest.fn()
 
@@ -140,7 +140,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
   it('reloads alignments track (BAM 404)', async () => {
     console.error = jest.fn()
 
@@ -176,7 +176,7 @@ describe('reload tests', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 
   it('reloads bigwig (BW 404)', async () => {
     console.error = jest.fn()
@@ -212,5 +212,5 @@ describe('reload tests', () => {
       failureThreshold: 0.01,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 })
