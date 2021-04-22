@@ -41,6 +41,22 @@ export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
+export interface BasePlugin {
+  version?: string
+  name: string
+  url?: string
+}
+
+export interface JBrowsePlugin {
+  name: string
+  authors: string[]
+  description: string
+  location: string
+  url: string
+  license: string
+  image?: string
+}
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
@@ -49,6 +65,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
+  sessionPlugins: JBrowsePlugin[]
   selection?: unknown
   duplicateCurrentSession?(): void
   notify(message: string, level?: NotificationLevel): void
