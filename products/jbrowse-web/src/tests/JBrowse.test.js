@@ -1,5 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
+import fs from 'fs'
+import path from 'path'
 
 import {
   cleanup,
@@ -331,18 +333,20 @@ test('export svg', async () => {
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(5, 100)
+  state.session.views[0].setNewView(0.1, 1)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
   )
 
   state.session.views[0].exportSvg()
 
-  await waitFor(
-    async () => {
-      expect(FileSaver.saveAs).toHaveBeenCalled()
-    },
-    { timeout: 25000 },
-  )
-  expect(FileSaver.saveAs).toHaveBeenCalled()
+  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
+    timeout: 25000,
+  })
+
+  const svg = FileSaver.saveAs.mock.calls[0][0].content[0]
+  const dir = path.dirname(module.filename)
+  console.log({ dir })
+  fs.writeFileSync(`${dir}/__image_snapshots__/snapshot.svg`, svg)
+  expect(svg.slice(0, 1000)).toMatchSnapshot()
 }, 25000)
