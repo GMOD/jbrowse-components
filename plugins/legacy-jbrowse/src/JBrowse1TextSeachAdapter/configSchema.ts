@@ -7,7 +7,7 @@ export default ConfigurationSchema(
     // TODO: URL path to the directory of the names
     namesIndexLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '' },
+      defaultValue: { uri: '/volvox/names' },
       description: 'the location of the JBrowse1 names index data directory',
     },
     tracks: {

@@ -123,29 +123,18 @@ function RefNameAutocomplete({
       setCurrentOptions([])
     }
   }, [open])
+  
   async function onChange(selectedOption: Option | string) {
     let newRegionValue: string | undefined
     if (selectedOption) {
       if (typeof selectedOption === 'object') {
         newRegionValue = selectedOption.result?.getRendering()
-        if (selectedOption.result instanceof BaseResult) {
-          const results = await session.textSearchManager.search({
-            queryString: newRegionValue.toLocaleLowerCase(),
-            searchType: 'exact',
-          })
-          if (results.length > 0) {
-            model.setSearchResults(results)
-          }
-        } else {
-          onSelect(newRegionValue)
-        }
-        // onSelect(newRegionValue)
       }
       if (typeof selectedOption === 'string') {
         // handles locstrings when you press enter
         newRegionValue = selectedOption
-        onSelect(newRegionValue)
       }
+      onSelect(newRegionValue)
     }
   }
 

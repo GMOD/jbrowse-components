@@ -3,6 +3,7 @@ import {
   BaseTextSearchAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { isElectron } from '@jbrowse/core/util'
 import BaseResult, {
   LocationResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
@@ -23,9 +24,9 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
     this.httpMap = new HttpMap({
       url: namesIndexLocation.baseUri
         ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
-        : this.namesIndexLocation.uri,
-      isElectron: false, // TODO: pass proper isElectron param
-      browser: '', // TODO: pass proper browser param
+        : namesIndexLocation.uri,
+      isElectron: isElectron,
+      browser: '', // TODO: pass proper browser param, is browser the same as BrowserWindow
     })
   }
 

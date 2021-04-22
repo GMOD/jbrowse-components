@@ -10,7 +10,6 @@ export default class HttpMap {
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
     this.browser = args.browser
     this.meta = {}
-    //   const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
     this.isElectron = args.isElectron
 
     // this.ready is a Deferred that will be resolved when we have
@@ -66,8 +65,14 @@ export default class HttpMap {
    * @param id - string
    */
   async loadFile(id: string) {
-    const response = await fetch(`${this.url}/${id}`)
-    return response.json()
+    try {
+      let response = await fetch(`${this.url}${id}`)
+      response = await response.json()
+      return response
+    } catch (err) {
+      // handle error
+      throw Error(err)
+    }
   }
 
   /**
