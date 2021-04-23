@@ -14,13 +14,9 @@ export function isSource(arg: any): arg is Source {
 /**
  * updates a with values from b, recursively
  */
-export function deepUpdate(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  a: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  b: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Obj = Record<string, any>
+export function deepUpdate(a: Obj, b: Obj): Obj {
   for (const prop of Object.keys(b)) {
     if (
       prop in a &&
@@ -47,11 +43,7 @@ export function deepUpdate(
  * @returns the template string with variables in fillWith replaced
  * e.g., 'htp://foo/someurl?arg=valueforbaz'
  */
-export function fillTemplate(
-  template: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fillWith: Record<string, any>,
-): string {
+export function fillTemplate(template: string, fillWith: Obj): string {
   return template.replace(
     /\{([\w\s.]+)\}/g,
     (match, varName: string): string => {
@@ -138,14 +130,7 @@ export function clone(src: any): any {
  * to the Javascript assignment operator.
  * @returns dest, as modified
  */
-function mixin(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dest: Record<string, any>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  source: Record<string, any>,
-  copyFunc: Function,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, any> {
+function mixin(dest: Obj, source: Obj, copyFunc: Function): Obj {
   let name
   let s
   const empty = {}
