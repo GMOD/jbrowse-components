@@ -5,10 +5,18 @@
 import { crc32 } from './Crc32'
 
 export default class HttpMap {
+
+  url: string
+
+  ready: Promise
+
+  isElectron: boolean 
+
+  meta: any
+
   constructor(args) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
-    this.browser = args.browser
     this.meta = {}
     this.isElectron = args.isElectron
 

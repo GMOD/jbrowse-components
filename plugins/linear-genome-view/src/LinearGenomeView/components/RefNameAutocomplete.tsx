@@ -1,11 +1,18 @@
 /**
- * Based on https://material-ui.com/components/autocomplete/#Virtualize.tsx
- * Asynchronous Requests for autocomplete: https://material-ui.com/components/autocomplete/
+ * Based on:
+ *  https://material-ui.com/components/autocomplete/#Virtualize.tsx
+ * Asynchronous Requests for autocomplete:
+ *  https://material-ui.com/components/autocomplete/
  */
 import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
+// jbrowse core
 import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
+import BaseResult, {
+  LocationResult,
+  RefSequenceResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import CircularProgress from '@material-ui/core/CircularProgress'
 import TextField, { TextFieldProps as TFP } from '@material-ui/core/TextField'
@@ -18,26 +25,26 @@ import Autocomplete, {
   createFilterOptions,
 } from '@material-ui/lab/Autocomplete'
 // other
-import BaseResult, {
-  LocationResult,
-  RefSequenceResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
 import { LinearGenomeViewModel } from '..'
 
 /**
- *  Option interface as the base format for text search adapter results
- *  and options in the refNameAutocomplete
+ *  Option interface used to format results to display in dropdown
+ *  of the materila ui interface
  */
 export interface Option {
   group: string
   result: BaseResult
   inputValue?: string
 }
-// filter for options that were fetched
-const filter = createFilterOptions<Option>({ trim: true, limit: 15 })
 
-const helperSearchText = `Syntax chr1:1-100 or chr1:1..100 or {hg19}chr1:1-100 to navigate. Or search for features or names`
-const useStyles = makeStyles(theme => ({
+// filters for options to display in dropdown
+const filter = createFilterOptions<Option>({
+  trim: true,
+  limit: 15,
+  matchFrom: 'start',
+})
+const helperSearchText = `Navigate to a specific location by using syntax [chr1:1-100 or chr1:1..100]. Or search for features or names`
+const useStyles = makeStyles(() => ({
   customWidth: {
     maxWidth: 150,
   },
@@ -52,7 +59,7 @@ function RefNameAutocomplete({
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
-  onSelect: (region: string | undefined) => void
+  onSelect: (region: BaseResult) => void
   assemblyName?: string
   value?: string
   style?: React.CSSProperties
@@ -60,16 +67,18 @@ function RefNameAutocomplete({
 }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { assemblyManager } = session
+  const { assemblyManager, textSearchManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
+  const loaded = regions.length !== 0 // assembly and regions have loaded
   const { coarseVisibleLocStrings } = model
 
+  // state
   const [open, setOpen] = useState(false)
   const [currentSearch, setCurrentSearch] = useState('')
   const [currentOptions, setCurrentOptions] = useState<Option[]>([])
   const [, setError] = useState<Error>()
-  const loaded = regions.length !== 0 // assembly and regions have
+
   // const loadingSearch = currentOptions.length === 0 && currentSearch !== ''
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
@@ -90,19 +99,21 @@ function RefNameAutocomplete({
     if (active) {
       ;(async () => {
         try {
-          const results = await session.textSearchManager.search({
-            queryString: currentSearch,
-            searchType: 'prefix',
-          })
-          if (results.length > 0) {
-            const adapterResults = results.map(result => {
-              const newOption: Option = {
-                group: 'text search adapter',
-                result,
-              }
-              return newOption
+          if (currentSearch !== '') {
+            const results: BaseResult[] = await textSearchManager.search({
+              queryString: currentSearch,
+              searchType: 'prefix',
             })
-            setCurrentOptions(adapterResults)
+            if (results.length > 0) {
+              const adapterResults: Option[] = results.map(result => {
+                const newOption: Option = {
+                  group: 'text search adapter',
+                  result,
+                }
+                return newOption
+              })
+              setCurrentOptions(adapterResults)
+            }
           }
         } catch (e) {
           console.error(e)
@@ -116,25 +127,28 @@ function RefNameAutocomplete({
       active = false
       setError(undefined)
     }
-  }, [currentSearch, session.textSearchManager])
+  }, [currentSearch])
 
   useEffect(() => {
     if (!open) {
       setCurrentOptions([])
     }
   }, [open])
-  
-  async function onChange(selectedOption: Option | string) {
-    let newRegionValue: string | undefined
+
+  function onChange(selectedOption: Option | string) {
+    let newRegionValue: BaseResult | undefined
     if (selectedOption) {
       if (typeof selectedOption === 'object') {
-        newRegionValue = selectedOption.result?.getRendering()
+        newRegionValue = selectedOption.result
       }
       if (typeof selectedOption === 'string') {
         // handles locstrings when you press enter
-        newRegionValue = selectedOption
+        newRegionValue = new LocationResult({
+          rendering: selectedOption,
+          location: selectedOption,
+        })
       }
-      onSelect(newRegionValue)
+      newRegionValue && onSelect(newRegionValue)
     }
   }
 
@@ -165,16 +179,6 @@ function RefNameAutocomplete({
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
         // creates new option if user input does not match options
-        // /\w{1,}\u003A\d{1,}\u002d\d{1,}/
-        // /\w+\:\d+(\.{2}|\-)\d+/
-
-        // if (params.inputValue !== '') {
-        //   const newOption: Option = {
-        //     group: 'Navigating to...',
-        //     value: params.inputValue,
-        //   }
-        //   filtered.push(newOption)
-        // }
         if (params.inputValue !== '') {
           const newOption: Option = {
             group: 'Navigating to...',
@@ -189,8 +193,8 @@ function RefNameAutocomplete({
         return filtered
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
-      onChange={(_, newRegion) => {
-        onChange(newRegion)
+      onChange={(_, selectedOption) => {
+        onChange(selectedOption)
       }}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
@@ -243,7 +247,7 @@ function RefNameAutocomplete({
         }
         return (
           <Typography noWrap>
-            {option.inputValue || result?.getRendering() || ''}
+            {option.inputValue || result.getRendering() || ''}
           </Typography>
         )
       }}
@@ -252,7 +256,7 @@ function RefNameAutocomplete({
         if (typeof option === 'string') {
           return option
         }
-        return option.inputValue || option?.result?.getRendering() || ''
+        return option.inputValue || option?.result.getRendering() || ''
       }}
     />
   )

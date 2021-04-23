@@ -1,5 +1,8 @@
-import { Region } from '@jbrowse/core/util/types'
 import { getSession } from '@jbrowse/core/util'
+import BaseResult, {
+  LocationResult,
+  RefSequenceResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -7,7 +10,7 @@ import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useCallback } from 'react'
+import React from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -98,32 +101,42 @@ export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
+  const { textSearchManager } = session
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
-  const setDisplayedRegion = useCallback(
-    (newRegionValue: string | undefined) => {
-      try {
-        if (newRegionValue) {
-          const newRegion: Region | undefined = model.displayedRegions.find(
-            region => newRegionValue === region.refName,
-          )
-          // navigate to region or if region not found try navigating to locstring
-          if (newRegion) {
-            model.setDisplayedRegions([newRegion])
-            // we use showAllRegions after setDisplayedRegions to make the entire
-            // region visible, xref #1703
-            model.showAllRegions()
-          } else {
-            newRegionValue && model.navToLocString(newRegionValue)
-          }
+  async function setDisplayedRegion(result: BaseResult) {
+    try {
+      if (result instanceof RefSequenceResult) {
+        const newRegion = displayedRegions.find(
+          region => result.getRefName() === region.refName,
+        )
+        if (newRegion) {
+          model.setDisplayedRegions([newRegion])
+          // we use showAllRegions after setDisplayedRegions to make the entire
+          // region visible, xref #1703
+          model.showAllRegions()
         }
-      } catch (e) {
-        console.warn(e)
-        session.notify(`${e}`, 'warning')
+      } else if (result instanceof LocationResult) {
+        model.navToLocString(result.getLocation())
+      } else {
+        /**
+         * if base result, try to look for
+         * 1) exact match of the object
+         * 2) a region and then navigate to show all regions
+         * */
+        const results = await textSearchManager.search({
+          queryString: result?.getRendering().toLocaleLowerCase(),
+          searchType: 'exact',
+        })
+        if (results.length > 0) {
+          model.setSearchResults(results)
+        }
       }
-    },
-    [model, session],
-  )
+    } catch (e) {
+      console.warn(e)
+      session.notify(`${e}`, 'warning')
+    }
+  }
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
 
