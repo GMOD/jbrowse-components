@@ -999,6 +999,7 @@ export function hashCode(str: string) {
   return hash
 }
 
-export function objectHash(obj: Record<string, unknown>) {
-  return hashCode(JSON.stringify(obj))
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function objectHash(obj: Record<string, any>) {
+  return `${hashCode(JSON.stringify(obj))}`
 }
