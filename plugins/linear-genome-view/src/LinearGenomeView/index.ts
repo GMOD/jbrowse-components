@@ -14,6 +14,7 @@ import {
   springAnimate,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
@@ -125,7 +126,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      searchResults: [] as any,
+      searchResults: [] as BaseResult[],
       DialogComponent: undefined as
         | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
         | undefined,
@@ -505,7 +506,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.rightOffset = right
       },
 
-      setSearchResults(results: Array) {
+      setSearchResults(results: BaseResult[]) {
         self.searchResults = results
       },
 

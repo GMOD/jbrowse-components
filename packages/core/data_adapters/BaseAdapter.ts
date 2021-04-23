@@ -295,7 +295,7 @@ export function isRefNameAliasAdapter(
 }
 
 export class BaseTextSearchAdapter extends BaseAdapter {
-  public abstract async searchIndex(args: BaseArgs): Promise<string[]>
+  public async searchIndex(args: BaseArgs): Promise<string[]>
 }
 
 export function isTextSearchAdapter(

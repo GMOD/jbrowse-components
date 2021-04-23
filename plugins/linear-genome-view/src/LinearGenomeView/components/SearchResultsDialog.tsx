@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types,@typescript-eslint/no-explicit-any,no-nested-ternary */
 import React from 'react'
 import {
   Button,
@@ -6,17 +5,9 @@ import {
   DialogActions,
   List,
   ListItem,
-  // ListItemText,
   DialogContent,
-  // DialogTitle,
-  // Container,
-  // Typography,
-  // Divider,
-  // IconButton,
-  // TextField,
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-// import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { LinearGenomeViewModel } from '../..'
 
@@ -76,13 +67,12 @@ export default function SearchResultsDialog({
         <List>
           {model.searchResults.map((result: BaseResult, index) => (
             <ListItem
-              key={`${result.rendering}-${index}`}
+              key={`${result.getRendering()}-${index}`}
               onClick={() => {
-                model.navToLocString(result.location || result.value)
                 handleClose()
               }}
             >
-              {`${result.getRendering()} ${result.location}`}
+              {`${result.getRendering()}`}
             </ListItem>
           ))}
         </List>

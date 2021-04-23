@@ -15,18 +15,20 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   Jbrowse1 text search adapter
   Uses index built by generate-names.pl
    */
+  httpMap: HttpMap 
+
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
+    // metadata about tracks and assemblies that the adapter covers
     this.tracks = readConfObject(config, 'tracks')
     this.assemblies = readConfObject(config, 'assemblies')
-
+    // create instance of httpmap
     const namesIndexLocation = readConfObject(config, 'namesIndexLocation')
     this.httpMap = new HttpMap({
       url: namesIndexLocation.baseUri
         ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
         : namesIndexLocation.uri,
-      isElectron: isElectron,
-      browser: '', // TODO: pass proper browser param, is browser the same as BrowserWindow
+      isElectron,
     })
   }
 
@@ -51,7 +53,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
    */
   async searchIndex(args: BaseArgs = {}) {
     const entries = await this.loadIndexFile(args.queryString)
-    if (entries && entries[args.queryString]) {
+    if (entries !== {} && entries[args.queryString]) {
       return this.formatResults(entries[args.queryString][args.searchType])
     }
     return []
@@ -71,16 +73,20 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
         const formattedResult = new LocationResult({
           location,
           rendering: name,
+          matchedAttribute: 'name',
+          matchedObject: result,
         })
         return formattedResult
       }
       const defaultResult = new BaseResult({
         rendering: result,
+        matchedAttribute: 'name',
+        matchedObject: result,
       })
       return defaultResult
     })
     return formattedResults
   }
 
-  public freeResources(/* { region } */) {}
+  freeResources() {}
 }
