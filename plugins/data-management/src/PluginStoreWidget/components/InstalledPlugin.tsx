@@ -8,6 +8,8 @@ import ListItem from '@material-ui/core/ListItem'
 import Typography from '@material-ui/core/Typography'
 import Link from '@material-ui/core/Link'
 import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import Button from '@material-ui/core/Button'
 
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
@@ -16,7 +18,6 @@ import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
 import { getSession } from '@jbrowse/core/util'
 import type { BasePlugin } from '@jbrowse/core/util/types'
 
-import { DialogTitle } from '@material-ui/core'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -69,7 +70,31 @@ function InstalledPlugin({
 
         <div className={classes.dialogContainer}>
           {isSessionPlugin ? (
-            'lol'
+            <>
+              <Typography>
+                Please confirm that you want to remove {plugin.name}:
+              </Typography>
+              <br />
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    setDialogOpen(false)
+                    // avoid showing runtime plugin warning
+                    window.setTimeout(() => {
+                      session.removeSessionPlugin(plugin.name)
+                    }, 500)
+                    // wait for session autorun to handle removing session
+                    window.setTimeout(() => {
+                      window.location.reload()
+                    }, 1000)
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </>
           ) : (
             <>
               <ErrorOutlineIcon />

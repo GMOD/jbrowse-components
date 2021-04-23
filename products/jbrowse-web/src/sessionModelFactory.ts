@@ -205,7 +205,14 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-
+      removeSessionPlugin(pluginName: string) {
+        const index = self.sessionPlugins.findIndex(
+          plugin => `${plugin.name}Plugin` === pluginName,
+        )
+        if (index !== -1) {
+          self.sessionPlugins.splice(index, 1)
+        }
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},

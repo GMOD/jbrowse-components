@@ -75,6 +75,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   addAssembly?: Function
   addSessionPlugin: Function
   removeAssembly?: Function
+  removeSessionPlugin: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
 }
