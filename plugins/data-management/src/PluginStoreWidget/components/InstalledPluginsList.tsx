@@ -33,7 +33,7 @@ function InstalledPluginsList({
       return plugin.name.toLowerCase().includes(model.filterText.toLowerCase())
     })
     .map((plugin: BasePlugin) => {
-      return <InstalledPlugin plugin={plugin} model={model} />
+      return <InstalledPlugin key={plugin.name} plugin={plugin} model={model} />
     })
 
   return (

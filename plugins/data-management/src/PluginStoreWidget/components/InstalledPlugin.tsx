@@ -29,6 +29,11 @@ function InstalledPlugin({
   const sessionSnapShot = getSnapshot(session)
   const { sessionPlugins } = sessionSnapShot
 
+  const isRuntimePlugin =
+    sessionPlugins.find(
+      (p: BasePlugin) => `${p.name}Plugin` === plugin.name,
+    ) === undefined
+
   return (
     <>
       <ListItem key={plugin.name}>
@@ -39,19 +44,10 @@ function InstalledPlugin({
       </ListItem>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>Foo</DialogTitle>
+        {isRuntimePlugin ? 'Cannot delete runtime plugin' : 'lol'}
       </Dialog>
     </>
   )
 }
 
 export default observer(InstalledPlugin)
-
-// () => {
-//   if (
-//     sessionPlugins.find(
-//       (p: BasePlugin) => `${p.name}Plugin` === plugin.name,
-//     ) === undefined
-//   ) {
-//     console.log('foo')
-//   }
-// }
