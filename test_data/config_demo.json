@@ -211,6 +211,17 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "cpgisland_ucsc_hg38",
+      "name": "UCSC CpG islands",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "cpgIslandExt"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "segdups_ucsc_hg19",
       "name": "UCSC SegDups",
       "category": ["Annotation"],
