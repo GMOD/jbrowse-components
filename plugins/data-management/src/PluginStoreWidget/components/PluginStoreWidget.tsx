@@ -72,6 +72,8 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const rootModel = getParent(model, 3)
   const { adminMode, pluginManager } = rootModel
 
+  console.log(rootModel)
+
   return (
     <div>
       {adminMode && (
@@ -129,6 +131,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
               key={(plugin as JBrowsePlugin).name}
               plugin={plugin}
               model={model}
+              adminMode={adminMode}
             />
           ))}
       </Accordion>

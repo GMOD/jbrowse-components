@@ -41,9 +41,11 @@ const useStyles = makeStyles(() => ({
 function PluginCard({
   plugin,
   model,
+  adminMode,
 }: {
   plugin: JBrowsePlugin
   model: PluginStoreModel
+  adminMode: boolean
 }) {
   const classes = useStyles()
   const session = getSession(model)
