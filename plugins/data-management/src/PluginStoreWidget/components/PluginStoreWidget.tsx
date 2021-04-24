@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton'
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import ClearIcon from '@material-ui/icons/Clear'
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
 
 import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
 
@@ -76,7 +76,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     <div>
       {adminMode && (
         <div className={classes.adminBadge}>
-          <ErrorOutlineIcon style={{ marginRight: '0.3em' }} />
+          <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
           <Typography>
             You are using the <code>admin-server</code>. Any changes you make
             will be saved to your configuration file.
