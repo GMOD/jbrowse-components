@@ -105,37 +105,38 @@ export default observer(({ model }: { model: LGV }) => {
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   async function setDisplayedRegion(result: BaseResult) {
-    try {
-      if (result instanceof RefSequenceResult) {
-        const newRegion = displayedRegions.find(
-          region => result.getRefName() === region.refName,
-        )
-        if (newRegion) {
-          model.setDisplayedRegions([newRegion])
-          // we use showAllRegions after setDisplayedRegions to make the entire
-          // region visible, xref #1703
-          model.showAllRegions()
-        }
-      } else if (result instanceof LocationResult) {
-        model.navToLocString(result.getLocation())
-      } else {
-        /**
-         * if base result, try to look for
-         * 1) exact match of the object
-         * 2) a region and then navigate to show all regions
-         * */
-        const results = await textSearchManager.search({
-          queryString: result?.getRendering().toLocaleLowerCase(),
-          searchType: 'exact',
-        })
-        if (results.length > 0) {
-          model.setSearchResults(results)
-        }
-      }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
-    }
+    console.log(result)
+    //try {
+    //  if (result instanceof RefSequenceResult) {
+    //    const newRegion = displayedRegions.find(
+    //      region => result.getRefName() === region.refName,
+    //    )
+    //    if (newRegion) {
+    //      model.setDisplayedRegions([newRegion])
+    //      // we use showAllRegions after setDisplayedRegions to make the entire
+    //      // region visible, xref #1703
+    //      model.showAllRegions()
+    //    }
+    //  } else if (result instanceof LocationResult) {
+    //    model.navToLocString(result.getLocation())
+    //  } else {
+    //    /**
+    //     * if base result, try to look for
+    //     * 1) exact match of the object
+    //     * 2) a region and then navigate to show all regions
+    //     * */
+    //    const results = await textSearchManager.search({
+    //      queryString: result?.getRendering().toLocaleLowerCase(),
+    //      searchType: 'exact',
+    //    })
+    //    if (results.length > 0) {
+    //      model.setSearchResults(results)
+    //    }
+    //  }
+    //} catch (e) {
+    //  console.warn(e)
+    //  session.notify(`${e}`, 'warning')
+    //}
   }
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
