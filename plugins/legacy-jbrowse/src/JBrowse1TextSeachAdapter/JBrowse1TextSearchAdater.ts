@@ -54,6 +54,8 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   async searchIndex(args: BaseArgs = {}) {
     const entries = await this.loadIndexFile(args.queryString)
     if (entries !== {} && entries[args.queryString]) {
+      // TODO: handle the undefined search type 
+      // TODO: handle passing empty list to format results
       return this.formatResults(entries[args.queryString][args.searchType])
     }
     return []

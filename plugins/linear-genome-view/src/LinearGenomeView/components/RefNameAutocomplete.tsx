@@ -8,7 +8,7 @@ import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useDebounce } from '@jbrowse/core/util'
 import BaseResult, {
   LocationResult,
   RefSequenceResult,
@@ -64,19 +64,21 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
+
   const classes = useStyles()
   const session = getSession(model)
+
+  const [open, setOpen] = useState(false)
+  const [_, setError] = useState<Error>()
+  const [currentSearch, setCurrentSearch] = useState('')
+  const debouncedSearch = useDebounce(currentSearch, 400)
+  
+  const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager, textSearchManager } = session
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
-  // TODO: check if I can reduce the state
-  const [open, setOpen] = useState(false)
-  const [currentSearch, setCurrentSearch] = useState('')
-  const [currentOptions, setCurrentOptions] = useState<Option[]>([])
-  const [, setError] = useState<Error>()
-
-  // TODO: handle loading the search results
+  // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
@@ -93,41 +95,48 @@ function RefNameAutocomplete({
   // assembly and regions have loaded
   const loaded = regions.length !== 0 && options.length !== 0
 
-
   useEffect(() => {
     let active = true
-    if (active) {
-      ;(async () => {
-        try {
+
+    ;(async () => {
+      try {
+        let results: BaseResult[] = []
+        if (debouncedSearch && debouncedSearch !== "") {
+          results = await textSearchManager.search({
+            queryString: debouncedSearch,
+            searchType: 'exact',
+          })
+        } else {
           if (currentSearch !== '') {
-            const results: BaseResult[] = await textSearchManager.search({
+            results = await textSearchManager.search({
               queryString: currentSearch,
               searchType: 'prefix',
             })
-            if (results.length > 0) {
-              const adapterResults: Option[] = results.map(result => {
-                const newOption: Option = {
-                  group: 'text search adapter',
-                  result,
-                }
-                return newOption
-              })
-              setCurrentOptions(adapterResults)
-            }
-          }
-        } catch (e) {
-          console.error(e)
-          if (active) {
-            setError(e)
           }
         }
-      })()
-    }
+        if (results.length > 0 && active) {
+          const adapterResults: Option[] = results.map(result => {
+            const newOption: Option = {
+              group: 'text search adapter',
+              result,
+            }
+            return newOption
+          })
+          setSearchOptions(adapterResults)
+        }
+      } catch (e) {
+        console.error(e)
+        if (active) {
+          setError(e)
+        }
+      }
+    })()
+
     return () => {
       active = false
     }
-  }, [currentSearch])
-
+  }, [currentSearch, debouncedSearch])
+  
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
       if (typeof selectedOption === 'string') {
@@ -163,9 +172,9 @@ function RefNameAutocomplete({
       onOpen={() => setOpen(true)}
       onClose={() => {
         setOpen(false)
-        setCurrentOptions([])
+        setSearchOptions([])
       }}
-      options={options.concat(currentOptions)}
+      options={options.concat(searchOptions)}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
         const filtered = filter(possibleOptions, params)
@@ -184,7 +193,6 @@ function RefNameAutocomplete({
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
-      onInputChange={(_, value) => setCurrentSearch(value)}
       renderInput={params => {
         const { helperText, InputProps = {} } = TextFieldProps
         const TextFieldInputProps = {
@@ -192,7 +200,7 @@ function RefNameAutocomplete({
           ...InputProps,
           endAdornment: (
             <>
-              {!loaded ? ( // TODO: add condition for when fetching for new search results
+              {!loaded ? (
                 <CircularProgress color="inherit" size={20} />
               ) : (
                 <Tooltip
@@ -218,6 +226,7 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
+            onChange={(e) => setCurrentSearch(e.target.value)}
           />
         )
       }}
