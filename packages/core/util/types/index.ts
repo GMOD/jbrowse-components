@@ -8,6 +8,7 @@ import {
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 import assemblyManager from '../../assemblyManager'
+import textSearchManager from '../../TextSearch/TextSearchManager'
 import { MenuItem } from '../../ui'
 import {
   NoAssemblyRegion as MUNoAssemblyRegion,
@@ -41,6 +42,8 @@ export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
+export type TextSearchManager = Instance<ReturnType<typeof textSearchManager>>
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
@@ -57,6 +60,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: Function
   addAssembly?: Function
   removeAssembly?: Function
+  textSearchManager?: TextSearchManager 
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

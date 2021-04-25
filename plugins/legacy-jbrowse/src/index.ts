@@ -1,4 +1,5 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -30,10 +31,11 @@ export default class LegacyJBrowsePlugin extends Plugin {
 
     pluginManager.addTextSearchAdapterType(
       () =>
-        new AdapterType({
+        new TextSearchAdapterType({
           name: 'JBrowse1TextSearchAdapter',
           configSchema: jbrowse1AdapterConfigSchema,
           AdapterClass: JBrowse1TextSearchAdapterClass,
+          description: 'A JBrowse 1 text search adapter',
         }),
     )
 

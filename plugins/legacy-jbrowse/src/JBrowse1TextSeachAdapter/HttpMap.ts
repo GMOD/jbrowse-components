@@ -14,7 +14,7 @@ export default class HttpMap {
 
   meta: any
 
-  constructor(args) {
+  constructor(args: {url: string, isElectron: boolean}) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
     this.meta = {}

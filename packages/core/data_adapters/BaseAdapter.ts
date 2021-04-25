@@ -19,6 +19,7 @@ export interface BaseOptions {
 }
 
 export type searchType = 'full' | 'prefix' | 'exact'
+
 export interface BaseArgs {
   searchType: searchType
   queryString: string

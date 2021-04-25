@@ -14,7 +14,7 @@ const crc32Table =
 export function stringToBytes(str: string) {
   let ch
   let st
-  let re = []
+  let re: number[] = []
   for (let i = 0; i < str.length; i++) {
     ch = str.charCodeAt(i) // get char
     st = [] // set up "stack"
@@ -36,7 +36,7 @@ export function stringToBytes(str: string) {
  * @param end - number
  * @param crc - number
  */
-export function crc32Raw(bytes: object, start: number, end: number, crc = 0) {
+export function crc32Raw(bytes: number[], start: number, end: number, crc = 0) {
   let n = 0 // a number between 0 and 255
   let x = 0 // a hex number
   const table = crc32Table

@@ -1,12 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BaseArgs,
   BaseTextSearchAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { isElectron } from '@jbrowse/core/util'
 import BaseResult, {
   LocationResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
+import { isElectron } from '@jbrowse/core/util'
+
+import { Instance } from 'mobx-state-tree'
+import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
@@ -16,6 +19,10 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   Uses index built by generate-names.pl
    */
   httpMap: HttpMap
+
+  tracks: string[]
+
+  assemblies: string[]
 
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
@@ -51,7 +58,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
    * @param args - search options/arguments include: search query
    * limit of results to return, searchType...preffix | full | exact", etc.
    */
-  async searchIndex(args: BaseArgs = {}) {
+  async searchIndex(args: BaseArgs) {
     const entries = await this.loadIndexFile(args.queryString)
     if (entries !== {} && entries[args.queryString]) {
       // TODO: handle the undefined search type
@@ -61,7 +68,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
     return []
   }
 
-  formatResults(results) {
+  formatResults(results: Array<any>) {
     if (results.length === 0) {
       return []
     }

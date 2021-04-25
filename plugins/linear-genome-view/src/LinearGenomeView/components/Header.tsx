@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { Region } from '@jbrowse/core/util/types'
 import BaseResult, {
   LocationResult,
   RefSequenceResult,

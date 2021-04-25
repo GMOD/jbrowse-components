@@ -11,9 +11,7 @@ describe('test JBrowse1 httpMap implementation', () => {
       uri: `${decodeURI(new URL(`file://${rootTemplate}`).href)}/names`,
     }
     const testHttpMap = new HttpMap({
-      url: configSchemaTest.baseUri
-        ? new URL(configSchemaTest.uri, configSchemaTest.baseUri).href
-        : configSchemaTest.uri,
+      url: configSchemaTest.uri,
       isElectron: false,
     })
     expect(testHttpMap).toBeTruthy()

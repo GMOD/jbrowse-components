@@ -132,7 +132,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [currentSearch, debouncedSearch])
+  }, [currentSearch, debouncedSearch]) // TODO: fix dependency on textSearchManager
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {

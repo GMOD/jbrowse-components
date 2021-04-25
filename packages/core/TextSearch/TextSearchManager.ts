@@ -2,6 +2,8 @@
 import { readConfObject } from '../configuration'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
+import { searchType } from '../data_adapters/BaseAdapter'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 interface BaseArgs {
   searchType: searchType
@@ -12,6 +14,7 @@ interface BaseArgs {
 }
 export default (pluginManager: PluginManager) => {
   return class TextSearchManager {
+    
     constructor() {
       this.textSearchAdapters = []
       this.lruCache = new QuickLRU({
@@ -45,7 +48,7 @@ export default (pluginManager: PluginManager) => {
 
     relevantAdapters() {
       // TODO: figure out how to determine relevant adapters
-      return pluginManager.rootModel.jbrowse.textSearchAdapters
+      return pluginManager.rootModel?.jbrowse.textSearchAdapters
     }
 
     /**
@@ -53,7 +56,7 @@ export default (pluginManager: PluginManager) => {
      * @param args - search options/arguments include: search query
      * limit of results to return, searchType...preffix | full | exact", etc.
      */
-    async search(args: BaseArgs = {}) {
+    async search(args: BaseArgs) {
       // determine list of relevant adapters
       this.textSearchAdapters = this.loadTextSearchAdapters()
       const results = await Promise.all(
@@ -65,7 +68,7 @@ export default (pluginManager: PluginManager) => {
       )
 
       // aggregate and return relevant results
-      const relevantResults = this.relevantResults([].concat(...results)) // flattening the results
+      const relevantResults = this.relevantResults(results.flat()) // flattening the results
 
       if (args.limit && relevantResults.length > 0) {
         return relevantResults.slice(0, args.limit)
@@ -78,7 +81,7 @@ export default (pluginManager: PluginManager) => {
      * Returns array of revelevant results
      * @param results - array of results from all text search adapters
      */
-    relevantResults(results: array) {
+    relevantResults(results: BaseResult[]) {
       // TODO: implement rank system
       return results
     }

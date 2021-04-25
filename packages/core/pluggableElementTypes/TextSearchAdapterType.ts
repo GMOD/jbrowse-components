@@ -1,4 +1,5 @@
 import PluggableElementBase from './PluggableElementBase'
+import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AdapterConstructor } from '../data_adapters/BaseAdapter'
 
 export default class TextSearchAdapterType extends PluggableElementBase {
@@ -6,11 +7,11 @@ export default class TextSearchAdapterType extends PluggableElementBase {
 
   configSchema: AnyConfigurationSchemaType
 
-  description: string
+  description?: string
 
   constructor(stuff: {
     name: string
-    description: string
+    description?: string
     configSchema: AnyConfigurationSchemaType
     AdapterClass: AdapterConstructor
   }) {

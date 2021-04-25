@@ -16,7 +16,7 @@ import ViewType from './pluggableElementTypes/ViewType'
 import WidgetType from './pluggableElementTypes/WidgetType'
 import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
-import TextSearchAdapter from './pluggableElementTypes/TextSearchAdapterType'
+import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
 
 import {
   ConfigurationSchema,
@@ -161,7 +161,7 @@ export default class PluginManager {
 
   textSearchAdapterTypes = new TypeRecord(
     'TextSearchAdapterType',
-    TextSearchAdapter,
+    TextSearchAdapterType,
   )
 
   trackTypes = new TypeRecord('TrackType', TrackType)
@@ -450,7 +450,7 @@ export default class PluginManager {
   }
 
   addTextSearchAdapterType(
-    creationCallback: (pluginManager: PluginManager) => TextSearchAdapter,
+    creationCallback: (pluginManager: PluginManager) => TextSearchAdapterType,
   ): this {
     return this.addElementType('text search adapter', creationCallback)
   }
