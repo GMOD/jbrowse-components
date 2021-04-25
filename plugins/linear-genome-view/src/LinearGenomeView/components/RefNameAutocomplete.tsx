@@ -65,6 +65,7 @@ function RefNameAutocomplete({
   TextFieldProps?: TFP
 }) {
 
+  
   const classes = useStyles()
   const session = getSession(model)
 
@@ -226,7 +227,7 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
-            onChange={(e) => setCurrentSearch(e.target.value)}
+            onChange={(e) => setCurrentSearch(e.target.value.toLocaleLowerCase())}
           />
         )
       }}

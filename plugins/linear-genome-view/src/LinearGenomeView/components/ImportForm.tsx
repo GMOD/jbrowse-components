@@ -37,7 +37,7 @@ type LGV = LinearGenomeViewModel
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const { assemblyNames, assemblyManager } = session
+  const { assemblyNames, assemblyManager, textSearchManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
@@ -65,18 +65,24 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }, [assemblyManager, assemblyName])
 
-  function setSelectedValue(selectedOption: BaseResult) {
-    switch (true) {
-      case (selectedOption instanceof RefSequenceResult):
-        setSelectedRegion(selectedOption.getRefName())
-        break
-      case (selectedOption instanceof LocationResult):
-        setSelectedRegion(selectedOption.getLocation())
-        break
-      default:
-        setSelectedRegion(selectedOptiont.getRendering())
-        break
-    }
+  async function setSelectedValue(selectedOption: BaseResult) {
+    let newValue = selectedOption.getRendering()
+      if (selectedOption instanceof RefSequenceResult) {
+        newValue = selectedOption.getRefName()
+      }
+      else if (selectedOption instanceof LocationResult) {
+        newValue = selectedOption.getLocation()
+      } else {
+        const results = await textSearchManager.search({
+          queryString: newValue.toLocaleLowerCase(),
+          searchType: 'exact',
+        })
+        console.log(results)
+        if (results.length > 0) {
+          model.setSearchResults(results)
+        }
+      }
+    setSelectedRegion(newValue)
   }
 
   function handleSelectedRegion(input: string) {

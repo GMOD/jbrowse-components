@@ -10,7 +10,7 @@ import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -105,38 +105,47 @@ export default observer(({ model }: { model: LGV }) => {
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   async function setDisplayedRegion(result: BaseResult) {
-    console.log(result)
-    //try {
-    //  if (result instanceof RefSequenceResult) {
-    //    const newRegion = displayedRegions.find(
-    //      region => result.getRefName() === region.refName,
-    //    )
-    //    if (newRegion) {
-    //      model.setDisplayedRegions([newRegion])
-    //      // we use showAllRegions after setDisplayedRegions to make the entire
-    //      // region visible, xref #1703
-    //      model.showAllRegions()
-    //    }
-    //  } else if (result instanceof LocationResult) {
-    //    model.navToLocString(result.getLocation())
-    //  } else {
-    //    /**
-    //     * if base result, try to look for
-    //     * 1) exact match of the object
-    //     * 2) a region and then navigate to show all regions
-    //     * */
-    //    const results = await textSearchManager.search({
-    //      queryString: result?.getRendering().toLocaleLowerCase(),
-    //      searchType: 'exact',
-    //    })
-    //    if (results.length > 0) {
-    //      model.setSearchResults(results)
-    //    }
-    //  }
-    //} catch (e) {
-    //  console.warn(e)
-    //  session.notify(`${e}`, 'warning')
-    //}
+    console.log("clicked")
+    try {
+      console.log(model.displayedRegions)
+      if (result) {
+        console.log("result", result)
+        let newRegionValue = result.getRendering()
+        if (result instanceof RefSequenceResult) {
+          console.log("I am a ref seq result", result instanceof RefSequenceResult)
+          newRegionValue = result.getRefName()
+          const newRegion: Region | undefined = model.displayedRegions.find(
+            region => newRegionValue === region.refName
+          )
+          console.log(model.displayedRegions)
+          console.log(newRegion)
+          if (newRegion) {
+            model.setDisplayedRegions([newRegion])
+            // we use showAllRegions after setDisplayedRegions to make the entire
+            // region visible, xref #1703
+            model.showAllRegions()
+          }
+        } else if (result instanceof LocationResult) {
+          console.log("I am a location result", result instanceof LocationResult)
+          newRegionValue = result.getLocation()
+          model.navToLocString(newRegionValue)
+        } else {
+          console.log("I am a base result or undefined", result instanceof BaseResult)
+          console.log(newRegionValue)
+          const results = await textSearchManager.search({
+            queryString: newRegionValue.toLocaleLowerCase(),
+            searchType: 'exact',
+          })
+          console.log(results)
+          if (results.length > 0) {
+            model.setSearchResults(results)
+          }
+        }
+      }
+    } catch (e) {
+      console.warn(e)
+      session.notify(`${e}`, 'warning')
+    }
   }
 
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
