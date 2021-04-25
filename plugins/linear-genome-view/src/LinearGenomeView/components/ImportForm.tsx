@@ -4,6 +4,10 @@ import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
+import BaseResult, {
+  LocationResult,
+  RefSequenceResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
@@ -61,6 +65,20 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }, [assemblyManager, assemblyName])
 
+  function setSelectedValue(selectedOption: BaseResult) {
+    switch (true) {
+      case (selectedOption instanceof RefSequenceResult):
+        setSelectedRegion(selectedOption.getRefName())
+        break
+      case (selectedOption instanceof LocationResult):
+        setSelectedRegion(selectedOption.getLocation())
+        break
+      default:
+        setSelectedRegion(selectedOptiont.getRendering())
+        break
+    }
+  }
+
   function handleSelectedRegion(input: string) {
     const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
@@ -112,7 +130,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }
                 value={selectedRegion}
-                onSelect={setSelectedRegion}
+                onSelect={(option) => {setSelectedValue(option)}}
                 TextFieldProps={{
                   margin: 'normal',
                   variant: 'outlined',
