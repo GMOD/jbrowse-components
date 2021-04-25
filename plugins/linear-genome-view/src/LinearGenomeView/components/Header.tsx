@@ -10,7 +10,7 @@ import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useCallback } from 'react'
+import React from 'react'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -105,20 +105,14 @@ export default observer(({ model }: { model: LGV }) => {
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   async function setDisplayedRegion(result: BaseResult) {
-    console.log("clicked")
     try {
-      console.log(model.displayedRegions)
       if (result) {
-        console.log("result", result)
         let newRegionValue = result.getRendering()
         if (result instanceof RefSequenceResult) {
-          console.log("I am a ref seq result", result instanceof RefSequenceResult)
           newRegionValue = result.getRefName()
           const newRegion: Region | undefined = model.displayedRegions.find(
-            region => newRegionValue === region.refName
+            region => newRegionValue === region.refName,
           )
-          console.log(model.displayedRegions)
-          console.log(newRegion)
           if (newRegion) {
             model.setDisplayedRegions([newRegion])
             // we use showAllRegions after setDisplayedRegions to make the entire
@@ -126,17 +120,13 @@ export default observer(({ model }: { model: LGV }) => {
             model.showAllRegions()
           }
         } else if (result instanceof LocationResult) {
-          console.log("I am a location result", result instanceof LocationResult)
           newRegionValue = result.getLocation()
           model.navToLocString(newRegionValue)
         } else {
-          console.log("I am a base result or undefined", result instanceof BaseResult)
-          console.log(newRegionValue)
           const results = await textSearchManager.search({
             queryString: newRegionValue.toLocaleLowerCase(),
             searchType: 'exact',
           })
-          console.log(results)
           if (results.length > 0) {
             model.setSearchResults(results)
           }

@@ -64,16 +64,14 @@ function RefNameAutocomplete({
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
-
-  
   const classes = useStyles()
   const session = getSession(model)
 
   const [open, setOpen] = useState(false)
-  const [_, setError] = useState<Error>()
+  const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 400)
-  
+  const debouncedSearch = useDebounce(currentSearch, 350)
+
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager, textSearchManager } = session
   const { coarseVisibleLocStrings } = model
@@ -102,18 +100,16 @@ function RefNameAutocomplete({
     ;(async () => {
       try {
         let results: BaseResult[] = []
-        if (debouncedSearch && debouncedSearch !== "") {
+        if (debouncedSearch && debouncedSearch !== '') {
           results = await textSearchManager.search({
             queryString: debouncedSearch,
             searchType: 'exact',
           })
-        } else {
-          if (currentSearch !== '') {
-            results = await textSearchManager.search({
-              queryString: currentSearch,
-              searchType: 'prefix',
-            })
-          }
+        } else if (currentSearch !== '') {
+          results = await textSearchManager.search({
+            queryString: currentSearch,
+            searchType: 'prefix',
+          })
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
@@ -137,7 +133,7 @@ function RefNameAutocomplete({
       active = false
     }
   }, [currentSearch, debouncedSearch])
-  
+
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
       if (typeof selectedOption === 'string') {
@@ -227,7 +223,7 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
-            onChange={(e) => setCurrentSearch(e.target.value.toLocaleLowerCase())}
+            onChange={e => setCurrentSearch(e.target.value.toLocaleLowerCase())}
           />
         )
       }}
@@ -242,15 +238,13 @@ function RefNameAutocomplete({
             </Typography>
           )
         }
-        return (
-          <Typography noWrap>
-            {val}
-          </Typography>
-        )
+        return <Typography noWrap>{val}</Typography>
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
-        return (typeof option === 'string') ? option : option.result.getRendering()
+        return typeof option === 'string'
+          ? option
+          : option.result.getRendering()
       }}
     />
   )

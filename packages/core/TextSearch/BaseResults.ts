@@ -15,7 +15,6 @@ export interface BaseResultArgs {
   location?: string
 
   refName?: string
-
 }
 export default class BaseResult {
   rendering: string // todo add | react component here
@@ -60,7 +59,6 @@ export class LocationResult extends BaseResult {
 }
 
 export class RefSequenceResult extends BaseResult {
-
   refName: string
 
   constructor(args: BaseResultArgs) {

@@ -67,21 +67,19 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
 
   async function setSelectedValue(selectedOption: BaseResult) {
     let newValue = selectedOption.getRendering()
-      if (selectedOption instanceof RefSequenceResult) {
-        newValue = selectedOption.getRefName()
+    if (selectedOption instanceof RefSequenceResult) {
+      newValue = selectedOption.getRefName()
+    } else if (selectedOption instanceof LocationResult) {
+      newValue = selectedOption.getLocation()
+    } else {
+      const results = await textSearchManager.search({
+        queryString: newValue.toLocaleLowerCase(),
+        searchType: 'exact',
+      })
+      if (results.length > 0) {
+        model.setSearchResults(results)
       }
-      else if (selectedOption instanceof LocationResult) {
-        newValue = selectedOption.getLocation()
-      } else {
-        const results = await textSearchManager.search({
-          queryString: newValue.toLocaleLowerCase(),
-          searchType: 'exact',
-        })
-        console.log(results)
-        if (results.length > 0) {
-          model.setSearchResults(results)
-        }
-      }
+    }
     setSelectedRegion(newValue)
   }
 
@@ -136,7 +134,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }
                 value={selectedRegion}
-                onSelect={(option) => {setSelectedValue(option)}}
+                onSelect={option => {
+                  setSelectedValue(option)
+                }}
                 TextFieldProps={{
                   margin: 'normal',
                   variant: 'outlined',

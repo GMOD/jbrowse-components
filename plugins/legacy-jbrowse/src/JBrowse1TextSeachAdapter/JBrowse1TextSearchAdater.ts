@@ -15,7 +15,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   Jbrowse1 text search adapter
   Uses index built by generate-names.pl
    */
-  httpMap: HttpMap 
+  httpMap: HttpMap
 
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
@@ -54,7 +54,7 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   async searchIndex(args: BaseArgs = {}) {
     const entries = await this.loadIndexFile(args.queryString)
     if (entries !== {} && entries[args.queryString]) {
-      // TODO: handle the undefined search type 
+      // TODO: handle the undefined search type
       // TODO: handle passing empty list to format results
       return this.formatResults(entries[args.queryString][args.searchType])
     }

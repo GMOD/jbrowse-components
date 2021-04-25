@@ -66,12 +66,7 @@ export default function SearchResultsDialog({
       <DialogContent>
         <List>
           {model.searchResults.map((result: BaseResult, index) => (
-            <ListItem
-              key={`${result.getRendering()}-${index}`}
-              onClick={() => {
-                handleClose()
-              }}
-            >
+            <ListItem key={`${result.getRendering()}-${index}`}>
               {`${result.getRendering()}`}
             </ListItem>
           ))}
