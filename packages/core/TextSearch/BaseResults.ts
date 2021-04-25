@@ -25,7 +25,7 @@ export default class BaseResult {
 
   textSearchAdapter?: TextSearchAdapterType
 
-  relevance: searchType
+  relevance?: searchType
 
   constructor(args: BaseResultArgs) {
     this.rendering = args.rendering

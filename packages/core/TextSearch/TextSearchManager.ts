@@ -59,10 +59,10 @@ export default (pluginManager: PluginManager) => {
     async search(args: BaseArgs) {
       // determine list of relevant adapters
       this.textSearchAdapters = this.loadTextSearchAdapters()
-      const results = await Promise.all(
+      const results: Array<BaseResult[]> = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
           // search with given options
-          const currentResults = await adapter.searchIndex(args)
+          const currentResults: BaseResult[] = await adapter.searchIndex(args)
           return currentResults
         }),
       )
