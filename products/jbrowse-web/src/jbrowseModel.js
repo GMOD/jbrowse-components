@@ -162,6 +162,24 @@ export default function JBrowseWeb(
         }
         self.defaultSession = newDefault
       },
+      addPlugin(plugin, pluginStore = true) {
+        self.plugins = [...self.plugins, plugin]
+        if (pluginStore) {
+          // wait for autorun on rootModel to update session storage
+          window.setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        }
+      },
+      removePlugin(pluginName, pluginStore = true) {
+        self.plugins = self.plugins.filter(plugin => plugin.name !== pluginName)
+        if (pluginStore) {
+          // wait for autorun on rootModel to update session storage
+          window.setTimeout(() => {
+            window.location.reload()
+          }, 1000)
+        }
+      },
     }))
     .views(self => ({
       get assemblyNames() {

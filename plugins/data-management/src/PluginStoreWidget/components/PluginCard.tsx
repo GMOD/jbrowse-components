@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv, getParent } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
@@ -54,6 +54,9 @@ function PluginCard({
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 
+  const rootModel = getParent(model, 3)
+  const { jbrowse } = rootModel
+
   return (
     <Card variant="outlined" key={plugin.name} className={classes.card}>
       <CardContent>
@@ -82,7 +85,11 @@ function PluginCard({
           disabled={disableButton}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
-            session.addSessionPlugin(plugin)
+            if (adminMode) {
+              jbrowse.addPlugin({ name: plugin.name, url: plugin.url })
+            } else {
+              session.addSessionPlugin(plugin)
+            }
             setTempDisabled(true)
           }}
         >
