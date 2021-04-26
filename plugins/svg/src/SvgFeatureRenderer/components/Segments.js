@@ -32,12 +32,13 @@ function Segments(props) {
     [left + width, top + height / 2],
   ]
   const strand = feature.get('strand')
-  if (strand)
+  if (strand) {
     points.push(
       [left + width - height / 4, top + height / 4],
       [left + width - height / 4, top + 3 * (height / 4)],
       [left + width, top + height / 2],
     )
+  }
 
   return (
     <>

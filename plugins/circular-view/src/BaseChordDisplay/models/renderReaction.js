@@ -54,10 +54,11 @@ export default ({ jbrequire }) => {
     }
 
     // check renderertype compatibility
-    if (!self.isCompatibleWithRenderer(rendererType))
+    if (!self.isCompatibleWithRenderer(rendererType)) {
       throw new Error(
         `renderer ${rendererType.name} is not compatible with this display type`,
       )
+    }
 
     const { html, ...data } = await rendererType.renderInClient(rpcManager, {
       ...renderArgs,

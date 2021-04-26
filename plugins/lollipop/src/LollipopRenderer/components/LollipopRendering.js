@@ -57,12 +57,13 @@ function LollipopRendering(props) {
     const centerPx = bpToPx(centerBp, region, bpPerPx)
     const radiusPx = readConfObject(args.config, 'radius', { feature })
 
-    if (!radiusPx)
+    if (!radiusPx) {
       console.error(
         new Error(
           `lollipop radius ${radiusPx} configured for feature ${feature.id()}`,
         ),
       )
+    }
     layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
       featureId: feature.id(),
       anchorX: centerPx,

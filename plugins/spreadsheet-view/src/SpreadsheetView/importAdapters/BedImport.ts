@@ -128,8 +128,9 @@ export async function parseBedPEBuffer(buffer: Buffer, options: ParseOptions) {
       if (bedColumn) {
         // a predefined column
         if (bedColumn.featureField.length === 2) {
-          if (!featureData[bedColumn.featureField[0]])
+          if (!featureData[bedColumn.featureField[0]]) {
             featureData[bedColumn.featureField[0]] = {}
+          }
           featureData[bedColumn.featureField[0]][
             bedColumn.featureField[1]
           ] = val

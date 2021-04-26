@@ -33,13 +33,14 @@ export default function (pluginManager) {
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
               let genomesFileLocation
-              if (hubFileLocation.uri)
+              if (hubFileLocation.uri) {
                 genomesFileLocation = {
                   uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
                     .href,
                 }
-              else
+              } else {
                 genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+              }
               return Promise.all([
                 hubFile,
                 fetchGenomesFile(genomesFileLocation),

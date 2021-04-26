@@ -98,11 +98,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
-        if (isAlive(self))
+        if (isAlive(self)) {
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
             self.activeWidgets.size - 1
           ]
+        }
         return undefined
       },
       /**
@@ -186,12 +187,13 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
             dereferenceTypeCount[type] += 1
           }
-          if (!dereferenced)
+          if (!dereferenced) {
             throw new Error(
               `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
+          }
         })
       },
 
@@ -253,8 +255,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
+        if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
+        }
         self.activeWidgets.set(widget.id, widget)
       },
 

@@ -93,10 +93,11 @@ function makeConfigurationSchemaModel<
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
 
-  if (options.explicitIdentifier && options.implicitIdentifier)
+  if (options.explicitIdentifier && options.implicitIdentifier) {
     throw new Error(
       `Cannot have both explicit and implicit identifiers in ${modelName}`,
     )
+  }
   if (options.explicitIdentifier) {
     if (typeof options.explicitIdentifier === 'string') {
       modelDefinition[options.explicitIdentifier] = types.identifier

@@ -237,10 +237,11 @@ export default function ConfigSlot(
       // }),
     )
     .postProcessSnapshot(snap => {
-      if (typeof snap.value === 'object')
+      if (typeof snap.value === 'object') {
         return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
           ? snap.value
           : undefined
+      }
       return snap.value !== defaultValue ? snap.value : undefined
     })
     .actions(self => ({

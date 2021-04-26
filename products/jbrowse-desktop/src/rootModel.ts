@@ -141,9 +141,9 @@ export default function RootModel(pluginManager: PluginManager) {
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
-        if (sessionSnapshot)
+        if (sessionSnapshot) {
           this.setHistory(UndoManager.create({}, { targetStore: self.session }))
-        else this.setHistory(undefined)
+        } else this.setHistory(undefined)
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setHistory(history: any) {

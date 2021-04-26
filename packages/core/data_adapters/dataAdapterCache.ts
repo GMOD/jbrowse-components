@@ -36,10 +36,11 @@ export function getAdapter(
   const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
   if (!adapterCache[cacheKey]) {
     const adapterType = (adapterConfigSnapshot || {}).type
-    if (!adapterType)
+    if (!adapterType) {
       throw new Error(
         'could not determine adapter type from adapter config snapshot',
       )
+    }
     const dataAdapterType = pluginManager.getAdapterType(adapterType)
     if (!dataAdapterType) {
       throw new Error(`unknown data adapter type ${adapterType}`)
@@ -113,8 +114,9 @@ export function freeAdapterResources(specification: Record<string, any>) {
           specification.regions ||
           (specification.region ? [specification.region] : [])
         regions.forEach((region: Region) => {
-          if (region.refName !== undefined)
+          if (region.refName !== undefined) {
             cacheEntry.dataAdapter.freeResources(region)
+          }
         })
       }
     })

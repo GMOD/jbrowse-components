@@ -18,10 +18,11 @@ export default (pluginManager: PluginManager) => {
       // returns a function that tests the given row
       get predicate() {
         let s = self.stringToFind // avoid closing over self
-        if (!s)
+        if (!s) {
           return function alwaysTrue() {
             return true
           }
+        }
         s = s.toLowerCase()
         return function stringPredicate(
           _sheet: unknown,

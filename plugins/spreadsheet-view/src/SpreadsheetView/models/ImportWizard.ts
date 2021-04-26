@@ -151,8 +151,9 @@ export default (pluginManager: PluginManager) => {
         try {
           if (!self.fileSource) return
 
-          if (self.loading)
+          if (self.loading) {
             throw new Error('cannot import, load already in progress')
+          }
           self.loading = true
           const typeParser = await fileTypeParsers[
             self.fileType as keyof typeof fileTypeParsers
@@ -165,12 +166,13 @@ export default (pluginManager: PluginManager) => {
           filehandle
             .stat()
             .then(stat => {
-              if (stat.size > IMPORT_SIZE_LIMIT)
+              if (stat.size > IMPORT_SIZE_LIMIT) {
                 throw new Error(
                   `File is too big. Tabular files are limited to at most ${(
                     IMPORT_SIZE_LIMIT / 1000
                   ).toLocaleString()}kb.`,
                 )
+              }
             })
             .then(() => filehandle.readFile())
             .then(buffer => {

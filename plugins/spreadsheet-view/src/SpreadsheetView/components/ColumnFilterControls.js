@@ -42,8 +42,9 @@ const ColumnFilterControls = observer(
     }
 
     const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
-    if (!columnDefinition)
+    if (!columnDefinition) {
       throw new Error('no column definition! filters are probably out of date')
+    }
     return (
       <Grid
         container

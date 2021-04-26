@@ -111,8 +111,9 @@ export default ({ jbrequire }) => {
     const columnTypes = {}
     columnDisplayOrder.forEach(columnNumber => {
       const columnDefinition = columns[columnNumber]
-      if (!columnTypes[columnDefinition.dataType.type])
+      if (!columnTypes[columnDefinition.dataType.type]) {
         columnTypes[columnDefinition.dataType.type] = []
+      }
       columnTypes[columnDefinition.dataType.type].push(columnNumber)
     })
     const locationColumnNumbers = columnTypes.LocString || []

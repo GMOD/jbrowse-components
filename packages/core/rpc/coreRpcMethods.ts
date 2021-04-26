@@ -224,10 +224,11 @@ export class CoreRender extends RpcMethodType {
       sessionId,
       adapterConfig,
     )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter))
+    if (!(dataAdapter instanceof BaseFeatureDataAdapter)) {
       throw new Error(
         `CoreRender cannot handle this type of data adapter ${dataAdapter}`,
       )
+    }
 
     const RendererType = validateRendererType(
       rendererType,
