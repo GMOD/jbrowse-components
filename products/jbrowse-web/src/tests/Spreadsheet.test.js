@@ -48,8 +48,9 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
     target: { value: 'volvox.filtered.vcf.gz' },
   })
 
+  expect(await findByTestId('open_spreadsheet')).not.toBeDisabled()
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  fireEvent.click(await findByText('ctgA:9602..9603'))
+  fireEvent.click(await findByText('ctgA:276..277'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
 
@@ -68,6 +69,7 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
     target: { value: 'volvox-bed12.bed.gz' },
   })
 
+  expect(await findByTestId('open_spreadsheet')).not.toBeDisabled()
   fireEvent.click(await findByTestId('open_spreadsheet'))
   fireEvent.click(await findByText('ctgA:1299..9000'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
