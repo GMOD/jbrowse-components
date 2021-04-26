@@ -50,7 +50,10 @@ export class LocationResult extends BaseResult {
 
   constructor(args: BaseResultArgs) {
     super(args)
-    this.location = args.location
+    if (!args.location) {
+      throw new Error('must provide location locstring')
+    }
+    this.location = args.location ?? ''
   }
 
   getLocation() {
@@ -63,7 +66,10 @@ export class RefSequenceResult extends BaseResult {
 
   constructor(args: BaseResultArgs) {
     super(args)
-    this.refName = args.refName
+    if (!args.refName) {
+      throw new Error('must provide refName')
+    }
+    this.refName = args.refName ?? ''
   }
 
   getRefName() {

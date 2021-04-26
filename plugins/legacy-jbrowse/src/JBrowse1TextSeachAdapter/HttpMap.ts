@@ -8,13 +8,13 @@ import { crc32 } from './Crc32'
 export default class HttpMap {
   url: string
 
-  ready: Promise
+  ready: Promise<boolean>
 
   isElectron: boolean
 
   meta: any
 
-  constructor(args: {url: string, isElectron: boolean}) {
+  constructor(args: { url: string; isElectron: boolean }) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
     this.meta = {}
@@ -44,7 +44,7 @@ export default class HttpMap {
    * @param key - string
    */
   async get(key: string) {
-    const bucket = await this.getBucket(key)
+    const bucket: Record<string, any> = await this.getBucket(key)
     return bucket[key]
   }
 

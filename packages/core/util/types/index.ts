@@ -60,7 +60,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: Function
   addAssembly?: Function
   removeAssembly?: Function
-  textSearchManager?: TextSearchManager 
+  textSearchManager?: TextSearchManager
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (

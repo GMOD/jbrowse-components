@@ -38,14 +38,14 @@ export function stringToBytes(str: string) {
  */
 export function crc32Raw(bytes: number[], start: number, end: number, crc = 0) {
   let n = 0 // a number between 0 and 255
-  let x = 0 // a hex number
+  let x // a hex number
   const table = crc32Table
 
   crc ^= -1
   for (let i = start, iTop = end; i < iTop; i++) {
     n = (crc ^ bytes[i]) & 0xff
     x = `0x${table.substr(n * 9, 8)}`
-    crc = (crc >>> 8) ^ x
+    crc = (crc >>> 8) ^ parseInt(x, 16)
   }
   crc ^= -1
   // convert to unsigned 32-bit int if needed
@@ -63,14 +63,14 @@ export function crc32Raw(bytes: number[], start: number, end: number, crc = 0) {
 export function crc32(str: string, crc = 0) {
   const bytes = stringToBytes(str)
   let n = 0 // a number between 0 and 255
-  let x = 0 // a hex number
+  let x // a hex number
   const table = crc32Table
 
   crc ^= -1
   for (let i = 0, iTop = bytes.length; i < iTop; i++) {
     n = (crc ^ bytes[i]) & 0xff
     x = `0x${table.substr(n * 9, 8)}`
-    crc = (crc >>> 8) ^ x
+    crc = (crc >>> 8) ^ parseInt(x, 16)
   }
   crc ^= -1
   // convert to unsigned 32-bit int if needed

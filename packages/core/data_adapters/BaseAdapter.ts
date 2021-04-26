@@ -8,6 +8,7 @@ import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import BaseResult from '../TextSearch/BaseResults'
 
 export interface BaseOptions {
   signal?: AbortSignal
@@ -294,11 +295,9 @@ export function isRefNameAliasAdapter(
 ): thing is BaseRefNameAliasAdapter {
   return 'getRefNameAliases' in thing
 }
-
-export class BaseTextSearchAdapter extends BaseAdapter {
-  public async searchIndex(args: BaseArgs): Promise<string[]>
+export interface BaseTextSearchAdapter extends BaseAdapter {
+  searchIndex(args: BaseArgs): Promise<BaseResult[]>
 }
-
 export function isTextSearchAdapter(
   thing: AnyDataAdapter,
 ): thing is BaseTextSearchAdapter {

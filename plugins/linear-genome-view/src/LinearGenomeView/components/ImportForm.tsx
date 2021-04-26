@@ -37,7 +37,7 @@ type LGV = LinearGenomeViewModel
 const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
-  const { assemblyNames, assemblyManager, textSearchManager } = session
+  const { assemblyNames, assemblyManager } = session
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
@@ -65,20 +65,13 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }, [assemblyManager, assemblyName])
 
-  async function setSelectedValue(selectedOption: BaseResult) {
+  function setSelectedValue(selectedOption: BaseResult) {
     let newValue = selectedOption.getRendering()
     if (selectedOption instanceof RefSequenceResult) {
       newValue = selectedOption.getRefName()
-    } else if (selectedOption instanceof LocationResult) {
+    }
+    if (selectedOption instanceof LocationResult) {
       newValue = selectedOption.getLocation()
-    } else {
-      const results = await textSearchManager.search({
-        queryString: newValue.toLocaleLowerCase(),
-        searchType: 'exact',
-      })
-      if (results.length > 0) {
-        model.setSearchResults(results)
-      }
     }
     setSelectedRegion(newValue)
   }
@@ -130,6 +123,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             selectedRegion && model.volatileWidth ? (
               <RefNameAutocomplete
                 model={model}
+                importForm
                 assemblyName={
                   error ? undefined : assemblyNames[selectedAssemblyIdx]
                 }

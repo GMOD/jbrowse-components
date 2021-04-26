@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*  text-searching controller */
-import { readConfObject } from '../configuration'
+import BaseResult from './BaseResults'
+// import { readConfObject } from '../configuration'
+import { AnyConfigurationModel } from '../configuration/configurationSchema'
+
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
-import { searchType } from '../data_adapters/BaseAdapter'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { searchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 
 interface BaseArgs {
   searchType: searchType
@@ -12,12 +15,16 @@ interface BaseArgs {
   limit?: number
   pageNumber?: number
 }
+
 export default (pluginManager: PluginManager) => {
   return class TextSearchManager {
-    
+    adapterCache: QuickLRU // TODO: replace with AbortablePromiseCache
+
+    textSearchAdapters: BaseTextSearchAdapter[]
+
     constructor() {
       this.textSearchAdapters = []
-      this.lruCache = new QuickLRU({
+      this.adapterCache = new QuickLRU({
         maxSize: 15,
       })
     }
@@ -26,29 +33,25 @@ export default (pluginManager: PluginManager) => {
      * Instantiate/initialize list of relevant adapters
      */
     loadTextSearchAdapters() {
-      const initialAdapters = []
+      const initialAdapters: BaseTextSearchAdapter[] = []
       // initialize relevant adapters
-      this.relevantAdapters().forEach(adapterConfig => {
-        const id = readConfObject(adapterConfig, 'textSearchAdapterId')
-        if (this.lruCache.has(id)) {
-          const adapterFromCache = this.lruCache.get(id)
-          initialAdapters.push(adapterFromCache)
-        } else {
+      this.relevantAdapters().forEach(
+        (adapterConfig: AnyConfigurationModel) => {
           const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
             adapterConfig.type,
           )
           const textSearchAdapter = new textSearchAdapterType.AdapterClass(
             adapterConfig,
-          )
-          this.lruCache.set(id, textSearchAdapter)
-        }
-      })
+          ) as BaseTextSearchAdapter
+          initialAdapters.push(textSearchAdapter)
+        },
+      )
       return initialAdapters
     }
 
     relevantAdapters() {
       // TODO: figure out how to determine relevant adapters
-      return pluginManager.rootModel?.jbrowse.textSearchAdapters
+      return (pluginManager.rootModel?.jbrowse as any).textSearchAdapters
     }
 
     /**

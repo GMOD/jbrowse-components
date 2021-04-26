@@ -10,8 +10,9 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
+import { Instance, getEnv } from 'mobx-state-tree'
 import React from 'react'
+
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
@@ -102,7 +103,9 @@ export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
-  const { textSearchManager } = session
+  const { pluginManager } = getEnv(session)
+  const { textSearchManager } = pluginManager.rootModel
+
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
 
   async function setDisplayedRegion(result: BaseResult) {

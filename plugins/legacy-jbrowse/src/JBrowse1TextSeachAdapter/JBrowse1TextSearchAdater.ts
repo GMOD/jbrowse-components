@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  BaseArgs,
   BaseTextSearchAdapter,
+  BaseArgs,
+  BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import BaseResult, {
   LocationResult,
@@ -13,24 +14,21 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 
-export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
+export default class JBrowse1TextSearchAdapter
+  extends BaseAdapter
+  implements BaseTextSearchAdapter {
   /*
   Jbrowse1 text search adapter
   Uses index built by generate-names.pl
    */
-  httpMap: HttpMap
-
-  tracks: string[]
-
-  assemblies: string[]
+  private httpMap: HttpMap
 
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
-    // metadata about tracks and assemblies that the adapter covers
-    this.tracks = readConfObject(config, 'tracks')
-    this.assemblies = readConfObject(config, 'assemblies')
-    // create instance of httpmap
     const namesIndexLocation = readConfObject(config, 'namesIndexLocation')
+    if (!namesIndexLocation) {
+      throw new Error('must provide namesIndexLocation')
+    }
     this.httpMap = new HttpMap({
       url: namesIndexLocation.baseUri
         ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
@@ -47,7 +45,9 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
   async loadIndexFile(query: string) {
     const readyCheck = await this.httpMap.ready
     if (readyCheck) {
-      const bucketContents = await this.httpMap.getBucket(query)
+      const bucketContents: Record<string, any> = await this.httpMap.getBucket(
+        query,
+      )
       return bucketContents
     }
     return {}
@@ -59,7 +59,9 @@ export default class JBrowse1TextSearchAdapter extends BaseTextSearchAdapter {
    * limit of results to return, searchType...preffix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    const entries = await this.loadIndexFile(args.queryString)
+    const entries: Record<string, any> = await this.loadIndexFile(
+      args.queryString,
+    )
     if (entries !== {} && entries[args.queryString]) {
       // TODO: handle the undefined search type
       // TODO: handle passing empty list to format results

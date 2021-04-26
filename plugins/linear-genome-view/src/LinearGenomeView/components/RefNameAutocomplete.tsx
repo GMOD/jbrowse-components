@@ -6,9 +6,12 @@
  */
 import React, { useMemo, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
+
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
-import { getSession, useDebounce } from '@jbrowse/core/util'
+import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
+
 import BaseResult, {
   LocationResult,
   RefSequenceResult,
@@ -53,6 +56,7 @@ function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
+  importForm,
   style,
   value,
   TextFieldProps = {},
@@ -60,20 +64,22 @@ function RefNameAutocomplete({
   model: LinearGenomeViewModel
   onSelect: (region: BaseResult) => void
   assemblyName?: string
+  importForm?: boolean
   value?: string
   style?: React.CSSProperties
   TextFieldProps?: TFP
 }) {
   const classes = useStyles()
   const session = getSession(model)
+  const { pluginManager } = getEnv(session)
 
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
   const debouncedSearch = useDebounce(currentSearch, 350)
-
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
-  const { assemblyManager, textSearchManager } = session
+  const { assemblyManager } = session
+  const { textSearchManager } = pluginManager.rootModel
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
@@ -105,7 +111,7 @@ function RefNameAutocomplete({
             queryString: debouncedSearch,
             searchType: 'exact',
           })
-        } else if (currentSearch !== '') {
+        } else if (currentSearch !== '' && !importForm) {
           results = await textSearchManager.search({
             queryString: currentSearch,
             searchType: 'prefix',
@@ -132,7 +138,8 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [currentSearch, debouncedSearch]) // TODO: fix dependency on textSearchManager
+  }, [currentSearch, textSearchManager, debouncedSearch, importForm])
+  // TODO: fix dependency on textSearchManager...need to do initial search ...with text search it lags,debouncedSearch
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
