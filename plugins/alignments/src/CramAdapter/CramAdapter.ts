@@ -27,6 +27,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cram: any
 
+  private setupP?: Promise<Header>
+
   private sequenceAdapter?: BaseFeatureDataAdapter
 
   public samHeader: Header = {}
@@ -128,40 +130,52 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    if (Object.keys(this.samHeader).length === 0) {
-      await this.configure()
-      statusCallback('Downloading index')
-      const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
+    if (!this.setupP) {
+      this.setupP = this.configure()
+        .then(async () => {
+          statusCallback('Downloading index')
+          const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
 
-      // use the @SQ lines in the header to figure out the
-      // mapping between ref ref ID numbers and names
-      const idToName: string[] = []
-      const nameToId: Record<string, number> = {}
-      const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-      sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-        sqLine.data.forEach((item: HeaderLine) => {
-          if (item.tag === 'SN') {
-            // this is the ref name
-            const refName = item.value
-            nameToId[refName] = refId
-            idToName[refId] = refName
+          // use the @SQ lines in the header to figure out the
+          // mapping between ref ref ID numbers and names
+          const idToName: string[] = []
+          const nameToId: Record<string, number> = {}
+          const sqLines = samHeader.filter(
+            (l: { tag: string }) => l.tag === 'SQ',
+          )
+          sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
+            sqLine.data.forEach((item: HeaderLine) => {
+              if (item.tag === 'SN') {
+                // this is the ref name
+                const refName = item.value
+                nameToId[refName] = refId
+                idToName[refId] = refName
+              }
+            })
+          })
+
+          const rgLines = samHeader.filter(
+            (l: { tag: string }) => l.tag === 'RG',
+          )
+          const readGroups = rgLines.map((rgLine: { data: HeaderLine[] }) => {
+            const { value } =
+              rgLine.data.find(item => {
+                return item.tag === 'ID'
+              }) || {}
+            return value
+          })
+          if (idToName.length) {
+            this.samHeader = { idToName, nameToId, readGroups }
           }
+          statusCallback('')
+          return this.samHeader
         })
-      })
-
-      const rgLines = samHeader.filter((l: { tag: string }) => l.tag === 'RG')
-      const readGroups = rgLines.map((rgLine: { data: HeaderLine[] }) => {
-        const { value } =
-          rgLine.data.find(item => {
-            return item.tag === 'ID'
-          }) || {}
-        return value
-      })
-      if (idToName.length) {
-        this.samHeader = { idToName, nameToId, readGroups }
-      }
-      statusCallback('')
+        .catch(e => {
+          this.setupP = undefined
+          throw e
+        })
     }
+    return this.setupP
   }
 
   async getRefNames(opts?: BaseOptions) {
