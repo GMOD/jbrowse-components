@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, getParent } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
 import ListItem from '@material-ui/core/ListItem'
@@ -37,6 +37,7 @@ function InstalledPlugin({
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  adminMode: boolean
 }) {
   const classes = useStyles()
 
@@ -48,6 +49,9 @@ function InstalledPlugin({
   const isSessionPlugin = sessionPlugins.some(
     (p: BasePlugin) => `${p.name}Plugin` === plugin.name,
   )
+
+  const rootModel = getParent(model, 3)
+  const { jbrowse, adminMode } = rootModel
 
   return (
     <>
@@ -69,7 +73,7 @@ function InstalledPlugin({
         </DialogTitle>
 
         <div className={classes.dialogContainer}>
-          {isSessionPlugin ? (
+          {adminMode || isSessionPlugin ? (
             <>
               <Typography>
                 Please confirm that you want to remove {plugin.name}:
@@ -83,7 +87,11 @@ function InstalledPlugin({
                     setDialogOpen(false)
                     // avoid showing runtime plugin warning
                     window.setTimeout(() => {
-                      session.removeSessionPlugin(plugin.name)
+                      if (adminMode) {
+                        jbrowse.removePlugin(plugin.name)
+                      } else {
+                        session.removeSessionPlugin(plugin.name)
+                      }
                     }, 500)
                     // wait for session autorun to handle removing session
                     window.setTimeout(() => {

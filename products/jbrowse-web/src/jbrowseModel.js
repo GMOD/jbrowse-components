@@ -171,14 +171,10 @@ export default function JBrowseWeb(
           }, 1000)
         }
       },
-      removePlugin(pluginName, pluginStore = true) {
-        self.plugins = self.plugins.filter(plugin => plugin.name !== pluginName)
-        if (pluginStore) {
-          // wait for autorun on rootModel to update session storage
-          window.setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        }
+      removePlugin(pluginName) {
+        self.plugins = self.plugins.filter(
+          plugin => `${plugin.name}Plugin` !== pluginName,
+        )
       },
     }))
     .views(self => ({
