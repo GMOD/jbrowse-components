@@ -9,6 +9,7 @@ Object {
     "name": "New session",
   },
   "plugins": undefined,
+  "textSearchAdapters": Array [],
   "tracks": Array [],
 }
 `;
@@ -123,6 +124,15 @@ Object {
     },
   },
   "plugins": undefined,
+  "textSearchAdapters": Array [
+    Object {
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "JBrowse1GenerateNamesAdapter",
+      "type": "JBrowse1TextSearchAdapter",
+    },
+  ],
   "tracks": Array [
     Object {
       "adapter": Object {

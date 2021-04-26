@@ -194,6 +194,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   style="margin-right: 7px;"
+                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                 >
                   <svg
                     aria-hidden="true"
@@ -666,6 +667,7 @@ exports[`<LinearGenomeView /> renders setup wizard 1`] = `
             <div
               class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
               style="margin-right: 7px;"
+              title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
             >
               <svg
                 aria-hidden="true"
@@ -949,6 +951,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
                   style="margin-right: 7px;"
+                  title="Search for features or navigate to a location using syntax \\"chr1:1-100\\" or \\"chr1:1..100\\""
                 >
                   <svg
                     aria-hidden="true"
