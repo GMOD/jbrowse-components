@@ -12,10 +12,6 @@ import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
-interface HeaderLine {
-  tag: string
-  value: string
-}
 interface Header {
   idToName: string[]
   nameToId: Record<string, number>
@@ -82,19 +78,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           // mapping between ref ref ID numbers and names
           const idToName: string[] = []
           const nameToId: Record<string, number> = {}
-          const sqLines = samHeader.filter(
-            (l: { tag: string }) => l.tag === 'SQ',
-          )
-          sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-            sqLine.data.forEach((item: HeaderLine) => {
-              if (item.tag === 'SN') {
-                // this is the ref name
-                const refName = item.value
-                nameToId[refName] = refId
-                idToName[refId] = refName
-              }
+          samHeader
+            .filter(l => l.tag === 'SQ')
+            .forEach((sqLine, refId) => {
+              sqLine.data.forEach(item => {
+                if (item.tag === 'SN') {
+                  // this is the ref name
+                  const refName = item.value
+                  nameToId[refName] = refId
+                  idToName[refId] = refName
+                }
+              })
             })
-          })
           statusCallback('')
           this.samHeader = { idToName, nameToId }
           return this.samHeader

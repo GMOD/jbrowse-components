@@ -12,11 +12,15 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
-interface HeaderLine {
+interface HeaderKeyVal {
   tag: string
   value: string
 }
-
+interface HeaderLine {
+  tag: string
+  value: any
+  data: HeaderLine[]
+}
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
@@ -134,36 +138,31 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       this.setupP = this.configure()
         .then(async () => {
           statusCallback('Downloading index')
-          const samHeader = await this.cram.cram.getSamHeader(opts?.signal)
+          const samHeader: HeaderLine[] = await this.cram.cram.getSamHeader(
+            opts?.signal,
+          )
 
           // use the @SQ lines in the header to figure out the
-          // mapping between ref ref ID numbers and names
+          // mapping between ref ID numbers and names
           const idToName: string[] = []
           const nameToId: Record<string, number> = {}
-          const sqLines = samHeader.filter(
-            (l: { tag: string }) => l.tag === 'SQ',
-          )
-          sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-            sqLine.data.forEach((item: HeaderLine) => {
-              if (item.tag === 'SN') {
-                // this is the ref name
-                const refName = item.value
-                nameToId[refName] = refId
-                idToName[refId] = refName
-              }
+          samHeader
+            .filter(l => l.tag === 'SQ')
+            .forEach((sqLine, refId) => {
+              sqLine.data.forEach(item => {
+                if (item.tag === 'SN') {
+                  // this is the ref name
+                  const refName = item.value
+                  nameToId[refName] = refId
+                  idToName[refId] = refName
+                }
+              })
             })
-          })
 
-          const rgLines = samHeader.filter(
-            (l: { tag: string }) => l.tag === 'RG',
-          )
-          const readGroups = rgLines.map((rgLine: { data: HeaderLine[] }) => {
-            const { value } =
-              rgLine.data.find(item => {
-                return item.tag === 'ID'
-              }) || {}
-            return value
-          })
+          const readGroups = samHeader
+            .filter(l => l.tag === 'RG')
+            .map(rgLine => rgLine.data.find(item => item.tag === 'ID')?.value)
+
           if (idToName.length) {
             this.samHeader = { idToName, nameToId, readGroups }
           }
