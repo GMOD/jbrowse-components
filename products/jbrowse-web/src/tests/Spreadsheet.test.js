@@ -33,9 +33,9 @@ beforeEach(() => {
   )
 })
 
-test('looks at about this track dialog', async () => {
+test('opens a vcf.gz file in the spreadsheet view', async () => {
   const pluginManager = getPluginManager()
-  const { findByTestId, getByTestId, findByText } = render(
+  const { findByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   fireEvent.click(await findByText('File'))
@@ -48,6 +48,7 @@ test('looks at about this track dialog', async () => {
     target: { value: 'volvox.filtered.vcf.gz' },
   })
 
-  fireEvent.click(getByTestId('open_spreadsheet'))
-  await findByText('ctgA:9602..9603')
+  fireEvent.click(await findByTestId('open_spreadsheet'))
+  fireEvent.click(await findByText('ctgA:9602..9603'))
+  expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
