@@ -300,19 +300,21 @@ export default function SequenceFeatureDetails(props: BaseProps) {
       return () => {}
     }
     const { assemblyManager, rpcManager } = getSession(model)
-    const { assemblyNames } = model.view || { assemblyNames: [] }
-    const [assemblyName] = assemblyNames
+    const [assemblyName] = model.view?.assemblyNames || []
     async function fetchSeq(start: number, end: number, refName: string) {
       const assembly = await assemblyManager.waitForAssembly(assemblyName)
       if (!assembly) {
         throw new Error('assembly not found')
       }
-      const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
       const sessionId = 'getSequence'
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-        adapterConfig,
+        adapterConfig: getConf(assembly, ['sequence', 'adapter']),
         sessionId,
-        region: { start, end, refName: assembly?.getCanonicalRefName(refName) },
+        region: {
+          start,
+          end,
+          refName: assembly.getCanonicalRefName(refName),
+        },
       })
       const [feat] = feats as Feature[]
       if (!feat) {

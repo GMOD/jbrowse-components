@@ -83,7 +83,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       mod_0: 'red',
       mod_1: 'green',
       mod_2: 'blue',
+      meth: 'red',
+      unmeth: 'blue',
     }
+    console.log([...features.values()].find(f => f.get('snpinfo').cov))
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
     // bpPerPx First pass: draw the gray background
@@ -109,6 +112,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       Object.entries(snpinfo.cov).reduce((curr, [base, score]) => {
         ctx.fillStyle = colorForBase[base] || 'red'
+        console.log({ base, score, curr })
         ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
         return curr + score
       }, 0)

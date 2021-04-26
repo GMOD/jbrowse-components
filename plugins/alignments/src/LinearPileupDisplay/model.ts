@@ -508,6 +508,12 @@ const stateModelFactory = (
                   },
                 },
                 {
+                  label: 'Methylation (specialized MM+MP/ML)',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'methylation' })
+                  },
+                },
+                {
                   label: 'Insert size',
                   onClick: () => {
                     self.setColorScheme({ type: 'insertSize' })

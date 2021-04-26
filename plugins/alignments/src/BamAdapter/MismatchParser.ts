@@ -314,33 +314,38 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
 
 export function getModificationPositions(mm: string, seq: string) {
   const mods = mm.split(';')
-  return mods.map(mod => {
-    const [basemod, ...rest] = mod.split(',')
+  return mods
+    .filter(mod => !!mod)
+    .map(mod => {
+      const [basemod, ...rest] = mod.split(',')
 
-    const [base, strand, ...type] = basemod.split('')
-    if (strand === '-') {
-      console.warn('unsupported negative strand modifications')
-      return []
-    }
+      const [, base, strand, type] = basemod.match(/([A-Z])([-+])([^,]+)/)
+      if (strand === '-') {
+        console.warn('unsupported negative strand modifications')
+        return []
+      }
 
-    let i = 0
+      let i = 0
 
-    // based on parse_mm.pl from hts-specs
-    // the logic is that in the sequence of the read, if we have a modification
-    // type e.g. C+m;2 and a sequence ACGTACGTAC we skip the two instances of C
-    // and go to the last C
-    return rest
-      .map(score => +score)
-      .map(delta => {
-        i++
-        do {
-          if (base === 'N' || base === seq[i]) {
-            delta--
-          }
-          i++
-        } while (delta >= 0 && i < seq.length)
-        i--
-        return i
-      })
-  })
+      // based on parse_mm.pl from hts-specs
+      // the logic is that in the sequence of the read, if we have a modification
+      // type e.g. C+m;2 and a sequence ACGTACGTAC we skip the two instances of C
+      // and go to the last C
+      return {
+        type,
+        positions: rest
+          .map(score => +score)
+          .map(delta => {
+            i++
+            do {
+              if (base === 'N' || base === seq[i]) {
+                delta--
+              }
+              i++
+            } while (delta >= 0 && i < seq.length)
+            i--
+            return i
+          }),
+      }
+    })
 }

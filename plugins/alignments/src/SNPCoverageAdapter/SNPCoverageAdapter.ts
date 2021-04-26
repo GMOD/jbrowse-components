@@ -3,14 +3,14 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { reduce, filter } from 'rxjs/operators'
 import { getSnapshot } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+import { reduce, filter, toArray } from 'rxjs/operators'
 import { Observable } from 'rxjs'
 import { getTagAlt } from '../util'
 import {
@@ -43,7 +43,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       throw new Error('failed to initialize adapter, no subadapter')
     }
     this.subadapter = dataAdapter as BaseFeatureDataAdapter
-
     this.sequenceAdapter = sequenceAdapter as BaseFeatureDataAdapter
   }
 
@@ -60,6 +59,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       }
 
       const bins = await this.generateCoverageBins(stream, region, opts)
+      console.log({ bins })
 
       bins.forEach((bin, index) => {
         observer.next(
@@ -100,24 +100,29 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } },
   ) {
     const { colorBy } = opts
-    const leftBase = region.start
-    const rightBase = region.end
-    const binMax = Math.ceil(rightBase - leftBase)
+    const binMax = Math.ceil(region.end - region.start)
 
-    const bins = new Array(binMax)
-    for (let i = 0; i < bins.length; i++) {
-      bins[i] = { total: 0, ref: 0, cov: {}, noncov: {} }
-    }
+    const initBins = Array.from({ length: binMax }, () => ({
+      total: 0,
+      ref: 0,
+      cov: {},
+      noncov: {},
+    }))
+    const [feat] = await this.sequenceAdapter
+      .getFeatures(region)
+      .pipe(toArray())
+      .toPromise()
+    const regionSeq = feat.get('seq')
 
     return features
       .pipe(
-        reduce((bins: any[], feature: Feature) => {
-          const start = feature.get('start')
-          const end = feature.get('end')
+        reduce((bins, feature) => {
           const cigarOps = parseCigar(feature.get('CIGAR'))
+          const fstart = feature.get('start')
+          const fend = feature.get('end')
 
-          for (let j = start; j < end; j++) {
-            const pos = j - leftBase
+          for (let j = fstart; j < fend; j++) {
+            const pos = j - region.start
             const bin = bins[pos]
             if (pos >= 0 && pos < bins.length) {
               bin.total++
@@ -129,10 +134,12 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             const seq = feature.get('seq')
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
 
-            getModificationPositions(mm, seq).forEach((positions, idx) => {
-              const mod = `mod_${idx}`
+            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
+              const mod = `mod_${type}`
               for (const pos of getNextRefPos(cigarOps, positions)) {
-                const epos = pos + feature.get('start') - leftBase
+                const epos = pos + fstart - region.start
+
+                console.log({ epos })
                 const bin = bins[epos]
                 if (epos >= 0 && epos < bins.length) {
                   bin.ref--
@@ -144,10 +151,51 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 }
               }
             })
-          } else {
+          } else if (colorBy?.type === 'methylation') {
+            const seq = feature.get('seq')
+            const mm = getTagAlt(feature, 'MM', 'Mm') || ''
+            const methBins = new Array(region.end - region.start).fill(0)
+            getModificationPositions(mm, seq).forEach(({ type, positions }) => {
+              // we are processing methylation
+              if (type === 'm') {
+                for (const pos of getNextRefPos(cigarOps, positions)) {
+                  const epos = pos + fstart - region.start
+                  if (epos >= 0 && epos < methBins.length) {
+                    methBins[epos] = 1
+                  }
+                }
+              }
+            })
+
+            console.log(bins.length, regionSeq.length)
+            for (let i = 0; i < regionSeq.length; i++) {
+              const l1 = regionSeq[i]
+              const l2 = regionSeq[i + 1]
+              const bin = bins[i]
+              // color
+              if (l1 === 'C' && l2 === 'G') {
+                if (methBins[i]) {
+                  // bin.ref--
+
+                  if (!bin.cov.meth) {
+                    bin.cov.meth = 1
+                  } else {
+                    bin.cov.meth++
+                  }
+                } else {
+                  // bin.ref--
+
+                  if (!bin.cov.unmeth) {
+                    bin.cov.unmeth = 1
+                  } else {
+                    bin.cov.unmeth++
+                  }
+                }
+              }
+            }
           }
           return bins
-        }, bins),
+        }, initBins),
       )
       .toPromise()
   }
