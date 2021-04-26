@@ -8,14 +8,13 @@ import ToggleButton from '@material-ui/lab/ToggleButton'
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
 import { observer } from 'mobx-react'
 import React, { useState } from 'react'
+import { isElectron } from '../util'
 import {
   FileLocation,
   UriLocation,
   LocalPathLocation,
   BlobLocation,
 } from '../util/types'
-
-const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
