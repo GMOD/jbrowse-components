@@ -62,8 +62,8 @@ export async function parseBedBuffer(buffer: Buffer, options: ParseOptions) {
     name: 'Location',
     dataType: { type: 'LocString' },
     isDerived: true,
-    derivationFunctionText: `jexl:{text:row.cells.ref.text+':'+row.cells.start.text+'..'+row.cells.end.text,\n
-    extendedData: {refName: row.cells.ref.text, start: +row.cells.start.text, end: +row.cells.end.text}}`,
+    derivationFunctionText: `jexl:{text:row.cells[0].text+':'+row.cells[1].text+'..'+row.cells[2].text,\n
+    extendedData: {refName: row.cells.ref.text, start: parseInt(row.cells.start.text,10), end: parseInt(row.cells.end.text,10)}}`,
   })
   return data
 }
