@@ -125,9 +125,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      DialogComponent: undefined as
-        | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
-        | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogComponent: undefined as React.FC<any> | undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get width(): number {
@@ -295,14 +296,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
         let offsetBp = 0
 
         const interRegionPaddingBp = this.interRegionPaddingWidth * self.bpPerPx
-        const index = self.displayedRegions.findIndex((r, idx) => {
-          if (refName === r.refName && coord >= r.start && coord <= r.end) {
+        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
+        const index = self.displayedRegions.findIndex((region, idx) => {
+          const len = region.end - region.start
+          if (
+            refName === region.refName &&
+            coord >= region.start &&
+            coord <= region.end
+          ) {
             if (regionNumber ? regionNumber === idx : true) {
-              offsetBp += r.reversed ? r.end - coord : coord - r.start
+              offsetBp += region.reversed
+                ? region.end - coord
+                : coord - region.start
               return true
             }
           }
-          offsetBp += r.end - r.start + interRegionPaddingBp
+
+          // add the interRegionPaddingWidth if the boundary is in the screen
+          // e.g. offset>=0 && offset<width
+          if (
+            len > minimumBlockBp &&
+            offsetBp / self.bpPerPx >= 0 &&
+            offsetBp / self.bpPerPx < self.width
+          ) {
+            offsetBp += len + interRegionPaddingBp
+          } else {
+            offsetBp += len
+          }
           return false
         })
         const foundRegion = self.displayedRegions[index]
@@ -442,14 +462,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(
-        comp?: React.FC<{
-          handleClose: () => void
-          model: { clearView: Function }
-        }>,
-      ) {
-        self.DialogComponent = comp
-      },
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
@@ -1167,7 +1179,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Return to import form',
               onClick: () => {
-                self.setDialogComponent(ReturnToImportFormDlg)
+                getSession(self).setDialogComponent(ReturnToImportFormDlg, {
+                  model: self,
+                })
               },
               icon: FolderOpenIcon,
             },

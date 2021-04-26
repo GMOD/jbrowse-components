@@ -22,7 +22,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
           class="MuiTypography-root MuiTypography-button"
         >
            
-          rs123 - undefined
+          rs123
         </span>
       </div>
       <div

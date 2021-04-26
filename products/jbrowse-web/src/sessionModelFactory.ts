@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import isObject from 'is-object'
 import {
   readConfObject,
   getConf,
@@ -46,7 +47,7 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
 ) {
   const minDrawerWidth = 128
-  return types
+  const sessionModel = types
     .model('JBrowseWebSessionModel', {
       id: types.optional(types.identifier, shortid()),
       name: types.string,
@@ -64,8 +65,8 @@ export default function sessionModelFactory(
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
-      connectionInstances: types.map(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+      connectionInstances: types.array(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
@@ -91,6 +92,9 @@ export default function sessionModelFactory(
       task: undefined,
 
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
+
+      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get shareURL() {
@@ -176,6 +180,10 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: React.FC<any>, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       setName(str: string) {
         self.name = str
       },
@@ -203,20 +211,14 @@ export default function sessionModelFactory(
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
-        const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionData = {
           ...initialSnapshot,
           name,
           type,
           configuration,
         }
-        if (!self.connectionInstances.has(assemblyName))
-          self.connectionInstances.set(assemblyName, [])
-        const assemblyConnections = self.connectionInstances.get(assemblyName)
-        if (!assemblyConnections)
-          throw new Error(`assembly ${assemblyName} not found`)
-        const length = assemblyConnections.push(connectionData)
-        return assemblyConnections[length - 1]
+        const length = self.connectionInstances.push(connectionData)
+        return self.connectionInstances[length - 1]
       },
 
       removeReferring(
@@ -265,10 +267,7 @@ export default function sessionModelFactory(
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const assemblyConnections =
-          self.connectionInstances.get(assemblyName) || []
-        const connection = assemblyConnections.find(c => c.name === name)
+        const connection = self.connectionInstances.find(c => c.name === name)
         if (connection) {
           connection.tracks.forEach((track: any) => {
             const referring = self.getReferring(track)
@@ -290,12 +289,8 @@ export default function sessionModelFactory(
 
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionInstances = self.connectionInstances.get(assemblyName)
-        if (!connectionInstances)
-          throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connectionInstances.find(c => c.name === name)
-        connectionInstances.remove(connection)
+        const connection = self.connectionInstances.find(c => c.name === name)
+        self.connectionInstances.remove(connection)
       },
 
       deleteConnection(configuration: AnyConfigurationModel) {
@@ -510,8 +505,7 @@ export default function sessionModelFactory(
       },
 
       clearConnections() {
-        self.connectionInstances.clear()
-        self.sessionConnections.clear()
+        self.connectionInstances.length = 0
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
@@ -664,6 +658,23 @@ export default function sessionModelFactory(
         ]
       },
     }))
+
+  return types.snapshotProcessor(sessionModel, {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (snapshot) {
+        // @ts-ignore
+        const { connectionInstances, ...rest } = snapshot || {}
+        // connectionInstances schema changed from object to an array, so any
+        // old connectionInstances as object is in snapshot, filter it out
+        // https://github.com/GMOD/jbrowse-components/issues/1903
+        if (isObject(connectionInstances)) {
+          return rest
+        }
+      }
+      return snapshot
+    },
+  })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

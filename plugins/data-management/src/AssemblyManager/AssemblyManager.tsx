@@ -8,6 +8,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import AddIcon from '@material-ui/icons/Add'
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
+import CloseIcon from '@material-ui/icons/Close'
 import { IconButton } from '@material-ui/core/'
 
 import AssemblyTable from './AssemblyTable'
@@ -29,6 +30,12 @@ const useStyles = makeStyles(theme => ({
     left: theme.spacing(4),
     top: theme.spacing(4),
   },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
 }))
 
 const AssemblyManager = observer(
@@ -40,7 +47,7 @@ const AssemblyManager = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rootModel: any
     open: boolean
-    onClose: Function
+    onClose: (arg: boolean) => void
   }) => {
     const classes = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
@@ -50,7 +57,7 @@ const AssemblyManager = observer(
     const showAssemblyTable = !isFormOpen && !isAssemblyBeingEdited
 
     return (
-      <Dialog open={open}>
+      <Dialog open={open} onClose={() => onClose(false)}>
         <DialogTitle className={classes.titleBox}>
           {showAssemblyTable ? 'Assembly manager' : null}
           {isFormOpen ? (
@@ -77,6 +84,13 @@ const AssemblyManager = observer(
               {returnAssemblyName(assemblyBeingEdited)}
             </>
           ) : null}
+          <IconButton
+            aria-label="close"
+            className={classes.closeButton}
+            onClick={() => onClose(false)}
+          >
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
         <DialogContent>
           <div className={classes.dialogContent}>
@@ -104,19 +118,15 @@ const AssemblyManager = observer(
               <Button
                 color="secondary"
                 variant="contained"
-                onClick={() => {
-                  onClose(false)
-                }}
+                onClick={() => onClose(false)}
               >
-                Return
+                Close
               </Button>
               <Button
                 variant="contained"
                 color="secondary"
                 startIcon={<AddIcon />}
-                onClick={() => {
-                  setFormOpen(true)
-                }}
+                onClick={() => setFormOpen(true)}
               >
                 Add new assembly
               </Button>

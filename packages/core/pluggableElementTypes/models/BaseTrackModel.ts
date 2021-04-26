@@ -38,16 +38,6 @@ export function createBaseTrackModel(
         pluginManager.pluggableMstType('display', 'stateModel'),
       ),
     })
-    .volatile(() => ({
-      DialogComponent: undefined as React.FC | undefined,
-      DialogDisplay: undefined as any,
-    }))
-    .actions(self => ({
-      setDialogComponent(dlg?: React.FC, context?: any) {
-        self.DialogComponent = dlg
-        self.DialogDisplay = context
-      },
-    }))
     .views(self => ({
       get rpcSessionId() {
         return self.configuration.trackId

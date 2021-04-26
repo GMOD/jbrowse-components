@@ -316,9 +316,12 @@ export default function SequenceFeatureDetails(props: BaseProps) {
           refName: assembly.getCanonicalRefName(refName),
         },
       })
+
       const [feat] = feats as Feature[]
       if (!feat) {
-        throw new Error('sequence not found')
+        throw new Error(
+          `sequence not found for feature with refName:${refName}`,
+        )
       }
       return feat.get('seq') as string
     }
@@ -388,7 +391,7 @@ export default function SequenceFeatureDetails(props: BaseProps) {
       </Button>
       <div data-testid="feature_sequence">
         {error ? (
-          <Typography color="error">{error}</Typography>
+          <Typography color="error">{`${error}`}</Typography>
         ) : loading ? (
           <div>Loading gene sequence...</div>
         ) : sequence ? (

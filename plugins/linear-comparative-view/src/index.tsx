@@ -30,8 +30,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   AbstractSessionModel,
   getSession,
-  getContainingTrack,
   getContainingView,
+  getContainingTrack,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
 
@@ -160,15 +160,15 @@ function getTag(f: Feature, tag: string) {
 
 function WindowSizeDlg(props: {
   display: any
+  feature: Feature
   handleClose: () => void
   track: any
 }) {
   const classes = useStyles()
-  const {
-    track,
-    display: { feature: preFeature },
-    handleClose,
-  } = props
+  const { track, feature: preFeature, handleClose } = props
+
+  // window size stored as string, because it corresponds to a textfield which
+  // is parsed as number on submit
   const [window, setWindowSize] = useState('0')
   const [error, setError] = useState<Error>()
   const windowSize = +window
@@ -624,8 +624,8 @@ export default class extends Plugin {
               label: 'Linear read vs ref',
               icon: AddIcon,
               onClick: () => {
-                const track = getContainingTrack(display)
-                track.setDialogComponent(WindowSizeDlg, {
+                getSession(display).setDialogComponent(WindowSizeDlg, {
+                  track: getContainingTrack(display),
                   feature,
                 })
               },

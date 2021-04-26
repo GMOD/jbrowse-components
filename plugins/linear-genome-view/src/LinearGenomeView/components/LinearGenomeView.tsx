@@ -1,3 +1,4 @@
+import React from 'react'
 // material ui things
 import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -5,7 +6,6 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 // misc
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React from 'react'
 
 // locals
 import { LinearGenomeViewStateModel } from '..'
@@ -34,8 +34,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const classes = useStyles()
 
-  const dialogTrack = model.tracks.find(track => track.DialogComponent)
-
   if (!initialized) {
     return null
   }
@@ -44,22 +42,6 @@ const LinearGenomeView = observer((props: { model: LGV }) => {
   }
   return (
     <div style={{ position: 'relative' }}>
-      {model.DialogComponent ? (
-        <model.DialogComponent
-          model={model}
-          handleClose={() => model.setDialogComponent(undefined)}
-        />
-      ) : null}
-
-      {dialogTrack ? (
-        <dialogTrack.DialogComponent
-          track={dialogTrack}
-          display={dialogTrack.DialogDisplay}
-          handleClose={() =>
-            dialogTrack.setDialogComponent(undefined, undefined)
-          }
-        />
-      ) : null}
       {model.isSeqDialogDisplayed ? (
         <SequenceDialog
           model={model}

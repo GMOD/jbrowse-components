@@ -3,14 +3,14 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 /* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
 
 /**
- * VCF Feature creation with lazy genotpye evaluation.
+ * VCF Feature creation with lazy genotype evaluation.
  */
 interface Samples {
   [key: string]: {
     [key: string]: { values: string[] | number[] | null }
   }
 }
-interface Breakend {
+export interface Breakend {
   MateDirection: string
   Replacement: string
   MatePosition: string
@@ -49,8 +49,10 @@ export default class VCFFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
-    if (field === 'samples') return this.variant.SAMPLES
-    return this.variant[field] || this.data[field]
+    if (field === 'samples') {
+      return this.variant.SAMPLES
+    }
+    return this.data[field] || this.variant[field]
   }
 
   set(): void {}
@@ -78,31 +80,24 @@ export default class VCFFeature implements Feature {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataFromVariant(variant: any): FeatureData {
-    const start = variant.POS - 1
-    const [SO_term, description] = this._getSOTermAndDescription(
-      variant.REF,
-      variant.ALT,
-    )
-    const isTRA =
-      variant.ALT && variant.ALT.some((f: string | Breakend) => f === '<TRA>')
+    const { REF, ALT, POS, CHROM, INFO, ID } = variant
+    const start = POS - 1
+    const [SO_term, description] = this._getSOTermAndDescription(REF, ALT)
+    const isTRA = ALT && ALT.some((f: string | Breakend) => f === '<TRA>')
     const isSymbolic =
-      variant.ALT &&
-      variant.ALT.some(
+      ALT &&
+      ALT.some(
         (f: string | Breakend) =>
           typeof f === 'string' && f.indexOf('<') !== -1,
       )
     const featureData: FeatureData = {
-      refName: variant.CHROM,
+      refName: CHROM,
       start,
-      end:
-        isSymbolic && variant.INFO.END && !isTRA
-          ? Number(variant.INFO.END[0])
-          : start + variant.REF.length,
+      end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
       description,
       type: SO_term,
-      name: variant.ID ? variant.ID[0] : undefined,
-      aliases:
-        variant.ID && variant.ID.length > 1 ? variant.ID.slice(1) : undefined,
+      name: ID ? ID[0] : undefined,
+      aliases: ID && ID.length > 1 ? variant.ID.slice(1) : undefined,
     }
 
     return featureData
@@ -137,8 +132,11 @@ export default class VCFFeature implements Feature {
       const prefixes: Set<string> = new Set()
       descriptions.forEach(desc => {
         const prefix = /(\w+? \w+? -> )(?:<)\w+(?:>)/.exec(desc)
-        if (prefix && prefix[1]) prefixes.add(prefix[1])
-        else prefixes.add(desc)
+        if (prefix && prefix[1]) {
+          prefixes.add(prefix[1])
+        } else {
+          prefixes.add(desc)
+        }
       })
       const new_descs: string[] = []
       ;[...prefixes].forEach((prefix: string) => {
@@ -192,11 +190,13 @@ export default class VCFFeature implements Feature {
     // look for a definition with an SO type for this
     let soTerm = VCFFeature._altTypeToSO[alt]
     // if no SO term but ALT is in metadata, assume sequence_variant
-    if (!soTerm && this.parser.getMetadata('ALT', alt))
+    if (!soTerm && this.parser.getMetadata('ALT', alt)) {
       soTerm = 'sequence_variant'
+    }
     if (soTerm) {
-      const description = this.parser.getMetadata('ALT', alt, 'Description')
-        ? `${alt} - ${this.parser.getMetadata('ALT', alt, 'Description')}`
+      const metaDescription = this.parser.getMetadata('ALT', alt, 'Description')
+      const description = metaDescription
+        ? `${alt} - ${metaDescription}`
         : this._makeDescriptionString(soTerm, ref, alt)
       return [soTerm, description]
     }
@@ -225,20 +225,23 @@ export default class VCFFeature implements Feature {
       // least 1% in population, and can't be sure we meet that
       return ['SNV', this._makeDescriptionString('SNV', ref, alt)]
     }
-    if (ref.length === alt.length)
-      if (ref.split('').reverse().join('') === alt)
+    if (ref.length === alt.length) {
+      if (ref.split('').reverse().join('') === alt) {
         return ['inversion', this._makeDescriptionString('inversion', ref, alt)]
-      else
-        return [
-          'substitution',
-          this._makeDescriptionString('substitution', ref, alt),
-        ]
+      }
+      return [
+        'substitution',
+        this._makeDescriptionString('substitution', ref, alt),
+      ]
+    }
 
-    if (ref.length <= alt.length)
+    if (ref.length <= alt.length) {
       return ['insertion', this._makeDescriptionString('insertion', ref, alt)]
+    }
 
-    if (ref.length > alt.length)
+    if (ref.length > alt.length) {
       return ['deletion', this._makeDescriptionString('deletion', ref, alt)]
+    }
 
     return ['indel', this._makeDescriptionString('indel', ref, alt)]
   }
@@ -255,8 +258,8 @@ export default class VCFFeature implements Feature {
   toJSON(): any {
     return {
       uniqueId: this._id,
-      ...this.data,
       ...this.variant,
+      ...this.data,
       samples: this.variant.SAMPLES,
     }
   }

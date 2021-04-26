@@ -39,8 +39,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
-      connectionInstances: types.map(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+      connectionInstances: types.array(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .volatile((/* self */) => ({
@@ -59,6 +59,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       // which config is being shown in the "About track" menu
       showAboutConfig: undefined as undefined | AnyConfigurationModel,
+
+      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get rpcManager() {
@@ -126,6 +129,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: React.FC<any>, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       setShowAboutConfig(showConfig: AnyConfigurationModel) {
         self.showAboutConfig = showConfig
       },
@@ -138,20 +145,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
         if (!connectionType) throw new Error(`unknown connection type ${type}`)
-        const assemblyName = readConfObject(configuration, 'assemblyName')
         const connectionData = {
           ...initialSnapshot,
           name,
           type,
           configuration,
         }
-        if (!self.connectionInstances.has(assemblyName))
-          self.connectionInstances.set(assemblyName, [])
-        const assemblyConnections = self.connectionInstances.get(assemblyName)
-        if (!assemblyConnections)
-          throw new Error(`assembly ${assemblyName} not found`)
-        const length = assemblyConnections.push(connectionData)
-        return assemblyConnections[length - 1]
+        const length = self.connectionInstances.push(connectionData)
+        return self.connectionInstances[length - 1]
       },
 
       removeReferring(
@@ -198,10 +199,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const assemblyConnections =
-          self.connectionInstances.get(assemblyName) || []
-        const connection = assemblyConnections.find(c => c.name === name)
+        const connection = self.connectionInstances.find(c => c.name === name)
         connection.tracks.forEach((track: any) => {
           const referring = self.getReferring(track)
           this.removeReferring(
@@ -220,12 +218,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionInstances = self.connectionInstances.get(assemblyName)
-        if (!connectionInstances)
-          throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connectionInstances.find(c => c.name === name)
-        connectionInstances.remove(connection)
+        const connection = self.connectionInstances.find(c => c.name === name)
+        self.connectionInstances.remove(connection)
       },
 
       addView(typeName: string, initialState = {}) {
@@ -293,7 +287,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       clearConnections() {
-        self.connectionInstances.clear()
+        self.connectionInstances.length = 0
       },
 
       renameCurrentSession(sessionName: string) {
@@ -340,6 +334,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
+export type SessionModel = Instance<SessionStateModel>
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // @ts-ignore

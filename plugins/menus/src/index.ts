@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -17,22 +18,18 @@ import { saveAs } from 'file-saver'
 import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
 import {
   configSchema as aboutConfigSchema,
-  ReactComponent as AboutReactComponent,
   stateModel as aboutStateModel,
 } from './AboutWidget'
 import {
   configSchema as helpConfigSchema,
-  ReactComponent as HelpReactComponent,
   stateModel as helpStateModel,
 } from './HelpWidget'
 import {
   configSchema as importSessionConfigSchema,
-  ReactComponent as ImportSessionReactComponent,
   stateModel as importSessionStateModel,
 } from './ImportSessionWidget'
 import {
   configSchema as sessionManagerConfigSchema,
-  ReactComponent as SessionManagerReactComponent,
   stateModel as sessionManagerStateModel,
 } from './SessionManager'
 
@@ -46,7 +43,9 @@ export default class extends Plugin {
         heading: 'About',
         configSchema: aboutConfigSchema,
         stateModel: aboutStateModel,
-        ReactComponent: AboutReactComponent,
+        ReactComponent: lazy(
+          () => import('./AboutWidget/components/AboutWidget'),
+        ),
       })
     })
 
@@ -56,7 +55,9 @@ export default class extends Plugin {
         heading: 'Help',
         configSchema: helpConfigSchema,
         stateModel: helpStateModel,
-        ReactComponent: HelpReactComponent,
+        ReactComponent: lazy(
+          () => import('./HelpWidget/components/HelpWidget'),
+        ),
       })
     })
 
@@ -66,7 +67,9 @@ export default class extends Plugin {
         heading: 'Import session',
         configSchema: importSessionConfigSchema,
         stateModel: importSessionStateModel,
-        ReactComponent: ImportSessionReactComponent,
+        ReactComponent: lazy(
+          () => import('./ImportSessionWidget/components/ImportSessionWidget'),
+        ),
       })
     })
 
@@ -76,7 +79,9 @@ export default class extends Plugin {
         heading: 'Sessions',
         configSchema: sessionManagerConfigSchema,
         stateModel: sessionManagerStateModel,
-        ReactComponent: SessionManagerReactComponent,
+        ReactComponent: lazy(
+          () => import('./SessionManager/components/SessionManager'),
+        ),
       })
     })
   }

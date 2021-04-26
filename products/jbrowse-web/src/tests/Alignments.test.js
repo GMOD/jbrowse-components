@@ -125,6 +125,8 @@ describe('alignments track', () => {
 
     const pileupCanvas = await findAllByTestId1(
       'prerendered_canvas_softclipped',
+      {},
+      { timeout: 10000 },
     )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
@@ -146,7 +148,11 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    await findByTestId(
+      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+      {},
+      { timeout: 10000 },
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu
@@ -188,9 +194,7 @@ describe('alignments track', () => {
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
-    const trackMenu = await findByTestId('track_menu_icon')
-
-    fireEvent.click(trackMenu)
+    fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Color scheme'))
     fireEvent.click(await findByText('Strand'))
 

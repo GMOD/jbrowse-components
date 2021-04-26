@@ -473,7 +473,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_bigwig_nonexist",
       "name": "wiggle_track 404",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -486,7 +486,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -499,7 +499,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -519,7 +519,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_density",
       "name": "wiggle_track density",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -539,7 +539,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_density_altname",
       "name": "wiggle_track density (altname)",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",

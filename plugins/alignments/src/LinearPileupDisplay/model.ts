@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   ConfigurationReference,
   readConfObject,
@@ -11,7 +12,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
-  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -35,11 +35,12 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import ColorByTagDlg from './components/ColorByTag'
-import FilterByTagDlg from './components/FilterByTag'
-import SortByTagDlg from './components/SortByTag'
-import SetFeatureHeightDlg from './components/SetFeatureHeight'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+
+const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
+const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
+const SortByTagDlg = lazy(() => import('./components/SortByTag'))
+const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
+const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -456,10 +457,9 @@ const stateModelFactory = (
                 {
                   label: 'Sort by tag...',
                   onClick: () =>
-                    getContainingTrack(self).setDialogComponent(
-                      SortByTagDlg,
-                      self,
-                    ),
+                    getSession(self).setDialogComponent(SortByTagDlg, {
+                      model: self,
+                    }),
                 },
                 {
                   label: 'Clear sort',
@@ -528,10 +528,9 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getContainingTrack(self).setDialogComponent(
-                      ColorByTagDlg,
-                      self,
-                    )
+                    getSession(self).setDialogComponent(ColorByTagDlg, {
+                      model: self,
+                    })
                   },
                 },
               ],
@@ -540,28 +539,25 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  FilterByTagDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(FilterByTagDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set feature height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetFeatureHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetMaxHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetMaxHeightDlg, {
+                  model: self,
+                })
               },
             },
             {

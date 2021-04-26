@@ -299,8 +299,10 @@ test('wrong assembly', async () => {
   view.showTrack('volvox_wrong_assembly')
   await findAllByText(
     'Error: region assembly (volvox) does not match track assemblies (wombat)',
+    {},
+    { timeout: 10000 },
   )
-})
+}, 15000)
 
 test('looks at about this track dialog', async () => {
   const pluginManager = getPluginManager()

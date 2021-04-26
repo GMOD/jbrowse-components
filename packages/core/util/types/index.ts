@@ -59,6 +59,16 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeAssembly?: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
+  connections: AnyConfigurationModel[]
+  deleteConnection?: Function
+  sessionConnections?: AnyConfigurationModel[]
+  connectionInstances?: { name: string }[]
+  makeConnection?: Function
+  adminMode?: boolean
+  showWidget?: Function
+  addWidget?: Function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDialogComponent: (dlg: React.FC<any>, props?: any) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
