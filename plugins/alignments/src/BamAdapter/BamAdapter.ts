@@ -73,29 +73,36 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     // conditional
     const { statusCallback = () => {} } = opts || {}
     if (!this.setupP) {
-      this.setupP = this.configure().then(async ({ bam }) => {
-        statusCallback('Downloading index')
-        const samHeader = await bam.getHeader(opts)
+      this.setupP = this.configure()
+        .then(async ({ bam }) => {
+          statusCallback('Downloading index')
+          const samHeader = await bam.getHeader(opts)
 
-        // use the @SQ lines in the header to figure out the
-        // mapping between ref ref ID numbers and names
-        const idToName: string[] = []
-        const nameToId: Record<string, number> = {}
-        const sqLines = samHeader.filter((l: { tag: string }) => l.tag === 'SQ')
-        sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
-          sqLine.data.forEach((item: HeaderLine) => {
-            if (item.tag === 'SN') {
-              // this is the ref name
-              const refName = item.value
-              nameToId[refName] = refId
-              idToName[refId] = refName
-            }
+          // use the @SQ lines in the header to figure out the
+          // mapping between ref ref ID numbers and names
+          const idToName: string[] = []
+          const nameToId: Record<string, number> = {}
+          const sqLines = samHeader.filter(
+            (l: { tag: string }) => l.tag === 'SQ',
+          )
+          sqLines.forEach((sqLine: { data: HeaderLine[] }, refId: number) => {
+            sqLine.data.forEach((item: HeaderLine) => {
+              if (item.tag === 'SN') {
+                // this is the ref name
+                const refName = item.value
+                nameToId[refName] = refId
+                idToName[refId] = refName
+              }
+            })
           })
+          statusCallback('')
+          this.samHeader = { idToName, nameToId }
+          return this.samHeader
         })
-        statusCallback('')
-        this.samHeader = { idToName, nameToId }
-        return this.samHeader
-      })
+        .catch(e => {
+          this.setupP = undefined
+          throw e
+        })
     }
     return this.setupP
   }

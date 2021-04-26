@@ -107,8 +107,6 @@ describe('reload tests', () => {
     })
   }, 10000)
   it('reloads alignments track (BAI 404)', async () => {
-    console.error = jest.fn()
-
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
@@ -142,8 +140,6 @@ describe('reload tests', () => {
     })
   }, 10000)
   it('reloads alignments track (BAM 404)', async () => {
-    console.error = jest.fn()
-
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     fetch.mockResponse(async request => {
