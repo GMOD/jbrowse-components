@@ -65,7 +65,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   rpcManager: RpcManager
   assemblyNames: string[]
   assemblies: AnyConfigurationModel[]
-  sessionPlugins: JBrowsePlugin[]
   selection?: unknown
   duplicateCurrentSession?(): void
   notify(message: string, level?: NotificationLevel): void
@@ -73,9 +72,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   version: string
   getTrackActionMenuItems?: Function
   addAssembly?: Function
-  addSessionPlugin: Function
   removeAssembly?: Function
-  removeSessionPlugin: Function
   showAboutConfig?: AnyConfigurationModel
   setShowAboutConfig?: Function
 }
@@ -114,6 +111,17 @@ export function isSessionModelWithWidgets(
   thing: unknown,
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
+}
+
+export interface SessionWithSessionPlugins extends AbstractSessionModel {
+  sessionPlugins: JBrowsePlugin[]
+  addSessionPlugin: Function
+  removeSessionPlugin: Function
+}
+export function isSessionWithSessionPlugins(
+  thing: unknown,
+): thing is SessionWithSessionPlugins {
+  return isSessionModel(thing) && 'sessionPlugins' in thing
 }
 
 /** abstract interface for a session that manages a global selection */

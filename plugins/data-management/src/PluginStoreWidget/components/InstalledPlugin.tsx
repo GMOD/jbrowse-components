@@ -17,7 +17,7 @@ import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
 
 import { getSession } from '@jbrowse/core/util'
 import type { BasePlugin } from '@jbrowse/core/util/types'
-
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({
@@ -37,7 +37,6 @@ function InstalledPlugin({
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
-  adminMode: boolean
 }) {
   const classes = useStyles()
 
@@ -89,7 +88,7 @@ function InstalledPlugin({
                     window.setTimeout(() => {
                       if (adminMode) {
                         jbrowse.removePlugin(plugin.name)
-                      } else {
+                      } else if (isSessionWithSessionPlugins(session)) {
                         session.removeSessionPlugin(plugin.name)
                       }
                     }, 500)

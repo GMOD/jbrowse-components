@@ -17,6 +17,7 @@ import CheckIcon from '@material-ui/icons/Check'
 
 import { getSession } from '@jbrowse/core/util'
 import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 
 import type { PluginStoreModel } from '../model'
 
@@ -87,8 +88,8 @@ function PluginCard({
           onClick={() => {
             if (adminMode) {
               jbrowse.addPlugin({ name: plugin.name, url: plugin.url })
-            } else {
-              session.addSessionPlugin(plugin)
+            } else if (isSessionWithSessionPlugins(session)) {
+              session.removeSessionPlugin(plugin.name)
             }
             setTempDisabled(true)
           }}
