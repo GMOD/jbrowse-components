@@ -12,13 +12,9 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
-interface HeaderKeyVal {
-  tag: string
-  value: string
-}
 interface HeaderLine {
   tag: string
-  value: any
+  value: any // eslint-disable-line @typescript-eslint/no-explicit-any
   data: HeaderLine[]
 }
 interface Header {
