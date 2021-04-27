@@ -17,6 +17,7 @@ import { observable } from 'mobx'
 import {
   getMembers,
   getParent,
+  getRoot,
   getSnapshot,
   getType,
   IAnyStateTreeNode,
@@ -188,14 +189,12 @@ export default function sessionModelFactory(
         self.sessionAssemblies.push(assemblyConfig)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
+        const rootModel = getRoot(self)
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        // wait for autorun on rootModel to update session storage
-        window.setTimeout(() => {
-          window.location.reload()
-        }, 1000)
+        rootModel.setPluginsUpdated(true)
       },
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(

@@ -5,6 +5,7 @@ import {
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
+  getRoot,
   getSnapshot,
   resolveIdentifier,
   types,
@@ -162,14 +163,10 @@ export default function JBrowseWeb(
         }
         self.defaultSession = newDefault
       },
-      addPlugin(plugin, pluginStore = true) {
+      addPlugin(plugin) {
+        const rootModel = getRoot(self)
         self.plugins = [...self.plugins, plugin]
-        if (pluginStore) {
-          // wait for autorun on rootModel to update session storage
-          window.setTimeout(() => {
-            window.location.reload()
-          }, 1000)
-        }
+        rootModel.setPluginsUpdated(true)
       },
       removePlugin(pluginName) {
         self.plugins = self.plugins.filter(

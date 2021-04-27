@@ -122,6 +122,7 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
+      pluginsUpdated: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
@@ -207,6 +208,10 @@ export default function RootModel(
                     },
                   }),
                 )
+                if (self.pluginsUpdated) {
+                  this.setPluginsUpdated(false)
+                  window.location.reload()
+                }
               }
             },
             { delay: 400 },
@@ -226,12 +231,18 @@ export default function RootModel(
             throw error
           }
         }
+        if (oldSession) {
+          this.setPluginsUpdated(true)
+        }
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
       setDefaultSessionEditing(flag: boolean) {
         self.isDefaultSessionEditing = flag
+      },
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
       },
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
