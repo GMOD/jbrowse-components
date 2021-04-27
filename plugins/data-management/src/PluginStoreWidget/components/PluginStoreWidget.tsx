@@ -8,6 +8,7 @@ import Accordion from '@material-ui/core/Accordion'
 import AccordionSummary from '@material-ui/core/AccordionSummary'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
+import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
@@ -18,6 +19,7 @@ import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
 
 import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
+import CustomPluginForm from './CustomPluginForm'
 
 import { PluginStoreModel } from '../model'
 
@@ -39,12 +41,17 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignContent: 'center',
   },
+  customPluginButton: {
+    margin: '0.5em',
+    display: 'flex',
+    justifyContent: 'center',
+  },
 }))
 
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const classes = useStyles()
-
   const [pluginArray, setPluginArray] = useState([])
+  const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)
 
   useEffect(() => {
     if (pluginArray.length === 0) {
@@ -75,13 +82,30 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   return (
     <div>
       {adminMode && (
-        <div className={classes.adminBadge}>
-          <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
-          <Typography>
-            You are using the <code>admin-server</code>. Any changes you make
-            will be saved to your configuration file.
-          </Typography>
-        </div>
+        <>
+          <div className={classes.adminBadge}>
+            <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
+            <Typography>
+              You are using the <code>admin-server</code>. Any changes you make
+              will be saved to your configuration file. You also have the
+              ability to add custom plugins that are not in the store.
+            </Typography>
+          </div>
+          <div className={classes.customPluginButton}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setCustomPluginFormOpen(true)}
+            >
+              Add custom plugin
+            </Button>
+          </div>
+          <CustomPluginForm
+            open={customPluginFormOpen}
+            onClose={setCustomPluginFormOpen}
+            model={model}
+          />
+        </>
       )}
       <TextField
         className={classes.searchBox}
