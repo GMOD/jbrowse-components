@@ -72,6 +72,7 @@ export interface RenderArgsDeserializedWithFeaturesAndLayout
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
   layout: BaseLayout<Feature>
+  regionSequence?: string
 }
 
 interface LayoutRecord {
@@ -377,6 +378,10 @@ export default class PileupRenderer extends BoxRendererType {
     const mm: string = getTagAlt(feature, 'MM', 'Mm') || ''
     const ml: number[] | string = getTagAlt(feature, 'ML', 'Ml') || []
 
+    if (!regionSequence) {
+      throw new Error('region sequence required for methylation')
+    }
+
     //     const probabilities = ml
     //       ? (typeof ml === 'string' ? ml.split(',').map(e => +e) : ml).map(
     //           e => e / 255,
@@ -424,22 +429,6 @@ export default class PileupRenderer extends BoxRendererType {
         }
       }
     }
-    // const px = leftPx + readPos * width
-    // const l1 = regionSequence[readPos]
-    // const l2 = regionSequence[readPos + 1]
-    // if (px > leftPx && px < rightPx) {
-    //   const prob = probabilities[probIndex++]
-    //   if (prob > 0.9) {
-    //     ctx.fillStyle = 'red'
-    //     ctx.fillRect(px, topPx, width + 0.5, heightPx)
-    //   } else {
-    //     ctx.fillStyle = 'blue'
-    //     ctx.fillRect(px, topPx, width + 0.5, heightPx)
-    //   }
-    // }
-    // }
-    // }
-    // })
   }
 
   drawRect(
@@ -882,10 +871,10 @@ export default class PileupRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
 
     const seqAdapter = renderProps.dataAdapter.sequenceAdapter
-
+    const { refName, start, end } = renderProps.regions[0]
     const [feat] = seqAdapter
       ? await seqAdapter
-          .getFeatures(renderProps.regions[0])
+          .getFeatures({ refName, start, end: end + 1 })
           .pipe(toArray())
           .toPromise()
       : []

@@ -109,66 +109,72 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const snpinfo = feature.get('snpinfo')
       const w = Math.max(rightPx - leftPx + 0.3, 1)
-      Object.entries(snpinfo.cov).reduce((curr, [base, score]) => {
-        ctx.fillStyle = colorForBase[base] || 'red'
-        ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
-        return curr + score
-      }, 0)
+      Object.entries(snpinfo.cov)
+        .sort(([a], [b]) => {
+          if (a < b) return -1
+          if (a > b) return 1
+          return 0
+        })
+        .reduce((curr, [base, score]) => {
+          ctx.fillStyle = colorForBase[base] || 'red'
+          ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
+          return curr + score
+        }, 0)
 
-      // const interbaseEvents = infoArray.filter(
-      //   ({ base }) =>
-      //     base === 'insertion' || base === 'softclip' || base === 'hardclip',
-      // )
+      //       const interbaseEvents = infoArray.filter(
+      //         ({ base }) =>
+      //           base === 'insertion' || base === 'softclip' || base === 'hardclip',
+      //       )
 
-      // const indicatorHeight = 4.5
-      // if (drawInterbaseCounts) {
-      //   interbaseEvents.reduce((curr, info) => {
-      //     const { score, base } = info
-      //     ctx.fillStyle = colorForBase[base]
-      //     ctx.fillRect(
-      //       leftPx - 0.6,
-      //       indicatorHeight + snpToHeight(curr),
-      //       1.2,
-      //       snpToHeight(score),
-      //     )
-      //     return curr + info.score
-      //   }, 0)
-      // }
+      //       const indicatorHeight = 4.5
+      //       if (drawInterbaseCounts) {
+      //         interbaseEvents.reduce((curr, info) => {
+      //           const { score, base } = info
+      //           ctx.fillStyle = colorForBase[base]
+      //           ctx.fillRect(
+      //             leftPx - 0.6,
+      //             indicatorHeight + snpToHeight(curr),
+      //             1.2,
+      //             snpToHeight(score),
+      //           )
+      //           return curr + info.score
+      //         }, 0)
+      //       }
 
-      // if (drawIndicators) {
-      //   let accum = 0
-      //   let max = 0
-      //   let maxBase = ''
-      //   interbaseEvents.forEach(({ score, base }) => {
-      //     accum += score
-      //     if (score > max) {
-      //       max = score
-      //       maxBase = base
+      //       if (drawIndicators) {
+      //         let accum = 0
+      //         let max = 0
+      //         let maxBase = ''
+      //         interbaseEvents.forEach(({ score, base }) => {
+      //           accum += score
+      //           if (score > max) {
+      //             max = score
+      //             maxBase = base
+      //           }
+      //         })
+
+      //         // avoid drawing a bunch of indicators if coverage is very low e.g.
+      //         // less than 7
+      //         if (accum > totalScore * indicatorThreshold && totalScore > 7) {
+      //           ctx.fillStyle = colorForBase[maxBase]
+      //           ctx.beginPath()
+      //           ctx.moveTo(leftPx - 3, 0)
+      //           ctx.lineTo(leftPx + 3, 0)
+      //           ctx.lineTo(leftPx, indicatorHeight)
+      //           ctx.fill()
+      //         }
+      //       }
       //     }
-      //   })
 
-      //   // avoid drawing a bunch of indicators if coverage is very low e.g.
-      //   // less than 7
-      //   if (accum > totalScore * indicatorThreshold && totalScore > 7) {
-      //     ctx.fillStyle = colorForBase[maxBase]
-      //     ctx.beginPath()
-      //     ctx.moveTo(leftPx - 3, 0)
-      //     ctx.lineTo(leftPx + 3, 0)
-      //     ctx.lineTo(leftPx, indicatorHeight)
-      //     ctx.fill()
-      //   }
-      // }
-    }
-
-    if (displayCrossHatches) {
-      ctx.lineWidth = 1
-      ctx.strokeStyle = 'rgba(140,140,140,0.8)'
-      values.forEach(tick => {
-        ctx.beginPath()
-        ctx.moveTo(0, Math.round(toY(tick)))
-        ctx.lineTo(width, Math.round(toY(tick)))
-        ctx.stroke()
-      })
+      //     if (displayCrossHatches) {
+      //       ctx.lineWidth = 1
+      //       ctx.strokeStyle = 'rgba(140,140,140,0.8)'
+      //       values.forEach(tick => {
+      //         ctx.beginPath()
+      //         ctx.moveTo(0, Math.round(toY(tick)))
+      //         ctx.lineTo(width, Math.round(toY(tick)))
+      //         ctx.stroke()
+      //       })
     }
   }
 }
