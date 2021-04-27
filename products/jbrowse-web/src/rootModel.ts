@@ -210,6 +210,7 @@ export default function RootModel(
                 )
                 if (self.pluginsUpdated) {
                   this.setPluginsUpdated(false)
+                  // reload app to get a fresh plugin manager
                   window.location.reload()
                 }
               }
