@@ -183,11 +183,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   // depends on setup being called before the BAM constructor
   refIdToName(refId: number): string | undefined {
-    // @ts-ignore
-    if (this.samHeader.idToName) {
-      // @ts-ignore
-      return this.samHeader.idToName[refId]
-    }
-    return undefined
+    return this.samHeader?.idToName[refId]
   }
 }
