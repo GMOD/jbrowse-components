@@ -164,14 +164,16 @@ export default function JBrowseWeb(
         self.defaultSession = newDefault
       },
       addPlugin(plugin) {
-        const rootModel = getRoot(self)
         self.plugins = [...self.plugins, plugin]
+        const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
       removePlugin(pluginName) {
         self.plugins = self.plugins.filter(
           plugin => `${plugin.name}Plugin` !== pluginName,
         )
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
       },
     }))
     .views(self => ({

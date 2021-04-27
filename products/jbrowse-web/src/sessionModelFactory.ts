@@ -189,11 +189,11 @@ export default function sessionModelFactory(
         self.sessionAssemblies.push(assemblyConfig)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
-        const rootModel = getRoot(self)
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
+        const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
       },
       removeAssembly(assemblyName: string) {
@@ -211,6 +211,8 @@ export default function sessionModelFactory(
         if (index !== -1) {
           self.sessionPlugins.splice(index, 1)
         }
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
       },
       makeConnection(
         configuration: AnyConfigurationModel,
