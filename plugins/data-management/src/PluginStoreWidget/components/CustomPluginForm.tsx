@@ -55,8 +55,6 @@ function CustomPluginForm({
     jbrowse.addPlugin({ name: formInput.name, url: formInput.url })
   }
 
-  console.log(formInput)
-
   return (
     <Dialog open={open} onClose={() => onClose(false)}>
       <DialogTitle>

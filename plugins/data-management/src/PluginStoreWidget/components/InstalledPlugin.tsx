@@ -6,14 +6,14 @@ import { getSnapshot, getParent } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
 import ListItem from '@material-ui/core/ListItem'
 import Typography from '@material-ui/core/Typography'
-import Link from '@material-ui/core/Link'
 import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Button from '@material-ui/core/Button'
+import Tooltip from '@material-ui/core/Tooltip'
 
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
+import LockIcon from '@material-ui/icons/Lock'
 
 import { getSession } from '@jbrowse/core/util'
 import type { BasePlugin } from '@jbrowse/core/util/types'
@@ -30,6 +30,17 @@ const useStyles = makeStyles(() => ({
     margin: 15,
   },
 }))
+
+function LockedPlugin() {
+  return (
+    <Tooltip
+      style={{ marginRight: '0.5rem' }}
+      title="This plugin was installed by an admin. It cannot be removed."
+    >
+      <LockIcon />
+    </Tooltip>
+  )
+}
 
 function InstalledPlugin({
   plugin,
@@ -55,9 +66,13 @@ function InstalledPlugin({
   return (
     <>
       <ListItem key={plugin.name}>
-        <IconButton aria-label="remove" onClick={() => setDialogOpen(true)}>
-          <CloseIcon />
-        </IconButton>
+        {adminMode || isSessionPlugin ? (
+          <IconButton aria-label="remove" onClick={() => setDialogOpen(true)}>
+            <CloseIcon />
+          </IconButton>
+        ) : (
+          <LockedPlugin />
+        )}
         <Typography>{plugin.name}</Typography>
       </ListItem>
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
@@ -70,58 +85,36 @@ function InstalledPlugin({
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-
         <div className={classes.dialogContainer}>
-          {adminMode || isSessionPlugin ? (
-            <>
-              <Typography>
-                Please confirm that you want to remove {plugin.name}:
-              </Typography>
-              <br />
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    setDialogOpen(false)
-                    // avoid showing runtime plugin warning
-                    window.setTimeout(() => {
-                      if (adminMode) {
-                        jbrowse.removePlugin(plugin.name)
-                      } else if (isSessionWithSessionPlugins(session)) {
-                        session.removeSessionPlugin(plugin.name)
-                      }
-                    }, 500)
-                    // wait for session autorun to handle removing session
-                    window.setTimeout(() => {
-                      window.location.reload()
-                    }, 1000)
-                  }}
-                >
-                  Confirm
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <ErrorOutlineIcon />
-              <Typography>
-                This plugin was specified as a runtime plugin in your
-                configuration file. Runtime plugins cannot be removed unless you
-                are using the admin server. You can either manually remove the
-                plugin from your configuration file or learn more about using
-                the admin server{' '}
-                <Link
-                  href="https://jbrowse.org/jb2/docs/quickstart_gui#starting-jbrowse-2-admin-server"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  here
-                </Link>
-                .
-              </Typography>
-            </>
-          )}
+          <>
+            <Typography>
+              Please confirm that you want to remove {plugin.name}:
+            </Typography>
+            <br />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  setDialogOpen(false)
+                  // avoid showing runtime plugin warning
+                  window.setTimeout(() => {
+                    if (adminMode) {
+                      jbrowse.removePlugin(plugin.name)
+                    } else if (isSessionWithSessionPlugins(session)) {
+                      session.removeSessionPlugin(plugin.name)
+                    }
+                  }, 500)
+                  // wait for session autorun to handle removing session
+                  window.setTimeout(() => {
+                    window.location.reload()
+                  }, 1000)
+                }}
+              >
+                Confirm
+              </Button>
+            </div>
+          </>
         </div>
       </Dialog>
     </>
