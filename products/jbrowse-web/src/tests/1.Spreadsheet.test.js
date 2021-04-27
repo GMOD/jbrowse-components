@@ -53,7 +53,7 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  fireEvent.click(await findByText('ctgA:276..277'))
+  // fireEvent.click(await findByText('ctgA:276..277'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
 
@@ -77,6 +77,6 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  fireEvent.click(await findByText('ctgA:1299..9000'))
+  // fireEvent.click(await findByText('ctgA:1299..9000'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
