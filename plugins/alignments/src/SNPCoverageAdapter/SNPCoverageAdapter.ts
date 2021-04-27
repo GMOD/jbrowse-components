@@ -19,6 +19,10 @@ import {
   getModificationPositions,
 } from '../BamAdapter/MismatchParser'
 
+interface SNPCoverageOptions extends BaseOptions {
+  filters?: SerializableFilterChain
+}
+
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   private subadapter: BaseFeatureDataAdapter
 
@@ -39,6 +43,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     if (!sequenceAdapter) {
       throw new Error('failed to initialize adapter, no sequence adapter')
     }
+
     if (!dataAdapter) {
       throw new Error('failed to initialize adapter, no subadapter')
     }
@@ -46,10 +51,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     this.sequenceAdapter = sequenceAdapter as BaseFeatureDataAdapter
   }
 
-  getFeatures(
-    region: Region,
-    opts: BaseOptions & { filters?: SerializableFilterChain } = {},
-  ) {
+  getFeatures(region: Region, opts: SNPCoverageOptions) {
     return ObservableCreate<Feature>(async observer => {
       let stream = this.subadapter.getFeatures(region, opts)
 
@@ -59,7 +61,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       }
 
       const bins = await this.generateCoverageBins(stream, region, opts)
-      console.log({ bins })
 
       bins.forEach((bin, index) => {
         observer.next(
@@ -108,23 +109,29 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       cov: {},
       noncov: {},
     }))
+    const { refName, start, end } = region
+
+    // request an extra +1 on the end to get CpG crossing region boundary
     const [feat] = await this.sequenceAdapter
-      .getFeatures(region)
+      .getFeatures({ refName, start, end: end + 1 })
       .pipe(toArray())
       .toPromise()
-    const regionSeq = feat.get('seq')
+    const regionSeq = feat?.get('seq')
+
+    const ii = 0
 
     return features
       .pipe(
         reduce((bins, feature) => {
-          const cigarOps = parseCigar(feature.get('CIGAR'))
+          const cigar = feature.get('CIGAR')
           const fstart = feature.get('start')
           const fend = feature.get('end')
+          const cigarOps = parseCigar(cigar)
 
           for (let j = fstart; j < fend; j++) {
-            const pos = j - region.start
-            const bin = bins[pos]
-            if (pos >= 0 && pos < bins.length) {
+            const i = j - region.start
+            if (i >= 0 && i < bins.length) {
+              const bin = bins[i]
               bin.total++
               bin.ref++
             }
@@ -138,16 +145,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               const mod = `mod_${type}`
               for (const pos of getNextRefPos(cigarOps, positions)) {
                 const epos = pos + fstart - region.start
-
-                console.log({ epos })
-                const bin = bins[epos]
                 if (epos >= 0 && epos < bins.length) {
+                  const bin = bins[epos]
                   bin.ref--
                   if (!bin.cov[mod]) {
-                    bin.cov[mod] = 1
-                  } else {
-                    bin.cov[mod]++
+                    bin.cov[mod] = 0
                   }
+                  bin.cov[mod]++
                 }
               }
             })
@@ -155,6 +159,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             const seq = feature.get('seq')
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
             const methBins = new Array(region.end - region.start).fill(0)
+
             getModificationPositions(mm, seq).forEach(({ type, positions }) => {
               // we are processing methylation
               if (type === 'm') {
@@ -167,33 +172,34 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               }
             })
 
-            console.log(bins.length, regionSeq.length)
-            for (let i = 0; i < regionSeq.length; i++) {
-              const l1 = regionSeq[i]
-              const l2 = regionSeq[i + 1]
-              const bin = bins[i]
-              // color
-              if (l1 === 'C' && l2 === 'G') {
-                if (methBins[i]) {
-                  // bin.ref--
+            for (let j = fstart; j < fend; j++) {
+              const i = j - region.start
+              if (i >= 0 && i < bins.length) {
+                const l2 = regionSeq[i + 1]
+                const l1 = regionSeq[i]
+                const bin = bins[i]
+                // color
+                if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
+                  if (methBins[i]) {
+                    bin.ref--
 
-                  if (!bin.cov.meth) {
-                    bin.cov.meth = 1
-                  } else {
+                    if (!bin.cov.meth) {
+                      bin.cov.meth = 0
+                    }
                     bin.cov.meth++
-                  }
-                } else {
-                  // bin.ref--
-
-                  if (!bin.cov.unmeth) {
-                    bin.cov.unmeth = 1
                   } else {
+                    bin.ref--
+
+                    if (!bin.cov.unmeth) {
+                      bin.cov.unmeth = 0
+                    }
                     bin.cov.unmeth++
                   }
                 }
               }
             }
           }
+
           return bins
         }, initBins),
       )

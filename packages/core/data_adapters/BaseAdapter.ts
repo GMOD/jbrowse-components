@@ -207,10 +207,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
 
   public async getRegionStats(region: Region, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
-
-    const res = await scoresToStats(region, feats)
-    console.log({ res })
-    return res
+    return scoresToStats(region, feats)
   }
 
   public async getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
