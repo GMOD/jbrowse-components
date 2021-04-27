@@ -322,7 +322,7 @@ export function getModificationPositions(mm: string, seq: string) {
       const [, base, strand, type] = basemod.match(/([A-Z])([-+])([^,]+)/)
       if (strand === '-') {
         console.warn('unsupported negative strand modifications')
-        return []
+        return {}
       }
 
       let i = 0

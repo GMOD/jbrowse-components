@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { toArray } from 'rxjs/operators'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -120,8 +121,8 @@ function getTagAlt(feature: Feature, tag: string, alt: string) {
 }
 
 export default class PileupRenderer extends BoxRendererType {
-  // get width and height of chars the height is an approximation: width
-  // letter M is approximately the height
+  // get width and height of chars the height is an approximation: width letter
+  // M is approximately the height
   getCharWidthHeight(ctx: CanvasRenderingContext2D) {
     const charWidth = ctx.measureText('A').width
     const charHeight = ctx.measureText('M').width
@@ -139,7 +140,7 @@ export default class PileupRenderer extends BoxRendererType {
     let expansionBefore = 0
     let expansionAfter = 0
     const mismatches: Mismatch[] = feature.get('mismatches')
-    const seq = feature.get('seq')
+    const seq: string = feature.get('seq')
 
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip && seq) {
@@ -274,8 +275,8 @@ export default class PileupRenderer extends BoxRendererType {
     bpPerPx: number,
   ) {
     const { feature, topPx, heightPx } = feat
-    const qual = feature.get('qual') as string
-    const scores = (qual || '').split(' ').map(val => +val)
+    const qual: string = feature.get('qual') || ''
+    const scores = qual.split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
     const [leftPx] = bpSpanPx(
@@ -357,6 +358,88 @@ export default class PileupRenderer extends BoxRendererType {
         }
       }
     })
+  }
+
+  // Color by methylation is slightly modified version of color by
+  // modifications
+  //
+  colorByMethylation(
+    ctx: CanvasRenderingContext2D,
+    layoutFeature: LayoutFeature,
+    _config: AnyConfigurationModel,
+    region: Region,
+    bpPerPx: number,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
+  ) {
+    const { regionSequence } = props
+    const { feature, topPx, heightPx } = layoutFeature
+
+    const mm: string = getTagAlt(feature, 'MM', 'Mm') || ''
+    const ml: number[] | string = getTagAlt(feature, 'ML', 'Ml') || []
+
+    //     const probabilities = ml
+    //       ? (typeof ml === 'string' ? ml.split(',').map(e => +e) : ml).map(
+    //           e => e / 255,
+    //         )
+    //       : (getTagAlt(feature, 'MP', 'Mp') as string)
+    //           .split('')
+    //           .map(s => s.charCodeAt(0) - 33)
+    //           .map(elt => Math.min(1, elt / 50))
+
+    // const colors = ['red', 'green', 'blue', 'purple', 'brown']
+    const cigar = feature.get('CIGAR')
+    const fstart = feature.get('start')
+    const fend = feature.get('end')
+    const seq = feature.get('seq')
+    const cigarOps = parseCigar(cigar)
+    const width = 1 / bpPerPx
+    const [leftPx] = bpSpanPx(region.start, region.end, region, bpPerPx)
+
+    const methBins = new Array(region.end - region.start).fill(0)
+    getModificationPositions(mm, seq).forEach(({ type, positions }) => {
+      if (type === 'm' && positions) {
+        for (const pos of getNextRefPos(cigarOps, positions)) {
+          const epos = pos + fstart - region.start
+          if (epos >= 0 && epos < methBins.length) {
+            methBins[epos] = 1
+          }
+        }
+      }
+    })
+
+    for (let j = fstart; j < fend; j++) {
+      const i = j - region.start
+      if (i >= 0 && i < methBins.length) {
+        const l2 = regionSequence[i + 1]
+        const l1 = regionSequence[i]
+        // color
+        if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
+          const px = leftPx + i * width
+          if (methBins[i]) {
+            ctx.fillStyle = 'red'
+          } else {
+            ctx.fillStyle = 'blue'
+          }
+          ctx.fillRect(px, topPx, width + 0.5, heightPx)
+        }
+      }
+    }
+    // const px = leftPx + readPos * width
+    // const l1 = regionSequence[readPos]
+    // const l2 = regionSequence[readPos + 1]
+    // if (px > leftPx && px < rightPx) {
+    //   const prob = probabilities[probIndex++]
+    //   if (prob > 0.9) {
+    //     ctx.fillStyle = 'red'
+    //     ctx.fillRect(px, topPx, width + 0.5, heightPx)
+    //   } else {
+    //     ctx.fillStyle = 'blue'
+    //     ctx.fillRect(px, topPx, width + 0.5, heightPx)
+    //   }
+    // }
+    // }
+    // }
+    // })
   }
 
   drawRect(
@@ -486,6 +569,10 @@ export default class PileupRenderer extends BoxRendererType {
 
       case 'modifications':
         this.colorByModifications(ctx, feat, config, region, bpPerPx)
+        break
+
+      case 'methylation':
+        this.colorByMethylation(ctx, feat, config, region, bpPerPx, props)
         break
     }
   }
@@ -768,11 +855,14 @@ export default class PileupRenderer extends BoxRendererType {
       const { feature, topPx, heightPx } = feat
 
       ctx.fillStyle = readConfObject(config, 'color', { feature })
+      const drawMismatches = (type?: string) => {
+        return !['methylation', 'modifications'].includes(type || '')
+      }
       this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
       this.drawMismatches(ctx, feat, props, theme, colorForBase, {
         mismatchAlpha,
-        drawSNPs: colorBy?.type !== 'modifications',
-        drawIndels: colorBy?.type !== 'modifications',
+        drawSNPs: drawMismatches(colorBy?.type),
+        drawIndels: drawMismatches(colorBy?.type),
       })
       if (showSoftClip) {
         this.drawSoftClipping(ctx, feat, props, config, theme)
@@ -790,13 +880,28 @@ export default class PileupRenderer extends BoxRendererType {
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
+
+    const seqAdapter = renderProps.dataAdapter.sequenceAdapter
+
+    const [feat] = seqAdapter
+      ? await seqAdapter
+          .getFeatures(renderProps.regions[0])
+          .pipe(toArray())
+          .toPromise()
+      : []
+    const regionSequence = feat.get('seq')
     const layout = this.createLayoutInWorker(renderProps)
     const {
       height,
       width,
       imageData,
       maxHeightReached,
-    } = await this.makeImageData({ ...renderProps, features, layout })
+    } = await this.makeImageData({
+      ...renderProps,
+      features,
+      layout,
+      regionSequence,
+    })
     const results = await super.render({
       ...renderProps,
       features,
