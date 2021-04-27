@@ -89,7 +89,7 @@ function PluginCard({
             if (adminMode) {
               jbrowse.addPlugin({ name: plugin.name, url: plugin.url })
             } else if (isSessionWithSessionPlugins(session)) {
-              session.removeSessionPlugin(plugin.name)
+              session.addSessionPlugin(plugin)
             }
             setTempDisabled(true)
           }}
