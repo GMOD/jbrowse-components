@@ -26,6 +26,7 @@ import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  renderToSvg,
 } from './LinearGenomeView'
 
 import {
@@ -139,6 +140,7 @@ export {
   linearBareDisplayConfigSchemaFactory,
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
+  renderToSvg,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

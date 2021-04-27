@@ -8,7 +8,8 @@ import PluginManager from '../../PluginManager'
 export type RenderProps = Record<string, unknown>
 
 export interface RenderResults {
-  reactElement: ReactElement
+  reactElement?: ReactElement
+  html?: string
 }
 
 export default class RendererType extends PluggableElementBase {

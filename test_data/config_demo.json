@@ -3053,6 +3053,32 @@
           }
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mastermind_hg19",
+      "name": "UCSC Mastermind",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mastermind_hg38",
+      "name": "UCSC Mastermind",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb"
+        }
+      }
     }
   ],
   "connections": [],

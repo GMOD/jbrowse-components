@@ -33,13 +33,14 @@ export type AnyDataAdapter =
   | SequenceAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
-// feature adapter by recursively enumerating props up to an ID of length 100
+// feature adapter by recursively enumerating props, but if config is too big
+// does not process entire config (FromConfigAdapter for example can be large)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function idMaker(args: any, id = '') {
   const keys = Object.keys(args)
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
-    if (id.length > 100) {
+    if (id.length > 5000) {
       break
     }
     if (typeof args[key] === 'object') {
@@ -48,7 +49,16 @@ function idMaker(args: any, id = '') {
       id += `${key}-${args[key]};`
     }
   }
-  return id.slice(0, 100)
+  // quickhash https://stackoverflow.com/questions/7616461
+  let hash = 0
+  let i
+  let chr
+  for (i = 0; i < id.length; i++) {
+    chr = id.charCodeAt(i)
+    hash = (hash << 5) - hash + chr // eslint-disable-line no-bitwise
+    hash |= 0 // eslint-disable-line no-bitwise
+  }
+  return hash
 }
 
 export abstract class BaseAdapter {
@@ -61,7 +71,7 @@ export abstract class BaseAdapter {
     // in test environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(args) ? getSnapshot(args) : args
-      this.id = idMaker(data)
+      this.id = `${idMaker(data)}`
     } else {
       this.id = 'test'
     }

@@ -857,6 +857,20 @@ export const complement = (() => {
   }
 })()
 
+export function blobToDataURL(blob: Blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}
+
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
@@ -981,4 +995,16 @@ export function generateCodonTable(table: any) {
     }
   })
   return tempCodonTable
+}
+
+// call statusCallback with current status and clear when finished
+export async function updateStatus(
+  statusMsg: string,
+  statusCallback: Function,
+  fn: Function,
+) {
+  statusCallback(statusMsg)
+  const result = await fn()
+  statusCallback('')
+  return result
 }

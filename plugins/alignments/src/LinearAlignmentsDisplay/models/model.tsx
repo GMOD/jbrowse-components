@@ -1,10 +1,11 @@
+import React from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'deep-equal'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
@@ -125,6 +126,10 @@ const stateModelFactory = (
           height: self.snpCovHeight,
         }
       },
+      setUserBpPerPxLimit(limit: number) {
+        self.PileupDisplay.setUserBpPerPxLimit(limit)
+        self.SNPCoverageDisplay.setUserBpPerPxLimit(limit)
+      },
       setPileupDisplay(displayConfig: AnyConfigurationModel) {
         self.PileupDisplay = {
           type: 'LinearPileupDisplay',
@@ -190,6 +195,23 @@ const stateModelFactory = (
           autorun(() => {
             self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
           }),
+        )
+      },
+      async renderSvg(opts: { rasterizeLayers?: boolean }) {
+        const pileupHeight = self.height - self.SNPCoverageDisplay.height
+        await when(() => self.PileupDisplay.ready)
+        return (
+          <>
+            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
+            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
+              {
+                await self.PileupDisplay.renderSvg({
+                  ...opts,
+                  overrideHeight: pileupHeight,
+                })
+              }
+            </g>
+          </>
         )
       },
     }))

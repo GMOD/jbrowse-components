@@ -1,7 +1,3 @@
-import {
-  createCanvas,
-  createImageBitmap,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
@@ -11,6 +7,7 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { ThemeOptions } from '@material-ui/core'
 import { ScaleOpts } from './util'
 
@@ -41,43 +38,48 @@ export type {
 }
 
 export default abstract class WiggleBaseRenderer extends FeatureRendererType {
-  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
-    const { height, regions, bpPerPx, highResolutionScaling = 1 } = props
-    const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0 }
-    }
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    this.draw(ctx, props)
-
-    const imageData = await createImageBitmap(canvas)
-    return { imageData, width }
-  }
-
-  /** draw features to context given props */
-  abstract draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ): void
+  supportsSVG = true
 
   async render(renderProps: RenderArgsDeserialized) {
     const features = await this.getFeatures(renderProps)
-    const { width, imageData } = await this.makeImageData({
-      ...renderProps,
-      features,
-    })
+    const { height, regions, bpPerPx } = renderProps
+    const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
+
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) =>
+        this.draw(ctx, {
+          ...renderProps,
+          features,
+        }),
+    )
+
     const results = await super.render({
       ...renderProps,
+      ...res,
       features,
+      height,
       width,
-      imageData,
     })
-    return { ...results, imageData, width }
+
+    return {
+      ...results,
+      ...res,
+      features,
+      height,
+      width,
+    }
   }
+
+  /*
+   * draw features to context given props, to be used by derived renderer
+   * classes
+   */
+  abstract draw(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserialized,
+  ): void
 }

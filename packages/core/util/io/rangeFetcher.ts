@@ -1,4 +1,3 @@
-import 'whatwg-fetch'
 // import tenaciousFetch from 'tenacious-fetch'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
