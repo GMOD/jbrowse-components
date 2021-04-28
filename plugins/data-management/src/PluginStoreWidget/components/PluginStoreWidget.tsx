@@ -17,6 +17,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
 
 import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
 
+import { isElectron } from '@jbrowse/core/util'
 import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
@@ -83,14 +84,16 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     <div>
       {adminMode && (
         <>
-          <div className={classes.adminBadge}>
-            <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
-            <Typography>
-              You are using the <code>admin-server</code>. Any changes you make
-              will be saved to your configuration file. You also have the
-              ability to add custom plugins that are not in the store.
-            </Typography>
-          </div>
+          {!isElectron && (
+            <div className={classes.adminBadge}>
+              <InfoOutlinedIcon style={{ marginRight: '0.3em' }} />
+              <Typography>
+                You are using the <code>admin-server</code>. Any changes you
+                make will be saved to your configuration file. You also have the
+                ability to add custom plugins that are not in the store.
+              </Typography>
+            </div>
+          )}
           <div className={classes.customPluginButton}>
             <Button
               variant="contained"
