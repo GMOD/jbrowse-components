@@ -5,6 +5,14 @@ import { Transform } from 'stream'
 import gff from '@gmod/gff'
 import { spawn } from 'child_process'
 
+type RecordData = {
+  attributes: any;
+  start: Number;
+  end: Number;
+  seq_id: String;
+  length:Number;
+};
+
 export default class TextIndex extends JBrowseCommand {
   // @ts-ignore
   target: string
@@ -69,8 +77,8 @@ export default class TextIndex extends JBrowseCommand {
     
     const gffTranform = new Transform({
       objectMode: true,
-      transform: (chunk, encoding, done) => {
-          chunk.forEach(record => {
+      transform: (chunk, _encoding, done) => {
+          chunk.forEach((record: RecordData) => {
               this._recurseFeatures(record, gff3Stream)
               done()
           })
@@ -82,7 +90,7 @@ export default class TextIndex extends JBrowseCommand {
     this.runIxIxx(gff3Stream)
   }
 
-  private _recurseFeatures(record, gff3Stream: ReadStream) {
+  private _recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
 
     const recordObj = { "ID":record.attributes.ID,
                         "Name":record.attributes.Name,
@@ -125,18 +133,18 @@ export default class TextIndex extends JBrowseCommand {
     })
 
     ixProcess.stdout.on('data', (data) => {
-        this.log(`stdout: ${data}`)
+        this.log(`Output from ixIxx: ${data}`)
     })
 
     ixProcess.stderr.on('data', (data) => {
-        this.error(`stderr: ${data}`)
+        this.error(`Error with ixIxx: ${data}`)
     })
 
-    ixProcess.on('close', (code) => {
-        this.log(`child process exited with code ${code}`)
-    })
+    // ixProcess.on('close', (code) => {
+    //     this.log(`child process exited with code ${code}`)
+    // })
 
-    this.log(`Done! Check ${ixFileName} and ${ixxFileName} files for output.`)
+    this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
   }
 
 
