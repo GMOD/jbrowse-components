@@ -22,7 +22,7 @@ export interface BaseOptions {
 export type searchType = 'full' | 'prefix' | 'exact'
 
 export interface BaseArgs {
-  searchType: searchType
+  searchType?: searchType
   queryString: string
   signal?: AbortSignal
   limit?: number

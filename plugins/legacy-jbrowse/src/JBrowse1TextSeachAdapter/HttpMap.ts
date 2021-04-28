@@ -8,22 +8,17 @@ import { crc32 } from './Crc32'
 export default class HttpMap {
   url: string
 
-  ready: Promise<boolean>
-
   isElectron: boolean
 
-  meta: any
+  hash_hex_characters?: number
+
+  compress?: number
 
   constructor(args: { url: string; isElectron: boolean }) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
-    this.meta = {}
-    this.isElectron = args.isElectron
 
-    // this.ready is a Deferred that will be resolved when we have
-    // read the meta.json file with the params of this hashstore
-    // this.ready = this.readMeta()
-    this.ready = this.readMeta()
+    this.isElectron = args.isElectron
   }
 
   /**
@@ -31,12 +26,39 @@ export default class HttpMap {
    */
   async readMeta() {
     try {
-      this.meta = await this.loadFile('meta.json')
-      this.meta.hash_hex_characters = Math.ceil(this.meta.hash_bits / 4)
-      return true
+      const meta = await this.loadFile('meta.json')
+      if (meta !== {}) {
+        const { compress } = meta
+        this.compress = compress
+        const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
+        this.hash_hex_characters = hashHexCharacters
+        return { hashHexCharacters, compress }
+      }
+      // const { compress } = meta
+      // this.compress = compress
+      // const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
+      // this.hash_hex_characters = hashHexCharacters
     } catch (err) {
-      throw Error(err)
+      // throw Error(err)
+      console.warn(`Error: ${err}`)
     }
+    return {}
+  }
+
+  async getHashHexCharacters() {
+    if (this.hash_hex_characters) {
+      return this.hash_hex_characters
+    }
+    const meta = await this.readMeta()
+    return meta.hashHexCharacters
+  }
+
+  async getCompress() {
+    if (this.compress) {
+      return this.compress
+    }
+    const meta = await this.readMeta()
+    return meta.compress
   }
 
   /**
@@ -53,10 +75,10 @@ export default class HttpMap {
    * @param key - string
    */
   async getBucket(key: string) {
-    await this.ready
     const bucketIdent = this.hash(key)
     try {
-      const value = await this.loadFile(this.hexToDirPath(bucketIdent))
+      const hexToDirPath = await this.hexToDirPath(bucketIdent)
+      const value = await this.loadFile(hexToDirPath)
       return value
     } catch (err) {
       if (this.isElectron || err.status === 404) {
@@ -73,29 +95,41 @@ export default class HttpMap {
    * @param id - string
    */
   async loadFile(id: string) {
+    const response = await fetch(`${this.url}${id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    })
     try {
-      let response = await fetch(`${this.url}${id}`)
-      response = await response.json()
-      return response
+      const data = await response.json()
+      return data
     } catch (err) {
       // handle error
-      throw Error(err)
+      // throw Error(err)
+      console.warn(`Error: ${err}`)
     }
+    return {}
   }
 
   /**
    * Returns the corresponding path of the file given a hex string
    * @param hex - hex string
    */
-  hexToDirPath(hex: string) {
+  async hexToDirPath(hex: string) {
     // zero-pad the hex string to be 8 chars if necessary
-    while (hex.length < 8) hex = `0${hex}`
-    hex = hex.substr(8 - this.meta.hash_hex_characters)
-    const dirpath = []
-    for (let i = 0; i < hex.length; i += 3) {
-      dirpath.push(hex.substring(i, i + 3))
+    const hashHexCharacters = await this.getHashHexCharacters()
+    if (hashHexCharacters) {
+      const compress = await this.getCompress()
+      while (hex.length < 8) hex = `0${hex}`
+      hex = hex.substr(8 - hashHexCharacters)
+      const dirpath = []
+      for (let i = 0; i < hex.length; i += 3) {
+        dirpath.push(hex.substring(i, i + 3))
+      }
+      return `${dirpath.join('/')}.json${compress ? 'z' : ''}`
     }
-    return `${dirpath.join('/')}.json${this.meta.compress ? 'z' : ''}`
+    return ''
   }
 
   /**

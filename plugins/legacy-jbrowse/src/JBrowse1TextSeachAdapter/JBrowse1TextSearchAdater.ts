@@ -8,7 +8,6 @@ import BaseResult, {
   LocationResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import { isElectron } from '@jbrowse/core/util'
-
 import { Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import MyConfigSchema from './configSchema'
@@ -21,7 +20,7 @@ export default class JBrowse1TextSearchAdapter
   Jbrowse1 text search adapter
   Uses index built by generate-names.pl
    */
-  private httpMap: HttpMap
+  httpMap: HttpMap
 
   constructor(config: Instance<typeof MyConfigSchema>) {
     super(config)
@@ -43,14 +42,10 @@ export default class JBrowse1TextSearchAdapter
    * @param query - string query
    */
   async loadIndexFile(query: string) {
-    const readyCheck = await this.httpMap.ready
-    if (readyCheck) {
-      const bucketContents: Record<string, any> = await this.httpMap.getBucket(
-        query,
-      )
-      return bucketContents
-    }
-    return {}
+    const bucketContents: Record<string, any> = await this.httpMap.getBucket(
+      query,
+    )
+    return bucketContents
   }
 
   /**
@@ -59,13 +54,11 @@ export default class JBrowse1TextSearchAdapter
    * limit of results to return, searchType...preffix | full | exact", etc.
    */
   async searchIndex(args: BaseArgs) {
-    const entries: Record<string, any> = await this.loadIndexFile(
-      args.queryString,
-    )
-    if (entries !== {} && entries[args.queryString]) {
-      // TODO: handle the undefined search type
-      // TODO: handle passing empty list to format results
-      return this.formatResults(entries[args.queryString][args.searchType])
+    const { searchType, queryString } = args
+    const entries: Record<string, any> = await this.loadIndexFile(queryString)
+    if (entries !== {} && entries[queryString]) {
+      // note: if no searchType is provided, it will default to return exact matches
+      return this.formatResults(entries[queryString][searchType || 'exact'])
     }
     return []
   }
