@@ -55,8 +55,8 @@ function idMaker(args: any, id = '') {
   let chr
   for (i = 0; i < id.length; i++) {
     chr = id.charCodeAt(i)
-    hash = (hash << 5) - hash + chr // eslint-disable-line no-bitwise
-    hash |= 0 // eslint-disable-line no-bitwise
+    hash = (hash << 5) - hash + chr
+    hash |= 0
   }
   return hash
 }

@@ -127,7 +127,9 @@ export const BaseLinearDisplay = types
       get features() {
         const featureMaps = []
         for (const block of self.blockState.values()) {
-          if (block && block.features) featureMaps.push(block.features)
+          if (block && block.features) {
+            featureMaps.push(block.features)
+          }
         }
         stale = true
         return new CompositeMap<string, Feature>(featureMaps)
@@ -219,7 +221,9 @@ export const BaseLinearDisplay = types
           })
           // delete any blocks we need go delete
           self.blockState.forEach((_, key) => {
-            if (!blocksPresent[key]) this.deleteBlock(key)
+            if (!blocksPresent[key]) {
+              this.deleteBlock(key)
+            }
           })
         }
       })
@@ -227,8 +231,11 @@ export const BaseLinearDisplay = types
       addDisposer(self, blockWatchDisposer)
     },
     setHeight(displayHeight: number) {
-      if (displayHeight > minDisplayHeight) self.height = displayHeight
-      else self.height = minDisplayHeight
+      if (displayHeight > minDisplayHeight) {
+        self.height = displayHeight
+      } else {
+        self.height = minDisplayHeight
+      }
       return self.height
     },
     resizeHeight(distance: number) {

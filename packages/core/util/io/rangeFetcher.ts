@@ -88,13 +88,16 @@ async function globalCacheFetch(
   const requestHeaders = opts && opts.headers
   let range
   if (requestHeaders) {
-    if (requestHeaders instanceof Headers) range = requestHeaders.get('range')
-    else if (Array.isArray(requestHeaders)) {
+    if (requestHeaders instanceof Headers) {
+      range = requestHeaders.get('range')
+    } else if (Array.isArray(requestHeaders)) {
       ;[, range] = requestHeaders.find(([key]) => key === 'range') || [
         undefined,
         undefined,
       ]
-    } else range = requestHeaders.range
+    } else {
+      range = requestHeaders.range
+    }
   }
   if (range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)

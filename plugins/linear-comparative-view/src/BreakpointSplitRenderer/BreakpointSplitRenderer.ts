@@ -1,4 +1,4 @@
-/* eslint-disable  no-continue,@typescript-eslint/no-explicit-any */
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'

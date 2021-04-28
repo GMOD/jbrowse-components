@@ -19,7 +19,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import VcfFeature from './VcfFeature'
 import MyConfigSchema from './configSchema'
 
-export default class extends BaseFeatureDataAdapter {
+export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
   protected vcf: TabixIndexedFile
 
   protected filehandle: GenericFilehandle

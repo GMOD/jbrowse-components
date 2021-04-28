@@ -108,7 +108,9 @@ function CallbackEditor({ slot }) {
               '_blank',
               'noopener,noreferrer',
             )
-            if (newWindow) newWindow.opener = null
+            if (newWindow) {
+              newWindow.opener = null
+            }
           }}
         >
           <HelpIcon />

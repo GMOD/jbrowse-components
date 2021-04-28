@@ -169,14 +169,12 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, val] of self.savedSessionsVolatile.entries()) {
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
               } catch (e) {
                 if (e.code === '22' || e.code === '1024') {
-                  // eslint-disable-next-line no-alert
                   alert(
                     'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
                   )

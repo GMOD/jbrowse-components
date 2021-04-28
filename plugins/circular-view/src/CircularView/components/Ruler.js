@@ -20,7 +20,9 @@ const useStyles = makeStyles({
 
 function sliceArcPath(slice, radiusPx, startBase, endBase) {
   // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
-  if (slice.flipped) [startBase, endBase] = [endBase, startBase]
+  if (slice.flipped) {
+    ;[startBase, endBase] = [endBase, startBase]
+  }
   const startXY = slice.bpToXY(startBase, radiusPx)
   const endXY = slice.bpToXY(endBase, radiusPx)
   const largeArc =
@@ -89,7 +91,9 @@ const RulerLabel = observer(
   ({ view, text, maxWidthPx, radians, radiusPx, title, color }) => {
     const classes = useStyles()
     const textXY = polarToCartesian(radiusPx + 5, radians)
-    if (!text) return null
+    if (!text) {
+      return null
+    }
 
     if (text.length * 6.5 < maxWidthPx) {
       // text is rotated parallel to the ruler arc

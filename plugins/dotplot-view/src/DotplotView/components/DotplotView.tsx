@@ -134,7 +134,9 @@ export function chooseGridPitch(
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {
     majorPitch *= 2
-    if (majorPitch >= minMajorPitchBp) break
+    if (majorPitch >= minMajorPitchBp) {
+      break
+    }
     majorPitch *= 2.5
   }
 

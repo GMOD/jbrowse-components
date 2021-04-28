@@ -237,7 +237,9 @@ export default class PluginManager {
   }
 
   configure() {
-    if (this.configured) throw new Error('already configured')
+    if (this.configured) {
+      throw new Error('already configured')
+    }
 
     this.plugins.forEach(plugin => plugin.configure(this))
 
@@ -364,7 +366,9 @@ export default class PluginManager {
   lib = ReExports
 
   load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
-    if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
+    if (!this.jbrequireCache.has(lib)) {
+      this.jbrequireCache.set(lib, lib(this))
+    }
     return this.jbrequireCache.get(lib)
   }
 
@@ -392,7 +396,9 @@ export default class PluginManager {
       return this.load(lib)
     }
 
-    if (lib.default) return this.jbrequire(lib.default)
+    if (lib.default) {
+      return this.jbrequire(lib.default)
+    }
 
     throw new TypeError(
       'lib passed to jbrequire must be either a string or a function',

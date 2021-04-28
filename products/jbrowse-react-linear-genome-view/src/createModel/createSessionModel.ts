@@ -142,10 +142,14 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
@@ -184,7 +188,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {
@@ -226,7 +232,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         self.view = {
           ...initialState,
@@ -243,7 +251,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -339,10 +349,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// @ts-ignore
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
-  /* eslint-enable @typescript-eslint/no-unused-vars */
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel
   return x

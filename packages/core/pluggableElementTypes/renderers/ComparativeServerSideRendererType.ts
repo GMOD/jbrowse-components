@@ -86,7 +86,9 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) return true
+    if (!renderArgs.filters) {
+      return true
+    }
     return renderArgs.filters.passes(feature, renderArgs)
   }
 

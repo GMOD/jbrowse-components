@@ -1,14 +1,14 @@
 const path = require('path')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const webpack = require('webpack')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   webpack: config => {
     const isDev = config.mode !== 'production'
     // Get rid of the webpackHotDevClient entry
-    if (isDev) config.entry.shift()
+    if (isDev) {
+      config.entry.shift()
+    }
     // Specify two entry points, a main one and one for the window worker
     const main = config.entry.pop()
     config.entry = {

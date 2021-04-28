@@ -264,8 +264,11 @@ export default function CircularView(pluginManager: PluginManager) {
           const previouslyEmpty = self.displayedRegions.length === 0
           self.displayedRegions = cast(regions)
 
-          if (previouslyEmpty) this.setBpPerPx(self.minBpPerPx)
-          else this.setBpPerPx(self.bpPerPx)
+          if (previouslyEmpty) {
+            this.setBpPerPx(self.minBpPerPx)
+          } else {
+            this.setBpPerPx(self.bpPerPx)
+          }
         },
 
         activateTrackSelector() {

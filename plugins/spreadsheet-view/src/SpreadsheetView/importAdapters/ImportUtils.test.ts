@@ -4,7 +4,9 @@ import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseCsvBuffer } from './ImportUtils'
 
-if (!window.TextDecoder) window.TextDecoder = TextDecoder
+if (!window.TextDecoder) {
+  window.TextDecoder = TextDecoder
+}
 
 const pluginManager = new PluginManager()
 const SpreadsheetModel = pluginManager.jbrequire(

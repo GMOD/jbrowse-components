@@ -10,10 +10,6 @@ import {
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
 
-export default {
-  title: 'Linear View',
-}
-
 const theme = createJBrowseTheme()
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -251,3 +247,9 @@ export const WithRuntimePlugins = () => {
     </ThemeProvider>
   )
 }
+
+const JBrowseLinearGenomeViewStories = {
+  title: 'Linear View',
+}
+
+export default JBrowseLinearGenomeViewStories

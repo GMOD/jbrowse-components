@@ -64,7 +64,9 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
     const { sessionId, adapterConfig, rendererType, signal } = deserializedArgs
-    if (!sessionId) throw new Error('must pass a unique session id')
+    if (!sessionId) {
+      throw new Error('must pass a unique session id')
+    }
 
     checkAbortSignal(signal)
 

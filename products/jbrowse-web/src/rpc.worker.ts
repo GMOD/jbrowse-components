@@ -13,7 +13,9 @@ import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-if (typeof __webpack_require__ === 'function') useStaticRendering(true)
+if (typeof __webpack_require__ === 'function') {
+  useStaticRendering(true)
+}
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]

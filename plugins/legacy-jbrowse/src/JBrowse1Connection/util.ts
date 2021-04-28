@@ -67,13 +67,17 @@ export function fillTemplate(
       varName = varName.replace(/\s+/g, '') // remove all whitespace
       const fill = getValue(fillWith, varName)
       if (fill !== undefined) {
-        if (typeof fill === 'function') return fill(varName)
+        if (typeof fill === 'function') {
+          return fill(varName)
+        }
         return fill
       }
       if (fillWith.callback) {
         // @ts-ignore
         const v = fillWith.callback.call(this, varName)
-        if (v !== undefined) return v
+        if (v !== undefined) {
+          return v
+        }
       }
       return match
     },
@@ -158,7 +162,6 @@ function mixin(
   let name
   let s
   const empty = {}
-  // eslint-disable-next-line guard-for-in
   for (name in source) {
     // the (!(name in empty) || empty[name] !== s) condition avoids copying
     // properties in "source" inherited from Object.prototype.	 For example,

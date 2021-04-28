@@ -66,7 +66,9 @@ export function convertTrackConfig(
   const description =
     jb1TrackConfig.metadata &&
     (jb1TrackConfig.metadata.description || jb1TrackConfig.metadata.Description)
-  if (description) jb2TrackConfig.description = description
+  if (description) {
+    jb2TrackConfig.description = description
+  }
 
   const category =
     jb1TrackConfig.category ||
@@ -111,7 +113,9 @@ export function convertTrackConfig(
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      } else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
+      } else {
+        adapter.index = { location: { uri: `${urlTemplate}.bai` } }
+      }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -128,7 +132,9 @@ export function convertTrackConfig(
         adapter.craiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
         }
-      } else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
+      } else {
+        adapter.craiLocation = { uri: `${urlTemplate}.crai` }
+      }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -180,7 +186,9 @@ export function convertTrackConfig(
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else {
+        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      }
       return {
         ...jb2TrackConfig,
         type: 'VariantTrack',
@@ -225,7 +233,9 @@ export function convertTrackConfig(
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else {
+        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      }
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
@@ -253,7 +263,9 @@ export function convertTrackConfig(
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else {
+        adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      }
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
@@ -293,7 +305,9 @@ export function convertTrackConfig(
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
         }
-      } else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      } else {
+        adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      }
       return {
         ...jb2TrackConfig,
         type: 'SequenceTrack',
@@ -309,12 +323,16 @@ export function convertTrackConfig(
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
         }
-      } else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      } else {
+        adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      }
       if (jb1TrackConfig.gziUrlTemplate) {
         adapter.gziLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
         }
-      } else adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
+      } else {
+        adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
+      }
       return {
         ...jb2TrackConfig,
         type: 'ReferenceSequenceTrack',

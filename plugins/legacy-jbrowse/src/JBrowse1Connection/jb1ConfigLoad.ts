@@ -30,8 +30,12 @@ export async function fetchJb1(
   const protocol = 'uri' in dataRoot ? 'uri' : 'localPath'
   const dataRootReg = JSON.parse(JSON.stringify(dataRoot))
   let dataRootLocation = ''
-  if (isUriLocation(dataRoot)) dataRootLocation = dataRoot.uri
-  if (isLocalPathLocation(dataRoot)) dataRootLocation = dataRoot.localPath
+  if (isUriLocation(dataRoot)) {
+    dataRootLocation = dataRoot.uri
+  }
+  if (isLocalPathLocation(dataRoot)) {
+    dataRootLocation = dataRoot.localPath
+  }
   if (dataRootLocation.endsWith('/')) {
     dataRootReg[protocol] = dataRootLocation.slice(
       0,
@@ -44,7 +48,9 @@ export async function fetchJb1(
   ) {
     const baseProtocol = 'uri' in baseConfigRoot ? 'uri' : 'localPath'
     let baseConfigLocation = ''
-    if (isUriLocation(baseConfigRoot)) baseConfigLocation = baseConfigRoot.uri
+    if (isUriLocation(baseConfigRoot)) {
+      baseConfigLocation = baseConfigRoot.uri
+    }
     if (isLocalPathLocation(baseConfigRoot)) {
       baseConfigLocation = baseConfigRoot.localPath
     }
@@ -59,7 +65,6 @@ export async function fetchJb1(
       let fetchedConfig = null
       try {
         // @ts-ignore
-        // eslint-disable-next-line no-await-in-loop
         fetchedConfig = await fetchConfigFile({
           [baseProtocol]: `${baseConfigLocation}/${conf}`,
         })
@@ -70,11 +75,15 @@ export async function fetchJb1(
       }
       newConfig = mergeConfigs(newConfig, fetchedConfig) || {}
     }
-    if (dataRootReg[protocol]) newConfig.dataRoot = dataRootReg[protocol]
+    if (dataRootReg[protocol]) {
+      newConfig.dataRoot = dataRootReg[protocol]
+    }
     return createFinalConfig(newConfig)
   }
   const newConfig = regularizeConf(baseConfig, window.location.href)
-  if (dataRootReg[protocol]) newConfig.dataRoot = dataRootReg[protocol]
+  if (dataRootReg[protocol]) {
+    newConfig.dataRoot = dataRootReg[protocol]
+  }
   return createFinalConfig(newConfig)
 }
 
@@ -95,13 +104,19 @@ export async function fetchConfigFile(location: JBLocation): Promise<Config> {
   if (typeof result !== 'string') {
     throw new Error(`Error opening location: ${location}`)
   }
-  if (isUriLocation(location)) return parseJb1(result, location.uri)
-  if (isLocalPathLocation(location)) return parseJb1(result, location.localPath)
+  if (isUriLocation(location)) {
+    return parseJb1(result, location.uri)
+  }
+  if (isLocalPathLocation(location)) {
+    return parseJb1(result, location.localPath)
+  }
   return parseJb1(result)
 }
 
 export function parseJb1(config: string, url = ''): Config {
-  if (config.trim().startsWith('{')) return parseJB1Json(config, url)
+  if (config.trim().startsWith('{')) {
+    return parseJB1Json(config, url)
+  }
   return parseJB1Conf(config, url)
 }
 
@@ -109,9 +124,13 @@ export function parseJb1(config: string, url = ''): Config {
  * Merges config object b into a. Properties in b override those in a.
  */
 function mergeConfigs(a: Config | null, b: Config | null): Config | null {
-  if (b === null) return null
+  if (b === null) {
+    return null
+  }
 
-  if (a === null) a = {}
+  if (a === null) {
+    a = {}
+  }
 
   for (const prop of Object.keys(b)) {
     if (prop === 'tracks' && prop in a) {
@@ -154,7 +173,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
  * Special-case merging of two `tracks` configuration arrays.
  */
 function mergeTrackConfigs(a: Track[], b: Track[]): Track[] {
-  if (!b.length) return a
+  if (!b.length) {
+    return a
+  }
 
   // index the tracks in `a` by track label
   const aTracks: Record<string, Track> = {}
@@ -194,7 +215,9 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
       )
     }
     const newUpstreamConf = mergeConfigs(clone(upstreamConf), config)
-    if (!newUpstreamConf) throw new Error('Problem merging configs')
+    if (!newUpstreamConf) {
+      throw new Error('Problem merging configs')
+    }
     const includes = fillTemplates(
       regularizeIncludes(config.include || []),
       newUpstreamConf,
@@ -223,15 +246,21 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
 function regularizeIncludes(
   includes: Include | string | (Include | string)[] | null,
 ): Include[] {
-  if (!includes) return []
+  if (!includes) {
+    return []
+  }
 
   // coerce include to an array
-  if (!Array.isArray(includes)) includes = [includes]
+  if (!Array.isArray(includes)) {
+    includes = [includes]
+  }
 
   return includes.map(
     (include): Include => {
       // coerce bare strings in the includes to URLs
-      if (typeof include === 'string') include = { url: include }
+      if (typeof include === 'string') {
+        include = { url: include }
+      }
 
       // set defaults for format and version
       if (!('format' in include)) {
@@ -313,7 +342,9 @@ const configDefaults = {
  * @returns nothing meaningful
  */
 function validateConfig(config: Config): void {
-  if (!config.tracks) config.tracks = []
+  if (!config.tracks) {
+    config.tracks = []
+  }
   if (!config.baseUrl) {
     throw new Error('Must provide a `baseUrl` in configuration')
   }

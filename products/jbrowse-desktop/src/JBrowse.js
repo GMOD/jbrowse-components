@@ -43,7 +43,9 @@ const JBrowse = observer(({ pluginManager }) => {
 
   const { rootModel } = pluginManager
   const { session, jbrowse, error } = rootModel
-  if (firstLoad && session) setFirstLoad(false)
+  if (firstLoad && session) {
+    setFirstLoad(false)
+  }
 
   useEffect(() => {
     function sendIpcConfig(snapshot) {

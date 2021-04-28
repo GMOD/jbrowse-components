@@ -41,9 +41,13 @@ function PileupRendering(props: {
   )
   useEffect(() => {
     const canvas = highlightOverlayCanvas.current
-    if (!canvas) return
+    if (!canvas) {
+      return
+    }
     const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!ctx) {
+      return
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     let rect
     let blockLayout
@@ -177,11 +181,8 @@ function PileupRendering(props: {
     <div
       className="PileupRendering"
       data-testid={`pileup-${
-        // eslint-disable-next-line no-nested-ternary
-        sortedBy
-          ? sortedBy.type
-          : colorBy
-          ? `${colorBy.type}${colorBy.tag || ''}`
+        sortedBy || colorBy
+          ? `${sortedBy?.type || ''}${colorBy?.type || ''}${colorBy?.tag || ''}`
           : 'normal'
       }`}
       style={{ position: 'relative', width: canvasWidth, height }}

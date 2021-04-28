@@ -1,6 +1,6 @@
 import ReactComponentFactory from './ReactComponent'
 
-export default pluginManager => {
+const ChordRendererConfigF = pluginManager => {
   const { jbrequire } = pluginManager
   const ChordRendererType = jbrequire(
     '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType',
@@ -40,3 +40,5 @@ export default pluginManager => {
     pluginManager,
   })
 }
+
+export default ChordRendererConfigF

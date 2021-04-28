@@ -35,7 +35,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
   },
 ]
 
-export default (pluginManager: PluginManager) => {
+const SpreadsheetViewModelF = (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { mobx } = lib
   const { types, getParent, getEnv } = lib['mobx-state-tree']
@@ -94,7 +94,9 @@ export default (pluginManager: PluginManager) => {
       get outputRows() {
         if (self.spreadsheet && self.spreadsheet.rowSet.isLoaded) {
           const selected = self.spreadsheet.rowSet.selectedFilteredRows
-          if (selected.length) return selected
+          if (selected.length) {
+            return selected
+          }
           return self.spreadsheet.rowSet.sortedFilteredRows
         }
         return undefined
@@ -124,8 +126,11 @@ export default (pluginManager: PluginManager) => {
         return self.width
       },
       setHeight(newHeight: number) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
+        if (newHeight > minHeight) {
+          self.height = newHeight
+        } else {
+          self.height = minHeight
+        }
         return self.height
       },
       resizeHeight(distance: number) {
@@ -152,7 +157,9 @@ export default (pluginManager: PluginManager) => {
       },
 
       setDisplayMode() {
-        if (self.readyToDisplay) self.mode = 'display'
+        if (self.readyToDisplay) {
+          self.mode = 'display'
+        }
       },
 
       closeView() {
@@ -164,3 +171,5 @@ export default (pluginManager: PluginManager) => {
 
   return stateModel
 }
+
+export default SpreadsheetViewModelF

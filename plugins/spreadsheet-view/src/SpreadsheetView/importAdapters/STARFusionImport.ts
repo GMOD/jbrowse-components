@@ -30,7 +30,9 @@ export async function parseSTARFusionBuffer(
   data.columns[0].name = data.columns[0].name.replace('#', '')
   // set some columns to be numeric
   data.columns.forEach(col => {
-    if (numericColumns[col.name]) col.dataType = { type: 'Number' }
+    if (numericColumns[col.name]) {
+      col.dataType = { type: 'Number' }
+    }
   })
 
   // decorate each row with a feature object in its extendedData

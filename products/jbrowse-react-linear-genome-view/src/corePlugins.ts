@@ -9,7 +9,7 @@ import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
-export default [
+const corePlugins = [
   SVG,
   Alignments,
   BED,
@@ -21,3 +21,5 @@ export default [
   Variants,
   Wiggle,
 ]
+
+export default corePlugins

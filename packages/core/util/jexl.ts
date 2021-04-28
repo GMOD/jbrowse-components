@@ -108,7 +108,6 @@ export default function (/* config?: any*/): JexlNonBuildable {
     return tags ? tags[str] : feature.get(str)
   })
 
-  // eslint-disable-next-line no-bitwise
   j.addBinaryOp('&', 15, (a: number, b: number) => a & b)
 
   return j

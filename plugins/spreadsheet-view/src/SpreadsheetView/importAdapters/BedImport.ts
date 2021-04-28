@@ -7,7 +7,9 @@ const commentBytes = '#'.split('').map(c => c.charCodeAt(0))
 function bytesAreFoundAt(position: number, buffer: Buffer, bytes: number[]) {
   let i = 0
   for (; i < bytes.length; i += 1) {
-    if (buffer[position + i] !== bytes[i]) return false
+    if (buffer[position + i] !== bytes[i]) {
+      return false
+    }
   }
   return true
 }

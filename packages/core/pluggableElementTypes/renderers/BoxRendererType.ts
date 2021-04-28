@@ -133,13 +133,17 @@ export default class BoxRendererType extends FeatureRendererType {
 
   // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) return region
+    if (!region) {
+      return region
+    }
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
       config === undefined
         ? 0
         : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) return region
+    if (!maxFeatureGlyphExpansion) {
+      return region
+    }
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
       ...region,

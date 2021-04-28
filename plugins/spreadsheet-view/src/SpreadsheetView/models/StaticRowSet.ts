@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import Row from './Row'
 
-export default (pluginManager: PluginManager) => {
+const StaticRowSetComponentF = (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { types, getParent } = lib['mobx-state-tree']
   const RowModel = load(Row)
@@ -62,3 +62,5 @@ export default (pluginManager: PluginManager) => {
       },
     }))
 }
+
+export default StaticRowSetComponentF

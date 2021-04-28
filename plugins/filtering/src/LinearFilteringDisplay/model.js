@@ -60,8 +60,12 @@ export default configSchema => {
           if (newHeight > self.filterControlsMinHeight) {
             if (newHeight < self.filterControlsMaxHeight) {
               self.filterControlsHeight = newHeight
-            } else self.filterControlsHeight = self.filterControlsMaxHeight
-          } else self.filterControlsHeight = self.filterControlsMinHeight
+            } else {
+              self.filterControlsHeight = self.filterControlsMaxHeight
+            }
+          } else {
+            self.filterControlsHeight = self.filterControlsMinHeight
+          }
           return self.filterControlsHeight
         },
         resizeFilterControls(distance) {
@@ -72,7 +76,9 @@ export default configSchema => {
           return oldHeight - newHeight
         },
         toggleFilter(attrName, value, checked) {
-          if (!self.filterOut.has(attrName)) self.filterOut.set(attrName, {})
+          if (!self.filterOut.has(attrName)) {
+            self.filterOut.set(attrName, {})
+          }
           const values = self.filterOut.get(attrName)
           values.set(String(value), !checked)
         },

@@ -47,7 +47,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
 
   public constructor(source: string, opts: FilehandleOptions = {}) {
     let ipcRenderer
-    if (electron) ipcRenderer = electron.ipcRenderer
+    if (electron) {
+      ipcRenderer = electron.ipcRenderer
+    }
     if (!ipcRenderer) {
       throw new Error(
         'Cannot use ElectronLocalFile without ipcRenderer from electron',
@@ -60,7 +62,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
     // if it is a file URL, monkey-patch ourselves to act like a LocalFile
     if (source.startsWith('file://')) {
       const path = uri2path(source)
-      if (!path) throw new TypeError('invalid file url')
+      if (!path) {
+        throw new TypeError('invalid file url')
+      }
       const localFile = new ElectronLocalFile(path)
       this.read = localFile.read.bind(localFile)
       this.readFile = localFile.readFile.bind(localFile)
@@ -100,7 +104,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
     input: RequestInfo,
     init?: RequestInit,
   ): Promise<Response> => {
-    if (init) init.signal = undefined
+    if (init) {
+      init.signal = undefined
+    }
     const serializedResponse = (await this.ipcRenderer.invoke(
       'fetch',
       input,
@@ -159,7 +165,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
         }
       } else {
         const contentLength = response.headers.get('content-length')
-        if (contentLength) this._stat = { size: parseInt(contentLength, 10) }
+        if (contentLength) {
+          this._stat = { size: parseInt(contentLength, 10) }
+        }
       }
     }
     return response
@@ -234,8 +242,12 @@ export default class ElectronRemoteFile implements GenericFilehandle {
   }
 
   public async stat(): Promise<Stats> {
-    if (!this._stat) await this.headFetch()
-    if (!this._stat) await this.read(Buffer.allocUnsafe(10), 0, 10, 0)
+    if (!this._stat) {
+      await this.headFetch()
+    }
+    if (!this._stat) {
+      await this.read(Buffer.allocUnsafe(10), 0, 10, 0)
+    }
     if (!this._stat) {
       throw new Error(`unable to determine size of file at ${this.url}`)
     }

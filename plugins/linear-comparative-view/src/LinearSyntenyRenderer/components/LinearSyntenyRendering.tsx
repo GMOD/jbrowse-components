@@ -1,4 +1,3 @@
-/* eslint-disable no-continue */
 import React, { useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'

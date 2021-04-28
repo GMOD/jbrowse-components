@@ -218,7 +218,9 @@ const Base1DView = types
       leftPx: BpOffset | undefined,
       rightPx: BpOffset | undefined,
     ) {
-      if (leftPx === undefined || rightPx === undefined) return
+      if (leftPx === undefined || rightPx === undefined) {
+        return
+      }
 
       const singleRefSeq =
         leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
@@ -309,7 +311,9 @@ const Base1DView = types
 
     zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
-      if (bpPerPx === self.bpPerPx) return
+      if (bpPerPx === self.bpPerPx) {
+        return
+      }
       const oldBpPerPx = self.bpPerPx
       self.bpPerPx = bpPerPx
 

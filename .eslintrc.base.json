@@ -3,7 +3,6 @@
     "browser": true
   },
   "extends": [
-    "airbnb-typescript",
     "plugin:@typescript-eslint/recommended",
     "plugin:monorepo/recommended",
     "plugin:prettier/recommended",
@@ -37,9 +36,13 @@
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/unbound-method": "off",
     "class-methods-use-this": "off",
+    "@typescript-eslint/no-redeclare": "off",
     "global-require": "off",
-    "import/no-cycle": "off",
     "curly": "error",
+    "no-global-assign": "warn",
+    "react/no-danger": "warn",
+    "import/no-cycle": "off",
+    "import/no-anonymous-default-export": "off",
     "import/prefer-default-export": "off",
     "jsx-a11y/mouse-events-have-key-events": "off",
     "max-classes-per-file": "off",

@@ -48,7 +48,9 @@ export function generateTracks(
       'container',
       'view',
     ]
-    if (trackKeys.some(key => parentTrackKeys.includes(key))) return
+    if (trackKeys.some(key => parentTrackKeys.includes(key))) {
+      return
+    }
     const parentTracks = []
     let currentTrackName = trackName
     do {
@@ -85,7 +87,9 @@ function makeTrackConfig(
   sequenceAdapter,
 ) {
   let trackType = track.get('type')
-  if (!trackType) trackType = trackDb.get(track.get('parent')).get('type')
+  if (!trackType) {
+    trackType = trackDb.get(track.get('parent')).get('type')
+  }
   let baseTrackType = trackType.split(' ')[0]
   if (
     baseTrackType === 'bam' &&
@@ -98,7 +102,9 @@ function makeTrackConfig(
     bigDataLocation = {
       uri: new URL(track.get('bigDataUrl'), trackDbFileLocation.uri).href,
     }
-  } else bigDataLocation = { localPath: track.get('bigDataUrl') }
+  } else {
+    bigDataLocation = { localPath: track.get('bigDataUrl') }
+  }
   let bigDataIndexLocation
 
   switch (baseTrackType) {
