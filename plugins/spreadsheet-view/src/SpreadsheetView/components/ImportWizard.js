@@ -178,6 +178,7 @@ const ImportForm = observer(({ model }) => {
           <Button
             disabled={!model.isReadyToOpen}
             variant="contained"
+            data-testid="open_spreadsheet"
             color="primary"
             onClick={model.import}
           >

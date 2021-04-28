@@ -23,6 +23,8 @@ import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
 
 /* adjust in both directions */
 class DivSequenceRenderer extends FeatureRendererType {
+  supportsSVG = true
+
   getExpandedRegion(region: Region) {
     return {
       ...region,

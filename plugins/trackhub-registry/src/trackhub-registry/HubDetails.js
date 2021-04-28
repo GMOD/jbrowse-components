@@ -52,7 +52,7 @@ function HubDetails(props) {
 
     getHubTxt()
   }, [hubUrl])
-  if (errorMessage)
+  if (errorMessage) {
     return (
       <Card>
         <CardContent>
@@ -60,7 +60,8 @@ function HubDetails(props) {
         </CardContent>
       </Card>
     )
-  if (hubFile)
+  }
+  if (hubFile) {
     return (
       <Card>
         <CardHeader title={shortLabel} />
@@ -90,6 +91,7 @@ function HubDetails(props) {
         </CardActions>
       </Card>
     )
+  }
   return <LinearProgress variant="query" />
 }
 

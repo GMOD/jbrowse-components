@@ -190,8 +190,9 @@ export default function CircularView(pluginManager: PluginManager) {
         get assemblyNames() {
           const assemblyNames: string[] = []
           self.displayedRegions.forEach(displayedRegion => {
-            if (!assemblyNames.includes(displayedRegion.assemblyName))
+            if (!assemblyNames.includes(displayedRegion.assemblyName)) {
               assemblyNames.push(displayedRegion.assemblyName)
+            }
           })
           return assemblyNames
         },

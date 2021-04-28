@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import React, { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
@@ -19,7 +19,7 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, observable } from 'mobx'
+import { autorun, observable, when } from 'mobx'
 import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -30,6 +30,7 @@ import { axisPropsFromTickScale } from 'react-d3-axis'
 import { getNiceDomain, getScale } from '../../util'
 
 import Tooltip from '../components/Tooltip'
+import { YScaleBar } from '../components/WiggleDisplayComponent'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -131,6 +132,10 @@ const stateModelFactory = (
         }
       },
 
+      setScaleType(scale?: string) {
+        self.scale = scale
+      },
+
       setSummaryScoreMode(val: string) {
         self.summaryScoreMode = val
       },
@@ -153,6 +158,10 @@ const stateModelFactory = (
 
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
+      },
+
+      setCrossHatches(cross: boolean) {
+        self.displayCrossHatches = cross
       },
     }))
     .views(self => ({
@@ -452,6 +461,9 @@ const stateModelFactory = (
     })
     .actions(self => {
       const superReload = self.reload
+      const superRenderSvg = self.renderSvg
+
+      type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
       async function getStats(opts: {
         headers?: Record<string, string>
@@ -583,6 +595,24 @@ const stateModelFactory = (
               },
               { delay: 1000 },
             ),
+          )
+        },
+        async renderSvg(opts: ExportSvgOpts) {
+          await when(() => self.ready && !!self.regionCannotBeRenderedText)
+          const { needsScalebar, stats } = self
+          const { offsetPx } = getContainingView(self) as LGV
+          return (
+            <>
+              <g id="snpcov">{await superRenderSvg(opts)}</g>
+              {needsScalebar && stats ? (
+                <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
+                  <YScaleBar
+                    model={self as WiggleDisplayModel}
+                    orientation="left"
+                  />
+                </g>
+              ) : null}
+            </>
           )
         },
       }

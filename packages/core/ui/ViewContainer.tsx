@@ -163,8 +163,13 @@ export default withContentRect('bounds')(
       // note that this effect will run only once, because of
       // the empty array second param
       useEffect(() => {
-        if (scrollRef && scrollRef.current && scrollRef.current.scrollIntoView)
+        if (
+          scrollRef &&
+          scrollRef.current &&
+          scrollRef.current.scrollIntoView
+        ) {
           scrollRef.current.scrollIntoView({ block: 'center' })
+        }
       }, [])
 
       const aboutTrack = session.showAboutConfig

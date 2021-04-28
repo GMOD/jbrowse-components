@@ -357,7 +357,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1107,7 +1107,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1144,7 +1144,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1184,7 +1184,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 279px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 299px;"
           />
           <div
@@ -1224,7 +1224,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 479px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 499px;"
           />
           <div
@@ -1264,7 +1264,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 679px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 699px;"
           />
           <div
@@ -1304,7 +1304,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 879px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 899px;"
           />
           <div

@@ -2,7 +2,7 @@ import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from '../util'
+import { checkAbortSignal, hashCode, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import {
   AnyConfigurationModel,
@@ -21,13 +21,6 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export type AnyDataAdapter =
-  | BaseAdapter
-  | BaseFeatureDataAdapter
-  | BaseRefNameAliasAdapter
-  | RegionsAdapter
-  | SequenceAdapter
-
 // see
 // https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
 // for why this is the abstract construct signature
@@ -38,14 +31,23 @@ export interface AnyAdapter {
   ): AnyDataAdapter
 }
 
+export type AnyDataAdapter =
+  | BaseAdapter
+  | BaseFeatureDataAdapter
+  | BaseRefNameAliasAdapter
+  | RegionsAdapter
+  | SequenceAdapter
+
+
 // generates a short "id fingerprint" from the config passed to the base
-// feature adapter by recursively enumerating props up to an ID of length 100
+// feature adapter by recursively enumerating props, but if config is too big
+// does not process entire config (FromConfigAdapter for example can be large)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function idMaker(args: any, id = '') {
   const keys = Object.keys(args)
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
-    if (id.length > 100) {
+    if (id.length > 5000) {
       break
     }
     if (typeof args[key] === 'object') {
@@ -54,7 +56,7 @@ function idMaker(args: any, id = '') {
       id += `${key}-${args[key]};`
     }
   }
-  return id.slice(0, 100)
+  return hashCode(id)
 }
 
 export abstract class BaseAdapter {
@@ -76,7 +78,7 @@ export abstract class BaseAdapter {
     // in test environment
     if (typeof jest === 'undefined') {
       const data = isStateTreeNode(config) ? getSnapshot(config) : config
-      this.id = idMaker(data)
+      this.id = `${idMaker(data)}`
     } else {
       this.id = 'test'
     }

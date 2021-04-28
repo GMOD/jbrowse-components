@@ -111,10 +111,11 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name))
+    if (!this.has(name)) {
       throw new Error(
         `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
       )
+    }
     return this.registeredTypes[name]
   }
 
@@ -285,8 +286,9 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
-      if (!newElement.name)
+      if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
+      }
 
       if (typeRecord.has(newElement.name)) {
         throw new Error(
@@ -351,8 +353,9 @@ export default class PluginManager {
           pluggableTypes.push(thing)
         }
       })
-    if (pluggableTypes.length === 0)
+    if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
+    }
     return types.union(...pluggableTypes)
   }
 

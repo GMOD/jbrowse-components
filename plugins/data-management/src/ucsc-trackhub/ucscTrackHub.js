@@ -90,19 +90,20 @@ function makeTrackConfig(
   if (
     baseTrackType === 'bam' &&
     track.get('bigDataUrl').toLowerCase().endsWith('cram')
-  )
+  ) {
     baseTrackType = 'cram'
+  }
   let bigDataLocation
-  if (trackDbFileLocation.uri)
+  if (trackDbFileLocation.uri) {
     bigDataLocation = {
       uri: new URL(track.get('bigDataUrl'), trackDbFileLocation.uri).href,
     }
-  else bigDataLocation = { localPath: track.get('bigDataUrl') }
+  } else bigDataLocation = { localPath: track.get('bigDataUrl') }
   let bigDataIndexLocation
 
   switch (baseTrackType) {
     case 'bam':
-      if (trackDbFileLocation.uri)
+      if (trackDbFileLocation.uri) {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
@@ -114,10 +115,11 @@ function makeTrackConfig(
                 trackDbFileLocation.uri,
               ).href,
             }
-      else
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.bai` }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
@@ -271,7 +273,7 @@ function makeTrackConfig(
         categories,
       )
     case 'cram':
-      if (trackDbFileLocation.uri)
+      if (trackDbFileLocation.uri) {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
@@ -283,10 +285,11 @@ function makeTrackConfig(
                 trackDbFileLocation.uri,
               ).href,
             }
-      else
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.crai` }
+      }
       return {
         type: 'AlignmentsTrack',
         name: track.get('shortLabel'),
@@ -335,7 +338,7 @@ function makeTrackConfig(
         categories,
       )
     case 'vcfTabix':
-      if (trackDbFileLocation.uri)
+      if (trackDbFileLocation.uri) {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? {
               uri: new URL(track.get('bigDataIndex'), trackDbFileLocation.uri)
@@ -347,10 +350,11 @@ function makeTrackConfig(
                 trackDbFileLocation.uri,
               ).href,
             }
-      else
+      } else {
         bigDataIndexLocation = track.get('bigDataIndex')
           ? { localPath: track.get('bigDataIndex') }
           : { localPath: `${track.get('bigDataUrl')}.tbi` }
+      }
       return {
         type: 'VariantTrack',
         name: track.get('shortLabel'),

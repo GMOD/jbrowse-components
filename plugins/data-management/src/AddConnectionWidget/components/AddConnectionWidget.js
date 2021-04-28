@@ -95,8 +95,9 @@ function AddConnectionWidget({ model }) {
     if (
       (activeStep === 0 && connectionType.name) ||
       (activeStep === 1 && configModel && configModelReady)
-    )
+    ) {
       return true
+    }
     return false
   }
 

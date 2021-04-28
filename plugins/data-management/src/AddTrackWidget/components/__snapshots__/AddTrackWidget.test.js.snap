@@ -96,7 +96,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                           <span
                             class="MuiToggleButton-label"
                           >
-                            Url
+                            URL
                           </span>
                           <span
                             class="MuiTouchRipple-root"
@@ -156,7 +156,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                           <span
                             class="MuiToggleButton-label"
                           >
-                            Url
+                            URL
                           </span>
                           <span
                             class="MuiTouchRipple-root"

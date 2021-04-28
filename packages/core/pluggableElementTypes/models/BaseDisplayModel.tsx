@@ -69,12 +69,14 @@ export const BaseDisplay = types
     get rendererType() {
       const { pluginManager } = getEnv(self)
       const RendererType = pluginManager.getRendererType(self.rendererTypeName)
-      if (!RendererType)
+      if (!RendererType) {
         throw new Error(`renderer "${self.rendererTypeName}" not found`)
-      if (!RendererType.ReactComponent)
+      }
+      if (!RendererType.ReactComponent) {
         throw new Error(
           `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return RendererType
     },
 

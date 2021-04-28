@@ -1,4 +1,5 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import XYPlotRenderer, { configSchema, ReactComponent } from '.'
 
 test('several features', async () => {
@@ -9,7 +10,7 @@ test('several features', async () => {
     configSchema,
     pluginManager,
   })
-  const result = await renderer.makeImageData({
+  const renderProps = {
     features: [
       new SimpleFeature({ id: 't1', data: { start: 1, end: 100, score: 1 } }),
       new SimpleFeature({ id: 't2', data: { start: 101, end: 200, score: 2 } }),
@@ -29,9 +30,12 @@ test('several features', async () => {
     highResolutionScaling: 1,
     height: 100,
     ticks: { values: [0, 100] },
-  })
+  }
 
-  expect(result).toMatchSnapshot({
+  const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
+    renderer.draw(ctx, renderProps),
+  )
+  expect(res).toMatchSnapshot({
     imageData: expect.any(Object),
   })
 })

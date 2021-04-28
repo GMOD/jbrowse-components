@@ -1,7 +1,13 @@
 import { customFields } from '../../docusaurus.config.json'
 
 export const Link = ({ extra, children }) => {
-  return <a href={`${customFields.currentLink}${extra}`}>{children}</a>
+  return (
+    <a
+      href={`https://jbrowse.org/code/jb2/${customFields.currentVersion}/${extra}`}
+    >
+      {children}
+    </a>
+  )
 }
 
 # JBrowse 2 demos

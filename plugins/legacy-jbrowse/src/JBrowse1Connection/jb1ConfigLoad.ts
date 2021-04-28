@@ -32,11 +32,12 @@ export async function fetchJb1(
   let dataRootLocation = ''
   if (isUriLocation(dataRoot)) dataRootLocation = dataRoot.uri
   if (isLocalPathLocation(dataRoot)) dataRootLocation = dataRoot.localPath
-  if (dataRootLocation.endsWith('/'))
+  if (dataRootLocation.endsWith('/')) {
     dataRootReg[protocol] = dataRootLocation.slice(
       0,
       dataRootLocation.length - 1,
     )
+  }
   if (
     (isUriLocation(baseConfigRoot) && baseConfigRoot.uri) ||
     (isLocalPathLocation(baseConfigRoot) && baseConfigRoot.localPath)
@@ -44,13 +45,15 @@ export async function fetchJb1(
     const baseProtocol = 'uri' in baseConfigRoot ? 'uri' : 'localPath'
     let baseConfigLocation = ''
     if (isUriLocation(baseConfigRoot)) baseConfigLocation = baseConfigRoot.uri
-    if (isLocalPathLocation(baseConfigRoot))
+    if (isLocalPathLocation(baseConfigRoot)) {
       baseConfigLocation = baseConfigRoot.localPath
-    if (baseConfigLocation.endsWith('/'))
+    }
+    if (baseConfigLocation.endsWith('/')) {
       baseConfigLocation = baseConfigLocation.slice(
         0,
         baseConfigLocation.length - 1,
       )
+    }
     let newConfig: Config = {}
     for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
       let fetchedConfig = null
@@ -89,8 +92,9 @@ export async function createFinalConfig(
 
 export async function fetchConfigFile(location: JBLocation): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
-  if (typeof result !== 'string')
+  if (typeof result !== 'string') {
     throw new Error(`Error opening location: ${location}`)
+  }
   if (isUriLocation(location)) return parseJb1(result, location.uri)
   if (isLocalPathLocation(location)) return parseJb1(result, location.localPath)
   return parseJb1(result)
@@ -113,12 +117,13 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     if (prop === 'tracks' && prop in a) {
       const aTracks = a[prop] || []
       const bTracks = b[prop] || []
-      if (Array.isArray(aTracks) && Array.isArray(bTracks))
+      if (Array.isArray(aTracks) && Array.isArray(bTracks)) {
         a[prop] = mergeTrackConfigs(aTracks || [], bTracks || [])
-      else
+      } else {
         throw new Error(
           `Track config has not been properly regularized: ${aTracks} ${bTracks}`,
         )
+      }
     } else if (
       !noRecursiveMerge(prop) &&
       prop in a &&
@@ -183,10 +188,11 @@ async function loadIncludes(inputConfig: Config): Promise<Config> {
     upstreamConf: Config,
   ): Promise<Config> {
     const sourceUrl = config.sourceUrl || config.baseUrl
-    if (!sourceUrl)
+    if (!sourceUrl) {
       throw new Error(
         `Could not determine source URL: ${JSON.stringify(config)}`,
       )
+    }
     const newUpstreamConf = mergeConfigs(clone(upstreamConf), config)
     if (!newUpstreamConf) throw new Error('Problem merging configs')
     const includes = fillTemplates(

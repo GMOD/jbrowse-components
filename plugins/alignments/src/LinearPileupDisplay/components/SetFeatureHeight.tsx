@@ -52,15 +52,11 @@ function SetFeatureHeightDlg(props: {
     <Dialog open onClose={handleClose}>
       <DialogTitle>
         Set feature height
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
+        <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ overflowX: 'hidden' }}>
+      <DialogContent>
         <Typography>
           Adjust the feature height and whether there is any spacing between
           features. Setting feature height to 1 and removing spacing makes the

@@ -1,4 +1,3 @@
-/* eslint curly:error*/
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import React from 'react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
