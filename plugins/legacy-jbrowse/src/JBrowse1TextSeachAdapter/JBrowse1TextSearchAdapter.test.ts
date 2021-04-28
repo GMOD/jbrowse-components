@@ -1,6 +1,4 @@
-import BaseResult, {
-  LocationResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import path from 'path'
 import meta from '../../test_data/names/meta.json'
 import first from '../../test_data/names/0.json'
@@ -52,9 +50,7 @@ test('adapter can fetch files from names index', async () => {
   })
   // check results are of type location for exact search
   expect(results2.length).toEqual(5)
-  const test2: LocationResult = results2[0]
+  const test2 = results2[0]
   expect(test2 instanceof BaseResult).toBeTruthy()
   expect(test2.getRendering()).toEqual('Apple3')
-  expect(test2 instanceof LocationResult).toBeTruthy()
-  expect(test2.getLocation()).toEqual('ctgA:17399-23000')
 })
