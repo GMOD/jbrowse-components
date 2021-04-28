@@ -149,11 +149,12 @@ export default function sessionModelFactory(
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
-        if (isAlive(self))
+        if (isAlive(self)) {
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
             self.activeWidgets.size - 1
           ]
+        }
         return undefined
       },
       /**
@@ -254,12 +255,13 @@ export default function sessionModelFactory(
             if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
             dereferenceTypeCount[type] += 1
           }
-          if (!dereferenced)
+          if (!dereferenced) {
             throw new Error(
               `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
+          }
         })
       },
 
@@ -425,10 +427,11 @@ export default function sessionModelFactory(
           (s: AnyConfigurationModel) =>
             readConfObject(s, 'name') === assemblyName,
         )
-        if (!assembly)
+        if (!assembly) {
           throw new Error(
             `Could not add view of assembly "${assemblyName}", assembly name not found`,
           )
+        }
         initialState.displayRegionsFromAssemblyName = readConfObject(
           assembly,
           'name',
@@ -465,8 +468,9 @@ export default function sessionModelFactory(
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
+        if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
+        }
         self.activeWidgets.set(widget.id, widget)
         self.minimized = false
       },

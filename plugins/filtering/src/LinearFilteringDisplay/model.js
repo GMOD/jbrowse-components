@@ -58,9 +58,9 @@ export default configSchema => {
       .actions(self => ({
         setFilterControlsHeight(newHeight) {
           if (newHeight > self.filterControlsMinHeight) {
-            if (newHeight < self.filterControlsMaxHeight)
+            if (newHeight < self.filterControlsMaxHeight) {
               self.filterControlsHeight = newHeight
-            else self.filterControlsHeight = self.filterControlsMaxHeight
+            } else self.filterControlsHeight = self.filterControlsMaxHeight
           } else self.filterControlsHeight = self.filterControlsMinHeight
           return self.filterControlsHeight
         },

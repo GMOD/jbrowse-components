@@ -85,10 +85,11 @@ export default function JBrowseDesktop(
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
         if (!name) throw new Error('Can\'t add assembly with no "name"')
-        if (self.assemblyNames.includes(name))
+        if (self.assemblyNames.includes(name)) {
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
+        }
         const length = self.assemblies.push({
           ...assemblyConf,
           sequence: {

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-/* eslint curly:error */
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { isAbortException } from '@jbrowse/core/util'

@@ -73,10 +73,11 @@ export default class PluginLoader {
         this
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const plugin = (scope as any)[umdName] as { default: PluginConstructor }
-      if (!plugin)
+      if (!plugin) {
         throw new Error(
           `plugin ${moduleName} failed to load, ${scope.constructor.name}.${umdName} is undefined`,
         )
+      }
 
       return plugin.default
     }

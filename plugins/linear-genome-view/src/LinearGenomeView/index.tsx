@@ -587,13 +587,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const oldIndex = self.tracks.findIndex(
           track => track.id === movingTrackId,
         )
-        if (oldIndex === -1)
+        if (oldIndex === -1) {
           throw new Error(`Track ID ${movingTrackId} not found`)
+        }
         const newIndex = self.tracks.findIndex(
           track => track.id === targetTrackId,
         )
-        if (newIndex === -1)
+        if (newIndex === -1) {
           throw new Error(`Track ID ${targetTrackId} not found`)
+        }
         const track = getSnapshot(self.tracks[oldIndex])
         self.tracks.splice(oldIndex, 1)
         self.tracks.splice(newIndex, 0, track)

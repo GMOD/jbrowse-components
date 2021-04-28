@@ -54,12 +54,13 @@ function parse(text: string, url: string): Config {
         const match = value.match(/^json:(.+)/i)
         if (match) parsedValue = JSON.parse(match[1])
         // parse numbers if it looks numeric
-        else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value))
+        else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
           parsedValue = parseFloat(value.replace(/,/g, ''))
-        else parsedValue = value
+        } else parsedValue = value
 
-        if (!keyPath)
+        if (!keyPath) {
           throw new Error(`Error parsing in section ${section.join(' - ')}`)
+        }
         const path = section.concat(keyPath).join('.')
         if (operation === '+=') {
           let existing = getValue(data, path)
@@ -95,8 +96,9 @@ function parse(text: string, url: string): Config {
       keyPath = undefined
       value = undefined
       section = match[1].trim().split(/\s*\.\s*/)
-      if (section.length === 1 && section[0].toLowerCase() === 'general')
+      if (section.length === 1 && section[0].toLowerCase() === 'general') {
         section = []
+      }
     }
     // new value
     else if (
@@ -194,8 +196,9 @@ export function regularizeConf(conf: Config, url: string): Config {
   }
 
   conf.sourceUrl = conf.sourceUrl || url
-  if (conf.sourceUrl.startsWith('/'))
+  if (conf.sourceUrl.startsWith('/')) {
     conf.sourceUrl = new URL(conf.sourceUrl, window.location.href).href
+  }
   conf.baseUrl = conf.baseUrl || new URL('.', conf.sourceUrl).href
   if (conf.baseUrl.length && !conf.baseUrl.endsWith('/')) conf.baseUrl += '/'
 
@@ -212,8 +215,9 @@ export function regularizeConf(conf: Config, url: string): Config {
     })
 
     // resolve the refSeqs and nameUrl if present
-    if (conf.refSeqs && typeof conf.refSeqs === 'string')
+    if (conf.refSeqs && typeof conf.refSeqs === 'string') {
       conf.refSeqs = new URL(conf.refSeqs, conf.sourceUrl).href
+    }
     if (conf.nameUrl) conf.nameUrl = new URL(conf.nameUrl, conf.sourceUrl).href
   }
 
@@ -231,24 +235,26 @@ export function regularizeConf(conf: Config, url: string): Config {
     if (trackConfig.store) return
 
     let trackClassName: string
-    if (trackConfig.type === 'FeatureTrack')
+    if (trackConfig.type === 'FeatureTrack') {
       trackClassName = 'JBrowse/View/Track/HTMLFeatures'
-    else if (trackConfig.type === 'ImageTrack')
+    } else if (trackConfig.type === 'ImageTrack') {
       trackClassName = 'JBrowse/View/Track/FixedImage'
-    else if (trackConfig.type === 'ImageTrack.Wiggle')
+    } else if (trackConfig.type === 'ImageTrack.Wiggle') {
       trackClassName = 'JBrowse/View/Track/FixedImage/Wiggle'
-    else if (trackConfig.type === 'SequenceTrack')
+    } else if (trackConfig.type === 'SequenceTrack') {
       trackClassName = 'JBrowse/View/Track/Sequence'
-    else
+    } else {
       trackClassName = regularizeClass('JBrowse/View/Track', trackConfig.type)
+    }
 
     trackConfig.type = trackClassName
 
     synthesizeTrackStoreConfig(conf, trackConfig)
 
     if (trackConfig.histograms) {
-      if (!trackConfig.histograms.baseUrl)
+      if (!trackConfig.histograms.baseUrl) {
         trackConfig.histograms.baseUrl = trackConfig.baseUrl
+      }
       synthesizeTrackStoreConfig(conf, trackConfig.histograms)
     }
   })
@@ -273,35 +279,45 @@ function guessStoreClass(
   urlTemplate: string,
 ): string {
   if (!trackConfig) return ''
-  if (trackConfig.type && trackConfig.type.includes('/FixedImage'))
+  if (trackConfig.type && trackConfig.type.includes('/FixedImage')) {
     return `JBrowse/Store/TiledImage/Fixed${
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
-  if (/\.jsonz?$/i.test(urlTemplate))
+  }
+  if (/\.jsonz?$/i.test(urlTemplate)) {
     return `JBrowse/Store/SeqFeature/NCList${
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
+  }
   if (/\.bam$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BAM'
   if (/\.cram$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/CRAM'
   if (/\.gff3?$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/GFF3'
   if (/\.bed$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BED'
-  if (/\.vcf.b?gz$/i.test(urlTemplate))
+  if (/\.vcf.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/VCFTabix'
-  if (/\.gff3?.b?gz$/i.test(urlTemplate))
+  }
+  if (/\.gff3?.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/GFF3Tabix'
-  if (/\.bed.b?gz$/i.test(urlTemplate))
+  }
+  if (/\.bed.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/BEDTabix'
-  if (/\.(bw|bigwig)$/i.test(urlTemplate))
+  }
+  if (/\.(bw|bigwig)$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/BigWig'
-  if (/\.(bb|bigbed)$/i.test(urlTemplate))
+  }
+  if (/\.(bb|bigbed)$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/BigBed'
-  if (/\.(fa|fasta)$/i.test(urlTemplate))
+  }
+  if (/\.(fa|fasta)$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/IndexedFasta'
-  if (/\.(fa|fasta)\.b?gz$/i.test(urlTemplate))
+  }
+  if (/\.(fa|fasta)\.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/BgzipIndexedFasta'
+  }
   if (/\.2bit$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/TwoBit'
-  if (trackConfig.type && trackConfig.type.endsWith('/Sequence'))
+  if (trackConfig.type && trackConfig.type.endsWith('/Sequence')) {
     return 'JBrowse/Store/Sequence/StaticChunked'
+  }
   return ''
 }
 
@@ -314,9 +330,9 @@ function synthesizeTrackStoreConfig(
   const { urlTemplate = '' } = trackConfig
 
   let storeClass: string
-  if (trackConfig.storeClass)
+  if (trackConfig.storeClass) {
     storeClass = regularizeClass('JBrowse/Store', trackConfig.storeClass)
-  else storeClass = guessStoreClass(trackConfig, urlTemplate)
+  } else storeClass = guessStoreClass(trackConfig, urlTemplate)
 
   if (!storeClass) {
     console.warn(

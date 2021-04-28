@@ -711,8 +711,9 @@ export function makeAbortableReaction<T, U, V>(
           successFunction(result)
         }
       } catch (error) {
-        if (thisInProgress && !thisInProgress.signal.aborted)
+        if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
+        }
         handleError(error)
       }
     },

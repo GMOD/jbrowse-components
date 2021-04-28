@@ -29,8 +29,9 @@ export default class SerializableFilterChain {
       if (
         // @ts-ignore
         !this.filterChain[i].expr.evalSync({ feature: args[0] })
-      )
+      ) {
         return false
+      }
     }
     return true
   }

@@ -104,8 +104,9 @@ export class FloatingLayout {
   }
 
   getTotalHeight() {
-    if (this.layoutDirty)
+    if (this.layoutDirty) {
       throw new Error('getTotalHeight does not work when the layout is dirty.')
+    }
     return this.totalHeight
   }
 
@@ -114,8 +115,9 @@ export class FloatingLayout {
   }
 
   toJSON() {
-    if (this.layoutDirty)
+    if (this.layoutDirty) {
       throw new Error('toJSON does not work when the layout is dirty.')
+    }
     return { pairs: [...this.getLayout()], totalHeight: this.getTotalHeight() }
   }
 
@@ -141,8 +143,9 @@ export class PrecomputedFloatingLayout {
   }
 
   add(uniqueId: string) {
-    if (!this.layout.has(uniqueId))
+    if (!this.layout.has(uniqueId)) {
       throw new Error(`layout error, precomputed layout is missing ${uniqueId}`)
+    }
   }
 
   getLayout() {

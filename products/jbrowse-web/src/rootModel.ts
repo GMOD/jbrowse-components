@@ -1,4 +1,3 @@
-/* eslint curly:error*/
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'

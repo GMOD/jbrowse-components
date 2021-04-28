@@ -54,8 +54,9 @@ describe('<DivSequenceRendering />', () => {
         args[0].includes(
           'The above error occurred in the <SequenceDivs> component',
         )
-      )
+      ) {
         return
+      }
       originalError.call(console, ...args)
     }
   })

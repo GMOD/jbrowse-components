@@ -230,7 +230,7 @@ export default function StartScreen({
     })()
   }, [ipcRenderer, updateSessionsList])
 
-  if (!sessions)
+  if (!sessions) {
     return (
       <CircularProgress
         style={{
@@ -243,6 +243,7 @@ export default function StartScreen({
         size={50}
       />
     )
+  }
 
   return (
     <>

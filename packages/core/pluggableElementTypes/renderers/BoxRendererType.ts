@@ -123,8 +123,9 @@ export default class BoxRendererType extends FeatureRendererType {
 
   getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
     const { sessionId } = props
-    if (!this.sessions[sessionId])
+    if (!this.sessions[sessionId]) {
       this.sessions[sessionId] = this.createSession(props)
+    }
     const session = this.sessions[sessionId]
     session.update(props)
     return session
