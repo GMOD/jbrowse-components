@@ -49,7 +49,6 @@ module.exports = config => {
             ],
           ),
           plugins: [
-            ...loaderListRule.oneOf[1].options.plugins,
             [
               require.resolve('babel-plugin-named-asset-import', {
                 paths: ['../../node_modules/react-scripts/node_modules'],
