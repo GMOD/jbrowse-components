@@ -3,7 +3,7 @@ import JBrowseCommand from '../base'
 import { ReadStream, createReadStream } from 'fs'
 import { Transform } from 'stream'
 import gff from '@gmod/gff'
-import process = require('child_process')
+import { spawn } from 'child_process'
 
 export default class TextIndex extends JBrowseCommand {
   // @ts-ignore
@@ -114,7 +114,7 @@ export default class TextIndex extends JBrowseCommand {
     //     this.log(err.stack)
     // })
     
-    const ixProcess = process.spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], { shell: true })
+    const ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], { shell: true })
 
     // Pass the readStream as stdin into ixProcess.
     readStream.pipe(ixProcess.stdin)
