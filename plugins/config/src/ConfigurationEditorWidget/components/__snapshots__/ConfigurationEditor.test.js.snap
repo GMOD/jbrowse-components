@@ -76,7 +76,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
               <span
                 class="MuiToggleButton-label"
               >
-                Url
+                URL
               </span>
               <span
                 class="MuiTouchRipple-root"

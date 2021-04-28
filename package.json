@@ -145,6 +145,7 @@
     "tslib": "^2.0.1",
     "typescript": "^3.7.2",
     "wait-on": "^5.0.0",
+    "web-encoding": "^1.1.5",
     "webpack-cli": "^3.3.11",
     "worker-loader": "^2.0.0"
   },
