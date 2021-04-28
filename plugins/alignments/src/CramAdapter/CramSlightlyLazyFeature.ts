@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
+/* eslint-disable no-underscore-dangle */
 import {
   Feature,
   SimpleFeatureSerialized,

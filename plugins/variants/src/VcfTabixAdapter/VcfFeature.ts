@@ -1,6 +1,6 @@
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
-/* eslint-disable no-underscore-dangle, @typescript-eslint/camelcase */
+/* eslint-disable no-underscore-dangle */
 
 /**
  * VCF Feature creation with lazy genotype evaluation.

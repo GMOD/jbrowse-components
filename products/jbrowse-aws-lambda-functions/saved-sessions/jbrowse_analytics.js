@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-// eslint-disable-next-line @typescript-eslint/camelcase
 const url_parser = require('url')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()

@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, no-console, @typescript-eslint/camelcase, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals, no-console, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
