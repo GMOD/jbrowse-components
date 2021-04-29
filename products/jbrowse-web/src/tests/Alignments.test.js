@@ -47,7 +47,7 @@ describe('alignments track', () => {
     )
 
     const { findAllByTestId: findAllByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
+      await findByTestId('Blockset-pileup', {}, delay),
     )
     const pileupCanvas = await findAllByTestId1('prerendered_canvas', {}, delay)
     const pileupImg = pileupCanvas[0].toDataURL()
@@ -59,7 +59,7 @@ describe('alignments track', () => {
     })
 
     const { findAllByTestId: findAllByTestId2 } = within(
-      await findByTestId('Blockset-snpcoverage'),
+      await findByTestId('Blockset-snpcoverage', {}, delay),
     )
     const snpCovCanvas = await findAllByTestId2('prerendered_canvas', {}, delay)
     const snpCovImg = snpCovCanvas[0].toDataURL()
@@ -80,7 +80,7 @@ describe('alignments track', () => {
 
     // this is to confirm a alignment detail widget opened
     await findByTestId('alignment-side-drawer')
-  }, 15000)
+  }, 20000)
 
   // Note: tracks with assembly volvox don't have much soft clipping
   it('opens the track menu and enables soft clipping', async () => {
@@ -113,7 +113,7 @@ describe('alignments track', () => {
     const pileupCanvas = await findAllByTestId1(
       'prerendered_canvas_softclipped',
       {},
-      { timeout: 10000 },
+      delay,
     )
     const pileupImg = pileupCanvas[0].toDataURL()
     const pileupData = pileupImg.replace(/^data:image\/\w+;base64,/, '')
@@ -122,7 +122,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 12000)
+  }, 20000)
 
   it('selects a sort, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -138,7 +138,7 @@ describe('alignments track', () => {
     await findByTestId(
       'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
       {},
-      { timeout: 10000 },
+      delay,
     )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
@@ -164,7 +164,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 
   it('selects a color, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -200,7 +200,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 
   it('colors by tag, updates object and layout', async () => {
     const pluginManager = getPluginManager()
@@ -229,7 +229,7 @@ describe('alignments track', () => {
     fireEvent.click(await findByText('Submit'))
 
     // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP', {}, { timeout: 10000 })
+    await findAllByTestId('pileup-tagHP', {}, delay)
 
     // wait for pileup track to render
     const { findAllByTestId: findAllByTestId1 } = within(
@@ -243,7 +243,7 @@ describe('alignments track', () => {
       failureThreshold: 0.05,
       failureThresholdType: 'percent',
     })
-  }, 10000)
+  }, 20000)
 
   it('test that bam with small max height displays message', async () => {
     const pluginManager = getPluginManager()
@@ -254,8 +254,8 @@ describe('alignments track', () => {
       await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
     )
 
-    await findAllByText('Max height reached', {}, { timeout: 10000 })
-  }, 15000)
+    await findAllByText('Max height reached', {}, delay)
+  }, 20000)
 
   it('test snpcoverage doesnt count snpcoverage', async () => {
     const pluginManager = getPluginManager()
@@ -275,13 +275,10 @@ describe('alignments track', () => {
       await findByTestId('Blockset-snpcoverage'),
     )
 
-    await waitFor(
-      async () => {
-        const canvases = await findAllByTestId('prerendered_canvas')
-        expect(canvases.length).toBe(2)
-      },
-      { timeout: 10000 },
-    )
+    await waitFor(async () => {
+      const canvases = await findAllByTestId('prerendered_canvas')
+      expect(canvases.length).toBe(2)
+    }, delay)
     const snpCoverageCanvas = await findAllByTestId('prerendered_canvas')
 
     // this block tests that softclip avoids decrementing the total block

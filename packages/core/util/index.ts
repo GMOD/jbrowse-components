@@ -1010,7 +1010,6 @@ export async function updateStatus(
   return result
 }
 
-
 export function hashCode(str: string) {
   let hash = 0
   let i
