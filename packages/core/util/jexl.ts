@@ -42,6 +42,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('floor', Math.floor)
   j.addFunction('round', Math.round)
   j.addFunction('abs', Math.abs)
+  j.addFunction('parseInt', Number.parseInt)
 
   // string
   j.addFunction('split', (str: string, char: string) => str.split(char))

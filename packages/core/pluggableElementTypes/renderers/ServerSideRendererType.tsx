@@ -1,14 +1,15 @@
+import React from 'react'
 import { ThemeOptions } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/core/styles'
 import { renderToString } from 'react-dom/server'
-import React from 'react'
+
 import {
   SnapshotOrInstance,
   SnapshotIn,
   getSnapshot,
   isStateTreeNode,
 } from 'mobx-state-tree'
-import { checkAbortSignal } from '../../util'
+import { checkAbortSignal, updateStatus } from '../../util'
 import RendererType, { RenderProps, RenderResults } from './RendererType'
 import SerializableFilterChain, {
   SerializedFilterChain,
@@ -24,6 +25,7 @@ interface BaseRenderArgs extends RenderProps {
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
   theme: ThemeOptions
+  exportSVG: { rasterizeLayers?: boolean }
 }
 
 export interface RenderArgs extends BaseRenderArgs {
@@ -69,7 +71,8 @@ export default class ServerSideRenderer extends RendererType {
 
   /**
    * Deserialize the render results from the worker in the client. Includes
-   * hydrating of the React HTML string.
+   * hydrating of the React HTML string, and not hydrating the result if SVG is
+   * being rendered
    *
    * @param results - the results of the render
    * @param args - the arguments passed to render
@@ -78,13 +81,32 @@ export default class ServerSideRenderer extends RendererType {
     results: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    const reactElement = React.createElement(ServerSideRenderedContent, {
-      ...args,
-      ...results,
-      RenderingComponent: this.ReactComponent,
-    })
-    delete results.html
-    return { ...results, reactElement }
+    const { html, ...rest } = results
+
+    // if we are rendering svg, we skip hydration
+    if (args.exportSVG) {
+      // only return the results if the renderer explicitly has
+      // this.supportsSVG support to avoid garbage being rendered in SVG
+      // document
+      return {
+        ...results,
+        html: this.supportsSVG
+          ? results.html
+          : '<text y="12" fill="black">SVG export not supported for this track</text>',
+      }
+    }
+
+    // hydrate results using ServerSideRenderedContent
+    return {
+      ...rest,
+      reactElement: (
+        <ServerSideRenderedContent
+          {...args}
+          {...results}
+          RenderingComponent={this.ReactComponent}
+        />
+      ),
+    }
   }
 
   /**
@@ -119,12 +141,9 @@ export default class ServerSideRenderer extends RendererType {
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const html = renderToString(
-      React.createElement(
-        ThemeProvider,
-        // @ts-ignore
-        { theme: createJBrowseTheme(args.theme) },
-        results.reactElement,
-      ),
+      <ThemeProvider theme={createJBrowseTheme(args.theme)}>
+        {results.reactElement}
+      </ThemeProvider>,
     )
     delete results.reactElement
     return { ...results, html }
@@ -155,16 +174,19 @@ export default class ServerSideRenderer extends RendererType {
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
     checkAbortSignal(signal)
-    statusCallback('Rendering plot')
-    const results = await this.render(deserializedArgs)
+    const results = await updateStatus('Rendering plot', statusCallback, () =>
+      this.render(deserializedArgs),
+    )
     checkAbortSignal(signal)
 
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    statusCallback('Serializing results')
-    const serialized = this.serializeResultsInWorker(results, deserializedArgs)
-    statusCallback('')
+    const serialized = await updateStatus(
+      'Serializing results',
+      statusCallback,
+      () => this.serializeResultsInWorker(results, deserializedArgs),
+    )
     return serialized
   }
 

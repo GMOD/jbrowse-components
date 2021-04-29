@@ -48,10 +48,11 @@ export default class ElectronRemoteFile implements GenericFilehandle {
   public constructor(source: string, opts: FilehandleOptions = {}) {
     let ipcRenderer
     if (electron) ipcRenderer = electron.ipcRenderer
-    if (!ipcRenderer)
+    if (!ipcRenderer) {
       throw new Error(
         'Cannot use ElectronLocalFile without ipcRenderer from electron',
       )
+    }
     this.ipcRenderer = ipcRenderer
 
     this.url = source
@@ -113,10 +114,11 @@ export default class ElectronRemoteFile implements GenericFilehandle {
   protected async getFetch(
     opts: FilehandleOptions,
   ): Promise<PolyfilledResponse> {
-    if (!this.fetch)
+    if (!this.fetch) {
       throw new Error(
         'a fetch function must be available unless using a file:// url',
       )
+    }
     if (!this.url) {
       throw new Error('no URL specified')
     }
@@ -152,8 +154,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
       if (requestOptions.headers && requestOptions.headers.range) {
         const contentRange = response.headers.get('content-range')
         const sizeMatch = /\/(\d+)$/.exec(contentRange || '')
-        if (sizeMatch && sizeMatch[1])
+        if (sizeMatch && sizeMatch[1]) {
           this._stat = { size: parseInt(sizeMatch[1], 10) }
+        }
       } else {
         const contentLength = response.headers.get('content-length')
         if (contentLength) this._stat = { size: parseInt(contentLength, 10) }
@@ -233,8 +236,9 @@ export default class ElectronRemoteFile implements GenericFilehandle {
   public async stat(): Promise<Stats> {
     if (!this._stat) await this.headFetch()
     if (!this._stat) await this.read(Buffer.allocUnsafe(10), 0, 10, 0)
-    if (!this._stat)
+    if (!this._stat) {
       throw new Error(`unable to determine size of file at ${this.url}`)
+    }
     return this._stat
   }
 }

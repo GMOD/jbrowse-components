@@ -13,7 +13,6 @@ import {
   SnapshotIn,
   types,
 } from 'mobx-state-tree'
-import { UndoManager } from 'mst-middlewares'
 import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -141,9 +140,6 @@ export default function RootModel(pluginManager: PluginManager) {
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
-        if (sessionSnapshot)
-          this.setHistory(UndoManager.create({}, { targetStore: self.session }))
-        else this.setHistory(undefined)
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setHistory(history: any) {

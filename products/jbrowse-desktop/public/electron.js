@@ -1,4 +1,3 @@
-/* eslint curly:error */
 // eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
 const debug = require('electron-debug')

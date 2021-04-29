@@ -23,6 +23,7 @@ export default function SetMinMaxDlg(props: {
   model: {
     minScore: number
     maxScore: number
+    scaleType: string
     setMinScore: Function
     setMaxScore: Function
   }
@@ -30,7 +31,7 @@ export default function SetMinMaxDlg(props: {
 }) {
   const classes = useStyles()
   const { model, handleClose } = props
-  const { minScore, maxScore } = model
+  const { minScore, maxScore, scaleType } = model
 
   const [min, setMin] = useState(
     `${minScore !== Number.MIN_VALUE ? minScore : ''}`,
@@ -44,20 +45,14 @@ export default function SetMinMaxDlg(props: {
       ? +max > +min
       : true
 
+  const logOk =
+    scaleType === 'log' && min !== '' && !Number.isNaN(+min) ? +min > 0 : true
+
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
         Set min/max score for track
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
+        <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -67,6 +62,12 @@ export default function SetMinMaxDlg(props: {
           {!ok ? (
             <Typography color="error">
               Max is greater than or equal to min
+            </Typography>
+          ) : null}
+
+          {!logOk ? (
+            <Typography color="error">
+              Min score should be greater than 0 for log scale
             </Typography>
           ) : null}
 

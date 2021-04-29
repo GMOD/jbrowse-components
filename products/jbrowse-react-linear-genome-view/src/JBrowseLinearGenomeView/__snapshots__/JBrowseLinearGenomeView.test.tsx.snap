@@ -440,7 +440,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 60px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 80px;"
                 />
                 <div
@@ -480,7 +480,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 260px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 280px;"
                 />
                 <div
@@ -520,7 +520,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 460px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 480px;"
                 />
                 <div
@@ -560,7 +560,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 660px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 680px;"
                 />
                 <div
@@ -600,7 +600,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   style="left: 860px;"
                 />
                 <div
-                  class="makeStyles-tick makeStyles-majorTick"
+                  class="makeStyles-tick makeStyles-minorTick"
                   style="left: 880px;"
                 />
                 <div

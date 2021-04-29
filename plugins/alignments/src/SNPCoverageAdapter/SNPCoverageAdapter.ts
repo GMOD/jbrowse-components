@@ -4,10 +4,7 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
 import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getSnapshot } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { reduce, filter, toArray } from 'rxjs/operators'
@@ -24,36 +21,33 @@ interface SNPCoverageOptions extends BaseOptions {
 }
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
-  private subadapter: BaseFeatureDataAdapter
+  protected async configure() {
+    const subadapterConfig = readConfObject(this.config, 'subadapter')
+    const sequenceConf = readConfObject(this.config, [
+      'subadapter',
+      'sequenceAdapter',
+    ])
+    const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
 
-  private sequenceAdapter: BaseFeatureDataAdapter
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-  ) {
-    super(config)
-
-    const dataAdapter = getSubAdapter?.(getSnapshot(config.subadapter))
-      .dataAdapter
-    const sequenceAdapter = getSubAdapter?.(
-      readConfObject(config, ['subadapter', 'sequenceAdapter']),
-    ).dataAdapter
-
-    if (!sequenceAdapter) {
-      throw new Error('failed to initialize adapter, no sequence adapter')
-    }
+    const sequenceAdapter = await this.getSubAdapter?.(sequenceConf)
 
     if (!dataAdapter) {
-      throw new Error('failed to initialize adapter, no subadapter')
+      throw new Error('Failed to get subadapter')
     }
-    this.subadapter = dataAdapter as BaseFeatureDataAdapter
-    this.sequenceAdapter = sequenceAdapter as BaseFeatureDataAdapter
+    if (!sequenceAdapter) {
+      throw new Error('Failed to get sequence subadapter')
+    }
+
+    return {
+      subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
+      sequenceAdapter: sequenceAdapter.dataAdapter as BaseFeatureDataAdapter,
+    }
   }
 
   getFeatures(region: Region, opts: SNPCoverageOptions) {
     return ObservableCreate<Feature>(async observer => {
-      let stream = this.subadapter.getFeatures(region, opts)
+      const { subadapter } = await this.configure()
+      let stream = subadapter.getFeatures(region, opts)
 
       if (opts.filters) {
         const { filters } = opts
@@ -82,7 +76,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    return this.subadapter.getRefNames(opts)
+    const { subadapter } = await this.configure()
+    return subadapter.getRefNames(opts)
   }
 
   freeResources(/* { region } */): void {}
@@ -101,6 +96,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     opts: { bpPerPx?: number; colorBy?: { type: string; tag?: string } },
   ) {
     const { colorBy } = opts
+    const { sequenceAdapter } = await this.configure()
     const binMax = Math.ceil(region.end - region.start)
 
     const initBins = Array.from({ length: binMax }, () => ({
@@ -112,8 +108,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const { refName, start, end } = region
 
     // request an extra +1 on the end to get CpG crossing region boundary
-    const [feat] = await this.sequenceAdapter
-      .getFeatures({ refName, start, end: end + 1 })
+    const [feat] = await sequenceAdapter
+      .getFeatures({ refName, start, end: end + 1, assemblyName: 'na' })
       .pipe(toArray())
       .toPromise()
     const regionSeq = feat?.get('seq')
@@ -206,3 +202,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       .toPromise()
   }
 }
+
+const { capabilities } = SNPCoverageAdapter
+export { capabilities }

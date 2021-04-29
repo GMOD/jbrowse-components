@@ -21,10 +21,7 @@ import {
   configSchema as variantFeatureWidgetConfigSchema,
   stateModelFactory as variantFeatureWidgetStateModelFactory,
 } from './VariantFeatureWidget'
-import {
-  AdapterClass as VcfTabixAdapterClass,
-  configSchema as vcfTabixAdapterConfigSchema,
-} from './VcfTabixAdapter'
+import { configSchema as vcfTabixAdapterConfigSchema } from './VcfTabixAdapter'
 
 export default class VariantsPlugin extends Plugin {
   name = 'VariantsPlugin'
@@ -35,7 +32,8 @@ export default class VariantsPlugin extends Plugin {
         new AdapterType({
           name: 'VcfTabixAdapter',
           configSchema: vcfTabixAdapterConfigSchema,
-          AdapterClass: VcfTabixAdapterClass,
+          getAdapterClass: () =>
+            import('./VcfTabixAdapter/VcfTabixAdapter').then(r => r.default),
         }),
     )
 

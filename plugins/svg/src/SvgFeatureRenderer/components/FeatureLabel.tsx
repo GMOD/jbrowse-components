@@ -32,9 +32,8 @@ export default function Label(props: {
   return (
     <text
       x={reversed ? x + (featureWidth || 0) - fontWidth * text.length : x}
-      y={y}
+      y={y + fontHeight}
       style={{ fontSize: fontHeight, fill: color, cursor: 'default' }}
-      dominantBaseline="hanging"
     >
       {fontWidth * text.length > totalWidth
         ? `${text.slice(0, totalWidth / fontWidth)}...`

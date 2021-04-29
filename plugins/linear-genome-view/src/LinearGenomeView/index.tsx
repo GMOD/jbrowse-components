@@ -30,6 +30,7 @@ import {
   addDisposer,
 } from 'mobx-state-tree'
 
+import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import SyncAltIcon from '@material-ui/icons/SyncAlt'
@@ -38,8 +39,9 @@ import LabelIcon from '@material-ui/icons/Label'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { saveAs } from 'file-saver'
+import { renderToSvg } from './components/LinearGenomeView'
+import ExportSvgDlg from './components/ExportSvgDialog'
 import ReturnToImportFormDlg from './components/ReturnToImportFormDialog'
 
 export { default as ReactComponent } from './components/LinearGenomeView'
@@ -54,6 +56,10 @@ export interface BpOffset {
   reversed?: boolean
   assemblyName?: string
   oob?: boolean
+}
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -125,10 +131,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      DialogComponent: undefined as React.FC<any> | undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      DialogProps: undefined as any,
     }))
     .views(self => ({
       get width(): number {
@@ -560,6 +562,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
+        return track
       },
 
       hideTrack(trackId: string) {
@@ -584,13 +587,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const oldIndex = self.tracks.findIndex(
           track => track.id === movingTrackId,
         )
-        if (oldIndex === -1)
+        if (oldIndex === -1) {
           throw new Error(`Track ID ${movingTrackId} not found`)
+        }
         const newIndex = self.tracks.findIndex(
           track => track.id === targetTrackId,
         )
-        if (newIndex === -1)
+        if (newIndex === -1) {
           throw new Error(`Track ID ${targetTrackId} not found`)
+        }
         const track = getSnapshot(self.tracks[oldIndex])
         self.tracks.splice(oldIndex, 1)
         self.tracks.splice(newIndex, 0, track)
@@ -1186,6 +1191,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               icon: FolderOpenIcon,
             },
             {
+              label: 'Export SVG',
+              onClick: () => {
+                getSession(self).setDialogComponent(ExportSvgDlg, {
+                  model: self,
+                })
+              },
+            },
+            {
               label: 'Open track selector',
               onClick: self.activateTrackSelector,
               icon: TrackSelectorIcon,
@@ -1281,6 +1294,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
         },
+
+        get roundedDynamicBlocks() {
+          return this.dynamicBlocks.contentBlocks.map(block => {
+            return {
+              ...block,
+              start: Math.floor(block.start),
+              end: Math.ceil(block.end),
+            }
+          })
+        },
         get visibleLocStrings() {
           return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
         },
@@ -1318,8 +1341,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .actions(self => ({
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, 'image.svg')
+      },
+    }))
 
   return types.compose(BaseViewModel, model)
 }
+
+export { renderToSvg }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>

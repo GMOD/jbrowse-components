@@ -511,10 +511,6 @@ const Renderer = observer(
               writeGAAnalytics(rootModel, initialTimestamp)
             }
 
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
             pluginManager.setRootModel(rootModel)
             pluginManager.configure()
             setPluginManager(pluginManager)

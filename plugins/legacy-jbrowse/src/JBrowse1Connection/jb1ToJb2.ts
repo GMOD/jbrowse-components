@@ -1,5 +1,5 @@
 import { openLocation } from '@jbrowse/core/util/io'
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import {
   generateUnknownTrackConf,
   generateUnsupportedTrackConf,
@@ -102,16 +102,16 @@ export function convertTrackConfig(
         type: 'BamAdapter',
         bamLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.baiUrlTemplate)
+      if (jb1TrackConfig.baiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.baiUrlTemplate) },
         }
-      else if (jb1TrackConfig.csiUrlTemplate)
+      } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
+      } else adapter.index = { location: { uri: `${urlTemplate}.bai` } }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -124,11 +124,11 @@ export function convertTrackConfig(
         cramLocation: { uri: urlTemplate },
         sequenceAdapter,
       }
-      if (jb1TrackConfig.craiUrlTemplate)
+      if (jb1TrackConfig.craiUrlTemplate) {
         adapter.craiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
         }
-      else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
+      } else adapter.craiLocation = { uri: `${urlTemplate}.crai` }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -171,16 +171,16 @@ export function convertTrackConfig(
         type: 'VcfTabixAdapter',
         vcfGzLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.tbiUrlTemplate)
+      if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
         }
-      else if (jb1TrackConfig.csiUrlTemplate)
+      } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
       return {
         ...jb2TrackConfig,
         type: 'VariantTrack',
@@ -216,16 +216,16 @@ export function convertTrackConfig(
         type: 'Gff3TabixAdapter',
         gffGzLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.tbiUrlTemplate)
+      if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
         }
-      else if (jb1TrackConfig.csiUrlTemplate)
+      } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
@@ -244,16 +244,16 @@ export function convertTrackConfig(
         type: 'BedTabixAdapter',
         bedGzLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.tbiUrlTemplate)
+      if (jb1TrackConfig.tbiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.tbiUrlTemplate) },
         }
-      else if (jb1TrackConfig.csiUrlTemplate)
+      } else if (jb1TrackConfig.csiUrlTemplate) {
         adapter.index = {
           location: { uri: resolveUrlTemplate(jb1TrackConfig.csiUrlTemplate) },
           indexType: 'CSI',
         }
-      else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
+      } else adapter.index = { location: { uri: `${urlTemplate}.tbi` } }
       return {
         ...jb2TrackConfig,
         type: 'FeatureTrack',
@@ -289,11 +289,11 @@ export function convertTrackConfig(
         type: 'IndexedFastaAdapter',
         fastaLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.faiUrlTemplate)
+      if (jb1TrackConfig.faiUrlTemplate) {
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
         }
-      else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      } else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
       return {
         ...jb2TrackConfig,
         type: 'SequenceTrack',
@@ -305,16 +305,16 @@ export function convertTrackConfig(
         type: 'BgzipFastaAdapter',
         fastaLocation: { uri: urlTemplate },
       }
-      if (jb1TrackConfig.faiUrlTemplate)
+      if (jb1TrackConfig.faiUrlTemplate) {
         adapter.faiLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
         }
-      else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
-      if (jb1TrackConfig.gziUrlTemplate)
+      } else adapter.faiLocation = { uri: `${urlTemplate}.fai` }
+      if (jb1TrackConfig.gziUrlTemplate) {
         adapter.gziLocation = {
           uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
         }
-      else adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
+      } else adapter.gziLocation = { uri: `${urlTemplate}.gzi` }
       return {
         ...jb2TrackConfig,
         type: 'ReferenceSequenceTrack',

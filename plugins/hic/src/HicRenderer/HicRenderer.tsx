@@ -8,11 +8,8 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType'
 import { Region } from '@jbrowse/core/util/types'
-import {
-  createCanvas,
-  createImageBitmap,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { abortBreakPoint } from '@jbrowse/core/util'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { toArray } from 'rxjs/operators'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -52,34 +49,15 @@ export type ResultsSerialized = ServerSideResultsSerialized
 export type ResultsDeserialized = ServerSideResultsDeserialized
 
 export default class HicRenderer extends ServerSideRendererType {
-  async makeImageData(props: RenderArgsDeserializedWithFeatures) {
-    const {
-      features,
-      config,
-      regions,
-      bpPerPx,
-      highResolutionScaling = 1,
-      dataAdapter,
-      signal,
-      resolution,
-    } = props
+  supportsSVG = true
 
-    const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    const height = readConfObject(config, 'maxHeight')
+  async makeImageData(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
+    const { features, config, bpPerPx, signal, dataAdapter, resolution } = props
     const res = await dataAdapter.getResolution(bpPerPx / resolution)
-
-    if (!(width > 0) || !(height > 0)) {
-      return { height: 0, width: 0, maxHeightReached: false }
-    }
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
     const w = res / (bpPerPx * Math.sqrt(2))
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
     const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {
       const offset = features[0].bin1
@@ -111,47 +89,47 @@ export default class HicRenderer extends ServerSideRendererType {
         }
       }
     }
-
-    const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-    }
   }
 
   async render(renderProps: RenderArgsDeserialized) {
+    const { config, regions, bpPerPx } = renderProps
+    const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
+    const height = readConfObject(config, 'maxHeight')
     const features = await this.getFeatures(renderProps)
-    const {
-      height,
-      width,
-      imageData,
-      maxHeightReached,
-    } = await this.makeImageData({ ...renderProps, features })
 
+    const res = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) => {
+        return this.makeImageData(ctx, {
+          ...renderProps,
+          features,
+        })
+      },
+    )
     const results = await super.render({
       ...renderProps,
+      ...res,
       features,
       region: renderProps.regions[0],
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
+      ...res,
       height,
       width,
-      maxHeightReached,
     }
   }
 
   async getFeatures(args: RenderArgsDeserialized) {
     const { dataAdapter, regions } = args
     const features = await dataAdapter
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .getFeatures(regions[0], args as any)
+      .getFeatures(regions[0], args)
       .pipe(toArray())
       .toPromise()
     // cast to any to avoid return-type conflict, because the

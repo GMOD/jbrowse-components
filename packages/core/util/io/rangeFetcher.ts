@@ -1,4 +1,3 @@
-import 'whatwg-fetch'
 // import tenaciousFetch from 'tenacious-fetch'
 
 import { HttpRangeFetcher } from 'http-range-fetcher'
@@ -90,12 +89,12 @@ async function globalCacheFetch(
   let range
   if (requestHeaders) {
     if (requestHeaders instanceof Headers) range = requestHeaders.get('range')
-    else if (Array.isArray(requestHeaders))
-      [, range] = requestHeaders.find(([key]) => key === 'range') || [
+    else if (Array.isArray(requestHeaders)) {
+      ;[, range] = requestHeaders.find(([key]) => key === 'range') || [
         undefined,
         undefined,
       ]
-    else range = requestHeaders.range
+    } else range = requestHeaders.range
   }
   if (range) {
     const rangeParse = /bytes=(\d+)-(\d+)/.exec(range)

@@ -45,9 +45,10 @@ export default class NCListFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(attrName: string): any {
     const attr = this.ncFeature.get(this.jb2TagToJb1Tag(attrName))
-    if (attr && attrName === 'subfeatures')
+    if (attr && attrName === 'subfeatures') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return attr.map((subfeature: any) => new NCListFeature(subfeature, this))
+    }
     return attr
   }
 

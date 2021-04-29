@@ -1,14 +1,8 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AdapterClass as BigBedAdapterClass,
-  configSchema as bigBedAdapterConfigSchema,
-} from './BigBedAdapter'
-import {
-  AdapterClass as BedTabixAdapterClass,
-  configSchema as bedTabixAdapterConfigSchema,
-} from './BedTabixAdapter'
+import { configSchema as bigBedAdapterConfigSchema } from './BigBedAdapter'
+import { configSchema as bedTabixAdapterConfigSchema } from './BedTabixAdapter'
 
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'
@@ -19,7 +13,8 @@ export default class BedPlugin extends Plugin {
         new AdapterType({
           name: 'BigBedAdapter',
           configSchema: bigBedAdapterConfigSchema,
-          AdapterClass: BigBedAdapterClass,
+          getAdapterClass: () =>
+            import('./BigBedAdapter/BigBedAdapter').then(r => r.default),
         }),
     )
     pluginManager.addAdapterType(
@@ -27,7 +22,8 @@ export default class BedPlugin extends Plugin {
         new AdapterType({
           name: 'BedTabixAdapter',
           configSchema: bedTabixAdapterConfigSchema,
-          AdapterClass: BedTabixAdapterClass,
+          getAdapterClass: () =>
+            import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
         }),
     )
   }

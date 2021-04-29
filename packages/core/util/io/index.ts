@@ -19,7 +19,9 @@ declare global {
 // for detecting electron in a renderer process, which is the one that has node enabled for us
 // const isElectron = process.versions.electron
 // const i2 = process.versions.hasOwnProperty('electron')
-const isElectron = /electron/i.test(navigator.userAgent)
+const isElectron = /electron/i.test(
+  typeof navigator !== 'undefined' ? navigator.userAgent : '',
+)
 
 export const openUrl = (arg: string) => {
   return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)

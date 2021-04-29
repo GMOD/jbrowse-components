@@ -97,12 +97,14 @@ export const BaseChordDisplayModel = types
       const ThisRendererType = pluginManager.getRendererType(
         self.rendererTypeName,
       )
-      if (!ThisRendererType)
+      if (!ThisRendererType) {
         throw new Error(`renderer "${display.rendererTypeName}" not found`)
-      if (!ThisRendererType.ReactComponent)
+      }
+      if (!ThisRendererType.ReactComponent) {
         throw new Error(
           `renderer ${display.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return ThisRendererType
     },
 

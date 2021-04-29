@@ -120,8 +120,9 @@ getPluginManager()
     const rpcConfig: { [methodName: string]: Function } = {}
     const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
     rpcMethods.forEach(rpcMethod => {
-      if (!(rpcMethod instanceof RpcMethodType))
+      if (!(rpcMethod instanceof RpcMethodType)) {
         throw new Error('invalid rpc method??')
+      }
 
       rpcConfig[rpcMethod.name] = wrapForRpc(
         rpcMethod.execute.bind(rpcMethod),

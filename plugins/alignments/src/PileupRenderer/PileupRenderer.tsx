@@ -15,6 +15,7 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { bpSpanPx, iterMap } from '@jbrowse/core/util'
 import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
+import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { interpolateLab } from 'd3-interpolate'
 import {
   createCanvas,
@@ -121,9 +122,15 @@ function getTagAlt(feature: Feature, tag: string, alt: string) {
   return getTag(feature, tag) || getTag(feature, alt)
 }
 
+function shouldDrawMismatches(type?: string) {
+  return !['methylation', 'modifications'].includes(type || '')
+}
+
 export default class PileupRenderer extends BoxRendererType {
-  // get width and height of chars the height is an approximation: width letter
-  // M is approximately the height
+  supportsSVG = true
+
+  // get width and height of chars the height is an approximation: width
+  // letter M is approximately the height
   getCharWidthHeight(ctx: CanvasRenderingContext2D) {
     const charWidth = ctx.measureText('A').width
     const charHeight = ctx.measureText('M').width
@@ -585,6 +592,10 @@ export default class PileupRenderer extends BoxRendererType {
     const [region] = regions
     const start = feature.get('start')
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
+    const insertionScale = readConfObject(
+      config,
+      'largeInsertionIndicatorScale',
+    )
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minFeatWidth, pxPerBp)
     const mismatches: Mismatch[] = feature.get('mismatches')
@@ -676,7 +687,13 @@ export default class PileupRenderer extends BoxRendererType {
         // note that this was also related to chrome bug https://bugs.chromium.org/p/chro>
         // ref #1236
         if (mismatchLeftPx + mismatchWidthPx > 0) {
-          ctx.clearRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
+          ctx.clearRect(
+            mismatchLeftPx,
+            topPx,
+            // make small exons more visible when zoomed far out
+            mismatchWidthPx - (bpPerPx > 10 ? 1.5 : 0),
+            heightPx,
+          )
         }
         ctx.fillStyle = '#333'
         ctx.fillRect(mismatchLeftPx, topPx + heightPx / 2, mismatchWidthPx, 2)
@@ -696,18 +713,25 @@ export default class PileupRenderer extends BoxRendererType {
         const len = +mismatch.base || mismatch.length
         const txt = `${len}`
         if (mismatch.type === 'insertion' && len >= 10) {
-          const rect = ctx.measureText(txt)
-          const padding = 5
-          ctx.fillStyle = 'purple'
-          ctx.fillRect(
-            mismatchLeftPx - rect.width / 2 - padding,
-            topPx,
-            rect.width + 2 * padding,
-            heightPx,
-          )
-          if (heightPx > charHeight) {
+          if (bpPerPx > insertionScale) {
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(mismatchLeftPx - 1, topPx, 2, heightPx)
+          } else if (heightPx > charHeight) {
+            const rect = ctx.measureText(txt)
+            const padding = 5
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(
+              mismatchLeftPx - rect.width / 2 - padding,
+              topPx,
+              rect.width + 2 * padding,
+              heightPx,
+            )
             ctx.fillStyle = 'white'
             ctx.fillText(txt, mismatchLeftPx - rect.width / 2, topPx + heightPx)
+          } else {
+            const padding = 2
+            ctx.fillStyle = 'purple'
+            ctx.fillRect(mismatchLeftPx - padding, topPx, 2 * padding, heightPx)
           }
         }
       }
@@ -750,7 +774,8 @@ export default class PileupRenderer extends BoxRendererType {
           for (let k = 0; k < softClipLength; k += 1) {
             const base = seq.charAt(k + mismatch.start)
 
-            // If softclip length+start is longer than sequence, no need to continue showing base
+            // If softclip length+start is longer than sequence, no need to
+            // continue showing base
             if (!base) return
 
             const [softClipLeftPx, softClipRightPx] = bpSpanPx(
@@ -783,21 +808,56 @@ export default class PileupRenderer extends BoxRendererType {
     }
   }
 
-  async makeImageData(props: RenderArgsDeserializedWithFeaturesAndLayout) {
-    const {
-      features,
-      layout,
-      config,
-      regions,
-      bpPerPx,
-      sortedBy,
-      highResolutionScaling = 1,
-      showSoftClip,
-      colorBy,
-      theme: configTheme,
-    } = props
+  async makeImageData(
+    ctx: CanvasRenderingContext2D,
+    layoutRecords: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
+  ) {
+    const { layout, config, showSoftClip, colorBy, theme: configTheme } = props
+    const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
     const theme = createJBrowseTheme(configTheme)
+    const colorForBase = getColorBaseMap(theme)
+    if (!layout) {
+      throw new Error(`layout required`)
+    }
+    if (!layout.addRect) {
+      throw new Error('invalid layout object')
+    }
+    ctx.font = 'bold 10px Courier New,monospace'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    layoutRecords.forEach((feat: any) => {
+      if (feat === null) {
+        return
+      }
 
+      const { feature, topPx, heightPx } = feat
+
+      ctx.fillStyle = readConfObject(config, 'color', { feature })
+      this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
+      this.drawMismatches(ctx, feat, props, theme, colorForBase, {
+        mismatchAlpha,
+
+        drawSNPs: shouldDrawMismatches(colorBy?.type),
+        drawIndels: shouldDrawMismatches(colorBy?.type),
+      })
+      if (showSoftClip) {
+        this.drawSoftClipping(ctx, feat, props, config, theme)
+      }
+    })
+  }
+
+  // we perform a full layout before render as a separate method because the
+  // layout determines the height of the canvas that we use to render
+  layoutFeats(props: RenderArgsDeserializedWithFeaturesAndLayout) {
+    const {
+      layout,
+      features,
+      sortedBy,
+      config,
+      bpPerPx,
+      showSoftClip,
+      regions,
+    } = props
     const [region] = regions
     if (!layout) {
       throw new Error(`layout required`)
@@ -806,11 +866,11 @@ export default class PileupRenderer extends BoxRendererType {
       throw new Error('invalid layout object')
     }
 
-    const colorForBase = getColorBaseMap(theme)
-    const featureMap =
+    const sortedFeatures =
       sortedBy && sortedBy.type && region.start === sortedBy.pos
         ? sortFeature(features, sortedBy)
-        : features
+        : null
+    const featureMap = sortedFeatures || features
     const layoutRecords = iterMap(
       featureMap.values(),
       feature =>
@@ -824,89 +884,49 @@ export default class PileupRenderer extends BoxRendererType {
         ),
       featureMap.size,
     )
-
-    const width = (region.end - region.start) / bpPerPx
-    const height = Math.max(layout.getTotalHeight(), 1)
-    const mismatchAlpha = readConfObject(config, 'mismatchAlpha') as boolean
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d')
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.font = 'bold 10px Courier New,monospace'
-    layoutRecords.forEach(feat => {
-      if (feat === null) {
-        return
-      }
-
-      const { feature, topPx, heightPx } = feat
-
-      ctx.fillStyle = readConfObject(config, 'color', { feature })
-      const drawMismatches = (type?: string) => {
-        return !['methylation', 'modifications'].includes(type || '')
-      }
-      this.drawAlignmentRect(ctx, { feature, topPx, heightPx }, props)
-      this.drawMismatches(ctx, feat, props, theme, colorForBase, {
-        mismatchAlpha,
-        drawSNPs: drawMismatches(colorBy?.type),
-        drawIndels: drawMismatches(colorBy?.type),
-      })
-      if (showSoftClip) {
-        this.drawSoftClipping(ctx, feat, props, config, theme)
-      }
-    })
-
-    const imageData = await createImageBitmap(canvas)
-    return {
-      imageData,
-      height,
-      width,
-      maxHeightReached: layout.maxHeightReached,
-    }
+    return layoutRecords
   }
 
   async render(renderProps: RenderArgsDeserialized) {
+    const { bpPerPx, regions } = renderProps
     const features = await this.getFeatures(renderProps)
-
-    const seqAdapter = renderProps.dataAdapter.sequenceAdapter
-    const { refName, start, end } = renderProps.regions[0]
-    const [feat] = seqAdapter
-      ? await seqAdapter
-          .getFeatures({ refName, start, end: end + 1 })
-          .pipe(toArray())
-          .toPromise()
-      : []
-    const regionSequence = feat.get('seq')
     const layout = this.createLayoutInWorker(renderProps)
-    const {
-      height,
+
+    const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
+    const [region] = regions
+
+    const width = (region.end - region.start) / bpPerPx
+    const height = Math.max(layout.getTotalHeight(), 1)
+
+    const res = await renderToAbstractCanvas(
       width,
-      imageData,
-      maxHeightReached,
-    } = await this.makeImageData({
-      ...renderProps,
-      features,
-      layout,
-      regionSequence,
-    })
+      height,
+      renderProps,
+      (ctx: CanvasRenderingContext2D) =>
+        this.makeImageData(ctx, layoutRecords, {
+          ...renderProps,
+          layout,
+          features,
+        }),
+    )
+
     const results = await super.render({
       ...renderProps,
+      ...res,
       features,
       layout,
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
+      ...res,
+      features,
+      layout,
       height,
       width,
-      maxHeightReached,
-      layout,
+      maxHeightReached: layout.maxHeightReached,
     }
   }
 

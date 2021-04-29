@@ -18,8 +18,9 @@ function recordStats(event, context, done) {
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
-  if (stats.host && stats.host.startsWith('www.'))
+  if (stats.host && stats.host.startsWith('www.')) {
     stats.host = stats.host.slice(4)
+  }
   // stats.fullHeaders = event.headers
 
   // construct JSON for the track types
