@@ -68,7 +68,7 @@ export default class ComparativeRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,

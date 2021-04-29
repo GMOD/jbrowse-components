@@ -4,10 +4,7 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 
-import { ClassReturnedBy } from '@jbrowse/core/util'
-import CramAdapterF from './CramAdapter'
-
-type CramAdapter = ClassReturnedBy<typeof CramAdapterF>
+import CramAdapter from './CramAdapter'
 
 export interface Mismatch {
   qual?: number

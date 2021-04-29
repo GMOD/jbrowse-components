@@ -45,7 +45,7 @@ class CustomAdapter extends BaseFeatureDataAdapter {
   }
 }
 
-const getSubAdapter: getSubAdapterType = () => {
+const getSubAdapter: getSubAdapterType = async () => {
   return {
     dataAdapter: new CustomAdapter(),
     sessionIds: new Set(),

@@ -2,9 +2,12 @@ import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from '../util'
+import { checkAbortSignal, hashCode, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  ConfigurationSchema,
+} from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
@@ -18,7 +21,10 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export interface AdapterConstructor {
+// see
+// https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
+// for why this is the abstract construct signature
+export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -49,16 +55,7 @@ function idMaker(args: any, id = '') {
       id += `${key}-${args[key]};`
     }
   }
-  // quickhash https://stackoverflow.com/questions/7616461
-  let hash = 0
-  let i
-  let chr
-  for (i = 0; i < id.length; i++) {
-    chr = id.charCodeAt(i)
-    hash = (hash << 5) - hash + chr // eslint-disable-line no-bitwise
-    hash |= 0 // eslint-disable-line no-bitwise
-  }
-  return hash
+  return hashCode(id)
 }
 
 export abstract class BaseAdapter {
@@ -66,11 +63,20 @@ export abstract class BaseAdapter {
 
   static capabilities = [] as string[]
 
-  constructor(args: unknown = {}) {
+  config: AnyConfigurationModel
+
+  getSubAdapter?: getSubAdapterType
+
+  constructor(
+    config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
+    getSubAdapter?: getSubAdapterType,
+  ) {
+    this.config = config
+    this.getSubAdapter = getSubAdapter
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(args) ? getSnapshot(args) : args
+      const data = isStateTreeNode(config) ? getSnapshot(config) : config
       this.id = `${idMaker(data)}`
     } else {
       this.id = 'test'

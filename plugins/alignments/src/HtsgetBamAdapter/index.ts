@@ -1,10 +1,8 @@
-// import PluginManager from '@jbrowse/core/PluginManager'
 import configSchema from './configSchema'
-import AdapterClass from './HtsgetBamAdapter'
 
 export default (/* pluginManager: PluginManager */) => {
   return {
     configSchema,
-    AdapterClass,
+    getAdapterClass: () => import('./HtsgetBamAdapter').then(r => r.default),
   }
 }

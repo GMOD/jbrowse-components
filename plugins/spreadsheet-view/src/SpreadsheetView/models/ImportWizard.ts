@@ -1,6 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { unzip } from '@gmod/bgzf-filehandle'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
@@ -161,6 +160,8 @@ export default (pluginManager: PluginManager) => {
           if (!typeParser) {
             throw new Error(`cannot open files of type '${self.fileType}'`)
           }
+
+          const { unzip } = await import('@gmod/bgzf-filehandle')
 
           const filehandle = openLocation(self.fileSource)
           filehandle

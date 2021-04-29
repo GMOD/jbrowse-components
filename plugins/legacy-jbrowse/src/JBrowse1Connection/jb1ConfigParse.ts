@@ -1,7 +1,8 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
 import getValue from 'get-value'
 import setValue from 'set-value'
-import { isSource, isTrack, objectFingerprint } from './util'
+import { objectHash } from '@jbrowse/core/util'
+import { isSource, isTrack } from './util'
 import { Config, Track, Source, Store, Names } from './types'
 
 export function parseJB1Json(config: Config | string, url: string): Config {
@@ -358,7 +359,7 @@ function synthesizeTrackStoreConfig(
   ) {
     storeConf.name = 'refseqs'
   } else {
-    storeConf.name = `store${objectFingerprint(storeConf)}`
+    storeConf.name = `store${objectHash(storeConf)}`
   }
   // record it
   if (!mainConf.stores) mainConf.stores = {}

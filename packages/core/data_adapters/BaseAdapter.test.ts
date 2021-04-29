@@ -19,7 +19,7 @@ describe('base data adapter', () => {
 
       freeResources(): void {}
     }
-    const adapter = new Adapter({})
+    const adapter = new Adapter()
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',
@@ -53,7 +53,7 @@ describe('base data adapter', () => {
 
       freeResources(): void {}
     }
-    const adapter = new Adapter({})
+    const adapter = new Adapter()
     const features = adapter.getFeatures({
       assemblyName: 'volvox',
       refName: 'ctgA',

@@ -1,4 +1,4 @@
-import objectHash from 'object-hash'
+import { objectHash } from '@jbrowse/core/util'
 import { generateUnsupportedTrackConf } from '@jbrowse/core/util/tracks'
 
 export function generateTracks(trackDb, assemblyName, sequenceAdapter) {

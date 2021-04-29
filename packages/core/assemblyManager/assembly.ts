@@ -331,9 +331,12 @@ async function loadAssemblyReaction(
   const dataAdapterType = pluginManager.getAdapterType(
     sequenceAdapterConfig.type,
   )
-  const adapter = new dataAdapterType.AdapterClass(
-    sequenceAdapterConfig,
-  ) as RegionsAdapter
+  const { AdapterClass, getAdapterClass } = dataAdapterType
+  const CLASS = AdapterClass || (await getAdapterClass?.())
+  if (!CLASS) {
+    throw new Error('Failed to get adapter class')
+  }
+  const adapter = new CLASS(sequenceAdapterConfig) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
@@ -346,7 +349,15 @@ async function loadAssemblyReaction(
     const refAliasAdapterType = pluginManager.getAdapterType(
       refNameAliasesAdapterConfig.type,
     )
-    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+    const {
+      AdapterClass: RefAdapterClass,
+      getAdapterClass: getRefAdapterClass,
+    } = refAliasAdapterType
+    const REFCLASS = RefAdapterClass || (await getRefAdapterClass?.())
+    if (!REFCLASS) {
+      throw new Error('Failed to get REFCLASS')
+    }
+    const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
     ) as BaseRefNameAliasAdapter
     const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
