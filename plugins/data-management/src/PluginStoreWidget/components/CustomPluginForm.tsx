@@ -92,7 +92,7 @@ function CustomPluginForm({
           style={{ marginTop: '1.5rem' }}
           onClick={handleSubmit}
         >
-          Submit
+          Add plugin
         </Button>
       </div>
     </Dialog>
