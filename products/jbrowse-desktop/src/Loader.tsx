@@ -38,7 +38,7 @@ export default function Loader({
   const [configSnapshot, setConfigSnapshot] = useState<
     SnapshotIn<AnyConfigurationModel>
   >()
-  const [plugins, setPlugins] = useState<PluginConstructor[]>()
+  const [plugins, setPlugins] = useState<PluginConstructor[]>([])
   const classes = useStyles()
   const [error, setError] = useState('')
   const [snapshotError, setSnapshotError] = useState('')
@@ -90,7 +90,7 @@ export default function Loader({
   }, [configSnapshot])
 
   useEffect(() => {
-    if (plugins) {
+    if (plugins.length > 0) {
       const pm = new PluginManager(plugins.map(P => new P()))
       pm.createPluggableElements()
 
