@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
+import { getParent, getEnv } from 'mobx-state-tree'
 
 import { makeStyles } from '@material-ui/core/styles'
 import { Typography } from '@material-ui/core'
@@ -64,7 +64,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     const fetchResult = await fetch(
       'https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json',
     )
-    if (fetchResult.status !== 200) {
+    if (!fetchResult.ok) {
       throw new Error('Failed to fetch plugin data')
     }
     const array = await fetchResult.json()
@@ -78,7 +78,8 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   }
 
   const rootModel = getParent(model, 3)
-  const { adminMode, pluginManager } = rootModel
+  const { adminMode } = rootModel
+  const pluginManager = getEnv(rootModel)
 
   return (
     <div>
