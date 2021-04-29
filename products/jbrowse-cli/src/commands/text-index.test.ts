@@ -18,4 +18,10 @@ describe('indexGff3', () => {
       expect(err.message).toContain('please specify a track to index')
     })
     .it('fails if no track id is provided to the command with --individual flag.')
-})
+  setup
+    .command(['text-index', '--individual', '--tracks=file1,gile2'])
+    .catch(err =>{
+      expect(err.message).toContain('--individual flag only allows one track to be indexed')
+    })
+    .it('fails if there are more than one track when using the individual flag')
+  })
