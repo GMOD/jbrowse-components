@@ -53,7 +53,7 @@ export default class TextIndex extends JBrowseCommand {
           )
         }
       } else {
-        this.log('Error, please specify a track to index.')
+        this.error('Error, please specify a track to index.')
       }
     } else if (runFlags.tracks) {
       const trackIds: Array<string> = runFlags.tracks.split(',')

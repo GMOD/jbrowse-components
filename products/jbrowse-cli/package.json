@@ -38,6 +38,7 @@
     "docs": "oclif-dev readme && prettier --write README.md"
   },
   "dependencies": {
+    "@gmod/gff": "^1.1.2",
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
