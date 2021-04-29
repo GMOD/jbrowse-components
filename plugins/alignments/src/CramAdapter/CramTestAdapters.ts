@@ -51,7 +51,7 @@ export class SequenceAdapter extends BaseFeatureDataAdapter {
   refNames: string[] = []
 
   constructor(filehandle: FileHandle) {
-    super(filehandle)
+    super()
     this.fasta = new FetchableSmallFasta(filehandle)
   }
 

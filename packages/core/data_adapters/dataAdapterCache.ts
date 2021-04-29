@@ -27,7 +27,7 @@ let adapterCache: Record<string, AdapterCacheEntry> = {}
  *   used for reference counting
  * @param adapterConfigSnapshot - plain-JS configuration snapshot for the adapter
  */
-export function getAdapter(
+export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
@@ -52,18 +52,21 @@ export function getAdapter(
       adapterConfigSnapshot,
     )
 
-    const getSubAdapter: getSubAdapterType = getAdapter.bind(
-      null,
-      pluginManager,
-      sessionId,
-    )
+    const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
+
     // instantiate the adapter itself with its config schema, and a bound
     // func that it can use to get any inner adapters
     // (such as sequence adapters or wrapped subadapters) that it needs
-    const dataAdapter = new dataAdapterType.AdapterClass(
-      adapterConfig,
-      getSubAdapter,
-    )
+    //
+    const { AdapterClass, getAdapterClass } = dataAdapterType
+
+    // @ts-ignore
+    const CLASS = AdapterClass || (await getAdapterClass())
+    if (!CLASS) {
+      throw new Error('Failed to get adapter')
+    }
+
+    const dataAdapter = new CLASS(adapterConfig, getSubAdapter)
 
     // store it in our cache
     adapterCache[cacheKey] = {

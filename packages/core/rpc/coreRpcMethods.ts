@@ -35,7 +35,7 @@ export class CoreGetRefNames extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -63,7 +63,7 @@ export class CoreGetFileInfo extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -90,7 +90,7 @@ export class CoreGetMetadata extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -124,7 +124,7 @@ export class CoreGetFeatures extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig, region } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -221,7 +221,7 @@ export class CoreRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
