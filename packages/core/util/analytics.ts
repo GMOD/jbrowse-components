@@ -14,7 +14,7 @@ export async function writeAWSAnalytics(
   initialTimeStamp: number,
   sessionQuery?: string | null,
 ) {
-  const url = 'https://analytics.jbrowse.org/jbrowse-analytics'
+  const url = 'https://analytics.jbrowse.org/api/v1'
 
   const multiAssemblyTracks = rootModel.jbrowse.tracks.filter(
     (track: any) => (readConfObject(track, 'assemblyNames') || []).length > 1,
