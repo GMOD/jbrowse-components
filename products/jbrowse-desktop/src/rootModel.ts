@@ -96,6 +96,9 @@ export default function RootModel(pluginManager: PluginManager) {
           this.setSession(snapshot)
         }
       },
+      reloadApp() {
+        window.location.reload()
+      },
     }))
     .volatile(self => ({
       history: {},
