@@ -60,6 +60,7 @@ export default class TextIndex extends JBrowseCommand {
 
       //getIndexingConfigurations(trackIds);
 
+
       this.log(
         `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
       )
@@ -160,6 +161,8 @@ function getIndexingConfigurations(TrackList: Array<String>){
 
   TrackList.forEach(Track =>{
     // instantiate their data adapters
+    // if filetype is gff3
+      // runn gff3 processor
   })
 
     return [{
