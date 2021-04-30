@@ -44,7 +44,7 @@ export default class TextIndex extends JBrowseCommand {
       if (runFlags.tracks) {
         const trackIds: string = runFlags.tracks
         if (trackIds.split(',').length > 1) {
-          this.log(
+          this.error(
             'Error, --individual flag only allows one track to be indexed',
           )
         } else {
@@ -147,5 +147,22 @@ export default class TextIndex extends JBrowseCommand {
     this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
   }
 
+}
 
+function getIndexingConfigurations(){
+  // TODO: go through all the tracks
+  // instantiate their data adapters
+  // call getIndexingConfigurations on 
+  //each if they have it.
+
+    return [{
+      trackId: 'value',
+      indexingConfiguration: {
+        indexingAdapter: 'filetype',
+        gzipped: 'true or false', // Im not sure if gzip was required or if we just had to accomodate for one
+        gffLocation: { url: 'gff3.com'},
+      },
+    },
+    // ...
+  ]
 }
