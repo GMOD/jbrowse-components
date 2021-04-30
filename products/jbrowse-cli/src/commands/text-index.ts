@@ -57,6 +57,9 @@ export default class TextIndex extends JBrowseCommand {
       }
     } else if (runFlags.tracks) {
       const trackIds: Array<string> = runFlags.tracks.split(',')
+
+      //getIndexingConfigurations(trackIds);
+
       this.log(
         `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
       )
@@ -149,17 +152,21 @@ export default class TextIndex extends JBrowseCommand {
 
 }
 
-function getIndexingConfigurations(){
+function getIndexingConfigurations(TrackList: Array<String>){
   // TODO: go through all the tracks
   // instantiate their data adapters
   // call getIndexingConfigurations on 
   //each if they have it.
 
+  TrackList.forEach(Track =>{
+    // instantiate their data adapters
+  })
+
     return [{
       trackId: 'value',
       indexingConfiguration: {
         indexingAdapter: 'filetype',
-        gzipped: 'true or false', // Im not sure if gzip was required or if we just had to accomodate for one
+        gzipped: 'true',
         gffLocation: { url: 'gff3.com'},
       },
     },

@@ -24,4 +24,10 @@ describe('indexGff3', () => {
       expect(err.message).toContain('--individual flag only allows one track to be indexed')
     })
     .it('fails if there are more than one track when using the individual flag')
+  setup
+    .command(['text-index', '--Command'])
+    .catch(err =>{
+      expect(err.message).toContain('Unexpected argument:')
+    })
+    .it('fails if there is an invalid flag')
   })
