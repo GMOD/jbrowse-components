@@ -38,7 +38,8 @@ export default function Loader({
   const [configSnapshot, setConfigSnapshot] = useState<
     SnapshotIn<AnyConfigurationModel>
   >()
-  const [plugins, setPlugins] = useState<PluginConstructor[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [plugins, setPlugins] = useState<any[]>([])
   const classes = useStyles()
   const [error, setError] = useState('')
   const [snapshotError, setSnapshotError] = useState('')
@@ -76,7 +77,13 @@ export default function Loader({
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
           pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
-          setPlugins([...corePlugins, ...runtimePlugins])
+          setPlugins([
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
+            ...runtimePlugins.map(P => new P()),
+          ])
         } catch (e) {
           // used to launch an error dialog for whatever caused plugin loading
           // to fail
@@ -91,7 +98,7 @@ export default function Loader({
 
   useEffect(() => {
     if (plugins.length > 0) {
-      const pm = new PluginManager(plugins.map(P => new P()))
+      const pm = new PluginManager(plugins)
       pm.createPluggableElements()
 
       const JBrowseRootModel = JBrowseRootModelFactory(pm)
