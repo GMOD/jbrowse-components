@@ -58,7 +58,7 @@ export default function RootModel(pluginManager: PluginManager) {
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+      setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
       setDefaultSession() {
