@@ -711,8 +711,9 @@ export function makeAbortableReaction<T, U, V>(
           successFunction(result)
         }
       } catch (error) {
-        if (thisInProgress && !thisInProgress.signal.aborted)
+        if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
+        }
         handleError(error)
       }
     },
@@ -857,6 +858,20 @@ export const complement = (() => {
   }
 })()
 
+export function blobToDataURL(blob: Blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}
+
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
@@ -981,4 +996,37 @@ export function generateCodonTable(table: any) {
     }
   })
   return tempCodonTable
+}
+
+// call statusCallback with current status and clear when finished
+export async function updateStatus(
+  statusMsg: string,
+  statusCallback: Function,
+  fn: Function,
+) {
+  statusCallback(statusMsg)
+  const result = await fn()
+  statusCallback('')
+  return result
+}
+
+export function hashCode(str: string) {
+  let hash = 0
+  let i
+  let chr
+  if (str.length === 0) return hash
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i)
+    // eslint-disable-next-line no-bitwise
+    hash = (hash << 5) - hash + chr
+
+    // eslint-disable-next-line no-bitwise
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function objectHash(obj: Record<string, any>) {
+  return `${hashCode(JSON.stringify(obj))}`
 }

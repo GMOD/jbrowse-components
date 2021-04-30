@@ -36,7 +36,6 @@
   },
   "dependencies": {
     "@material-ui/icons": "^4.9.1",
-    "array-intersection": "^0.1.2",
     "clsx": "^1.0.4",
     "is-object": "^1.0.1",
     "react-sizeme": "^2.6.7",

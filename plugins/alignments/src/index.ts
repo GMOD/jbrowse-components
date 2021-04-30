@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
@@ -13,7 +14,6 @@ import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 import {
   configSchema as alignmentsFeatureDetailConfigSchema,
-  ReactComponent as AlignmentsFeatureDetailReactComponent,
   stateModelFactory as alignmentsFeatureDetailStateModelFactory,
 } from './AlignmentsFeatureDetail'
 import BamAdapterF from './BamAdapter'
@@ -127,7 +127,9 @@ export default class AlignmentsPlugin extends Plugin {
           heading: 'Feature details',
           configSchema: alignmentsFeatureDetailConfigSchema,
           stateModel: alignmentsFeatureDetailStateModelFactory(pluginManager),
-          ReactComponent: AlignmentsFeatureDetailReactComponent,
+          ReactComponent: lazy(
+            () => import('./AlignmentsFeatureDetail/AlignmentsFeatureDetail'),
+          ),
         }),
     )
     pluginManager.addAdapterType(

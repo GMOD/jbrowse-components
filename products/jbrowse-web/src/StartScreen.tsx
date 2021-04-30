@@ -18,13 +18,12 @@ import Menu from '@material-ui/core/Menu'
 import MenuItem from '@material-ui/core/MenuItem'
 import { makeStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
-import { PropTypes as MobxPropTypes } from 'mobx-react'
 import React, { useEffect, useState } from 'react'
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {
-  ProceedEmptySession,
-  AddLinearGenomeViewToSession,
-  AddSVInspectorToSession,
+  NewEmptySession,
+  NewLinearGenomeViewSession,
+  NewSVInspectorSession,
 } from '@jbrowse/core/ui/NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
@@ -148,7 +147,7 @@ export default function StartScreen({
     })()
   }, [root.savedSessions, updateSessionsList])
 
-  if (!sessions)
+  if (!sessions) {
     return (
       <CircularProgress
         style={{
@@ -161,6 +160,7 @@ export default function StartScreen({
         size={50}
       />
     )
+  }
 
   return (
     <>
@@ -196,13 +196,13 @@ export default function StartScreen({
           </Typography>
           <Grid container spacing={4}>
             <Grid item data-testid="emptySession">
-              <ProceedEmptySession root={root} />
+              <NewEmptySession root={root} />
             </Grid>
             <Grid item data-testid="emptyLGVSession">
-              <AddLinearGenomeViewToSession root={root} />
+              <NewLinearGenomeViewSession root={root} />
             </Grid>
             <Grid item data-testid="emptySVSession">
-              <AddSVInspectorToSession root={root} />
+              <NewSVInspectorSession root={root} />
             </Grid>
           </Grid>
         </div>
@@ -235,7 +235,6 @@ export default function StartScreen({
       </Container>
 
       <Menu
-        id="simple-menu"
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
@@ -258,8 +257,4 @@ export default function StartScreen({
       </Menu>
     </>
   )
-}
-
-StartScreen.propTypes = {
-  root: MobxPropTypes.objectOrObservableObject.isRequired,
 }

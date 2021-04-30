@@ -9,22 +9,27 @@ import BamAdapterF from '../BamAdapter'
 import { SequenceAdapter } from '../CramAdapter/CramTestAdapters'
 
 const pluginManager = new PluginManager()
-const { AdapterClass: SNPCoverageAdapter, configSchema } = pluginManager.load(
-  AdapterF,
-)
 const {
-  AdapterClass: CramAdapter,
+  getAdapterClass: getSNPCoverageAdapter,
+  configSchema,
+} = pluginManager.load(AdapterF)
+const {
+  getAdapterClass: getCramAdapter,
   configSchema: CramConfigSchema,
 } = pluginManager.load(CramAdapterF)
 const {
-  AdapterClass: BamAdapter,
+  getAdapterClass: getBamAdapter,
   configSchema: BamConfigSchema,
 } = pluginManager.load(BamAdapterF)
 
 pluginManager.configure()
 
-function newSNPCoverageWithBam(bamConf: SnapshotIn<typeof BamConfigSchema>) {
-  return new SNPCoverageAdapter(configSchema.create({}), () => {
+async function newSNPCoverageWithBam(
+  bamConf: SnapshotIn<typeof BamConfigSchema>,
+) {
+  const BamAdapter = await getBamAdapter()
+  const SNPCoverageAdapter = await getSNPCoverageAdapter()
+  return new SNPCoverageAdapter(configSchema.create({}), async () => {
     return {
       dataAdapter: new BamAdapter(BamConfigSchema.create(bamConf)),
       sessionIds: new Set(),
@@ -33,7 +38,7 @@ function newSNPCoverageWithBam(bamConf: SnapshotIn<typeof BamConfigSchema>) {
 }
 
 test('SNP adapter can fetch features from volvox.bam using bam subadapter', async () => {
-  const adapter = newSNPCoverageWithBam({
+  const adapter = await newSNPCoverageWithBam({
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
@@ -70,7 +75,7 @@ test('SNP adapter can fetch features from volvox.bam using bam subadapter', asyn
 })
 
 test('test usage of BamSlightlyLazyFeature toJSON in a SNP adapter', async () => {
-  const adapter = newSNPCoverageWithBam({
+  const adapter = await newSNPCoverageWithBam({
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
@@ -99,7 +104,7 @@ test('test usage of BamSlightlyLazyFeature toJSON in a SNP adapter', async () =>
 })
 
 test('test usage of getMultiRegion stats, SNP adapter can generate a domain from BamFile', async () => {
-  const adapter = newSNPCoverageWithBam({
+  const adapter = await newSNPCoverageWithBam({
     type: 'BamAdapter',
     bamLocation: {
       localPath: require.resolve('../../test_data/volvox-sorted.bam'),
@@ -137,25 +142,30 @@ test('test usage of getMultiRegion stats, SNP adapter can generate a domain from
   expect(stats.scoreMax).toEqual(13)
 })
 
-function newSNPCoverageWithCram(
+async function newSNPCoverageWithCram(
   cramConf: SnapshotIn<typeof CramConfigSchema>,
   sequenceFileName: string,
 ) {
-  return new SNPCoverageAdapter(configSchema.create({}), () => {
+  const CramAdapter = await getCramAdapter()
+  const SNPCoverageAdapter = await getSNPCoverageAdapter()
+  return new SNPCoverageAdapter(configSchema.create({}), async () => {
     return {
-      dataAdapter: new CramAdapter(CramConfigSchema.create(cramConf), () => {
-        return {
-          dataAdapter: new SequenceAdapter(new LocalFile(sequenceFileName)),
-          sessionIds: new Set(),
-        }
-      }),
+      dataAdapter: new CramAdapter(
+        CramConfigSchema.create(cramConf),
+        async () => {
+          return {
+            dataAdapter: new SequenceAdapter(new LocalFile(sequenceFileName)),
+            sessionIds: new Set(),
+          }
+        },
+      ),
       sessionIds: new Set(),
     }
   })
 }
 
 test('SNP adapter can fetch features from volvox.cram using cram subadapter', async () => {
-  const adapter = newSNPCoverageWithCram(
+  const adapter = await newSNPCoverageWithCram(
     {
       type: 'CramAdapter',
       cramLocation: {
@@ -191,7 +201,7 @@ test('SNP adapter can fetch features from volvox.cram using cram subadapter', as
 })
 
 test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () => {
-  const adapter = newSNPCoverageWithCram(
+  const adapter = await newSNPCoverageWithCram(
     {
       type: 'CramAdapter',
       cramLocation: {
@@ -220,7 +230,7 @@ test('test usage of CramSlightlyLazyFeature toJSON in a SNP adapter', async () =
 })
 
 test('test usage of getMultiRegion stats, SNP adapter can generate a domain from CramFile', async () => {
-  const adapter = newSNPCoverageWithCram(
+  const adapter = await newSNPCoverageWithCram(
     {
       type: 'CramAdapter',
       cramLocation: {

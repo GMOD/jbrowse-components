@@ -38,8 +38,9 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       rpcDriverClassName,
     )
     const { adapterConfig, sessionId, regions, tag } = deserializedArgs
-    const dataAdapter = getAdapter(this.pluginManager, sessionId, adapterConfig)
-      .dataAdapter as BaseFeatureDataAdapter
+    const dataAdapter = (
+      await getAdapter(this.pluginManager, sessionId, adapterConfig)
+    ).dataAdapter as BaseFeatureDataAdapter
 
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()

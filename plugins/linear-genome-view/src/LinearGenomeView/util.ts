@@ -68,13 +68,10 @@ export function makeTicks(
     base < maxBase;
     base += iterPitch
   ) {
-    if (emitMinor && base % gridPitch.majorPitch) {
+    if (emitMinor && base % (gridPitch.majorPitch * 2)) {
       ticks.push({ type: 'minor', base: base - 1, index })
       index += 1
     } else if (emitMajor && !(base % (gridPitch.majorPitch * 2))) {
-      ticks.push({ type: 'labeledMajor', base: base - 1, index })
-      index += 1
-    } else if (emitMajor) {
       ticks.push({ type: 'major', base: base - 1, index })
       index += 1
     }

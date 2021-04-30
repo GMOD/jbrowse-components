@@ -85,10 +85,11 @@ export default function JBrowseDesktop(
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
         if (!name) throw new Error('Can\'t add assembly with no "name"')
-        if (self.assemblyNames.includes(name))
+        if (self.assemblyNames.includes(name)) {
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
+        }
         const length = self.assemblies.push({
           ...assemblyConf,
           sequence: {
@@ -136,7 +137,6 @@ export default function JBrowseDesktop(
       },
       addPlugin(plugin) {
         self.plugins = [...self.plugins, plugin]
-        console.log(getSnapshot(self.plugins))
         // const rootModel = getParent(self)
         // rootModel.reloadApp()
       },
@@ -144,7 +144,6 @@ export default function JBrowseDesktop(
         self.plugins = self.plugins.filter(
           plugin => `${plugin.name}Plugin` !== pluginName,
         )
-        console.log(getSnapshot(self.plugins))
         // const rootModel = getParent(self)
         // rootModel.reloadApp()
       },

@@ -74,7 +74,7 @@ const FileLocationEditor = observer(
                 </ToggleButton>
               ) : null}
               <ToggleButton value="url" aria-label="url">
-                Url
+                URL
               </ToggleButton>
             </ToggleButtonGroup>
           </Grid>

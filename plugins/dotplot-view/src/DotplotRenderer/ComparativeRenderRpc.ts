@@ -43,10 +43,11 @@ export default class ComparativeRender extends RpcMethodType {
 
     const RendererType = this.pluginManager.getRendererType(rendererType)
 
-    if (!(RendererType instanceof ComparativeServerSideRendererType))
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
       throw new Error(
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
+    }
 
     return RendererType.serializeArgsInClient(renamedArgs)
   }
@@ -67,15 +68,16 @@ export default class ComparativeRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter))
+    if (!(dataAdapter instanceof BaseFeatureDataAdapter)) {
       throw new Error(
         `ComparativeRender cannot handle this type of data adapter ${dataAdapter}`,
       )
+    }
 
     const RendererType = this.pluginManager.getRendererType(rendererType)
 
@@ -88,10 +90,11 @@ export default class ComparativeRender extends RpcMethodType {
       )
     }
 
-    if (!(RendererType instanceof ComparativeServerSideRendererType))
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
       throw new Error(
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
+    }
 
     const renderArgs = {
       ...deserializedArgs,
@@ -125,10 +128,11 @@ export default class ComparativeRender extends RpcMethodType {
         `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
       )
     }
-    if (!(RendererType instanceof ComparativeServerSideRendererType))
+    if (!(RendererType instanceof ComparativeServerSideRendererType)) {
       throw new Error(
         'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
       )
+    }
     return RendererType.deserializeResultsInClient(
       serializedReturn as ResultsSerialized,
       args,

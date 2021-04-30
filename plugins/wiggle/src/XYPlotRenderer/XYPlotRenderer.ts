@@ -39,7 +39,6 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const clipColor = readConfObject(config, 'clipColor')
     const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
-
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
@@ -53,6 +52,11 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
             score < pivotValue ? negColor : posColor
         : (feature: Feature, _score: number) =>
             readConfObject(config, 'color', { feature })
+
+    ctx.strokeStyle = 'grey'
+    ctx.moveTo(0, toY(0))
+    ctx.lineTo(width, toY(0))
+    ctx.stroke()
 
     const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
     for (const feature of features.values()) {
@@ -120,7 +124,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
         ctx.fillRect(leftPx, 0, w, 4)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
         ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, height - 4, w, height)
+        ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
       }
       if (feature.get('highlighted')) {
         ctx.fillStyle = highlightColor

@@ -263,13 +263,13 @@ export default pluginManager => {
           displayName: assemblyName,
           id: newViewId,
         })
+        await when(() => view.initialized)
 
         // note that we have to clone this because otherwise it adds "same object
         // twice to the mst tree"
         view.setDisplayedRegions([
           JSON.parse(JSON.stringify(newDisplayedRegion)),
         ])
-        await when(() => view.initialized)
       }
       view.navToLocString(cell.text)
     } catch (e) {

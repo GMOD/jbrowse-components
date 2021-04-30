@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
@@ -8,8 +8,8 @@ import { openLocation } from '@jbrowse/core/util/io'
 import ErrorBoundary from 'react-error-boundary'
 import {
   StringParam,
-  useQueryParam,
   QueryParamProvider,
+  useQueryParam,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
@@ -33,9 +33,10 @@ import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
-import StartScreen from './StartScreen'
-import SessionWarningModal from './sessionWarningModal'
-import ConfigWarningModal from './configWarningModal'
+
+const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
+const StartScreen = lazy(() => import('./StartScreen'))
 
 function NoConfigMessage() {
   const links = [
@@ -179,6 +180,9 @@ const SessionLoader = types
     },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
+    },
+    setSessionSnapshot(snap: unknown) {
+      self.sessionSnapshot = snap
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
@@ -535,10 +539,6 @@ const Renderer = observer(
               writeGAAnalytics(rootModel, initialTimestamp)
             }
 
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
             pluginManager.setRootModel(rootModel)
             pluginManager.configure()
             setPluginManager(pluginManager)
@@ -591,7 +591,6 @@ const Renderer = observer(
               {`${err}`}
               {snapshotError ? (
                 <>
-                  {' '}
                   ... Failed element had snapshot:
                   <pre
                     style={{
@@ -615,39 +614,47 @@ const Renderer = observer(
         loader.setSessionTriaged(undefined)
       }
       return loader.sessionTriaged.origin === 'session' ? (
-        <SessionWarningModal
-          onConfirm={async () => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            await loader.setSessionSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            loader.setBlankSession(true)
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <SessionWarningDialog
+            onConfirm={async () => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              await loader.setSessionSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              loader.setBlankSession(true)
+              handleClose()
+            }}
+          />
+        </Suspense>
       ) : (
-        <ConfigWarningModal
-          onConfirm={async () => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            await loader.fetchPlugins(session)
-            loader.setConfigSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            factoryReset()
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <ConfigWarningDialog
+            onConfirm={async () => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              await loader.fetchPlugins(session)
+              loader.setConfigSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              factoryReset()
+              handleClose()
+            }}
+          />
+        </Suspense>
       )
     }
     if (pm) {
       if (!pm.rootModel?.session) {
-        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+          </Suspense>
+        )
       }
       return <JBrowse pluginManager={pm} />
     }

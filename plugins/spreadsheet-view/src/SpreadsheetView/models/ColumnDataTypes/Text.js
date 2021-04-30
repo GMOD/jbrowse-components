@@ -140,8 +140,9 @@ export default pluginManager => {
           const cell = cellsWithDerived[columnNumber]
           if (!cell || !cell.text) return false
           const predicate = OPERATION_PREDICATES[operation]
-          if (!predicate)
+          if (!predicate) {
             throw new Error(`"${operation}" not implemented in location filter`)
+          }
           return predicate(cell.text, s)
         }
       },

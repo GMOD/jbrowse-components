@@ -18,7 +18,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import renderReactionFactory from './renderReaction'
-import { CircularViewModel } from '../../CircularView'
+import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 export const BaseChordDisplayModel = types
   .compose(
@@ -97,12 +97,14 @@ export const BaseChordDisplayModel = types
       const ThisRendererType = pluginManager.getRendererType(
         self.rendererTypeName,
       )
-      if (!ThisRendererType)
+      if (!ThisRendererType) {
         throw new Error(`renderer "${display.rendererTypeName}" not found`)
-      if (!ThisRendererType.ReactComponent)
+      }
+      if (!ThisRendererType.ReactComponent) {
         throw new Error(
           `renderer ${display.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return ThisRendererType
     },
 

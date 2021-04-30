@@ -1,8 +1,5 @@
-import {
-  configSchema as baseFeatureWidgetConfigSchema,
-  ReactComponent as BaseFeatureWidgetReactComponent,
-  stateModelFactory as baseFeatureWidgetStateModelFactory,
-} from '@jbrowse/core/BaseFeatureWidget'
+import { lazy } from 'react'
+
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   createBaseTrackConfig,
@@ -11,7 +8,6 @@ import {
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
@@ -29,8 +25,8 @@ import {
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  ReactComponent as LinearGenomeViewReactComponent,
   stateModelFactory as linearGenomeViewStateModelFactory,
+  renderToSvg,
 } from './LinearGenomeView'
 
 import {
@@ -117,17 +113,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
         new ViewType({
           name: 'LinearGenomeView',
           stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          ReactComponent: LinearGenomeViewReactComponent,
-        }),
-    )
-    pluginManager.addWidgetType(
-      () =>
-        new WidgetType({
-          name: 'BaseFeatureWidget',
-          heading: 'Feature details',
-          configSchema: baseFeatureWidgetConfigSchema,
-          stateModel: baseFeatureWidgetStateModelFactory(pluginManager),
-          ReactComponent: BaseFeatureWidgetReactComponent,
+          ReactComponent: lazy(
+            () => import('./LinearGenomeView/components/LinearGenomeView'),
+          ),
         }),
     )
   }
@@ -152,6 +140,7 @@ export {
   linearBareDisplayConfigSchemaFactory,
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
+  renderToSvg,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

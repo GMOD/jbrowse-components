@@ -35,6 +35,7 @@
     "class-methods-use-this": "off",
     "global-require": "off",
     "import/no-cycle": "off",
+    "curly": "error",
     "import/prefer-default-export": "off",
     "jsx-a11y/mouse-events-have-key-events": "off",
     "max-classes-per-file": "off",

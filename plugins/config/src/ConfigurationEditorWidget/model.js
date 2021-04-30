@@ -12,12 +12,8 @@ export default pluginManager =>
         pluginManager.pluggableConfigSchemaType('track'),
       ),
     })
-    // .volatile(() => ({
-    //   target: undefined,
-    // }))
     .actions(self => ({
       setTarget(newTarget) {
         self.target = newTarget
       },
     }))
-//    .views(self => ({}))

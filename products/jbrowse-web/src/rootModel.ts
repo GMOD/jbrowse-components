@@ -1,4 +1,3 @@
-/* eslint curly:error*/
 import assemblyManagerFactory, {
   assemblyConfigSchemas as AssemblyConfigSchemasFactory,
 } from '@jbrowse/core/assemblyManager'
@@ -29,7 +28,6 @@ import {
   IAnyType,
 } from 'mobx-state-tree'
 import { observable, autorun } from 'mobx'
-import { UndoManager } from 'mst-middlewares'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 // @ts-ignore
@@ -540,7 +538,6 @@ export function createTestSession(snapshot = {}) {
     name: 'testSession',
     ...snapshot,
   })
-  root.setHistory(UndoManager.create({}, { targetStore: root.session }))
   // @ts-ignore
   root.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(root)

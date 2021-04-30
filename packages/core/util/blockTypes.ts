@@ -85,6 +85,8 @@ export class BaseBlock {
 
   public key: string
 
+  public offsetPx: number
+
   /**
    * a block that should be shown as filled with data
    */
@@ -96,6 +98,7 @@ export class BaseBlock {
     this.start = data.start
     this.end = data.end
     this.key = data.key
+    this.offsetPx = data.offsetPx
   }
 
   /**

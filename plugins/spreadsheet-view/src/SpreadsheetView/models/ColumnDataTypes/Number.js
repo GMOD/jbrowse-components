@@ -129,10 +129,11 @@ export default ({ jbrequire }) => {
     .views(self => ({
       // returns a function that tests the given row
       get predicate() {
-        if (typeof self.firstNumber !== 'number')
+        if (typeof self.firstNumber !== 'number') {
           return function alwaysTrue() {
             return true
           }
+        }
 
         const { firstNumber, secondNumber, operation, columnNumber } = self // avoid closing over self
         return function stringPredicate(sheet, row) {
@@ -145,8 +146,9 @@ export default ({ jbrequire }) => {
           if (typeof parsedCellText !== 'number') return false
 
           const predicate = OPERATION_PREDICATES[operation]
-          if (!predicate)
+          if (!predicate) {
             throw new Error(`"${operation}" not implemented in location filter`)
+          }
 
           return predicate(parsedCellText, firstNumber, secondNumber)
         }
@@ -154,14 +156,14 @@ export default ({ jbrequire }) => {
     }))
     .actions(self => ({
       setFirstNumber(n) {
-        if (Number.isNaN(n) || typeof n !== 'number')
+        if (Number.isNaN(n) || typeof n !== 'number') {
           self.firstNumber = undefined
-        else self.firstNumber = n
+        } else self.firstNumber = n
       },
       setSecondNumber(n) {
-        if (Number.isNaN(n) || typeof n !== 'number')
+        if (Number.isNaN(n) || typeof n !== 'number') {
           self.secondNumber = undefined
-        else self.secondNumber = n
+        } else self.secondNumber = n
       },
       setOperation(op) {
         self.operation = op

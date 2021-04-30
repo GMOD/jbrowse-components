@@ -101,8 +101,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
-    if (this.additionalQueryParams.length)
+    if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
+    }
     const signal = opts && opts.signal
     const response = await fetch(
       `${this.endpoint}?query=${query}${additionalQueryParams}`,
@@ -118,8 +119,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     const rows = ((response || {}).results || {}).bindings || []
     if (!rows.length) return []
     const fields = response.head.vars
-    if (!fields.includes('refName'))
+    if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
+    }
     return rows.map(row => row.refName.value)
   }
 
@@ -132,10 +134,11 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
     requiredFields.forEach(requiredField => {
-      if (!fields.includes(requiredField))
+      if (!fields.includes(requiredField)) {
         console.error(
           `Required field ${requiredField} missing from feature data`,
         )
+      }
     })
     const seenFeatures: Record<string, SPARQLFeature> = {}
     rows.forEach(row => {
