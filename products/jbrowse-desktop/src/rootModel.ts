@@ -6,6 +6,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
 import {
   cast,
   getParent,
@@ -111,6 +112,13 @@ export default function RootModel(pluginManager: PluginManager) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()
+              },
+            },
+            {
+              label: 'Return to splash screen',
+              icon: AppsIcon,
+              onClick: () => {
+                self.setSession(undefined)
               },
             },
           ],
