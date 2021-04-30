@@ -105,10 +105,6 @@ function InstalledPlugin({
                       session.removeSessionPlugin(plugin.name)
                     }
                   }, 500)
-                  // wait for session autorun to handle removing session
-                  window.setTimeout(() => {
-                    window.location.reload()
-                  }, 1000)
                 }}
               >
                 Confirm
