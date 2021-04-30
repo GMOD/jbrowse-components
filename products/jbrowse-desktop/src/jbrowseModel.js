@@ -137,15 +137,16 @@ export default function JBrowseDesktop(
       addPlugin(plugin) {
         self.plugins = [...self.plugins, plugin]
         console.log(getSnapshot(self.plugins))
-        const rootModel = getParent(self)
-        rootModel.reloadApp()
+        // const rootModel = getParent(self)
+        // rootModel.reloadApp()
       },
       removePlugin(pluginName) {
         self.plugins = self.plugins.filter(
           plugin => `${plugin.name}Plugin` !== pluginName,
         )
-        const rootModel = getParent(self)
-        rootModel.reloadApp()
+        console.log(getSnapshot(self.plugins))
+        // const rootModel = getParent(self)
+        // rootModel.reloadApp()
       },
     }))
     .views(self => ({
