@@ -79,7 +79,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
 
   const rootModel = getParent(model, 3)
   const { adminMode } = rootModel
-  const pluginManager = getEnv(rootModel)
+  const { pluginManager } = getEnv(model)
 
   return (
     <div>

@@ -56,7 +56,7 @@ function InstalledPlugin({
   const session = getSession(model)
   const sessionSnapShot = getSnapshot(session)
   const { sessionPlugins } = sessionSnapShot
-  const isSessionPlugin = sessionPlugins.some(
+  const isSessionPlugin = sessionPlugins?.some(
     (p: BasePlugin) => `${p.name}Plugin` === plugin.name,
   )
 

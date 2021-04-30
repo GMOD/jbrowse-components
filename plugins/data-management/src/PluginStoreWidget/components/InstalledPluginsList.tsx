@@ -19,16 +19,13 @@ function InstalledPluginsList({
   model: PluginStoreModel
 }) {
   const { plugins } = pluginManager
-  // guard against plugins being temporarily undefined
-  if (!plugins) {
-    return null
-  }
 
   const corePlugins = plugins
     .filter((p: BasePlugin) =>
       Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
     )
     .map((p: BasePlugin) => p.name)
+
   const externalPlugins = plugins.filter((plugin: BasePlugin) => {
     return !corePlugins.includes(plugin.name)
   })
