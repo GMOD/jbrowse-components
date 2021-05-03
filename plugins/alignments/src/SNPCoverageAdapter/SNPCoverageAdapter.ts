@@ -29,6 +29,7 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
   if (!bin[type][field]) {
     bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
@@ -36,6 +37,7 @@ function inc(bin: any, strand: number, type: string, field: string) {
   bin[type][field].total++
   bin[type][field].strands[strand]++
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dec(bin: any, strand: number, type: string, field: string) {
   if (!bin[type][field]) {
     bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
