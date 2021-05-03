@@ -2,7 +2,7 @@ import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterTyp
 import { searchType } from '../data_adapters/BaseAdapter'
 
 export interface BaseResultArgs {
-  rendering: string
+  rendering: string | JSX.Element
 
   matchedAttribute?: string
 
@@ -12,12 +12,14 @@ export interface BaseResultArgs {
 
   relevance?: searchType
 
-  location?: string
+  locString?: string
 
   refName?: string
+
+  trackName?: string
 }
 export default class BaseResult {
-  rendering: string // todo add | react component here
+  rendering: string | JSX.Element // todo add | react component here
 
   matchedAttribute?: string
 
@@ -26,6 +28,8 @@ export default class BaseResult {
   textSearchAdapter?: TextSearchAdapterType
 
   relevance?: searchType
+
+  trackName?: string
 
   constructor(args: BaseResultArgs) {
     this.rendering = args.rendering
@@ -33,10 +37,19 @@ export default class BaseResult {
     this.matchedObject = args.matchedObject
     this.textSearchAdapter = args.textSearchAdapter
     this.relevance = args.relevance
+    this.trackName = args.trackName
   }
 
   getRendering() {
     return this.rendering
+  }
+
+  getLocation() {
+    return this.rendering
+  }
+
+  getTrackName() {
+    return this.trackName
   }
 }
 
@@ -45,19 +58,19 @@ export default class BaseResult {
  * e.g: reference sequence results, track results,
  * feature results
  */
-export class LocationResult extends BaseResult {
-  location: string
+export class LocStringResult extends BaseResult {
+  locString: string
 
   constructor(args: BaseResultArgs) {
     super(args)
-    if (!args.location) {
-      throw new Error('must provide location locstring')
+    if (!args.locString) {
+      throw new Error('must provide locString')
     }
-    this.location = args.location ?? ''
+    this.locString = args.locString ?? ''
   }
 
   getLocation() {
-    return this.location
+    return this.locString
   }
 }
 
@@ -72,7 +85,7 @@ export class RefSequenceResult extends BaseResult {
     this.refName = args.refName ?? ''
   }
 
-  getRefName() {
+  getLocation() {
     return this.refName
   }
 }

@@ -14,6 +14,8 @@ export default class HttpMap {
 
   compress?: number
 
+  tracks?: string[]
+
   constructor(args: { url: string; isElectron: boolean }) {
     // make sure url has a trailing slash
     this.url = /\/$/.test(args.url) ? args.url : `${args.url}/`
@@ -28,12 +30,15 @@ export default class HttpMap {
     try {
       const meta = await this.loadFile('meta.json')
       if (meta !== {}) {
-        const { compress } = meta
+        const { compress, track_names: tracks } = meta
         this.compress = compress
         const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
         this.hash_hex_characters = hashHexCharacters
-        return { hashHexCharacters, compress }
+        this.tracks = tracks
+        return { hashHexCharacters, compress, tracks }
       }
+      throw new Error('Error parsing meta.json')
+
       // const { compress } = meta
       // this.compress = compress
       // const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
@@ -59,6 +64,14 @@ export default class HttpMap {
     }
     const meta = await this.readMeta()
     return meta.compress
+  }
+
+  async getTrackNames() {
+    if (this.tracks) {
+      return this.tracks
+    }
+    const meta = await this.readMeta()
+    return meta.tracks
   }
 
   /**

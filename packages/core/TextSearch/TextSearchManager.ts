@@ -14,6 +14,8 @@ interface BaseArgs {
   signal?: AbortSignal
   limit?: number
   pageNumber?: number
+  aggregate?: boolean
+  importForm?: boolean
 }
 
 export default (pluginManager: PluginManager) => {
@@ -51,7 +53,13 @@ export default (pluginManager: PluginManager) => {
 
     relevantAdapters() {
       // TODO: figure out how to determine relevant adapters
-      return (pluginManager.rootModel?.jbrowse as any).textSearchAdapters
+      /* Relevant sketch:
+      1) opened tracks
+      2) all tracks for aggregate
+      3) cache of recently used tracks?
+      */
+      const { textSearchAdapters } = pluginManager.rootModel?.jbrowse as any
+      return textSearchAdapters
     }
 
     /**
@@ -85,7 +93,15 @@ export default (pluginManager: PluginManager) => {
      * @param results - array of results from all text search adapters
      */
     relevantResults(results: BaseResult[]) {
-      // TODO: implement rank system
+      /**
+       * Relevant results sketch
+       * Is it coming from import form ? only display reference and locstring results
+       * priority results coming from opened tracks vs all tracks
+       * recently searched terms?
+       */
+      // if (args.importForm) {
+      //  return results.filter(result => result instanceof )
+      // }
       return results
     }
   }

@@ -1,4 +1,6 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult, {
+  LocStringResult,
+} from '@jbrowse/core/TextSearch/BaseResults'
 import path from 'path'
 import meta from '../../test_data/names/meta.json'
 import first from '../../test_data/names/0.json'
@@ -53,4 +55,6 @@ test('adapter can fetch files from names index', async () => {
   const test2 = results2[0]
   expect(test2 instanceof BaseResult).toBeTruthy()
   expect(test2.getRendering()).toEqual('Apple3')
+  expect(test2 instanceof LocStringResult).toBeTruthy()
+  expect(test2.getLocation()).toEqual('ctgA:17399-23000')
 })

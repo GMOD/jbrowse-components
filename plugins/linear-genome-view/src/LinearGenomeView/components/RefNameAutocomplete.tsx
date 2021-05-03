@@ -13,7 +13,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
 
 import BaseResult, {
-  LocationResult,
+  LocStringResult,
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
@@ -72,11 +72,11 @@ function RefNameAutocomplete({
   const classes = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-
+  console.log(model.tracks)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 325)
+  const debouncedSearch = useDebounce(currentSearch, 300)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
@@ -84,6 +84,16 @@ function RefNameAutocomplete({
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   // default options for dropdown
+  // const test = new LocationResult({
+  //  rendering: <TestInnerHTML innerText="this is test" />,
+  //  matchedAttribute: 'name',
+  //  location: 'ctgA:1-900',
+  // })
+  // const testOption: Option = {
+  //  group: 'test',
+  //  result: test,
+  // }
+  // console.log(test.getRendering())
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
@@ -91,10 +101,13 @@ function RefNameAutocomplete({
         result: new RefSequenceResult({
           refName: option.refName,
           rendering: option.refName,
+          matchedAttribute: 'refName',
+          matchedObject: option.refName,
         }),
       }
       return defaultOption
     })
+    // return defaultOptions.concat(testOption)
     return defaultOptions
   }, [regions])
   // assembly and regions have loaded
@@ -106,17 +119,19 @@ function RefNameAutocomplete({
     ;(async () => {
       try {
         let results: BaseResult[] = []
-        if (debouncedSearch && debouncedSearch !== '') {
+        if (currentSearch !== '' && !importForm) {
           results = await textSearchManager.search({
-            queryString: debouncedSearch,
-            searchType: 'exact',
-          })
-        } else if (currentSearch !== '' && !importForm) {
-          results = await textSearchManager.search({
-            queryString: currentSearch,
+            queryString: currentSearch.toLocaleLowerCase(),
             searchType: 'prefix',
           })
         }
+        if (debouncedSearch && debouncedSearch !== '') {
+          results = await textSearchManager.search({
+            queryString: debouncedSearch.toLocaleLowerCase(),
+            searchType: 'exact',
+          })
+        }
+
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
@@ -139,15 +154,16 @@ function RefNameAutocomplete({
       active = false
     }
   }, [currentSearch, textSearchManager, debouncedSearch, importForm])
-  // TODO: fix dependency on textSearchManager...need to do initial search ...with text search it lags,debouncedSearch
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
-        const newResult = new LocationResult({
+        const newResult = new LocStringResult({
           rendering: selectedOption,
-          location: selectedOption,
+          locString: selectedOption,
+          matchedAttribute: 'locstring',
+          matchedObject: selectedOption,
         })
         onSelect(newResult)
       } else {
@@ -186,9 +202,11 @@ function RefNameAutocomplete({
         if (params.inputValue !== '') {
           const newOption: Option = {
             group: 'Navigating to...',
-            result: new LocationResult({
+            result: new LocStringResult({
               rendering: params.inputValue,
-              location: params.inputValue,
+              locString: params.inputValue,
+              matchedAttribute: 'locstring',
+              matchedObject: params.inputValue,
             }),
           }
           filtered.push(newOption)
@@ -236,8 +254,16 @@ function RefNameAutocomplete({
       }}
       renderOption={(option, { inputValue }) => {
         const { result } = option
+        // Note: rendering could be a react component or a string
         const val = result.getRendering()
-        if (currentSearch !== '' && inputValue.length <= val.length) {
+        if (React.isValidElement(val)) {
+          return val
+        }
+        if (
+          currentSearch !== '' &&
+          inputValue.length <= val.length &&
+          typeof val === 'string'
+        ) {
           return (
             <Typography noWrap>
               <b>{val.slice(0, inputValue.length)}</b>
@@ -249,9 +275,13 @@ function RefNameAutocomplete({
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
-        return typeof option === 'string'
-          ? option
-          : option.result.getRendering()
+        if (typeof option === 'object') {
+          const optionLabel = option.result.getRendering()
+          return typeof optionLabel === 'string'
+            ? optionLabel
+            : optionLabel?.props?.innerText
+        }
+        return option
       }}
     />
   )

@@ -1,7 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult, {
-  LocationResult,
+  LocStringResult,
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import Button from '@material-ui/core/Button'
@@ -112,18 +112,20 @@ export default observer(({ model }: { model: LGV }) => {
     try {
       if (result) {
         let newRegionValue = result.getRendering()
-        if (result instanceof RefSequenceResult) {
-          newRegionValue = result.getRefName()
+        if (result instanceof RefSequenceResult) { // need to fix finding region
+          newRegionValue = result.getLocation()
           const newRegion: Region | undefined = model.displayedRegions.find(
             region => newRegionValue === region.refName,
           )
+          console.log(newRegionValue)
+          console.log(newRegion)
           if (newRegion) {
             model.setDisplayedRegions([newRegion])
             // we use showAllRegions after setDisplayedRegions to make the entire
             // region visible, xref #1703
             model.showAllRegions()
           }
-        } else if (result instanceof LocationResult) {
+        } else if (result instanceof LocStringResult) {
           newRegionValue = result.getLocation()
           model.navToLocString(newRegionValue)
         } else {

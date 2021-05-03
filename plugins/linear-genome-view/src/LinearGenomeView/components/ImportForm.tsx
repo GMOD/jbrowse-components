@@ -5,8 +5,8 @@ import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult, {
-  LocationResult,
   RefSequenceResult,
+  LocStringResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui
 import { makeStyles } from '@material-ui/core/styles'
@@ -68,9 +68,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   function setSelectedValue(selectedOption: BaseResult) {
     let newValue = selectedOption.getRendering()
     if (selectedOption instanceof RefSequenceResult) {
-      newValue = selectedOption.getRefName()
+      newValue = selectedOption.getLocation()
     }
-    if (selectedOption instanceof LocationResult) {
+    if (selectedOption instanceof LocStringResult) {
       newValue = selectedOption.getLocation()
     }
     setSelectedRegion(newValue)
@@ -141,6 +141,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   },
                   onKeyPress: event => {
                     const inputValue = (event.target as HTMLInputElement).value
+                    // maybe check regular expression here to see if it's a locstring
+                    // try defaulting exact matches to first exact match
                     if (event.key === 'Enter') {
                       handleSelectedRegion(inputValue)
                     }
