@@ -352,7 +352,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
-    modifications.forEach((positions, index) => {
+    modifications.forEach(({ type, positions }, index) => {
       const interpolater = interpolateLab('white', colors[index])
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const px = leftPx + readPos * width
