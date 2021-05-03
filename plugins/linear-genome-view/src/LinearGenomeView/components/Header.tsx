@@ -1,5 +1,4 @@
 import { getSession } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import BaseResult, {
   LocStringResult,
   RefSequenceResult,
@@ -10,7 +9,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator'
 import FormGroup from '@material-ui/core/FormGroup'
 import Typography from '@material-ui/core/Typography'
 import { observer } from 'mobx-react'
-import { Instance, getEnv } from 'mobx-state-tree'
+import { Instance, getEnv, getSnapshot } from 'mobx-state-tree'
 import React from 'react'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -103,10 +102,14 @@ export default observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
+  const { assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
 
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
+  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
+  const assembly = assemblyName && assemblyManager.get(assemblyName)
+  const regions = (assembly && assembly.regions) || []
 
   async function setDisplayedRegion(result: BaseResult) {
     try {
@@ -114,11 +117,11 @@ export default observer(({ model }: { model: LGV }) => {
         const newRegionValue = result.getLocation()
         // need to fix finding region
         if (result instanceof RefSequenceResult) {
-          const newRegion: Region | undefined = model.displayedRegions.find(
+          const newRegion = regions.find(
             region => newRegionValue === region.refName,
           )
           if (newRegion) {
-            model.setDisplayedRegions([newRegion])
+            model.setDisplayedRegions([getSnapshot(newRegion)])
             // we use showAllRegions after setDisplayedRegions to make the entire
             // region visible, xref #1703
             model.showAllRegions()
@@ -140,8 +143,6 @@ export default observer(({ model }: { model: LGV }) => {
       session.notify(`${e}`, 'warning')
     }
   }
-
-  const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
 
   const controls = (
     <div className={classes.headerBar}>
