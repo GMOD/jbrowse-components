@@ -17,10 +17,6 @@ import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { interpolateLab } from 'd3-interpolate'
-import {
-  createCanvas,
-  createImageBitmap,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -383,28 +379,17 @@ export default class PileupRenderer extends BoxRendererType {
     const { feature, topPx, heightPx } = layoutFeature
 
     const mm: string = getTagAlt(feature, 'MM', 'Mm') || ''
-    const ml: number[] | string = getTagAlt(feature, 'ML', 'Ml') || []
 
     if (!regionSequence) {
       throw new Error('region sequence required for methylation')
     }
 
-    //     const probabilities = ml
-    //       ? (typeof ml === 'string' ? ml.split(',').map(e => +e) : ml).map(
-    //           e => e / 255,
-    //         )
-    //       : (getTagAlt(feature, 'MP', 'Mp') as string)
-    //           .split('')
-    //           .map(s => s.charCodeAt(0) - 33)
-    //           .map(elt => Math.min(1, elt / 50))
-
-    // const colors = ['red', 'green', 'blue', 'purple', 'brown']
     const cigar = feature.get('CIGAR')
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const seq = feature.get('seq')
-    const cigarOps = parseCigar(cigar)
     const width = 1 / bpPerPx
+    const cigarOps = parseCigar(cigar)
     const [leftPx] = bpSpanPx(region.start, region.end, region, bpPerPx)
 
     const methBins = new Array(region.end - region.start).fill(0)

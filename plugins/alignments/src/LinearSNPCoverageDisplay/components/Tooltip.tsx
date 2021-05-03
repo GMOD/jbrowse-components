@@ -24,58 +24,90 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+type Count = { [key: string]: number }
+
 function TooltipContents({ feature }: { feature: Feature }) {
-  const ref = feature.get('refName')
-  const displayRef = `${ref ? `${ref}:` : ''}`
+  const refName = feature.get('refName')
   const start = (feature.get('start') + 1).toLocaleString('en-US')
   const end = feature.get('end').toLocaleString('en-US')
-  const coord = start === end ? start : `${start}..${end}`
-  const loc = `${displayRef}${coord}`
+  const loc = `${refName ? `${refName}:` : ''}${
+    start === end ? start : `${start}..${end}`
+  }`
 
-  return <div />
-  // const info = feature.get('snpinfo')
-  // const total = info
-  //   ? info[info.map((e: any) => e.base).indexOf('total')].score
-  //   : 0
-  // const condId = info && info.length >= 5 ? 'smallInfo' : 'info' // readjust table size to fit all
-  // return (
-  //   <div>
-  //     <table>
-  //       <caption>{loc}</caption>
-  //       <thead>
-  //         <tr>
-  //           <th id={condId}>Base</th>
-  //           <th id={condId}>Count</th>
-  //           <th id={condId}>% of Total</th>
-  //           <th id={condId}>Strands</th>
-  //         </tr>
-  //       </thead>
-  //       <tbody>
-  //         {(info || []).map((mismatch: any) => {
-  //           const { base, score, strands } = mismatch
-  //           return (
-  //             <tr key={base}>
-  //               <td id={condId}>{base.toUpperCase()}</td>
-  //               <td id={condId}>{score}</td>
-  //               <td id={condId}>
-  //                 {base === 'total'
-  //                   ? '---'
-  //                   : `${Math.floor((score / total) * 100)}%`}
-  //               </td>
-  //               <td id={condId}>
-  //                 {base === 'total'
-  //                   ? '---'
-  //                   : (strands['+']
-  //                       ? `+:${strands['+']} ${strands['-'] ? `,\t` : `\t`} `
-  //                       : ``) + (strands['-'] ? `-:${strands['-']}` : ``)}
-  //               </td>
-  //             </tr>
-  //           )
-  //         })}
-  //       </tbody>
-  //     </table>
-  //   </div>
-  // )
+  const info = feature.get('snpinfo') as {
+    cov: Count
+    noncov: Count
+    delskips: Count
+    total: number
+    ref: number
+  }
+
+  const { total, ref, cov, noncov, delskips } = info
+  return (
+    <div>
+      <table>
+        <caption>{loc}</caption>
+        <thead>
+          <tr>
+            <th>Base</th>
+            <th>Count</th>
+            <th>% of Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total</td>
+            <td>{total}</td>
+            <td />
+          </tr>
+          <tr>
+            <td>Ref</td>
+            <td>{ref}</td>
+            <td />
+          </tr>
+          {Object.entries(cov).map(([base, score]) => {
+            return (
+              <tr key={base}>
+                <td>{base.toUpperCase()}</td>
+                <td>{score}</td>
+                <td>
+                  {base === 'total'
+                    ? '---'
+                    : `${Math.floor((score / total) * 100)}%`}
+                </td>
+              </tr>
+            )
+          })}
+          {Object.entries(noncov).map(([base, score]) => {
+            return (
+              <tr key={base}>
+                <td>{base.toUpperCase()}</td>
+                <td>{score}</td>
+                <td>
+                  {base === 'total'
+                    ? '---'
+                    : `${Math.floor((score / total) * 100)}%`}
+                </td>
+              </tr>
+            )
+          })}
+          {Object.entries(delskips).map(([base, score]) => {
+            return (
+              <tr key={base}>
+                <td>{base.toUpperCase()}</td>
+                <td>{score}</td>
+                <td>
+                  {base === 'total'
+                    ? '---'
+                    : `${Math.floor((score / total) * 100)}%`}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
 }
 
 type Coord = [number, number]

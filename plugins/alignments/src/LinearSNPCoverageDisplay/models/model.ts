@@ -56,8 +56,8 @@ const stateModelFactory = (
       }) {
         self.filterBy = cast(filter)
       },
-      setColorBy(colorBy: any) {
-        self.colorBy = colorBy
+      setColorBy(colorBy?: { type: string; tag?: string }) {
+        self.colorBy = cast(colorBy)
       },
     }))
     .views(self => ({

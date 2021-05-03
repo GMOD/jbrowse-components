@@ -14,10 +14,19 @@ import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
+  Mismatch,
 } from '../BamAdapter/MismatchParser'
 
 interface SNPCoverageOptions extends BaseOptions {
   filters?: SerializableFilterChain
+}
+
+function mismatchLen(mismatch: Mismatch) {
+  return !isInterbase(mismatch.type) ? mismatch.length : 1
+}
+
+function isInterbase(type: string) {
+  return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
@@ -29,18 +38,19 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     ])
     const dataAdapter = await this.getSubAdapter?.(subadapterConfig)
 
-    const sequenceAdapter = await this.getSubAdapter?.(sequenceConf)
+    const sequenceAdapter = sequenceConf
+      ? await this.getSubAdapter?.(sequenceConf)
+      : undefined
 
     if (!dataAdapter) {
       throw new Error('Failed to get subadapter')
     }
-    if (!sequenceAdapter) {
-      throw new Error('Failed to get sequence subadapter')
-    }
 
     return {
       subadapter: dataAdapter.dataAdapter as BaseFeatureDataAdapter,
-      sequenceAdapter: sequenceAdapter.dataAdapter as BaseFeatureDataAdapter,
+      sequenceAdapter: sequenceAdapter?.dataAdapter as
+        | BaseFeatureDataAdapter
+        | undefined,
     }
   }
 
@@ -61,7 +71,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           new SimpleFeature({
             id: `${this.id}-${region.start}-${index}`,
             data: {
-              score: bin.total,
+              score: bin.ref,
               snpinfo: bin,
               start: region.start + index,
               end: region.start + index + 1,
@@ -97,24 +107,31 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   ) {
     const { colorBy } = opts
     const { sequenceAdapter } = await this.configure()
+    const { refName, start, end } = region
     const binMax = Math.ceil(region.end - region.start)
 
+    // bins contain cov feature if they contribute to coverage, or noncov which
+    // are interbase or other features that don't contribute to coverage.
+    // delskips are elements that don't contribute to coverage, but should be
+    // reported also (and are not interbase)
     const initBins = Array.from({ length: binMax }, () => ({
       total: 0,
       ref: 0,
-      cov: {},
-      noncov: {},
+      cov: {} as { [key: string]: number },
+      delskips: {} as { [key: string]: number },
+      noncov: {} as { [key: string]: number },
     }))
-    const { refName, start, end } = region
 
     // request an extra +1 on the end to get CpG crossing region boundary
-    const [feat] = await sequenceAdapter
-      .getFeatures({ refName, start, end: end + 1, assemblyName: 'na' })
-      .pipe(toArray())
-      .toPromise()
-    const regionSeq = feat?.get('seq')
+    let regionSeq: string | undefined
 
-    const ii = 0
+    if (sequenceAdapter) {
+      const [feat] = await sequenceAdapter
+        .getFeatures({ refName, start, end: end + 1, assemblyName: 'na' })
+        .pipe(toArray())
+        .toPromise()
+      regionSeq = feat?.get('seq')
+    }
 
     return features
       .pipe(
@@ -151,7 +168,15 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 }
               }
             })
-          } else if (colorBy?.type === 'methylation') {
+          }
+
+          // methylation based coloring takes into account both reference sequence CpG detection and reads
+          else if (colorBy?.type === 'methylation') {
+            if (!regionSeq) {
+              throw new Error(
+                'no region sequence detected, need sequenceAdapter configuration',
+              )
+            }
             const seq = feature.get('seq')
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
             const methBins = new Array(region.end - region.start).fill(0)
@@ -190,6 +215,43 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                       bin.cov.unmeth = 0
                     }
                     bin.cov.unmeth++
+                  }
+                }
+              }
+            }
+          }
+
+          // normal SNP based coloring
+          else {
+            const mismatches = feature.get('mismatches')
+            for (let i = 0; i < mismatches?.length; i++) {
+              const mismatch = mismatches[i] as Mismatch
+              const mstart = fstart + mismatch.start
+              for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
+                const epos = j - region.start
+                if (epos >= 0 && epos < bins.length) {
+                  const bin = bins[epos]
+                  const { base, type } = mismatch
+                  const interbase = isInterbase(type)
+                  if (!interbase) {
+                    bin.ref--
+                  } else {
+                    if (!bin.noncov[type]) {
+                      bin.noncov[type] = 0
+                    }
+                    bin.noncov[type]++
+                  }
+
+                  if (type === 'deletion' || type === 'skip') {
+                    if (!bin.delskips[type]) {
+                      bin.delskips[type] = 0
+                    }
+                    bin.delskips[type]++
+                  } else if (!interbase) {
+                    if (!bin.cov[base]) {
+                      bin.cov[base] = 0
+                    }
+                    bin.cov[base]++
                   }
                 }
               }
