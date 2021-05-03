@@ -895,6 +895,17 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
     const [region] = regions
 
+    // @ts-ignore
+    const seqAdapter = renderProps.dataAdapter.sequenceAdapter
+
+    const [feat] = seqAdapter
+      ? await seqAdapter
+          .getFeatures(renderProps.regions[0])
+          .pipe(toArray())
+          .toPromise()
+      : []
+    const regionSequence = feat?.get('seq')
+
     const width = (region.end - region.start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
 
@@ -907,6 +918,7 @@ export default class PileupRenderer extends BoxRendererType {
           ...renderProps,
           layout,
           features,
+          regionSequence,
         }),
     )
 
