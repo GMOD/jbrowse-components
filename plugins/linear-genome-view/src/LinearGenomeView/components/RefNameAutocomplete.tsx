@@ -76,7 +76,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 325)
+  const debouncedSearch = useDebounce(currentSearch, 400)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
