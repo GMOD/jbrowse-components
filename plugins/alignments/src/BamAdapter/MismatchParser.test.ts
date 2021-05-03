@@ -493,5 +493,5 @@ test('getModificationPositions', () => {
     'C+m,2,2,1,4,1',
     'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
   )
-  expect(positions[0]).toEqual([6, 17, 20, 31, 34])
+  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
 })
