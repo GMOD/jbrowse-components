@@ -3,7 +3,7 @@ import JBrowseCommand from '../base'
 import { ReadStream, createReadStream } from 'fs'
 import { Transform } from 'stream'
 import gff from '@gmod/gff'
-import { spawn } from 'child_process'
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 
 type RecordData = {
   attributes: any;
@@ -69,7 +69,7 @@ export default class TextIndex extends JBrowseCommand {
       // For testing:
       const gff3FileName2: string = "./test/data/au9_scaffold_subset_sync.gff3"
       const gff3In = createReadStream(gff3FileName2)
-      this.parseGff3(gff3In)
+      this.parseGff3(gff3In, false)
 
       this.log(
         'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
@@ -77,7 +77,7 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  async parseGff3(gff3In: ReadStream) {
+  async parseGff3(gff3In: ReadStream, isTest: boolean) {
     
     const gffTranform = new Transform({
       objectMode: true,
@@ -91,7 +91,7 @@ export default class TextIndex extends JBrowseCommand {
       
     const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
       
-    this.runIxIxx(gff3Stream)
+    this.runIxIxx(gff3Stream, isTest)
   }
 
   private _recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
@@ -118,15 +118,18 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  async runIxIxx(readStream: ReadStream){
+  async runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
 
     // readStream.on('error', function(err) {
     //     this.log(err.stack)
-    // })
-    
-    const ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], { shell: true })
+    //  })
+    let ixProcess: ChildProcessWithoutNullStreams;
+    if (isTest)
+      ixProcess = spawn('cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin', ['./products/jbrowse-cli/test/data/out.ix', './products/jbrowse-cli/test/data/out.ixx'], { shell: true })   
+    else
+      ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], { shell: true })
 
     // Pass the readStream as stdin into ixProcess.
     readStream.pipe(ixProcess.stdin)

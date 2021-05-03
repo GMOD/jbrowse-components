@@ -3,9 +3,11 @@
  */
 
 import { setup } from '../testUtil'
+import TextIndex from './text-index'
+import { createReadStream } from 'fs'
 
 // Test throwing an error if --tracks and no track ids provided
-describe('indexGff3', () => {
+describe('textIndexCommandErrors', () => {
   setup
     .command(['text-index', '--tracks'])
     .catch(err => {
@@ -31,3 +33,34 @@ describe('indexGff3', () => {
     })
     .it('fails if there is an invalid flag')
   })
+
+describe('indexGff3', () => {
+  setup
+    .command(['text-index', '--tracks'])
+    .catch(err => {
+      expect(err.message).toContain('--tracks expects a value')
+    })
+    .it('fails if no track ids are provided to the command with --tracks flag.')
+  })
+
+
+describe('indexGff3', () => {
+  const gff3FileName2: string = "./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3"
+  const gff3In = createReadStream(gff3FileName2)
+  it(`Index ./test/data into out.ix and out.ixx`, async () => {
+    // parseGff
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+    textIndex.parseGff3(gff3In, true)
+    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+  })
+  // it('console.log the text "hello"', () => {
+    // let textIndex = new TextIndex([], null)
+    // textIndex.log = jest.fn();
+    // textIndex.log('hello');
+    // The first argument of the first call to the function was 'hello'
+    // expect(textIndex.log).toHaveBeenCalledWith('hello');
+  // })
+  
+  
+})
