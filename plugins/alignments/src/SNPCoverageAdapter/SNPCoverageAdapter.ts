@@ -54,7 +54,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  getFeatures(region: Region, opts: SNPCoverageOptions) {
+  getFeatures(region: Region, opts: SNPCoverageOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { subadapter } = await this.configure()
       let stream = subadapter.getFeatures(region, opts)
@@ -71,7 +71,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           new SimpleFeature({
             id: `${this.id}-${region.start}-${index}`,
             data: {
-              score: bin.ref,
+              score: bin.total,
               snpinfo: bin,
               start: region.start + index,
               end: region.start + index + 1,
@@ -247,6 +247,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                       bin.delskips[type] = 0
                     }
                     bin.delskips[type]++
+                    bin.total--
                   } else if (!interbase) {
                     if (!bin.cov[base]) {
                       bin.cov[base] = 0
