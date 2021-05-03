@@ -179,6 +179,7 @@ const stateModelFactory = (
             // note: the snpcoverage display is not able to control filterBy
             // itself
             if (
+              self.PileupDisplay.filterBy &&
               !deepEqual(
                 getSnapshot(self.PileupDisplay.filterBy),
                 getSnapshot(self.SNPCoverageDisplay.filterBy),
@@ -189,6 +190,7 @@ const stateModelFactory = (
               )
             }
             if (
+              self.PileupDisplay.colorBy &&
               !deepEqual(
                 getSnapshot(self.PileupDisplay.colorBy),
                 self.SNPCoverageDisplay.colorBy
