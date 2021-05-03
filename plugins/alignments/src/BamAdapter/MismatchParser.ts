@@ -319,7 +319,11 @@ export function getModificationPositions(mm: string, seq: string) {
     .map(mod => {
       const [basemod, ...rest] = mod.split(',')
 
-      const [, base, strand, type] = basemod.match(/([A-Z])([-+])([^,]+)/)
+      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      if (!matches) {
+        throw new Error('bad format for MM tag')
+      }
+      const [, base, strand, type] = matches
       if (strand === '-') {
         console.warn('unsupported negative strand modifications')
         // make sure to return a somewhat matching type even in this case
