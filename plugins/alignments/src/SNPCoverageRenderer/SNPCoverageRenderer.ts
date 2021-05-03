@@ -85,6 +85,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       mod_2: 'blue',
       meth: 'red',
       unmeth: 'blue',
+      ref: 'lightgrey',
     }
 
     // Use two pass rendering, which helps in visualizing the SNPs at higher
@@ -107,12 +108,13 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     // the grey background over the SNPs
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      type Counts = { [key: string]: number }
+      type Counts = {
+        [key: string]: { total: number; strands: { [key: string]: number } }
+      }
       const snpinfo = feature.get('snpinfo') as {
         cov: Counts
         noncov: Counts
         total: number
-        ref: number
       }
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
@@ -123,24 +125,24 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           if (a > b) return 1
           return 0
         })
-        .reduce((curr, [base, score]) => {
+        .reduce((curr, [base, { total }]) => {
           ctx.fillStyle = colorForBase[base] || 'red'
-          ctx.fillRect(leftPx, snpToY(score + curr), w, snpToHeight(score))
-          return curr + score
+          ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
+          return curr + total
         }, 0)
 
       const interbaseEvents = Object.entries(snpinfo.noncov)
       const indicatorHeight = 4.5
       if (drawInterbaseCounts) {
-        interbaseEvents.reduce((curr, [base, score]) => {
+        interbaseEvents.reduce((curr, [base, { total }]) => {
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
             leftPx - 0.6,
             indicatorHeight + snpToHeight(curr),
             1.2,
-            snpToHeight(score),
+            snpToHeight(total),
           )
-          return curr + score
+          return curr + total
         }, 0)
       }
 
@@ -148,10 +150,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
         let accum = 0
         let max = 0
         let maxBase = ''
-        interbaseEvents.forEach(([base, score]) => {
-          accum += score
-          if (score > max) {
-            max = score
+        interbaseEvents.forEach(([base, { total }]) => {
+          accum += total
+          if (total > max) {
+            max = total
             maxBase = base
           }
         })

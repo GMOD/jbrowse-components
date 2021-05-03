@@ -24,7 +24,12 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-type Count = { [key: string]: number }
+type Count = {
+  [key: string]: {
+    total: number
+    strands: { [key: string]: number }
+  }
+}
 
 function TooltipContents({ feature }: { feature: Feature }) {
   const refName = feature.get('refName')
@@ -35,11 +40,11 @@ function TooltipContents({ feature }: { feature: Feature }) {
   }`
 
   const info = feature.get('snpinfo') as {
+    ref: Count
     cov: Count
     noncov: Count
     delskips: Count
     total: number
-    ref: number
   }
 
   const { total, ref, cov, noncov, delskips } = info
@@ -52,6 +57,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
             <th>Base</th>
             <th>Count</th>
             <th>% of Total</th>
+            <th>Strands</th>
           </tr>
         </thead>
         <tbody>
@@ -60,50 +66,33 @@ function TooltipContents({ feature }: { feature: Feature }) {
             <td>{total}</td>
             <td />
           </tr>
-          <tr>
-            <td>Ref</td>
-            <td>{ref}</td>
-            <td />
-          </tr>
-          {Object.entries(cov).map(([base, score]) => {
-            return (
-              <tr key={base}>
-                <td>{base.toUpperCase()}</td>
-                <td>{score}</td>
-                <td>
-                  {base === 'total'
-                    ? '---'
-                    : `${Math.floor((score / total) * 100)}%`}
-                </td>
-              </tr>
-            )
-          })}
-          {Object.entries(noncov).map(([base, score]) => {
-            return (
-              <tr key={base}>
-                <td>{base.toUpperCase()}</td>
-                <td>{score}</td>
-                <td>
-                  {base === 'total'
-                    ? '---'
-                    : `${Math.floor((score / total) * 100)}%`}
-                </td>
-              </tr>
-            )
-          })}
-          {Object.entries(delskips).map(([base, score]) => {
-            return (
-              <tr key={base}>
-                <td>{base.toUpperCase()}</td>
-                <td>{score}</td>
-                <td>
-                  {base === 'total'
-                    ? '---'
-                    : `${Math.floor((score / total) * 100)}%`}
-                </td>
-              </tr>
-            )
-          })}
+
+          {Object.entries({ ref, cov, noncov, delskips }).map(
+            ([key, entry]) => {
+              return (
+                <React.Fragment key={key}>
+                  {Object.entries(entry).map(([base, score]) => {
+                    const { strands } = score
+                    return (
+                      <tr key={base}>
+                        <td>{base.toUpperCase()}</td>
+                        <td>{score.total}</td>
+                        <td>
+                          {base === 'total'
+                            ? '---'
+                            : `${Math.floor((score.total / total) * 100)}%`}
+                        </td>
+                        <td>
+                          {strands['-1'] ? `${strands['-1']}(-)` : ''}
+                          {strands['1'] ? `${strands['1']}(+)` : ''}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </React.Fragment>
+              )
+            },
+          )}
         </tbody>
       </table>
     </div>

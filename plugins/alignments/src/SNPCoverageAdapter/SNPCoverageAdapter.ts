@@ -29,6 +29,21 @@ function isInterbase(type: string) {
   return type === 'softclip' || type === 'hardclip' || type === 'insertion'
 }
 
+function inc(bin: any, strand: number, type: string, field: string) {
+  if (!bin[type][field]) {
+    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  }
+  bin[type][field].total++
+  bin[type][field].strands[strand]++
+}
+function dec(bin: any, strand: number, type: string, field: string) {
+  if (!bin[type][field]) {
+    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  }
+  bin[type][field].total--
+  bin[type][field].strands[strand]--
+}
+
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
     const subadapterConfig = readConfObject(this.config, 'subadapter')
@@ -116,12 +131,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     // are interbase or other features that don't contribute to coverage.
     // delskips are elements that don't contribute to coverage, but should be
     // reported also (and are not interbase)
+    type BinType = { total: number; strands: { [key: string]: number } }
     const initBins = Array.from({ length: binMax }, () => ({
       total: 0,
-      ref: 0,
-      cov: {} as { [key: string]: number },
-      delskips: {} as { [key: string]: number },
-      noncov: {} as { [key: string]: number },
+      cov: {} as BinType,
+      delskips: {} as BinType,
+      noncov: {} as BinType,
+      ref: {} as BinType,
     }))
 
     // request an extra +1 on the end to get CpG crossing region boundary
@@ -141,6 +157,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           const cigar = feature.get('CIGAR')
           const fstart = feature.get('start')
           const fend = feature.get('end')
+          const fstrand = feature.get('strand')
           const cigarOps = parseCigar(cigar)
 
           for (let j = fstart; j < fend; j++) {
@@ -148,7 +165,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             if (i >= 0 && i < bins.length) {
               const bin = bins[i]
               bin.total++
-              bin.ref++
+              inc(bin, fstrand, 'ref', 'ref')
             }
           }
 
@@ -162,11 +179,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 const epos = pos + fstart - region.start
                 if (epos >= 0 && epos < bins.length) {
                   const bin = bins[epos]
-                  bin.ref--
-                  if (!bin.cov[mod]) {
-                    bin.cov[mod] = 0
-                  }
-                  bin.cov[mod]++
+                  inc(bin, fstrand, 'cov', mod)
                 }
               }
             })
@@ -204,19 +217,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 // color
                 if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
                   if (methBins[i]) {
-                    bin.ref--
-
-                    if (!bin.cov.meth) {
-                      bin.cov.meth = 0
-                    }
-                    bin.cov.meth++
+                    inc(bin, fstrand, 'cov', 'meth')
+                    dec(bin, fstrand, 'ref', 'ref')
                   } else {
-                    bin.ref--
-
-                    if (!bin.cov.unmeth) {
-                      bin.cov.unmeth = 0
-                    }
-                    bin.cov.unmeth++
+                    inc(bin, fstrand, 'cov', 'unmeth')
+                    dec(bin, fstrand, 'ref', 'ref')
                   }
                 }
               }
@@ -236,25 +241,16 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                   const { base, type } = mismatch
                   const interbase = isInterbase(type)
                   if (!interbase) {
-                    bin.ref--
+                    dec(bin, fstrand, 'ref', 'ref')
                   } else {
-                    if (!bin.noncov[type]) {
-                      bin.noncov[type] = 0
-                    }
-                    bin.noncov[type]++
+                    inc(bin, fstrand, 'noncov', type)
                   }
 
                   if (type === 'deletion' || type === 'skip') {
-                    if (!bin.delskips[type]) {
-                      bin.delskips[type] = 0
-                    }
-                    bin.delskips[type]++
+                    inc(bin, fstrand, 'delskips', type)
                     bin.total--
                   } else if (!interbase) {
-                    if (!bin.cov[base]) {
-                      bin.cov[base] = 0
-                    }
-                    bin.cov[base]++
+                    inc(bin, fstrand, 'cov', base)
                   }
                 }
               }

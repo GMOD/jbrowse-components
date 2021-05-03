@@ -8,11 +8,27 @@ Array [
     "score": 18,
     "snpinfo": Object {
       "cov": Object {
-        "T": 1,
+        "T": Object {
+          "strands": Object {
+            "-1": 1,
+            "0": 0,
+            "1": 0,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 7,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 17,
+        },
+      },
       "total": 18,
     },
     "start": 1002,
@@ -26,7 +42,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 18,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 8,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 18,
+        },
+      },
       "total": 18,
     },
     "start": 1003,
@@ -38,11 +63,27 @@ Array [
     "score": 18,
     "snpinfo": Object {
       "cov": Object {
-        "A": 1,
+        "A": Object {
+          "strands": Object {
+            "-1": 1,
+            "0": 0,
+            "1": 0,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 7,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 17,
+        },
+      },
       "total": 18,
     },
     "start": 1004,
@@ -56,7 +97,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 19,
     },
     "start": 1005,
@@ -68,12 +118,35 @@ Array [
     "score": 20,
     "snpinfo": Object {
       "cov": Object {
-        "A": 2,
-        "T": 1,
+        "A": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 2,
+          },
+          "total": 2,
+        },
+        "T": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 1,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 8,
+          },
+          "total": 17,
+        },
+      },
       "total": 20,
     },
     "start": 1006,
@@ -87,7 +160,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1007,
@@ -99,11 +181,27 @@ Array [
     "score": 20,
     "snpinfo": Object {
       "cov": Object {
-        "T": 1,
+        "T": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 1,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 20,
     },
     "start": 1008,
@@ -117,7 +215,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1009,
@@ -131,7 +238,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1010,
@@ -145,7 +261,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 19,
     },
     "start": 1011,
@@ -162,11 +287,27 @@ Array [
     "score": 18,
     "snpinfo": Object {
       "cov": Object {
-        "T": 1,
+        "T": Object {
+          "strands": Object {
+            "-1": 1,
+            "0": 0,
+            "1": 0,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 7,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 17,
+        },
+      },
       "total": 18,
     },
     "start": 1002,
@@ -180,7 +321,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 18,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 8,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 18,
+        },
+      },
       "total": 18,
     },
     "start": 1003,
@@ -192,11 +342,27 @@ Array [
     "score": 18,
     "snpinfo": Object {
       "cov": Object {
-        "C": 1,
+        "C": Object {
+          "strands": Object {
+            "-1": 1,
+            "0": 0,
+            "1": 0,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 7,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 17,
+        },
+      },
       "total": 18,
     },
     "start": 1004,
@@ -210,7 +376,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 19,
     },
     "start": 1005,
@@ -222,12 +397,35 @@ Array [
     "score": 20,
     "snpinfo": Object {
       "cov": Object {
-        "A": 2,
-        "T": 1,
+        "A": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 2,
+          },
+          "total": 2,
+        },
+        "T": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 1,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 17,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 8,
+          },
+          "total": 17,
+        },
+      },
       "total": 20,
     },
     "start": 1006,
@@ -241,7 +439,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1007,
@@ -253,11 +460,27 @@ Array [
     "score": 20,
     "snpinfo": Object {
       "cov": Object {
-        "T": 1,
+        "T": Object {
+          "strands": Object {
+            "-1": 0,
+            "0": 0,
+            "1": 1,
+          },
+          "total": 1,
+        },
       },
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 20,
     },
     "start": 1008,
@@ -271,7 +494,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1009,
@@ -285,7 +517,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 20,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 11,
+          },
+          "total": 20,
+        },
+      },
       "total": 20,
     },
     "start": 1010,
@@ -299,7 +540,16 @@ Array [
       "cov": Object {},
       "delskips": Object {},
       "noncov": Object {},
-      "ref": 19,
+      "ref": Object {
+        "ref": Object {
+          "strands": Object {
+            "-1": 9,
+            "0": 0,
+            "1": 10,
+          },
+          "total": 19,
+        },
+      },
       "total": 19,
     },
     "start": 1011,
