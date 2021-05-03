@@ -48,19 +48,11 @@ describe('indexGff3', () => {
   const gff3FileName2: string = "./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3"
   const gff3In = createReadStream(gff3FileName2)
   it(`Index ./test/data into out.ix and out.ixx`, async () => {
-    // parseGff
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
+
+    // Test parsing of stream and running ixIxx.
     textIndex.parseGff3(gff3In, true)
     expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
-  })
-  // it('console.log the text "hello"', () => {
-    // let textIndex = new TextIndex([], null)
-    // textIndex.log = jest.fn();
-    // textIndex.log('hello');
-    // The first argument of the first call to the function was 'hello'
-    // expect(textIndex.log).toHaveBeenCalledWith('hello');
-  // })
-  
-  
+  })  
 })

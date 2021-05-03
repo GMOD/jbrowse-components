@@ -125,10 +125,13 @@ export default class TextIndex extends JBrowseCommand {
     // readStream.on('error', function(err) {
     //     this.log(err.stack)
     //  })
+
     let ixProcess: ChildProcessWithoutNullStreams;
     if (isTest)
+      // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
       ixProcess = spawn('cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin', ['./products/jbrowse-cli/test/data/out.ix', './products/jbrowse-cli/test/data/out.ixx'], { shell: true })   
     else
+      // Otherwise require user to have ixIxx in their system path.
       ixProcess = spawn('cat | ixIxx /dev/stdin', [ixFileName, ixxFileName], { shell: true })
 
     // Pass the readStream as stdin into ixProcess.
