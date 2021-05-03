@@ -6,27 +6,15 @@ Array [
     "end": 1003,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 10,
-          "-": 7,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "T": 1,
       },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "-": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 18,
+    },
     "start": 1002,
     "uniqueId": "test-0-1002",
   },
@@ -34,20 +22,13 @@ Array [
     "end": 1004,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 18,
-        "strands": Object {
-          "+": 10,
-          "-": 8,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 18,
+      "total": 18,
+    },
     "start": 1003,
     "uniqueId": "test-0-1003",
   },
@@ -55,27 +36,15 @@ Array [
     "end": 1005,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 10,
-          "-": 7,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "A": 1,
       },
-      Object {
-        "base": "A",
-        "score": 1,
-        "strands": Object {
-          "-": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 18,
+    },
     "start": 1004,
     "uniqueId": "test-0-1004",
   },
@@ -83,20 +52,13 @@ Array [
     "end": 1006,
     "refName": "ctgA",
     "score": 19,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 19,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 19,
+    },
     "start": 1005,
     "uniqueId": "test-0-1005",
   },
@@ -104,34 +66,16 @@ Array [
     "end": 1007,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 8,
-          "-": 9,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "A": 2,
+        "T": 1,
       },
-      Object {
-        "base": "A",
-        "score": 2,
-        "strands": Object {
-          "+": 2,
-        },
-      },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "+": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 20,
+    },
     "start": 1006,
     "uniqueId": "test-0-1006",
   },
@@ -139,20 +83,13 @@ Array [
     "end": 1008,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1007,
     "uniqueId": "test-0-1007",
   },
@@ -160,27 +97,15 @@ Array [
     "end": 1009,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "T": 1,
       },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "+": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 20,
+    },
     "start": 1008,
     "uniqueId": "test-0-1008",
   },
@@ -188,20 +113,13 @@ Array [
     "end": 1010,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1009,
     "uniqueId": "test-0-1009",
   },
@@ -209,20 +127,13 @@ Array [
     "end": 1011,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1010,
     "uniqueId": "test-0-1010",
   },
@@ -230,20 +141,13 @@ Array [
     "end": 1012,
     "refName": "ctgA",
     "score": 19,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 19,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 19,
+    },
     "start": 1011,
     "uniqueId": "test-0-1011",
   },
@@ -256,27 +160,15 @@ Array [
     "end": 1003,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 10,
-          "-": 7,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "T": 1,
       },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "-": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 18,
+    },
     "start": 1002,
     "uniqueId": "test-0-1002",
   },
@@ -284,20 +176,13 @@ Array [
     "end": 1004,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 18,
-        "strands": Object {
-          "+": 10,
-          "-": 8,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 18,
+      "total": 18,
+    },
     "start": 1003,
     "uniqueId": "test-0-1003",
   },
@@ -305,27 +190,15 @@ Array [
     "end": 1005,
     "refName": "ctgA",
     "score": 18,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 10,
-          "-": 7,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "C": 1,
       },
-      Object {
-        "base": "C",
-        "score": 1,
-        "strands": Object {
-          "-": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 18,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 18,
+    },
     "start": 1004,
     "uniqueId": "test-0-1004",
   },
@@ -333,20 +206,13 @@ Array [
     "end": 1006,
     "refName": "ctgA",
     "score": 19,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 19,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 19,
+    },
     "start": 1005,
     "uniqueId": "test-0-1005",
   },
@@ -354,34 +220,16 @@ Array [
     "end": 1007,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 17,
-        "strands": Object {
-          "+": 8,
-          "-": 9,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "A": 2,
+        "T": 1,
       },
-      Object {
-        "base": "A",
-        "score": 2,
-        "strands": Object {
-          "+": 2,
-        },
-      },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "+": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 17,
+      "total": 20,
+    },
     "start": 1006,
     "uniqueId": "test-0-1006",
   },
@@ -389,20 +237,13 @@ Array [
     "end": 1008,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1007,
     "uniqueId": "test-0-1007",
   },
@@ -410,27 +251,15 @@ Array [
     "end": 1009,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
+    "snpinfo": Object {
+      "cov": Object {
+        "T": 1,
       },
-      Object {
-        "base": "T",
-        "score": 1,
-        "strands": Object {
-          "+": 1,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 20,
+    },
     "start": 1008,
     "uniqueId": "test-0-1008",
   },
@@ -438,20 +267,13 @@ Array [
     "end": 1010,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1009,
     "uniqueId": "test-0-1009",
   },
@@ -459,20 +281,13 @@ Array [
     "end": 1011,
     "refName": "ctgA",
     "score": 20,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 20,
-        "strands": Object {
-          "+": 11,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 20,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 20,
+      "total": 20,
+    },
     "start": 1010,
     "uniqueId": "test-0-1010",
   },
@@ -480,20 +295,13 @@ Array [
     "end": 1012,
     "refName": "ctgA",
     "score": 19,
-    "snpinfo": Array [
-      Object {
-        "base": "reference",
-        "score": 19,
-        "strands": Object {
-          "+": 10,
-          "-": 9,
-        },
-      },
-      Object {
-        "base": "total",
-        "score": 19,
-      },
-    ],
+    "snpinfo": Object {
+      "cov": Object {},
+      "delskips": Object {},
+      "noncov": Object {},
+      "ref": 19,
+      "total": 19,
+    },
     "start": 1011,
     "uniqueId": "test-0-1011",
   },

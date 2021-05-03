@@ -67,18 +67,20 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       const bins = await this.generateCoverageBins(stream, region, opts)
 
       bins.forEach((bin, index) => {
-        observer.next(
-          new SimpleFeature({
-            id: `${this.id}-${region.start}-${index}`,
-            data: {
-              score: bin.total,
-              snpinfo: bin,
-              start: region.start + index,
-              end: region.start + index + 1,
-              refName: region.refName,
-            },
-          }),
-        )
+        if (bin.total) {
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${region.start}-${index}`,
+              data: {
+                score: bin.total,
+                snpinfo: bin,
+                start: region.start + index,
+                end: region.start + index + 1,
+                refName: region.refName,
+              },
+            }),
+          )
+        }
       })
 
       observer.complete()
