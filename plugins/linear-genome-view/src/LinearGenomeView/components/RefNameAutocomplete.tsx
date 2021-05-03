@@ -83,18 +83,6 @@ function RefNameAutocomplete({
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
-  // const test2 = new LocStringResult({
-  //  renderingComponent: <TestInnerHTML innerText="this is test" />,
-  //  rendering: 'this is test', // would have to correspond to props.innerText
-  //  matchedAttribute: 'name',
-  //  locString: 'ctgA:1-900',
-  // })
-  // const testOption: Option = {
-  //  group: 'test',
-  //  result: test2,
-  // }
-  // console.log('test2', test2.getRendering())
-  // console.log('test2', test2.getRenderingComponent())
   // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
@@ -102,13 +90,12 @@ function RefNameAutocomplete({
         group: 'reference sequence',
         result: new RefSequenceResult({
           refName: option.refName,
-          rendering: option.refName,
+          label: option.refName,
           matchedAttribute: 'refName',
         }),
       }
       return defaultOption
     })
-    // return defaultOptions.concat(testOption)
     return defaultOptions
   }, [regions])
   // assembly and regions have loaded
@@ -161,7 +148,7 @@ function RefNameAutocomplete({
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
         const newResult = new LocStringResult({
-          rendering: selectedOption,
+          label: selectedOption,
           locString: selectedOption,
           matchedAttribute: 'locstring',
         })
@@ -203,7 +190,7 @@ function RefNameAutocomplete({
           const newOption: Option = {
             group: 'Navigating to...',
             result: new LocStringResult({
-              rendering: params.inputValue,
+              label: params.inputValue,
               locString: params.inputValue,
               matchedAttribute: 'locstring',
             }),
@@ -253,7 +240,7 @@ function RefNameAutocomplete({
       }}
       renderOption={(option, { inputValue }) => {
         const { result } = option
-        const rendering = result.getRendering()
+        const rendering = result.getLabel()
         // if renderingComponent is provided render that
         const component = result.getRenderingComponent()
         if (component) {
@@ -273,9 +260,7 @@ function RefNameAutocomplete({
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
-        return typeof option === 'string'
-          ? option
-          : option.result.getRendering()
+        return typeof option === 'string' ? option : option.result.getLabel()
       }}
     />
   )

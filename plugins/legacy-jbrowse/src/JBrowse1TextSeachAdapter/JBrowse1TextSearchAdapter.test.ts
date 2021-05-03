@@ -42,9 +42,9 @@ test('adapter can fetch files from names index', async () => {
   })
   // check results are of type BaseResult for prefix search
   expect(results[0] instanceof BaseResult).toBeTruthy()
-  expect(results[0].getRendering()).toEqual('Apple1')
-  expect(results[1].getRendering()).toEqual('Apple2')
-  expect(results[2].getRendering()).toEqual('Apple3')
+  expect(results[0].getLabel()).toEqual('Apple1')
+  expect(results[1].getLabel()).toEqual('Apple2')
+  expect(results[2].getLabel()).toEqual('Apple3')
   // exact search
   const results2 = await adapter.searchIndex({
     searchType: 'exact',
@@ -54,7 +54,7 @@ test('adapter can fetch files from names index', async () => {
   expect(results2.length).toEqual(5)
   const test2 = results2[0]
   expect(test2 instanceof BaseResult).toBeTruthy()
-  expect(test2.getRendering()).toEqual('Apple3')
+  expect(test2.getLabel()).toEqual('Apple3')
   expect(test2 instanceof LocStringResult).toBeTruthy()
   expect(test2.getLocation()).toEqual('ctgA:17399-23000')
 })

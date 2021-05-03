@@ -66,7 +66,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   }, [assemblyManager, assemblyName])
 
   function setSelectedValue(selectedOption: BaseResult) {
-    let newValue = selectedOption.getRendering()
+    let newValue = selectedOption.getLabel()
     if (selectedOption instanceof RefSequenceResult) {
       newValue = selectedOption.getLocation()
     }

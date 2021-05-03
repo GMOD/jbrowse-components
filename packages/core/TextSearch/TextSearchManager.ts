@@ -56,9 +56,9 @@ export default (pluginManager: PluginManager) => {
       /* Relevant sketch:
       1) opened tracks
       2) all tracks for aggregate
-      3) cache of recently used tracks?
       */
       const { textSearchAdapters } = pluginManager.rootModel?.jbrowse as any
+      // console.log(pluginManager.rootModel)
       return textSearchAdapters
     }
 
