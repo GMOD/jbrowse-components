@@ -29,6 +29,7 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 // other
 import { LinearGenomeViewModel } from '..'
+// import TestInnerHTML from './TestInnerHTML'
 
 /**
  *  Option interface used to format results to display in dropdown
@@ -72,28 +73,29 @@ function RefNameAutocomplete({
   const classes = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  console.log(model.tracks)
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 300)
+  const debouncedSearch = useDebounce(currentSearch, 325)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
-  // default options for dropdown
-  // const test = new LocationResult({
-  //  rendering: <TestInnerHTML innerText="this is test" />,
+  // const test2 = new LocStringResult({
+  //  renderingComponent: <TestInnerHTML innerText="this is test" />,
+  //  rendering: 'this is test', // would have to correspond to props.innerText
   //  matchedAttribute: 'name',
-  //  location: 'ctgA:1-900',
+  //  locString: 'ctgA:1-900',
   // })
   // const testOption: Option = {
   //  group: 'test',
-  //  result: test,
+  //  result: test2,
   // }
-  // console.log(test.getRendering())
+  // console.log('test2', test2.getRendering())
+  // console.log('test2', test2.getRenderingComponent())
+  // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
@@ -102,7 +104,6 @@ function RefNameAutocomplete({
           refName: option.refName,
           rendering: option.refName,
           matchedAttribute: 'refName',
-          matchedObject: option.refName,
         }),
       }
       return defaultOption
@@ -121,13 +122,13 @@ function RefNameAutocomplete({
         let results: BaseResult[] = []
         if (currentSearch !== '' && !importForm) {
           results = await textSearchManager.search({
-            queryString: currentSearch.toLocaleLowerCase(),
+            queryString: currentSearch,
             searchType: 'prefix',
           })
         }
         if (debouncedSearch && debouncedSearch !== '') {
           results = await textSearchManager.search({
-            queryString: debouncedSearch.toLocaleLowerCase(),
+            queryString: debouncedSearch,
             searchType: 'exact',
           })
         }
@@ -163,7 +164,6 @@ function RefNameAutocomplete({
           rendering: selectedOption,
           locString: selectedOption,
           matchedAttribute: 'locstring',
-          matchedObject: selectedOption,
         })
         onSelect(newResult)
       } else {
@@ -206,7 +206,6 @@ function RefNameAutocomplete({
               rendering: params.inputValue,
               locString: params.inputValue,
               matchedAttribute: 'locstring',
-              matchedObject: params.inputValue,
             }),
           }
           filtered.push(newOption)
@@ -254,34 +253,29 @@ function RefNameAutocomplete({
       }}
       renderOption={(option, { inputValue }) => {
         const { result } = option
-        // Note: rendering could be a react component or a string
-        const val = result.getRendering()
-        if (React.isValidElement(val)) {
-          return val
+        const rendering = result.getRendering()
+        // if renderingComponent is provided render that
+        const component = result.getRenderingComponent()
+        if (component) {
+          if (React.isValidElement(component)) {
+            return component
+          }
         }
-        if (
-          currentSearch !== '' &&
-          inputValue.length <= val.length &&
-          typeof val === 'string'
-        ) {
+        if (currentSearch !== '' && inputValue.length <= rendering.length) {
           return (
             <Typography noWrap>
-              <b>{val.slice(0, inputValue.length)}</b>
-              {val.slice(inputValue.length)}
+              <b>{rendering.slice(0, inputValue.length)}</b>
+              {rendering.slice(inputValue.length)}
             </Typography>
           )
         }
-        return <Typography noWrap>{val}</Typography>
+        return <Typography noWrap>{rendering}</Typography>
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
-        if (typeof option === 'object') {
-          const optionLabel = option.result.getRendering()
-          return typeof optionLabel === 'string'
-            ? optionLabel
-            : optionLabel?.props?.innerText
-        }
-        return option
+        return typeof option === 'string'
+          ? option
+          : option.result.getRendering()
       }}
     />
   )

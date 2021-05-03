@@ -2,8 +2,9 @@ import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterTyp
 import { searchType } from '../data_adapters/BaseAdapter'
 
 export interface BaseResultArgs {
-  rendering: string | JSX.Element
+  rendering: string
 
+  renderingComponent?: JSX.Element
   matchedAttribute?: string
 
   matchedObject?: object
@@ -19,7 +20,9 @@ export interface BaseResultArgs {
   trackName?: string
 }
 export default class BaseResult {
-  rendering: string | JSX.Element // todo add | react component here
+  rendering: string
+
+  renderingComponent?: JSX.Element
 
   matchedAttribute?: string
 
@@ -33,6 +36,7 @@ export default class BaseResult {
 
   constructor(args: BaseResultArgs) {
     this.rendering = args.rendering
+    this.renderingComponent = args.renderingComponent
     this.matchedAttribute = args.matchedAttribute
     this.matchedObject = args.matchedObject
     this.textSearchAdapter = args.textSearchAdapter
@@ -46,6 +50,10 @@ export default class BaseResult {
 
   getLocation() {
     return this.rendering
+  }
+
+  getRenderingComponent() {
+    return this.renderingComponent
   }
 
   getTrackName() {

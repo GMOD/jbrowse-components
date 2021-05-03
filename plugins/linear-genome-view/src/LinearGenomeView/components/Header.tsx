@@ -111,14 +111,12 @@ export default observer(({ model }: { model: LGV }) => {
   async function setDisplayedRegion(result: BaseResult) {
     try {
       if (result) {
-        let newRegionValue = result.getRendering()
-        if (result instanceof RefSequenceResult) { // need to fix finding region
-          newRegionValue = result.getLocation()
+        const newRegionValue = result.getLocation()
+        // need to fix finding region
+        if (result instanceof RefSequenceResult) {
           const newRegion: Region | undefined = model.displayedRegions.find(
             region => newRegionValue === region.refName,
           )
-          console.log(newRegionValue)
-          console.log(newRegion)
           if (newRegion) {
             model.setDisplayedRegions([newRegion])
             // we use showAllRegions after setDisplayedRegions to make the entire
@@ -126,7 +124,6 @@ export default observer(({ model }: { model: LGV }) => {
             model.showAllRegions()
           }
         } else if (result instanceof LocStringResult) {
-          newRegionValue = result.getLocation()
           model.navToLocString(newRegionValue)
         } else {
           const results = await textSearchManager.search({
