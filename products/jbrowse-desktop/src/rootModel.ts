@@ -53,6 +53,7 @@ export default function RootModel(pluginManager: PluginManager) {
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
+      pluginsUpdated: true,
     })
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
@@ -71,6 +72,9 @@ export default function RootModel(pluginManager: PluginManager) {
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
+      },
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -95,9 +99,6 @@ export default function RootModel(pluginManager: PluginManager) {
           snapshot.name = newSnapshotName
           this.setSession(snapshot)
         }
-      },
-      reloadApp() {
-        window.location.reload()
       },
     }))
     .volatile(self => ({

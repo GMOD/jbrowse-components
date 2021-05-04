@@ -137,15 +137,15 @@ export default function JBrowseDesktop(
       },
       addPlugin(plugin) {
         self.plugins = [...self.plugins, plugin]
-        // const rootModel = getParent(self)
-        // rootModel.reloadApp()
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
       },
       removePlugin(pluginName) {
         self.plugins = self.plugins.filter(
           plugin => `${plugin.name}Plugin` !== pluginName,
         )
-        // const rootModel = getParent(self)
-        // rootModel.reloadApp()
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
       },
     }))
     .views(self => ({

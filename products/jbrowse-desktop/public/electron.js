@@ -227,8 +227,8 @@ ipcMain.handle('loadConfig', async () => {
   }
 })
 
-ipcMain.on('saveConfig', async (event, configSnapshot) => {
-  fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
+ipcMain.handle('saveConfig', async (event, configSnapshot) => {
+  return fsWriteFile(configLocation, JSON.stringify(configSnapshot, null, 2))
 })
 
 ipcMain.handle('listSessions', async () => {
