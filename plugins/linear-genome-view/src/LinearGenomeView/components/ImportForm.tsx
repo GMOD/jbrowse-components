@@ -137,7 +137,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   className: classes.importFormEntry,
                   helperText: 'Enter a sequence or locstring',
                   onBlur: event => {
-                    setSelectedRegion((event.target as HTMLInputElement).value)
+                    if ((event.target as HTMLInputElement).value !== '') {
+                      setSelectedRegion(
+                        (event.target as HTMLInputElement).value,
+                      )
+                    }
                   },
                   onKeyPress: event => {
                     const inputValue = (event.target as HTMLInputElement).value

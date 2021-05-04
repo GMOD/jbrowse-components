@@ -5,6 +5,7 @@ export interface BaseResultArgs {
   label: string
 
   renderingComponent?: JSX.Element
+
   matchedAttribute?: string
 
   matchedObject?: object

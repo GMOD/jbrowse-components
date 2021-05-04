@@ -76,7 +76,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 400)
+  const debouncedSearch = useDebounce(currentSearch, 300)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
@@ -107,19 +107,20 @@ function RefNameAutocomplete({
     ;(async () => {
       try {
         let results: BaseResult[] = []
-        if (currentSearch !== '' && !importForm) {
-          results = await textSearchManager.search({
-            queryString: currentSearch,
-            searchType: 'prefix',
-          })
-        }
         if (debouncedSearch && debouncedSearch !== '') {
-          results = await textSearchManager.search({
+          if (!importForm) {
+            const prefixResults = await textSearchManager.search({
+              queryString: debouncedSearch,
+              searchType: 'prefix',
+            })
+            results = results.concat(prefixResults)
+          }
+          const exactResults = await textSearchManager.search({
             queryString: debouncedSearch,
             searchType: 'exact',
           })
+          results = results.concat(exactResults)
         }
-
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
@@ -141,7 +142,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [currentSearch, textSearchManager, debouncedSearch, importForm])
+  }, [textSearchManager, debouncedSearch, importForm])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
@@ -179,6 +180,7 @@ function RefNameAutocomplete({
       onOpen={() => setOpen(true)}
       onClose={() => {
         setOpen(false)
+        setCurrentSearch('')
         setSearchOptions([])
       }}
       options={options.concat(searchOptions)}
@@ -234,7 +236,9 @@ function RefNameAutocomplete({
             value={coarseVisibleLocStrings || value || ''}
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
-            onChange={e => setCurrentSearch(e.target.value.toLocaleLowerCase())}
+            onChange={e => {
+              setCurrentSearch(e.target.value.toLocaleLowerCase())
+            }}
           />
         )
       }}

@@ -7,6 +7,7 @@ import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 import { searchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
+import { readConfObject } from '../configuration'
 
 interface BaseArgs {
   searchType: searchType
@@ -20,7 +21,7 @@ interface BaseArgs {
 
 export default (pluginManager: PluginManager) => {
   return class TextSearchManager {
-    adapterCache: QuickLRU // TODO: replace with AbortablePromiseCache
+    adapterCache: QuickLRU
 
     textSearchAdapters: BaseTextSearchAdapter[]
 
@@ -39,13 +40,20 @@ export default (pluginManager: PluginManager) => {
       // initialize relevant adapters
       this.relevantAdapters().forEach(
         (adapterConfig: AnyConfigurationModel) => {
-          const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
-            adapterConfig.type,
-          )
-          const textSearchAdapter = new textSearchAdapterType.AdapterClass(
-            adapterConfig,
-          ) as BaseTextSearchAdapter
-          initialAdapters.push(textSearchAdapter)
+          const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
+          if (this.adapterCache.has(adapterId)) {
+            const adapterFromCache = this.adapterCache.get(adapterId)
+            initialAdapters.push(adapterFromCache)
+          } else {
+            const textSearchAdapterType = pluginManager.getTextSearchAdapterType(
+              adapterConfig.type,
+            )
+            const textSearchAdapter = new textSearchAdapterType.AdapterClass(
+              adapterConfig,
+            ) as BaseTextSearchAdapter
+            this.adapterCache.set(adapterId, textSearchAdapter)
+            initialAdapters.push(textSearchAdapter)
+          }
         },
       )
       return initialAdapters
