@@ -3150,6 +3150,19 @@
           }
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "modified_bases.5mC",
+      "name": "modified_bases.5mC",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
+        }
+      }
     }
   ],
   "connections": [],
