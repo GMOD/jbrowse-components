@@ -7,7 +7,6 @@ import Layout from '@theme/Layout'
 // eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 
-import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'
 import Typography from '@material-ui/core/Typography'
 import Card from '@material-ui/core/Card'
@@ -33,129 +32,52 @@ import { DialogContent } from '@material-ui/core'
 // eslint-disable-next-line import/no-unresolved
 import { plugins } from '../../plugins.json'
 
-const useStyles = makeStyles(theme => ({
-  button: {
-    textTransform: 'none',
-  },
-  section: {
-    marginTop: '24px',
-    marginBottom: '32px',
-  },
-
-  container: {
-    display: 'flex',
-    [theme.breakpoints.down('md')]: {
-      flexDirection: 'column',
-    },
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  body: {
-    [theme.breakpoints.down('md')]: {
-      margin: '0.5em',
-    },
-    margin: '5em',
-  },
-
-  topLinks: {
-    margin: '0 auto',
-    display: 'flex',
-    alignItems: 'space-between',
-    justifyContent: 'center',
-  },
-
-  card: {
-    margin: '1em auto',
-    width: 800,
-  },
-
-  cardMedia: {
-    height: 200,
-    width: 800,
-  },
-
-  '@media (max-width: 800px)': {
-    cardMedia: {
-      display: 'none',
-    },
-
-    card: {
-      width: 'auto',
-    },
-  },
-
-  icon: {
-    marginLeft: '0.5em',
-    marginRight: '0.5em',
-  },
-
-  topButton: {
-    margin: '1em',
-  },
-
-  closeButton: {
-    color: '#fff',
-    position: 'absolute',
-    top: 5,
-    right: 0,
-  },
-
-  dataField: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: '0.4em 0em',
-  },
-
-  dialogTitleBox: {
-    backgroundColor: theme.palette.primary.main,
-    color: '#fff',
-    textAlign: 'center',
-  },
-}))
+import pluginStyles from '../css/pluginStyles.module.css'
 
 function TopDocumentation() {
-  const classes = useStyles()
   const [aboutSectionOpen, setAboutSectionOpen] = useState(false)
   const [developerSectionOpen, setDeveloperSectionOpen] = useState(false)
 
   return (
     <>
-      <div className={classes.topLinks}>
-        <Button
-          color="primary"
-          variant="contained"
-          size="medium"
-          className={classes.topButton}
-          onClick={() => setAboutSectionOpen(true)}
-          disableRipple
-        >
-          <HelpIcon style={{ marginRight: '0.5em' }} /> About the plugin store
-        </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          size="medium"
-          className={classes.topButton}
-          onClick={() => setDeveloperSectionOpen(true)}
-          disableRipple
-        >
-          <CodeIcon style={{ marginRight: '0.5em' }} /> Developer information
-        </Button>
+      <div className={pluginStyles.topLinks}>
+        <div className={pluginStyles.topButton}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="medium"
+            onClick={() => setAboutSectionOpen(true)}
+            disableRipple
+          >
+            <HelpIcon style={{ marginRight: '0.5em' }} /> About the plugin store
+          </Button>
+        </div>
+        <div className={pluginStyles.topButton}>
+          <Button
+            color="primary"
+            variant="contained"
+            size="medium"
+            onClick={() => setDeveloperSectionOpen(true)}
+            disableRipple
+          >
+            <CodeIcon style={{ marginRight: '0.5em' }} /> Developer information
+          </Button>
+        </div>
       </div>
       <Dialog
         open={aboutSectionOpen}
         onClose={() => setAboutSectionOpen(false)}
       >
-        <DialogTitle className={classes.dialogTitleBox}>
+        <DialogTitle className={pluginStyles.dialogTitleBox}>
           About
-          <IconButton
-            aria-label="close"
-            className={classes.closeButton}
-            onClick={() => setAboutSectionOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
+          <div className={pluginStyles.closeButton}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setAboutSectionOpen(false)}
+            >
+              <CloseIcon style={{ color: '#fff' }} />
+            </IconButton>
+          </div>
         </DialogTitle>
         <DialogContent>
           <Typography>
@@ -186,15 +108,16 @@ function TopDocumentation() {
         open={developerSectionOpen}
         onClose={() => setDeveloperSectionOpen(false)}
       >
-        <DialogTitle className={classes.dialogTitleBox}>
+        <DialogTitle className={pluginStyles.dialogTitleBox}>
           Developer info
-          <IconButton
-            aria-label="close"
-            className={classes.closeButton}
-            onClick={() => setDeveloperSectionOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
+          <div className={pluginStyles.closeButton}>
+            <IconButton
+              aria-label="close"
+              onClick={() => setDeveloperSectionOpen(false)}
+            >
+              <CloseIcon style={{ color: '#fff' }} />
+            </IconButton>
+          </div>
         </DialogTitle>
         <DialogContent>
           <Typography>
@@ -228,32 +151,31 @@ function TopDocumentation() {
 }
 
 function PluginCard(props) {
-  const classes = useStyles()
   const { plugin } = props
 
   const [showConfig, setShowConfig] = useState(false)
 
   return (
-    <Card variant="outlined" key={plugin.name} className={classes.card}>
+    <Card variant="outlined" key={plugin.name} className={pluginStyles.card}>
       {plugin.image ? (
         <CardMedia
-          className={classes.cardMedia}
+          className={pluginStyles.cardMedia}
           image={plugin.image}
           title={plugin.name}
         />
       ) : null}
       <CardContent>
-        <div className={classes.dataField}>
+        <div className={pluginStyles.dataField}>
           <Typography variant="h4">{plugin.name}</Typography>
         </div>
-        <div className={classes.dataField}>
+        <div className={pluginStyles.dataField}>
           <PersonIcon style={{ marginRight: '0.5em' }} />
           <Typography>{plugin.authors.join(', ')}</Typography>
-          <AccountBalanceIcon className={classes.icon} />
+          <AccountBalanceIcon className={pluginStyles.icon} />
           <Typography>
             {plugin.license === 'NONE' ? 'No license' : plugin.license}
           </Typography>
-          <GitHubIcon className={classes.icon} />
+          <GitHubIcon className={pluginStyles.icon} />
           <Link href={plugin.location} target="_blank" rel="noopener">
             <Typography>{plugin.location}</Typography>
           </Link>
@@ -319,11 +241,10 @@ function ConfigBlock(props) {
 function PluginStore() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
-  const classes = useStyles()
 
   return (
     <Layout title={`${siteConfig.title}`}>
-      <div className={classes.body}>
+      <div className={pluginStyles.body}>
         <div style={{ flexBasis: '50%' }}>
           <h1 style={{ textAlign: 'center' }}>JBrowse 2 Plugin Store</h1>
         </div>
