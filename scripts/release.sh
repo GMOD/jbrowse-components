@@ -25,7 +25,7 @@ MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 yarn
 
 # make sure the tests are passing
-yarn test
+yarn test --runInBand
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
