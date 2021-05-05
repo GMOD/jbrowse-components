@@ -1,4 +1,4 @@
-import { types, cast } from 'mobx-state-tree'
+import { types, cast, getSnapshot } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
@@ -101,7 +101,10 @@ const stateModelFactory = (
           ticks: self.ticks,
           displayCrossHatches: self.displayCrossHatches,
           filters: self.filters,
-          colorBy: self.colorBy,
+
+          // must use getSnapshot because otherwise changes to e.g. just the
+          // colorBy.type are not read
+          colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
         }
       },
     }))
