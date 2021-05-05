@@ -110,8 +110,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async seqFetch(refName: string, start: number, end: number) {
     const { sequenceAdapter } = await this.configure()
     const refSeqStore = sequenceAdapter
-    if (!refSeqStore) return undefined
-    if (!refName) return undefined
+    if (!refSeqStore) {
+      return undefined
+    }
+    if (!refName) {
+      return undefined
+    }
 
     const features = refSeqStore.getFeatures({
       refName,
