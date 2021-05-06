@@ -1,5 +1,10 @@
 import React from 'react'
-import { getSnapshot } from 'mobx-state-tree'
+import {
+  getSnapshot,
+  getEnv,
+  resolveIdentifier,
+  getRoot,
+} from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import {
   Button,
@@ -43,6 +48,7 @@ export default function SearchResultsDialog({
 }) {
   const classes = useStyles()
   const session = getSession(model)
+  const { pluginManager } = getEnv(session)
   const { assemblyName } = model.displayedRegions[0]
   const { assemblyManager } = session
   const assembly = assemblyManager.get(assemblyName)
@@ -53,7 +59,7 @@ export default function SearchResultsDialog({
     throw new Error(`assembly ${assemblyName} regions not loaded`)
   }
   const assemblyRegions = assembly.regions
-  // TODO:  match the trackid of JB1 to JB2?
+
   function handleClick(location: string) {
     try {
       const newRegion = assemblyRegions.find(
@@ -72,6 +78,37 @@ export default function SearchResultsDialog({
       session.notify(`${e}`, 'warning')
     }
   }
+  function handleShowTrack(trackId: string) {
+    const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
+    const configuration = resolveIdentifier(
+      trackConfigSchema,
+      getRoot(model),
+      'gff3tabix_genes',
+    )
+    // check if we have any tracks with that configuration
+    const shownTracks = model.tracks.filter(
+      t => t.configuration === configuration,
+    )
+    if (shownTracks.length === 0) {
+      model.showTrack('gff3tabix_genes') // replace with trackId
+    }
+  }
+
+  function getTrackName(trackId: string | undefined) {
+    if (trackId) {
+      const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
+      const configuration = resolveIdentifier(
+        trackConfigSchema,
+        getRoot(model),
+        'gff3tabix_genes',
+      )
+      if (configuration) {
+        return configuration.name?.value
+      }
+    }
+    return ''
+  }
+
   return (
     <Dialog open onClose={handleClose} className={classes.dialogContent}>
       <DialogTitle id="search-results-dialog">
@@ -96,7 +133,7 @@ export default function SearchResultsDialog({
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell align="right">Location</TableCell>
-                <TableCell align="right">Track Name</TableCell>
+                <TableCell align="right">Track Id</TableCell>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>
@@ -107,7 +144,9 @@ export default function SearchResultsDialog({
                     {result.getLabel()}
                   </TableCell>
                   <TableCell align="right">{result.getLocation()}</TableCell>
-                  <TableCell align="right">{result.getTrackName()}</TableCell>
+                  <TableCell align="right">
+                    {getTrackName(result.getTrackId())}
+                  </TableCell>
                   <TableCell align="right">
                     <Button
                       onClick={() => {
@@ -118,6 +157,22 @@ export default function SearchResultsDialog({
                       variant="contained"
                     >
                       Go
+                    </Button>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Button
+                      onClick={() => {
+                        const resultTrackId = result.getTrackId()
+                        if (resultTrackId) {
+                          handleShowTrack(resultTrackId)
+                          handleClick(result.getLocation())
+                        }
+                        handleClose()
+                      }}
+                      color="primary"
+                      variant="contained"
+                    >
+                      Show
                     </Button>
                   </TableCell>
                 </TableRow>

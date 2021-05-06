@@ -78,7 +78,7 @@ export default class JBrowse1TextSearchAdapter
     const formattedResults = results.map(result => {
       if (result && typeof result === 'object' && result.length > 1) {
         const name: string = result[0]
-        const trackId: number = result[1]
+        const trackIndex: number = result[1]
         const refName: string = result[3]
         const start: number = result[4]
         const end: number = result[5]
@@ -88,7 +88,7 @@ export default class JBrowse1TextSearchAdapter
           label: name,
           matchedAttribute: 'name',
           matchedObject: result,
-          trackName: tracksNames[trackId],
+          trackName: tracksNames[trackIndex],
         })
         return formattedResult
       }

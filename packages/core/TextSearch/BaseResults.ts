@@ -18,7 +18,7 @@ export interface BaseResultArgs {
 
   refName?: string
 
-  trackName?: string
+  trackId?: string
 }
 export default class BaseResult {
   label: string
@@ -33,7 +33,7 @@ export default class BaseResult {
 
   relevance?: searchType
 
-  trackName?: string
+  trackId?: string
 
   constructor(args: BaseResultArgs) {
     this.label = args.label
@@ -42,7 +42,7 @@ export default class BaseResult {
     this.matchedObject = args.matchedObject
     this.textSearchAdapter = args.textSearchAdapter
     this.relevance = args.relevance
-    this.trackName = args.trackName
+    this.trackId = args.trackId
   }
 
   getLabel() {
@@ -57,8 +57,8 @@ export default class BaseResult {
     return this.renderingComponent
   }
 
-  getTrackName() {
-    return this.trackName
+  getTrackId() {
+    return this.trackId
   }
 }
 

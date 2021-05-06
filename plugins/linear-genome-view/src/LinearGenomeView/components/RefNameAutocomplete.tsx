@@ -76,7 +76,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 300)
+  const debouncedSearch = useDebounce(currentSearch, 400)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
@@ -264,7 +264,9 @@ function RefNameAutocomplete({
       }}
       getOptionLabel={option => {
         // needed for filtering options and value
-        return typeof option === 'string' ? option : option.result.getLabel()
+        return (
+          (typeof option === 'string' ? option : option.result.getLabel()) || ''
+        )
       }}
     />
   )
