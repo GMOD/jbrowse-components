@@ -11,6 +11,8 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
     SNPCoverageDisplay,
     showPileup,
     showCoverage,
+    groups,
+    groupBy,
   } = model
   return (
     <div
@@ -39,15 +41,31 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
       />
 
       {PileupDisplays ? (
-        PileupDisplays.map(disp => (
-          <div
-            data-testid="Blockset-pileup"
-            key={disp.id}
-            style={{ height: 100 }}
-          >
-            {showPileup ? <disp.RenderingComponent model={disp} /> : null}
-          </div>
-        ))
+        PileupDisplays.map((disp, index) => {
+          return (
+            <div
+              data-testid="Blockset-pileup"
+              key={disp.id}
+              style={{
+                height: disp.height,
+                overflow: 'hidden',
+                marginBottom: 5,
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  zIndex: 1000,
+                  background: 'white',
+                  border: '1px solid black',
+                }}
+              >
+                {groupBy?.tag} {groups[index]}
+              </div>
+              {showPileup ? <disp.RenderingComponent model={disp} /> : null}
+            </div>
+          )
+        })
       ) : (
         <div data-testid="Blockset-pileup">
           {showPileup ? (

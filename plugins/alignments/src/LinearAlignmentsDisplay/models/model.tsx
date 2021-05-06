@@ -103,7 +103,6 @@ const stateModelFactory = (
       },
 
       updateGroups(groups: string[]) {
-        console.log('here')
         self.groups = groups
       },
     }))
@@ -212,6 +211,7 @@ const stateModelFactory = (
             filterBy: {
               tagFilter: { tag: self.groupBy?.tag, value: group },
             },
+            colorBy: self.colorBy,
           })),
         )
       },
@@ -237,7 +237,7 @@ const stateModelFactory = (
             }
 
             // initialize pileup sub-display at startup
-            if (self.groups) {
+            if (self.groups.length) {
               self.setPileupDisplays(self.pileupDisplayConfig)
             } else if (!self.PileupDisplay) {
               self.setPileupDisplay(self.pileupDisplayConfig)
