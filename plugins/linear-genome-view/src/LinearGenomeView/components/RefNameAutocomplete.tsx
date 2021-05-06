@@ -105,23 +105,11 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '') {
-          // if (!importForm) {
-          //  const prefixResults = await textSearchManager.search({
-          //    queryString: debouncedSearch,
-          //    searchType: 'prefix',
-          //  })
-          //  results = results.concat(prefixResults)
-          // }
           const prefixResults = await textSearchManager.search({
             queryString: debouncedSearch,
             searchType: 'prefix',
           })
           results = results.concat(prefixResults)
-          // const exactResults = await textSearchManager.search({
-          //  queryString: debouncedSearch,
-          //  searchType: 'exact',
-          // })
-          // results = results.concat(prefixResults, exactResults)
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
@@ -166,7 +154,6 @@ function RefNameAutocomplete({
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
       freeSolo
-      // autoHighlight
       disableListWrap
       disableClearable
       includeInputInList
