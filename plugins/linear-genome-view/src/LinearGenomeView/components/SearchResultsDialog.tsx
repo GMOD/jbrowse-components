@@ -41,16 +41,24 @@ export const useStyles = makeStyles(theme => ({
 
 export default function SearchResultsDialog({
   model,
+  optAssemblyName,
   handleClose,
 }: {
   model: LinearGenomeViewModel
+  optAssemblyName?: string
   handleClose: () => void
 }) {
   const classes = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
-  const { assemblyName } = model.displayedRegions[0]
   const { assemblyManager } = session
+  let assemblyName = optAssemblyName
+  if (model.displayedRegions.length > 0) {
+    assemblyName = model.displayedRegions[0]?.assemblyName
+  }
+  if (!assemblyName) {
+    throw new Error(`Assembly name not found`)
+  }
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
@@ -71,7 +79,7 @@ export default function SearchResultsDialog({
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        model.navToLocString(location)
+        model.navToLocString(location, assemblyName)
       }
     } catch (e) {
       console.warn(e)
@@ -162,11 +170,12 @@ export default function SearchResultsDialog({
                   <TableCell align="right">
                     <Button
                       onClick={() => {
+                        handleClick(result.getLocation())
                         const resultTrackId = result.getTrackId()
                         if (resultTrackId) {
                           handleShowTrack(resultTrackId)
-                          handleClick(result.getLocation())
                         }
+                        // handleShowTrack('gff3tabix_genes')
                         handleClose()
                       }}
                       color="primary"

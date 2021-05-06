@@ -57,7 +57,6 @@ function RefNameAutocomplete({
   model,
   onSelect,
   assemblyName,
-  importForm,
   style,
   value,
   TextFieldProps = {},
@@ -65,7 +64,6 @@ function RefNameAutocomplete({
   model: LinearGenomeViewModel
   onSelect: (region: BaseResult) => void
   assemblyName?: string
-  importForm?: boolean
   value?: string
   style?: React.CSSProperties
   TextFieldProps?: TFP
@@ -76,7 +74,7 @@ function RefNameAutocomplete({
   const [open, setOpen] = useState(false)
   const [, setError] = useState<Error>()
   const [currentSearch, setCurrentSearch] = useState('')
-  const debouncedSearch = useDebounce(currentSearch, 400)
+  const debouncedSearch = useDebounce(currentSearch, 350)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
@@ -100,7 +98,6 @@ function RefNameAutocomplete({
   }, [regions])
   // assembly and regions have loaded
   const loaded = regions.length !== 0 && options.length !== 0
-
   useEffect(() => {
     let active = true
 
@@ -108,18 +105,23 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '') {
-          if (!importForm) {
-            const prefixResults = await textSearchManager.search({
-              queryString: debouncedSearch,
-              searchType: 'prefix',
-            })
-            results = results.concat(prefixResults)
-          }
-          const exactResults = await textSearchManager.search({
+          // if (!importForm) {
+          //  const prefixResults = await textSearchManager.search({
+          //    queryString: debouncedSearch,
+          //    searchType: 'prefix',
+          //  })
+          //  results = results.concat(prefixResults)
+          // }
+          const prefixResults = await textSearchManager.search({
             queryString: debouncedSearch,
-            searchType: 'exact',
+            searchType: 'prefix',
           })
-          results = results.concat(exactResults)
+          results = results.concat(prefixResults)
+          // const exactResults = await textSearchManager.search({
+          //  queryString: debouncedSearch,
+          //  searchType: 'exact',
+          // })
+          // results = results.concat(prefixResults, exactResults)
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
@@ -142,16 +144,14 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [textSearchManager, debouncedSearch, importForm])
+  }, [textSearchManager, debouncedSearch])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
       if (typeof selectedOption === 'string') {
         // handles string inputs on keyPress enter
-        const newResult = new LocStringResult({
+        const newResult = new BaseResult({
           label: selectedOption,
-          locString: selectedOption,
-          matchedAttribute: 'locstring',
         })
         onSelect(newResult)
       } else {
@@ -166,14 +166,13 @@ function RefNameAutocomplete({
       id={`refNameAutocomplete-${model.id}`}
       data-testid="autocomplete"
       freeSolo
+      // autoHighlight
       disableListWrap
       disableClearable
       includeInputInList
       clearOnBlur
       selectOnFocus
       disabled={!assemblyName || !loaded}
-      loading={loaded}
-      loadingText="Loading..."
       style={style}
       value={coarseVisibleLocStrings || value || ''}
       open={open}
@@ -183,7 +182,7 @@ function RefNameAutocomplete({
         setCurrentSearch('')
         setSearchOptions([])
       }}
-      options={options.concat(searchOptions)}
+      options={searchOptions.length === 0 ? options : searchOptions}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
         return filter(possibleOptions, params)

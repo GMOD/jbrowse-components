@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import BaseResult, {
@@ -18,6 +18,7 @@ import Grid from '@material-ui/core/Grid'
 import MenuItem from '@material-ui/core/MenuItem'
 // other
 import RefNameAutocomplete from './RefNameAutocomplete'
+import SearchResultsDialog from './SearchResultsDialog'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -38,6 +39,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
+  const { pluginManager } = getEnv(session)
+  const { textSearchManager } = pluginManager.rootModel
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
@@ -76,7 +79,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     setSelectedRegion(newValue)
   }
 
-  function handleSelectedRegion(input: string) {
+  async function handleSelectedRegion(input: string) {
     const newRegion = assemblyRegions.find(r => selectedRegion === r.refName)
     if (newRegion) {
       model.setDisplayedRegions([newRegion])
@@ -84,113 +87,133 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      try {
-        input && model.navToLocString(input, assemblyName)
-      } catch (e) {
-        console.warn(e)
-        session.notify(`${e}`, 'warning')
+      const results = await textSearchManager.search({
+        queryString: input.toLocaleLowerCase(),
+        searchType: 'exact',
+      })
+      if (results.length > 0) {
+        model.setSearchResults(results)
+      } else {
+        try {
+          input && model.navToLocString(input, assemblyName)
+        } catch (e) {
+          console.warn(e)
+          session.notify(`${e}`, 'warning')
+        }
       }
     }
   }
 
+  console.log(assemblyName)
   return (
-    <Container className={classes.importFormContainer}>
-      <Grid container spacing={1} justify="center" alignItems="center">
-        <Grid item>
-          <TextField
-            select
-            variant="outlined"
-            value={displayName}
-            onChange={event => {
-              setSelectedAssemblyIdx(Number(event.target.value))
-            }}
-            label="Assembly"
-            helperText={error || 'Select assembly to view'}
-            error={hasError}
-            disabled={hasError}
-            margin="normal"
-            className={classes.importFormEntry}
-          >
-            {assemblyNames.map((name, idx) => (
-              <MenuItem key={name} value={idx}>
-                {name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item>
-          {assemblyName ? (
-            selectedRegion && model.volatileWidth ? (
-              <RefNameAutocomplete
-                model={model}
-                importForm
-                assemblyName={
-                  error ? undefined : assemblyNames[selectedAssemblyIdx]
+    <div>
+      {model.isSearchDialogDisplayed ? (
+        <SearchResultsDialog
+          model={model}
+          optAssemblyName={assemblyName}
+          handleClose={() => {
+            model.setSearchResults([])
+          }}
+        />
+      ) : null}
+      <Container className={classes.importFormContainer}>
+        <Grid container spacing={1} justify="center" alignItems="center">
+          <Grid item>
+            <TextField
+              select
+              variant="outlined"
+              value={displayName}
+              onChange={event => {
+                setSelectedAssemblyIdx(Number(event.target.value))
+              }}
+              label="Assembly"
+              helperText={error || 'Select assembly to view'}
+              error={hasError}
+              disabled={hasError}
+              margin="normal"
+              className={classes.importFormEntry}
+            >
+              {assemblyNames.map((name, idx) => (
+                <MenuItem key={name} value={idx}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item>
+            {assemblyName ? (
+              selectedRegion && model.volatileWidth ? (
+                <RefNameAutocomplete
+                  model={model}
+                  assemblyName={
+                    error ? undefined : assemblyNames[selectedAssemblyIdx]
+                  }
+                  value={selectedRegion}
+                  onSelect={option => {
+                    setSelectedValue(option)
+                  }}
+                  TextFieldProps={{
+                    margin: 'normal',
+                    variant: 'outlined',
+                    className: classes.importFormEntry,
+                    helperText: 'Enter a sequence or locstring',
+                    onBlur: event => {
+                      if ((event.target as HTMLInputElement).value !== '') {
+                        setSelectedRegion(
+                          (event.target as HTMLInputElement).value,
+                        )
+                      }
+                    },
+                    onKeyPress: event => {
+                      const inputValue = (event.target as HTMLInputElement)
+                        .value
+                      // maybe check regular expression here to see if it's a locstring
+                      // try defaulting exact matches to first exact match
+                      if (event.key === 'Enter') {
+                        handleSelectedRegion(inputValue)
+                      }
+                    },
+                  }}
+                />
+              ) : (
+                <CircularProgress
+                  role="progressbar"
+                  color="inherit"
+                  size={20}
+                  disableShrink
+                />
+              )
+            ) : null}
+          </Grid>
+          <Grid item>
+            <Button
+              disabled={!selectedRegion}
+              className={classes.button}
+              onClick={() => {
+                if (selectedRegion) {
+                  handleSelectedRegion(selectedRegion)
                 }
-                value={selectedRegion}
-                onSelect={option => {
-                  setSelectedValue(option)
-                }}
-                TextFieldProps={{
-                  margin: 'normal',
-                  variant: 'outlined',
-                  className: classes.importFormEntry,
-                  helperText: 'Enter a sequence or locstring',
-                  onBlur: event => {
-                    if ((event.target as HTMLInputElement).value !== '') {
-                      setSelectedRegion(
-                        (event.target as HTMLInputElement).value,
-                      )
-                    }
-                  },
-                  onKeyPress: event => {
-                    const inputValue = (event.target as HTMLInputElement).value
-                    // maybe check regular expression here to see if it's a locstring
-                    // try defaulting exact matches to first exact match
-                    if (event.key === 'Enter') {
-                      handleSelectedRegion(inputValue)
-                    }
-                  },
-                }}
-              />
-            ) : (
-              <CircularProgress
-                role="progressbar"
-                color="inherit"
-                size={20}
-                disableShrink
-              />
-            )
-          ) : null}
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Open
+            </Button>
+            <Button
+              disabled={!selectedRegion}
+              className={classes.button}
+              onClick={() => {
+                model.showAllRegionsInAssembly(assemblyName)
+              }}
+              variant="contained"
+              color="secondary"
+            >
+              Show all regions in assembly
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item>
-          <Button
-            disabled={!selectedRegion}
-            className={classes.button}
-            onClick={() => {
-              if (selectedRegion) {
-                handleSelectedRegion(selectedRegion)
-              }
-            }}
-            variant="contained"
-            color="primary"
-          >
-            Open
-          </Button>
-          <Button
-            disabled={!selectedRegion}
-            className={classes.button}
-            onClick={() => {
-              model.showAllRegionsInAssembly(assemblyName)
-            }}
-            variant="contained"
-            color="secondary"
-          >
-            Show all regions in assembly
-          </Button>
-        </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </div>
   )
 })
 

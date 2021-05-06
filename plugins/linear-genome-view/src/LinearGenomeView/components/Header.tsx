@@ -112,35 +112,54 @@ export default observer(({ model }: { model: LGV }) => {
   const regions = (assembly && assembly.regions) || []
 
   async function setDisplayedRegion(result: BaseResult) {
-    try {
-      if (result) {
-        const newRegionValue = result.getLocation()
-        // need to fix finding region
-        if (result instanceof RefSequenceResult) {
-          const newRegion = regions.find(
-            region => newRegionValue === region.refName,
-          )
-          if (newRegion) {
-            model.setDisplayedRegions([getSnapshot(newRegion)])
-            // we use showAllRegions after setDisplayedRegions to make the entire
-            // region visible, xref #1703
-            model.showAllRegions()
-          }
-        } else if (result instanceof LocStringResult) {
-          model.navToLocString(newRegionValue)
+    if (result) {
+      const newRegionValue = result.getLocation()
+      // need to fix finding region
+      const newRegion = regions.find(
+        region => newRegionValue === region.refName,
+      )
+      if (newRegion) {
+        model.setDisplayedRegions([getSnapshot(newRegion)])
+        // we use showAllRegions after setDisplayedRegions to make the entire
+        // region visible, xref #1703
+        model.showAllRegions()
+      } else {
+        const results = await textSearchManager.search({
+          queryString: newRegionValue.toLocaleLowerCase(),
+          searchType: 'exact',
+        })
+        if (results.length > 0) {
+          model.setSearchResults(results)
         } else {
-          const results = await textSearchManager.search({
-            queryString: newRegionValue.toLocaleLowerCase(),
-            searchType: 'exact',
-          })
-          if (results.length > 0) {
-            model.setSearchResults(results)
+          try {
+            model.navToLocString(newRegionValue)
+          } catch (e) {
+            console.warn(e)
+            session.notify(`${e}`, 'warning')
           }
         }
       }
-    } catch (e) {
-      console.warn(e)
-      session.notify(`${e}`, 'warning')
+      // if (result instanceof RefSequenceResult) {
+      //  const newRegion = regions.find(
+      //    region => newRegionValue === region.refName,
+      //  )
+      //  if (newRegion) {
+      //    model.setDisplayedRegions([getSnapshot(newRegion)])
+      //    // we use showAllRegions after setDisplayedRegions to make the entire
+      //    // region visible, xref #1703
+      //    model.showAllRegions()
+      //  }
+      // } else if (result instanceof LocStringResult) {
+      //  model.navToLocString(newRegionValue)
+      // } else {
+      //  const results = await textSearchManager.search({
+      //    queryString: newRegionValue.toLocaleLowerCase(),
+      //    searchType: 'exact',
+      //  })
+      //  if (results.length > 0) {
+      //    model.setSearchResults(results)
+      //  }
+      // }
     }
   }
 
