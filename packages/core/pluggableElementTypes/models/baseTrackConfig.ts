@@ -33,6 +33,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: {},
       },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      textSearchAdapter: pluginManager.pluggableConfigSchemaType(
+        'text search adapter',
+      ),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
       // see corresponding entry in circular-view ChordTrack
       // no config slot editor exists for this at the time being

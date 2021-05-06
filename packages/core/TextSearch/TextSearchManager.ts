@@ -59,15 +59,27 @@ export default (pluginManager: PluginManager) => {
       return initialAdapters
     }
 
+    /**
+     * Returns list of relevant text search adapters to use
+     * @param args - search options/arguments include: search query
+     */
     relevantAdapters() {
-      // TODO: figure out how to determine relevant adapters
-      /* Relevant sketch:
-      1) opened tracks
-      2) all tracks for aggregate
-      */
-      const { textSearchAdapters } = pluginManager.rootModel?.jbrowse as any
-      // console.log(pluginManager.rootModel)
-      return textSearchAdapters
+      /**
+       * TODO
+       */
+      const { textSearchAdapters, tracks } = pluginManager.rootModel
+        ?.jbrowse as any
+      const trackTextSearchAdapters = []
+      tracks.forEach((trackTextSearchAdapterConfig: AnyConfigurationModel) => {
+        const trackTextSearchAdapter = readConfObject(
+          trackTextSearchAdapterConfig,
+          'textSearchAdapter',
+        )
+        if (trackTextSearchAdapter.textSearchAdapterId !== 'placeholderId') {
+          trackTextSearchAdapters.push(trackTextSearchAdapter)
+        }
+      })
+      return textSearchAdapters.concat(textSearchAdapters)
     }
 
     /**
@@ -103,13 +115,9 @@ export default (pluginManager: PluginManager) => {
     relevantResults(results: BaseResult[]) {
       /**
        * Relevant results sketch
-       * Is it coming from import form ? only display reference and locstring results
        * priority results coming from opened tracks vs all tracks
        * recently searched terms?
        */
-      // if (args.importForm) {
-      //  return results.filter(result => result instanceof )
-      // }
       return results
     }
   }
