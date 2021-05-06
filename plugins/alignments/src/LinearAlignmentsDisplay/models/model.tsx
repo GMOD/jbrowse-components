@@ -6,7 +6,13 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'fast-deep-equal'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  cast,
+  Instance,
+  types,
+} from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
 import {
@@ -57,6 +63,17 @@ const stateModelFactory = (
       },
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
+      },
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        self.colorBy = cast(colorScheme)
+      },
+      setFilterBy(filter: {
+        flagInclude: number
+        flagExclude: number
+        readName?: string
+        tagFilter?: { tag: string; value: string }
+      }) {
+        self.filterBy = cast(filter)
       },
     }))
     .views(self => {
@@ -165,21 +182,30 @@ const stateModelFactory = (
         addDisposer(
           self,
           autorun(() => {
+            // initialize snpcov sub-display at startup
             if (!self.SNPCoverageDisplay) {
               self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
-            } else if (
+            }
+
+            // initialize pileup sub-display at startup
+            if (!self.PileupDisplay) {
+              self.setPileupDisplay(self.pileupDisplayConfig)
+            }
+
+            // propagate updates to the copy of the snpcov display on this
+            // model to the subdisplay if changed
+            if (
               !deepEqual(
                 self.snpCoverageDisplayConfig,
                 getSnapshot(self.SNPCoverageDisplay.configuration),
               )
             ) {
-              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
               self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
             }
 
-            if (!self.PileupDisplay) {
-              self.setPileupDisplay(self.pileupDisplayConfig)
-            } else if (
+            // propagate updates to the copy of the pileup display on this
+            // model to the subdisplay
+            if (
               !deepEqual(
                 self.pileupDisplayConfig,
                 getSnapshot(self.PileupDisplay.configuration),
@@ -188,19 +214,16 @@ const stateModelFactory = (
               self.PileupDisplay.setConfig(self.pileupDisplayConfig)
             }
 
-            // propagate the filterBy setting from pileupdisplay to snpcoverage
-            // note: the snpcoverage display is not able to control filterBy
-            // itself
-            if (
-              !deepEqual(
-                getSnapshot(self.PileupDisplay.filterBy),
-                getSnapshot(self.SNPCoverageDisplay.filterBy),
-              )
-            ) {
-              self.SNPCoverageDisplay.setFilterBy(
-                getSnapshot(self.PileupDisplay.filterBy),
-              )
+            // propagate the filterBy and colorBy settings
+            self.SNPCoverageDisplay.setFilterBy(getSnapshot(self.filterBy))
+            self.PileupDisplay.setFilterBy(getSnapshot(self.filterBy))
+            if (self.colorBy) {
+              self.SNPCoverageDisplay.setColorScheme(getSnapshot(self.colorBy))
+              self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
             }
+
+            // propagate the height setting
+            self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
           }),
         )
         addDisposer(

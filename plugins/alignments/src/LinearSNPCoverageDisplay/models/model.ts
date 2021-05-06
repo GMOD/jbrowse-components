@@ -49,6 +49,7 @@ const stateModelFactory = (
       }) {
         self.filterBy = cast(filter)
       },
+      setColorScheme() {},
     }))
     .views(self => ({
       get rendererConfig() {
