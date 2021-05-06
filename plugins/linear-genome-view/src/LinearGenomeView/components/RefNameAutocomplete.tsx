@@ -13,7 +13,6 @@ import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
 
 import BaseResult, {
-  LocStringResult,
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 // material ui

@@ -104,7 +104,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  console.log(assemblyName)
   return (
     <div>
       {model.isSearchDialogDisplayed ? (

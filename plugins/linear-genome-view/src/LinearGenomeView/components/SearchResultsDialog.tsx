@@ -91,14 +91,14 @@ export default function SearchResultsDialog({
     const configuration = resolveIdentifier(
       trackConfigSchema,
       getRoot(model),
-      'gff3tabix_genes',
+      trackId,
     )
     // check if we have any tracks with that configuration
     const shownTracks = model.tracks.filter(
       t => t.configuration === configuration,
     )
     if (shownTracks.length === 0) {
-      model.showTrack('gff3tabix_genes') // replace with trackId
+      model.showTrack(trackId)
     }
   }
 
@@ -108,7 +108,7 @@ export default function SearchResultsDialog({
       const configuration = resolveIdentifier(
         trackConfigSchema,
         getRoot(model),
-        'gff3tabix_genes',
+        trackId,
       )
       if (configuration) {
         return configuration.name?.value
@@ -175,7 +175,6 @@ export default function SearchResultsDialog({
                         if (resultTrackId) {
                           handleShowTrack(resultTrackId)
                         }
-                        // handleShowTrack('gff3tabix_genes')
                         handleClose()
                       }}
                       color="primary"

@@ -88,7 +88,7 @@ export default class JBrowse1TextSearchAdapter
           label: name,
           matchedAttribute: 'name',
           matchedObject: result,
-          trackName: tracksNames[trackIndex],
+          trackId: tracksNames[trackIndex],
         })
         return formattedResult
       }
