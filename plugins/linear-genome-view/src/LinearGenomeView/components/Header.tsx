@@ -1,8 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import BaseResult, {
-  LocStringResult,
-  RefSequenceResult,
-} from '@jbrowse/core/TextSearch/BaseResults'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import Button from '@material-ui/core/Button'
 import { makeStyles, useTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
@@ -139,27 +136,6 @@ export default observer(({ model }: { model: LGV }) => {
           }
         }
       }
-      // if (result instanceof RefSequenceResult) {
-      //  const newRegion = regions.find(
-      //    region => newRegionValue === region.refName,
-      //  )
-      //  if (newRegion) {
-      //    model.setDisplayedRegions([getSnapshot(newRegion)])
-      //    // we use showAllRegions after setDisplayedRegions to make the entire
-      //    // region visible, xref #1703
-      //    model.showAllRegions()
-      //  }
-      // } else if (result instanceof LocStringResult) {
-      //  model.navToLocString(newRegionValue)
-      // } else {
-      //  const results = await textSearchManager.search({
-      //    queryString: newRegionValue.toLocaleLowerCase(),
-      //    searchType: 'exact',
-      //  })
-      //  if (results.length > 0) {
-      //    model.setSearchResults(results)
-      //  }
-      // }
     }
   }
 
