@@ -27,17 +27,14 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
-import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import { filterBy, colorBy } from '../shared/models'
 
-const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
@@ -75,23 +72,8 @@ const stateModelFactory = (
             assemblyName: types.string,
           }),
         ),
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        ),
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1536),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+        colorBy,
+        filterBy,
       }),
     )
     .volatile(() => ({
@@ -470,71 +452,7 @@ const stateModelFactory = (
                 },
               ],
             },
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Normal',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'normal' })
-                  },
-                },
-                {
-                  label: 'Mapping quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mappingQuality' })
-                  },
-                },
-                {
-                  label: 'Strand',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'strand' })
-                  },
-                },
-                {
-                  label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
-                },
-                {
-                  label: 'Per-base quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseQuality' })
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Stranded paired-end',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'reverseTemplate' })
-                  },
-                },
-                {
-                  label: 'Color by tag...',
-                  onClick: () => {
-                    getSession(self).setDialogComponent(ColorByTagDlg, {
-                      model: self,
-                    })
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).setDialogComponent(FilterByTagDlg, {
-                  model: self,
-                })
-              },
-            },
+
             {
               label: 'Set feature height',
               onClick: () => {

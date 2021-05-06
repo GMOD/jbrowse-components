@@ -9,6 +9,12 @@ import { autorun, when } from 'mobx'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 import { AlignmentsConfigModel } from './configSchema'
+import {
+  colorSchemeMenu,
+  filterByMenu,
+  colorBy,
+  filterBy,
+} from '../../shared/models'
 
 const minDisplayHeight = 20
 const stateModelFactory = (
@@ -29,6 +35,8 @@ const stateModelFactory = (
         snpCovHeight: 45,
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
+        colorBy,
+        filterBy,
         height: 250,
         showCoverage: true,
         showPileup: true,
@@ -114,6 +122,8 @@ const stateModelFactory = (
                 ...self.SNPCoverageDisplay.extraTrackMenuItems,
               ],
             },
+            colorSchemeMenu(self),
+            filterByMenu(self),
           ]
         },
       }
