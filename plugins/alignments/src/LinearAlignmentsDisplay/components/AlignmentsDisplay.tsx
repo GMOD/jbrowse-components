@@ -15,10 +15,7 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
     groupBy,
   } = model
   return (
-    <div
-      data-testid={`display-${getConf(model, 'displayId')}`}
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
+    <div data-testid={`display-${getConf(model, 'displayId')}`}>
       <div
         data-testid="Blockset-snpcoverage"
         style={{ height: SNPCoverageDisplay.height }}
@@ -42,12 +39,19 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
 
       {PileupDisplays ? (
         PileupDisplays.map((disp, index) => {
+          const { blockDefinitions, blockState } = disp
+          const height = Math.max(
+            ...blockDefinitions.map((block: any) => {
+              const state = blockState.get(block.key)
+              return (state && state.layout?.getTotalHeight()) || 0
+            }),
+          )
           return (
             <div
               data-testid="Blockset-pileup"
               key={disp.id}
               style={{
-                height: disp.height,
+                height,
                 overflow: 'hidden',
                 marginBottom: 5,
               }}
