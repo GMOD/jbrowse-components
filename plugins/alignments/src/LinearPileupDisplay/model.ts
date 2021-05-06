@@ -21,7 +21,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, getParent, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -33,7 +33,12 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { filterBy, colorBy } from '../shared/models'
+import {
+  filterBy,
+  colorBy,
+  colorSchemeMenu,
+  filterByMenu,
+} from '../shared/models'
 
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
@@ -449,7 +454,12 @@ const stateModelFactory = (
                 },
               ],
             },
-
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [colorSchemeMenu(self)]
+              : []),
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [filterByMenu(self)]
+              : []),
             {
               label: 'Set feature height',
               onClick: () => {
