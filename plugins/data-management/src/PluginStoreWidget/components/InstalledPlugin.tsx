@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot, getParent } from 'mobx-state-tree'
