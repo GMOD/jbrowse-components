@@ -18,7 +18,7 @@ import {
   getContainingTrack,
   getContainingView,
 } from '@jbrowse/core/util'
-import GroupIcon from '@material-ui/icons/GroupWork'
+import GroupIcon from '@material-ui/icons/ViewModule'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AlignmentsConfigModel } from './configSchema'
 import {

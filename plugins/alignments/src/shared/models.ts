@@ -1,9 +1,11 @@
 import { lazy } from 'react'
-import { types } from 'mobx-state-tree'
+import { types, IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { Region } from '@jbrowse/core/util/types'
 import PaletteIcon from '@material-ui/icons/Palette'
 import FilterListIcon from '@material-ui/icons/FilterList'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
@@ -27,8 +29,9 @@ const filterByModel = types.optional(
   {},
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const colorSchemeMenu = (self: any) => ({
+const colorSchemeMenu = (
+  self: IAnyStateTreeNode & { setColorScheme: Function },
+) => ({
   label: 'Color scheme',
   icon: PaletteIcon,
   subMenu: [
@@ -85,8 +88,7 @@ const colorSchemeMenu = (self: any) => ({
   ],
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const filterByMenu = (self: any) => ({
+const filterByMenu = (self: IAnyStateTreeNode) => ({
   label: 'Filter by',
   icon: FilterListIcon,
   onClick: () => {
@@ -97,10 +99,10 @@ const filterByMenu = (self: any) => ({
 })
 
 async function getUniqueTagValues(
-  self: any,
-  regions: any,
+  self: IAnyStateTreeNode & { adapterConfig: AnyConfigurationModel },
+  regions: Region[],
   tag: string,
-  opts: any = {},
+  opts: Record<string, unknown> = {},
 ) {
   const { rpcManager } = getSession(self)
   const { adapterConfig } = self
