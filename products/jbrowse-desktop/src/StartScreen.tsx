@@ -195,8 +195,6 @@ export default function StartScreen({
       )
     : []
 
-  console.log(sortedSessions)
-
   useEffect(() => {
     ;(async () => {
       try {
@@ -224,7 +222,6 @@ export default function StartScreen({
           setUpdateSessionsList(false)
 
           const sess = await ipcRenderer.invoke('listSessions')
-          console.log({ sess })
           setSessions(sess)
         }
       } catch (e) {
