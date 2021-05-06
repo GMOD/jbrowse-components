@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<PluginStoreWidget /> renders 1`] = `
+exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
 <div>
   <div
     class="MuiFormControl-root MuiTextField-root makeStyles-searchBox MuiFormControl-fullWidth"
