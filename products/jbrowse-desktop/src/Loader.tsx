@@ -44,11 +44,10 @@ export default function Loader({
   const [snapshotError, setSnapshotError] = useState('')
   const [pluginManager, setPluginManager] = useState<PluginManager>()
 
-  const ipcRenderer = (electron && electron.ipcRenderer) || {
-    invoke: () => {},
-  }
-
   useEffect(() => {
+    const ipcRenderer = (electron && electron.ipcRenderer) || {
+      invoke: () => {},
+    }
     async function fetchConfig() {
       try {
         setConfigSnapshot(
@@ -66,7 +65,7 @@ export default function Loader({
     }
 
     fetchConfig()
-  }, [ipcRenderer])
+  }, [])
 
   useEffect(() => {
     async function fetchPlugins() {

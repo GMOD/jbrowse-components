@@ -189,11 +189,9 @@ export default function StartScreen({
   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
   root.setSavedSessionNames(sessionNames)
 
-  const sortedSessions = sessions
-    ? Object.entries(sessions)
-        .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
-        .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
-    : []
+  const sortedSessions = Object.entries(sessions || {})
+    .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
+    .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
 
   useEffect(() => {
     ;(async () => {
