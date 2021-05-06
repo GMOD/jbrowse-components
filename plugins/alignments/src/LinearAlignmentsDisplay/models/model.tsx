@@ -103,7 +103,9 @@ const stateModelFactory = (
       },
 
       updateGroups(groups: string[]) {
-        self.groups = groups
+        if (JSON.stringify(groups) !== JSON.stringify(self.groups)) {
+          self.groups = groups
+        }
       },
     }))
     .views(self => {
@@ -211,7 +213,7 @@ const stateModelFactory = (
             filterBy: {
               tagFilter: { tag: self.groupBy?.tag, value: group },
             },
-            colorBy: self.colorBy,
+            colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
           })),
         )
       },
