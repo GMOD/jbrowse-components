@@ -186,20 +186,7 @@ function RefNameAutocomplete({
       options={options.concat(searchOptions)}
       groupBy={option => String(option.group)}
       filterOptions={(possibleOptions, params) => {
-        const filtered = filter(possibleOptions, params)
-        // creates a new location option as user types
-        if (params.inputValue !== '') {
-          const newOption: Option = {
-            group: 'Navigating to...',
-            result: new LocStringResult({
-              label: params.inputValue,
-              locString: params.inputValue,
-              matchedAttribute: 'locstring',
-            }),
-          }
-          filtered.push(newOption)
-        }
-        return filtered
+        return filter(possibleOptions, params)
       }}
       ListboxProps={{ style: { maxHeight: 250 } }}
       onChange={(_, selectedOption) => onChange(selectedOption)}
