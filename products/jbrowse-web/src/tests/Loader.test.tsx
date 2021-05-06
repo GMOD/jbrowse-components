@@ -1,7 +1,7 @@
 import React from 'react'
 import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { TextEncoder, TextDecoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 

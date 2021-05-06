@@ -1,10 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseSTARFusionBuffer } from './STARFusionImport'
-
-window.TextEncoder = TextEncoder
+import { TextDecoder } from 'web-encoding'
 window.TextDecoder = TextDecoder
 
 const pluginManager = new PluginManager()
