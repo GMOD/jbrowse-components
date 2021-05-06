@@ -656,7 +656,180 @@ exports[`<PluginStoreWidget /> renders 1`] = `
         >
           <div
             role="region"
-          />
+          >
+            <div
+              class="MuiPaper-root MuiCard-root makeStyles-card MuiPaper-outlined MuiPaper-rounded"
+            >
+              <div
+                class="MuiCardContent-root"
+              >
+                <div
+                  class="makeStyles-dataField"
+                >
+                  <h5
+                    class="MuiTypography-root MuiTypography-h5"
+                  >
+                    <a
+                      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+                      href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
+                      rel="noopener"
+                      target="_blank"
+                    >
+                      MsaView
+                    </a>
+                  </h5>
+                </div>
+                <div
+                  class="makeStyles-dataField"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    style="margin-right: 0.5em;"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                    />
+                  </svg>
+                  <p
+                    class="MuiTypography-root MuiTypography-body1"
+                  >
+                    Colin Diesh
+                  </p>
+                </div>
+                <p
+                  class="MuiTypography-root makeStyles-bold MuiTypography-body1"
+                >
+                  Description:
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
+                >
+                  multiple sequence alignment browser plugin for JBrowse 2
+                </p>
+              </div>
+              <div
+                class="MuiCardActions-root MuiCardActions-spacing"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        />
+                      </svg>
+                    </span>
+                    Install
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+            </div>
+            <div
+              class="MuiPaper-root MuiCard-root makeStyles-card MuiPaper-outlined MuiPaper-rounded"
+            >
+              <div
+                class="MuiCardContent-root"
+              >
+                <div
+                  class="makeStyles-dataField"
+                >
+                  <h5
+                    class="MuiTypography-root MuiTypography-h5"
+                  >
+                    <a
+                      class="MuiTypography-root MuiLink-root MuiLink-underlineHover MuiTypography-colorPrimary"
+                      href="https://github.com/GMOD/jbrowse-plugin-gdc#readme"
+                      rel="noopener"
+                      target="_blank"
+                    >
+                      GDC
+                    </a>
+                  </h5>
+                </div>
+                <div
+                  class="makeStyles-dataField"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root"
+                    focusable="false"
+                    style="margin-right: 0.5em;"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                    />
+                  </svg>
+                  <p
+                    class="MuiTypography-root MuiTypography-body1"
+                  >
+                    Garrett Stevens, Colin Diesh, Rob Buels
+                  </p>
+                </div>
+                <p
+                  class="MuiTypography-root makeStyles-bold MuiTypography-body1"
+                >
+                  Description:
+                </p>
+                <p
+                  class="MuiTypography-root MuiTypography-body1"
+                >
+                  JBrowse 2 plugin for integrating with GDC resources
+                </p>
+              </div>
+              <div
+                class="MuiCardActions-root MuiCardActions-spacing"
+              >
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                  tabindex="0"
+                  type="button"
+                >
+                  <span
+                    class="MuiButton-label"
+                  >
+                    <span
+                      class="MuiButton-startIcon MuiButton-iconSizeMedium"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        />
+                      </svg>
+                    </span>
+                    Install
+                  </span>
+                  <span
+                    class="MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
