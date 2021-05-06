@@ -14,7 +14,6 @@ import {
   getContainingView,
 } from '@jbrowse/core/util'
 
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -34,10 +33,11 @@ import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/rendere
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import {
-  filterBy,
-  colorBy,
+  filterByModel,
+  colorByModel,
   colorSchemeMenu,
   filterByMenu,
+  getUniqueTagValues,
 } from '../shared/models'
 
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
@@ -77,8 +77,8 @@ const stateModelFactory = (
             assemblyName: types.string,
           }),
         ),
-        colorBy,
-        filterBy,
+        colorBy: colorByModel,
+        filterBy: filterByModel,
       }),
     )
     .volatile(() => ({
@@ -108,31 +108,7 @@ const stateModelFactory = (
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
-      async getUniqueTagValues(
-        colorScheme: { type: string; tag?: string },
-        blocks: BlockSet,
-        opts?: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const values = await rpcManager.call(
-          getRpcSessionId(self),
-          'PileupGetGlobalValueForTag',
-          {
-            adapterConfig,
-            tag: colorScheme.tag,
-            sessionId,
-            regions: blocks.contentBlocks,
-            ...opts,
-          },
-        )
-        return values as string[]
-      },
+
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
@@ -171,9 +147,10 @@ const stateModelFactory = (
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
-                  const uniqueTagSet = await self.getUniqueTagValues(
-                    colorBy,
-                    view.staticBlocks,
+                  const uniqueTagSet = await getUniqueTagValues(
+                    self,
+                    view.staticBlocks.contentBlocks,
+                    colorBy.tag,
                   )
                   self.updateColorTagMap(uniqueTagSet)
                 }

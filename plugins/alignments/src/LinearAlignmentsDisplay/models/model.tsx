@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -13,14 +13,25 @@ import {
   Instance,
   types,
 } from 'mobx-state-tree'
-import { getContainingTrack } from '@jbrowse/core/util'
+import {
+  getSession,
+  getContainingTrack,
+  getContainingView,
+} from '@jbrowse/core/util'
+import GroupIcon from '@material-ui/icons/GroupWork'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AlignmentsConfigModel } from './configSchema'
 import {
   colorSchemeMenu,
   filterByMenu,
-  colorBy,
-  filterBy,
+  colorByModel,
+  filterByModel,
+  getUniqueTagValues,
 } from '../../shared/models'
+
+const GroupByTagDlg = lazy(() => import('../components/GroupByTag'))
+
+type LGV = LinearGenomeViewModel
 
 const minDisplayHeight = 20
 const stateModelFactory = (
@@ -35,14 +46,25 @@ const stateModelFactory = (
         PileupDisplay: types.maybe(
           pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
         ),
+        PileupDisplays: types.maybe(
+          types.array(
+            pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
+          ),
+        ),
         SNPCoverageDisplay: types.maybe(
           pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
         ),
         snpCovHeight: 45,
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
-        colorBy,
-        filterBy,
+        groupBy: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        ),
+        colorBy: colorByModel,
+        filterBy: filterByModel,
         height: 250,
         showCoverage: true,
         showPileup: true,
@@ -50,6 +72,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       scrollTop: 0,
+      groups: [] as string[],
     }))
     .actions(self => ({
       toggleCoverage() {
@@ -74,6 +97,14 @@ const stateModelFactory = (
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
+      },
+      setGroupBy(groupBy: { type: string; tag: string }) {
+        self.groupBy = cast(groupBy)
+      },
+
+      updateGroups(groups: string[]) {
+        console.log('here')
+        self.groups = groups
       },
     }))
     .views(self => {
@@ -141,6 +172,15 @@ const stateModelFactory = (
             },
             colorSchemeMenu(self),
             filterByMenu(self),
+            {
+              label: 'Group by',
+              icon: GroupIcon,
+              onClick: () => {
+                getSession(self).setDialogComponent(GroupByTagDlg, {
+                  model: self,
+                })
+              },
+            },
           ]
         },
       }
@@ -162,6 +202,18 @@ const stateModelFactory = (
           type: 'LinearPileupDisplay',
           configuration: displayConfig,
         }
+      },
+
+      setPileupDisplays(displayConfig: AnyConfigurationModel) {
+        self.PileupDisplays = cast(
+          self.groups.map(group => ({
+            type: 'LinearPileupDisplay',
+            configuration: displayConfig,
+            filterBy: {
+              tagFilter: { tag: self.groupBy?.tag, value: group },
+            },
+          })),
+        )
       },
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) self.height = displayHeight
@@ -185,7 +237,9 @@ const stateModelFactory = (
             }
 
             // initialize pileup sub-display at startup
-            if (!self.PileupDisplay) {
+            if (self.groups) {
+              self.setPileupDisplays(self.pileupDisplayConfig)
+            } else if (!self.PileupDisplay) {
               self.setPileupDisplay(self.pileupDisplayConfig)
             }
 
@@ -198,6 +252,7 @@ const stateModelFactory = (
               )
             ) {
               self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
+              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
             }
 
             // propagate updates to the copy of the pileup display on this
@@ -218,15 +273,35 @@ const stateModelFactory = (
               self.SNPCoverageDisplay.setColorScheme(getSnapshot(self.colorBy))
               self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
             }
-
-            // propagate the height setting
-            self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
           }),
         )
         addDisposer(
           self,
           autorun(() => {
             self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(async () => {
+            try {
+              const { groupBy } = self
+              const view = getContainingView(self) as LGV
+
+              // continually generate the vc pairing, set and rerender if any
+              // new values seen
+              if (groupBy?.tag) {
+                const uniqueTagSet = await getUniqueTagValues(
+                  self,
+                  view.staticBlocks.contentBlocks,
+                  groupBy.tag,
+                )
+                self.updateGroups(uniqueTagSet)
+              }
+            } catch (e) {
+              console.error(e)
+            }
           }),
         )
       },

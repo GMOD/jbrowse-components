@@ -11,8 +11,8 @@ import Tooltip from '../components/Tooltip'
 import {
   colorSchemeMenu,
   filterByMenu,
-  filterBy,
-  colorBy,
+  filterByModel,
+  colorByModel,
 } from '../../shared/models'
 
 // using a map because it preserves order
@@ -30,8 +30,8 @@ const stateModelFactory = (
         type: types.literal('LinearSNPCoverageDisplay'),
         drawInterbaseCounts: types.maybe(types.boolean),
         drawIndicators: types.maybe(types.boolean),
-        colorBy,
-        filterBy,
+        colorBy: colorByModel,
+        filterBy: filterByModel,
       }),
     )
     .actions(self => ({
