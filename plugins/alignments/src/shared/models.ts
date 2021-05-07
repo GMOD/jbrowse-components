@@ -23,7 +23,7 @@ const filterByModel = types.optional(
     flagExclude: types.optional(types.number, 1536),
     readName: types.maybe(types.string),
     tagFilter: types.maybe(
-      types.model({ tag: types.string, value: types.string }),
+      types.model({ tag: types.string, value: types.maybe(types.string) }),
     ),
   }),
   {},

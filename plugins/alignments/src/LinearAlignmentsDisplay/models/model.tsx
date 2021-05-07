@@ -227,8 +227,8 @@ const stateModelFactory = (
       },
 
       setPileupDisplays(displayConfig: AnyConfigurationModel) {
-        self.PileupDisplays = cast(
-          self.groups.map(group => ({
+        self.PileupDisplays = cast([
+          ...self.groups.map(group => ({
             type: 'LinearPileupDisplay',
             configuration: displayConfig,
             filterBy: {
@@ -236,7 +236,14 @@ const stateModelFactory = (
             },
             colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
           })),
-        )
+          {
+            type: 'LinearPileupDisplay',
+            configuration: displayConfig,
+            filterBy: {
+              tagFilter: { tag: self.groupBy?.tag, value: undefined },
+            },
+          },
+        ])
       },
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) self.height = displayHeight

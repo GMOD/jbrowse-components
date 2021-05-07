@@ -351,9 +351,13 @@ const stateModelFactory = (
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
-              filters.push(
-                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
-              )
+              if (value === undefined) {
+                filters.push(`jexl:getTag(feature,"${tag}") == undefined`)
+              } else {
+                filters.push(
+                  `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
+                )
+              }
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
