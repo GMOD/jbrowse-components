@@ -69,7 +69,7 @@ export default (pluginManager: PluginManager) => {
        */
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
-      const trackTextSearchAdapters = []
+      const trackTextSearchAdapters: BaseTextSearchAdapter[] = []
       tracks.forEach((trackTextSearchAdapterConfig: AnyConfigurationModel) => {
         const trackTextSearchAdapter = readConfObject(
           trackTextSearchAdapterConfig,
@@ -79,7 +79,7 @@ export default (pluginManager: PluginManager) => {
           trackTextSearchAdapters.push(trackTextSearchAdapter)
         }
       })
-      return textSearchAdapters.concat(textSearchAdapters)
+      return textSearchAdapters.concat(trackTextSearchAdapters)
     }
 
     /**
