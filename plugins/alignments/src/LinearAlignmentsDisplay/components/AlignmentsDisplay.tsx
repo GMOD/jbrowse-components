@@ -39,14 +39,8 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
 
       {PileupDisplays ? (
         PileupDisplays.map((disp, index) => {
-          const { blockDefinitions, blockState } = disp
-          const height = Math.max(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ...blockDefinitions.map((block: any) => {
-              const state = blockState.get(block.key)
-              return (state && state.layout?.getTotalHeight()) || 0
-            }),
-          )
+          const { layoutHeight: height } = disp
+
           return (
             <div
               data-testid="Blockset-pileup"
