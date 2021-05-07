@@ -202,7 +202,7 @@ describe('alignments track', () => {
     })
   }, 20000)
 
-  it('colors by tag, updates object and layout', async () => {
+  it('group by', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText, findAllByTestId } = render(
@@ -221,21 +221,28 @@ describe('alignments track', () => {
 
     // colors by HP tag
     fireEvent.click(trackMenu)
-    fireEvent.click(await findByText('Color scheme'))
-    fireEvent.click(await findByText('Color by tag...'))
-    fireEvent.change(await findByTestId('color-tag-name-input'), {
+    fireEvent.click(await findByText('Group by'))
+    fireEvent.change(await findByTestId('group-tag-name-input'), {
       target: { value: 'HP' },
     })
     fireEvent.click(await findByText('Submit'))
 
-    // wait for pileup track to render with color
-    await findAllByTestId('pileup-tagHP', {}, delay)
-
     // wait for pileup track to render
-    const { findAllByTestId: findAllByTestId1 } = within(
-      await findByTestId('Blockset-pileup'),
+    const { getAllByTestId: getAllByTestId1 } = within(
+      await findByTestId('Blockset-pileup-HP1'),
     )
-    const canvases = await findAllByTestId1('prerendered_canvas')
+    await waitFor(
+      () => {
+        const res = getAllByTestId1('prerendered_canvas')
+        expect(res.length).toBe(2)
+      },
+      { timeout: 10000 },
+    )
+    const canvases = getAllByTestId1(
+      'prerendered_canvas',
+      {},
+      { timeout: 10000 },
+    )
     const img = canvases[1].toDataURL()
     const data = img.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(data, 'base64')

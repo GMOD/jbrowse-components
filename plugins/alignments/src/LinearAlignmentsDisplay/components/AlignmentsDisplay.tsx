@@ -40,10 +40,10 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
       {PileupDisplays ? (
         PileupDisplays.map((disp, index) => {
           const { layoutHeight: height } = disp
-
+          const tag = `${groupBy?.tag}${groups[index] || ' none'}`
           return (
             <div
-              data-testid="Blockset-pileup"
+              data-testid={`Blockset-pileup-${tag}`}
               key={disp.id}
               style={{
                 height,
@@ -59,7 +59,7 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
                   border: '1px solid black',
                 }}
               >
-                {groupBy?.tag} {groups[index] || 'none'}
+                {tag}
               </div>
               {showPileup ? <disp.RenderingComponent model={disp} /> : null}
             </div>
