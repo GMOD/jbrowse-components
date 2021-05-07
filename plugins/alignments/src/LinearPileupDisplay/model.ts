@@ -386,6 +386,10 @@ const stateModelFactory = (
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
+
+            // this forces the worker to create an extra layoutSession, but
+            // allows it to share a webworker
+            sessionExtra: JSON.stringify(self.filterBy),
           }
         },
 
