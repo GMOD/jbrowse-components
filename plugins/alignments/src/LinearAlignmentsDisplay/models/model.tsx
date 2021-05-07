@@ -24,6 +24,7 @@ import { AlignmentsConfigModel } from './configSchema'
 import {
   colorSchemeMenu,
   filterByMenu,
+  setDisplayModeMenu,
   colorByModel,
   filterByModel,
   getUniqueTagValues,
@@ -107,6 +108,11 @@ const stateModelFactory = (
           self.groups = groups
         }
       },
+      setDisplayMode(type: string) {
+        self.PileupDisplays?.forEach(disp => {
+          disp.setDisplayMode(type)
+        })
+      },
     }))
     .views(self => {
       const { trackMenuItems } = self
@@ -158,11 +164,16 @@ const stateModelFactory = (
         get trackMenuItems(): MenuItem[] {
           return [
             ...trackMenuItems,
-            {
-              type: 'subMenu',
-              label: 'Pileup settings',
-              subMenu: self.PileupDisplay.composedTrackMenuItems,
-            },
+
+            ...(self.groups.length
+              ? []
+              : [
+                  {
+                    type: 'subMenu',
+                    label: 'Pileup settings',
+                    subMenu: self.PileupDisplay.composedTrackMenuItems,
+                  },
+                ]),
             {
               type: 'subMenu',
               label: 'SNPCoverage settings',
@@ -171,8 +182,10 @@ const stateModelFactory = (
                 ...self.SNPCoverageDisplay.extraTrackMenuItems,
               ],
             },
+
             colorSchemeMenu(self),
             filterByMenu(self),
+            setDisplayModeMenu(self),
             {
               label: 'Group by',
               icon: GroupIcon,
@@ -245,7 +258,6 @@ const stateModelFactory = (
                 self.groups.length &&
                 oldGroups !== JSON.stringify(self.groups)
               ) {
-                console.log('here')
                 self.setPileupDisplays(self.pileupDisplayConfig)
                 oldGroups = JSON.stringify(self.groups)
               } else if (!self.PileupDisplay) {

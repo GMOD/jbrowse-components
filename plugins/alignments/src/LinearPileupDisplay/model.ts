@@ -38,10 +38,10 @@ import {
   colorSchemeMenu,
   filterByMenu,
   getUniqueTagValues,
+  setDisplayModeMenu,
 } from '../shared/models'
 
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
-const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 // using a map because it preserves order
@@ -64,8 +64,7 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
-        featureHeight: types.maybe(types.number),
-        noSpacing: types.maybe(types.boolean),
+        displayMode: types.maybe(types.string),
         trackMaxHeight: types.maybe(types.number),
         mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
@@ -96,11 +95,8 @@ const stateModelFactory = (
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
-      setFeatureHeight(n: number) {
-        self.featureHeight = n
-      },
-      setNoSpacing(flag: boolean) {
-        self.noSpacing = flag
+      setDisplayMode(type: string) {
+        self.displayMode = type
       },
 
       setColorScheme(colorScheme: { type: string; tag?: string }) {
@@ -282,15 +278,14 @@ const stateModelFactory = (
           getConf(self, ['renderers', self.rendererTypeName]) || {}
         return self.rendererType.configSchema.create({
           ...configBlob,
-          height: self.featureHeight,
-          noSpacing: self.noSpacing,
+          displayMode: self.displayMode,
           maxHeight: this.maxHeight,
           mismatchAlpha: self.mismatchAlpha,
         })
       },
-      get featureHeightSetting() {
+      get displayModeSetting() {
         return (
-          self.featureHeight || readConfObject(this.rendererConfig, 'height')
+          self.displayMode || readConfObject(this.rendererConfig, 'displayMode')
         )
       },
       get mismatchAlphaSetting() {
@@ -441,14 +436,10 @@ const stateModelFactory = (
             ...(getParent(self).type !== 'LinearAlignmentsDisplay'
               ? [filterByMenu(self)]
               : []),
-            {
-              label: 'Set feature height',
-              onClick: () => {
-                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
-                  model: self,
-                })
-              },
-            },
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [setDisplayModeMenu(self)]
+              : []),
+
             {
               label: 'Set max height',
               onClick: () => {

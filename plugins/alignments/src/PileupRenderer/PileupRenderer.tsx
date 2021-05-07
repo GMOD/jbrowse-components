@@ -130,7 +130,10 @@ export default class PileupRenderer extends BoxRendererType {
     let heightPx = readConfObject(config, 'height', { feature })
     const displayMode = readConfObject(config, 'displayMode', { feature })
     if (displayMode === 'compact') {
-      heightPx /= 3
+      heightPx /= 2
+    }
+    if (displayMode === 'squish') {
+      heightPx = 1
     }
     if (feature.get('refName') !== region.refName) {
       throw new Error(

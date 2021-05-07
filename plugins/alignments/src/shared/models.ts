@@ -88,6 +88,32 @@ const colorSchemeMenu = (
   ],
 })
 
+const setDisplayModeMenu = (
+  self: IAnyStateTreeNode & { setDisplayMode: Function },
+) => ({
+  label: 'Set display mode',
+  subMenu: [
+    {
+      label: 'Normal',
+      onClick: () => {
+        self.setDisplayMode('normal')
+      },
+    },
+    {
+      label: 'Compact',
+      onClick: () => {
+        self.setDisplayMode('compact')
+      },
+    },
+    {
+      label: 'Squish',
+      onClick: () => {
+        self.setDisplayMode('squish')
+      },
+    },
+  ],
+})
+
 const filterByMenu = (self: IAnyStateTreeNode) => ({
   label: 'Filter by',
   icon: FilterListIcon,
@@ -127,4 +153,5 @@ export {
   colorSchemeMenu,
   filterByMenu,
   getUniqueTagValues,
+  setDisplayModeMenu,
 }
