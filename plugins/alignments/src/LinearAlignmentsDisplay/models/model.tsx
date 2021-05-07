@@ -228,103 +228,113 @@ const stateModelFactory = (
         return newHeight - oldHeight
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            // initialize snpcov sub-display at startup
-            if (!self.SNPCoverageDisplay) {
-              self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
-            }
+    .actions(self => {
+      let oldGroups = ''
+      return {
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(() => {
+              // initialize snpcov sub-display at startup
+              if (!self.SNPCoverageDisplay) {
+                self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
+              }
 
-            // initialize pileup sub-display at startup
-            if (self.groups.length) {
-              self.setPileupDisplays(self.pileupDisplayConfig)
-            } else if (!self.PileupDisplay) {
-              self.setPileupDisplay(self.pileupDisplayConfig)
-            }
+              // initialize pileup sub-display at startup
+              if (
+                self.groups.length &&
+                oldGroups !== JSON.stringify(self.groups)
+              ) {
+                console.log('here')
+                self.setPileupDisplays(self.pileupDisplayConfig)
+                oldGroups = JSON.stringify(self.groups)
+              } else if (!self.PileupDisplay) {
+                self.setPileupDisplay(self.pileupDisplayConfig)
+              }
 
-            // propagate updates to the copy of the snpcov display on this
-            // model to the subdisplay if changed
-            if (
-              !deepEqual(
-                self.snpCoverageDisplayConfig,
-                getSnapshot(self.SNPCoverageDisplay.configuration),
-              )
-            ) {
-              self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
-              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
-            }
-
-            // propagate updates to the copy of the pileup display on this
-            // model to the subdisplay
-            if (
-              !deepEqual(
-                self.pileupDisplayConfig,
-                getSnapshot(self.PileupDisplay.configuration),
-              )
-            ) {
-              self.PileupDisplay.setConfig(self.pileupDisplayConfig)
-            }
-
-            // propagate the filterBy and colorBy settings
-            self.SNPCoverageDisplay.setFilterBy(getSnapshot(self.filterBy))
-            self.PileupDisplay.setFilterBy(getSnapshot(self.filterBy))
-            if (self.colorBy) {
-              self.SNPCoverageDisplay.setColorScheme(getSnapshot(self.colorBy))
-              self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
-            }
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
-            self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
-          }),
-        )
-
-        addDisposer(
-          self,
-          autorun(async () => {
-            try {
-              const { groupBy } = self
-              const view = getContainingView(self) as LGV
-
-              // continually generate the vc pairing, set and rerender if any
-              // new values seen
-              if (groupBy?.tag) {
-                const uniqueTagSet = await getUniqueTagValues(
-                  self,
-                  view.staticBlocks.contentBlocks,
-                  groupBy.tag,
+              // propagate updates to the copy of the snpcov display on this
+              // model to the subdisplay if changed
+              if (
+                !deepEqual(
+                  self.snpCoverageDisplayConfig,
+                  getSnapshot(self.SNPCoverageDisplay.configuration),
                 )
-                self.updateGroups(uniqueTagSet)
+              ) {
+                self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
+                self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
               }
-            } catch (e) {
-              console.error(e)
-            }
-          }),
-        )
-      },
-      async renderSvg(opts: { rasterizeLayers?: boolean }) {
-        const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => self.PileupDisplay.ready)
-        return (
-          <>
-            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
-            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {
-                await self.PileupDisplay.renderSvg({
-                  ...opts,
-                  overrideHeight: pileupHeight,
-                })
+
+              // propagate updates to the copy of the pileup display on this
+              // model to the subdisplay
+              if (
+                !deepEqual(
+                  self.pileupDisplayConfig,
+                  getSnapshot(self.PileupDisplay.configuration),
+                )
+              ) {
+                self.PileupDisplay.setConfig(self.pileupDisplayConfig)
               }
-            </g>
-          </>
-        )
-      },
-    }))
+
+              // propagate the filterBy and colorBy settings
+              self.SNPCoverageDisplay.setFilterBy(getSnapshot(self.filterBy))
+              self.PileupDisplay.setFilterBy(getSnapshot(self.filterBy))
+              if (self.colorBy) {
+                self.SNPCoverageDisplay.setColorScheme(
+                  getSnapshot(self.colorBy),
+                )
+                self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
+              }
+            }),
+          )
+          addDisposer(
+            self,
+            autorun(() => {
+              self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+            }),
+          )
+
+          addDisposer(
+            self,
+            autorun(async () => {
+              try {
+                const { groupBy } = self
+                const view = getContainingView(self) as LGV
+
+                // continually generate the vc pairing, set and rerender if any
+                // new values seen
+                if (groupBy?.tag) {
+                  const uniqueTagSet = await getUniqueTagValues(
+                    self,
+                    view.staticBlocks.contentBlocks,
+                    groupBy.tag,
+                  )
+                  self.updateGroups(uniqueTagSet)
+                }
+              } catch (e) {
+                console.error(e)
+              }
+            }),
+          )
+        },
+        async renderSvg(opts: { rasterizeLayers?: boolean }) {
+          const pileupHeight = self.height - self.SNPCoverageDisplay.height
+          await when(() => self.PileupDisplay.ready)
+          return (
+            <>
+              <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
+              <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
+                {
+                  await self.PileupDisplay.renderSvg({
+                    ...opts,
+                    overrideHeight: pileupHeight,
+                  })
+                }
+              </g>
+            </>
+          )
+        },
+      }
+    })
 }
 
 export default stateModelFactory
