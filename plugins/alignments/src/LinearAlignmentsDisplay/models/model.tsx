@@ -75,6 +75,7 @@ const stateModelFactory = (
     .volatile(() => ({
       scrollTop: 0,
       groups: [] as string[],
+      ready: false,
     }))
     .actions(self => ({
       toggleCoverage() {
@@ -102,6 +103,10 @@ const stateModelFactory = (
       },
       setGroupBy(groupBy: { type: string; tag: string }) {
         self.groupBy = cast(groupBy)
+        self.ready = false
+      },
+      setReady(flag: boolean) {
+        self.ready = flag
       },
 
       updateGroups(groups: string[]) {
@@ -338,6 +343,7 @@ const stateModelFactory = (
                   )
                   self.updateGroups(uniqueTagSet)
                 }
+                self.setReady(true)
               } catch (e) {
                 console.error(e)
               }
@@ -362,12 +368,15 @@ const stateModelFactory = (
                   await (self.PileupDisplays?.length
                     ? Promise.all(
                         self.PileupDisplays.map(async (disp, index) => {
-                          const result = await disp.renderSvg({
+                          const {
+                            reactElement,
+                            layoutHeight,
+                          } = await disp.renderSvg({
                             ...opts,
                             overrideHeight: pileupHeight,
                           })
 
-                          const offset = disp.layoutHeight + 10
+                          const offset = layoutHeight + 10
                           currOffset += offset
                           return (
                             <g
@@ -377,7 +386,7 @@ const stateModelFactory = (
                               <text fontSize={10} y={10}>
                                 {self.groupBy?.tag} {self.groups[index]}
                               </text>
-                              <g transform="translate(0 10)">{result}</g>
+                              <g transform="translate(0 10)">{reactElement}</g>
                             </g>
                           )
                         }),

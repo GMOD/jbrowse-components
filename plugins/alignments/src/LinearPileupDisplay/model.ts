@@ -331,12 +331,10 @@ const stateModelFactory = (
                 },
               ]
             : []
-          self.additionalContextMenuItemCallbacks.forEach(
-            (callback: Function) => {
-              const menuItems = callback(feat, self, pluginManager)
-              contextMenuItems.push(...menuItems)
-            },
-          )
+          self.additionalContextMenuItemCallbacks.forEach(callback => {
+            const menuItems = callback(feat, self, pluginManager)
+            contextMenuItems.push(...menuItems)
+          })
           return contextMenuItems
         },
 

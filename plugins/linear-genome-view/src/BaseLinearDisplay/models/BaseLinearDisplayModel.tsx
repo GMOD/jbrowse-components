@@ -479,41 +479,49 @@ export const BaseLinearDisplay = types
         }),
       )
 
-      return (
-        <>
-          {renderings.map((rendering, index) => {
-            const { offsetPx } = dynamicBlocks[index]
-            const offset = offsetPx - viewOffsetPx
-            // stabalize clipid under test for snapshot
-            const clipid = `clip-${
-              typeof jest === 'undefined' ? id : 'jest'
-            }-${index}`
-            return (
-              <React.Fragment key={`frag-${index}`}>
-                <defs>
-                  <clipPath id={clipid}>
-                    <rect
-                      x={0}
-                      y={0}
-                      width={width}
-                      height={overrideHeight || height}
-                    />
-                  </clipPath>
-                </defs>
-                <g transform={`translate(${offset} 0)`}>
-                  <g clipPath={`url(#${clipid})`}>
-                    {React.isValidElement(rendering.reactElement) ? (
-                      rendering.reactElement
-                    ) : (
-                      <g dangerouslySetInnerHTML={{ __html: rendering.html }} />
-                    )}
+      return {
+        layoutHeight: renderings.reduce(
+          (a, b) => a + b.layout?.getTotalHeight() || 0,
+          0,
+        ),
+        reactElement: (
+          <>
+            {renderings.map((rendering, index) => {
+              const { offsetPx } = dynamicBlocks[index]
+              const offset = offsetPx - viewOffsetPx
+              // stabilize clipid under test for snapshot so it's not random
+              const clipid = `clip-${
+                typeof jest === 'undefined' ? id : 'jest'
+              }-${index}`
+              return (
+                <React.Fragment key={`frag-${index}`}>
+                  <defs>
+                    <clipPath id={clipid}>
+                      <rect
+                        x={0}
+                        y={0}
+                        width={width}
+                        height={overrideHeight || height}
+                      />
+                    </clipPath>
+                  </defs>
+                  <g transform={`translate(${offset} 0)`}>
+                    <g clipPath={`url(#${clipid})`}>
+                      {React.isValidElement(rendering.reactElement) ? (
+                        rendering.reactElement
+                      ) : (
+                        <g
+                          dangerouslySetInnerHTML={{ __html: rendering.html }}
+                        />
+                      )}
+                    </g>
                   </g>
-                </g>
-              </React.Fragment>
-            )
-          })}
-        </>
-      )
+                </React.Fragment>
+              )
+            })}
+          </>
+        ),
+      }
     },
   }))
   .postProcessSnapshot(self => {

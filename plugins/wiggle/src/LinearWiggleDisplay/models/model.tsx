@@ -601,9 +601,10 @@ const stateModelFactory = (
           await when(() => self.ready && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
+          const { reactElement } = await superRenderSvg(opts)
           return (
             <>
-              <g id="snpcov">{await superRenderSvg(opts)}</g>
+              <g id="snpcov">{reactElement}</g>
               {needsScalebar && stats ? (
                 <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
                   <YScaleBar
