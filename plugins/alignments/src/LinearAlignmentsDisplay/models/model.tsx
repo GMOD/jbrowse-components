@@ -65,6 +65,7 @@ const stateModelFactory = (
           }),
         ),
         colorBy: colorByModel,
+        displayMode: types.maybe(types.string),
         filterBy: filterByModel,
         height: 250,
         showCoverage: true,
@@ -108,10 +109,8 @@ const stateModelFactory = (
           self.groups = groups
         }
       },
-      setDisplayMode(type: string) {
-        self.PileupDisplays?.forEach(disp => {
-          disp.setDisplayMode(type)
-        })
+      setDisplayMode(type?: string) {
+        self.displayMode = type
       },
     }))
     .views(self => {
@@ -291,10 +290,26 @@ const stateModelFactory = (
               self.SNPCoverageDisplay.setFilterBy(getSnapshot(self.filterBy))
               self.PileupDisplay.setFilterBy(getSnapshot(self.filterBy))
               if (self.colorBy) {
-                self.SNPCoverageDisplay.setColorScheme(
-                  getSnapshot(self.colorBy),
-                )
-                self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
+                const { colorBy } = self
+                self.SNPCoverageDisplay.setColorScheme(getSnapshot(colorBy))
+                if (self.groups.length) {
+                  self.PileupDisplays?.forEach(disp =>
+                    disp.setColorScheme(getSnapshot(colorBy)),
+                  )
+                } else {
+                  self.PileupDisplay.setColorScheme(getSnapshot(colorBy))
+                }
+              }
+
+              if (self.displayMode) {
+                const { displayMode } = self
+                if (self.groups.length) {
+                  self.PileupDisplays?.forEach(disp =>
+                    disp.setDisplayMode(displayMode),
+                  )
+                } else {
+                  self.PileupDisplay.setDisplayMode(displayMode)
+                }
               }
             }),
           )
