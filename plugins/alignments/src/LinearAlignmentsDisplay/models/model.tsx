@@ -110,8 +110,11 @@ const stateModelFactory = (
       },
 
       updateGroups(groups: string[]) {
-        if (JSON.stringify(groups) !== JSON.stringify(self.groups)) {
-          self.groups = groups
+        for (let i = 0; i < groups.length; i++) {
+          if (!self.groups.includes(groups[i])) {
+            self.groups = groups
+            break
+          }
         }
       },
       setDisplayMode(type?: string) {
