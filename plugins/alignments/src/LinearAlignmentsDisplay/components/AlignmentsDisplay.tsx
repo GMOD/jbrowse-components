@@ -59,7 +59,7 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
                   border: '1px solid black',
                 }}
               >
-                {groupBy?.tag} {groups[index]}
+                {groupBy?.tag} {groups[index] || 'none'}
               </div>
               {showPileup ? <disp.RenderingComponent model={disp} /> : null}
             </div>

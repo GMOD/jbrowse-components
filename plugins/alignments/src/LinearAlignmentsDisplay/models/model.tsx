@@ -394,7 +394,8 @@ const stateModelFactory = (
                               transform={`translate(0 ${currOffset - offset})`}
                             >
                               <text fontSize={10} y={10}>
-                                {self.groupBy?.tag} {self.groups[index]}
+                                {self.groupBy?.tag}{' '}
+                                {self.groups[index] || 'none'}
                               </text>
                               <g transform="translate(0 10)">{reactElement}</g>
                             </g>
