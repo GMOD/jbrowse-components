@@ -164,11 +164,12 @@ const stateModelFactory = (
           return [
             ...trackMenuItems,
 
+            // When there are multiple PileupDisplays, we hide the
+            // PileupDisplay track settings
             ...(self.groups.length
               ? []
               : [
                   {
-                    type: 'subMenu',
                     label: 'Pileup settings',
                     subMenu: self.PileupDisplay.composedTrackMenuItems,
                   },

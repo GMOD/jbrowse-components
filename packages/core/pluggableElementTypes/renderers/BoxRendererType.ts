@@ -125,7 +125,7 @@ export default class BoxRendererType extends FeatureRendererType {
   sessions: { [sessionId: string]: LayoutSession } = {}
 
   getWorkerSession(
-    props: LayoutSessionProps & { sessionId: string; sessionExtra: string },
+    props: LayoutSessionProps & { sessionId: string; sessionExtra?: string },
   ) {
     const { sessionId, sessionExtra } = props
     const id = `${sessionId}-${sessionExtra}`
