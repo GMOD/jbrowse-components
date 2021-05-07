@@ -176,6 +176,16 @@ export const BaseLinearDisplay = types
         return new CompositeMap<string, LayoutRecord>(layoutMaps)
       },
 
+      get layoutHeight() {
+        let height = 0
+        for (const block of self.blockState.values()) {
+          if (block && block.layout) {
+            height = Math.max(height, block.layout.getTotalHeight())
+          }
+        }
+        return height
+      },
+
       get rtree() {
         if (stale) {
           rbush = {} as Record<string, RBush<Layout>>

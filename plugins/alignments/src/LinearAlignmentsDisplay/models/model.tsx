@@ -346,16 +346,46 @@ const stateModelFactory = (
         },
         async renderSvg(opts: { rasterizeLayers?: boolean }) {
           const pileupHeight = self.height - self.SNPCoverageDisplay.height
-          await when(() => self.PileupDisplay.ready)
+          if (self.groups.length) {
+            await Promise.all(
+              self.PileupDisplays?.map(disp => when(() => disp.ready)) || [],
+            )
+          } else {
+            await when(() => self.PileupDisplay.ready)
+          }
+          let currOffset = 0
           return (
             <>
               <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
               <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
                 {
-                  await self.PileupDisplay.renderSvg({
-                    ...opts,
-                    overrideHeight: pileupHeight,
-                  })
+                  await (self.PileupDisplays?.length
+                    ? Promise.all(
+                        self.PileupDisplays.map(async (disp, index) => {
+                          const result = await disp.renderSvg({
+                            ...opts,
+                            overrideHeight: pileupHeight,
+                          })
+
+                          const offset = disp.layoutHeight + 10
+                          currOffset += offset
+                          return (
+                            <g
+                              key={`${Math.random}`}
+                              transform={`translate(0 ${currOffset - offset})`}
+                            >
+                              <text fontSize={10} y={10}>
+                                {self.groupBy?.tag} {self.groups[index]}
+                              </text>
+                              <g transform="translate(0 10)">{result}</g>
+                            </g>
+                          )
+                        }),
+                      )
+                    : self.PileupDisplay.renderSvg({
+                        ...opts,
+                        overrideHeight: pileupHeight,
+                      }))
                 }
               </g>
             </>

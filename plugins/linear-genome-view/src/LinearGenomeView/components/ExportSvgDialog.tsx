@@ -47,7 +47,7 @@ export default function ExportSvgDlg({
       </DialogTitle>
       <DialogContent>
         {error ? (
-          <div style={{ color: 'red' }}>{`${error}`}</div>
+          <pre style={{ color: 'red' }}>{`${error}`}</pre>
         ) : loading ? (
           <div>
             <CircularProgress size={20} style={{ marginRight: 20 }} />
@@ -83,6 +83,7 @@ export default function ExportSvgDlg({
               await model.exportSvg({ rasterizeLayers })
               handleClose()
             } catch (e) {
+              console.error(e)
               setError(e)
             } finally {
               setLoading(false)
