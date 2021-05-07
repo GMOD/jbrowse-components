@@ -205,7 +205,7 @@ describe('alignments track', () => {
   it('group by', async () => {
     const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
-    const { findByTestId, findByText, findAllByTestId } = render(
+    const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
