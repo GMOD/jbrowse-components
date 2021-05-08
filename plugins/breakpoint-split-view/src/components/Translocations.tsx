@@ -16,7 +16,6 @@ const Translocations = observer(
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    height: number
     trackConfigId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
@@ -28,7 +27,7 @@ const Translocations = observer(
       trackConfigId,
       features,
     )
-    const [mouseoverElt, setMouseoverElt] = useState()
+    const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
     const { assemblyManager } = session

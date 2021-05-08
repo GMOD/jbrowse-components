@@ -24,7 +24,6 @@ const Breakends = observer(
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    height: number
     trackConfigId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {

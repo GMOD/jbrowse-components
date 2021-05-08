@@ -15,7 +15,6 @@ const AlignmentConnections = observer(
     parentRef,
   }: {
     model: BreakpointViewModel
-    height: number
     trackConfigId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
