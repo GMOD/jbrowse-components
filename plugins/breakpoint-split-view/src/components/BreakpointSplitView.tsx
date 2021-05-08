@@ -1,27 +1,15 @@
+import React, { useRef } from 'react'
+import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BreakpointViewModel, VIEW_DIVIDER_HEIGHT } from '../model'
-import AlignmentConnectionsFactory from './AlignmentConnections'
-import BreakendsFactory from './Breakends'
-import HeaderFactory from './Header'
-import TranslocationsFactory from './Translocations'
+import AlignmentConnections from './AlignmentConnections'
+import Breakends from './Breakends'
+import Header from './Header'
+import Translocations from './Translocations'
 
 export default (pluginManager: PluginManager) => {
-  const { jbrequire } = pluginManager
-  const { observer, PropTypes } = jbrequire('mobx-react')
-  const React = jbrequire('react')
-  const { useRef } = React
-  const { makeStyles: jbrequiredMakeStyles } = jbrequire(
-    '@material-ui/core/styles',
-  )
-
-  const AlignmentConnections = jbrequire(AlignmentConnectionsFactory)
-  const Breakends = jbrequire(BreakendsFactory)
-  const Translocations = jbrequire(TranslocationsFactory)
-
-  const Header = jbrequire(HeaderFactory)
-
-  const useStyles = (jbrequiredMakeStyles as typeof makeStyles)(theme => {
+  const useStyles = makeStyles(theme => {
     return {
       root: {
         position: 'relative',
@@ -142,8 +130,6 @@ export default (pluginManager: PluginManager) => {
       )
     },
   )
-  BreakpointSplitView.propTypes = {
-    model: PropTypes.objectOrObservableObject.isRequired,
-  }
+
   return BreakpointSplitView
 }

@@ -30,7 +30,7 @@ beforeEach(() => {
   )
 })
 
-xdescribe('breakpoint split view', () => {
+describe('breakpoint split view', () => {
   it('open a split view', async () => {
     console.warn = jest.fn()
     const pluginManager = getPluginManager(breakpointConfig)
