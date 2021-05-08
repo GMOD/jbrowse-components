@@ -1,7 +1,6 @@
 import Path from 'svg-path-generator'
 import { getSession } from '@jbrowse/core/util'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { observer } from 'mobx-react'
 import React, { useState } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
