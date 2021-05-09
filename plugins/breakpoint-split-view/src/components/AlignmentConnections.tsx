@@ -85,12 +85,12 @@ export default (pluginManager: any) => {
               }
               const x1 = getPxFromCoordinate(
                 views[level1],
-                f1.get('refName'),
+                f1ref,
                 c1[f1.get('strand') === -1 ? LEFT : RIGHT],
               )
               const x2 = getPxFromCoordinate(
                 views[level2],
-                f2.get('refName'),
+                f2ref,
                 c2[f2.get('strand') === -1 ? RIGHT : LEFT],
               )
               const reversed1 = views[level1].pxToBp(x1).reversed
