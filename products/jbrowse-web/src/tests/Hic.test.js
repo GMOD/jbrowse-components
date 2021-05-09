@@ -14,40 +14,44 @@ expect.extend({ toMatchImageSnapshot })
 setup()
 afterEach(cleanup)
 
+hicConfig.configuration = {
+  rpc: {
+    defaultDriver: 'MainThreadRpcDriver',
+  },
+}
+
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-describe('hic', () => {
-  it('hic track', async () => {
-    fetch.resetMocks()
-    fetch.mockResponse(
-      generateReadBuffer(url => {
-        return new LocalFile(require.resolve(`../../test_data/${url}`))
-      }),
-    )
-    const pluginManager = getPluginManager(hicConfig)
+test('hic', async () => {
+  fetch.resetMocks()
+  fetch.mockResponse(
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/${url}`)),
+    ),
+  )
+  const pluginManager = getPluginManager(hicConfig)
 
-    const state = pluginManager.rootModel
-    const { findByTestId, findAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    state.session.views[0].setNewView(5000, 0)
-    fireEvent.click(await findByTestId('htsTrackEntry-hic_test'))
-    await timeout(1000)
-    const canvas = await findAllByTestId(
-      'prerendered_canvas',
-      {},
-      {
-        timeout: 10000,
-      },
-    )
-    const bigwigImg = canvas[0].toDataURL()
-    const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
-    const bigwigBuf = Buffer.from(bigwigData, 'base64')
-    expect(bigwigBuf).toMatchImageSnapshot({
-      failureThreshold: 0.05,
-      failureThresholdType: 'percent',
-    })
-  }, 15000)
-})
+  const state = pluginManager.rootModel
+  const { findByTestId, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  state.session.views[0].setNewView(5000, 0)
+  fireEvent.click(await findByTestId('htsTrackEntry-hic_test'))
+  await timeout(1000)
+  const canvas = await findAllByTestId(
+    'prerendered_canvas',
+    {},
+    {
+      timeout: 10000,
+    },
+  )
+  const bigwigImg = canvas[0].toDataURL()
+  const bigwigData = bigwigImg.replace(/^data:image\/\w+;base64,/, '')
+  const bigwigBuf = Buffer.from(bigwigData, 'base64')
+  expect(bigwigBuf).toMatchImageSnapshot({
+    failureThreshold: 0.05,
+    failureThresholdType: 'percent',
+  })
+}, 15000)

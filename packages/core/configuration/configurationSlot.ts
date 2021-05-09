@@ -219,22 +219,15 @@ export default function ConfigSlot(
         return json(self.value)
       },
     }))
-    .preProcessSnapshot(
-      val =>
-        typeof val === 'object' && val.name === slotName
-          ? val
-          : {
-              name: slotName,
-              description,
-              type,
-              value: val,
-            },
-      // ({
-      //   name: slotName,
-      //   description,
-      //   type,
-      //   value: val,
-      // }),
+    .preProcessSnapshot(val =>
+      typeof val === 'object' && val.name === slotName
+        ? val
+        : {
+            name: slotName,
+            description,
+            type,
+            value: val,
+          },
     )
     .postProcessSnapshot(snap => {
       if (typeof snap.value === 'object') {
