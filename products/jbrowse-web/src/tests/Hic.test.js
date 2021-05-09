@@ -8,7 +8,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import { setup, generateReadBuffer, getPluginManager } from './util'
 import JBrowse from '../JBrowse'
-import hicConfig from '../../test_data/hic_integration_test.json'
+import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -28,7 +28,8 @@ test('hic', async () => {
   fetch.resetMocks()
   fetch.mockResponse(
     generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/${url}`)),
+      url =>
+        new LocalFile(require.resolve(`../../../../extra_test_data/${url}`)),
     ),
   )
   const pluginManager = getPluginManager(hicConfig)
