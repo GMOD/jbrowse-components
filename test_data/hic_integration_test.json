@@ -1,4 +1,9 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
   "assemblies": [
     {
       "name": "hg19",
