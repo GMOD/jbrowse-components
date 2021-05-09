@@ -198,7 +198,7 @@ export default function ConfigSlot(
         if (self.isCallback) {
           // compile as jexl function
           const { pluginManager } = getEnv(self)
-          if (!pluginManager) {
+          if (!pluginManager && typeof jest === 'undefined') {
             console.warn(
               'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
             )
