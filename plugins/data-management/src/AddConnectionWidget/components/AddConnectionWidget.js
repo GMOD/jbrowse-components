@@ -44,9 +44,12 @@ function AddConnectionWidget({ model }) {
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)
     setConfigModel(
-      newConnectionType.configSchema.create({
-        connectionId: `${newConnectionType.name}-${Date.now()}`,
-      }),
+      newConnectionType.configSchema.create(
+        {
+          connectionId: `${newConnectionType.name}-${Date.now()}`,
+        },
+        getEnv(model),
+      ),
     )
   }
 
