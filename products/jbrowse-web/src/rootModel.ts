@@ -520,11 +520,11 @@ export default function RootModel(
     }))
 }
 
-export function createTestSession(snapshot = {}) {
+export function createTestSession(snapshot = {}, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = RootModel(pluginManager)
+  const JBrowseRootModel = RootModel(pluginManager, adminMode)
   const root = JBrowseRootModel.create(
     {
       jbrowse: {
