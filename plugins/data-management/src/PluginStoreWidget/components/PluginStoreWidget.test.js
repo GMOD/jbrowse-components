@@ -1,5 +1,5 @@
 import React from 'react'
-import { getSnapshot } from 'mobx-state-tree'
+import { getSnapshot, getParent } from 'mobx-state-tree'
 import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
@@ -25,7 +25,7 @@ describe('<PluginStoreWidget />', () => {
   let session
   let model
 
-  beforeAll(() => {
+  beforeEach(() => {
     session = createTestSession()
     model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
     const { location } = window
@@ -34,9 +34,6 @@ describe('<PluginStoreWidget />', () => {
       ...location,
       reload: jest.fn(),
     }
-  })
-
-  beforeEach(() => {
     fetch.resetMocks()
     fetch.mockResponse(JSON.stringify(plugins))
   })
@@ -59,5 +56,39 @@ describe('<PluginStoreWidget />', () => {
       expect(window.location.reload).toHaveBeenCalled()
     })
     expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
+  })
+
+  it('plugin store admin - adds a custom plugin correctly', async () => {
+    session = createTestSession({}, true)
+    model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
+    const { findByText, getByText, getByLabelText } = render(
+      <PluginStoreWidget model={model} />,
+    )
+    await findByText('multiple sequence alignment browser plugin for JBrowse 2')
+    fireEvent.click(getByText('Add custom plugin'))
+    fireEvent.change(getByLabelText('Plugin name'), {
+      target: {
+        value: 'MsaView',
+      },
+    })
+    fireEvent.change(getByLabelText('Plugin URL'), {
+      target: {
+        value:
+          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+      },
+    })
+    fireEvent.click(getByText('Add plugin'))
+
+    await waitFor(() => {
+      expect(window.location.reload).toHaveBeenCalled()
+    })
+
+    expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
+      {
+        name: 'MsaView',
+        url:
+          'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+      },
+    ])
   })
 })
