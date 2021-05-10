@@ -172,9 +172,6 @@ export default class TextIndex extends JBrowseCommand {
       )
       if (track) {
         const {adapter} = track
-        // instantiate their data adapters
-        // if filetype is gff3
-        // runn gff3 processor
         if (adapter.type === 'Gff3TabixAdapter') {
           return {
             trackId,
@@ -186,6 +183,8 @@ export default class TextIndex extends JBrowseCommand {
             attributes: []
           }
         }
+        // TODO: add statement to check for GTF files
+        // TODO: add attributes?
       } else {
         this.error(`Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`)
       }
