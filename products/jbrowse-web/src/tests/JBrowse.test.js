@@ -172,7 +172,8 @@ test('widget drawer navigation', async () => {
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   expect(state.session.activeWidgets.size).toEqual(1)
-})
+}, 10000)
+
 describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
     const pluginManager = getPluginManager()
@@ -205,8 +206,9 @@ describe('nclist track test with long name', () => {
       {},
       waitForOptions,
     )
-  })
+  }, 10000)
 })
+
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
