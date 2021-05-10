@@ -50,7 +50,6 @@
     "crypto-js": "^3.0.0",
     "fastestsmallesttextencoderdecoder": "^1.0.14",
     "fontsource-roboto": "3.0.3",
-    "is-object": "^1.0.2",
     "json-stable-stringify": "^1.0.1",
     "merge-deep": "^3.0.2",
     "mobx": "^5.10.1",
