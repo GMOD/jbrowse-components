@@ -48,7 +48,7 @@ export default function JBrowseWeb(
         theme: { type: 'frozen', defaultValue: {} },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
-      plugins: types.frozen(),
+      plugins: types.array(types.frozen()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
