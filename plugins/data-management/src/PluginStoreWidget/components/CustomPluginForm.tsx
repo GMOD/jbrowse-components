@@ -78,7 +78,7 @@ function CustomPluginForm({
           multiline
         />
         <TextField
-          id="name-input"
+          id="url-input"
           name="url"
           label="Plugin URL"
           variant="outlined"
