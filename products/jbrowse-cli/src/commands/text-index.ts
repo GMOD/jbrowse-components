@@ -40,7 +40,6 @@ export default class TextIndex extends JBrowseCommand {
 
     this.debug(`Command loaded`)
 
-    const test = await this.getIndexingConfigurations(runFlags)
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
@@ -60,8 +59,7 @@ export default class TextIndex extends JBrowseCommand {
     } else if (runFlags.tracks) {
       const trackIds: Array<string> = runFlags.tracks.split(',')
 
-      //getIndexingConfigurations(trackIds);
-
+      const configurationsList = await this.getIndexingConfigurations(trackIds, runFlags)
 
       this.log(
         `TODO: implement aggregate text indexing for these tracks: ${trackIds}`,
@@ -159,14 +157,8 @@ export default class TextIndex extends JBrowseCommand {
     this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
   }
 
-  async getIndexingConfigurations(runFlags: any){
+  async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
-    //const output = runFlags?.target || runFlags?.out || '.'
-    //const isDir = (await promises.lstat(output)).isDirectory()
-    //this.target = isDir ? `${output}/config.json` : output
-    //const config: Config = await this.readJsonFile(this.target)
-    //console.log(config)
-
     const output = runFlags?.target || runFlags?.out || '.'
     const isDir = (await promises.lstat(output)).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
@@ -174,29 +166,31 @@ export default class TextIndex extends JBrowseCommand {
     if (!config.tracks) {
       this.error('Error, no tracks found in config.json. Please add a track before indexing.')
     }
-    const trackIds = ['gff3tabix_genes']
     const configurations = trackIds.map(trackId => {
-      const idx = config.tracks.findIndex(
+      const track = config.tracks.find(
         (track) => trackId === track.trackId,
       )
-      if (idx !== -1) {
+      if (track) {
+        const {adapter} = track
         // instantiate their data adapters
         // if filetype is gff3
         // runn gff3 processor
-        return {
-          trackId,
-          indexingConfiguration: {
-            indexingAdapter: 'filetype',
-            gzipped: 'true',
-            gffLocation: { url: 'gff3.com'},
+        if (adapter.type === 'Gff3TabixAdapter') {
+          return {
+            trackId,
+            indexingConfiguration: {
+              indexingAdapter: 'GFF3',
+              gzipped: true,
+              gffLocation: adapter?.gffGzLocation,
+            },
+            attributes: []
           }
         }
       } else {
-        this.error(`Error, no track found in config.json for trackId ${trackId}`)
+        this.error(`Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`)
       }
       return {}
     })
-    console.log(configurations)
     return configurations
   }
 }
