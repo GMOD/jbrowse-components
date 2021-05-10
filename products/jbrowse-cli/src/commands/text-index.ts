@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import JBrowseCommand from '../base'
-import { ReadStream, createReadStream } from 'fs'
+import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
@@ -39,6 +39,43 @@ export default class TextIndex extends JBrowseCommand {
     const { flags: runFlags } = this.parse(TextIndex)
 
     this.debug(`Command loaded`)
+
+    this.log("=====================")
+    const output = runFlags.target || runFlags.out || '.'
+    const isDir = (await promises.lstat(output)).isDirectory()
+    console.log(isDir)
+    this.target = isDir ? `${output}/config.json` : output
+    console.log(this.target)
+    const config: Config = await this.readJsonFile(this.target)
+    console.log(config.tracks)
+    if (!config.tracks) {
+      this.error('Error, no tracks found in config.json. Please add a track before indexing.')
+    }
+    const trackIds = ['gff3tabix_genes']
+    const configurations = trackIds.map(trackId => {
+      const idx = config.tracks.findIndex(
+        (track) => trackId === track.trackId,
+      )
+      console.log(idx)
+      if (idx !== -1) {
+        // instantiate their data adapters
+        // if filetype is gff3
+        // runn gff3 processor
+        return {
+          trackId,
+          indexingConfiguration: {
+            indexingAdapter: 'filetype',
+            gzipped: 'true',
+            gffLocation: { url: 'gff3.com'},
+          }
+        }
+      } else {
+        this.error(`Error, no track found in config.json for trackId ${trackId}`)
+      }
+      return {}
+    })
+    console.log(configurations)
+    this.log("=====================")
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
