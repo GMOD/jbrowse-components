@@ -1,11 +1,6 @@
 import React from 'react'
-import {
-  render,
-  cleanup,
-  // fireEvent,
-  // waitFor,
-  // screen,
-} from '@testing-library/react'
+import { getSnapshot } from 'mobx-state-tree'
+import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import PluginStoreWidget from './PluginStoreWidget'
@@ -23,17 +18,6 @@ const plugins = {
       image:
         'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png',
     },
-    {
-      name: 'GDC',
-      authors: ['Garrett Stevens', 'Colin Diesh', 'Rob Buels'],
-      description: 'JBrowse 2 plugin for integrating with GDC resources',
-      location: 'https://github.com/GMOD/jbrowse-plugin-gdc',
-      url:
-        'https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js',
-      license: 'MIT',
-      image:
-        'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png',
-    },
   ],
 }
 
@@ -44,20 +28,36 @@ describe('<PluginStoreWidget />', () => {
   beforeAll(() => {
     session = createTestSession()
     model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
+    const { location } = window
+    delete window.location
+    window.location = {
+      ...location,
+      reload: jest.fn(),
+    }
   })
 
   beforeEach(() => {
     fetch.resetMocks()
+    fetch.mockResponse(JSON.stringify(plugins))
   })
 
   afterEach(cleanup)
 
   it('renders with the available plugins', async () => {
-    fetch.mockResponse(JSON.stringify(plugins))
     const { container, findByText } = render(
       <PluginStoreWidget model={model} />,
     )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     expect(container.firstChild).toMatchSnapshot()
+  })
+
+  it('Installs a session plugin', async () => {
+    const { findByText } = render(<PluginStoreWidget model={model} />)
+    await findByText('multiple sequence alignment browser plugin for JBrowse 2')
+    fireEvent.click(await findByText('Install'))
+    await waitFor(() => {
+      expect(window.location.reload).toHaveBeenCalled()
+    })
+    expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
   })
 })
