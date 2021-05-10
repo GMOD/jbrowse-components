@@ -43,7 +43,7 @@ setup()
 
 afterEach(cleanup)
 
-const delay = { timeout: 10000 }
+const waitForOptions = { timeout: 10000 }
 
 beforeEach(() => {
   clearCache()
@@ -120,12 +120,12 @@ test('variant track test - opens feature detail view', async () => {
   state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
     'test-vcf-604452',
   )
-  const feats1 = await findAllByTestId('test-vcf-604452', {}, delay)
+  const feats1 = await findAllByTestId('test-vcf-604452', {}, waitForOptions)
   fireEvent.click(feats1[0])
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
-  const feats2 = await findAllByTestId('test-vcf-604452', {}, delay)
+  const feats2 = await findAllByTestId('test-vcf-604452', {}, waitForOptions)
   fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
@@ -185,7 +185,7 @@ describe('assembly aliases', () => {
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
-    await findByTestId('box-test-vcf-604452', {}, delay)
+    await findByTestId('box-test-vcf-604452', {}, waitForOptions)
   }, 10000)
 })
 
@@ -203,7 +203,7 @@ describe('nclist track test with long name', () => {
     await findByText(
       'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
       {},
-      delay,
+      waitForOptions,
     )
   })
 })
@@ -232,7 +232,7 @@ describe('test configuration editor', () => {
           'fill',
           'green',
         ),
-      delay,
+      waitForOptions,
     )
   }, 10000)
 })
@@ -288,7 +288,7 @@ test('wrong assembly', async () => {
   await findAllByText(
     'Error: region assembly (volvox) does not match track assemblies (wombat)',
     {},
-    delay,
+    waitForOptions,
   )
 }, 15000)
 
@@ -301,9 +301,9 @@ test('looks at about this track dialog', async () => {
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-  fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
+  fireEvent.click(await findByTestId('track_menu_icon', {}, waitForOptions))
   fireEvent.click(await findByText('About track'))
-  await findAllByText(/SQ/, {}, delay)
+  await findAllByText(/SQ/, {}, waitForOptions)
 }, 15000)
 
 test('export svg', async () => {
