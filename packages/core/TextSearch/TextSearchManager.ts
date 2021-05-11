@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*  text-searching controller */
 import BaseResult from './BaseResults'
-// import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import PluginManager from '../PluginManager'
@@ -64,9 +63,7 @@ export default (pluginManager: PluginManager) => {
      * @param args - search options/arguments include: search query
      */
     relevantAdapters() {
-      /**
-       * TODO
-       */
+      // obtain root level and track level adapters
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
       const trackTextSearchAdapters: BaseTextSearchAdapter[] = []
