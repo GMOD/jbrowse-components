@@ -41,7 +41,7 @@ export function generateReadBuffer(getFileFunction) {
   return async request => {
     try {
       const file = getFileFunction(request.url)
-      const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
+      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
       if (request.headers.get('range')) {
         const range = rangeParser(maxRangeRequest, request.headers.get('range'))
         if (range === -2 || range === -1) {

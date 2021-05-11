@@ -34,6 +34,7 @@ beforeEach(() => {
   )
 })
 afterEach(cleanup)
+
 test('copy and delete track in admin mode', async () => {
   const pluginManager = getPluginManager(undefined, true)
   const state = pluginManager.rootModel
@@ -51,7 +52,7 @@ test('copy and delete track in admin mode', async () => {
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
-})
+}, 20000)
 
 test('copy and delete reference sequence track disabled', async () => {
   const pluginManager = getPluginManager(undefined, true)
@@ -73,7 +74,7 @@ test('copy and delete reference sequence track disabled', async () => {
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
   expect(trackMenuItems[2].disabled).toBe(true)
   expect(trackMenuItems[3].disabled).toBe(true)
-})
+}, 20000)
 
 test('copy and delete track to session tracks', async () => {
   const pluginManager = getPluginManager(undefined, false)
@@ -92,7 +93,7 @@ test('copy and delete track to session tracks', async () => {
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
-})
+}, 20000)
 
 xtest('delete connection', async () => {
   const pluginManager = getPluginManager(masterConfig, true)
