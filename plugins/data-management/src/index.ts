@@ -24,7 +24,6 @@ import {
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
 import {
-  ReactComponent as PluginStoreReactComponent,
   stateModelFactory as PluginStoreStateModelFactory,
   configSchema as PluginStoreConfigSchema,
 } from './PluginStoreWidget'
@@ -99,7 +98,9 @@ export default class extends Plugin {
         heading: 'Plugin store',
         configSchema: PluginStoreConfigSchema,
         stateModel: PluginStoreStateModelFactory(pluginManager),
-        ReactComponent: PluginStoreReactComponent,
+        ReactComponent: lazy(
+          () => import('./PluginStoreWidget/components/PluginStoreWidget'),
+        ),
       })
     })
   }
