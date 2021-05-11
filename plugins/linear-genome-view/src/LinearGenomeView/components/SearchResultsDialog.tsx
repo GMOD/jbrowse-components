@@ -118,7 +118,7 @@ export default function SearchResultsDialog({
   }
 
   return (
-    <Dialog open onClose={handleClose} className={classes.dialogContent}>
+    <Dialog open maxWidth="xl" onClose={handleClose}>
       <DialogTitle id="search-results-dialog">
         Search Results
         {handleClose ? (
@@ -153,7 +153,7 @@ export default function SearchResultsDialog({
                   </TableCell>
                   <TableCell align="right">{result.getLocation()}</TableCell>
                   <TableCell align="right">
-                    {getTrackName(result.getTrackId())}
+                    {getTrackName(result.getTrackId()) || 'N/A'}
                   </TableCell>
                   <TableCell align="right">
                     <Button
@@ -164,7 +164,7 @@ export default function SearchResultsDialog({
                       color="primary"
                       variant="contained"
                     >
-                      Go
+                      Go to location
                     </Button>
                   </TableCell>
                   <TableCell align="right">
@@ -177,10 +177,11 @@ export default function SearchResultsDialog({
                         }
                         handleClose()
                       }}
+                      disabled={!getTrackName(result.getTrackId())}
                       color="primary"
                       variant="contained"
                     >
-                      Show
+                      Show Track
                     </Button>
                   </TableCell>
                 </TableRow>
