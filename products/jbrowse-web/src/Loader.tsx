@@ -296,8 +296,7 @@ const SessionLoader = types
         return (conf.configuration || {})[attr] || def
       }
 
-      const defaultURL =
-        'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/'
+      const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',

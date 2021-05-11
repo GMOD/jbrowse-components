@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`breakpoint split view open a split view 1`] = `
+<g
+  data-testid="pacbio_hg002_breakpoints-loaded"
+  fill="none"
+  stroke="#333"
+>
+  <path
+    d="M 407.99312656000257 80.5 C 607.9931265600026 80.5 203.41868021525443 89.5 403.4186802152544 89.5"
+    data-testid="r1"
+    stroke-width="1"
+  />
+  <path
+    d="M 660.4186802152544 89.5 C 860.4186802152544 89.5 206.99312656000257 53.5 406.99312656000257 53.5"
+    data-testid="r1"
+    stroke-width="1"
+  />
+</g>
+`;
+
+exports[`breakpoint split view open a split view 2`] = `
+<g
+  data-testid="pacbio_vcf-loaded"
+  fill="none"
+  stroke="green"
+  stroke-width="5"
+>
+  <path
+    d="M 387.99312656000257 20 L 407.99312656000257 20 L 403.4186802152544 20 L 423.4186802152544 20"
+    stroke-width="5"
+  />
+</g>
+`;

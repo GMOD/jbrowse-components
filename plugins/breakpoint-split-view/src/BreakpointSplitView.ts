@@ -114,12 +114,11 @@ class BreakpointSplitViewType extends ViewType {
 export default (pluginManager: PluginManager) => {
   const { load } = pluginManager
 
-  const ReactComponent = load(BreakpointSplitViewComponent)
   const { stateModel } = load(BreakpointSplitViewModel)
 
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
     stateModel,
-    ReactComponent,
+    ReactComponent: BreakpointSplitViewComponent,
   })
 }

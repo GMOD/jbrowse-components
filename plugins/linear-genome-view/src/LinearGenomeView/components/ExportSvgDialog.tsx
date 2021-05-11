@@ -31,7 +31,9 @@ export default function ExportSvgDlg({
   model: LGV
   handleClose: () => void
 }) {
-  const [rasterizeLayers, setRasterizeLayers] = useState(true)
+  const [rasterizeLayers, setRasterizeLayers] = useState(
+    typeof OffscreenCanvas !== 'undefined',
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error>()
   const classes = useStyles()
@@ -52,15 +54,23 @@ export default function ExportSvgDlg({
             <Typography display="inline">Creating SVG</Typography>
           </div>
         ) : null}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={rasterizeLayers}
-              onChange={() => setRasterizeLayers(val => !val)}
-            />
-          }
-          label="Rasterize canvas based tracks? File may be much larger if this is turned off"
-        />
+
+        {typeof OffscreenCanvas !== 'undefined' ? (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rasterizeLayers}
+                onChange={() => setRasterizeLayers(val => !val)}
+              />
+            }
+            label="Rasterize canvas based tracks? File may be much larger if this is turned off"
+          />
+        ) : (
+          <Typography>
+            Note: rasterizing layers not yet supported in this browser, so SVG
+            size may be large
+          </Typography>
+        )}
 
         <Button
           variant="contained"
