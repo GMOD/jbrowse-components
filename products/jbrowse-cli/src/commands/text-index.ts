@@ -4,6 +4,8 @@ import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
+import { http as httpFR, https as httpsFR } from 'follow-redirects'
+import { createGunzip } from "zlib"
 
 type RecordData = {
   attributes: any;
@@ -67,9 +69,12 @@ export default class TextIndex extends JBrowseCommand {
     } else {
 
       // For testing:
-      const gff3FileName2: string = "./test/data/au9_scaffold_subset_sync.gff3"
-      const gff3In = createReadStream(gff3FileName2)
-      this.parseGff3(gff3In, false)
+      // const gff3FileName2: string = "./test/data/au9_scaffold_subset_sync.gff3"
+      // const gff3In = createReadStream(gff3FileName2)
+      // this.parseGff3(gff3In, false)
+
+      const remoteGff3File: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
+      this.ParseGff3Url(remoteGff3File, true)
 
       this.log(
         'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
@@ -77,6 +82,9 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
+
+  // Function that takes in a gff3 readstream and parses through
+  // it and retrieves the needed attributes and information.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
     
     const gffTranform = new Transform({
@@ -94,6 +102,10 @@ export default class TextIndex extends JBrowseCommand {
     this.runIxIxx(gff3Stream, isTest)
   }
 
+
+  // Recursively goes through every record in the gff3 file and gets
+  // the desires attributes in the form of a JSON object. It is then pushed
+  // and returned to the ixIxx file to run.
   private _recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
 
     const recordObj = { "ID":record.attributes.ID,
@@ -126,7 +138,7 @@ export default class TextIndex extends JBrowseCommand {
     //     this.log(err.stack)
     //  })
 
-    let ixProcess: ChildProcessWithoutNullStreams;
+    let ixProcess: ChildProcessWithoutNullStreams
     if (isTest)
       // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
       ixProcess = spawn('cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin', ['./products/jbrowse-cli/test/data/out.ix', './products/jbrowse-cli/test/data/out.ixx'], { shell: true })   
@@ -156,6 +168,93 @@ export default class TextIndex extends JBrowseCommand {
 
     this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
   }
+
+
+
+
+
+  // Checks if the passed in string is a valid 
+  // URL. Will return a boolean
+  isURL(FileName: string) {
+    let url
+
+    try {
+      url = new URL(FileName);
+    } catch (_) {
+      return false
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:"
+  }
+
+  ParseGff3Url(urlIn: string, isGZ: boolean) {
+    if (!isGZ) {
+      this.ParseGff3UrlNoGz(urlIn)
+    } else {
+      this.ParseGff3UrlWithGz(urlIn)
+    }
+  }
+  
+  ParseGff3UrlWithGz(urlIn: string) {
+    const unzip = createGunzip()
+    const newUrl = new URL(urlIn)
+    if (newUrl.protocol === "https:") {
+      httpsFR
+        .get(urlIn, (response) => {
+          this.parseGff3(response.pipe(unzip), false)
+          response.on("finish", () => {
+            this.log("done")
+          })
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    } else {
+      httpFR
+        .get(urlIn, (response) => {
+          this.parseGff3(response.pipe(unzip), false)
+          response.on("finish", () => {
+            this.log("done")
+          })
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    }
+  }
+  
+  ParseGff3UrlNoGz(urlIn: string) {
+    const newUrl = new URL(urlIn)
+  
+    if (newUrl.protocol === "https:") {
+      httpsFR
+        .get(urlIn, (res) => {
+          this.parseGff3(res, false)
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    } else {
+      httpFR
+        .get(urlIn, (res) => {
+          this.parseGff3(res, false)
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    }
+  }
+
+
+
+
+
+
+
 
   async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
