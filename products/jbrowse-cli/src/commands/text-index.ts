@@ -69,17 +69,103 @@ export default class TextIndex extends JBrowseCommand {
     } else {
 
       // For testing:
-      // const gff3FileName2: string = "./test/data/au9_scaffold_subset_sync.gff3"
-      // const gff3In = createReadStream(gff3FileName2)
-      // this.parseGff3(gff3In, false)
+      // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
+      // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
+      const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3';
 
-      const remoteGff3File: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      this.parseGff3Url(remoteGff3File, true)
+      // Check if the file is a URL, then index it.
+      if (this.isURL(gff3FileLocation))
+        this.parseGff3Url(gff3FileLocation, false)
+      else
+        this.parseGff3(createReadStream(gff3FileLocation), false)
+
 
       this.log(
         'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
       )
     }
+  }
+
+
+
+  // Method for handing off the parsing of a gff3 file URL.
+  // Calls the proper parser depending on if it is gzipped or not.
+  parseGff3Url(urlIn: string, isGZ: boolean) {
+    if (!isGZ)
+      this._parseGff3UrlNoGz(urlIn)
+    else
+      this._parseGff3UrlWithGz(urlIn)
+  }
+  
+  // Grab the remote file from urlIn, then unzip it before
+  // piping into parseGff3 for parsing and indexing.
+  private _parseGff3UrlWithGz(urlIn: string) {
+    const unzip = createGunzip()
+    const newUrl = new URL(urlIn)
+    if (newUrl.protocol === "https:") {
+      httpsFR
+        .get(urlIn, (response) => {
+          this.parseGff3(response.pipe(unzip), false)
+          response.on("finish", () => {
+            this.log("done")
+          })
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    } else {
+      httpFR
+        .get(urlIn, (response) => {
+          this.parseGff3(response.pipe(unzip), false)
+          response.on("finish", () => {
+            this.log("done")
+          })
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    }
+  }
+  
+  // Grab the remote file from urlIn, then pipe it directly to parseGff3().
+  private _parseGff3UrlNoGz(urlIn: string) {
+    const newUrl = new URL(urlIn)
+  
+    if (newUrl.protocol === "https:") {
+      httpsFR
+        .get(urlIn, (res) => {
+          this.parseGff3(res, false)
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    } else {
+      httpFR
+        .get(urlIn, (res) => {
+          this.parseGff3(res, false)
+        })
+        .on("error", (e: NodeJS.ErrnoException) => {
+          if (e.code === "ENOTFOUND") this.error("Bad file url")
+          else this.error("Other error: ", e)
+        })
+    }
+  }
+
+  // Checks if the passed in string is a valid URL. 
+  // Returns a boolean.
+  isURL(FileName: string) {
+    let url
+
+    try {
+      url = new URL(FileName);
+    } catch (_) {
+      return false
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:"
   }
 
 
@@ -130,6 +216,8 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
+  // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
+  // The ixIxx executable is required on the system path for users, however tests use a local copy.
   async runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
@@ -172,87 +260,7 @@ export default class TextIndex extends JBrowseCommand {
 
 
 
-
-  // Checks if the passed in string is a valid 
-  // URL. Will return a boolean
-  isURL(FileName: string) {
-    let url
-
-    try {
-      url = new URL(FileName);
-    } catch (_) {
-      return false
-    }
-
-    return url.protocol === "http:" || url.protocol === "https:"
-  }
-
-  parseGff3Url(urlIn: string, isGZ: boolean) {
-    if (!isGZ) {
-      this.parseGff3UrlNoGz(urlIn)
-    } else {
-      this.parseGff3UrlWithGz(urlIn)
-    }
-  }
   
-  parseGff3UrlWithGz(urlIn: string) {
-    const unzip = createGunzip()
-    const newUrl = new URL(urlIn)
-    if (newUrl.protocol === "https:") {
-      httpsFR
-        .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
-          response.on("finish", () => {
-            this.log("done")
-          })
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
-    } else {
-      httpFR
-        .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
-          response.on("finish", () => {
-            this.log("done")
-          })
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
-    }
-  }
-  
-  parseGff3UrlNoGz(urlIn: string) {
-    const newUrl = new URL(urlIn)
-  
-    if (newUrl.protocol === "https:") {
-      httpsFR
-        .get(urlIn, (res) => {
-          this.parseGff3(res, false)
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
-    } else {
-      httpFR
-        .get(urlIn, (res) => {
-          this.parseGff3(res, false)
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
-    }
-  }
-
-
-
-
-
   async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
     const output = runFlags?.target || runFlags?.out || '.'
