@@ -42,14 +42,25 @@ const JBrowse = observer(({ pluginManager }) => {
   const [firstLoad, setFirstLoad] = useState(true)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse, error } = rootModel
+  const {
+    session,
+    jbrowse,
+    error,
+    pluginsUpdated,
+    setPluginsUpdated,
+  } = rootModel
   if (firstLoad && session) {
     setFirstLoad(false)
   }
 
   useEffect(() => {
-    function sendIpcConfig(snapshot) {
-      ipcRenderer.send('saveConfig', snapshot)
+    async function sendIpcConfig(snapshot) {
+      await ipcRenderer.invoke('saveConfig', snapshot)
+
+      if (pluginsUpdated) {
+        setPluginsUpdated(false)
+        window.location.reload()
+      }
     }
 
     let disposer = () => {}
@@ -62,7 +73,7 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [jbrowse, ipcRenderer])
+  }, [jbrowse, ipcRenderer, pluginsUpdated, setPluginsUpdated])
 
   useEffect(() => {
     async function createScreenshot(snapshot) {

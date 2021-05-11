@@ -6,6 +6,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
 import NoteAddIcon from '@material-ui/icons/NoteAdd'
 import InputIcon from '@material-ui/icons/Input'
+import ExtensionIcon from '@material-ui/icons/Extension'
 import {
   configSchema as ucscConfigSchema,
   modelFactory as ucscModelFactory,
@@ -22,6 +23,10 @@ import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
 } from './HierarchicalTrackSelectorWidget'
+import {
+  stateModelFactory as PluginStoreStateModelFactory,
+  configSchema as PluginStoreConfigSchema,
+} from './PluginStoreWidget'
 
 const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
 
@@ -86,6 +91,18 @@ export default class extends Plugin {
         ),
       })
     })
+
+    pluginManager.addWidgetType(() => {
+      return new WidgetType({
+        name: 'PluginStoreWidget',
+        heading: 'Plugin store',
+        configSchema: PluginStoreConfigSchema,
+        stateModel: PluginStoreStateModelFactory(pluginManager),
+        ReactComponent: lazy(
+          () => import('./PluginStoreWidget/components/PluginStoreWidget'),
+        ),
+      })
+    })
   }
 
   configure(pluginManager: PluginManager) {
@@ -118,6 +135,17 @@ export default class extends Plugin {
           const widget = session.addWidget(
             'AddConnectionWidget',
             'addConnectionWidget',
+          )
+          session.showWidget(widget)
+        },
+      })
+      pluginManager.rootModel.appendToMenu('File', {
+        label: 'Plugin store',
+        icon: ExtensionIcon,
+        onClick: (session: SessionWithWidgets) => {
+          const widget = session.addWidget(
+            'PluginStoreWidget',
+            'pluginStoreWidget',
           )
           session.showWidget(widget)
         },

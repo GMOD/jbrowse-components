@@ -189,9 +189,11 @@ export default function StartScreen({
   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
   root.setSavedSessionNames(sessionNames)
 
-  const sortedSessions = Object.entries(sessions || {})
-    .filter(([, sessionData]: [unknown, any]) => sessionData.stats)
-    .sort((a: any, b: any) => b[1].stats.mtimeMs - a[1].stats.mtimeMs)
+  const sortedSessions = sessions
+    ? Object.entries(sessions).sort(
+        (a: any, b: any) => b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
+      )
+    : []
 
   useEffect(() => {
     ;(async () => {
@@ -218,7 +220,9 @@ export default function StartScreen({
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          setSessions(await ipcRenderer.invoke('listSessions'))
+
+          const sess = await ipcRenderer.invoke('listSessions')
+          setSessions(sess)
         }
       } catch (e) {
         setSessions(() => {

@@ -88,7 +88,7 @@ function RecentSessionCard({
               style={{ width: 178 }}
             >
               Last modified{' '}
-              {new Date(sessionStats.mtimeMs).toLocaleDateString(undefined, {
+              {new Date(sessionStats?.mtimeMs).toLocaleDateString(undefined, {
                 dateStyle: 'medium',
               })}
             </Typography>

@@ -209,10 +209,13 @@ export default function ConfigSlot(
       get expr() {
         if (self.isCallback) {
           // compile as jexl function
-          return stringToJexlExpression(
-            String(self.value),
-            getEnv(self).pluginManager?.jexl,
-          )
+          const { pluginManager } = getEnv(self)
+          if (!pluginManager && typeof jest === 'undefined') {
+            console.warn(
+              'no pluginManager detected on config env (if you dynamically instantiate a config, for example in renderProps for your display model, check that you add the env argument)',
+            )
+          }
+          return stringToJexlExpression(String(self.value), pluginManager?.jexl)
         }
         return { evalSync: () => self.value }
       },
@@ -233,22 +236,15 @@ export default function ConfigSlot(
         return json(self.value)
       },
     }))
-    .preProcessSnapshot(
-      val =>
-        typeof val === 'object' && val.name === slotName
-          ? val
-          : {
-              name: slotName,
-              description,
-              type,
-              value: val,
-            },
-      // ({
-      //   name: slotName,
-      //   description,
-      //   type,
-      //   value: val,
-      // }),
+    .preProcessSnapshot(val =>
+      typeof val === 'object' && val.name === slotName
+        ? val
+        : {
+            name: slotName,
+            description,
+            type,
+            value: val,
+          },
     )
     .postProcessSnapshot(snap => {
       if (typeof snap.value === 'object') {

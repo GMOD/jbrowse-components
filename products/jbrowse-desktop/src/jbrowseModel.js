@@ -41,7 +41,7 @@ export default function JBrowseDesktop(
           defaultValue: false,
         },
       }),
-      plugins: types.frozen(),
+      plugins: types.array(types.frozen()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -126,14 +126,12 @@ export default function JBrowseDesktop(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
-
       deleteConnectionConf(configuration) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
         return self.connections.splice(idx, 1)
       },
-
       deleteTrackConf(trackConf) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
@@ -142,6 +140,18 @@ export default function JBrowseDesktop(
         }
 
         return self.tracks.splice(idx, 1)
+      },
+      addPlugin(plugin) {
+        self.plugins = [...self.plugins, plugin]
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
+      },
+      removePlugin(pluginName) {
+        self.plugins = self.plugins.filter(
+          plugin => `${plugin.name}Plugin` !== pluginName,
+        )
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
       },
     }))
     .views(self => ({
