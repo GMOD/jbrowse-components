@@ -71,11 +71,11 @@ export default class TextIndex extends JBrowseCommand {
       // For testing:
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
       // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3';
+      const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
 
       // Check if the file is a URL, then index it.
       if (this.isURL(gff3FileLocation))
-        this.parseGff3Url(gff3FileLocation, false)
+        this.parseGff3Url(gff3FileLocation, false, false)
       else
         this.parseGff3(createReadStream(gff3FileLocation), false)
 
@@ -90,11 +90,11 @@ export default class TextIndex extends JBrowseCommand {
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
-  parseGff3Url(urlIn: string, isGZ: boolean) {
+  parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
-      this._parseGff3UrlNoGz(urlIn)
+      return this._parseGff3UrlNoGz(urlIn)
     else
-      this._parseGff3UrlWithGz(urlIn)
+      return this._parseGff3UrlWithGz(urlIn)
   }
   
   // Grab the remote file from urlIn, then unzip it before
@@ -105,10 +105,7 @@ export default class TextIndex extends JBrowseCommand {
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
-          response.on("finish", () => {
-            this.log("done")
-          })
+          return this.parseGff3(response.pipe(unzip), false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -117,16 +114,14 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
-          response.on("finish", () => {
-            this.log("done")
-          })
+          return this.parseGff3(response.pipe(unzip), false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
           else this.error("Other error: ", e)
         })
     }
+    return -1
   }
   
   // Grab the remote file from urlIn, then pipe it directly to parseGff3().
@@ -136,7 +131,7 @@ export default class TextIndex extends JBrowseCommand {
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (res) => {
-          this.parseGff3(res, false)
+          return this.parseGff3(res, false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -145,13 +140,14 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (res) => {
-          this.parseGff3(res, false)
+          return this.parseGff3(res, false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
           else this.error("Other error: ", e)
         })
     }
+    return -1
   }
 
   // Checks if the passed in string is a valid URL. 
@@ -171,6 +167,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
+  // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
     
     const gffTranform = new Transform({
@@ -185,7 +182,7 @@ export default class TextIndex extends JBrowseCommand {
       
     const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
       
-    this.runIxIxx(gff3Stream, isTest)
+    return this.runIxIxx(gff3Stream, isTest)
   }
 
 
@@ -218,6 +215,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
   // The ixIxx executable is required on the system path for users, however tests use a local copy.
+  // Returns the exit code of child process ixIxx.
   async runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
@@ -250,9 +248,10 @@ export default class TextIndex extends JBrowseCommand {
         this.error(`Error with ixIxx: ${data}`)
     })
 
-    // ixProcess.on('close', (code) => {
-    //     this.log(`child process exited with code ${code}`)
-    // })
+    ixProcess.on('close', (code) => {
+        // this.log(`child process exited with code ${code}`)
+        return code;
+    })
 
     this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
   }

@@ -56,3 +56,16 @@ describe('indexGff3', () => {
     expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })  
 })
+
+describe('indexGff3', () => {
+  const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+  it(`Index remote gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+
+    // Test parsing of stream and running ixIxx.
+    const exitCode: number = textIndex.parseGff3Url(gff3FileLocation, false, true);
+    expect(exitCode).toEqual(0);
+    // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+  })  
+})
