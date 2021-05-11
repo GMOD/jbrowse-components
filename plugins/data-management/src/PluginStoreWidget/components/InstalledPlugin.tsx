@@ -66,7 +66,11 @@ function InstalledPlugin({
     <>
       <ListItem key={plugin.name}>
         {adminMode || isSessionPlugin ? (
-          <IconButton aria-label="remove" onClick={() => setDialogOpen(true)}>
+          <IconButton
+            aria-label="removePlugin"
+            data-testid={`removePlugin-${plugin.name}`}
+            onClick={() => setDialogOpen(true)}
+          >
             <CloseIcon />
           </IconButton>
         ) : (

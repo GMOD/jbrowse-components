@@ -91,4 +91,21 @@ describe('<PluginStoreWidget />', () => {
       },
     ])
   })
+
+  it('plugin store admin - removes a custom plugin correctly', async () => {
+    session = createTestSession({}, true)
+    model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
+    const rootModel = getParent(session)
+    const { jbrowse } = rootModel
+    jbrowse.addPlugin(plugins.plugins[0])
+    const { findByText, getByText, getByTestId } = render(
+      <PluginStoreWidget model={model} />,
+    )
+    await findByText('multiple sequence alignment browser plugin for JBrowse 2')
+    fireEvent.click(getByTestId('removePlugin-SVGPlugin'))
+    fireEvent.click(getByText('Confirm'))
+    await waitFor(() => {
+      expect(window.location.reload).toHaveBeenCalled()
+    })
+  })
 })
