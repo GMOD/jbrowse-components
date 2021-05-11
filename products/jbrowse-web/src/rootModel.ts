@@ -120,6 +120,7 @@ export default function RootModel(
       version: types.maybe(types.string),
       isAssemblyEditing: false,
       isDefaultSessionEditing: false,
+      pluginsUpdated: false,
     })
     .volatile(() => ({
       savedSessionsVolatile: observable.map({}),
@@ -205,6 +206,11 @@ export default function RootModel(
                     },
                   }),
                 )
+                if (self.pluginsUpdated) {
+                  this.setPluginsUpdated(false)
+                  // reload app to get a fresh plugin manager
+                  window.location.reload()
+                }
               }
             },
             { delay: 400 },
@@ -224,12 +230,18 @@ export default function RootModel(
             throw error
           }
         }
+        if (oldSession) {
+          this.setPluginsUpdated(true)
+        }
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
       },
       setDefaultSessionEditing(flag: boolean) {
         self.isDefaultSessionEditing = flag
+      },
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
       },
       setDefaultSession() {
         const { defaultSession } = self.jbrowse
@@ -508,11 +520,11 @@ export default function RootModel(
     }))
 }
 
-export function createTestSession(snapshot = {}) {
+export function createTestSession(snapshot = {}, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = RootModel(pluginManager)
+  const JBrowseRootModel = RootModel(pluginManager, adminMode)
   const root = JBrowseRootModel.create(
     {
       jbrowse: {

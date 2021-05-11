@@ -5,6 +5,7 @@ import {
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
   getParent,
+  getRoot,
   getSnapshot,
   resolveIdentifier,
   types,
@@ -46,7 +47,7 @@ export default function JBrowseWeb(
         theme: { type: 'frozen', defaultValue: {} },
         ...pluginManager.pluginConfigurationSchemas(),
       }),
-      plugins: types.frozen(),
+      plugins: types.array(types.frozen()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -160,6 +161,18 @@ export default function JBrowseWeb(
           throw new Error(`unable to set default session to ${name}`)
         }
         self.defaultSession = newDefault
+      },
+      addPlugin(plugin) {
+        self.plugins = [...self.plugins, plugin]
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
+      },
+      removePlugin(pluginName) {
+        self.plugins = self.plugins.filter(
+          plugin => `${plugin.name}Plugin` !== pluginName,
+        )
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
       },
     }))
     .views(self => ({

@@ -6,6 +6,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
 import {
   cast,
   getParent,
@@ -52,12 +53,13 @@ export default function RootModel(pluginManager: PluginManager) {
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
+      pluginsUpdated: true,
     })
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+      setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
       setDefaultSession() {
@@ -70,6 +72,9 @@ export default function RootModel(pluginManager: PluginManager) {
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
+      },
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -108,6 +113,13 @@ export default function RootModel(pluginManager: PluginManager) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick: (session: any) => {
                 session.setDefaultSession()
+              },
+            },
+            {
+              label: 'Return to splash screen',
+              icon: AppsIcon,
+              onClick: () => {
+                self.setSession(undefined)
               },
             },
           ],

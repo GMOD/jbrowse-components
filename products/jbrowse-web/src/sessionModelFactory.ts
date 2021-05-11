@@ -11,12 +11,14 @@ import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
+  JBrowsePlugin,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
   getParent,
+  getRoot,
   getSnapshot,
   getType,
   IAnyStateTreeNode,
@@ -75,6 +77,7 @@ export default function sessionModelFactory(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
     })
     .volatile((/* self */) => ({
@@ -194,6 +197,14 @@ export default function sessionModelFactory(
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
+      addSessionPlugin(plugin: JBrowsePlugin) {
+        if (self.sessionPlugins.find(p => p.name === plugin.name)) {
+          throw new Error('session plugin cannot be installed twice')
+        }
+        self.sessionPlugins.push(plugin)
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
+      },
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(
           asm => asm.name === assemblyName,
@@ -202,7 +213,16 @@ export default function sessionModelFactory(
           self.sessionAssemblies.splice(index, 1)
         }
       },
-
+      removeSessionPlugin(pluginName: string) {
+        const index = self.sessionPlugins.findIndex(
+          plugin => `${plugin.name}Plugin` === pluginName,
+        )
+        if (index !== -1) {
+          self.sessionPlugins.splice(index, 1)
+        }
+        const rootModel = getRoot(self)
+        rootModel.setPluginsUpdated(true)
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
