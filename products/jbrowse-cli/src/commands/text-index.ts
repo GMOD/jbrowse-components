@@ -74,7 +74,7 @@ export default class TextIndex extends JBrowseCommand {
       // this.parseGff3(gff3In, false)
 
       const remoteGff3File: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      this.ParseGff3Url(remoteGff3File, true)
+      this.parseGff3Url(remoteGff3File, true)
 
       this.log(
         'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
@@ -187,15 +187,15 @@ export default class TextIndex extends JBrowseCommand {
     return url.protocol === "http:" || url.protocol === "https:"
   }
 
-  ParseGff3Url(urlIn: string, isGZ: boolean) {
+  parseGff3Url(urlIn: string, isGZ: boolean) {
     if (!isGZ) {
-      this.ParseGff3UrlNoGz(urlIn)
+      this.parseGff3UrlNoGz(urlIn)
     } else {
-      this.ParseGff3UrlWithGz(urlIn)
+      this.parseGff3UrlWithGz(urlIn)
     }
   }
   
-  ParseGff3UrlWithGz(urlIn: string) {
+  parseGff3UrlWithGz(urlIn: string) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
     if (newUrl.protocol === "https:") {
@@ -225,7 +225,7 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
   
-  ParseGff3UrlNoGz(urlIn: string) {
+  parseGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
   
     if (newUrl.protocol === "https:") {
@@ -248,9 +248,6 @@ export default class TextIndex extends JBrowseCommand {
         })
     }
   }
-
-
-
 
 
 
