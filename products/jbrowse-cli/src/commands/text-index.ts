@@ -92,14 +92,14 @@ export default class TextIndex extends JBrowseCommand {
   // Calls the proper parser depending on if it is gzipped or not.
   parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
-      return this._parseGff3UrlNoGz(urlIn)
+      return this._parseGff3UrlNoGz(urlIn, isTest)
     else
-      return this._parseGff3UrlWithGz(urlIn)
+      return this._parseGff3UrlWithGz(urlIn, isTest)
   }
   
   // Grab the remote file from urlIn, then unzip it before
   // piping into parseGff3 for parsing and indexing.
-  private _parseGff3UrlWithGz(urlIn: string) {
+  private _parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
     if (newUrl.protocol === "https:") {
@@ -122,16 +122,17 @@ export default class TextIndex extends JBrowseCommand {
         })
     }
     return -1
+    //return 0;
   }
   
   // Grab the remote file from urlIn, then pipe it directly to parseGff3().
-  private _parseGff3UrlNoGz(urlIn: string) {
+  private _parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
     const newUrl = new URL(urlIn)
   
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (res) => {
-          return this.parseGff3(res, false)
+          return this.parseGff3(res, isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -140,7 +141,7 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (res) => {
-          return this.parseGff3(res, false)
+          return this.parseGff3(res, isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -148,6 +149,7 @@ export default class TextIndex extends JBrowseCommand {
         })
     }
     return -1
+    //return 0
   }
 
   // Checks if the passed in string is a valid URL. 

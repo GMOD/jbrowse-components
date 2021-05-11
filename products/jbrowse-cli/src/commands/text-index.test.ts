@@ -57,15 +57,62 @@ describe('indexGff3', () => {
   })  
 })
 
+//remote non-GZ file
 describe('indexGff3', () => {
   const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+  let isTest: boolean = true;
   it(`Index remote gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
     // Test parsing of stream and running ixIxx.
-    const exitCode: number = textIndex.parseGff3Url(gff3FileLocation, false, true);
+    const exitCode: number = textIndex.parseGff3Url(gff3FileLocation, false, isTest);
     expect(exitCode).toEqual(0);
     // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })  
 })
+
+// remote GZ file
+describe('indexGff3', () => {
+  const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
+  let isTest = true;
+  it(`Index remote gzipped gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+
+    const exitCode: number = textIndex.parseGff3Url(gff3FileLocation, true, isTest);
+    expect(exitCode).toEqual(0);
+    // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+  })
+})
+
+//local gff3 file
+describe('indexGff3', () => {
+  const gff3FileLocation = './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3';
+  let isTest = true;
+  it(`Index local gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+
+    textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
+    //const exitCode: number = textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
+    //expect(exitCode).toEqual(0);
+    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+  })
+})
+
+/* function needs to be added to test gz local file
+//local GZ
+describe('indexGff3', () => {
+  const gff3FileLocation = './products/jbrowse-cli/test/data/volvox.sort.gff3.gz';
+  let isTest = true;
+  it(`Index local gzipped gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+
+    textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
+    //const exitCode: number = textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
+    //expect(exitCode).toEqual(0);
+    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+  })
+})*/
