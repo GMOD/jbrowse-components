@@ -28,9 +28,10 @@ import CloseIcon from '@material-ui/icons/Close'
 import { DialogContent } from '@material-ui/core'
 
 import pluginJSON from '../../plugins.json'
-const { plugins } = pluginJSON
 
 import pluginStyles from '../css/pluginStyles.module.css'
+
+const { plugins } = pluginJSON
 
 function TopDocumentation() {
   const [aboutSectionOpen, setAboutSectionOpen] = useState(false)
