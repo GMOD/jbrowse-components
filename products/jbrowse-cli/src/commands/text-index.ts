@@ -91,11 +91,11 @@ export default class TextIndex extends JBrowseCommand {
   // Grab the local file from the readStream, check if the
   // file is gzipped or not, then passes it into the correct
   // file handler
-  parseLocalGff3(gff3LocalIn: ReadStream, isGZ: boolean, isTest: boolean){
+  async parseLocalGff3(gff3LocalIn: ReadStream, isGZ: boolean, isTest: boolean){
     if(!isGZ){
-      this.parseGff3(gff3LocalIn, isTest)
+      await this.parseGff3(gff3LocalIn, isTest)
     }else{
-      this._isLocalGzip(gff3LocalIn, isTest)
+      await this._isLocalGzip(gff3LocalIn, isTest)
     }
   }
 
@@ -176,11 +176,11 @@ export default class TextIndex extends JBrowseCommand {
 
   // Handles local gZipped files by unzipping them
   // then passing them into the gff3 parser
-  private _isLocalGzip(file: ReadStream, isTest: boolean){
+  private async _isLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
 
     let gZipRead: ReadStream = file.pipe(unzip)
-    this.parseGff3(gZipRead, isTest)
+    await this.parseGff3(gZipRead, isTest)
 }
 
   // Function that takes in a gff3 readstream and parses through
