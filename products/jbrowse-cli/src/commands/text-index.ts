@@ -87,9 +87,10 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  
+  // Grab the local file from the readStream, check if the
+  // file is gzipped or not, then passes it into the correct
+  // file handler
   parseLocalGff3(gff3LocalIn: ReadStream, isGZ: boolean, isTest: boolean){
-    //const gff3LocalIn : ReadStream = createReadStream(fileName);
     if(!isGZ){
       this.parseGff3(gff3LocalIn, isTest)
     }else{
