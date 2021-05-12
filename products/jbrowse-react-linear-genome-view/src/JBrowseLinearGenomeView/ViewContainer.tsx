@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import {
   IconButton,
   IconButtonProps as IconButtonPropsType,
@@ -13,7 +13,6 @@ import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useDimensions from 'react-use-dimensions'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -58,21 +57,13 @@ const ViewMenu = observer(
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
-    const session = getSession(model)
 
     if (!model.menuItems?.length) {
       return null
     }
 
-    const aboutTrack = session.showAboutConfig
     return (
       <>
-        {aboutTrack ? (
-          <AboutDialog
-            model={aboutTrack}
-            handleClose={() => session.setShowAboutConfig?.(undefined)}
-          />
-        ) : null}
         <IconButton
           {...IconButtonProps}
           aria-label="more"
@@ -106,6 +97,7 @@ const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
     const classes = useStyles()
     const theme = useTheme()
+    const session = getSession(view)
     const [measureRef, { width }] = useDimensions()
 
     const padWidth = theme.spacing(1)
@@ -125,6 +117,16 @@ const ViewContainer = observer(
         className={classes.viewContainer}
         style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
       >
+        {session.DialogComponent ? (
+          <Suspense fallback={<div />}>
+            <session.DialogComponent
+              handleClose={() =>
+                session.setDialogComponent(undefined, undefined)
+              }
+              {...session.DialogProps}
+            />
+          </Suspense>
+        ) : null}
         <div style={{ display: 'flex' }}>
           <ViewMenu
             model={view}

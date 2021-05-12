@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import isObject from 'is-object'
 import {
@@ -9,6 +10,7 @@ import {
   Region,
   NotificationLevel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -31,6 +33,8 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -78,10 +82,7 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      // which config is being shown in the "About track" menu
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
-
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as DialogComponentType | undefined,
       DialogProps: undefined as any,
     }))
     .views(self => ({
@@ -162,13 +163,11 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<unknown>, props?: unknown) {
+      setDialogComponent(comp?: DialogComponentType, props?: unknown) {
         self.DialogComponent = comp
         self.DialogProps = props
       },
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
-      },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -532,7 +531,7 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setShowAboutConfig(config)
+              session.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },
