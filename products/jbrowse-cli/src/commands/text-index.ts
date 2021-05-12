@@ -71,11 +71,12 @@ export default class TextIndex extends JBrowseCommand {
       // For testing:
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
       // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
-      const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+      // const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+      const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz'
 
       // Check if the file is a URL, then index it.
       if (this.isURL(gff3FileLocation))
-        this.parseGff3Url(gff3FileLocation, false, false)
+        this.parseGff3Url(gff3FileLocation, true, true)
       else
         this.parseGff3(createReadStream(gff3FileLocation), false)
 
@@ -92,9 +93,9 @@ export default class TextIndex extends JBrowseCommand {
   // Calls the proper parser depending on if it is gzipped or not.
   parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
-      return this._parseGff3UrlNoGz(urlIn, isTest)
+      this._parseGff3UrlNoGz(urlIn, isTest)
     else
-      return this._parseGff3UrlWithGz(urlIn, isTest)
+      this._parseGff3UrlWithGz(urlIn, isTest)
   }
   
   // Grab the remote file from urlIn, then unzip it before
@@ -105,7 +106,7 @@ export default class TextIndex extends JBrowseCommand {
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (response) => {
-          return this.parseGff3(response.pipe(unzip), false)
+          this.parseGff3(response.pipe(unzip), false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -114,7 +115,7 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (response) => {
-          return this.parseGff3(response.pipe(unzip), false)
+          this.parseGff3(response.pipe(unzip), false)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -132,7 +133,7 @@ export default class TextIndex extends JBrowseCommand {
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (res) => {
-          return this.parseGff3(res, isTest)
+          this.parseGff3(res, isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -141,7 +142,7 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (res) => {
-          return this.parseGff3(res, isTest)
+          this.parseGff3(res, isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -171,7 +172,7 @@ export default class TextIndex extends JBrowseCommand {
   // it and retrieves the needed attributes and information.
   // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
-    
+    debugger;
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
@@ -184,7 +185,7 @@ export default class TextIndex extends JBrowseCommand {
       
     const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
       
-    return this.runIxIxx(gff3Stream, isTest)
+    this.runIxIxx(gff3Stream, isTest)
   }
 
 
