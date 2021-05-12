@@ -77,7 +77,7 @@ export default class TextIndex extends JBrowseCommand {
 
       // Check if the file is a URL, then index it.
       if (this.isURL(gff3FileLocation))
-        this.parseGff3Url(gff3FileLocation, true, true)
+        this.parseGff3Url(gff3FileLocation, true, false)
       else
         this.parseGff3(createReadStream(gff3FileLocation), false)
 
@@ -101,62 +101,73 @@ export default class TextIndex extends JBrowseCommand {
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
-  parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
-    debugger;
+  async parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
-      this._parseGff3UrlNoGz(urlIn, isTest)
+      await this._parseGff3UrlNoGz(urlIn, isTest)
     else
-      this._parseGff3UrlWithGz(urlIn, isTest)
+      await this._parseGff3UrlWithGz(urlIn, isTest)
   }
   
   // Grab the remote file from urlIn, then unzip it before
   // piping into parseGff3 for parsing and indexing.
-  private _parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
+  private async _parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
     if (newUrl.protocol === "https:") {
-      httpsFR
-        .get(urlIn, (response) => {
+      new Promise((resolve, reject) => {         
+        httpsFR
+        .get(urlIn, async (response) => {
           this.parseGff3(response.pipe(unzip), isTest)
+          resolve("sucess")
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
           else this.error("Other error: ", e)
         })
+      })
     } else {
-      httpFR
-        .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), isTest)
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
+      new Promise((resolve, reject) => {
+        httpFR
+          .get(urlIn, (response) => {
+            this.parseGff3(response.pipe(unzip), isTest)
+            resolve("sucess")
+          })
+          .on("error", (e: NodeJS.ErrnoException) => {
+            if (e.code === "ENOTFOUND") this.error("Bad file url")
+            else this.error("Other error: ", e)
+          })
+      }) 
     }
   }
   
   // Grab the remote file from urlIn, then pipe it directly to parseGff3().
-  private _parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
+  private async _parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
     const newUrl = new URL(urlIn)
   
     if (newUrl.protocol === "https:") {
-      httpsFR
-        .get(urlIn, (res) => {
-          this.parseGff3(res, isTest)
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
+      new Promise((resolve, reject) => {
+        httpsFR
+          .get(urlIn, async (res) => {
+            await this.parseGff3(res, isTest)
+            resolve("success")
+          })
+          .on("error", (e: NodeJS.ErrnoException) => {
+            if (e.code === "ENOTFOUND") this.error("Bad file url")
+            else this.error("Other error: ", e)
+          })
+      })
     } else {
-      httpFR
-        .get(urlIn, (res) => {
-          this.parseGff3(res, isTest)
-        })
-        .on("error", (e: NodeJS.ErrnoException) => {
-          if (e.code === "ENOTFOUND") this.error("Bad file url")
-          else this.error("Other error: ", e)
-        })
+      new Promise((resolve, reject) => {
+        httpFR
+          .get(urlIn, async (res) => {
+            await this.parseGff3(res, isTest)
+            resolve("success")
+          })
+          .on("error", (e: NodeJS.ErrnoException) => {
+            if (e.code === "ENOTFOUND") this.error("Bad file url")
+            else this.error("Other error: ", e)
+          })
+      })
     }
   }
 
@@ -187,7 +198,6 @@ export default class TextIndex extends JBrowseCommand {
   // it and retrieves the needed attributes and information.
   // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
-    debugger;
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
@@ -201,8 +211,6 @@ export default class TextIndex extends JBrowseCommand {
     const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
       
     await this.runIxIxx(gff3Stream, isTest)
-    debugger;
-    this.log("hey")
   }
 
 
