@@ -30,7 +30,8 @@ import CloseIcon from '@material-ui/icons/Close'
 import { DialogContent } from '@material-ui/core'
 
 // eslint-disable-next-line import/no-unresolved
-import { plugins } from '../../plugins.json'
+import pluginJSON from '../../plugins.json'
+const { plugins } = pluginJSON
 
 import pluginStyles from '../css/pluginStyles.module.css'
 

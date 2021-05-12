@@ -1,9 +1,9 @@
-import { customFields } from '../../docusaurus.config.json'
+import config from '../../docusaurus.config.json'
 
 export const Link = ({ extra, children }) => {
   return (
     <a
-      href={`https://jbrowse.org/code/jb2/${customFields.currentVersion}/${extra}`}
+      href={`https://jbrowse.org/code/jb2/${config.customFields.currentVersion}/${extra}`}
     >
       {children}
     </a>
