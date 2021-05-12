@@ -248,26 +248,20 @@ ipcMain.handle('listSessions', async () => {
     const data = await Promise.all(sessionFilesData)
     const sessions = {}
     sessionFiles.forEach((sessionFile, idx) => {
-      if (path.extname(sessionFile) === '.thumbnail') {
-        const sessionName = decodeURIComponent(
-          path.basename(sessionFile, '.thumbnail'),
-        )
+      const ext = path.extname(sessionFile)
+      const basename = path.basename(sessionFile, ext)
+      if (ext === '.thumbnail') {
+        const sessionName = decodeURIComponent(basename)
         if (!sessions[sessionName]) {
           sessions[sessionName] = {}
         }
         sessions[sessionName].screenshot = data[idx]
-      } else if (path.extname(sessionFile) === '.json') {
-        const sessionName = decodeURIComponent(
-          path.basename(sessionFile, '.json'),
-        )
+      } else if (ext === '.json') {
+        const sessionName = decodeURIComponent(basename)
         if (!sessions[sessionName]) {
           sessions[sessionName] = {}
-        } else if (path.extname(sessionFile) === '.json') {
-          if (!sessions[sessionName]) {
-            sessions[sessionName] = {}
-          }
-          sessions[sessionName].stats = data[idx]
         }
+        sessions[sessionName].stats = data[idx]
       }
     })
     return sessions
