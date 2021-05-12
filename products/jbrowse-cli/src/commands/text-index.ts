@@ -92,6 +92,7 @@ export default class TextIndex extends JBrowseCommand {
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
+    debugger;
     if (!isGZ)
       this._parseGff3UrlNoGz(urlIn, isTest)
     else
@@ -106,7 +107,7 @@ export default class TextIndex extends JBrowseCommand {
     if (newUrl.protocol === "https:") {
       httpsFR
         .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
+          this.parseGff3(response.pipe(unzip), isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
@@ -115,15 +116,13 @@ export default class TextIndex extends JBrowseCommand {
     } else {
       httpFR
         .get(urlIn, (response) => {
-          this.parseGff3(response.pipe(unzip), false)
+          this.parseGff3(response.pipe(unzip), isTest)
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
           else this.error("Other error: ", e)
         })
     }
-    return -1
-    //return 0;
   }
   
   // Grab the remote file from urlIn, then pipe it directly to parseGff3().
@@ -149,8 +148,6 @@ export default class TextIndex extends JBrowseCommand {
           else this.error("Other error: ", e)
         })
     }
-    return -1
-    //return 0
   }
 
   // Checks if the passed in string is a valid URL. 
@@ -172,7 +169,6 @@ export default class TextIndex extends JBrowseCommand {
   // it and retrieves the needed attributes and information.
   // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
-    debugger;
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
@@ -226,6 +222,8 @@ export default class TextIndex extends JBrowseCommand {
     // readStream.on('error', function(err) {
     //     this.log(err.stack)
     //  })
+    
+    // debugger;
 
     let ixProcess: ChildProcessWithoutNullStreams
     if (isTest)
