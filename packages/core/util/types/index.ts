@@ -58,7 +58,9 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.LazyExoticComponent<React.FC<any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | React.FC<any>
 
 /** minimum interface that all session state models must implement */
@@ -172,7 +174,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-export interface AbstractTrackModel {}
+type AbstractTrackModel = {}
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&
