@@ -6,6 +6,7 @@ import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from "zlib"
+import { resolve } from 'path'
 
 type RecordData = {
   attributes: any;
@@ -169,6 +170,7 @@ export default class TextIndex extends JBrowseCommand {
   // it and retrieves the needed attributes and information.
   // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
+    debugger;
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
@@ -181,7 +183,9 @@ export default class TextIndex extends JBrowseCommand {
       
     const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
       
-    this.runIxIxx(gff3Stream, isTest)
+    await this.runIxIxx(gff3Stream, isTest)
+    debugger;
+    this.log("hey")
   }
 
 
@@ -249,9 +253,15 @@ export default class TextIndex extends JBrowseCommand {
         this.error(`Error with ixIxx: ${data}`)
     })
 
-    ixProcess.on('close', (code) => {
+    await new Promise(resolve => {
+      setTimeout(() => {
+        resolve('foo')
+      }, 5000);
+
+      ixProcess.on('close', (code) => {
         // this.log(`child process exited with code ${code}`)
         return code;
+      })
     })
 
     this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)

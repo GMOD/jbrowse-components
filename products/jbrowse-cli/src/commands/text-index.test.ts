@@ -4,7 +4,7 @@
 
 import { setup } from '../testUtil'
 import TextIndex from './text-index'
-import { createReadStream } from 'fs'
+import { createReadStream, readFileSync } from 'fs'
 
 // Test throwing an error if --tracks and no track ids provided
 describe('textIndexCommandErrors', () => {
@@ -51,8 +51,12 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
+    // debugger;
     // Test parsing of stream and running ixIxx.
-    textIndex.parseGff3(gff3In, true)
+    await textIndex.parseGff3(gff3In, true)
+    debugger;
+    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    expect(data).toMatchSnapshot()
     expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })  
 })
@@ -73,18 +77,18 @@ describe('indexGff3', () => {
 // })
 
 // remote GZ file
-describe('indexGff3', () => {
-  const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
-  let isTest = true;
-  it(`Index remote gzipped gff3 file into out.ix and out.ixx`, async () => {
-    let textIndex = new TextIndex([], null)
-    // textIndex.log = jest.fn()
+// describe('indexGff3', () => {
+//   const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
+//   let isTest = true;
+//   it(`Index remote gzipped gff3 file into out.ix and out.ixx`, async () => {
+//     let textIndex = new TextIndex([], null)
+//     // textIndex.log = jest.fn()
 
-    textIndex.parseGff3Url(gff3FileLocation, true, isTest);
-    // expect(exitCode).toEqual(0);
-    // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
-  })
-})
+//     textIndex.parseGff3Url(gff3FileLocation, true, isTest);
+//     // expect(exitCode).toEqual(0);
+//     // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+//   })
+// })
 
 //local gff3 file
 // describe('indexGff3', () => {
