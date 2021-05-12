@@ -5,6 +5,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
@@ -374,7 +375,7 @@ export default function RootModel(
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
-        self.jbrowse.plugins,
+        readConfObject(self.jbrowse.configuration, 'plugins'),
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },
