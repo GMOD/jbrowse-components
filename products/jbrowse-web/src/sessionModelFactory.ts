@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import isObject from 'is-object'
 import {
@@ -12,6 +13,7 @@ import {
   AbstractSessionModel,
   TrackViewModel,
   JBrowsePlugin,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -38,6 +40,8 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -94,9 +98,7 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
-
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as DialogComponentType | undefined,
       DialogProps: undefined as any,
     }))
     .views(self => ({
@@ -184,16 +186,14 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<any>, props?: any) {
+      setDialogComponent(comp?: DialogComponentType, props?: any) {
         self.DialogComponent = comp
         self.DialogProps = props
       },
       setName(str: string) {
         self.name = str
       },
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
-      },
+
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
@@ -633,7 +633,7 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setShowAboutConfig(config)
+              session.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },

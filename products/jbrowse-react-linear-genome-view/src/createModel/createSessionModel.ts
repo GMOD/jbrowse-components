@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -24,6 +26,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -57,10 +61,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       task: undefined,
 
-      // which config is being shown in the "About track" menu
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
-
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as DialogComponentType | undefined,
       DialogProps: undefined as any,
     }))
     .views(self => ({
@@ -130,12 +131,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<any>, props?: any) {
+      setDialogComponent(comp?: DialogComponentType, props?: any) {
         self.DialogComponent = comp
         self.DialogProps = props
-      },
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
       },
       makeConnection(
         configuration: AnyConfigurationModel,
@@ -303,7 +301,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.setShowAboutConfig(config)
+              self.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },
