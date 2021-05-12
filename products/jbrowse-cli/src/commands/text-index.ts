@@ -271,17 +271,15 @@ export default class TextIndex extends JBrowseCommand {
     })
 
     await new Promise(resolve => {
-      setTimeout(() => {
-        resolve('foo')
-      }, 5000);
-
       ixProcess.on('close', (code) => {
+        resolve('Success!')
         // this.log(`child process exited with code ${code}`)
+        this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
         return code;
       })
     })
 
-    this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
+    return -1;
   }
 
 
