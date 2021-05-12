@@ -76,6 +76,7 @@ describe('indexGff3', () => {
 //   })  
 // })
 
+
 // remote GZ file
 // describe('indexGff3', () => {
 //   const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
@@ -98,14 +99,14 @@ describe('indexGff3', () => {
 //     let textIndex = new TextIndex([], null)
 //     // textIndex.log = jest.fn()
 
-//     textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
+//     textIndex.parseLocalGff3(createReadStream(gff3FileLocation), false,  isTest);
 //     //expect(exitCode).toEqual(0);
 //     // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
 //   })
 // })
 
-/* function needs to be added to test gz local file
-//local GZ
+
+// local GZ
 describe('indexGff3', () => {
   const gff3FileLocation = './products/jbrowse-cli/test/data/volvox.sort.gff3.gz';
   let isTest = true;
@@ -113,9 +114,7 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
-    //const exitCode: number = textIndex.parseGff3(createReadStream(gff3FileLocation), isTest);
-    //expect(exitCode).toEqual(0);
+    textIndex.parseLocalGff3(createReadStream(gff3FileLocation), true,  isTest);
     expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })
-}) */
+}) 
