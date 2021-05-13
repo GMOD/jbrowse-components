@@ -43,24 +43,6 @@ describe('indexGff3', () => {
     .it('fails if no track ids are provided to the command with --tracks flag.')
   })
 
-
-describe('indexGff3', () => {
-  const gff3FileName2: string = "./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3"
-  const gff3In = createReadStream(gff3FileName2)
-  it(`Index ./test/data into out.ix and out.ixx`, async () => {
-    let textIndex = new TextIndex([], null)
-    textIndex.log = jest.fn()
-
-    // debugger;
-    // Test parsing of stream and running ixIxx.
-    await textIndex.parseGff3(gff3In, true)
-
-    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
-    expect(data).toMatchSnapshot()
-    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
-  })  
-})
-
 // local GZ
 describe('indexGff3', () => {
   const gff3FileLocation = './products/jbrowse-cli/test/data/volvox.sort.gff3.gz';
@@ -70,54 +52,65 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), true,  isTest);
-
     const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
     expect(data).toMatchSnapshot()
-    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })
 }) 
 
-// remote non-GZ file
+// local nonGZ gff3 file
 describe('indexGff3', () => {
-  const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-  let isTest: boolean = true;
-  it(`Index remote gff3 file into out.ix and out.ixx`, async () => {
+  const gff3FileLocation = './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3';
+  let isTest = true;
+  it(`Index non-GZ local gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    // Test parsing of stream and running ixIxx.
+    await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), false,  isTest);
+    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    expect(data).toMatchSnapshot()
+  })
+})
+
+// remote https non-GZ file
+describe('indexGff3', () => {
+  const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
+  let isTest: boolean = true;
+  it(`Index non-GZ remote https gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
+
     await textIndex.parseGff3Url(gff3FileLocation, false, isTest);
     const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
     expect(data).toMatchSnapshot()
-    // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })  
 })
 
-
-// remote GZ file
+// remote https GZ file
 describe('indexGff3', () => {
   const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
   let isTest = true;
-  it(`Index remote gzipped gff3 file into out.ix and out.ixx`, async () => {
+  it(`Index remote https gzipped gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
     const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
     expect(data).toMatchSnapshot()
-    // expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
   })
 })
 
-// local gff3 file
+// remote GZ http file
 describe('indexGff3', () => {
-  const gff3FileLocation = './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3';
+  const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz';
   let isTest = true;
-  it(`Index local gff3 file into out.ix and out.ixx`, async () => {
+  it(`Index remote http gzipped gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), false,  isTest);
-    expect(textIndex.log).toHaveBeenCalledWith(`Indexing done! Check out.ix and out.ixx files for output.`)
+    await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
+    const data = readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'})
+    expect(data).toMatchSnapshot()
   })
 })
+
+// remote nonGZ http file

@@ -38,11 +38,13 @@ export default class TextIndex extends JBrowseCommand {
     }),
   }
 
+  // Called when running the terminal command. Parses the given flags
+  // and tracks associated. Gets their information and sends it to the
+  // appropriate file parser to be indexed
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
 
     this.debug(`Command loaded`)
-
 
     if (runFlags.individual) {
       if (runFlags.tracks) {
@@ -92,11 +94,10 @@ export default class TextIndex extends JBrowseCommand {
   // file is gzipped or not, then passes it into the correct
   // file handler
   async parseLocalGff3(gff3LocalIn: ReadStream, isGZ: boolean, isTest: boolean){
-    if(!isGZ){
+    if(!isGZ)
       await this.parseGff3(gff3LocalIn, isTest)
-    }else{
+    else
       await this._isLocalGzip(gff3LocalIn, isTest)
-    }
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -109,43 +110,53 @@ export default class TextIndex extends JBrowseCommand {
   }
   
   // Grab the remote file from urlIn, then unzip it before
-  // piping into parseGff3 for parsing and indexing.
+  // piping into parseGff3 for parsing and indexing. Awaits 
+  // a promise until the child proccess is complete and
+  // indexing is complete.
   private async _parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
+
     if (newUrl.protocol === "https:") {
-      new Promise((resolve, reject) => {         
+      new Promise((resolve, reject) => {   
+
         httpsFR
         .get(urlIn, async (response) => {
-          this.parseGff3(response.pipe(unzip), isTest)
-          resolve("sucess")
+          await this.parseGff3(response.pipe(unzip), isTest)
+          resolve("success")
         })
         .on("error", (e: NodeJS.ErrnoException) => {
           if (e.code === "ENOTFOUND") this.error("Bad file url")
           else this.error("Other error: ", e)
         })
+
       })
     } else {
       new Promise((resolve, reject) => {
+
         httpFR
-          .get(urlIn, (response) => {
-            this.parseGff3(response.pipe(unzip), isTest)
-            resolve("sucess")
+          .get(urlIn, async (response) => {
+            await this.parseGff3(response.pipe(unzip), isTest)
+            resolve("success")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
             if (e.code === "ENOTFOUND") this.error("Bad file url")
             else this.error("Other error: ", e)
           })
+
       }) 
     }
   }
   
-  // Grab the remote file from urlIn, then pipe it directly to parseGff3().
+  // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
+  // for parsing and indexing. Awaits promise until the child process
+  // is complete and resolves the promise.
   private async _parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
     const newUrl = new URL(urlIn)
   
     if (newUrl.protocol === "https:") {
       new Promise((resolve, reject) => {
+
         httpsFR
           .get(urlIn, async (res) => {
             await this.parseGff3(res, isTest)
@@ -155,9 +166,11 @@ export default class TextIndex extends JBrowseCommand {
             if (e.code === "ENOTFOUND") this.error("Bad file url")
             else this.error("Other error: ", e)
           })
+
       })
     } else {
       new Promise((resolve, reject) => {
+
         httpFR
           .get(urlIn, async (res) => {
             await this.parseGff3(res, isTest)
@@ -167,6 +180,7 @@ export default class TextIndex extends JBrowseCommand {
             if (e.code === "ENOTFOUND") this.error("Bad file url")
             else this.error("Other error: ", e)
           })
+
       })
     }
   }
@@ -186,17 +200,16 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   // Handles local gZipped files by unzipping them
-  // then passing them into the gff3 parser
+  // then passing them into the parseGff3()
   private async _isLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
 
     let gZipRead: ReadStream = file.pipe(unzip)
     await this.parseGff3(gZipRead, isTest)
-}
+  } 
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
-  // Returns the exit code of child process ixIxx.
   async parseGff3(gff3In: ReadStream, isTest: boolean) {
     const gffTranform = new Transform({
       objectMode: true,
@@ -247,14 +260,11 @@ export default class TextIndex extends JBrowseCommand {
   async runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
-
-    // readStream.on('error', function(err) {
-    //     this.log(err.stack)
-    //  })
     
     // debugger;
 
     let ixProcess: ChildProcessWithoutNullStreams
+
     if (isTest)
       // If this is a test, output to test/data/ directory, and use the local version of ixIxx.
       ixProcess = spawn('cat | ./products/jbrowse-cli/test/ixIxx /dev/stdin', ['./products/jbrowse-cli/test/data/out.ix', './products/jbrowse-cli/test/data/out.ixx'], { shell: true })   
@@ -281,7 +291,6 @@ export default class TextIndex extends JBrowseCommand {
     await new Promise(resolve => {
       ixProcess.on('close', (code) => {
         resolve('Success!')
-        // this.log(`child process exited with code ${code}`)
         this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
         return code;
       })
@@ -290,10 +299,8 @@ export default class TextIndex extends JBrowseCommand {
     return -1;
   }
 
-
-
-
-  
+  // Function that takes in an array of tracks and returns an array of
+  // identifiers stating what will be indexed. 
   async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
     const output = runFlags?.target || runFlags?.out || '.'
