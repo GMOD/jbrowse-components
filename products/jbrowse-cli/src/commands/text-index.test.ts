@@ -6,6 +6,7 @@ import { setup } from '../testUtil'
 import TextIndex from './text-index'
 import { createReadStream, readFileSync } from 'fs'
 
+// Base text index command 
 // Test throwing an error if --tracks and no track ids provided
 describe('textIndexCommandErrors', () => {
   setup
@@ -43,7 +44,7 @@ describe('indexGff3', () => {
     .it('fails if no track ids are provided to the command with --tracks flag.')
   })
 
-// local GZ
+// Test for a local Gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = './products/jbrowse-cli/test/data/volvox.sort.gff3.gz';
   let isTest = true;
@@ -52,12 +53,12 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), true,  isTest);
-    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
 }) 
 
-// local nonGZ gff3 file
+// Test for a local non-gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3';
   let isTest = true;
@@ -66,12 +67,12 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), false,  isTest);
-    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
 })
 
-// remote https non-GZ file
+// Test for a remote https non-gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
   let isTest: boolean = true;
@@ -80,12 +81,12 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, false, isTest);
-    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })  
 })
 
-// remote https GZ file
+// Test for a remote https gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
   let isTest = true;
@@ -94,12 +95,12 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
-    const data = readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'})
+    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
 })
 
-// remote GZ http file
+// Test for remote http gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz';
   let isTest = true;
@@ -108,9 +109,11 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
-    const data = readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'})
+    const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
 })
 
-// remote nonGZ http file
+// Test for remote http non-gzipped file
+
+// test goes here but im not having any luck finding a link.
