@@ -75,8 +75,16 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   const [shown, setShown] = useState(false)
   const classes = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    let killed = false
+    const timeout = setTimeout(() => {
+      if (!killed) {
+        setShown(true)
+      }
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      killed = true
+    }
   }, [])
 
   const { status: blockStatus } = model
