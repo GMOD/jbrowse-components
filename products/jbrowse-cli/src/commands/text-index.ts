@@ -75,18 +75,25 @@ export default class TextIndex extends JBrowseCommand {
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
       // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
       // const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-      const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz'
+      // const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz'
 
-      // Check if the file is a URL, then index it.
-      if (this.isURL(gff3FileLocation))
-        this.parseGff3Url(gff3FileLocation, true, false)
-      else
-        this.parseLocalGff3(gff3FileLocation, true, false)
+      // // Check if the file is a URL, then index it.
+      // if (this.isURL(gff3FileLocation))
+      //   this.parseGff3Url(gff3FileLocation, true, false)
+      // else
+      //   this.parseLocalGff3(gff3FileLocation, true, false)
 
 
-      this.log(
-        'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
-      )
+      // this.log(
+      //   'TODO: index all locally configured tracks into an aggregate, equivalent to --tracks (all_track_ids) ',
+      // )
+
+      // repeats_hg19
+      // gff3tabix_genes
+      
+      const trackIds: Array<string> = ['gff3tabix_genes']
+      const iConfig = await this.getIndexingConfigurations(trackIds, null)
+      this.log(JSON.stringify(iConfig, null, " "))
     }
   }
 
@@ -328,6 +335,9 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in an array of tracks and returns an array of
   // identifiers stating what will be indexed. 
+  // Params:
+  //  trackIds: array of string ids for tracks to index
+  //  runFlags: specify if there is a target ouput location for the indexing
   async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
     const output = runFlags?.target || runFlags?.out || '.'
