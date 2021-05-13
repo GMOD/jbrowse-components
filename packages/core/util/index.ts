@@ -897,8 +897,10 @@ export function blobToDataURL(blob: Blob) {
 // get the contents of the canvas
 export const rIC =
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined' && window.requestIdleCallback
-      ? window.requestIdleCallback
+    ? // @ts-ignore
+      typeof window !== 'undefined' && window.requestIdleCallback
+      ? // @ts-ignore
+        window.requestIdleCallback
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
