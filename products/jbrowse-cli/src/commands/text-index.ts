@@ -90,6 +90,29 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
+
+
+
+
+  // Diagram of function call flow:
+  // 
+  //                       -------------------------------------
+  // parseLocalGff3() -- /                                      \
+  //                     \                                       \
+  //                      ---->  isLocalGzip()  ----------------- \
+  //                                                               \
+  //                                                                ------>  parseGff3()  ----->  runIxIxx()  --->  Indexed files created (.ix and .ixx)
+  //                                                               /           ↓    ↑ 
+  //                      ---->  parseGff3UrlNoGz() -----------  /        recurse_features()   
+  //  parseGff3Url() ---/                                      /           
+  //                    \                                    /
+  //                      ---->  parseGff3UrlWithGz() ------
+  //
+  //
+
+
+
+
   // Take in the local file path, check if the
   // it is gzipped or not, then passes it into the correct
   // file handler
@@ -110,6 +133,45 @@ export default class TextIndex extends JBrowseCommand {
       await this.parseGff3UrlWithGz(urlIn, isTest)
   }
   
+  
+  // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
+  // for parsing and indexing. Awaits promise until the child process
+  // is complete and resolves the promise.
+  private async parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
+    const newUrl = new URL(urlIn)
+  
+    if (newUrl.protocol === "https:") {
+      new Promise((resolve, reject) => {
+
+        httpsFR
+          .get(urlIn, async (res) => {
+            await this.parseGff3(res, isTest)
+            resolve("success")
+          })
+          .on("error", (e: NodeJS.ErrnoException) => {
+            if (e.code === "ENOTFOUND") this.error("Bad file url")
+            else this.error("Other error: ", e)
+          })
+
+      })
+    } else {
+      new Promise((resolve, reject) => {
+
+        httpFR
+          .get(urlIn, async (res) => {
+            await this.parseGff3(res, isTest)
+            resolve("success")
+          })
+          .on("error", (e: NodeJS.ErrnoException) => {
+            if (e.code === "ENOTFOUND") this.error("Bad file url")
+            else this.error("Other error: ", e)
+          })
+
+      })
+    }
+  }
+
+
   // Grab the remote file from urlIn, then unzip it before
   // piping into parseGff3 for parsing and indexing. Awaits 
   // a promise until the child proccess is complete and
@@ -148,43 +210,8 @@ export default class TextIndex extends JBrowseCommand {
       }) 
     }
   }
-  
-  // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
-  // for parsing and indexing. Awaits promise until the child process
-  // is complete and resolves the promise.
-  private async parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
-    const newUrl = new URL(urlIn)
-  
-    if (newUrl.protocol === "https:") {
-      new Promise((resolve, reject) => {
 
-        httpsFR
-          .get(urlIn, async (res) => {
-            await this.parseGff3(res, isTest)
-            resolve("success")
-          })
-          .on("error", (e: NodeJS.ErrnoException) => {
-            if (e.code === "ENOTFOUND") this.error("Bad file url")
-            else this.error("Other error: ", e)
-          })
 
-      })
-    } else {
-      new Promise((resolve, reject) => {
-
-        httpFR
-          .get(urlIn, async (res) => {
-            await this.parseGff3(res, isTest)
-            resolve("success")
-          })
-          .on("error", (e: NodeJS.ErrnoException) => {
-            if (e.code === "ENOTFOUND") this.error("Bad file url")
-            else this.error("Other error: ", e)
-          })
-
-      })
-    }
-  }
 
   // Checks if the passed in string is a valid URL. 
   // Returns a boolean.
