@@ -93,15 +93,14 @@ export default class TextIndex extends JBrowseCommand {
 
 
 
-
   // Diagram of function call flow:
   // 
   //                       -------------------------------------
   // parseLocalGff3() -- /                                      \
   //                     \                                       \
-  //                      ---->  isLocalGzip()  ----------------- \
+  //                      ---->  parseLocalGzip()  ----------------- \
   //                                                               \
-  //                                                                ------>  parseGff3()  ----->  runIxIxx()  --->  Indexed files created (.ix and .ixx)
+  //                                                                ------>  indexGff3()  ----->  runIxIxx()  --->  Indexed files created (.ix and .ixx)
   //                                                               /           ↓    ↑ 
   //                      ---->  parseGff3UrlNoGz() -----------  /        recurse_features()   
   //  parseGff3Url() ---/                                      /           
@@ -119,9 +118,9 @@ export default class TextIndex extends JBrowseCommand {
   async parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean){
     let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn);
     if(!isGZ)
-      await this.parseGff3(gff3ReadStream, isTest)
+      await this.indexGff3(gff3ReadStream, isTest)
     else
-      await this.isLocalGzip(gff3ReadStream, isTest)
+      await this.parseLocalGzip(gff3ReadStream, isTest)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -145,7 +144,7 @@ export default class TextIndex extends JBrowseCommand {
 
         httpsFR
           .get(urlIn, async (res) => {
-            await this.parseGff3(res, isTest)
+            await this.indexGff3(res, isTest)
             resolve("success")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
@@ -159,7 +158,7 @@ export default class TextIndex extends JBrowseCommand {
 
         httpFR
           .get(urlIn, async (res) => {
-            await this.parseGff3(res, isTest)
+            await this.indexGff3(res, isTest)
             resolve("success")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
@@ -185,7 +184,7 @@ export default class TextIndex extends JBrowseCommand {
 
         httpsFR
         .get(urlIn, async (response) => {
-          await this.parseGff3(response.pipe(unzip), isTest)
+          await this.indexGff3(response.pipe(unzip), isTest)
           resolve("success")
         })
         .on("error", (e: NodeJS.ErrnoException) => {
@@ -199,7 +198,7 @@ export default class TextIndex extends JBrowseCommand {
 
         httpFR
           .get(urlIn, async (response) => {
-            await this.parseGff3(response.pipe(unzip), isTest)
+            await this.indexGff3(response.pipe(unzip), isTest)
             resolve("success")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
@@ -229,16 +228,16 @@ export default class TextIndex extends JBrowseCommand {
 
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
-  private async isLocalGzip(file: ReadStream, isTest: boolean){
+  private async parseLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
 
     let gZipRead: ReadStream = file.pipe(unzip)
-    await this.parseGff3(gZipRead, isTest)
+    await this.indexGff3(gZipRead, isTest)
   } 
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
-  private async parseGff3(gff3In: ReadStream, isTest: boolean) {
+  private async indexGff3(gff3In: ReadStream, isTest: boolean) {
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
