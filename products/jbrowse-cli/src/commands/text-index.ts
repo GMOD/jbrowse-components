@@ -81,7 +81,7 @@ export default class TextIndex extends JBrowseCommand {
       if (this.isURL(gff3FileLocation))
         this.parseGff3Url(gff3FileLocation, true, false)
       else
-        this.parseGff3(createReadStream(gff3FileLocation), false)
+        this.parseLocalGff3(gff3FileLocation, true, false)
 
 
       this.log(
@@ -90,30 +90,31 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  // Grab the local file from the readStream, check if the
-  // file is gzipped or not, then passes it into the correct
+  // Take in the local file path, check if the
+  // it is gzipped or not, then passes it into the correct
   // file handler
-  async parseLocalGff3(gff3LocalIn: ReadStream, isGZ: boolean, isTest: boolean){
+  async parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean){
+    let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn);
     if(!isGZ)
-      await this.parseGff3(gff3LocalIn, isTest)
+      await this.parseGff3(gff3ReadStream, isTest)
     else
-      await this._isLocalGzip(gff3LocalIn, isTest)
+      await this.isLocalGzip(gff3ReadStream, isTest)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   async parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
-      await this._parseGff3UrlNoGz(urlIn, isTest)
+      await this.parseGff3UrlNoGz(urlIn, isTest)
     else
-      await this._parseGff3UrlWithGz(urlIn, isTest)
+      await this.parseGff3UrlWithGz(urlIn, isTest)
   }
   
   // Grab the remote file from urlIn, then unzip it before
   // piping into parseGff3 for parsing and indexing. Awaits 
   // a promise until the child proccess is complete and
   // indexing is complete.
-  private async _parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
+  private async parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
@@ -151,7 +152,7 @@ export default class TextIndex extends JBrowseCommand {
   // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
   // for parsing and indexing. Awaits promise until the child process
   // is complete and resolves the promise.
-  private async _parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
+  private async parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
     const newUrl = new URL(urlIn)
   
     if (newUrl.protocol === "https:") {
@@ -201,7 +202,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
-  private async _isLocalGzip(file: ReadStream, isTest: boolean){
+  private async isLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
 
     let gZipRead: ReadStream = file.pipe(unzip)
@@ -210,12 +211,12 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
-  async parseGff3(gff3In: ReadStream, isTest: boolean) {
+  private async parseGff3(gff3In: ReadStream, isTest: boolean) {
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
           chunk.forEach((record: RecordData) => {
-              this._recurseFeatures(record, gff3Stream)
+              this.recurseFeatures(record, gff3Stream)
               done()
           })
       }
@@ -230,7 +231,7 @@ export default class TextIndex extends JBrowseCommand {
   // Recursively goes through every record in the gff3 file and gets
   // the desires attributes in the form of a JSON object. It is then pushed
   // and returned to the ixIxx file to run.
-  private _recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
+  private recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
 
     const recordObj = { "ID":record.attributes.ID,
                         "Name":record.attributes.Name,
@@ -249,7 +250,7 @@ export default class TextIndex extends JBrowseCommand {
 
     for(let j = 0; record.length; j++){
         for(let i = 0; i < record[j].child_features.length; i++){
-            this._recurseFeatures(record[j].child_features[i], gff3Stream)
+            this.recurseFeatures(record[j].child_features[i], gff3Stream)
         }
     }
   }

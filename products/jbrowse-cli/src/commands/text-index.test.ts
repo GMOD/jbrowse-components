@@ -52,7 +52,7 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), true,  isTest);
+    await textIndex.parseLocalGff3(gff3FileLocation, true,  isTest);
     const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
@@ -66,7 +66,7 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseLocalGff3(createReadStream(gff3FileLocation), false,  isTest);
+    await textIndex.parseLocalGff3(gff3FileLocation, false,  isTest);
     const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
   })
