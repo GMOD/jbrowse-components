@@ -36,7 +36,6 @@ import factoryReset from './factoryReset'
 
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
 const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
-
 const StartScreen = lazy(() => import('./StartScreen'))
 
 function NoConfigMessage() {
@@ -120,6 +119,7 @@ const SessionLoader = types
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     runtimePlugins: [] as PluginConstructor[],
+    sessionPlugins: [] as PluginConstructor[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -176,6 +176,9 @@ const SessionLoader = types
     setRuntimePlugins(plugins: PluginConstructor[]) {
       self.runtimePlugins = plugins
     },
+    setSessionPlugins(plugins: PluginConstructor[]) {
+      self.sessionPlugins = plugins
+    },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
     },
@@ -200,6 +203,30 @@ const SessionLoader = types
         console.error(e)
         self.setConfigError(e)
       }
+    },
+    async fetchSessionPlugins(sessionSnapShot: {
+      sessionPlugins: PluginDefinition[]
+    }) {
+      try {
+        const pluginLoader = new PluginLoader(sessionSnapShot.sessionPlugins)
+        pluginLoader.installGlobalReExports(window)
+        const sessionPlugins = await pluginLoader.load()
+        self.setSessionPlugins([...sessionPlugins])
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
+      }
+    },
+    async setSessionSnapshot(snap: unknown) {
+      await this.fetchSessionPlugins(
+        snap as {
+          sessionPlugins: PluginDefinition[]
+        },
+      )
+      this.setSessionSnapshotSuccess(snap)
+    },
+    setSessionSnapshotSuccess(snap: unknown) {
+      self.sessionSnapshot = snap
     },
     async fetchConfig() {
       try {
@@ -232,7 +259,7 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          self.setSessionSnapshot(sessionSnap)
+          await this.setSessionSnapshot(sessionSnap)
           return
         }
       }
@@ -250,7 +277,7 @@ const SessionLoader = types
         try {
           const result = await resultP
           // @ts-ignore
-          self.setSessionSnapshot({ ...result, id: shortid() })
+          await self.setSessionSnapshot({ ...result, id: shortid() })
           return
         } catch (e) {
           // the broadcast channels did not find the session in another tab
@@ -278,7 +305,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -286,13 +313,13 @@ const SessionLoader = types
         // @ts-ignore
         fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async afterCreate() {
@@ -407,6 +434,7 @@ const Renderer = observer(
       try {
         const {
           runtimePlugins,
+          sessionPlugins,
           adminKey,
           configSnapshot,
           sessionSnapshot,
@@ -425,6 +453,7 @@ const Renderer = observer(
               } as PluginLoadRecord
             }),
             ...runtimePlugins.map(P => new P()),
+            ...sessionPlugins.map(P => new P()),
           ])
           pluginManager.createPluggableElements()
 
@@ -587,11 +616,11 @@ const Renderer = observer(
       return loader.sessionTriaged.origin === 'session' ? (
         <Suspense fallback={<div />}>
           <SessionWarningDialog
-            onConfirm={() => {
+            onConfirm={async () => {
               const session = JSON.parse(
                 JSON.stringify(loader.sessionTriaged.snap),
               )
-              loader.setSessionSnapshot({ ...session, id: shortid() })
+              await loader.setSessionSnapshot({ ...session, id: shortid() })
               handleClose()
             }}
             onCancel={() => {

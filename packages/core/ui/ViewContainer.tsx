@@ -15,8 +15,6 @@ import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
 
-import AboutDialog from './AboutDialog'
-import { getSession } from '../util'
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -144,7 +142,6 @@ export default withContentRect('bounds')(
       const classes = useStyles()
       const theme = useTheme()
       const padWidth = theme.spacing(1)
-      const session = getSession(view)
 
       let width = 0
       if (contentRect.bounds) {
@@ -163,16 +160,10 @@ export default withContentRect('bounds')(
       // note that this effect will run only once, because of
       // the empty array second param
       useEffect(() => {
-        if (
-          scrollRef &&
-          scrollRef.current &&
-          scrollRef.current.scrollIntoView
-        ) {
+        if (scrollRef?.current?.scrollIntoView) {
           scrollRef.current.scrollIntoView({ block: 'center' })
         }
       }, [])
-
-      const aboutTrack = session.showAboutConfig
 
       return (
         <Paper
@@ -181,12 +172,6 @@ export default withContentRect('bounds')(
           className={classes.viewContainer}
           style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
         >
-          {aboutTrack ? (
-            <AboutDialog
-              model={aboutTrack}
-              handleClose={() => session.setShowAboutConfig?.(undefined)}
-            />
-          ) : null}
           <div ref={scrollRef} style={{ display: 'flex' }}>
             <ViewMenu
               model={view}

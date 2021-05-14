@@ -1,7 +1,7 @@
-import { customFields } from '../../docusaurus.config.json'
+import config from '../../docusaurus.config.json'
 
 export const Link = () => {
-  const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${customFields.currentVersion}`
+  const curr = `https://github.com/GMOD/jbrowse-components/releases/tag/${config.customFields.currentVersion}`
   return (
     <div style={{ margin: 50 }}>
       <a href={curr}>{curr}</a>

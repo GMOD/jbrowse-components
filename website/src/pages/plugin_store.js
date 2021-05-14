@@ -30,9 +30,11 @@ import CloseIcon from '@material-ui/icons/Close'
 import { DialogContent } from '@material-ui/core'
 
 // eslint-disable-next-line import/no-unresolved
-import { plugins } from '../../plugins.json'
+import pluginJSON from '../../plugins.json'
 
 import pluginStyles from '../css/pluginStyles.module.css'
+
+const { plugins } = pluginJSON
 
 function TopDocumentation() {
   const [aboutSectionOpen, setAboutSectionOpen] = useState(false)

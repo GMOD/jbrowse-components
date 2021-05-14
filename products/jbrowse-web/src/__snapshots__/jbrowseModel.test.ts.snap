@@ -16,7 +16,7 @@ Object {
   "defaultSession": Object {
     "name": "New session",
   },
-  "plugins": undefined,
+  "plugins": Array [],
   "tracks": Array [],
 }
 `;
@@ -138,7 +138,7 @@ Object {
       },
     },
   },
-  "plugins": undefined,
+  "plugins": Array [],
   "tracks": Array [
     Object {
       "adapter": Object {
