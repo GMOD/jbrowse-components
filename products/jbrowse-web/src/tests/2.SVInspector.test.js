@@ -56,7 +56,7 @@ test('opens a vcf.gz file in the sv inspector view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  fireEvent.click(await findByTestId('chord-vcf-0'))
+  fireEvent.click(await findByTestId('chord-vcf-0', {}, { timeout: 10000 }))
 
   // confirm breakpoint split view opened
   expect(session.views.length).toBe(3)
