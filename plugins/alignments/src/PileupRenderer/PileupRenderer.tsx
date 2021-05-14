@@ -271,12 +271,7 @@ export default class PileupRenderer extends BoxRendererType {
     const scores = qual.split(' ').map(val => +val)
     const cigarOps = parseCigar(feature.get('CIGAR'))
     const width = 1 / bpPerPx
-    const [leftPx] = bpSpanPx(
-      feature.get('start'),
-      feature.get('end'),
-      region,
-      bpPerPx,
-    )
+    const start = feature.get('start')
 
     for (let i = 0, j = 0, k = 0; k < scores.length; i += 2, k++) {
       const len = +cigarOps[i]
@@ -289,7 +284,13 @@ export default class PileupRenderer extends BoxRendererType {
         for (let m = 0; m < len; m++) {
           const score = scores[k + m]
           ctx.fillStyle = `hsl(${score === 255 ? 150 : score * 1.5},55%,50%)`
-          ctx.fillRect(leftPx + (j + m) * width, topPx, width + 0.5, heightPx)
+          const [leftPx] = bpSpanPx(
+            start + j + m,
+            start + j + m + 1,
+            region,
+            bpPerPx,
+          )
+          ctx.fillRect(leftPx, topPx, width + 0.5, heightPx)
         }
         j += len
       }
@@ -331,11 +332,8 @@ export default class PileupRenderer extends BoxRendererType {
 
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
-    const end = feature.get('end')
     const seq = feature.get('seq')
     const cigarOps = parseCigar(cigar)
-    const width = 1 / bpPerPx
-    const [leftPx, rightPx] = bpSpanPx(start, end, region, bpPerPx)
 
     const modifications = getModificationPositions(mm, seq)
 
@@ -345,14 +343,17 @@ export default class PileupRenderer extends BoxRendererType {
       const col = modificationTagMap[type] || 'black'
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
-        const px = leftPx + readPos * width
-        if (px > leftPx && px < rightPx) {
-          ctx.fillStyle = base
-            .alpha(probabilities[probIndex++])
-            .hsl()
-            .string()
-          ctx.fillRect(px, topPx, width + 0.5, heightPx)
-        }
+        const [leftPx, rightPx] = bpSpanPx(
+          start + readPos,
+          start + readPos + 1,
+          region,
+          bpPerPx,
+        )
+        ctx.fillStyle = base
+          .alpha(probabilities[probIndex++])
+          .hsl()
+          .string()
+        ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
       }
     })
   }
@@ -381,15 +382,14 @@ export default class PileupRenderer extends BoxRendererType {
     const fstart = feature.get('start')
     const fend = feature.get('end')
     const seq = feature.get('seq')
-    const width = 1 / bpPerPx
     const cigarOps = parseCigar(cigar)
-    const [leftPx] = bpSpanPx(region.start, region.end, region, bpPerPx)
+    const { start: rstart, end: rend } = region
 
-    const methBins = new Array(region.end - region.start).fill(0)
+    const methBins = new Array(rend - rstart).fill(0)
     getModificationPositions(mm, seq).forEach(({ type, positions }) => {
       if (type === 'm' && positions) {
         for (const pos of getNextRefPos(cigarOps, positions)) {
-          const epos = pos + fstart - region.start
+          const epos = pos + fstart - rstart
           if (epos >= 0 && epos < methBins.length) {
             methBins[epos] = 1
           }
@@ -398,19 +398,24 @@ export default class PileupRenderer extends BoxRendererType {
     })
 
     for (let j = fstart; j < fend; j++) {
-      const i = j - region.start
+      const i = j - rstart
       if (i >= 0 && i < methBins.length) {
         const l2 = regionSequence[i + 1]
         const l1 = regionSequence[i]
         // color
         if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
-          const px = leftPx + i * width
+          const [leftPx, rightPx] = bpSpanPx(
+            rstart,
+            rstart + i,
+            region,
+            bpPerPx,
+          )
           if (methBins[i]) {
             ctx.fillStyle = 'red'
           } else {
             ctx.fillStyle = 'blue'
           }
-          ctx.fillRect(px, topPx, width + 0.5, heightPx)
+          ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
         }
       }
     }
