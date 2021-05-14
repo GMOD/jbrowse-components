@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import { ObservableMap } from 'mobx'
 import {
   Button,
   Dialog,
@@ -8,6 +9,8 @@ import {
   IconButton,
   FormControlLabel,
   Checkbox,
+  Typography,
+  CircularProgress,
   makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
@@ -22,15 +25,29 @@ const useStyles = makeStyles(theme => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+
+  table: {
+    border: '1px solid #888',
+    margin: theme.spacing(4),
+    '& td': {
+      padding: theme.spacing(1),
+    },
+  },
 }))
 
 function ColorByTagDlg(props: {
-  model: { setColorScheme: Function }
+  model: {
+    setColorScheme: Function
+    modificationTagMap: ObservableMap<string, string>
+    colorBy?: { type: string }
+  }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { model, handleClose, fadeLikelihoodSetting } = props
-  const [fadeLikelihood, setFadeLikelihood] = useState(fadeLikelihoodSetting)
+  const { model, handleClose } = props
+  const { colorBy, modificationTagMap } = model
+
+  const modifications = [...modificationTagMap.entries()]
 
   return (
     <Dialog open onClose={handleClose}>
@@ -46,17 +63,40 @@ function ColorByTagDlg(props: {
       </DialogTitle>
       <DialogContent style={{ overflowX: 'hidden' }}>
         <div className={classes.root}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={!!fadeLikelihood}
-                onChange={() => setFadeLikelihood(val => !val)}
-              />
-            }
-            label="Fade low likelihood calls?"
-          />
-
-          <div>Current modification-type-to-color mapping</div>
+          <Typography>
+            This dialog presents current settings for the color by modifications
+            setting
+          </Typography>
+          <div style={{ margin: 20 }}>
+            {colorBy?.type === 'modifications' ? (
+              <div>
+                {modifications.length ? (
+                  <>
+                    Current modification-type-to-color mapping
+                    <table className={classes.table}>
+                      {modifications.map(([key, value]) => (
+                        <tr key={key}>
+                          <td>{key}</td>
+                          <td>{value}</td>
+                          <td
+                            style={{ width: 14, height: 14, background: value }}
+                          />
+                        </tr>
+                      ))}
+                    </table>
+                  </>
+                ) : (
+                  <div>
+                    <Typography>
+                      Note: color by modifications is already enabled. Loading
+                      current modifications...
+                    </Typography>
+                    <CircularProgress size={15} />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
           <Button
             variant="contained"
             color="primary"
@@ -64,12 +104,18 @@ function ColorByTagDlg(props: {
             onClick={() => {
               model.setColorScheme({
                 type: 'modifications',
-                fadeLikelihood,
               })
               handleClose()
             }}
           >
-            Submit
+            Color by modifications
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
           </Button>
         </div>
       </DialogContent>

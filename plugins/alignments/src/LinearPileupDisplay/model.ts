@@ -81,6 +81,7 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            extra: types.frozen(),
           }),
         ),
         filterBy: types.optional(
