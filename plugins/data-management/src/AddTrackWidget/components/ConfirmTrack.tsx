@@ -22,7 +22,7 @@ function StatusMessage({
   trackAdapter,
   trackType,
 }: {
-  trackData: any
+  trackData: FileLocation
   trackAdapter: any
   trackType: any
 }) {

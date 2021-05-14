@@ -1,7 +1,6 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { objectHash } from './index'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { UriLocation, LocalPathLocation } from './types'
 import { readConfObject } from '../configuration'
 
 /* utility functions for use by track models and so forth */
@@ -66,11 +65,10 @@ export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobId = 0
-let blobMap: { [key: string]: Blob } = {}
+let blobMap: { [key: string]: File } = {}
 
 // get a specific blob
 export function getBlob(id: string) {
-  console.log({ blobMap })
   return blobMap[id]
 }
 
@@ -80,8 +78,7 @@ export function getBlobMap() {
 }
 
 // used in new contexts like webworkers
-export function setBlobMap(map: { [key: string]: Blob }) {
-  console.log('setting')
+export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
@@ -89,8 +86,8 @@ export function guessAdapter(
   fileName: string,
   protocol: 'uri' | 'localPath' | 'blob',
   index?: string,
-  fileObj?: any,
-  indexObj?: any,
+  fileBlob?: File,
+  indexBlob?: File,
 ) {
   // if index paramter is given, this function returns slightly different
   // things
@@ -102,10 +99,13 @@ export function guessAdapter(
       return { localPath: indexOverride || location }
     }
     if (protocol === 'blob') {
-      blobMap[`b${blobId}`] = indexOverride ? indexObj : fileObj
+      // possibly we should be more clear about when this is not undefined, and
+      // also allow mix of blob and url for index and file
+      // @ts-ignore
+      blobMap[`b${blobId}`] = indexOverride ? indexBlob : fileBlob
       return indexOverride
-        ? { name: indexObj.name, blobId: `b${blobId++}` }
-        : { name: fileObj.name, blobId: `b${blobId++}` }
+        ? { name: indexBlob?.name, blobId: `b${blobId++}` }
+        : { name: fileBlob?.name, blobId: `b${blobId++}` }
     }
     throw new Error(`invalid protocol ${protocol}`)
   }

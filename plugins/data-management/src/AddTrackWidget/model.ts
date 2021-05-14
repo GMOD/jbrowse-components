@@ -2,6 +2,7 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { FileLocation } from '@jbrowse/core/util/types'
 import {
   guessAdapter,
   guessTrackType,
@@ -28,8 +29,8 @@ export default function f(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       trackSource: 'fromFile',
-      trackData: { uri: '' } as any,
-      indexTrackData: { uri: '' } as any,
+      trackData: { uri: '' } as FileLocation,
+      indexTrackData: { uri: '' } as FileLocation,
 
       // alts
       altAssemblyName: '',
@@ -45,10 +46,10 @@ export default function f(pluginManager: PluginManager) {
       setTrackSource(str: string) {
         self.trackSource = str
       },
-      setTrackData(obj: any) {
+      setTrackData(obj: FileLocation) {
         self.trackData = obj
       },
-      setIndexTrackData(obj: any) {
+      setIndexTrackData(obj: FileLocation) {
         self.indexTrackData = obj
       },
       setAssembly(str: string) {
@@ -76,11 +77,11 @@ export default function f(pluginManager: PluginManager) {
       get trackAdapter() {
         const { trackData, indexTrackData } = self
 
-        if (trackData.uri) {
+        if ('uri' in trackData) {
           return guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
         }
 
-        if (trackData.localPath) {
+        if ('localPath' in trackData) {
           return guessAdapter(trackData.localPath, 'localPath')
         }
 
