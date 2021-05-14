@@ -41,6 +41,7 @@ const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -64,6 +65,7 @@ const stateModelFactory = (
         showSoftClipping: false,
         featureHeight: types.maybe(types.number),
         noSpacing: types.maybe(types.boolean),
+        fadeLikelihood: types.maybe(types.boolean),
         trackMaxHeight: types.maybe(types.number),
         mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
@@ -96,6 +98,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, string>({}),
       ready: false,
       currBpPerPx: 0,
     }))
@@ -146,6 +149,46 @@ const stateModelFactory = (
         )
         return values as string[]
       },
+      async getUniqueModificationValues(
+        colorScheme: { type: string; tag?: string },
+        blocks: BlockSet,
+        opts?: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const values = await rpcManager.call(
+          getRpcSessionId(self),
+          'PileupGetVisibleModifications',
+          {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            regions: blocks.contentBlocks,
+            ...opts,
+          },
+        )
+        console.log({ values })
+        return values as string[]
+      },
+
+      updateModificationColorMap(uniqueModifications: string[]) {
+        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
+
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            const totalKeys = [...self.modificationTagMap.keys()].length
+            const newColor = colorPalette[totalKeys]
+            self.modificationTagMap.set(value, newColor)
+          }
+        })
+      },
+
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
@@ -189,6 +232,16 @@ const stateModelFactory = (
                     view.staticBlocks,
                   )
                   self.updateColorTagMap(uniqueTagSet)
+                }
+
+                console.log({ colorBy })
+                if (colorBy?.type === 'modifications') {
+                  const uniqueModificationsSet = await self.getUniqueModificationValues(
+                    colorBy,
+                    view.staticBlocks,
+                  )
+                  console.log({ uniqueModificationsSet })
+                  self.updateModificationColorMap(uniqueModificationsSet)
                 }
 
                 if (sortedBy) {
@@ -504,7 +557,9 @@ const stateModelFactory = (
                 {
                   label: 'Base modifications (MM+MP/ML)',
                   onClick: () => {
-                    self.setColorScheme({ type: 'modifications' })
+                    getSession(self).setDialogComponent(ModificationsDlg, {
+                      model: self,
+                    })
                   },
                 },
                 {
