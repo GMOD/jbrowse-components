@@ -6,15 +6,20 @@ import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from "zlib"
-import { resolve } from 'path'
 
-type RecordData = {
-  attributes: any;
-  start: Number;
-  end: Number;
-  seq_id: String;
-  length:Number;
-};
+
+type trackConfig = {
+  'trackId': string,
+  'indexingConfiguration': {
+    'indexingAdapter': string,
+    'gzipped': boolean,
+    'gffLocation': {
+      'uri': string,
+    }
+  },
+  'attributes': Array<String>
+}
+
 
 export default class TextIndex extends JBrowseCommand {
   // @ts-ignore
@@ -92,8 +97,10 @@ export default class TextIndex extends JBrowseCommand {
       // gff3tabix_genes
       
       const trackIds: Array<string> = ['gff3tabix_genes']
-      const iConfig = await this.getIndexingConfigurations(trackIds, null)
-      this.log(JSON.stringify(iConfig, null, " "))
+      const indexConfig = await this.getIndexingConfigurations(trackIds, null)
+      // TODO: Fix this
+      // const uri = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      // this.parseLocalGff3(uri, true, true)
     }
   }
 
@@ -105,7 +112,7 @@ export default class TextIndex extends JBrowseCommand {
   //                       -------------------------------------
   // parseLocalGff3() -- /                                      \
   //                     \                                       \
-  //                      ---->  parseLocalGzip()  ----------------- \
+  //                      ---->  parseLocalGzip()  -------------- \
   //                                                               \
   //                                                                ------>  indexGff3()  ----->  runIxIxx()  --->  Indexed files created (.ix and .ixx)
   //                                                               /           ↓    ↑ 
@@ -347,6 +354,7 @@ export default class TextIndex extends JBrowseCommand {
     if (!config.tracks) {
       this.error('Error, no tracks found in config.json. Please add a track before indexing.')
     }
+    debugger;
     const configurations = trackIds.map(trackId => {
       const track = config.tracks.find(
         (track) => trackId === track.trackId,

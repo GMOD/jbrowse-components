@@ -58,7 +58,7 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "volvox.sort.gff3.gz"
+          "uri": "test/data/volvox.sort.gff3.gz"
         },
         "index": {
           "location": {

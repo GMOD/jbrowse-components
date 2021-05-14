@@ -117,3 +117,15 @@ describe('indexGff3', () => {
 // Test for remote http non-gzipped file
 
 // test goes here but im not having any luck finding a link.
+describe('getIndexingConfigurations', () => {
+  it(`Get the configuration for ['gff3tabix_genes']`, async () => {
+    let textIndex = new TextIndex([], null)
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const uri = indexConfig[0].indexingConfiguration.gffLocation.uri;
+    expect(indexConfig).toMatchSnapshot()
+    expect(uri).toMatchSnapshot()
+  })
+})
+
+// TODO: Write a test to test indexing from the configuration
