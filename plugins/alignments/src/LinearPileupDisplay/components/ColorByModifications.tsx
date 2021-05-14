@@ -74,15 +74,21 @@ function ColorByTagDlg(props: {
                   <>
                     Current modification-type-to-color mapping
                     <table className={classes.table}>
-                      {modifications.map(([key, value]) => (
-                        <tr key={key}>
-                          <td>{key}</td>
-                          <td>{value}</td>
-                          <td
-                            style={{ width: 14, height: 14, background: value }}
-                          />
-                        </tr>
-                      ))}
+                      <tbody>
+                        {modifications.map(([key, value]) => (
+                          <tr key={key}>
+                            <td>{key}</td>
+                            <td>{value}</td>
+                            <td
+                              style={{
+                                width: 14,
+                                height: 14,
+                                background: value,
+                              }}
+                            />
+                          </tr>
+                        ))}
+                      </tbody>
                     </table>
                   </>
                 ) : (

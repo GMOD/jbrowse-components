@@ -173,7 +173,6 @@ const stateModelFactory = (
             ...opts,
           },
         )
-        console.log({ values })
         return values as string[]
       },
 
@@ -235,13 +234,11 @@ const stateModelFactory = (
                   self.updateColorTagMap(uniqueTagSet)
                 }
 
-                console.log({ colorBy })
                 if (colorBy?.type === 'modifications') {
                   const uniqueModificationsSet = await self.getUniqueModificationValues(
                     colorBy,
                     view.staticBlocks,
                   )
-                  console.log({ uniqueModificationsSet })
                   self.updateModificationColorMap(uniqueModificationsSet)
                 }
 
@@ -473,6 +470,9 @@ const stateModelFactory = (
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
+            modificationTagMap: JSON.parse(
+              JSON.stringify(self.modificationTagMap),
+            ),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
