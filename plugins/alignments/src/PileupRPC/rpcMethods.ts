@@ -98,10 +98,8 @@ export class PileupGetVisibleModifications extends RpcMethodType {
     const uniqueValues = new Set<string>()
     featuresArray.forEach(feature => {
       const val = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-      const seq = feature.get('seq')
       if (val !== undefined) {
-        const types = getModificationTypes(val, seq)
-        types.forEach(t => uniqueValues.add(t))
+        getModificationTypes(val).forEach(t => uniqueValues.add(t))
       }
     })
     return [...uniqueValues]

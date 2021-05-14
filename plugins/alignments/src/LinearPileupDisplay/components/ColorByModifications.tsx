@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { ObservableMap } from 'mobx'
 import {
@@ -7,8 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  FormControlLabel,
-  Checkbox,
   Typography,
   CircularProgress,
   makeStyles,

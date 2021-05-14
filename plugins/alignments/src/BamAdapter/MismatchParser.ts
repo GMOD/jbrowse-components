@@ -355,12 +355,12 @@ export function getModificationPositions(mm: string, seq: string) {
     })
 }
 
-export function getModificationTypes(mm: string, seq: string) {
+export function getModificationTypes(mm: string) {
   const mods = mm.split(';')
   return mods
     .filter(mod => !!mod)
     .map(mod => {
-      const [basemod, ...rest] = mod.split(',')
+      const [basemod] = mod.split(',')
 
       const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
       if (!matches) {
