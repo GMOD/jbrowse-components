@@ -28,10 +28,9 @@ export default (configSchema: AnyConfigurationSchemaType) =>
        * is rendered in this track
        */
       get renderProps() {
-        const env = getEnv(self)
         const config = self.rendererType.configSchema.create(
           getConf(self, 'renderer') || {},
-          env,
+          getEnv(self),
         )
 
         return {

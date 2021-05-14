@@ -4,7 +4,7 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { types, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
@@ -51,12 +51,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
 
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          showLabels: this.showLabels,
-          displayMode: this.displayMode,
-          maxHeight: this.maxHeight,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            showLabels: this.showLabels,
+            displayMode: this.displayMode,
+            maxHeight: this.maxHeight,
+          },
+          getEnv(self),
+        )
       },
     }))
 

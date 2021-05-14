@@ -50,6 +50,7 @@ export async function getAdapter(
     // callbacks, etc
     const adapterConfig = dataAdapterType.configSchema.create(
       adapterConfigSnapshot,
+      { pluginManager },
     )
 
     const getSubAdapter = getAdapter.bind(null, pluginManager, sessionId)
