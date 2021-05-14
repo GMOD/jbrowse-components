@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { useRef, useEffect } from 'react'
 import { getParent, isStateTreeNode } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'

@@ -187,9 +187,13 @@ export default class SimpleFeature implements Feature {
   public toJSON(): SimpleFeatureSerialized {
     const d = { ...this.data, uniqueId: this.id() } as SimpleFeatureSerialized
     const p = this.parent()
-    if (p) d.parentId = p.id()
+    if (p) {
+      d.parentId = p.id()
+    }
     const c = this.children()
-    if (c) d.subfeatures = c.map(child => child.toJSON())
+    if (c) {
+      d.subfeatures = c.map(child => child.toJSON())
+    }
     return d
   }
 

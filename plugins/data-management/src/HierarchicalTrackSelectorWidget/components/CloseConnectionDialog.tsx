@@ -54,7 +54,9 @@ function CloseConnectionDialog({
           onClick={
             modalInfo
               ? () => {
-                  if (safelyBreakConnection) safelyBreakConnection()
+                  if (safelyBreakConnection) {
+                    safelyBreakConnection()
+                  }
                   setModalInfo()
                 }
               : () => {}

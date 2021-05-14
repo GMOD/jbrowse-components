@@ -1,6 +1,4 @@
-// eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
-// eslint-disable-next-line @typescript-eslint/camelcase
 const url_parser = require('url')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
@@ -28,8 +26,7 @@ function recordStats(event, context, done) {
   const trackTypesRe = /^track-types-/
   for (const key in stats) {
     if (trackTypesRe.test(key)) {
-      // eslint-disable-next-line radix
-      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key])
+      trackTypes[key.replace(trackTypesRe, '')] = parseInt(stats[key], 10)
       delete stats[key]
     }
   }
@@ -41,9 +38,9 @@ function recordStats(event, context, done) {
     const sessionTrackTypesRe = /^sessionTrack-types-/
     for (const key in stats) {
       if (sessionTrackTypesRe.test(key)) {
-        // eslint-disable-next-line radix
         sessionTrackTypes[key.replace(sessionTrackTypesRe, '')] = parseInt(
           stats[key],
+          10,
         )
         delete stats[key]
       }
@@ -65,8 +62,6 @@ function recordStats(event, context, done) {
 
 exports.handler = (event, context, callback) => {
   // console.log('Received event:', JSON.stringify(event, null, 2));
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const done = (err, res) =>
     callback(null, {
       statusCode: err ? '400' : '200',

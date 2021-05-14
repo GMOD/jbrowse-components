@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import shortid from 'shortid'
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import PluginManager from '../PluginManager'

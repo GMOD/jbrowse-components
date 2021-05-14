@@ -20,7 +20,9 @@ export class FloatingLayout {
   totalHeight = 0
 
   constructor({ width }: { width: number }) {
-    if (!width) throw new Error('width required to make a new FloatingLayout')
+    if (!width) {
+      throw new Error('width required to make a new FloatingLayout')
+    }
     this.width = width
   }
 
@@ -45,8 +47,12 @@ export class FloatingLayout {
    * @returns Map of `uniqueId => {x,y,anchorLocation,width,height,data}`
    */
   getLayout(configuration?: AnyConfigurationModel) {
-    if (!this.layoutDirty) return this.layout
-    if (!configuration) throw new Error('configuration object required')
+    if (!this.layoutDirty) {
+      return this.layout
+    }
+    if (!configuration) {
+      throw new Error('configuration object required')
+    }
 
     const minY = readConfObject(configuration, 'minStickLength')
 
@@ -92,7 +98,9 @@ export class FloatingLayout {
         currentItem.uniqueId,
         { ...currentItem, x: start, y: top },
       ]
-      if (bottom > maxBottom) maxBottom = bottom
+      if (bottom > maxBottom) {
+        maxBottom = bottom
+      }
     }
 
     // try to tile them left to right all at the same level

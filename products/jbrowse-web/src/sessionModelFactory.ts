@@ -228,10 +228,14 @@ export default function sessionModelFactory(
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
@@ -272,7 +276,9 @@ export default function sessionModelFactory(
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {
@@ -336,9 +342,13 @@ export default function sessionModelFactory(
       },
 
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
         let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -352,7 +362,9 @@ export default function sessionModelFactory(
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         const length = self.views.push({
           ...initialState,
@@ -476,7 +488,9 @@ export default function sessionModelFactory(
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -704,8 +718,6 @@ export default function sessionModelFactory(
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel

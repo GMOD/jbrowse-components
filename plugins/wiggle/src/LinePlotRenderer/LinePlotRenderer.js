@@ -4,7 +4,7 @@ import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
-export default class extends WiggleBaseRenderer {
+export default class LinePlotRenderer extends WiggleBaseRenderer {
   draw(ctx, props) {
     const {
       features,
@@ -31,8 +31,7 @@ export default class extends WiggleBaseRenderer {
     const toY = rawscore => height - scale(rawscore) + offset
     const colorCallback =
       readConfObject(config, 'color') === '#f0f'
-        ? // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          feature => 'grey'
+        ? () => 'grey'
         : feature => readConfObject(config, 'color', { feature })
 
     ctx.strokeStyle = 'grey'

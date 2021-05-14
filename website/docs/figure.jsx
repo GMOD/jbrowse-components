@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,import/no-unresolved */
+/* eslint-disable react/prop-types */
 import React from 'react'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 

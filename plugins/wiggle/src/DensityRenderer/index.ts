@@ -13,7 +13,7 @@ import WiggleBaseRenderer, {
 
 export { default as ReactComponent } from '../WiggleRendering'
 
-export default class extends WiggleBaseRenderer {
+export default class DensityRenderer extends WiggleBaseRenderer {
   draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,

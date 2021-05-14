@@ -66,7 +66,9 @@ const Translocations = observer(
             const { layout: c1, feature: f1, level: level1 } = chunk[i]
             const level2 = level1 === 0 ? 1 : 0
             const id = f1.id()
-            if (!c1) return null
+            if (!c1) {
+              return null
+            }
 
             const info = f1.get('INFO')
             const chr2 = info.CHR2[0]

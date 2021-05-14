@@ -117,7 +117,9 @@ export function stateModelFactory(configSchema: any) {
           reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
-          if (args === undefined) return
+          if (args === undefined) {
+            return
+          }
           const { data, reactElement, renderingComponent } = args
           self.filled = true
           self.message = undefined

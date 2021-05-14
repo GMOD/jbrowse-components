@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const electron = require('electron')
 const debug = require('electron-debug')
 const isDev = require('electron-is-dev')

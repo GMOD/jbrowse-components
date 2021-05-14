@@ -33,7 +33,9 @@ export class FetchableSmallFasta {
     const data = await this.data
     const entry = data[id]
     const length = end - start + 1
-    if (!entry) throw new Error(`no sequence with id ${id} exists`)
+    if (!entry) {
+      throw new Error(`no sequence with id ${id} exists`)
+    }
     return entry.sequence.substr(start - 1, length)
   }
 

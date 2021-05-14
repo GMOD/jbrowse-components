@@ -140,10 +140,14 @@ export default ({ jbrequire }) => {
           const { cellsWithDerived } = row
           const cell = cellsWithDerived[columnNumber]
 
-          if (!cell || !cell.text) return false
+          if (!cell || !cell.text) {
+            return false
+          }
 
           const parsedCellText = parseFloat(cell.text)
-          if (typeof parsedCellText !== 'number') return false
+          if (typeof parsedCellText !== 'number') {
+            return false
+          }
 
           const predicate = OPERATION_PREDICATES[operation]
           if (!predicate) {
@@ -158,12 +162,16 @@ export default ({ jbrequire }) => {
       setFirstNumber(n) {
         if (Number.isNaN(n) || typeof n !== 'number') {
           self.firstNumber = undefined
-        } else self.firstNumber = n
+        } else {
+          self.firstNumber = n
+        }
       },
       setSecondNumber(n) {
         if (Number.isNaN(n) || typeof n !== 'number') {
           self.secondNumber = undefined
-        } else self.secondNumber = n
+        } else {
+          self.secondNumber = n
+        }
       },
       setOperation(op) {
         self.operation = op

@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types,no-nested-ternary,jsx-a11y/no-static-element-interactions,jsx-a11y/click-events-have-key-events */
+/* eslint-disable react/prop-types */
 import React, {
   Suspense,
   lazy,

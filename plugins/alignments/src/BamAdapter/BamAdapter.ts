@@ -110,8 +110,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private async seqFetch(refName: string, start: number, end: number) {
     const { sequenceAdapter } = await this.configure()
     const refSeqStore = sequenceAdapter
-    if (!refSeqStore) return undefined
-    if (!refName) return undefined
+    if (!refSeqStore) {
+      return undefined
+    }
+    if (!refName) {
+      return undefined
+    }
 
     const features = refSeqStore.getFeatures({
       refName,
@@ -165,7 +169,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       for (const record of records) {
         let ref: string | undefined
         if (!record.get('md')) {
-          // eslint-disable-next-line no-await-in-loop
           ref = await this.seqFetch(
             originalRefName || refName,
             record.get('start'),

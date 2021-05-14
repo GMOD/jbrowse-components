@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase,no-underscore-dangle */
+/* eslint-disable no-underscore-dangle */
 import {
   Feature,
   SimpleFeatureSerialized,
@@ -171,28 +171,38 @@ export default class CramSlightlyLazyFeature implements Feature {
         } else if (code === 'D' || code === 'N') {
           // Deletion or Ref Skip
           last_pos += data
-          if (oplen) cigar += oplen + op
+          if (oplen) {
+            cigar += oplen + op
+          }
           cigar += data + code
           oplen = 0
         } else if (code === 'I' || code === 'S') {
           // Insertion or soft-clip
           seq += data
-          if (oplen) cigar += oplen + op
+          if (oplen) {
+            cigar += oplen + op
+          }
           cigar += data.length + code
           oplen = 0
         } else if (code === 'i') {
           // Single base insertion
           seq += data
-          if (oplen) cigar += oplen + op
+          if (oplen) {
+            cigar += oplen + op
+          }
           cigar += `${1}I`
           oplen = 0
         } else if (code === 'P') {
           // Padding
-          if (oplen) cigar += oplen + op
+          if (oplen) {
+            cigar += oplen + op
+          }
           cigar += `${data}P`
         } else if (code === 'H') {
           // Hard clip
-          if (oplen) cigar += oplen + op
+          if (oplen) {
+            cigar += oplen + op
+          }
           cigar += `${data}H`
           oplen = 0
         } // else q or Q
@@ -239,7 +249,10 @@ export default class CramSlightlyLazyFeature implements Feature {
   get(field: string) {
     const methodName = `_get_${field}`
     // @ts-ignore
-    if (this[methodName]) return this[methodName]()
+    if (this[methodName]) {
+      // @ts-ignore
+      return this[methodName]()
+    }
     return undefined
   }
 
@@ -293,7 +306,9 @@ export default class CramSlightlyLazyFeature implements Feature {
   _get_mismatches(): Mismatch[] {
     const readFeatures = this.get('cram_read_features')
     const qual = this.qualRaw()
-    if (!readFeatures) return []
+    if (!readFeatures) {
+      return []
+    }
     const start = this.get('start')
     const mismatches: Mismatch[] = []
     readFeatures.forEach(

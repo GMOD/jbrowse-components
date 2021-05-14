@@ -1,4 +1,4 @@
-export default ({ jbrequire }) => {
+const ChordRendererF = ({ jbrequire }) => {
   const React = jbrequire('react')
   const { useMemo } = jbrequire('react')
   const { observer, PropTypes: MobxPropTypes } = jbrequire('mobx-react')
@@ -88,10 +88,14 @@ export default ({ jbrequire }) => {
             onClick(feature, startBlock.region, endBlock.region, evt)
           }
           onMouseOver={evt => {
-            if (!selected) evt.target.style.stroke = hoverStrokeColor
+            if (!selected) {
+              evt.target.style.stroke = hoverStrokeColor
+            }
           }}
           onMouseOut={evt => {
-            if (!selected) evt.target.style.stroke = strokeColor
+            if (!selected) {
+              evt.target.style.stroke = strokeColor
+            }
           }}
         />
       )
@@ -182,3 +186,5 @@ export default ({ jbrequire }) => {
 
   return observer(StructuralVariantChords)
 }
+
+export default ChordRendererF

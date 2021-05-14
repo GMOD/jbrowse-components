@@ -6,7 +6,9 @@ function findCircleIntersectionX(
   resultArray: [number, number][],
 ) {
   const d = Math.abs(y - cy)
-  if (d > r) return
+  if (d > r) {
+    return
+  }
   if (d === r) {
     resultArray.push([cx, y])
   }
@@ -23,7 +25,9 @@ function findCircleIntersectionY(
   resultArray: [number, number][],
 ) {
   const d = Math.abs(x - cx)
-  if (d > r) return
+  if (d > r) {
+    return
+  }
   if (d === r) {
     resultArray.push([x, cy])
   }
@@ -35,15 +39,20 @@ function findCircleIntersectionY(
 function cartesianToTheta(x: number, y: number) {
   let theta = (Math.atan(y / x) + 2 * Math.PI) % (2 * Math.PI)
   if (x < 0) {
-    if (y <= 0) theta += Math.PI
-    else theta -= Math.PI
+    if (y <= 0) {
+      theta += Math.PI
+    } else {
+      theta -= Math.PI
+    }
   }
   return theta
 }
 
 export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
-  if (rho === 0) return [0, 0]
+  if (rho === 0) {
+    return [0, 0]
+  }
   const theta = cartesianToTheta(x, y)
   return [rho, theta]
 }
@@ -55,18 +64,26 @@ export function thetaRangesOverlap(
   r2start: number,
   r2length: number,
 ) {
-  if (r1length <= 0 || r2length <= 0) return false
-  if (r1length + 0.0001 >= twoPi || r2length + 0.0001 >= twoPi) return true
+  if (r1length <= 0 || r2length <= 0) {
+    return false
+  }
+  if (r1length + 0.0001 >= twoPi || r2length + 0.0001 >= twoPi) {
+    return true
+  }
 
   // put both range starts between 2π and 4π
   r1start = (((r1start % twoPi) + twoPi) % twoPi) + twoPi
   r2start = (((r2start % twoPi) + twoPi) % twoPi) + twoPi
 
-  if (r1start < r2start + r2length && r1start + r1length > r2start) return true
+  if (r1start < r2start + r2length && r1start + r1length > r2start) {
+    return true
+  }
 
   // move r2 2π to the left and check
   r2start -= twoPi
-  if (r1start < r2start + r2length && r1start + r1length > r2start) return true
+  if (r1start < r2start + r2length && r1start + r1length > r2start) {
+    return true
+  }
 
   // move it 2π to the right and check
   r2start += twoPi + twoPi
@@ -102,7 +119,9 @@ export function viewportVisibleSection(
     for (let i = 0; i < vertices.length; i += 1) {
       const [x, y] = vertices[i]
       const rho = Math.sqrt(x * x + y * y)
-      if (rho > maxRho) maxRho = rho
+      if (rho > maxRho) {
+        maxRho = rho
+      }
     }
     return {
       rho: [0, Math.min(circleRadius, maxRho)],
@@ -222,10 +241,18 @@ export function viewportVisibleSection(
       // ignore vertex if outside the circle
       if (rho <= circleRadius + 0.001) {
         // ignore theta if rho is 0
-        if (theta < thetaMin && rho > 0.0001) thetaMin = theta
-        if (theta > thetaMax && rho > 0.0001) thetaMax = theta
-        if (rho < rhoMin) rhoMin = rho
-        if (rho > rhoMax) rhoMax = rho
+        if (theta < thetaMin && rho > 0.0001) {
+          thetaMin = theta
+        }
+        if (theta > thetaMax && rho > 0.0001) {
+          thetaMax = theta
+        }
+        if (rho < rhoMin) {
+          rhoMin = rho
+        }
+        if (rho > rhoMax) {
+          rhoMax = rho
+        }
       }
     }
   }

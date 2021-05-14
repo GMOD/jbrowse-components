@@ -3,7 +3,9 @@ import { render } from '@testing-library/react'
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
 
-window.requestIdleCallback = (cb: (deadline: IdleDeadline) => void) => {
+window.requestIdleCallback = (
+  cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,
+) => {
   cb({ didTimeout: false, timeRemaining: () => 0 })
   return 0
 }

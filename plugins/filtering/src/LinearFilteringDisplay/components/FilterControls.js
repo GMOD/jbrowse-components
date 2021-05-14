@@ -95,7 +95,9 @@ class FilterControls extends Component {
       () => {
         const newSeenAttributes = {}
         getConf(model, 'filterAttributes').forEach(attrName => {
-          if (!newSeenAttributes[attrName]) newSeenAttributes[attrName] = {}
+          if (!newSeenAttributes[attrName]) {
+            newSeenAttributes[attrName] = {}
+          }
           visibleValues(model, attrName).forEach(value => {
             newSeenAttributes[attrName][value] = true
           })

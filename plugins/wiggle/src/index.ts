@@ -39,7 +39,7 @@ import {
   WiggleGetMultiRegionStats,
 } from './WiggleRPC/rpcMethods'
 
-export default class extends Plugin {
+export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
 
   install(pluginManager: PluginManager) {

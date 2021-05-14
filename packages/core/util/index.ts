@@ -147,9 +147,14 @@ export function findParentThat(
 ) {
   let currentNode: IAnyStateTreeNode | undefined = node
   while (currentNode && isAlive(currentNode)) {
-    if (predicate(currentNode)) return currentNode
-    if (hasParent(currentNode)) currentNode = getParent(currentNode)
-    else break
+    if (predicate(currentNode)) {
+      return currentNode
+    }
+    if (hasParent(currentNode)) {
+      currentNode = getParent(currentNode)
+    } else {
+      break
+    }
   }
   throw new Error('no matching node found')
 }
@@ -463,21 +468,29 @@ export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
     locA.assemblyName || locB.assemblyName
       ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
       : 0
-  if (assemblyComp) return assemblyComp
+  if (assemblyComp) {
+    return assemblyComp
+  }
 
   const refComp =
     locA.refName || locB.refName
       ? (locA.refName || '').localeCompare(locB.refName || '')
       : 0
-  if (refComp) return refComp
+  if (refComp) {
+    return refComp
+  }
 
   if (locA.start !== undefined && locB.start !== undefined) {
     const startComp = locA.start - locB.start
-    if (startComp) return startComp
+    if (startComp) {
+      return startComp
+    }
   }
   if (locA.end !== undefined && locB.end !== undefined) {
     const endComp = locA.end - locB.end
-    if (endComp) return endComp
+    if (endComp) {
+      return endComp
+    }
   }
   return 0
 }
@@ -500,8 +513,12 @@ export function compareLocStrings(
  * @param  max -
  */
 export function clamp(num: number, min: number, max: number): number {
-  if (num < min) return min
-  if (num > max) return max
+  if (num < min) {
+    return min
+  }
+  if (num > max) {
+    return max
+  }
   return num
 }
 
@@ -607,8 +624,11 @@ interface Config {
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
   const merged = merge(A, B)
-  if (B.defaultSession) merged.defaultSession = B.defaultSession
-  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  if (B.defaultSession) {
+    merged.defaultSession = B.defaultSession
+  } else if (A.defaultSession) {
+    merged.defaultSession = A.defaultSession
+  }
   return merged
 }
 
@@ -876,10 +896,11 @@ export function blobToDataURL(blob: Blob) {
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
-  // eslint-disable-next-line no-nested-ternary
   typeof jest === 'undefined'
-    ? typeof window !== 'undefined' && window.requestIdleCallback
-      ? window.requestIdleCallback
+    ? // @ts-ignore
+      typeof window !== 'undefined' && window.requestIdleCallback
+      ? // @ts-ignore
+        window.requestIdleCallback
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
@@ -1014,13 +1035,12 @@ export function hashCode(str: string) {
   let hash = 0
   let i
   let chr
-  if (str.length === 0) return hash
+  if (str.length === 0) {
+    return hash
+  }
   for (i = 0; i < str.length; i++) {
     chr = str.charCodeAt(i)
-    // eslint-disable-next-line no-bitwise
     hash = (hash << 5) - hash + chr
-
-    // eslint-disable-next-line no-bitwise
     hash |= 0 // Convert to 32bit integer
   }
   return hash

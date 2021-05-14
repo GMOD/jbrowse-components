@@ -58,7 +58,9 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
         ) {
           currentRegion.end = feature.get('end')
         } else {
-          if (currentRegion) regions.push(currentRegion)
+          if (currentRegion) {
+            regions.push(currentRegion)
+          }
           currentRegion = {
             refName,
             start: feature.get('start'),
@@ -66,7 +68,9 @@ export default class FromSequenceConfigAdapter extends FromConfigAdapter {
           }
         }
       }
-      if (currentRegion) regions.push(currentRegion)
+      if (currentRegion) {
+        regions.push(currentRegion)
+      }
     }
 
     // sort the regions by refName

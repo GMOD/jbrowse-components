@@ -13,9 +13,14 @@ import configSchema from './configSchema'
 test('adapter can fetch variants from volvox.vcf.gz', async () => {
   function mockFetch(url: string): Promise<Response> {
     let response = {}
-    if (url.includes('chr1')) response = queryResponse
-    if (url.includes('chr80')) response = emptyQueryResponse
-    else if (url.includes('fakeRefNamesQuery')) response = refNamesResponse
+    if (url.includes('chr1')) {
+      response = queryResponse
+    }
+    if (url.includes('chr80')) {
+      response = emptyQueryResponse
+    } else if (url.includes('fakeRefNamesQuery')) {
+      response = refNamesResponse
+    }
 
     return Promise.resolve(new Response(JSON.stringify(response)))
   }

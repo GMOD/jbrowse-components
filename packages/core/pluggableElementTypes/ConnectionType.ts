@@ -1,4 +1,3 @@
-/* eslint-disable react/static-property-placement */
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'

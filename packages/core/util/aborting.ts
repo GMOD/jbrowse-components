@@ -16,14 +16,15 @@ class AbortError extends Error {
  * @returns nothing
  */
 export function checkAbortSignal(signal?: AbortSignal): void {
-  if (!signal) return
+  if (!signal) {
+    return
+  }
 
   if (!(signal instanceof AbortSignal)) {
     throw new TypeError('must pass an AbortSignal')
   }
 
   if (signal.aborted) {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw makeAbortError()
   }
 }
@@ -55,7 +56,9 @@ export function makeAbortError() {
 }
 
 export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
-  if (!signal) return Observable.create()
+  if (!signal) {
+    return Observable.create()
+  }
   return fromEvent(signal, 'abort')
 }
 

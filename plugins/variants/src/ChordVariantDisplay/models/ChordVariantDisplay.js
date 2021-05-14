@@ -3,7 +3,7 @@ import {
   BaseChordDisplayModel,
 } from '@jbrowse/plugin-circular-view'
 
-export default pluginManager => {
+const ChordVariantDisplayF = pluginManager => {
   const { jbrequire } = pluginManager
 
   const { types } = jbrequire('mobx-state-tree')
@@ -59,3 +59,5 @@ export default pluginManager => {
 // render request is for 1.5x the current viewing window
 
 // tracks all have a height
+//
+export default ChordVariantDisplayF

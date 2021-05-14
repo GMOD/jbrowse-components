@@ -84,7 +84,9 @@ export default function JBrowseDesktop(
       },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
-        if (!name) throw new Error('Can\'t add assembly with no "name"')
+        if (!name) {
+          throw new Error('Can\'t add assembly with no "name"')
+        }
         if (self.assemblyNames.includes(name)) {
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
@@ -110,13 +112,17 @@ export default function JBrowseDesktop(
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
-        if (!type) throw new Error(`unknown track type ${type}`)
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
       addConnectionConf(connectionConf) {
         const { type } = connectionConf
-        if (!type) throw new Error(`unknown connection type ${type}`)
+        if (!type) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },

@@ -2,7 +2,6 @@
  * based on https://github.com/linonetwo/rescript-worker-loader, but with
  * custom resolving of babel-plugin-named-asset-import
  */
-// eslint-disable-next-line import/no-extraneous-dependencies
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier')
 
 module.exports = config => {
@@ -49,7 +48,6 @@ module.exports = config => {
             ],
           ),
           plugins: [
-            ...loaderListRule.oneOf[1].options.plugins,
             [
               require.resolve('babel-plugin-named-asset-import', {
                 paths: ['../../node_modules/react-scripts/node_modules'],

@@ -226,9 +226,13 @@ export default function sessionModelFactory(
       },
 
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
         let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -242,7 +246,9 @@ export default function sessionModelFactory(
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         const length = self.views.push({
           ...initialState,
@@ -306,7 +312,9 @@ export default function sessionModelFactory(
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {
@@ -405,7 +413,9 @@ export default function sessionModelFactory(
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
