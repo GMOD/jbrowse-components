@@ -52,7 +52,6 @@
     "@types/color": "^3.0.1",
     "@types/cors": "^2.8.8",
     "@types/crypto-js": "^4.0.1",
-    "@types/d3-interpolate": "^2.0.0",
     "@types/d3-scale": "^2.2.0",
     "@types/deep-equal": "^1.0.1",
     "@types/dompurify": "^2.0.2",

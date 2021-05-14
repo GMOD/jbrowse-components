@@ -16,7 +16,6 @@ import { bpSpanPx, iterMap } from '@jbrowse/core/util'
 import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { interpolateLab } from 'd3-interpolate'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
 
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -55,6 +54,7 @@ function getColorBaseMap(theme: Theme) {
 export interface RenderArgsDeserialized extends BoxRenderArgsDeserialized {
   colorBy?: { type: string; tag?: string }
   colorTagMap?: Record<string, string>
+  modificationTagMap?: Record<string, string>
   sortedBy?: {
     type: string
     pos: number
@@ -311,8 +311,10 @@ export default class PileupRenderer extends BoxRendererType {
     _config: AnyConfigurationModel,
     region: Region,
     bpPerPx: number,
+    props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
     const { feature, topPx, heightPx } = layoutFeature
+    const { modificationTagMap = {} } = props
 
     const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
 
@@ -327,7 +329,6 @@ export default class PileupRenderer extends BoxRendererType {
           .map(s => s.charCodeAt(0) - 33)
           .map(elt => Math.min(1, elt / 50))
 
-    const colors = ['red', 'green', 'blue', 'purple', 'brown']
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
     const end = feature.get('end')
@@ -340,12 +341,16 @@ export default class PileupRenderer extends BoxRendererType {
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
-    modifications.forEach(({ type, positions }, index) => {
-      const interpolater = interpolateLab('white', colors[index])
+    modifications.forEach(({ type, positions }) => {
+      const col = modificationTagMap[type] || 'black'
+      const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const px = leftPx + readPos * width
         if (px > leftPx && px < rightPx) {
-          ctx.fillStyle = interpolater(probabilities[probIndex++])
+          ctx.fillStyle = base
+            .alpha(probabilities[probIndex++])
+            .hsl()
+            .string()
           ctx.fillRect(px, topPx, width + 0.5, heightPx)
         }
       }
@@ -537,7 +542,7 @@ export default class PileupRenderer extends BoxRendererType {
         break
 
       case 'modifications':
-        this.colorByModifications(ctx, feat, config, region, bpPerPx)
+        this.colorByModifications(ctx, feat, config, region, bpPerPx, props)
         break
 
       case 'methylation':
