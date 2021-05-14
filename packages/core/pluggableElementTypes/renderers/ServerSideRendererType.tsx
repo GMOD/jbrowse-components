@@ -10,6 +10,7 @@ import {
   isStateTreeNode,
 } from 'mobx-state-tree'
 import { checkAbortSignal, updateStatus } from '../../util'
+import { getBlobMap, setBlobMap } from '../../util/tracks'
 import RendererType, { RenderProps, RenderResults } from './RendererType'
 import SerializableFilterChain, {
   SerializedFilterChain,

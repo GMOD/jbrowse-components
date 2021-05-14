@@ -1,5 +1,6 @@
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
+import { setBlobMap, getBlobMap } from '../util/tracks'
 
 import {
   deserializeAbortSignal,
@@ -20,17 +21,20 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
-    return args
+    const blobMap = getBlobMap()
+    return { ...args, blobMap }
   }
 
   async deserializeArguments<SERIALIZED extends { signal?: RemoteAbortSignal }>(
     serializedArgs: SERIALIZED,
     _rpcDriverClassName: string,
   ) {
+    setBlobMap(serializedArgs.blobMap)
     const { signal } = serializedArgs
     if (signal && isRemoteAbortSignal(signal)) {
       return { ...serializedArgs, signal: deserializeAbortSignal(signal) }
     }
+
     return { ...serializedArgs, signal: undefined }
   }
 

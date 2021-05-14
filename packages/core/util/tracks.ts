@@ -66,10 +66,23 @@ export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobId = 0
-const blobMap: { [key: string]: Blob } = {}
+let blobMap: { [key: string]: Blob } = {}
 
+// get a specific blob
 export function getBlob(id: string) {
+  console.log({ blobMap })
   return blobMap[id]
+}
+
+// used to export entire context to webworker
+export function getBlobMap() {
+  return blobMap
+}
+
+// used in new contexts like webworkers
+export function setBlobMap(map: { [key: string]: Blob }) {
+  console.log('setting')
+  blobMap = map
 }
 
 export function guessAdapter(
