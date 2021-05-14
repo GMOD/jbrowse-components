@@ -36,13 +36,9 @@ const FileLocationEditor = observer(
     setLocation: (param: FileLocation) => void
     name?: string
     description?: string
-    localFileAllowed?: boolean
   }) => {
-    const { location, name, description, localFileAllowed = isElectron } = props
-    const fileOrUrl =
-      (location && isUriLocation(location)) || !localFileAllowed
-        ? 'url'
-        : 'file'
+    const { location, name, description } = props
+    const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     const handleFileOrUrlChange = (
@@ -51,7 +47,7 @@ const FileLocationEditor = observer(
     ) => {
       if (newValue === 'url') {
         setFileOrUrlState('url')
-      } else if (localFileAllowed) {
+      } else {
         setFileOrUrlState('file')
       }
     }
@@ -68,11 +64,9 @@ const FileLocationEditor = observer(
               onChange={handleFileOrUrlChange}
               aria-label="file or url picker"
             >
-              {localFileAllowed ? (
-                <ToggleButton value="file" aria-label="local file">
-                  File
-                </ToggleButton>
-              ) : null}
+              <ToggleButton value="file" aria-label="local file">
+                File
+              </ToggleButton>
               <ToggleButton value="url" aria-label="url">
                 URL
               </ToggleButton>
@@ -97,17 +91,13 @@ const UrlChooser = (props: {
   setLocation: Function
 }) => {
   const { location, setLocation } = props
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setLocation({ uri: event.target.value })
-  }
+
   return (
     <TextField
       fullWidth
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      onChange={handleChange}
+      onChange={event => setLocation({ uri: event.target.value })}
     />
   )
 }

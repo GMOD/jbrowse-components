@@ -67,15 +67,20 @@ export const UNSUPPORTED = 'UNSUPPORTED'
 
 export function guessAdapter(
   fileName: string,
-  protocol: 'uri' | 'localPath',
+  protocol: 'uri' | 'localPath' | 'blob',
   index?: string,
+  fileObj?: any,
+  indexObj?: any,
 ) {
-  function makeLocation(location: string): UriLocation | LocalPathLocation {
+  function makeLocation(location: string, index?: string) {
     if (protocol === 'uri') {
-      return { uri: location }
+      return { uri: index || location }
     }
     if (protocol === 'localPath') {
-      return { localPath: location }
+      return { localPath: index || location }
+    }
+    if (protocol === 'blob') {
+      return index ? indexObj : fileObj
     }
     throw new Error(`invalid protocol ${protocol}`)
   }
@@ -84,7 +89,7 @@ export function guessAdapter(
       type: 'BamAdapter',
       bamLocation: makeLocation(fileName),
       index: {
-        location: makeLocation(index || `${fileName}.bai`),
+        location: makeLocation(`${fileName}.bai`, index),
         indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
       },
     }
@@ -94,7 +99,7 @@ export function guessAdapter(
     return {
       type: 'CramAdapter',
       cramLocation: makeLocation(fileName),
-      craiLocation: makeLocation(`${fileName}.crai`),
+      craiLocation: makeLocation(`${fileName}.crai`, index),
     }
   }
 
@@ -109,7 +114,7 @@ export function guessAdapter(
       type: 'Gff3TabixAdapter',
       gffGzLocation: makeLocation(fileName),
       index: {
-        location: makeLocation(index || `${fileName}.tbi`),
+        location: makeLocation(`${fileName}.tbi`, index),
         indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
@@ -132,7 +137,7 @@ export function guessAdapter(
       type: 'VcfTabixAdapter',
       vcfGzLocation: makeLocation(fileName),
       index: {
-        location: makeLocation(`${fileName}.tbi`),
+        location: makeLocation(`${fileName}.tbi`, index),
         indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
@@ -155,7 +160,7 @@ export function guessAdapter(
       type: 'BedTabixAdapter',
       bedGzLocation: makeLocation(fileName),
       index: {
-        location: makeLocation(`${fileName}.tbi`),
+        location: makeLocation(`${fileName}.tbi`, index),
         indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
@@ -179,7 +184,7 @@ export function guessAdapter(
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(index || `${fileName}.fai`),
+      faiLocation: makeLocation(`${fileName}.fai`, index),
     }
   }
 
@@ -187,7 +192,7 @@ export function guessAdapter(
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(`${fileName}.fai`),
+      faiLocation: makeLocation(`${fileName}.fai`, index),
       gziLocation: makeLocation(`${fileName}.gzi`),
     }
   }

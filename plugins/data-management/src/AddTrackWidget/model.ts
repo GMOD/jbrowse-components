@@ -75,12 +75,23 @@ export default function f(pluginManager: PluginManager) {
     .views(self => ({
       get trackAdapter() {
         const { trackData, indexTrackData } = self
-        if (trackData?.uri) {
+
+        if (trackData.uri) {
           return guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
         }
 
         if (trackData.localPath) {
           return guessAdapter(trackData.localPath, 'localPath')
+        }
+
+        if (trackData.blob) {
+          return guessAdapter(
+            trackData.blob.name,
+            'blob',
+            indexTrackData?.blob?.name,
+            trackData.blob,
+            indexTrackData?.blob,
+          )
         }
         return self.altTrackAdapter
       },
@@ -88,10 +99,12 @@ export default function f(pluginManager: PluginManager) {
       get trackName() {
         const uri = self.trackData?.uri
         const localPath = self.trackData?.localPath
+        const blobName = self.trackData?.blob?.name
         return (
           self.altTrackName ||
-          (uri ? uri.slice(uri.lastIndexOf('/') + 1) : null) ||
-          (localPath ? localPath.slice(localPath.lastIndexOf('/') + 1) : null)
+          blobName ||
+          uri?.slice(uri.lastIndexOf('/') + 1) ||
+          localPath?.slice(localPath.lastIndexOf('/') + 1)
         )
       },
 
