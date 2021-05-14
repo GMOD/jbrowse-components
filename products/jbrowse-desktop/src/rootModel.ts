@@ -14,7 +14,6 @@ import {
   SnapshotIn,
   types,
 } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
