@@ -197,11 +197,16 @@ export default pluginManager =>
 
         const session = getSession(self)
         const conns = session.connectionInstances
-          .filter(conn =>
-            readConfObject(conn.configuration, 'assemblyNames').includes(
-              assemblyName,
-            ),
-          )
+          .filter(conn => {
+            const configAssemblyNames = readConfObject(
+              conn.configuration,
+              'assemblyNames',
+            )
+            if (configAssemblyNames.length === 0) {
+              return true
+            }
+            return configAssemblyNames.includes(assemblyName)
+          })
           .map((conn, index) => {
             const c = session.connections[index]
             return {

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import isObject from 'is-object'
 import {
   readConfObject,
   isConfigurationModel,
@@ -591,7 +590,7 @@ export default function sessionModelFactory(
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out
         // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (isObject(connectionInstances)) {
+        if (!Array.isArray(connectionInstances)) {
           return rest
         }
       }
