@@ -8,6 +8,7 @@ import {
   UriLocation,
   BlobLocation,
 } from '../types'
+import { getBlob } from '../tracks'
 
 declare global {
   interface Window {
@@ -38,7 +39,7 @@ function isLocalPathLocation(
 }
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blob' in location
+  return 'blobId' in location
 }
 
 export function openLocation(location: FileLocation): GenericFilehandle {
@@ -65,7 +66,8 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     }
   }
   if (isBlobLocation(location)) {
-    return new BlobFile(location.blob)
+    // special case where blob is not directly stored on the model, use a getter
+    return new BlobFile(getBlob(location.blobId))
   }
   throw new Error('invalid fileLocation')
 }

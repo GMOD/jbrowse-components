@@ -111,8 +111,8 @@ export default function f(pluginManager: PluginManager) {
       get isFtp() {
         const { trackData, indexTrackData } = self
         return !!(
-          (indexTrackData.uri && indexTrackData.uri.startsWith('ftp://')) ||
-          (trackData.uri && trackData.uri.startsWith('ftp://'))
+          indexTrackData.uri?.startsWith('ftp://') ||
+          trackData.uri?.startsWith('ftp://')
         )
       },
 
@@ -126,9 +126,8 @@ export default function f(pluginManager: PluginManager) {
       get wrongProtocol() {
         return (
           window.location.protocol === 'https:' &&
-          ((self.indexTrackData.uri &&
-            self.indexTrackData.uri.startsWith('http://')) ||
-            self.trackData.uri.startsWith('http://'))
+          (self.indexTrackData.uri?.startsWith('http://') ||
+            self.trackData.uri?.startsWith('http://'))
         )
       },
 

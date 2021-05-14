@@ -65,6 +65,13 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
+let blobId = 0
+const blobMap: { [key: string]: Blob } = {}
+
+export function getBlob(id: string) {
+  return blobMap[id]
+}
+
 export function guessAdapter(
   fileName: string,
   protocol: 'uri' | 'localPath' | 'blob',
@@ -72,15 +79,20 @@ export function guessAdapter(
   fileObj?: any,
   indexObj?: any,
 ) {
-  function makeLocation(location: string, index?: string) {
+  // if index paramter is given, this function returns slightly different
+  // things
+  function makeLocation(location: string, indexOverride?: string) {
     if (protocol === 'uri') {
-      return { uri: index || location }
+      return { uri: indexOverride || location }
     }
     if (protocol === 'localPath') {
-      return { localPath: index || location }
+      return { localPath: indexOverride || location }
     }
     if (protocol === 'blob') {
-      return index ? indexObj : fileObj
+      blobMap[`b${blobId}`] = indexOverride ? indexObj : fileObj
+      return indexOverride
+        ? { name: indexObj.name, blobId: `b${blobId++}` }
+        : { name: fileObj.name, blobId: `b${blobId++}` }
     }
     throw new Error(`invalid protocol ${protocol}`)
   }
