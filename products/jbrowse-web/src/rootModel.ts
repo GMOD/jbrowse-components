@@ -375,7 +375,7 @@ export default function RootModel(
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
-        readConfObject(self.jbrowse.configuration, 'plugins'),
+        self.jbrowse.plugins,
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },
