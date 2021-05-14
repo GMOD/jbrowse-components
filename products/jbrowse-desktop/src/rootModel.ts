@@ -141,7 +141,7 @@ export default function RootModel(pluginManager: PluginManager) {
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
-        self.jbrowse.plugins,
+        getSnapshot(self.jbrowse.plugins),
         self.jbrowse.configuration.rpc,
         {
           ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
