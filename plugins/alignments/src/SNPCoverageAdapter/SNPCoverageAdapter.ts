@@ -136,6 +136,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     type BinType = { total: number; strands: { [key: string]: number } }
     const initBins = Array.from({ length: binMax }, () => ({
       total: 0,
+      lowqual: {} as BinType,
       cov: {} as BinType,
       delskips: {} as BinType,
       noncov: {} as BinType,
@@ -175,19 +176,38 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
             const seq = feature.get('seq')
             const mm = getTagAlt(feature, 'MM', 'Mm') || ''
 
+            const ml =
+              (getTagAlt(feature, 'ML', 'Ml') as number[] | string) || []
+
+            const probabilities = ml
+              ? (typeof ml === 'string' ? ml.split(',').map(e => +e) : ml).map(
+                  e => e / 255,
+                )
+              : (getTagAlt(feature, 'MP', 'Mp') as string)
+                  .split('')
+                  .map(s => s.charCodeAt(0) - 33)
+                  .map(elt => Math.min(1, elt / 50))
+
+            let probIndex = 0
             getModificationPositions(mm, seq).forEach(({ type, positions }) => {
               const mod = `mod_${type}`
               for (const pos of getNextRefPos(cigarOps, positions)) {
                 const epos = pos + fstart - region.start
-                if (epos >= 0 && epos < bins.length) {
+                if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
                   const bin = bins[epos]
-                  inc(bin, fstrand, 'cov', mod)
+                  if (probabilities[probIndex] > 0.5) {
+                    inc(bin, fstrand, 'cov', mod)
+                  } else {
+                    inc(bin, fstrand, 'lowqual', mod)
+                  }
                 }
+                probIndex++
               }
             })
           }
 
-          // methylation based coloring takes into account both reference sequence CpG detection and reads
+          // methylation based coloring takes into account both reference
+          // sequence CpG detection and reads
           else if (colorBy?.type === 'methylation') {
             if (!regionSeq) {
               throw new Error(

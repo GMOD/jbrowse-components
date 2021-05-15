@@ -404,8 +404,8 @@ export default class PileupRenderer extends BoxRendererType {
         // color
         if (l1.toUpperCase() === 'C' && l2.toUpperCase() === 'G') {
           const [leftPx, rightPx] = bpSpanPx(
-            rstart,
             rstart + i,
+            rstart + i + 1,
             region,
             bpPerPx,
           )
