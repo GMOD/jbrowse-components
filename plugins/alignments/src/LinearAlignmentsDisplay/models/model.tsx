@@ -205,6 +205,20 @@ const stateModelFactory = (
                 getSnapshot(self.PileupDisplay.colorBy),
               )
             }
+            if (
+              !deepEqual(
+                self.SNPCoverageDisplay.modificationTagMap,
+                JSON.parse(
+                  JSON.stringify(self.PileupDisplay.modificationTagMap),
+                ),
+              )
+            ) {
+              self.SNPCoverageDisplay.setModificationTagMap(
+                JSON.parse(
+                  JSON.stringify(self.PileupDisplay.modificationTagMap),
+                ),
+              )
+            }
           }),
         )
         addDisposer(

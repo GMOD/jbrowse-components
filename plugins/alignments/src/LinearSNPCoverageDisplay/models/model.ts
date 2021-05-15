@@ -44,7 +44,13 @@ const stateModelFactory = (
         ),
       }),
     )
+    .volatile(() => ({
+      modificationTagMap: {},
+    }))
     .actions(self => ({
+      setModificationTagMap(elt: Record<string, string>) {
+        self.modificationTagMap = elt
+      },
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
@@ -104,6 +110,9 @@ const stateModelFactory = (
           ticks: self.ticks,
           displayCrossHatches: self.displayCrossHatches,
           filters: self.filters,
+          modificationTagMap: JSON.parse(
+            JSON.stringify(self.modificationTagMap),
+          ),
 
           // must use getSnapshot because otherwise changes to e.g. just the
           // colorBy.type are not read

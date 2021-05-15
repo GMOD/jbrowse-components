@@ -23,6 +23,7 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
   ticks: { values: number[] }
   displayCrossHatches: boolean
+  modificationTagMap: Record<string, string>
 }
 
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
@@ -42,6 +43,7 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       config: cfg,
       displayCrossHatches,
       ticks: { values },
+      modificationTagMap,
     } = props
     const theme = createJBrowseTheme(configTheme)
     const [region] = regions
@@ -80,9 +82,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       insertion: 'purple',
       softclip: 'blue',
       hardclip: 'red',
-      mod_0: 'red',
-      mod_1: 'green',
-      mod_2: 'blue',
       meth: 'red',
       unmeth: 'blue',
       ref: 'lightgrey',
@@ -130,7 +129,10 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           return 0
         })
         .reduce((curr, [base, { total }]) => {
-          ctx.fillStyle = colorForBase[base] || 'red'
+          ctx.fillStyle =
+            colorForBase[base] ||
+            modificationTagMap[base.replace('mod_', '')] ||
+            'red'
           ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
           return curr + total
         }, 0)
