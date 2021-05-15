@@ -885,10 +885,10 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
 
     // @ts-ignore
-    const seqAdapter = renderProps.dataAdapter.sequenceAdapter
+    const { sequenceAdapter } = await renderProps.dataAdapter.configure()
     const [region] = regions
-    const [feat] = seqAdapter
-      ? await seqAdapter
+    const [feat] = sequenceAdapter
+      ? await sequenceAdapter
           .getFeatures({
             start: region.start,
             end: region.end + 1,
