@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Divider,
   IconButton,
@@ -20,6 +21,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
   Paper,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
@@ -135,61 +137,77 @@ export default function SearchResultsDialog({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell align="right">Location</TableCell>
-                <TableCell align="right">Track Id</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {model.searchResults.map((result: BaseResult, index) => (
-                <TableRow key={`${result.getLabel()}-${index}`}>
-                  <TableCell component="th" scope="row">
-                    {result.getLabel()}
-                  </TableCell>
-                  <TableCell align="right">{result.getLocation()}</TableCell>
-                  <TableCell align="right">
-                    {getTrackName(result.getTrackId()) || 'N/A'}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      onClick={() => {
-                        handleClick(result.getLocation())
-                        handleClose()
-                      }}
-                      color="primary"
-                      variant="contained"
-                    >
-                      Go to location
-                    </Button>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Button
-                      onClick={() => {
-                        handleClick(result.getLocation())
-                        const resultTrackId = result.getTrackId()
-                        if (resultTrackId) {
-                          handleShowTrack(resultTrackId)
-                        }
-                        handleClose()
-                      }}
-                      disabled={!getTrackName(result.getTrackId())}
-                      color="primary"
-                      variant="contained"
-                    >
-                      Show Track
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        {model.searchResults.length === 0 ? (
+          <Typography color="error">
+            {`No results found for `}
+            <b>{model.searchQuery}</b>
+          </Typography>
+        ) : (
+          <>
+            <DialogContentText id="alert-dialog-slide-description">
+              {`Showing results for `}
+              <b>{model.searchQuery}</b>
+            </DialogContentText>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell align="right">Location</TableCell>
+                    <TableCell align="right">Track Id</TableCell>
+                    <TableCell align="right" />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {model.searchResults.map((result: BaseResult, index) => (
+                    <TableRow key={`${result.getLabel()}-${index}`}>
+                      <TableCell component="th" scope="row">
+                        {result.getLabel()}
+                      </TableCell>
+                      <TableCell align="right">
+                        {result.getLocation()}
+                      </TableCell>
+                      <TableCell align="right">
+                        {getTrackName(result.getTrackId()) || 'N/A'}
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          onClick={() => {
+                            handleClick(result.getLocation())
+                            handleClose()
+                          }}
+                          color="primary"
+                          variant="contained"
+                        >
+                          Go to location
+                        </Button>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Button
+                          onClick={() => {
+                            handleClick(result.getLocation())
+                            const resultTrackId = result.getTrackId()
+                            if (resultTrackId) {
+                              handleShowTrack(resultTrackId)
+                            }
+                            handleClose()
+                          }}
+                          disabled={!getTrackName(result.getTrackId())}
+                          color="primary"
+                          variant="contained"
+                        >
+                          Show Track
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
+        )}
       </DialogContent>
+      <Divider />
       <DialogActions>
         <Button
           onClick={() => {

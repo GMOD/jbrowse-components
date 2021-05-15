@@ -15,7 +15,8 @@ interface BaseArgs {
   limit?: number
   pageNumber?: number
   aggregate?: boolean
-  importForm?: boolean
+  openedTracks?: Array<string>
+  assemblyNames?: Array<string>
 }
 
 export default (pluginManager: PluginManager) => {
@@ -66,6 +67,7 @@ export default (pluginManager: PluginManager) => {
       // obtain root level and track level adapters
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
+      //console.log(tracks)
       const trackTextSearchAdapters: BaseTextSearchAdapter[] = []
       tracks.forEach((trackTextSearchAdapterConfig: AnyConfigurationModel) => {
         const trackTextSearchAdapter = readConfObject(

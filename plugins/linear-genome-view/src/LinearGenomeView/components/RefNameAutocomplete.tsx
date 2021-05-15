@@ -81,6 +81,7 @@ function RefNameAutocomplete({
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
   // default options for dropdown
+  //console.log(model.findSearchScope())
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
@@ -209,7 +210,7 @@ function RefNameAutocomplete({
             InputProps={TextFieldInputProps}
             placeholder="Search for location"
             onChange={e => {
-              setCurrentSearch(e.target.value.toLocaleLowerCase())
+              setCurrentSearch(e.target.value)
             }}
           />
         )

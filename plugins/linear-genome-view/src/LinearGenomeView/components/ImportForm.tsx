@@ -92,7 +92,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         searchType: 'exact',
       })
       if (results.length > 0) {
-        model.setSearchResults(results)
+        model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
         try {
           input && model.navToLocString(input, assemblyName)
@@ -111,7 +111,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           model={model}
           optAssemblyName={assemblyName}
           handleClose={() => {
-            model.setSearchResults([])
+            model.setSearchResults(undefined, undefined)
           }}
         />
       ) : null}

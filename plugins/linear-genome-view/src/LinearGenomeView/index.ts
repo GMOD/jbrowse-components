@@ -126,7 +126,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       coarseTotalBp: 0,
       leftOffset: undefined as undefined | BpOffset,
       rightOffset: undefined as undefined | BpOffset,
-      searchResults: [] as BaseResult[],
+      searchResults: undefined as undefined | BaseResult[],
+      searchQuery: undefined as undefined | string,
       DialogComponent: undefined as
         | React.FC<{ handleClose: () => void; model: { clearView: Function } }>
         | undefined,
@@ -169,7 +170,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.leftOffset && self.rightOffset
       },
       get isSearchDialogDisplayed() {
-        return self.searchResults.length > 0
+        return self.searchResults !== undefined
       },
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
@@ -406,6 +407,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
+      findSearchScope() {
+        const session = getSession(self)
+        console.log('model', self)
+        if (!self.hasDisplayedRegions) {
+          // from import form
+          return {
+            aggregate: true,
+            assemblyNames: session.assemblyNames,
+          }
+        }
+        return {
+          aggregate: true,
+          openedTracks: self.tracks,
+          assemblyNames: session.assemblyNames,
+        }
+      },
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {
@@ -506,8 +523,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.rightOffset = right
       },
 
-      setSearchResults(results: BaseResult[]) {
+      setSearchResults(results: BaseResult[], query: string) {
         self.searchResults = results
+        self.searchQuery = query
       },
 
       setNewView(bpPerPx: number, offsetPx: number) {

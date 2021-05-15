@@ -32,6 +32,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         description: 'anything to add about this track',
         defaultValue: {},
       },
+      attributes: {
+        type: 'stringArray',
+        description: 'attributes used to index track',
+        defaultValue: [],
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       textSearchAdapter: pluginManager.pluggableConfigSchemaType(
         'text search adapter',
