@@ -93,17 +93,23 @@ const typeModelExtensions: { [typeName: string]: (self: any) => any } = {
       },
       addToKey(key: string, val: string) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar.push(val)
       },
       removeAtKeyIndex(key: string, idx: number) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar.splice(idx, 1)
       },
       setAtKeyIndex(key: string, idx: number, val: string) {
         const ar = self.value.get(key)
-        if (!ar) throw new Error(`${key} not found`)
+        if (!ar) {
+          throw new Error(`${key} not found`)
+        }
         ar[idx] = val
       },
     },
@@ -163,15 +169,21 @@ export default function ConfigSlot(
     contextVariable = [],
   }: ConfigSlotDefinition,
 ) {
-  if (!type) throw new Error('type name required')
-  if (!model) model = typeModels[type]
+  if (!type) {
+    throw new Error('type name required')
+  }
+  if (!model) {
+    model = typeModels[type]
+  }
   if (!model) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
 
-  if (defaultValue === undefined) throw new Error("no 'defaultValue' provided")
+  if (defaultValue === undefined) {
+    throw new Error("no 'defaultValue' provided")
+  }
 
   // if the `type` is something like `color`, then the model name
   // here will be `ColorConfigSlot`
@@ -212,7 +224,9 @@ export default function ConfigSlot(
       // for embedding in either JSON or a JS function string.
       // many of the data types override this in typeModelExtensions
       get valueJSON(): any[] | Record<string, any> | string | undefined {
-        if (self.isCallback) return undefined
+        if (self.isCallback) {
+          return undefined
+        }
         function json(value: { toJSON: Function } | any) {
           if (value && value.toJSON) {
             return value.toJSON()
@@ -248,11 +262,15 @@ export default function ConfigSlot(
         self.value = defaultValue
       },
       convertToCallback() {
-        if (self.isCallback) return
+        if (self.isCallback) {
+          return
+        }
         self.value = `jexl:${self.valueJSON || "''"}`
       },
       convertToValue() {
-        if (!self.isCallback) return
+        if (!self.isCallback) {
+          return
+        }
         // try calling it with no arguments
         try {
           const funcResult = self.expr.evalSync()

@@ -121,7 +121,9 @@ export default (pluginManager: PluginManager) => {
       },
 
       setColumnNameLineNumber(newnumber: number) {
-        if (newnumber > 0) self.columnNameLineNumber = newnumber
+        if (newnumber > 0) {
+          self.columnNameLineNumber = newnumber
+        }
       },
 
       setFileType(typeName: string) {
@@ -148,7 +150,9 @@ export default (pluginManager: PluginManager) => {
       // then set the parent to display it
       async import() {
         try {
-          if (!self.fileSource) return
+          if (!self.fileSource) {
+            return
+          }
 
           if (self.loading) {
             throw new Error('cannot import, load already in progress')

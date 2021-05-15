@@ -111,7 +111,9 @@ export function splitVcfFileHeaderAndBody(wholeFile: string) {
   let prevChar
   for (; headerEndIndex < wholeFile.length; headerEndIndex += 1) {
     const c = wholeFile[headerEndIndex]
-    if (prevChar === '\n' && c !== '#') break
+    if (prevChar === '\n' && c !== '#') {
+      break
+    }
     prevChar = c
   }
 

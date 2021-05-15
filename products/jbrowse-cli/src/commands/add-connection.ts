@@ -141,11 +141,15 @@ export default class AddConnection extends JBrowseCommand {
     }
     if (connectionId) {
       this.debug(`Connection id is ${connectionId}`)
-    } else connectionId = `${type}-${assemblyName}-${Date.now()}`
+    } else {
+      connectionId = `${type}-${assemblyName}-${Date.now()}`
+    }
 
     if (name) {
       this.debug(`Name is: ${name}`)
-    } else name = connectionId
+    } else {
+      name = connectionId
+    }
 
     let configObj = {}
     if (config) {
@@ -202,7 +206,9 @@ export default class AddConnection extends JBrowseCommand {
           { exit: 150 },
         )
       }
-    } else configContents.connections.push(connectionConfig)
+    } else {
+      configContents.connections.push(connectionConfig)
+    }
 
     this.debug(`Writing configuration to file ${this.target}`)
     await this.writeJsonFile(this.target, configContents)
@@ -227,7 +233,9 @@ export default class AddConnection extends JBrowseCommand {
         if (check) {
           response = await fetch(locationUrl, { method: 'HEAD' })
         }
-        if (!response || response.ok) return locationUrl.href
+        if (!response || response.ok) {
+          return locationUrl.href
+        }
         this.error(`Response returned with code ${response.status}`)
       } catch (error) {
         // ignore
@@ -240,9 +248,15 @@ export default class AddConnection extends JBrowseCommand {
   }
 
   determineConnectionType(url: string, config: string | undefined) {
-    if (path.basename(url) === 'hub.txt') return 'UCSCTrackHubConnection'
-    if (url.includes('jbrowse/data')) return 'JBrowse1Connection'
-    if (config && this.isValidJSON(config)) return 'custom'
+    if (path.basename(url) === 'hub.txt') {
+      return 'UCSCTrackHubConnection'
+    }
+    if (url.includes('jbrowse/data')) {
+      return 'JBrowse1Connection'
+    }
+    if (config && this.isValidJSON(config)) {
+      return 'custom'
+    }
     return this.error(
       `Unable to determine a specific connection from URL given.\nPlease specify a type with --type.\nIf you want a custom type, please provide the config object with --config`,
     )

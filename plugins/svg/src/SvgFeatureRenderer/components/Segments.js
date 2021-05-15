@@ -58,7 +58,9 @@ function Segments(props) {
           const subfeatureId = String(subfeature.id())
           const subfeatureLayout = featureLayout.getSubRecord(subfeatureId)
           // This subfeature got filtered out
-          if (!subfeatureLayout) return null
+          if (!subfeatureLayout) {
+            return null
+          }
           const { GlyphComponent } = subfeatureLayout.data
           return (
             <GlyphComponent

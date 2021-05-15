@@ -8,7 +8,6 @@ function mathPower(num: number): string {
   if (num < 999) {
     return String(num)
   }
-  // eslint-disable-next-line no-bitwise
   return `${mathPower(~~(num / 1000))},${`00${~~(num % 1000)}`.substr(-3, 3)}`
 }
 

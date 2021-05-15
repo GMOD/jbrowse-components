@@ -605,7 +605,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const parent = getContainingView(self)
         if (parent) {
           // I am embedded in a some other view
-          if (isViewContainer(parent)) parent.removeView(self)
+          if (isViewContainer(parent)) {
+            parent.removeView(self)
+          }
         } else {
           // I am part of a session
           getSession(self).removeView(self)
@@ -942,7 +944,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightPx- `object as {start, end, index, offset}`, offset = end of user drag
        */
       zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
-        if (leftPx === undefined || rightPx === undefined) return
+        if (leftPx === undefined || rightPx === undefined) {
+          return
+        }
 
         const singleRefSeq =
           leftPx.refName === rightPx.refName && leftPx.index === rightPx.index

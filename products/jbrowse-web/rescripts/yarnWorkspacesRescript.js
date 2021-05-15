@@ -5,9 +5,7 @@
  */
 const fs = require('fs')
 const path = require('path')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const spawn = require('cross-spawn')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const root = require('find-yarn-workspace-root')()
 
 const pgks = spawn.sync('yarn', ['--json', 'workspaces', 'info'])

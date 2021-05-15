@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'

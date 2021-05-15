@@ -2403,6 +2403,44 @@ Object {
     },
     Object {
       "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "vvx",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
+          "renderer": Object {
+            "type": "StructuralVariantChordRenderer",
+          },
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (with assembly alias)",
+      "trackId": "volvox_filtered_vcf_assembly_alias",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
         "bigBedLocation": Object {
           "uri": "volvox.bb",
         },

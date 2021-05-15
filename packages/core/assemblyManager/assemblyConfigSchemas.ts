@@ -38,9 +38,13 @@ export default (pluginManager: PluginManager) => {
       | SnapshotIn<typeof BaseAssemblyConfigSchema>
       | SnapshotIn<typeof AssemblyConfigSchema>,
   ) {
-    if (!snapshot) return BaseAssemblyConfigSchema
+    if (!snapshot) {
+      return BaseAssemblyConfigSchema
+    }
     const { refNameAliases } = snapshot
-    if (refNameAliases) return AssemblyConfigSchema
+    if (refNameAliases) {
+      return AssemblyConfigSchema
+    }
     return BaseAssemblyConfigSchema
   }
 

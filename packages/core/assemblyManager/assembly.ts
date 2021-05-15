@@ -379,7 +379,6 @@ async function loadAssemblyReaction(
   adapterRegionsWithAssembly.forEach(region => {
     refNameAliases[region.refName] = region.refName
   })
-  // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>

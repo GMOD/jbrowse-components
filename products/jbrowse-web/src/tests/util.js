@@ -1,4 +1,4 @@
-import rangeParser from 'range-parser' // eslint-disable-line import/no-extraneous-dependencies
+import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
@@ -29,7 +29,9 @@ export function getPluginManager(initialState, adminMode = true) {
       JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
     )
     rootModel.activateSession(name)
-  } else rootModel.setDefaultSession()
+  } else {
+    rootModel.setDefaultSession()
+  }
   rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 

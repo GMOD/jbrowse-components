@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary,react/prop-types */
+/* eslint-disable react/prop-types */
 import React, { useRef, useState, useEffect } from 'react'
 import { Button, Select, MenuItem, Typography } from '@material-ui/core'
 import { useInView } from 'react-intersection-observer'

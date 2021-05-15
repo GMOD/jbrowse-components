@@ -25,14 +25,18 @@ export default ({ jbrequire }) => {
           // and hydration for when we have some free time. helps
           // keep the framerate up.
           rIC(() => {
-            if (!isAlive(model)) return
+            if (!isAlive(model)) {
+              return
+            }
             const mainThreadRendering = React.createElement(
               renderingComponent,
               { ...data, ...renderProps },
               null,
             )
             rIC(() => {
-              if (!isAlive(model)) return
+              if (!isAlive(model)) {
+                return
+              }
               hydrate(mainThreadRendering, domNode)
             })
           })

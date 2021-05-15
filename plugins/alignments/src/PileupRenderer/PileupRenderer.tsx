@@ -1,4 +1,3 @@
-/* eslint-disable no-bitwise */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { toArray } from 'rxjs/operators'
 import BoxRendererType, {
@@ -765,7 +764,9 @@ export default class PileupRenderer extends BoxRendererType {
 
             // If softclip length+start is longer than sequence, no need to
             // continue showing base
-            if (!base) return
+            if (!base) {
+              return
+            }
 
             const [softClipLeftPx, softClipRightPx] = bpSpanPx(
               softClipStart + k,

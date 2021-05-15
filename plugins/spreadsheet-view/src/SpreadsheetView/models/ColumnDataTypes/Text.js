@@ -35,7 +35,9 @@ export default pluginManager => {
     },
     'ends with': (textInCell, stringToFind) => {
       const index = textInCell.toLowerCase().indexOf(stringToFind)
-      if (index === -1) return false
+      if (index === -1) {
+        return false
+      }
       return index === textInCell.length - stringToFind.length
     },
   }
@@ -138,7 +140,9 @@ export default pluginManager => {
         return function stringPredicate(sheet, row) {
           const { cellsWithDerived } = row
           const cell = cellsWithDerived[columnNumber]
-          if (!cell || !cell.text) return false
+          if (!cell || !cell.text) {
+            return false
+          }
           const predicate = OPERATION_PREDICATES[operation]
           if (!predicate) {
             throw new Error(`"${operation}" not implemented in location filter`)

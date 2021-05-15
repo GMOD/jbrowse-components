@@ -1,10 +1,8 @@
-/* eslint-disable import/no-extraneous-dependencies */
 const fs = require('fs')
 const path = require('path')
 const { DepGraph } = require('dependency-graph')
 const spawn = require('cross-spawn')
 const workspaceRoot = require('find-yarn-workspace-root')()
-/* eslint-enable import/no-extraneous-dependencies */
 
 const DEPENDENCY_TYPES = [
   'devDependencies',

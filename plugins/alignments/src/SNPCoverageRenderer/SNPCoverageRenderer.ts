@@ -121,8 +121,12 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
 
       Object.entries(snpinfo.cov)
         .sort(([a], [b]) => {
-          if (a < b) return -1
-          if (a > b) return 1
+          if (a < b) {
+            return -1
+          }
+          if (a > b) {
+            return 1
+          }
           return 0
         })
         .reduce((curr, [base, { total }]) => {

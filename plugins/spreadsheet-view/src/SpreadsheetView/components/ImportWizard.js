@@ -46,8 +46,11 @@ const NumberEditor = observer(
     useEffect(() => {
       const num = parseInt(val, 10)
       if (!Number.isNaN(num)) {
-        if (num > 0) model[modelSetterName](num)
-        else setVal(1)
+        if (num > 0) {
+          model[modelSetterName](num)
+        } else {
+          setVal(1)
+        }
       }
     }, [model, modelSetterName, val])
     return (

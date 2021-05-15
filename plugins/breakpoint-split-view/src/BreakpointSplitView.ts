@@ -45,8 +45,12 @@ class BreakpointSplitViewType extends ViewType {
         const matePosition = breakendSpecification.MatePosition.split(':')
         endPos = parseInt(matePosition[1], 10) - 1
         mateRefName = getCanonicalRefName(matePosition[0])
-        if (breakendSpecification.Join === 'left') startMod = -1
-        if (breakendSpecification.MateDirection === 'left') endMod = -1
+        if (breakendSpecification.Join === 'left') {
+          startMod = -1
+        }
+        if (breakendSpecification.MateDirection === 'left') {
+          endMod = -1
+        }
       }
 
       // if (breakendSpecification.Join === 'left') {

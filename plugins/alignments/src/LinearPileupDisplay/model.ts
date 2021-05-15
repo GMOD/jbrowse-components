@@ -21,7 +21,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -367,13 +367,16 @@ const stateModelFactory = (
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          height: self.featureHeight,
-          noSpacing: self.noSpacing,
-          maxHeight: this.maxHeight,
-          mismatchAlpha: self.mismatchAlpha,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            height: self.featureHeight,
+            noSpacing: self.noSpacing,
+            maxHeight: this.maxHeight,
+            mismatchAlpha: self.mismatchAlpha,
+          },
+          getEnv(self),
+        )
       },
       get featureHeightSetting() {
         return (

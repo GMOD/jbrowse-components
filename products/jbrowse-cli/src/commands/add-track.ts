@@ -305,7 +305,9 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) await fsPromises.unlink(dest)
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
             } catch (e) {
               this.error(e)
             }
@@ -323,7 +325,9 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) await fsPromises.unlink(dest)
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
             } catch (e) {
               this.error(e)
             }
@@ -337,7 +341,9 @@ export default class AddTrack extends JBrowseCommand {
           filePaths.map(async filePath => {
             const dest = destinationFn(configDirectory, filePath)
             try {
-              if (force) await fsPromises.unlink(dest)
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
             } catch (e) {
               this.error(e)
             }

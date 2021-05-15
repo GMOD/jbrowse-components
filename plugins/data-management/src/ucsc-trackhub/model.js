@@ -13,7 +13,7 @@ import {
   generateTracks,
 } from './ucscTrackHub'
 
-export default function (pluginManager) {
+export default function UCSCTrackHubConnection(pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
     BaseConnectionModelFactory(pluginManager),

@@ -20,7 +20,9 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
   }
 
   const rowNumber = spreadsheetModel.rowMenuPosition?.rowNumber
-  if (rowNumber === undefined) return null
+  if (rowNumber === undefined) {
+    return null
+  }
 
   const row = spreadsheetModel.rowSet.rows[rowNumber - 1]
 

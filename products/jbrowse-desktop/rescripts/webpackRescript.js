@@ -1,19 +1,13 @@
 const path = require('path')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const webpack = require('webpack')
-// eslint-disable-next-line import/no-extraneous-dependencies
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   webpack: config => {
-    const isDev = config.mode !== 'production'
-    // Get rid of the webpackHotDevClient entry
-    if (isDev) config.entry.shift()
     // Specify two entry points, a main one and one for the window worker
-    const main = config.entry.pop()
     config.entry = {
-      main,
-      rpc: path.join(path.dirname(main), 'worker.ts'),
+      main: config.entry,
+      rpc: path.join(path.dirname(config.entry), 'worker.ts'),
     }
     config.plugins[0].options.chunks = ['main']
     // Generate an HTML file for window workers to load

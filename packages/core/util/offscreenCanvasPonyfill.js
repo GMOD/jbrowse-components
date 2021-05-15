@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
-/* eslint-disable import/no-mutable-exports */
 /* eslint-disable no-restricted-globals */
-/* eslint-disable prefer-destructuring */
 import React from 'react'
 import Path from 'svg-path-generator'
 import Color from 'color'
@@ -245,12 +242,16 @@ function parseFont(font) {
         if (!fontSize) {
           const parts = element.split('/')
           fontSize = parts[0]
-          if (parts.length > 1) lineHeight = parts[1]
+          if (parts.length > 1) {
+            lineHeight = parts[1]
+          }
           break
         }
 
         fontFamily = element
-        if (elements.length) fontFamily += ` ${elements.join(' ')}`
+        if (elements.length) {
+          fontFamily += ` ${elements.join(' ')}`
+        }
         break outer
     }
   }
@@ -271,7 +272,9 @@ export class PonyfillOffscreenCanvas {
   }
 
   getContext(type) {
-    if (type !== '2d') throw new Error(`unknown type ${type}`)
+    if (type !== '2d') {
+      throw new Error(`unknown type ${type}`)
+    }
     this.context = new PonyfillOffscreenContext(this.width, this.height)
     return this.context
   }

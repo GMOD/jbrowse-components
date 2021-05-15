@@ -7,7 +7,6 @@ import {
   cleanup,
   fireEvent,
   render,
-  screen,
   waitFor,
   getByRole,
 } from '@testing-library/react'
@@ -15,7 +14,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
-import { TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { TextEncoder } from 'web-encoding'
 import FileSaver from 'file-saver'
 
 // locals
@@ -44,6 +43,8 @@ setup()
 
 afterEach(cleanup)
 
+const waitForOptions = { timeout: 10000 }
+
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
@@ -59,12 +60,12 @@ describe('<JBrowse />', () => {
   it('renders with an empty config', async () => {
     const pluginManager = getPluginManager({})
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
-    expect(await findByText('Help')).toBeTruthy()
+    await findByText('Help')
   })
   it('renders with an initialState', async () => {
     const pluginManager = getPluginManager()
     const { findByText } = render(<JBrowse pluginManager={pluginManager} />)
-    expect(await findByText('Help')).toBeTruthy()
+    await findByText('Help')
   })
 })
 
@@ -81,7 +82,7 @@ test('lollipop track test', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
 
   await findByTestId('display-lollipop_track_linear')
-  await expect(findByTestId('three')).resolves.toBeTruthy()
+  await findByTestId('three')
 })
 
 test('toplevel configuration', () => {
@@ -119,20 +120,12 @@ test('variant track test - opens feature detail view', async () => {
   state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
     'test-vcf-604452',
   )
-  const feats1 = await findAllByTestId(
-    'test-vcf-604452',
-    {},
-    { timeout: 10000 },
-  )
+  const feats1 = await findAllByTestId('test-vcf-604452', {}, waitForOptions)
   fireEvent.click(feats1[0])
 
   // this text is to confirm a feature detail drawer opened
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
-  const feats2 = await findAllByTestId(
-    'test-vcf-604452',
-    {},
-    { timeout: 10000 },
-  )
+  const feats2 = await findAllByTestId('test-vcf-604452', {}, waitForOptions)
   fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
@@ -141,7 +134,7 @@ test('variant track test - opens feature detail view', async () => {
 test('widget drawer navigation', async () => {
   const pluginManager = getPluginManager(undefined, true)
   const state = pluginManager.rootModel
-  const { findByTestId, findByText, getByTestId } = render(
+  const { findByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -150,63 +143,50 @@ test('widget drawer navigation', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   fireEvent.click(await findByText('Settings'))
-  await expect(findByTestId('configEditor')).resolves.toBeTruthy()
+  await findByTestId('configEditor')
   // shows up when there  active widgets
-  const widgetSelect = await findByTestId('widget-drawer-selects')
-  const button = getByRole(widgetSelect, 'button')
-  fireEvent.mouseDown(button)
-  const popoverMenuItem = await screen.findByTestId(
-    'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
+  fireEvent.mouseDown(
+    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
   )
-  fireEvent.click(popoverMenuItem)
+  fireEvent.click(
+    await findByTestId(
+      'widget-drawer-selects-item-HierarchicalTrackSelectorWidget',
+    ),
+  )
   await findByTestId('hierarchical_track_selector')
 
   // test minimize and maximize widget drawer
   expect(state.session.minimized).toBeFalsy()
 
   await findByTestId('drawer-minimize')
-  const minimizeButton = await getByTestId('drawer-minimize')
-  fireEvent.click(minimizeButton)
+  fireEvent.click(await findByTestId('drawer-minimize'))
   expect(state.session.minimized).toBeTruthy()
 
-  const fabMaximize = await screen.findByTestId('drawer-maximize')
-  fireEvent.click(fabMaximize)
+  fireEvent.click(await findByTestId('drawer-maximize'))
   expect(state.session.minimized).toBeFalsy()
 
   // test deleting widget from select dropdown using trash icon
   expect(state.session.activeWidgets.size).toEqual(2)
-  const widgetSelect2 = await findByTestId('widget-drawer-selects')
-  const button2 = getByRole(widgetSelect2, 'button')
-  fireEvent.mouseDown(button2)
-  const popoverDeleteIcon = await screen.findByTestId(
-    'ConfigurationEditorWidget-drawer-delete',
+  fireEvent.mouseDown(
+    getByRole(await findByTestId('widget-drawer-selects'), 'button'),
   )
-  fireEvent.click(popoverDeleteIcon)
+  fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   expect(state.session.activeWidgets.size).toEqual(1)
-})
+}, 10000)
+
 describe('assembly aliases', () => {
   it('allow a track with an alias assemblyName to display', async () => {
-    const variantTrack = volvoxConfigSnapshot.tracks.find(
-      track => track.trackId === 'volvox_filtered_vcf',
-    )
-    const assemblyAliasVariantTrack = JSON.parse(JSON.stringify(variantTrack))
-    assemblyAliasVariantTrack.assemblyNames = ['vvx']
-    const pluginManager = getPluginManager({
-      ...volvoxConfigSnapshot,
-      tracks: [assemblyAliasVariantTrack],
-    })
+    const pluginManager = getPluginManager()
     const state = pluginManager.rootModel
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
     await findByText('Help')
     state.session.views[0].setNewView(0.05, 5000)
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-    state.session.views[0].tracks[0].displays[0].setFeatureIdUnderMouse(
-      'test-vcf-604452',
+    fireEvent.click(
+      await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
     )
-    const feat = await findByTestId('test-vcf-604452', {}, { timeout: 10000 })
-    expect(feat).toBeTruthy()
+    await findByTestId('box-test-vcf-604452', {}, waitForOptions)
   }, 10000)
 })
 
@@ -224,17 +204,18 @@ describe('nclist track test with long name', () => {
     await findByText(
       'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
       {},
-      { timeout: 10000 },
+      waitForOptions,
     )
-  })
+  }, 10000)
 })
+
 describe('test configuration editor', () => {
   it('change color on track', async () => {
     const pluginManager = getPluginManager(undefined, true)
     const state = pluginManager.rootModel
     const {
+      getByTestId,
       findByTestId,
-      findAllByTestId,
       findByText,
       findByDisplayValue,
     } = render(<JBrowse pluginManager={pluginManager} />)
@@ -243,15 +224,17 @@ describe('test configuration editor', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
     fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
     fireEvent.click(await findByText('Settings'))
-    await expect(findByTestId('configEditor')).resolves.toBeTruthy()
-    const input = await findByDisplayValue('goldenrod')
-    fireEvent.change(input, { target: { value: 'green' } })
+    await findByTestId('configEditor')
+    fireEvent.change(await findByDisplayValue('goldenrod'), {
+      target: { value: 'green' },
+    })
     await waitFor(
-      async () => {
-        const feats = await findAllByTestId('box-test-vcf-604452')
-        expect(feats[0]).toHaveAttribute('fill', 'green')
-      },
-      { timeout: 10000 },
+      () =>
+        expect(getByTestId('box-test-vcf-604452')).toHaveAttribute(
+          'fill',
+          'green',
+        ),
+      waitForOptions,
     )
   }, 10000)
 })
@@ -278,7 +261,7 @@ describe('test sharing', () => {
     fireEvent.click(await findByText('Share'))
 
     // check the share dialog has the above session shared
-    expect(await findByTestId('share-dialog')).toBeTruthy()
+    await findByTestId('share-dialog')
     const url = await findByTestId('share-url-text')
     expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
   })
@@ -307,7 +290,7 @@ test('wrong assembly', async () => {
   await findAllByText(
     'Error: region assembly (volvox) does not match track assemblies (wombat)',
     {},
-    { timeout: 10000 },
+    waitForOptions,
   )
 }, 15000)
 
@@ -320,9 +303,9 @@ test('looks at about this track dialog', async () => {
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-  fireEvent.click(await findByTestId('track_menu_icon', {}, { timeout: 10000 }))
+  fireEvent.click(await findByTestId('track_menu_icon', {}, waitForOptions))
   fireEvent.click(await findByText('About track'))
-  await findAllByText(/SQ/, {}, { timeout: 10000 })
+  await findAllByText(/SQ/, {}, waitForOptions)
 }, 15000)
 
 test('export svg', async () => {

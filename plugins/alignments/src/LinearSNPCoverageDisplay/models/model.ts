@@ -1,4 +1,4 @@
-import { types, cast, getSnapshot } from 'mobx-state-tree'
+import { types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
@@ -65,17 +65,20 @@ const stateModelFactory = (
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
 
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          drawInterbaseCounts:
-            self.drawInterbaseCounts === undefined
-              ? configBlob.drawInterbaseCounts
-              : self.drawInterbaseCounts,
-          drawIndicators:
-            self.drawIndicators === undefined
-              ? configBlob.drawIndicators
-              : self.drawIndicators,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            drawInterbaseCounts:
+              self.drawInterbaseCounts === undefined
+                ? configBlob.drawInterbaseCounts
+                : self.drawInterbaseCounts,
+            drawIndicators:
+              self.drawIndicators === undefined
+                ? configBlob.drawIndicators
+                : self.drawIndicators,
+          },
+          getEnv(self),
+        )
       },
       get drawInterbaseCountsSetting() {
         return self.drawInterbaseCounts !== undefined
