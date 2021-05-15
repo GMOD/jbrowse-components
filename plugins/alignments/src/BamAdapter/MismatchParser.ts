@@ -321,40 +321,48 @@ export function getModificationPositions(mm: string, seq: string) {
     .map(mod => {
       const [basemod, ...rest] = mod.split(',')
 
+      // regexes based on parse_mm.pl from hts-specs
       const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
       if (!matches) {
         throw new Error('bad format for MM tag')
       }
-      const [, base, strand, type] = matches
+      const [, base, strand, typestr] = matches
+
+      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
+      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
+      const types = typestr.split(/(\d+|.)/).filter(f => !!f)
+
       if (strand === '-') {
         console.warn('unsupported negative strand modifications')
         // make sure to return a somewhat matching type even in this case
         return { type: 'unsupported', positions: [] }
       }
 
-      let i = 0
-
-      // based on parse_mm.pl from hts-specs
-      // the logic is that in the sequence of the read, if we have a modification
-      // type e.g. C+m;2 and a sequence ACGTACGTAC we skip the two instances of C
-      // and go to the last C
-      return {
-        type,
-        positions: rest
-          .map(score => +score)
-          .map(delta => {
-            i++
-            do {
-              if (base === 'N' || base === seq[i]) {
-                delta--
-              }
+      // this logic also based on parse_mm.pl from hts-specs is that in the
+      // sequence of the read, if we have a modification type e.g. C+m;2 and a
+      // sequence ACGTACGTAC we skip the two instances of C and go to the last
+      // C
+      return types.map(type => {
+        let i = 0
+        return {
+          type,
+          positions: rest
+            .map(score => +score)
+            .map(delta => {
               i++
-            } while (delta >= 0 && i < seq.length)
-            i--
-            return i
-          }),
-      }
+              do {
+                if (base === 'N' || base === seq[i]) {
+                  delta--
+                }
+                i++
+              } while (delta >= 0 && i < seq.length)
+              i--
+              return i
+            }),
+        }
+      })
     })
+    .flat()
 }
 
 export function getModificationTypes(mm: string) {
