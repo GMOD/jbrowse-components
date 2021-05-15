@@ -42,12 +42,13 @@ function TooltipContents({ feature }: { feature: Feature }) {
   const info = feature.get('snpinfo') as {
     ref: Count
     cov: Count
+    lowqual: Count
     noncov: Count
     delskips: Count
     total: number
   }
 
-  const { total, ref, cov, noncov, delskips } = info
+  const { total, ref, cov, noncov, lowqual, delskips } = info
   return (
     <div>
       <table>
@@ -58,6 +59,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
             <th>Count</th>
             <th>% of Total</th>
             <th>Strands</th>
+            <th>Source</th>
           </tr>
         </thead>
         <tbody>
@@ -67,7 +69,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
             <td />
           </tr>
 
-          {Object.entries({ ref, cov, noncov, delskips }).map(
+          {Object.entries({ ref, cov, noncov, delskips, lowqual }).map(
             ([key, entry]) => {
               return (
                 <React.Fragment key={key}>
@@ -86,6 +88,7 @@ function TooltipContents({ feature }: { feature: Feature }) {
                           {strands['-1'] ? `${strands['-1']}(-)` : ''}
                           {strands['1'] ? `${strands['1']}(+)` : ''}
                         </td>
+                        <td>{key}</td>
                       </tr>
                     )
                   })}
