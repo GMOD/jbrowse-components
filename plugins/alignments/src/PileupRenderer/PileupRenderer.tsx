@@ -350,12 +350,16 @@ export default class PileupRenderer extends BoxRendererType {
             region,
             bpPerPx,
           )
+
+          // give it a little boost of 0.1 to not make them fully
+          // invisible to avoid confusion
           ctx.fillStyle = base
-            .alpha(probabilities[probIndex++])
+            .alpha(probabilities[probIndex] + 0.1)
             .hsl()
             .string()
           ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
         }
+        probIndex++
       }
     })
   }

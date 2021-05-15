@@ -18,6 +18,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -41,6 +42,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -73,6 +75,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -96,6 +99,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -136,6 +140,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -159,6 +164,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -191,6 +197,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -214,6 +221,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -237,6 +245,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -260,6 +269,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -297,6 +307,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -320,6 +331,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -352,6 +364,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -375,6 +388,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -415,6 +429,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -438,6 +453,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -470,6 +486,7 @@ Array [
         },
       },
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -493,6 +510,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -516,6 +534,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
@@ -539,6 +558,7 @@ Array [
     "snpinfo": Object {
       "cov": Object {},
       "delskips": Object {},
+      "lowqual": Object {},
       "noncov": Object {},
       "ref": Object {
         "ref": Object {
