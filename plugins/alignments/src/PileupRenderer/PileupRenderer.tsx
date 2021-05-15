@@ -584,6 +584,17 @@ export default class PileupRenderer extends BoxRendererType {
     const mismatches: Mismatch[] = feature.get('mismatches')
     const heightLim = charHeight - 2
 
+    function getAlphaColor(baseColor: string, mismatch: { qual?: number }) {
+      let color = baseColor
+      if (mismatchAlpha && mismatch.qual !== undefined) {
+        color = Color(baseColor)
+          .alpha(Math.min(1, mismatch.qual / 50))
+          .hsl()
+          .string()
+      }
+      return color
+    }
+
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
     for (let i = 0; i < mismatches.length; i += 1) {
@@ -598,24 +609,19 @@ export default class PileupRenderer extends BoxRendererType {
         minFeatWidth,
         Math.abs(mismatchLeftPx - mismatchRightPx),
       )
-
       if (mismatch.type === 'mismatch' && drawSNPs) {
         const baseColor = colorForBase[mismatch.base] || '#888'
 
-        let color = baseColor
-        if (mismatchAlpha && mismatch.qual !== undefined) {
-          color = Color(baseColor)
-            .alpha(Math.min(1, mismatch.qual / 50))
-            .hsl()
-            .string()
-        }
-        ctx.fillStyle = color
+        ctx.fillStyle = getAlphaColor(baseColor, mismatch)
 
         ctx.fillRect(mismatchLeftPx, topPx, mismatchWidthPx, heightPx)
 
         if (mismatchWidthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
-          ctx.fillStyle = theme.palette.getContrastText(baseColor)
+          ctx.fillStyle = getAlphaColor(
+            theme.palette.getContrastText(baseColor),
+            mismatch,
+          )
           ctx.fillText(
             mismatch.base,
             mismatchLeftPx + (mismatchWidthPx - charWidth) / 2 + 1,
