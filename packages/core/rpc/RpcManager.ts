@@ -60,7 +60,9 @@ export default class RpcManager {
 
   getDriver(backendName: keyof typeof DriverClasses): DriverClass {
     const driver = this.driverObjects.get(backendName)
-    if (driver) return driver
+    if (driver) {
+      return driver
+    }
 
     const backendConfiguration = this.backendConfigurations[backendName]
     const DriverClassImpl = DriverClasses[backendName]

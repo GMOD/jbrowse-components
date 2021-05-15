@@ -57,6 +57,12 @@ export interface JBrowsePlugin {
   image?: string
 }
 
+export type DialogComponentType =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | React.LazyExoticComponent<React.FC<any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | React.FC<any>
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
@@ -73,8 +79,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: Function
   addAssembly?: Function
   removeAssembly?: Function
-  showAboutConfig?: AnyConfigurationModel
-  setShowAboutConfig?: Function
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]
@@ -83,8 +87,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
+
+  DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDialogComponent: (dlg: React.FC<any>, props?: any) => void
+  DialogProps: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -166,9 +174,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-export interface AbstractTrackModel {
-  setDialogComponent(dlg: unknown, display?: unknown): void
-}
+type AbstractTrackModel = {}
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&

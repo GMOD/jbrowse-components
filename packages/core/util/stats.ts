@@ -34,7 +34,9 @@ export function calcStdFromSums(
   n: number,
   population = false,
 ): number {
-  if (n === 0) return 0
+  if (n === 0) {
+    return 0
+  }
   let variance
   if (population) {
     variance = sumSquares / n - (sum * sum) / (n * n)

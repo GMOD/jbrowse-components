@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types,no-nested-ternary */
+/* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import React from 'react'
 import ErrorBoundary from 'react-error-boundary'
 import {

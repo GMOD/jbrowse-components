@@ -682,7 +682,7 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
     />
   )
 }
-export default ({ initialTimestamp }: { initialTimestamp: number }) => {
+const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
@@ -691,5 +691,7 @@ export default ({ initialTimestamp }: { initialTimestamp: number }) => {
     </ErrorBoundary>
   )
 }
+
+export default LoaderWrapper
 
 export type SessionLoader = Instance<typeof SessionLoader>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   CircularProgress,
@@ -189,11 +189,16 @@ export default function StartScreen({
   const sessionNames = sessions !== undefined ? Object.keys(sessions) : []
   root.setSavedSessionNames(sessionNames)
 
-  const sortedSessions = sessions
-    ? Object.entries(sessions).sort(
-        (a: any, b: any) => b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
-      )
-    : []
+  const sortedSessions = useMemo(
+    () =>
+      sessions
+        ? Object.entries(sessions).sort(
+            (a: any, b: any) =>
+              b[1].stats?.mtimeMs || 0 - a[1].stats?.mtimeMs || 0,
+          )
+        : [],
+    [sessions],
+  )
 
   useEffect(() => {
     ;(async () => {

@@ -38,7 +38,6 @@ function AlignmentFlags(props: { feature: any }) {
         <div className={classes.fieldValue}>{flags}</div>
       </div>
       {flagNames.map((name, index) => {
-        // eslint-disable-next-line no-bitwise
         const val = flags & (1 << index)
         const key = `${name}_${val}`
         return (

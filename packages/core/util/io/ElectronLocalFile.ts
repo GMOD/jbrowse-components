@@ -21,7 +21,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   constructor(source: PathLike) {
     let ipcRenderer
-    if (electron) ipcRenderer = electron.ipcRenderer
+    if (electron) {
+      ipcRenderer = electron.ipcRenderer
+    }
     if (!ipcRenderer) {
       throw new Error(
         'Cannot use ElectronLocalFile without ipcRenderer from electron',
@@ -32,7 +34,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   private async getFd(): Promise<number> {
-    if (!this.filename) throw new Error('no file path specified')
+    if (!this.filename) {
+      throw new Error('no file path specified')
+    }
     if (!this.fd) {
       this.fd = this.ipcRenderer.invoke('open', this.filename, 'r') as Promise<
         number
@@ -66,7 +70,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   async readFile(_: FilehandleOptions = {}): Promise<Buffer | string> {
-    if (!this.filename) throw new Error('no file path specified')
+    if (!this.filename) {
+      throw new Error('no file path specified')
+    }
 
     const result = await this.ipcRenderer.invoke('readFile', this.filename)
 

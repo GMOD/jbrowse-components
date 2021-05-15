@@ -246,8 +246,11 @@ const stateModelFactory = (
         ])
       },
       setHeight(displayHeight: number) {
-        if (displayHeight > minDisplayHeight) self.height = displayHeight
-        else self.height = minDisplayHeight
+        if (displayHeight > minDisplayHeight) {
+          self.height = displayHeight
+        } else {
+          self.height = minDisplayHeight
+        }
         return self.height
       },
       resizeHeight(distance: number) {

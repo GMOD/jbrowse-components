@@ -59,8 +59,11 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
   const classes = useStyles()
 
   useEffect(() => {
-    if (selectedHub) setModelReady(true)
-    else setModelReady(false)
+    if (selectedHub) {
+      setModelReady(true)
+    } else {
+      setModelReady(false)
+    }
   }, [selectedHub, setModelReady])
 
   useEffect(() => {
@@ -100,8 +103,11 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     const controller = new AbortController()
     const { signal } = controller
     if (!errorMessage) {
-      if (selectedAssembly && !hubs.size) getHubs(signal, true)
-      else if (hubs.size && !allHubsRetrieved) getHubs(signal)
+      if (selectedAssembly && !hubs.size) {
+        getHubs(signal, true)
+      } else if (hubs.size && !allHubsRetrieved) {
+        getHubs(signal)
+      }
     }
 
     return () => {
@@ -125,7 +131,6 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
         } else {
           const hub = openLocation({ uri: item.hub.url })
           try {
-            // eslint-disable-next-line no-await-in-loop
             await hub.stat()
           } catch (error) {
             item.error = error.message
@@ -134,7 +139,9 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
         newHubs.set(item.id, item)
       }
       setHubs(newHubs)
-      if (newHubs.size === response.total_entries) setAllHubsRetrieved(true)
+      if (newHubs.size === response.total_entries) {
+        setAllHubsRetrieved(true)
+      }
     }
   }
 

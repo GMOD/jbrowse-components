@@ -49,7 +49,7 @@ function idMaker(args: any, id = '') {
     if (id.length > 5000) {
       break
     }
-    if (typeof args[key] === 'object') {
+    if (typeof args[key] === 'object' && args[key]) {
       id += idMaker(args[key], id)
     } else {
       id += `${key}-${args[key]};`

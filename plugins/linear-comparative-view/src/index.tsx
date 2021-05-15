@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -159,7 +159,6 @@ function getTag(f: Feature, tag: string) {
 }
 
 function WindowSizeDlg(props: {
-  display: any
   feature: Feature
   handleClose: () => void
   track: any

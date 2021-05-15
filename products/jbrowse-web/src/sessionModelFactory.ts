@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import isObject from 'is-object'
 import {
   readConfObject,
   getConf,
@@ -12,6 +12,7 @@ import {
   AbstractSessionModel,
   TrackViewModel,
   JBrowsePlugin,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -38,6 +39,8 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import shortid from 'shortid'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -94,9 +97,7 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
-
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as DialogComponentType | undefined,
       DialogProps: undefined as any,
     }))
     .views(self => ({
@@ -184,16 +185,14 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<any>, props?: any) {
+      setDialogComponent(comp?: DialogComponentType, props?: any) {
         self.DialogComponent = comp
         self.DialogProps = props
       },
       setName(str: string) {
         self.name = str
       },
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
-      },
+
       addAssembly(assemblyConfig: AnyConfigurationModel) {
         self.sessionAssemblies.push(assemblyConfig)
       },
@@ -228,10 +227,14 @@ export default function sessionModelFactory(
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
@@ -272,7 +275,9 @@ export default function sessionModelFactory(
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {
@@ -336,9 +341,13 @@ export default function sessionModelFactory(
       },
 
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
         let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -352,7 +361,9 @@ export default function sessionModelFactory(
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         const length = self.views.push({
           ...initialState,
@@ -476,7 +487,9 @@ export default function sessionModelFactory(
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -633,7 +646,7 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setShowAboutConfig(config)
+              session.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },
@@ -692,7 +705,7 @@ export default function sessionModelFactory(
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out
         // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (isObject(connectionInstances)) {
+        if (!Array.isArray(connectionInstances)) {
           return rest
         }
       }
@@ -704,8 +717,6 @@ export default function sessionModelFactory(
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel

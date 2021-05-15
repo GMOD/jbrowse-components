@@ -49,7 +49,9 @@ const JBrowse = observer(({ pluginManager }) => {
     pluginsUpdated,
     setPluginsUpdated,
   } = rootModel
-  if (firstLoad && session) setFirstLoad(false)
+  if (firstLoad && session) {
+    setFirstLoad(false)
+  }
 
   useEffect(() => {
     async function sendIpcConfig(snapshot) {

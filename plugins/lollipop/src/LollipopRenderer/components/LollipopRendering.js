@@ -10,43 +10,57 @@ import Stick from './Stick'
 function LollipopRendering(props) {
   const onMouseDown = event => {
     const { onMouseDown: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseUp = event => {
     const { onMouseUp: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseEnter = event => {
     const { onMouseEnter: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseLeave = event => {
     const { onMouseLeave: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseOver = event => {
     const { onMouseOver: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseOut = event => {
     const { onMouseOut: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onClick = event => {
     const { onClick: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 

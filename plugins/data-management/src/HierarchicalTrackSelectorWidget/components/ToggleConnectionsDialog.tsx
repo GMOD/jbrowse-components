@@ -43,9 +43,13 @@ function ToggleConnectionDialog({
 }) {
   const classes = useStyles()
   const { connections, connectionInstances } = session
-  const assemblySpecificConnections = connections.filter(c =>
-    readConfObject(c, 'assemblyNames').includes(assemblyName),
-  )
+  const assemblySpecificConnections = connections.filter(c => {
+    const configAssemblyNames = readConfObject(c, 'assemblyNames')
+    if (configAssemblyNames.length === 0) {
+      return true
+    }
+    return configAssemblyNames.includes(assemblyName)
+  })
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">
       <DialogTitle>
@@ -63,7 +67,7 @@ function ToggleConnectionDialog({
           {assemblySpecificConnections.map(conf => {
             const name = readConfObject(conf, 'name')
             return (
-              <div>
+              <div key={conf.connectionId}>
                 <FormControlLabel
                   control={
                     <Checkbox

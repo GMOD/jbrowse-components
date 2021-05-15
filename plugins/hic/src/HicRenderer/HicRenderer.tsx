@@ -83,7 +83,6 @@ export default class HicRenderer extends ServerSideRendererType {
         })
         ctx.fillRect((bin1 - offset) * w, (bin2 - offset) * w, w, w)
         if (+Date.now() - start > 400) {
-          // eslint-disable-next-line no-await-in-loop
           await abortBreakPoint(signal)
           start = +Date.now()
         }

@@ -5,7 +5,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
 import AppsIcon from '@material-ui/icons/Apps'
@@ -170,14 +169,12 @@ export default function RootModel(
         addDisposer(
           self,
           autorun(() => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             for (const [_, val] of self.savedSessionsVolatile.entries()) {
               try {
                 const key = self.localStorageId(val.name)
                 localStorage.setItem(key, JSON.stringify({ session: val }))
               } catch (e) {
                 if (e.code === '22' || e.code === '1024') {
-                  // eslint-disable-next-line no-alert
                   alert(
                     'Local storage is full! Please use the "Open sessions" panel to remove old sessions',
                   )
@@ -375,7 +372,7 @@ export default function RootModel(
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
-        readConfObject(self.jbrowse.configuration, 'plugins'),
+        getSnapshot(self.jbrowse.plugins),
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },

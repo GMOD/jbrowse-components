@@ -1,8 +1,6 @@
 import React from 'react'
-// eslint-disable-next-line import/no-unresolved
 import Layout from '@theme/Layout'
 
-// eslint-disable-next-line import/no-unresolved
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { makeStyles } from '@material-ui/core/styles'
 import Link from '@material-ui/core/Link'

@@ -26,11 +26,14 @@ export async function parseSTARFusionBuffer(
     selectedAssemblyName: options.selectedAssemblyName,
     isValidRefName: () => false,
   })
+
   // remove the # in #FusionName
   data.columns[0].name = data.columns[0].name.replace('#', '')
   // set some columns to be numeric
   data.columns.forEach(col => {
-    if (numericColumns[col.name]) col.dataType = { type: 'Number' }
+    if (numericColumns[col.name]) {
+      col.dataType = { type: 'Number' }
+    }
   })
 
   // decorate each row with a feature object in its extendedData

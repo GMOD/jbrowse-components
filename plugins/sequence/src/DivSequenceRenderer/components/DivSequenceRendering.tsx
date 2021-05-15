@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any,no-return-assign */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -193,7 +193,9 @@ const SequenceSVG = ({
     return null
   }
   const seq: string = feature.get('seq')
-  if (!seq) return null
+  if (!seq) {
+    return null
+  }
 
   // incrementer for the y-position of the current sequence being rendered
   // (applies to both translation rows and dna rows)

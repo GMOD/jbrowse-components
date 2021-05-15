@@ -31,7 +31,7 @@ beforeEach(() => {
   )
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 20000 }
 
 describe('alignments track', () => {
   it('opens an alignments track', async () => {
@@ -177,7 +177,11 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-    await findByTestId('display-volvox-long-reads-cram-LinearAlignmentsDisplay')
+    await findByTestId(
+      'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
+      {},
+      delay,
+    )
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu and turns on soft clipping
@@ -213,7 +217,7 @@ describe('alignments track', () => {
 
     // load track
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
-    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay')
+    await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
     expect(state.session.views[0].tracks[0]).toBeTruthy()
 
     // opens the track menu

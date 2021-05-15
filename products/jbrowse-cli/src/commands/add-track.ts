@@ -292,21 +292,30 @@ export default class AddTrack extends JBrowseCommand {
     }
 
     // copy/symlinks/moves the track into the jbrowse installation directory
-    const filePaths = Object.values(this.guessFileNames(location, index))
+    const filePaths = Object.values(
+      this.guessFileNames(location, index),
+    ).filter(f => !!f) as string[]
+
+    const destinationFn = (dir: string, file: string) =>
+      path.join(dir, subDir, path.basename(file))
 
     switch (load) {
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
+            return fsPromises.copyFile(
+              filePath,
+              dest,
+              fs.constants.COPYFILE_EXCL,
             )
-            return fsPromises.copyFile(filePath, dataLocation)
           }),
         )
         break
@@ -314,15 +323,15 @@ export default class AddTrack extends JBrowseCommand {
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
-            )
-            return fsPromises.symlink(filePath, dataLocation)
+            return fsPromises.symlink(filePath, dest)
           }),
         )
         break
@@ -330,15 +339,15 @@ export default class AddTrack extends JBrowseCommand {
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) {
-              return undefined
+            const dest = destinationFn(configDirectory, filePath)
+            try {
+              if (force) {
+                await fsPromises.unlink(dest)
+              }
+            } catch (e) {
+              this.error(e)
             }
-            const dataLocation = path.join(
-              configDirectory,
-              subDir,
-              path.basename(filePath),
-            )
-            return fsPromises.rename(filePath, dataLocation)
+            return fsPromises.rename(filePath, dest)
           }),
         )
         break

@@ -1,7 +1,7 @@
 // library
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, wait } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
 import { LocalFile } from 'generic-filehandle'
@@ -41,13 +41,9 @@ describe('circular views', () => {
       views: [{ id: 'integration_test_circular', type: 'CircularView' }],
     }
     const pluginManager = getPluginManager(configSnapshotWithCircular)
-    const {
-      findByTestId,
-      findAllByTestId,
-      findByText,
-      getByTestId,
-      queryByTestId,
-    } = render(<JBrowse pluginManager={pluginManager} />)
+    const { findByTestId, findAllByTestId, findByText, queryByTestId } = render(
+      <JBrowse pluginManager={pluginManager} />,
+    )
     // wait for the UI to be loaded
     await findByText('Help')
     // try opening a track before opening the actual view
@@ -66,24 +62,16 @@ describe('circular views', () => {
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
 
     // expect the chord track to render eventually
-    await wait(
-      () => {
-        expect(
-          getByTestId('structuralVariantChordRenderer'),
-        ).toBeInTheDocument()
-      },
-      { timeout: 10000 },
-    )
+    await findByTestId('structuralVariantChordRenderer', {}, { timeout: 10000 })
+
     // make sure a chord is rendered
-    await wait(() => {
-      expect(getByTestId('chord-test-vcf-66132')).toBeInTheDocument()
-    })
+    await findByTestId('chord-test-vcf-66132')
 
     // toggle track off
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
 
     // expect the track to disappear
-    await wait(() => {
+    await waitFor(() => {
       expect(
         queryByTestId('structuralVariantChordRenderer'),
       ).not.toBeInTheDocument()
@@ -91,9 +79,8 @@ describe('circular views', () => {
 
     // open up VCF with renamed refNames
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test_renamed'))
+
     // make sure a chord is rendered
-    await wait(() => {
-      expect(getByTestId('chord-test-vcf-62852')).toBeInTheDocument()
-    })
+    findByTestId('chord-test-vcf-62852', {}, { timeout: 10000 })
   }, 15000)
 })

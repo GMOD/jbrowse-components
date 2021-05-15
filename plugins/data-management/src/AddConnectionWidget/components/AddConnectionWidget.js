@@ -44,9 +44,12 @@ function AddConnectionWidget({ model }) {
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)
     setConfigModel(
-      newConnectionType.configSchema.create({
-        connectionId: `${newConnectionType.name}-${Date.now()}`,
-      }),
+      newConnectionType.configSchema.create(
+        {
+          connectionId: `${newConnectionType.name}-${Date.now()}`,
+        },
+        getEnv(model),
+      ),
     )
   }
 
@@ -77,8 +80,11 @@ function AddConnectionWidget({ model }) {
   }
 
   function handleNext() {
-    if (activeStep === steps.length - 1) handleFinish()
-    else setActiveStep(activeStep + 1)
+    if (activeStep === steps.length - 1) {
+      handleFinish()
+    } else {
+      setActiveStep(activeStep + 1)
+    }
   }
 
   function handleBack() {

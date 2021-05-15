@@ -14,7 +14,9 @@ const initialTimestamp = Date.now()
 window.onbeforeunload = () => {
   const thisWindowId = getCurrentWindow().id
   BrowserWindow.getAllWindows().forEach(win => {
-    if (win.id !== thisWindowId) win.close()
+    if (win.id !== thisWindowId) {
+      win.close()
+    }
   })
 }
 

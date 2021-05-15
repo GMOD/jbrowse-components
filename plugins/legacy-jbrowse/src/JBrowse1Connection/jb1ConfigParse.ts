@@ -29,7 +29,9 @@ export function parseJB1Conf(config: string, url: string): Config {
 }
 
 function isAlwaysArray(varName: string): boolean {
-  if (varName === 'include') return true
+  if (varName === 'include') {
+    return true
+  }
   return false
 }
 
@@ -53,11 +55,15 @@ function parse(text: string, url: string): Config {
       try {
         // parse json
         const match = value.match(/^json:(.+)/i)
-        if (match) parsedValue = JSON.parse(match[1])
+        if (match) {
+          parsedValue = JSON.parse(match[1])
+        }
         // parse numbers if it looks numeric
         else if (/^[+-]?[\d.,]+([eE][-+]?\d+)?$/.test(value)) {
           parsedValue = parseFloat(value.replace(/,/g, ''))
-        } else parsedValue = value
+        } else {
+          parsedValue = value
+        }
 
         if (!keyPath) {
           throw new Error(`Error parsing in section ${section.join(' - ')}`)
@@ -66,14 +72,22 @@ function parse(text: string, url: string): Config {
         if (operation === '+=') {
           let existing = getValue(data, path)
           if (existing) {
-            if (!Array.isArray(existing)) existing = [existing]
-          } else existing = []
+            if (!Array.isArray(existing)) {
+              existing = [existing]
+            }
+          } else {
+            existing = []
+          }
 
           existing.push(parsedValue)
           parsedValue = existing
         }
-        if (parsedValue === 'true') parsedValue = true
-        if (parsedValue === 'false') parsedValue = false
+        if (parsedValue === 'true') {
+          parsedValue = true
+        }
+        if (parsedValue === 'false') {
+          parsedValue = false
+        }
         setValue(data, path, parsedValue)
       } catch (e) {
         throw new Error(
@@ -152,14 +166,19 @@ export function regularizeConf(conf: Config, url: string): Config {
   // if tracks is not an array, convert it to one
   if (conf.tracks && !Array.isArray(conf.tracks)) {
     // if it's a single track config, wrap it in an arrayref
-    if (isTrack(conf.tracks)) conf.tracks = [conf.tracks]
+    if (isTrack(conf.tracks)) {
+      conf.tracks = [conf.tracks]
+    }
     // otherwise, coerce it to an array
     else {
       const tracks: Track[] = []
       for (const label of Object.keys(conf.tracks)) {
         const track = conf.tracks[label]
-        if (isTrack(track)) tracks.push(track)
-        else tracks.push({ label, ...track })
+        if (isTrack(track)) {
+          tracks.push(track)
+        } else {
+          tracks.push({ label, ...track })
+        }
       }
       conf.tracks = tracks
     }
@@ -169,14 +188,20 @@ export function regularizeConf(conf: Config, url: string): Config {
   const meta = conf.trackMetadata
   if (meta && meta.sources) {
     // if it's a single source config, wrap it in an arrayref
-    if (typeof meta.sources === 'string') meta.sources = [meta.sources]
-    if (isSource(meta.sources)) meta.sources = [meta.sources]
+    if (typeof meta.sources === 'string') {
+      meta.sources = [meta.sources]
+    }
+    if (isSource(meta.sources)) {
+      meta.sources = [meta.sources]
+    }
 
     if (!Array.isArray(meta.sources)) {
       const sources: Source[] = []
       for (const name of Object.keys(meta.sources)) {
         const source = meta.sources[name]
-        if (!('name' in source)) source.name = name
+        if (!('name' in source)) {
+          source.name = name
+        }
         sources.push(source)
       }
       meta.sources = sources
@@ -188,7 +213,9 @@ export function regularizeConf(conf: Config, url: string): Config {
         if (typeof sourceDef === 'string') {
           const newSourceDef: Source = { url: sourceDef }
           const typeMatch = sourceDef.match(/\.(\w+)$/)
-          if (typeMatch) newSourceDef.type = typeMatch[1].toLowerCase()
+          if (typeMatch) {
+            newSourceDef.type = typeMatch[1].toLowerCase()
+          }
           return newSourceDef
         }
         return sourceDef
@@ -201,25 +228,37 @@ export function regularizeConf(conf: Config, url: string): Config {
     conf.sourceUrl = new URL(conf.sourceUrl, window.location.href).href
   }
   conf.baseUrl = conf.baseUrl || new URL('.', conf.sourceUrl).href
-  if (conf.baseUrl.length && !conf.baseUrl.endsWith('/')) conf.baseUrl += '/'
+  if (conf.baseUrl.length && !conf.baseUrl.endsWith('/')) {
+    conf.baseUrl += '/'
+  }
 
   if (conf.sourceUrl) {
     // set a default baseUrl in each of the track and store confs, and the names
     // conf, if needed
     const addBase: (Track | Store | Names)[] = []
-    if (conf.tracks) addBase.push(...conf.tracks)
-    if (conf.stores) addBase.push(...Object.values(conf.stores))
-    if (conf.names) addBase.push(conf.names)
+    if (conf.tracks) {
+      addBase.push(...conf.tracks)
+    }
+    if (conf.stores) {
+      addBase.push(...Object.values(conf.stores))
+    }
+    if (conf.names) {
+      addBase.push(conf.names)
+    }
 
     addBase.forEach((t): void => {
-      if (!t.baseUrl) t.baseUrl = conf.baseUrl || '/'
+      if (!t.baseUrl) {
+        t.baseUrl = conf.baseUrl || '/'
+      }
     })
 
     // resolve the refSeqs and nameUrl if present
     if (conf.refSeqs && typeof conf.refSeqs === 'string') {
       conf.refSeqs = new URL(conf.refSeqs, conf.sourceUrl).href
     }
-    if (conf.nameUrl) conf.nameUrl = new URL(conf.nameUrl, conf.sourceUrl).href
+    if (conf.nameUrl) {
+      conf.nameUrl = new URL(conf.nameUrl, conf.sourceUrl).href
+    }
   }
 
   conf.stores = conf.stores || {}
@@ -233,7 +272,9 @@ export function regularizeConf(conf: Config, url: string): Config {
     }
 
     // skip if it's a new-style track def
-    if (trackConfig.store) return
+    if (trackConfig.store) {
+      return
+    }
 
     let trackClassName: string
     if (trackConfig.type === 'FeatureTrack') {
@@ -269,8 +310,12 @@ export function regularizeConf(conf: Config, url: string): Config {
  * @param className - class name
  */
 function regularizeClass(root: string, className: string | undefined): string {
-  if (!className) return ''
-  if (!className.includes('/')) className = `${root}/${className}`
+  if (!className) {
+    return ''
+  }
+  if (!className.includes('/')) {
+    className = `${root}/${className}`
+  }
   className = className.replace(/^\//, '')
   return className
 }
@@ -279,7 +324,9 @@ function guessStoreClass(
   trackConfig: Track | undefined,
   urlTemplate: string,
 ): string {
-  if (!trackConfig) return ''
+  if (!trackConfig) {
+    return ''
+  }
   if (trackConfig.type && trackConfig.type.includes('/FixedImage')) {
     return `JBrowse/Store/TiledImage/Fixed${
       trackConfig.backendVersion === 0 ? '_v0' : ''
@@ -290,10 +337,18 @@ function guessStoreClass(
       trackConfig.backendVersion === 0 ? '_v0' : ''
     }`
   }
-  if (/\.bam$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BAM'
-  if (/\.cram$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/CRAM'
-  if (/\.gff3?$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/GFF3'
-  if (/\.bed$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/BED'
+  if (/\.bam$/i.test(urlTemplate)) {
+    return 'JBrowse/Store/SeqFeature/BAM'
+  }
+  if (/\.cram$/i.test(urlTemplate)) {
+    return 'JBrowse/Store/SeqFeature/CRAM'
+  }
+  if (/\.gff3?$/i.test(urlTemplate)) {
+    return 'JBrowse/Store/SeqFeature/GFF3'
+  }
+  if (/\.bed$/i.test(urlTemplate)) {
+    return 'JBrowse/Store/SeqFeature/BED'
+  }
   if (/\.vcf.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/VCFTabix'
   }
@@ -315,7 +370,9 @@ function guessStoreClass(
   if (/\.(fa|fasta)\.b?gz$/i.test(urlTemplate)) {
     return 'JBrowse/Store/SeqFeature/BgzipIndexedFasta'
   }
-  if (/\.2bit$/i.test(urlTemplate)) return 'JBrowse/Store/SeqFeature/TwoBit'
+  if (/\.2bit$/i.test(urlTemplate)) {
+    return 'JBrowse/Store/SeqFeature/TwoBit'
+  }
   if (trackConfig.type && trackConfig.type.endsWith('/Sequence')) {
     return 'JBrowse/Store/Sequence/StaticChunked'
   }
@@ -333,7 +390,9 @@ function synthesizeTrackStoreConfig(
   let storeClass: string
   if (trackConfig.storeClass) {
     storeClass = regularizeClass('JBrowse/Store', trackConfig.storeClass)
-  } else storeClass = guessStoreClass(trackConfig, urlTemplate)
+  } else {
+    storeClass = guessStoreClass(trackConfig, urlTemplate)
+  }
 
   if (!storeClass) {
     console.warn(
@@ -362,7 +421,9 @@ function synthesizeTrackStoreConfig(
     storeConf.name = `store${objectHash(storeConf)}`
   }
   // record it
-  if (!mainConf.stores) mainConf.stores = {}
+  if (!mainConf.stores) {
+    mainConf.stores = {}
+  }
   mainConf.stores[storeConf.name] = storeConf
 
   // connect it to the track conf

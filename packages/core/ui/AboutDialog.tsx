@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import {
   Dialog,
@@ -26,18 +25,18 @@ const useStyles = makeStyles(theme => ({
 }))
 
 export default function AboutDialog({
-  model,
+  config,
   handleClose,
 }: {
-  model: AnyConfigurationModel
+  config: AnyConfigurationModel
   handleClose: () => void
 }) {
   const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()
   const [error, setError] = useState<Error>()
-  const session = getSession(model)
+  const session = getSession(config)
   const { rpcManager } = session
-  const conf = readConfObject(model)
+  const conf = readConfObject(config)
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -45,8 +44,8 @@ export default function AboutDialog({
     let cancelled = false
     ;(async () => {
       try {
-        const adapterConfig = readConfObject(model, 'adapter')
-        const result = await rpcManager.call(model.trackId, 'CoreGetInfo', {
+        const adapterConfig = readConfObject(config, 'adapter')
+        const result = await rpcManager.call(config.trackId, 'CoreGetInfo', {
           adapterConfig,
           signal,
         })
@@ -55,6 +54,7 @@ export default function AboutDialog({
         }
       } catch (e) {
         if (!cancelled) {
+          console.error(e)
           setError(e)
         }
       }
@@ -64,13 +64,13 @@ export default function AboutDialog({
       aborter.abort()
       cancelled = true
     }
-  }, [model, rpcManager])
+  }, [config, rpcManager])
 
-  let trackName = readConfObject(model, 'name')
-  if (readConfObject(model, 'type') === 'ReferenceSequenceTrack') {
+  let trackName = readConfObject(config, 'name')
+  if (readConfObject(config, 'type') === 'ReferenceSequenceTrack') {
     trackName = 'Reference Sequence'
     session.assemblies.forEach(assembly => {
-      if (assembly.sequence === model.configuration) {
+      if (assembly.sequence === config.configuration) {
         trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
       }
     })

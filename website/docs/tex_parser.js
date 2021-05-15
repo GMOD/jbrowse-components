@@ -1,4 +1,4 @@
-/* eslint-disable no-console,no-continue */
+/* eslint-disable no-console */
 const readline = require('readline')
 const acorn = require('acorn')
 const jsx = require('acorn-jsx')

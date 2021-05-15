@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import React, { useState, useEffect } from 'react'
 import Button from '@material-ui/core/Button'
 import ShareIcon from '@material-ui/icons/Share'
@@ -266,7 +265,6 @@ const ShareDialog = observer(
                     InputProps={{
                       readOnly: true,
                     }}
-                    // eslint-disable-next-line react/jsx-no-duplicate-props
                     inputProps={{ 'data-testid': 'share-url-text' }}
                     variant="filled"
                     style={{ width: '100%' }}

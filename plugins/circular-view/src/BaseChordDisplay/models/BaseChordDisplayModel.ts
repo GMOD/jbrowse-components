@@ -55,7 +55,9 @@ export const BaseChordDisplayModel = types
     get blockDefinitions() {
       const origSlices = (getContainingView(self) as CircularViewModel)
         .staticSlices
-      if (!self.refNameMap) return origSlices
+      if (!self.refNameMap) {
+        return origSlices
+      }
 
       const slices = JSON.parse(JSON.stringify(origSlices))
 
@@ -117,9 +119,13 @@ export const BaseChordDisplayModel = types
      * is probably a feature
      */
     get selectedFeatureId() {
-      if (!isAlive(self)) return undefined
+      if (!isAlive(self)) {
+        return undefined
+      }
       const session = getSession(self)
-      if (!session) return undefined
+      if (!session) {
+        return undefined
+      }
       const { selection } = session
       // does it quack like a feature?
       if (isFeature(selection)) {

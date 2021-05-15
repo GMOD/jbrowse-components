@@ -20,7 +20,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, observable, when } from 'mobx'
-import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
+import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
@@ -211,14 +211,17 @@ const stateModelFactory = (
         const configBlob =
           getConf(self, ['renderers', this.rendererTypeName]) || {}
 
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          filled: self.fill,
-          scaleType: this.scaleType,
-          displayCrossHatches: self.displayCrossHatches,
-          summaryScoreMode: self.summaryScoreMode,
-          color: self.color,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            filled: self.fill,
+            scaleType: this.scaleType,
+            displayCrossHatches: self.displayCrossHatches,
+            summaryScoreMode: self.summaryScoreMode,
+            color: self.color,
+          },
+          getEnv(self),
+        )
       },
     }))
     .views(self => {

@@ -155,7 +155,9 @@ const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
   const classes = useStyles()
   const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
   let rowClass = classes.dataRow
-  if (rowModel.isSelected) rowClass += ` ${classes.dataRowSelected}`
+  if (rowModel.isSelected) {
+    rowClass += ` ${classes.dataRowSelected}`
+  }
 
   function labelClick(evt) {
     rowModel.toggleSelect()

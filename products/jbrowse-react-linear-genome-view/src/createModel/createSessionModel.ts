@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -24,6 +26,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -57,10 +61,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       task: undefined,
 
-      // which config is being shown in the "About track" menu
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
-
-      DialogComponent: undefined as React.FC<any> | undefined,
+      DialogComponent: undefined as DialogComponentType | undefined,
       DialogProps: undefined as any,
     }))
     .views(self => ({
@@ -130,22 +131,23 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      setDialogComponent(comp?: React.FC<any>, props?: any) {
+      setDialogComponent(comp?: DialogComponentType, props?: any) {
         self.DialogComponent = comp
         self.DialogProps = props
-      },
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
       },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
@@ -184,7 +186,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
           if (!dereferenced) {
@@ -226,7 +230,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         self.view = {
           ...initialState,
@@ -243,7 +249,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -303,7 +311,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.setShowAboutConfig(config)
+              self.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },
@@ -339,10 +347,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
 export type SessionModel = Instance<SessionStateModel>
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// @ts-ignore
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
-  /* eslint-enable @typescript-eslint/no-unused-vars */
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel
   return x

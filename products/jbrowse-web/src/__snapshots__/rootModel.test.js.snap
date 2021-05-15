@@ -9,7 +9,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AddIcon",
           "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
@@ -23,7 +22,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AppsIcon",
           "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
@@ -47,7 +45,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AddIcon",
           "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),
@@ -61,7 +58,6 @@ Array [
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "displayName": "AppsIcon",
           "muiName": "SvgIcon",
           "type": Object {
             "$$typeof": Symbol(react.forward_ref),

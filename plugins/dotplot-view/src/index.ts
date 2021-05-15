@@ -235,11 +235,9 @@ export default class DotplotPlugin extends Plugin {
                 // from SA[0]'s CIGAR which is the primary alignments.
                 // otherwise it is the primary alignment just use seq.length if
                 // primary alignment
-                const totalLength =
-                  // eslint-disable-next-line no-bitwise
-                  flags & 2048
-                    ? getLength(supplementaryAlignments[0].CIGAR)
-                    : getLength(cigar)
+                const totalLength = getLength(
+                  flags & 2048 ? supplementaryAlignments[0].CIGAR : cigar,
+                )
 
                 const features = [
                   feat,

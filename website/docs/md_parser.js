@@ -1,4 +1,4 @@
-/* eslint-disable no-console,no-continue */
+/* eslint-disable no-console */
 const readline = require('readline')
 
 const rl = readline.createInterface({
@@ -36,8 +36,11 @@ let topLevel = false
       continue
     }
     if (readingHeader === false) {
-      if (line.startsWith('#')) console.log(`#${line}`)
-      else console.log(line)
+      if (line.startsWith('#')) {
+        console.log(`#${line}`)
+      } else {
+        console.log(line)
+      }
     }
   }
 })()
