@@ -265,43 +265,30 @@ const SessionLoader = types
     },
 
     async fetchConfig() {
-      try {
-        const { configPath = 'config.json' } = self
-        const config = JSON.parse(
-          (await openLocation({ uri: configPath }).readFile('utf8')) as string,
-        )
-        const configUri = new URL(configPath, window.location.href)
-        addRelativeUris(config, configUri)
+      const { configPath = 'config.json' } = self
+      const config = JSON.parse(
+        (await openLocation({ uri: configPath }).readFile('utf8')) as string,
+      )
+      const configUri = new URL(configPath, window.location.href)
+      addRelativeUris(config, configUri)
 
-        // cross origin config check
-        if (configUri.hostname !== window.location.hostname) {
-          const configPlugins = config.plugins || []
-          const defSessionPlugins = config.defaultSession?.sessionPlugins || []
-          const configPluginsAllowed = await checkPlugins(configPlugins)
-          const defSessionPluginsAllowed = await checkPlugins(defSessionPlugins)
-          if (!configPluginsAllowed) {
-            self.setSessionTriaged({
-              snap: config,
-              origin: 'config',
-              reason: configPlugins,
-            })
-          } else if (!defSessionPluginsAllowed) {
-            self.setSessionTriaged({
-              snap: config,
-              origin: 'config',
-              reason: defSessionPlugins,
-            })
-          } else {
-            await this.fetchPlugins(config)
-            self.setConfigSnapshot(config)
-          }
+      // cross origin config check
+      if (configUri.hostname !== window.location.hostname) {
+        const configPlugins = config.plugins || []
+        const configPluginsAllowed = await checkPlugins(configPlugins)
+        if (!configPluginsAllowed) {
+          self.setSessionTriaged({
+            snap: config,
+            origin: 'config',
+            reason: configPlugins,
+          })
         } else {
           await this.fetchPlugins(config)
           self.setConfigSnapshot(config)
         }
-      } catch (e) {
-        console.error(e)
-        self.setConfigError(e)
+      } else {
+        await this.fetchPlugins(config)
+        self.setConfigSnapshot(config)
       }
     },
 
@@ -338,7 +325,7 @@ const SessionLoader = types
           // clear session param, so just ignore
         }
       }
-      self.setSessionError(new Error('Local storage session not found'))
+      throw new Error('Local storage session not found')
     },
 
     async fetchSharedSession() {
@@ -396,6 +383,7 @@ const SessionLoader = types
         // fetch config
         await this.fetchConfig()
       } catch (e) {
+        console.error(e)
         self.setConfigError(e)
         return
       }
