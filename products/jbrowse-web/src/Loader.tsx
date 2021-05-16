@@ -102,6 +102,26 @@ function NoConfigMessage() {
   )
 }
 
+async function checkPlugins(pluginsToCheck: { url: string }[]) {
+  const fetchResult = await fetch(
+    'https://jbrowse.org/plugin-store/plugins.json',
+  )
+  if (!fetchResult.ok) {
+    throw new Error('Failed to fetch plugin data')
+  }
+  const array = (await fetchResult.json()) as {
+    plugins: { url: string }[]
+  }
+  const allowedPluginUrls = array.plugins.map(p => p.url)
+  const configPluginUrls: string[] = pluginsToCheck.map(
+    (p: { url: string }) => p.url,
+  )
+  const allPluginsAllowed = configPluginUrls.every(r =>
+    allowedPluginUrls.includes(r),
+  )
+  return allPluginsAllowed
+}
+
 type Config = SnapshotOut<AnyConfigurationModel>
 
 const SessionLoader = types
@@ -181,14 +201,15 @@ const SessionLoader = types
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
     },
-    setSessionSnapshot(snap: unknown) {
-      self.sessionSnapshot = snap
-    },
+
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
     setSessionTriaged(args?: { snap: unknown; origin: string }) {
       self.sessionTriaged = args
+    },
+    setSessionSnapshotSuccess(snap: unknown) {
+      self.sessionSnapshot = snap
     },
   }))
   .actions(self => ({
@@ -203,43 +224,55 @@ const SessionLoader = types
         self.setConfigError(e)
       }
     },
-    async fetchSessionPlugins(sessionSnapShot: {
-      sessionPlugins: PluginDefinition[]
-    }) {
+    async fetchSessionPlugins(snap: { sessionPlugins: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(sessionSnapShot.sessionPlugins)
+        const pluginLoader = new PluginLoader(snap.sessionPlugins)
         pluginLoader.installGlobalReExports(window)
-        const sessionPlugins = await pluginLoader.load()
-        self.setSessionPlugins([...sessionPlugins])
+        const plugins = await pluginLoader.load()
+        self.setSessionPlugins([...plugins])
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
       }
     },
-    async setSessionSnapshot(snap: unknown) {
-      await this.fetchSessionPlugins(
-        snap as {
-          sessionPlugins: PluginDefinition[]
-        },
-      )
-      this.setSessionSnapshotSuccess(snap)
+
+    // passed
+    async setSessionSnapshot(
+      snap: { sessionPlugins: PluginDefinition[] },
+      userAcceptedConfirmation?: boolean,
+    ) {
+      try {
+        const allPluginsAllowed = await checkPlugins(snap.sessionPlugins || [])
+        if (allPluginsAllowed || userAcceptedConfirmation) {
+          await this.fetchSessionPlugins(snap)
+          self.setSessionSnapshotSuccess(snap)
+        } else {
+          self.setSessionTriaged({ snap, origin: 'session' })
+        }
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
+      }
     },
-    setSessionSnapshotSuccess(snap: unknown) {
-      self.sessionSnapshot = snap
-    },
+
     async fetchConfig() {
       try {
-        const configLocation = {
-          uri: self.configPath || 'config.json',
-        }
-        const location = openLocation(configLocation)
-        const configText = (await location.readFile('utf8')) as string
-        const config = JSON.parse(configText)
-        const configUri = new URL(configLocation.uri, window.location.href)
+        const { configPath = 'config.json' } = self
+        const config = JSON.parse(
+          (await openLocation({ uri: configPath }).readFile('utf8')) as string,
+        )
+        const configUri = new URL(configPath, window.location.href)
         addRelativeUris(config, configUri)
+
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
-          self.setSessionTriaged({ snap: config, origin: 'config' })
+          const allPluginsAllowed = await checkPlugins(config.plugins)
+          if (!allPluginsAllowed) {
+            self.setSessionTriaged({ snap: config, origin: 'config' })
+          } else {
+            await this.fetchPlugins(config)
+            self.setConfigSnapshot(config)
+          }
         } else {
           await this.fetchPlugins(config)
           self.setConfigSnapshot(config)
@@ -304,6 +337,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
+
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
@@ -619,7 +653,12 @@ const Renderer = observer(
               const session = JSON.parse(
                 JSON.stringify(loader.sessionTriaged.snap),
               )
-              await loader.setSessionSnapshot({ ...session, id: shortid() })
+
+              // second param true says we passed user confirmation
+              await loader.setSessionSnapshot(
+                { ...session, id: shortid() },
+                true,
+              )
               handleClose()
             }}
             onCancel={() => {

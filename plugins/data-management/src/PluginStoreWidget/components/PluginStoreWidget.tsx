@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { getParent, getEnv } from 'mobx-state-tree'
+import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 
-import { makeStyles } from '@material-ui/core/styles'
-import { Typography } from '@material-ui/core'
-import Accordion from '@material-ui/core/Accordion'
-import AccordionSummary from '@material-ui/core/AccordionSummary'
-import TextField from '@material-ui/core/TextField'
-import InputAdornment from '@material-ui/core/InputAdornment'
-import Button from '@material-ui/core/Button'
-import IconButton from '@material-ui/core/IconButton'
+import {
+  Accordion,
+  AccordionSummary,
+  TextField,
+  InputAdornment,
+  Button,
+  IconButton,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import ClearIcon from '@material-ui/icons/Clear'
@@ -17,7 +19,7 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
 
 import type { JBrowsePlugin, BasePlugin } from '@jbrowse/core/util/types'
 
-import { isElectron } from '@jbrowse/core/util'
+import { getSession, isElectron } from '@jbrowse/core/util'
 import InstalledPluginsList from './InstalledPluginsList'
 import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
@@ -54,33 +56,29 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
   const classes = useStyles()
   const [pluginArray, setPluginArray] = useState([])
   const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)
+  const { adminMode } = getSession(model)
+  const { pluginManager } = getEnv(model)
 
   useEffect(() => {
-    if (pluginArray.length === 0) {
-      fetchPluginArray()
+    let killed = false
+
+    ;(async () => {
+      const fetchResult = await fetch(
+        'https://jbrowse.org/plugin-store/plugins.json',
+      )
+      if (!fetchResult.ok) {
+        throw new Error('Failed to fetch plugin data')
+      }
+      const array = await fetchResult.json()
+      if (!killed) {
+        setPluginArray(array.plugins)
+      }
+    })()
+
+    return () => {
+      killed = true
     }
-  })
-
-  const fetchPluginArray = async () => {
-    const fetchResult = await fetch(
-      'https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json',
-    )
-    if (!fetchResult.ok) {
-      throw new Error('Failed to fetch plugin data')
-    }
-    const array = await fetchResult.json()
-    setPluginArray(array.plugins)
-  }
-
-  const handleInputChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-  ) => {
-    model.setFilterText(event.target.value)
-  }
-
-  const rootModel = getParent(model, 3)
-  const { adminMode } = rootModel
-  const { pluginManager } = getEnv(model)
+  }, [])
 
   return (
     <div>
@@ -116,7 +114,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         className={classes.searchBox}
         label="Filter plugins"
         value={model.filterText}
-        onChange={handleInputChange}
+        onChange={event => model.setFilterText(event.target.value)}
         fullWidth
         InputProps={{
           endAdornment: (
@@ -158,16 +156,12 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
               key={(plugin as JBrowsePlugin).name}
               plugin={plugin}
               model={model}
-              adminMode={adminMode}
+              adminMode={!!adminMode}
             />
           ))}
       </Accordion>
     </div>
   )
-}
-
-PluginStoreWidget.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(PluginStoreWidget)
