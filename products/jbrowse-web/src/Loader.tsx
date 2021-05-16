@@ -224,9 +224,9 @@ const SessionLoader = types
         self.setConfigError(e)
       }
     },
-    async fetchSessionPlugins(snap: { sessionPlugins: PluginDefinition[] }) {
+    async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(snap.sessionPlugins)
+        const pluginLoader = new PluginLoader(snap.sessionPlugins || [])
         pluginLoader.installGlobalReExports(window)
         const plugins = await pluginLoader.load()
         self.setSessionPlugins([...plugins])
@@ -238,7 +238,7 @@ const SessionLoader = types
 
     // passed
     async setSessionSnapshot(
-      snap: { sessionPlugins: PluginDefinition[] },
+      snap: { sessionPlugins?: PluginDefinition[] },
       userAcceptedConfirmation?: boolean,
     ) {
       try {
