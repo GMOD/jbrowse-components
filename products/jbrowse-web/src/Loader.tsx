@@ -205,7 +205,11 @@ const SessionLoader = types
     setBlankSession(flag: boolean) {
       self.blankSession = flag
     },
-    setSessionTriaged(args?: { snap: unknown; origin: string }) {
+    setSessionTriaged(args?: {
+      snap: unknown
+      origin: string
+      reason: { url: string }[]
+    }) {
       self.sessionTriaged = args
     },
     setSessionSnapshotSuccess(snap: unknown) {
@@ -242,12 +246,17 @@ const SessionLoader = types
       userAcceptedConfirmation?: boolean,
     ) {
       try {
-        const allPluginsAllowed = await checkPlugins(snap.sessionPlugins || [])
-        if (allPluginsAllowed || userAcceptedConfirmation) {
+        const { sessionPlugins = [] } = snap
+        const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
+        if (sessionPluginsAllowed || userAcceptedConfirmation) {
           await this.fetchSessionPlugins(snap)
           self.setSessionSnapshotSuccess(snap)
         } else {
-          self.setSessionTriaged({ snap, origin: 'session' })
+          self.setSessionTriaged({
+            snap,
+            origin: 'session',
+            reason: sessionPlugins,
+          })
         }
       } catch (e) {
         console.error(e)
@@ -266,9 +275,22 @@ const SessionLoader = types
 
         // cross origin config check
         if (configUri.hostname !== window.location.hostname) {
-          const allPluginsAllowed = await checkPlugins(config.plugins)
-          if (!allPluginsAllowed) {
-            self.setSessionTriaged({ snap: config, origin: 'config' })
+          const configPlugins = config.plugins || []
+          const defSessionPlugins = config.defaultSession?.sessionPlugins || []
+          const configPluginsAllowed = await checkPlugins(configPlugins)
+          const defSessionPluginsAllowed = await checkPlugins(defSessionPlugins)
+          if (!configPluginsAllowed) {
+            self.setSessionTriaged({
+              snap: config,
+              origin: 'config',
+              reason: configPlugins,
+            })
+          } else if (!defSessionPluginsAllowed) {
+            self.setSessionTriaged({
+              snap: config,
+              origin: 'config',
+              reason: defSessionPlugins,
+            })
           } else {
             await this.fetchPlugins(config)
             self.setConfigSnapshot(config)
