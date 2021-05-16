@@ -2,7 +2,6 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { FileLocation } from '@jbrowse/core/util/types'
 import {
   guessAdapter,
   guessTrackType,
@@ -18,6 +17,23 @@ function isAbsoluteUrl(url: string) {
   }
 }
 
+type PreUrlLocation = { uri: string }
+type PreLocalPath = { localPath: string }
+type PreFileBlob = { blob: File }
+type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
+
+function getFileName(track: PreFileLocation) {
+  const uri = 'uri' in track ? track.uri : undefined
+  const localPath = 'localPath' in track ? track.localPath : undefined
+  const blob = 'blob' in track ? track.blob : undefined
+  return (
+    blob?.name ||
+    uri?.slice(uri.lastIndexOf('/') + 1) ||
+    localPath?.slice(localPath.lastIndexOf('/') + 1) ||
+    ''
+  )
+}
+
 export default function f(pluginManager: PluginManager) {
   return types
     .model('AddTrackModel', {
@@ -29,8 +45,8 @@ export default function f(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       trackSource: 'fromFile',
-      trackData: { uri: '' } as FileLocation,
-      indexTrackData: { uri: '' } as FileLocation,
+      trackData: { uri: '' } as PreFileLocation,
+      indexTrackData: { uri: '' } as PreFileLocation,
 
       // alts
       altAssemblyName: '',
@@ -46,10 +62,10 @@ export default function f(pluginManager: PluginManager) {
       setTrackSource(str: string) {
         self.trackSource = str
       },
-      setTrackData(obj: FileLocation) {
+      setTrackData(obj: PreFileLocation) {
         self.trackData = obj
       },
-      setIndexTrackData(obj: FileLocation) {
+      setIndexTrackData(obj: PreFileLocation) {
         self.indexTrackData = obj
       },
       setAssembly(str: string) {
@@ -64,72 +80,53 @@ export default function f(pluginManager: PluginManager) {
 
       clearData() {
         self.trackSource = ''
-        self.altTrackAdapter = {}
-        self.indexTrackData = { uri: '' }
-        self.trackData = { uri: '' }
         self.altTrackName = ''
         self.altTrackType = ''
         self.altAssemblyName = ''
         self.altTrackAdapter = {}
+        self.indexTrackData = { uri: '' }
+        self.trackData = { uri: '' }
       },
     }))
     .views(self => ({
       get trackAdapter() {
         const { trackData, indexTrackData } = self
 
-        if ('uri' in trackData) {
-          return guessAdapter(trackData.uri, 'uri', indexTrackData.uri)
-        }
-
-        if ('localPath' in trackData) {
-          return guessAdapter(trackData.localPath, 'localPath')
-        }
-
-        if (trackData.blob) {
-          return guessAdapter(
-            trackData.blob.name,
-            'blob',
-            indexTrackData?.blob?.name,
-            trackData.blob,
-            indexTrackData?.blob,
-          )
-        }
-        return self.altTrackAdapter
+        return self.altTrackAdapter.type
+          ? self.altTrackAdapter
+          : guessAdapter(trackData, indexTrackData, getFileName)
       },
 
       get trackName() {
-        const uri = self.trackData?.uri
-        const localPath = self.trackData?.localPath
-        const blobName = self.trackData?.blob?.name
-        return (
-          self.altTrackName ||
-          blobName ||
-          uri?.slice(uri.lastIndexOf('/') + 1) ||
-          localPath?.slice(localPath.lastIndexOf('/') + 1)
-        )
+        return self.altTrackName || getFileName(self.trackData)
       },
 
       get isFtp() {
-        const { trackData, indexTrackData } = self
+        const { trackData: track, indexTrackData: index } = self
         return !!(
-          indexTrackData.uri?.startsWith('ftp://') ||
-          trackData.uri?.startsWith('ftp://')
+          ('uri' in index && index.uri.startsWith('ftp://')) ||
+          ('uri' in track && track.uri.startsWith('ftp://'))
         )
       },
 
       get isRelativeUrl() {
-        return !(
-          (self.indexTrackData.uri && isAbsoluteUrl(self.indexTrackData.uri)) ||
-          (self.trackData.uri && isAbsoluteUrl(self.trackData.uri))
-        )
+        const { trackData: track, indexTrackData: index } = self
+
+        return 'uri' in index || 'uri' in track
+          ? ('uri' in index && isAbsoluteUrl(index.uri)) ||
+              ('uri' in track && isAbsoluteUrl(track.uri))
+          : false
       },
 
       get wrongProtocol() {
-        return (
-          window.location.protocol === 'https:' &&
-          (self.indexTrackData.uri?.startsWith('http://') ||
-            self.trackData.uri?.startsWith('http://'))
-        )
+        const { trackData: track, indexTrackData: index } = self
+        if (window.location.protocol === 'https:') {
+          return (
+            ('uri' in index && index.uri.startsWith('http://')) ||
+            ('uri' in track && track.uri.startsWith('http://'))
+          )
+        }
+        return false
       },
 
       get unsupported() {
@@ -142,6 +139,23 @@ export default function f(pluginManager: PluginManager) {
 
       get trackType() {
         return self.altTrackType || guessTrackType(this.trackAdapter.type)
+      },
+    }))
+    .views(self => ({
+      get warningMessage() {
+        if (self.isFtp) {
+          return `Warning: JBrowse cannot access files using the ftp protocol`
+        } else if (self.isRelativeUrl) {
+          return `Warning: one or more of your files do not provide the protocol e.g.
+          https://, please provide an absolute URL unless you are sure a
+          relative URL is intended.`
+        } else if (self.wrongProtocol) {
+          return `Warning: You entered a http:// resources but we cannot access HTTP
+          resources from JBrowse when it is running on https. Please use an
+          https URL for your track, or access the JBrowse app from the http
+          protocol`
+        }
+        return ''
       },
     }))
 }

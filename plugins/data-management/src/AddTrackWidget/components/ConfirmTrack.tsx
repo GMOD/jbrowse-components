@@ -18,59 +18,33 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function StatusMessage({
-  trackData,
   trackAdapter,
   trackType,
 }: {
-  trackData: FileLocation
-  trackAdapter: any
-  trackType: any
+  trackAdapter: { type: string; subadapter?: { type: string } }
+  trackType: string
 }) {
   const classes = useStyles()
-  if (trackData.uri || trackData.localPath || trackData.config) {
-    if (trackData.uri || trackData.localPath) {
-      return trackAdapter.type === 'SNPCoverageAdapter' ? (
-        <Typography className={classes.spacing}>
-          Selected <code>{trackType}</code>. Using adapter{' '}
-          <code>{trackAdapter.type}</code> with subadapter{' '}
-          <code>{trackAdapter.subadapter.type}</code>. Please enter a track name
-          and, if necessary, update the track type.
-        </Typography>
-      ) : (
-        <Typography className={classes.spacing}>
-          Using adapter <code>{trackAdapter.type}</code> and guessing track type{' '}
-          <code>{trackType}</code>. Please enter a track name and, if necessary,
-          update the track type.
-        </Typography>
-      )
-    }
-    return (
-      <Typography className={classes.spacing}>
-        Please enter a track type and track name.
-      </Typography>
-    )
-  }
-  return null
+  return trackAdapter.type === 'SNPCoverageAdapter' ? (
+    <Typography className={classes.spacing}>
+      Selected <code>{trackType}</code>. Using adapter{' '}
+      <code>{trackAdapter.type}</code> with subadapter{' '}
+      <code>{trackAdapter.subadapter?.type}</code>. Please enter a track name
+      and, if necessary, update the track type.
+    </Typography>
+  ) : (
+    <Typography className={classes.spacing}>
+      Using adapter <code>{trackAdapter.type}</code> and guessing track type{' '}
+      <code>{trackType}</code>. Please enter a track name and, if necessary,
+      update the track type.
+    </Typography>
+  )
 }
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  let error = ''
-  const { trackName, trackData, trackAdapter, trackType, assembly } = model
-
-  if (model.isFtp) {
-    error = `Warning: JBrowse cannot access files using the ftp protocol`
-  } else if (model.isRelativeUrl) {
-    error = `Warning: one or more of your files do not provide the protocol e.g.
-          https://, please provide an absolute URL unless you are sure a
-          relative URL is intended.`
-  } else if (model.wrongProtocol) {
-    error = `Warning: You entered a http:// resources but we cannot access HTTP
-          resources from JBrowse when it is running on https. Please use an
-          https URL for your track, or access the JBrowse app from the http
-          protocol`
-  }
+  const { trackName, trackAdapter, trackType, assembly, warningMessage } = model
 
   if (model.unsupported) {
     return (
@@ -163,13 +137,9 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
 
   return (
     <>
-      <StatusMessage
-        trackAdapter={trackAdapter}
-        trackType={trackType}
-        trackData={trackData}
-      />
-      {error ? (
-        <Typography style={{ color: 'orange' }}>{error}</Typography>
+      <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+      {warningMessage ? (
+        <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
       <TextField
         className={classes.spacing}
@@ -198,12 +168,9 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
         {getEnv(session)
           .pluginManager.getElementTypesInGroup('track')
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((installedTrackType: any) => (
-            <MenuItem
-              key={installedTrackType.name}
-              value={installedTrackType.name}
-            >
-              {installedTrackType.name}
+          .map(({ name }: any) => (
+            <MenuItem key={name} value={name}>
+              {name}
             </MenuItem>
           ))}
       </TextField>

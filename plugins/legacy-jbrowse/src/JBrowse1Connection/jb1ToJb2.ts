@@ -24,8 +24,8 @@ interface Jb2Adapter {
   type: string
   features?: Jb2Feature[]
   bamLocation?: Jb2Location
-  cramLocation?: JBLocation
-  craiLocation?: JBLocation
+  cramLocation?: Jb2Location
+  craiLocation?: Jb2Location
   fastaLocation?: Jb2Location
   faiLocation?: Jb2Location
   gziLocation?: Jb2Location
@@ -50,7 +50,7 @@ interface Jb2Feature {
 interface Jb2Location {
   uri?: string
   localPath?: string
-  blob?: Blob
+  blobId?: string
 }
 
 export function convertTrackConfig(
@@ -352,7 +352,11 @@ export function convertTrackConfig(
   }
 
   // If we don't recogize the store class, make a best effort to guess by file type
-  jb2TrackConfig.adapter = guessAdapter(urlTemplate, 'uri')
+  jb2TrackConfig.adapter = guessAdapter(
+    { uri: urlTemplate },
+    undefined,
+    () => urlTemplate,
+  )
   if (!jb2TrackConfig.adapter) {
     throw new Error('Could not determine adapter')
   }

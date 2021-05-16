@@ -82,40 +82,53 @@ export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
-export function guessAdapter(
-  fileName: string,
-  protocol: 'uri' | 'localPath' | 'blob',
-  index?: string,
-  fileBlob?: File,
-  indexBlob?: File,
-) {
-  // if index paramter is given, this function returns slightly different
-  // things
-  function makeLocation(location: string, indexOverride?: string) {
-    if (protocol === 'uri') {
-      return { uri: indexOverride || location }
-    }
-    if (protocol === 'localPath') {
-      return { localPath: indexOverride || location }
-    }
-    if (protocol === 'blob') {
-      // possibly we should be more clear about when this is not undefined, and
-      // also allow mix of blob and url for index and file
-      // @ts-ignore
-      blobMap[`b${blobId}`] = indexOverride ? indexBlob : fileBlob
-      return indexOverride
-        ? { name: indexBlob?.name, blobId: `b${blobId++}` }
-        : { name: fileBlob?.name, blobId: `b${blobId++}` }
-    }
-    throw new Error(`invalid protocol ${protocol}`)
+type PreUrlLocation = { uri: string }
+type PreLocalPath = { localPath: string }
+type PreFileBlob = { blob: File }
+type PostFileBlob = { blobId: string; name: string }
+type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
+type ProcessedFileLocation = PreUrlLocation | PreLocalPath | PostFileBlob
+
+// blob files are stored in a global map
+function storeBlobLocation(location: PreFileLocation) {
+  if (location && 'blob' in location) {
+    // possibly we should be more clear about when this is not undefined, and
+    // also allow mix of blob and url for index and file
+    // @ts-ignore
+    blobMap[`b${blobId}`] = location.blob
+    return { name: location?.blob.name, blobId: `b${blobId++}` }
   }
+  return location
+}
+
+export function guessAdapter(
+  prefile: PreFileLocation,
+  preindex: PreFileLocation | undefined,
+  getFileName: (f: PreFileLocation) => string,
+) {
+  const file = storeBlobLocation(prefile)
+  const index = preindex && storeBlobLocation(preindex)
+
+  function makeIndex(location: ProcessedFileLocation, suffix: string) {
+    if ('uri' in location) {
+      return { uri: location.uri + suffix }
+    }
+    if ('localPath' in location) {
+      return { localPath: location.localPath + suffix }
+    }
+    return location
+  }
+
+  const fileName = getFileName(prefile)
+  const indexName = preindex && getFileName(preindex)
+
   if (/\.bam$/i.test(fileName)) {
     return {
       type: 'BamAdapter',
-      bamLocation: makeLocation(fileName),
+      bamLocation: file,
       index: {
-        location: makeLocation(`${fileName}.bai`, index),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        location: index || makeIndex(file, '.bai'),
+        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
       },
     }
   }
@@ -123,8 +136,8 @@ export function guessAdapter(
   if (/\.cram$/i.test(fileName)) {
     return {
       type: 'CramAdapter',
-      cramLocation: makeLocation(fileName),
-      craiLocation: makeLocation(`${fileName}.crai`, index),
+      cramLocation: file,
+      craiLocation: index || makeIndex(file, '.crai'),
     }
   }
 
@@ -137,10 +150,10 @@ export function guessAdapter(
   if (/\.gff3?\.b?gz$/i.test(fileName)) {
     return {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(fileName),
+      gffGzLocation: file,
       index: {
-        location: makeLocation(`${fileName}.tbi`, index),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        location: index || makeIndex(file, '.tbi'),
+        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
   }
@@ -160,10 +173,10 @@ export function guessAdapter(
   if (/\.vcf\.b?gz$/i.test(fileName)) {
     return {
       type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(fileName),
+      vcfGzLocation: file,
       index: {
-        location: makeLocation(`${fileName}.tbi`, index),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        location: index || makeIndex(file, 'tbi'),
+        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
   }
@@ -183,10 +196,10 @@ export function guessAdapter(
   if (/\.bed\.b?gz$/i.test(fileName)) {
     return {
       type: 'BedTabixAdapter',
-      bedGzLocation: makeLocation(fileName),
+      bedGzLocation: file,
       index: {
-        location: makeLocation(`${fileName}.tbi`, index),
-        indexType: index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        location: index || makeIndex(file, '.tbi'),
+        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
       },
     }
   }
@@ -194,38 +207,38 @@ export function guessAdapter(
   if (/\.(bb|bigbed)$/i.test(fileName)) {
     return {
       type: 'BigBedAdapter',
-      bigBedLocation: makeLocation(fileName),
+      bigBedLocation: file,
     }
   }
 
   if (/\.(bw|bigwig)$/i.test(fileName)) {
     return {
       type: 'BigWigAdapter',
-      bigWigLocation: makeLocation(fileName),
+      bigWigLocation: file,
     }
   }
 
   if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
     return {
       type: 'IndexedFastaAdapter',
-      fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(`${fileName}.fai`, index),
+      fastaLocation: file,
+      faiLocation: index || makeIndex(file, '.fai'),
     }
   }
 
   if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
     return {
       type: 'BgzipFastaAdapter',
-      fastaLocation: makeLocation(fileName),
-      faiLocation: makeLocation(`${fileName}.fai`, index),
-      gziLocation: makeLocation(`${fileName}.gzi`),
+      fastaLocation: file,
+      faiLocation: makeIndex(file, '.fai'),
+      gziLocation: makeIndex(file, '.gzi'),
     }
   }
 
   if (/\.2bit$/i.test(fileName)) {
     return {
       type: 'TwoBitAdapter',
-      twoBitLocation: makeLocation(fileName),
+      twoBitLocation: file,
     }
   }
 
@@ -238,28 +251,28 @@ export function guessAdapter(
   if (/\/trackData.jsonz?$/i.test(fileName)) {
     return {
       type: 'NCListAdapter',
-      rootUrlTemplate: makeLocation(fileName),
+      rootUrlTemplate: file,
     }
   }
 
   if (/\/sparql$/i.test(fileName)) {
     return {
       type: 'SPARQLAdapter',
-      endpoint: fileName,
+      endpoint: file,
     }
   }
 
   if (/\.hic/i.test(fileName)) {
     return {
       type: 'HicAdapter',
-      hicLocation: makeLocation(fileName),
+      hicLocation: file,
     }
   }
 
   if (/\.paf/i.test(fileName)) {
     return {
       type: 'PAFAdapter',
-      pafLocation: makeLocation(fileName),
+      pafLocation: file,
     }
   }
 
