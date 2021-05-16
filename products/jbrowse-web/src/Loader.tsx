@@ -361,7 +361,7 @@ const SessionLoader = types
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      await this.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session.session, id: shortid() })
     },
 
     async afterCreate() {
@@ -430,7 +430,11 @@ const SessionLoader = types
     },
   }))
 
-export function Loader({ initialTimestamp }: { initialTimestamp: number }) {
+export function Loader({
+  initialTimestamp = Date.now(),
+}: {
+  initialTimestamp?: number
+}) {
   // return value if defined, else convert null to undefined for use with
   // types.maybe
   const load = (param: string | null | undefined) =>

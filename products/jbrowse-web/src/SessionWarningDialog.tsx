@@ -34,12 +34,10 @@ export default function SessionWarningModal({
     <Dialog
       open
       maxWidth="xl"
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
       data-testid="session-warning-modal"
       className={classes.main}
     >
-      <DialogTitle id="alert-dialog-title">Warning</DialogTitle>
+      <DialogTitle>Warning</DialogTitle>
       <Divider />
       <div>
         <WarningIcon fontSize="large" />
