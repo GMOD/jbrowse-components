@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import React from 'react'
-import ErrorBoundary from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
   AccordionDetails,

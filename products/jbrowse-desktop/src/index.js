@@ -1,7 +1,7 @@
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import ErrorBoundary from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import 'fontsource-roboto'
 import factoryReset from './factoryReset'
 import Loader from './Loader'
