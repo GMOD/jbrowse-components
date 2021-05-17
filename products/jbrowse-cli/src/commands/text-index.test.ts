@@ -139,6 +139,8 @@ describe('getIndexingConfigurations', () => {
     await textIndex.parseLocalGff3('./products/jbrowse-cli/test/data/volvox.sort.gff3.gz', true, true)
 
     const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
+    expect(ixxData).toMatchSnapshot()
   })
 })
