@@ -64,7 +64,6 @@ export function getParentRenderProps(node: IAnyStateTreeNode) {
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
-let blobId = 0
 let blobMap: { [key: string]: File } = {}
 
 // get a specific blob
@@ -90,13 +89,14 @@ type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
 type ProcessedFileLocation = PreUrlLocation | PreLocalPath | PostFileBlob
 
 // blob files are stored in a global map
-function storeBlobLocation(location: PreFileLocation) {
+export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
     // possibly we should be more clear about when this is not undefined, and
     // also allow mix of blob and url for index and file
     // @ts-ignore
-    blobMap[`b${blobId}`] = location.blob
-    return { name: location?.blob.name, blobId: `b${blobId++}` }
+    const id = +Date.now()
+    blobMap[`b${id}`] = location.blob
+    return { name: location?.blob.name, blobId: `b${id}` }
   }
   return location
 }

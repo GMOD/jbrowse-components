@@ -67,7 +67,13 @@ export function openLocation(location: FileLocation): GenericFilehandle {
   }
   if (isBlobLocation(location)) {
     // special case where blob is not directly stored on the model, use a getter
-    return new BlobFile(getBlob(location.blobId))
+    const blob = getBlob(location.blobId)
+    if (!blob) {
+      throw new Error(
+        `this file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
+      )
+    }
+    return new BlobFile(blob)
   }
   throw new Error('invalid fileLocation')
 }
