@@ -530,7 +530,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
-      showTrack(trackId: string, initialSnapshot = {}) {
+      showTrack(trackId: string, initialSnapshot = {}, initialSnapshot2 = {}) {
         const trackConfigSchema = pluginManager.pluggableConfigSchemaType(
           'track',
         )
@@ -559,7 +559,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...initialSnapshot,
           type: configuration.type,
           configuration,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
+          displays: [
+            {
+              type: displayConf.type,
+              configuration: displayConf,
+              ...initialSnapshot2,
+            },
+          ],
         })
         self.tracks.push(track)
         return track
