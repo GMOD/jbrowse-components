@@ -95,15 +95,11 @@ export default class TextIndex extends JBrowseCommand {
 
       // repeats_hg19
       // gff3tabix_genes
-      // console.log("i did something")
-      // const trackIds: Array<string> = ['gff3tabix_genes']
-      // const indexConfig = await this.getIndexingConfigurations(trackIds, null)
       
-      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      //console.log(typeof uri) // returns string
-
-      // when isTest is set to true it throws an error but runs when its false
-      await this.parseLocalGff3('./products/jbrowse-cli/test/data/volvox.sort.gff3.gz', true, true)
+      const trackIds: Array<string> = ['gff3tabix_genes']
+      const indexConfig = await this.getIndexingConfigurations(trackIds, null)
+      const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      await this.parseLocalGff3(uri, true, false)
     }
   }
 
