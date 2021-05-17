@@ -49,8 +49,6 @@ export default class TextIndex extends JBrowseCommand {
   async run() {
     const { flags: runFlags } = this.parse(TextIndex)
 
-    this.debug(`Command loaded`)
-
     if (runFlags.individual) {
       if (runFlags.tracks) {
         const trackIds: string = runFlags.tracks
@@ -243,7 +241,6 @@ export default class TextIndex extends JBrowseCommand {
   // then passing them into the parseGff3()
   private async parseLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
-    debugger;
     let gZipRead: ReadStream = file.pipe(unzip)
     await this.indexGff3(gZipRead, isTest)
   } 
@@ -300,8 +297,6 @@ export default class TextIndex extends JBrowseCommand {
   async runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
-    
-    // debugger;
 
     let ixProcess: ChildProcessWithoutNullStreams
 
@@ -324,13 +319,15 @@ export default class TextIndex extends JBrowseCommand {
         this.log(`Output from ixIxx: ${data}`)
     })
 
+    // Hook up the reject from promise on error
     ixProcess.stderr.on('data', (data) => {
         this.error(`Error with ixIxx: ${data}`)
     })
 
-    await new Promise(resolve => {
+    await new Promise((resolve, reject) => {
       ixProcess.on('close', (code) => {
         resolve('Success!')
+        // Code should = 0 for success
         this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
         return code;
       })
