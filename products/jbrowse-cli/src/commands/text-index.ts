@@ -247,7 +247,7 @@ export default class TextIndex extends JBrowseCommand {
   // then passing them into the parseGff3()
   private async parseLocalGzip(file: ReadStream, isTest: boolean){
     const unzip = createGunzip()
-
+    debugger;
     let gZipRead: ReadStream = file.pipe(unzip)
     await this.indexGff3(gZipRead, isTest)
   } 
@@ -357,7 +357,6 @@ export default class TextIndex extends JBrowseCommand {
     if (!config.tracks) {
       this.error('Error, no tracks found in config.json. Please add a track before indexing.')
     }
-    debugger;
     const configurations = trackIds.map(trackId => {
       const track = config.tracks.find(
         (track) => trackId === track.trackId,

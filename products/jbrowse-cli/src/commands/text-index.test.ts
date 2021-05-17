@@ -134,9 +134,8 @@ describe('getIndexingConfigurations', () => {
   it(`Gets the configurations for ['gff3tabix_genes] and indexes it`, async () => {
     let textIndex = new TextIndex([], null)
     const trackIds: Array<string> = ['gff3tabix_genes']
-    const indexConfig = await textIndex.getIndexingConfigurations(trackIds,null)
-    const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const uri: string = 'products/jbrowse-cli/' + indexConfig[0].indexingConfiguration.gffLocation.uri;
     await textIndex.parseLocalGff3(uri, true, true)
 
     const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
