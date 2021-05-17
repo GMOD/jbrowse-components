@@ -1,5 +1,6 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { objectHash } from './index'
+import { PreFileLocation, FileLocation } from './types'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 import { readConfObject } from '../configuration'
 
@@ -81,12 +82,12 @@ export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
-type PreUrlLocation = { uri: string }
-type PreLocalPath = { localPath: string }
-type PreFileBlob = { blob: File }
-type PostFileBlob = { blobId: string; name: string }
-type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
-type ProcessedFileLocation = PreUrlLocation | PreLocalPath | PostFileBlob
+// type PreUrlLocation = { uri: string }
+// type PreLocalPath = { localPath: string }
+// type PreFileBlob = { blob: File }
+// type PostFileBlob = { blobId: string; name: string }
+// type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
+// type ProcessedFileLocation = PreUrlLocation | PreLocalPath | PostFileBlob
 
 // blob files are stored in a global map
 export function storeBlobLocation(location: PreFileLocation) {
@@ -102,14 +103,11 @@ export function storeBlobLocation(location: PreFileLocation) {
 }
 
 export function guessAdapter(
-  prefile: PreFileLocation,
-  preindex: PreFileLocation | undefined,
-  getFileName: (f: PreFileLocation) => string,
+  file: FileLocation,
+  index: FileLocation | undefined,
+  getFileName: (f: FileLocation) => string,
 ) {
-  const file = storeBlobLocation(prefile)
-  const index = preindex && storeBlobLocation(preindex)
-
-  function makeIndex(location: ProcessedFileLocation, suffix: string) {
+  function makeIndex(location: FileLocation, suffix: string) {
     if ('uri' in location) {
       return { uri: location.uri + suffix }
     }
@@ -119,8 +117,8 @@ export function guessAdapter(
     return location
   }
 
-  const fileName = getFileName(prefile)
-  const indexName = preindex && getFileName(preindex)
+  const fileName = getFileName(file)
+  const indexName = index && getFileName(index)
 
   if (/\.bam$/i.test(fileName)) {
     return {

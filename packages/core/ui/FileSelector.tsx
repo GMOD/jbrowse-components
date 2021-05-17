@@ -20,7 +20,7 @@ import {
   FileLocation,
   BlobLocation,
 } from '../util/types'
-import { getBlob } from '../util/tracks'
+import { getBlob, storeBlobLocation } from '../util/tracks'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -39,7 +39,7 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 const FileLocationEditor = observer(
   (props: {
     location?: FileLocation
-    setLocation: (param: PreFileLocation) => void
+    setLocation: (param: FileLocation) => void
     name?: string
     description?: string
   }) => {
@@ -135,7 +135,7 @@ const LocalFileChooser = observer(
                 if (isElectron) {
                   setLocation({ localPath: file.path })
                 } else {
-                  setLocation({ blob: file })
+                  setLocation(storeBlobLocation({ blob: file }))
                 }
               }
             }}

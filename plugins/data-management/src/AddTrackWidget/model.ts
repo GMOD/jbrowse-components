@@ -3,6 +3,7 @@ import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { FileLocation } from '@jbrowse/core/util/types'
+import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import {
   guessAdapter,
   guessTrackType,
@@ -23,10 +24,10 @@ type PreLocalPath = { localPath: string }
 type PreFileBlob = { blob: File }
 type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
 
-function getFileName(track: PreFileLocation) {
+function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
   const localPath = 'localPath' in track ? track.localPath : undefined
-  const blob = 'blob' in track ? track.blob : undefined
+  const blob = 'blobId' in track ? track : undefined
   return (
     blob?.name ||
     uri?.slice(uri.lastIndexOf('/') + 1) ||
@@ -46,8 +47,8 @@ export default function f(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       trackSource: 'fromFile',
-      trackData: undefined as PreFileLocation | undefined,
-      indexTrackData: undefined as PreFileLocation | undefined,
+      trackData: undefined as FileLocation | undefined,
+      indexTrackData: undefined as FileLocation | undefined,
 
       // alts
       altAssemblyName: '',
@@ -63,10 +64,10 @@ export default function f(pluginManager: PluginManager) {
       setTrackSource(str: string) {
         self.trackSource = str
       },
-      setTrackData(obj: PreFileLocation) {
+      setTrackData(obj: FileLocation) {
         self.trackData = obj
       },
-      setIndexTrackData(obj: PreFileLocation) {
+      setIndexTrackData(obj: FileLocation) {
         self.indexTrackData = obj
       },
       setAssembly(str: string) {

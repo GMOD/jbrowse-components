@@ -2,15 +2,18 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import MenuItem from '@material-ui/core/MenuItem'
-import TextField from '@material-ui/core/TextField'
-import { PreFileLocation } from '@jbrowse/core/util/types'
-import { makeStyles } from '@material-ui/core/styles'
+import {
+  Button,
+  Container,
+  Grid,
+  MenuItem,
+  TextField,
+  Paper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
+import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper, Typography } from '@material-ui/core'
 import { LinearSyntenyViewModel } from '../model'
 
 // the below importsused for multi-way synteny, not implemented yet
@@ -78,7 +81,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
   const classes = useStyles()
   const [selected, setSelected] = useState([0, 0])
   const [numRows] = useState(2)
-  const [trackData, setTrackData] = useState<PreFileLocation>({ uri: '' })
+  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
   const session = getSession(model)
   const { assemblyNames } = session
   const error = assemblyNames.length ? '' : 'No configured assemblies'
