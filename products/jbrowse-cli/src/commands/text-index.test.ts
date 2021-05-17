@@ -58,7 +58,7 @@ describe('indexGff3', () => {
   })
 }) 
 
-// Test for a local non-gzipped file
+// // Test for a local non-gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3';
   let isTest = true;
@@ -72,7 +72,7 @@ describe('indexGff3', () => {
   })
 })
 
-// Test for a remote https non-gzipped file
+// // Test for a remote https non-gzipped file
 describe('indexGff3', () => {
   const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
   let isTest: boolean = true;
@@ -88,7 +88,7 @@ describe('indexGff3', () => {
 
 // Test for a remote https gzipped file
 describe('indexGff3', () => {
-  const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz';
+  const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz';
   let isTest = true;
   it(`Index remote https gzipped gff3 file into out.ix and out.ixx`, async () => {
     let textIndex = new TextIndex([], null)
@@ -129,14 +129,14 @@ describe('getIndexingConfigurations', () => {
   })
 })
 
-// TODO: Write a test to test indexing from the configuration
 describe('getIndexingConfigurations', () => {
   it(`Gets the configurations for ['gff3tabix_genes] and indexes it`, async () => {
     let textIndex = new TextIndex([], null)
     const trackIds: Array<string> = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
-    const uri: string = 'products/jbrowse-cli/' + indexConfig[0].indexingConfiguration.gffLocation.uri;
-    await textIndex.parseLocalGff3(uri, true, true)
+    const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+    debugger;
+    await textIndex.parseLocalGff3('./products/jbrowse-cli/test/data/volvox.sort.gff3.gz', true, true)
 
     const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     expect(data).toMatchSnapshot()
