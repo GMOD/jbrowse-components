@@ -20,10 +20,6 @@ hicConfig.configuration = {
   },
 }
 
-function timeout(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 test('hic', async () => {
   fetch.resetMocks()
   fetch.mockResponse(
@@ -40,7 +36,6 @@ test('hic', async () => {
   )
   state.session.views[0].setNewView(5000, 0)
   fireEvent.click(await findByTestId('htsTrackEntry-hic_test'))
-  await timeout(1000)
   const canvas = await findAllByTestId(
     'prerendered_canvas',
     {},
