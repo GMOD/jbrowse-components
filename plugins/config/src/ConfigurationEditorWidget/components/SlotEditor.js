@@ -4,7 +4,6 @@ import {
   getSubType,
   getUnionSubTypes,
 } from '@jbrowse/core/util/mst-reflection'
-import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import {
   Card,
   CardContent,
@@ -339,9 +338,7 @@ const FileSelectorWrapper = observer(({ slot }) => {
   return (
     <FileSelector
       location={slot.value}
-      setLocation={location => {
-        slot.set(storeBlobLocation(location))
-      }}
+      setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
     />

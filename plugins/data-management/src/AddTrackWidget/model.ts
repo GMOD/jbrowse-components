@@ -3,7 +3,6 @@ import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import {
   guessAdapter,
   guessTrackType,
@@ -18,11 +17,6 @@ function isAbsoluteUrl(url: string) {
     return url.startsWith('/')
   }
 }
-
-type PreUrlLocation = { uri: string }
-type PreLocalPath = { localPath: string }
-type PreFileBlob = { blob: File }
-type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
 
 function getFileName(track: FileLocation) {
   const uri = 'uri' in track ? track.uri : undefined
