@@ -90,11 +90,15 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent(model, 2)
   const status = displayStatus || blockStatus
-  return shown ? (
-    <div className={classes.loading}>
-      <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
-    </div>
-  ) : null
+  return (
+    <>
+      {shown ? (
+        <div className={classes.loading}>
+          <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
+        </div>
+      ) : null}
+    </>
+  )
 })
 
 function BlockMessage({
