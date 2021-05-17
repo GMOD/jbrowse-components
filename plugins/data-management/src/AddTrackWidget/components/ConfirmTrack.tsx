@@ -44,7 +44,7 @@ function StatusMessage({
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  const { trackAdapterHint } = model
+  const { adapterHint } = model
   return (
     <>
       <Typography className={classes.spacing}>
@@ -69,13 +69,13 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
       </Typography>
       <TextField
         className={classes.spacing}
-        value={trackAdapterHint}
+        value={adapterHint}
         label="adapterType"
         helperText="An adapter type"
         select
         fullWidth
         onChange={event => {
-          model.setTrackAdapterHint(event.target.value)
+          model.setAdapterHint(event.target.value)
         }}
         SelectProps={{
           // @ts-ignore
@@ -84,19 +84,13 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
       >
         {getEnv(session)
           .pluginManager.getElementTypesInGroup('adapter')
-          .map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (installedAdapterType: any) =>
-              // Exclude SNPCoverageAdapter from primary adapter user selection
-              installedAdapterType.name !== 'SNPCoverageAdapter' && (
-                <MenuItem
-                  key={installedAdapterType.name}
-                  value={installedAdapterType.name}
-                >
-                  {installedAdapterType.name}
-                </MenuItem>
-              ),
-          )}
+          // Exclude SNPCoverageAdapter from primary adapter user selection
+          .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
+          .map((elt: { name: string }) => (
+            <MenuItem key={elt.name} value={elt.name}>
+              {elt.name}
+            </MenuItem>
+          ))}
       </TextField>
     </>
   )
@@ -133,7 +127,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     )
   }
   if (trackAdapter?.type === UNKNOWN) {
-    return <UnknownAdapterPrompt model={model} trackAdapter={trackAdapter} />
+    return <UnknownAdapterPrompt model={model} />
   }
 
   if (!trackAdapter?.type) {

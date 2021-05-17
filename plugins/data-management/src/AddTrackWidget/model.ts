@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -49,10 +48,10 @@ export default function f(pluginManager: PluginManager) {
       altTrackName: '',
       altTrackType: '',
 
-      adapterHint: '' as any,
+      adapterHint: '',
     }))
     .actions(self => ({
-      setTrackAdapterHint(obj: any) {
+      setAdapterHint(obj: string) {
         self.adapterHint = obj
       },
       setTrackSource(str: string) {

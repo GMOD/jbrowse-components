@@ -113,6 +113,13 @@ export function guessAdapter(
 
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
+  function makeIndexType(
+    name: string | undefined,
+    typeA: string,
+    typeB: string,
+  ) {
+    return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
+  }
 
   if (/\.bam$/i.test(fileName) || adapterHint === 'BamAdapter') {
     return {
@@ -120,7 +127,7 @@ export function guessAdapter(
       bamLocation: file,
       index: {
         location: index || makeIndex(file, '.bai'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        indexType: makeIndexType(indexName, 'CSI', 'BAI'),
       },
     }
   }
@@ -145,7 +152,7 @@ export function guessAdapter(
       gffGzLocation: file,
       index: {
         location: index || makeIndex(file, '.tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
@@ -168,7 +175,7 @@ export function guessAdapter(
       vcfGzLocation: file,
       index: {
         location: index || makeIndex(file, 'tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
@@ -191,7 +198,7 @@ export function guessAdapter(
       bedGzLocation: file,
       index: {
         location: index || makeIndex(file, '.tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
