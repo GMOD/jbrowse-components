@@ -49,11 +49,11 @@ export default function f(pluginManager: PluginManager) {
       altTrackName: '',
       altTrackType: '',
 
-      altTrackAdapter: {} as any,
+      adapterHint: '' as any,
     }))
     .actions(self => ({
-      setTrackAdapter(obj: any) {
-        self.altTrackAdapter = obj
+      setTrackAdapterHint(obj: any) {
+        self.adapterHint = obj
       },
       setTrackSource(str: string) {
         self.trackSource = str
@@ -79,17 +79,17 @@ export default function f(pluginManager: PluginManager) {
         self.altTrackName = ''
         self.altTrackType = ''
         self.altAssemblyName = ''
-        self.altTrackAdapter = {}
+        self.adapterHint = ''
         self.indexTrackData = { uri: '' }
         self.trackData = { uri: '' }
       },
     }))
     .views(self => ({
       get trackAdapter() {
-        const { trackData, indexTrackData } = self
+        const { trackData, indexTrackData, adapterHint } = self
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, getFileName)
+          ? guessAdapter(trackData, indexTrackData, getFileName, adapterHint)
           : undefined
       },
 
