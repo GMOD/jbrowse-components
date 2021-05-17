@@ -35,10 +35,10 @@ export default (pluginManager: PluginManager) => {
     /**
      * Instantiate/initialize list of relevant adapters
      */
-    loadTextSearchAdapters() {
+    loadTextSearchAdapters(args: BaseArgs) {
       const initialAdapters: BaseTextSearchAdapter[] = []
       // initialize relevant adapters
-      this.relevantAdapters().forEach(
+      this.relevantAdapters(args).forEach(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
           if (this.adapterCache.has(adapterId)) {
@@ -63,11 +63,20 @@ export default (pluginManager: PluginManager) => {
      * Returns list of relevant text search adapters to use
      * @param args - search options/arguments include: search query
      */
-    relevantAdapters() {
-      // obtain root level and track level adapters
+    relevantAdapters(args: BaseArgs) {
+      // root level adapters and list of all tracks
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
-      //console.log(tracks)
+      console.log('search args', args)
+      let openedTrackIds = []
+      if (args.openedTracks) {
+        openedTrackIds = args.openedTracks.map(track => {
+          return track.rpcSessionId
+        })
+      }
+      //console.log(openedTrackIds)
+      // if opened tracks... get adapters that cover those tracks (track or aggregate)
+      // or get adapters that cover
       const trackTextSearchAdapters: BaseTextSearchAdapter[] = []
       tracks.forEach((trackTextSearchAdapterConfig: AnyConfigurationModel) => {
         const trackTextSearchAdapter = readConfObject(
@@ -78,6 +87,10 @@ export default (pluginManager: PluginManager) => {
           trackTextSearchAdapters.push(trackTextSearchAdapter)
         }
       })
+      //console.log(
+      //  'all adapters',
+      //  textSearchAdapters.concat(trackTextSearchAdapters),
+      //)
       return textSearchAdapters.concat(trackTextSearchAdapters)
     }
 
@@ -88,7 +101,7 @@ export default (pluginManager: PluginManager) => {
      */
     async search(args: BaseArgs) {
       // determine list of relevant adapters
-      this.textSearchAdapters = this.loadTextSearchAdapters()
+      this.textSearchAdapters = this.loadTextSearchAdapters(args)
       const results: Array<BaseResult[]> = await Promise.all(
         this.textSearchAdapters.map(async adapter => {
           // search with given options

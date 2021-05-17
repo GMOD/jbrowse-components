@@ -409,9 +409,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       findSearchScope() {
         const session = getSession(self)
-        console.log('model', self)
         if (!self.hasDisplayedRegions) {
-          // from import form
           return {
             aggregate: true,
             assemblyNames: session.assemblyNames,

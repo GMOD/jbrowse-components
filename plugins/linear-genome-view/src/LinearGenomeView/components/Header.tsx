@@ -135,15 +135,15 @@ export default observer(({ model }: { model: LGV }) => {
         //  console.log(/(.+)\:(.+)(\.{2}|\-)(.+)/.test(newRegionValue))
         // }
         const locStringPattern = /(\{([^}]+)\})?(.+)\:(.+)(\.{2}|\-)(.+)/
-        console.log(newRegionValue.match(locStringPattern))
-        console.log(locStringPattern.test(newRegionValue))
+        // console.log(newRegionValue.match(locStringPattern))
+        // console.log(locStringPattern.test(newRegionValue))
         if (!locStringPattern.test(newRegionValue)) {
-          console.log('hey its not a locstring')
+          // console.log('hey its not a locstring')
           const results = await textSearchManager.search({
             queryString: newRegionValue.toLocaleLowerCase(),
             searchType: 'exact',
           })
-          model.setSearchResults(results,newRegionValue.toLocaleLowerCase())
+          model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
         } else {
           try {
             model.navToLocString(newRegionValue)

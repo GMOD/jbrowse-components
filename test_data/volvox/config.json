@@ -55,8 +55,13 @@
       "namesIndexLocation": {
         "uri": "names/"
       },
-      "tracks": [],
-      "assemblies": []
+      "tracks": [
+        "bedtabix_genes",
+        "volvox_test_vcf",
+        "gff3tabix_genes",
+        "volvox_filtered_vcf"
+      ],
+      "assemblies": ["volvox", "volvox2"]
     }
   ],
   "tracks": [
@@ -66,6 +71,7 @@
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
+      "attributes": ["Name", "ID", "Description"],
       "adapter": {
         "type": "VcfTabixAdapter",
         "vcfGzLocation": {
@@ -848,6 +854,15 @@
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
+      },
+      "textSearchAdapter": {
+        "type": "JBrowse1TextSearchAdapter",
+        "textSearchAdapterId": "testTrackTextSearchAdapter",
+        "namesIndexLocation": {
+          "uri": "names/"
+        },
+        "tracks": ["gff3tabix_genes", "volvox_filtered_vcf"],
+        "assemblies": ["volvox"]
       }
     },
     {

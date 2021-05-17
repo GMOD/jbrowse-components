@@ -11,7 +11,6 @@ import { getEnv } from 'mobx-state-tree'
 // jbrowse core
 import { Region } from '@jbrowse/core/util/types'
 import { getSession, useDebounce } from '@jbrowse/core/util' // useDebounce
-
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
@@ -28,7 +27,6 @@ import Autocomplete, {
 } from '@material-ui/lab/Autocomplete'
 // other
 import { LinearGenomeViewModel } from '..'
-// import TestInnerHTML from './TestInnerHTML'
 
 /**
  *  Option interface used to format results to display in dropdown
@@ -80,8 +78,8 @@ function RefNameAutocomplete({
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
+  const searchScope = model.findSearchScope()
   // default options for dropdown
-  //console.log(model.findSearchScope())
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
       const defaultOption: Option = {
@@ -105,10 +103,12 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '') {
-          const prefixResults = await textSearchManager.search({
+          const args = {
+            ...searchScope,
             queryString: debouncedSearch,
             searchType: 'prefix',
-          })
+          }
+          const prefixResults = await textSearchManager.search(args)
           results = results.concat(prefixResults)
         }
         if (results.length > 0 && active) {
