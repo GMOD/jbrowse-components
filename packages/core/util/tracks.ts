@@ -82,22 +82,15 @@ export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
-// type PreUrlLocation = { uri: string }
-// type PreLocalPath = { localPath: string }
-// type PreFileBlob = { blob: File }
-// type PostFileBlob = { blobId: string; name: string }
-// type PreFileLocation = PreUrlLocation | PreLocalPath | PreFileBlob
-// type ProcessedFileLocation = PreUrlLocation | PreLocalPath | PostFileBlob
-
 // blob files are stored in a global map
 export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
     // possibly we should be more clear about when this is not undefined, and
     // also allow mix of blob and url for index and file
     // @ts-ignore
-    const id = +Date.now()
-    blobMap[`b${id}`] = location.blob
-    return { name: location?.blob.name, blobId: `b${id}` }
+    const blobId = `b${+Date.now()}`
+    blobMap[blobId] = location.blob
+    return { name: location?.blob.name, blobId }
   }
   return location
 }
