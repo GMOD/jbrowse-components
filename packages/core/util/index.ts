@@ -347,7 +347,7 @@ export function parseLocStringOneBased(
   }
   const [, , assemblyName, location] = assemblyMatch
   if (!assemblyName && location.startsWith('{}')) {
-    throw new Error(`Unknown assembly name sequence "${location}"`)
+    throw new Error(`no assembly name was provided in location "${location}"`)
   }
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
