@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import { FileSelector } from '@jbrowse/core/ui'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { PreFileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
@@ -69,7 +69,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const classes = useStyles()
   const [numRows] = useState(2)
   const [selected, setSelected] = useState([0, 0])
-  const [trackData, setTrackData] = useState<FileLocation>({ uri: '' })
+  const [trackData, setTrackData] = useState<PreFileLocation>({ uri: '' })
   const session = getSession(model)
   const { assemblyNames } = session
   const error = assemblyNames.length ? '' : 'No configured assemblies'

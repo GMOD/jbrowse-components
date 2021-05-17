@@ -14,6 +14,7 @@ import {
   Region as MUIRegion,
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
+  BlobLocation as MUBlobLocation,
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
@@ -265,14 +266,23 @@ export interface NoAssemblyRegion
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface LocalPathLocation
-  extends SnapshotOut<typeof MULocalPathLocation> {}
+  extends SnapshotIn<typeof MULocalPathLocation> {}
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
-export interface BlobLocation {
-  blob: Blob
-}
+export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 
 /* eslint-enable @typescript-eslint/no-empty-interface */
+
+// These types are slightly different than the MST models representing a
+// location because a blob cannot be stored in a MST, so this is the
+// pre-processed file location
+export type PreUriLocation = { uri: string }
+export type PreLocalPathLocation = { localPath: string }
+export type PreBlobLocation = { blob: File }
+export type PreFileLocation =
+  | PreUriLocation
+  | PreLocalPathLocation
+  | PreBlobLocation

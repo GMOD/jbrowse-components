@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
-import { FileLocation } from '@jbrowse/core/util/types'
+import { PreFileLocation } from '@jbrowse/core/util/types'
 import {
   Button,
   Grid,
@@ -83,13 +83,13 @@ const AdapterInput = observer(
     setTwoBitLocation,
   }: {
     adapterSelection: string
-    fastaLocation: FileLocation
+    fastaLocation: PreFileLocation
     setFastaLocation: Function
-    faiLocation: FileLocation
+    faiLocation: PreFileLocation
     setFaiLocation: Function
-    gziLocation: FileLocation
+    gziLocation: PreFileLocation
     setGziLocation: Function
-    twoBitLocation: FileLocation
+    twoBitLocation: PreFileLocation
     setTwoBitLocation: Function
   }) => {
     if (

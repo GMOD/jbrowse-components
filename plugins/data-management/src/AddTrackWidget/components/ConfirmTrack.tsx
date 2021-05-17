@@ -71,7 +71,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       </Typography>
     )
   }
-  if (trackAdapter.type === UNKNOWN) {
+  if (trackAdapter?.type === UNKNOWN) {
     return (
       <>
         <Typography className={classes.spacing}>
@@ -129,7 +129,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     )
   }
 
-  if (!trackAdapter.type) {
+  if (!trackAdapter?.type) {
     // TODO: if file type is unrecognized, provide some way of specifying
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this data type.</Typography>
@@ -137,7 +137,9 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
 
   return (
     <>
-      <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+      {trackAdapter ? (
+        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+      ) : null}
       {warningMessage ? (
         <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
       ) : null}
