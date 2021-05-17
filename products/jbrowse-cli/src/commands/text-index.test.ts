@@ -53,8 +53,10 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseLocalGff3(gff3FileLocation, true,  isTest);
-    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
+    const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
   })
 }) 
 
@@ -67,8 +69,10 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseLocalGff3(gff3FileLocation, false,  isTest);
-    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
+    const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
   })
 })
 
@@ -81,8 +85,10 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, false, isTest);
-    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
+    const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
   })  
 })
 
@@ -95,8 +101,10 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
-    const data = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
+    const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
   })
 })
 
@@ -109,8 +117,10 @@ describe('indexGff3', () => {
     textIndex.log = jest.fn()
 
     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
-    const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
   })
 })
 
@@ -138,9 +148,10 @@ describe('getIndexingConfigurations', () => {
     debugger;
     await textIndex.parseLocalGff3('./products/jbrowse-cli/test/data/volvox.sort.gff3.gz', true, true)
 
-    const data = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
-    expect(data).toMatchSnapshot()
     expect(ixxData).toMatchSnapshot()
+    expect(ixdata).toMatchSnapshot()
+    
   })
 })
