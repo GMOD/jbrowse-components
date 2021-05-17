@@ -86,9 +86,26 @@ exports[`<AddTrackWidget /> renders 1`] = `
                         role="group"
                       >
                         <button
-                          aria-label="url"
+                          aria-label="local file"
                           aria-pressed="true"
                           class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
+                          tabindex="0"
+                          type="button"
+                          value="file"
+                        >
+                          <span
+                            class="MuiToggleButton-label"
+                          >
+                            File
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
+                        <button
+                          aria-label="url"
+                          aria-pressed="false"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
                           tabindex="0"
                           type="button"
                           value="url"
@@ -108,19 +125,27 @@ exports[`<AddTrackWidget /> renders 1`] = `
                       class="MuiGrid-root MuiGrid-item"
                     >
                       <div
-                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                        style="position: relative;"
                       >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                        <label
+                          aria-disabled="false"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+                          role="button"
+                          tabindex="0"
                         >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input"
-                            data-testid="urlInput"
-                            type="text"
-                            value=""
+                          <span
+                            class="MuiButton-label"
+                          >
+                            Choose File
+                            <input
+                              style="position: absolute; top: 0px; left: 0px; width: 100%; opacity: 0;"
+                              type="file"
+                            />
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
                           />
-                        </div>
+                        </label>
                       </div>
                     </div>
                   </div>
@@ -146,9 +171,26 @@ exports[`<AddTrackWidget /> renders 1`] = `
                         role="group"
                       >
                         <button
-                          aria-label="url"
+                          aria-label="local file"
                           aria-pressed="true"
                           class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"
+                          tabindex="0"
+                          type="button"
+                          value="file"
+                        >
+                          <span
+                            class="MuiToggleButton-label"
+                          >
+                            File
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
+                        <button
+                          aria-label="url"
+                          aria-pressed="false"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
                           tabindex="0"
                           type="button"
                           value="url"
@@ -168,19 +210,27 @@ exports[`<AddTrackWidget /> renders 1`] = `
                       class="MuiGrid-root MuiGrid-item"
                     >
                       <div
-                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                        style="position: relative;"
                       >
-                        <div
-                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+                        <label
+                          aria-disabled="false"
+                          class="MuiButtonBase-root MuiButton-root MuiButton-outlined"
+                          role="button"
+                          tabindex="0"
                         >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiInput-input"
-                            data-testid="urlInput"
-                            type="text"
-                            value=""
+                          <span
+                            class="MuiButton-label"
+                          >
+                            Choose File
+                            <input
+                              style="position: absolute; top: 0px; left: 0px; width: 100%; opacity: 0;"
+                              type="file"
+                            />
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
                           />
-                        </div>
+                        </label>
                       </div>
                     </div>
                   </div>

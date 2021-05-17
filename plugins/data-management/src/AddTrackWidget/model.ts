@@ -115,15 +115,11 @@ export default function f(pluginManager: PluginManager) {
 
       get isRelativeTrackUrl() {
         const { trackData } = self
-        return trackData && 'uri' in trackData && isAbsoluteUrl(trackData.uri)
+        return trackData && 'uri' in trackData && !isAbsoluteUrl(trackData.uri)
       },
       get isRelativeIndexUrl() {
-        const { indexTrackData } = self
-        return (
-          indexTrackData &&
-          'uri' in indexTrackData &&
-          isAbsoluteUrl(indexTrackData.uri)
-        )
+        const { indexTrackData: index } = self
+        return index && 'uri' in index && !isAbsoluteUrl(index.uri)
       },
       get isRelativeUrl() {
         return this.isRelativeIndexUrl || this.isRelativeTrackUrl
