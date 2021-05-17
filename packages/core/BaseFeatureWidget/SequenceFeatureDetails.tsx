@@ -205,7 +205,7 @@ export const SequencePanel = React.forwardRef<
   let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
   let exons = dedupe(children.filter(sub => sub.type === 'exon'))
 
-  if (!utr.length && cds.length) {
+  if (!utr.length && cds.length && exons.length) {
     utr = calculateUTRs(cds, exons)
   }
 
