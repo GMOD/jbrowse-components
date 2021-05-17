@@ -15,27 +15,30 @@ import {
   PreUriLocation,
   PreBlobLocation,
   PreFileLocation,
+  LocalPathLocation,
+  UriLocation,
+  FileLocation,
+  BlobLocation,
 } from '../util/types'
+import { getBlob } from '../util/tracks'
 
-function isUriLocation(location: PreFileLocation): location is PreUriLocation {
+function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
 }
 
 function isLocalPathLocation(
-  location: PreFileLocation,
-): location is PreLocalPathLocation {
+  location: FileLocation,
+): location is LocalPathLocation {
   return 'localPath' in location
 }
 
-function isBlobLocation(
-  location: PreFileLocation,
-): location is PreBlobLocation {
-  return 'blob' in location
+function isBlobLocation(location: FileLocation): location is BlobLocation {
+  return 'blobId' in location
 }
 
 const FileLocationEditor = observer(
   (props: {
-    location?: PreFileLocation
+    location?: FileLocation
     setLocation: (param: PreFileLocation) => void
     name?: string
     description?: string
@@ -86,7 +89,7 @@ const FileLocationEditor = observer(
 )
 
 const UrlChooser = (props: {
-  location?: PreFileLocation
+  location?: FileLocation
   setLocation: Function
 }) => {
   const { location, setLocation } = props
@@ -102,13 +105,16 @@ const UrlChooser = (props: {
 }
 
 const LocalFileChooser = observer(
-  (props: { location?: PreFileLocation; setLocation: Function }) => {
+  (props: { location?: FileLocation; setLocation: Function }) => {
     const { location, setLocation } = props
 
     const filename =
       location &&
-      ((isBlobLocation(location) && location.blob.name) ||
+      ((isBlobLocation(location) && location.name) ||
         (isLocalPathLocation(location) && location.localPath))
+
+    const needToReload =
+      location && isBlobLocation(location) && !getBlob(location.blobId)
 
     return (
       <div style={{ position: 'relative' }}>
@@ -136,13 +142,18 @@ const LocalFileChooser = observer(
           />
         </Button>
         {filename ? (
-          <Typography
-            style={{ marginLeft: '0.4rem' }}
-            variant="body1"
-            component="span"
-          >
-            {filename}
-          </Typography>
+          <>
+            <Typography
+              style={{ marginLeft: '0.4rem' }}
+              variant="body1"
+              component="span"
+            >
+              {filename}
+            </Typography>
+            {needToReload ? (
+              <Typography color="error">(need to reload)</Typography>
+            ) : null}
+          </>
         ) : null}
       </div>
     )

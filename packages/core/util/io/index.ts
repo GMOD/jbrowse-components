@@ -70,7 +70,7 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     const blob = getBlob(location.blobId)
     if (!blob) {
       throw new Error(
-        `this file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
+        `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
       )
     }
     return new BlobFile(blob)
