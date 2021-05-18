@@ -35,9 +35,10 @@ export default function ConfigWarningModal({
       open
       maxWidth="xl"
       data-testid="session-warning-modal"
+      aria-labelledby="alert-dialog-title"
       className={classes.main}
     >
-      <DialogTitle>Warning</DialogTitle>
+      <DialogTitle id="alert-dialog-title">Warning</DialogTitle>
       <Divider />
       <div>
         <WarningIcon fontSize="large" />
