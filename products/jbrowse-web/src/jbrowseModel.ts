@@ -53,7 +53,7 @@ export default function JBrowseWeb(
           extraFields: {
             type: 'string',
             description: 'modifies on the base feature details',
-            defaultValue: `jexl:{civicdb:"<a href=https://civicdb.org/events/genes/"+feature.gene_id+"/summary/variants/"+feature.id+"/summary>Link to CIVIC</a>"}`,
+            defaultValue: 'jexl:{}',
             contextVariable: ['feature'],
           },
         }),
