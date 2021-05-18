@@ -67,7 +67,7 @@ export default (pluginManager: PluginManager) => {
       // root level adapters and list of all tracks
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
-      console.log('search args', args)
+      //console.log('search args', args)
       let openedTrackIds = []
       if (args.openedTracks) {
         openedTrackIds = args.openedTracks.map(track => {

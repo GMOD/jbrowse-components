@@ -421,6 +421,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           assemblyNames: session.assemblyNames,
         }
       },
+
+      rankSearchResults(results: BaseResult[]) {
+        return results
+      },
+
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach((action: MenuItem) => {

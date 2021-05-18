@@ -108,13 +108,14 @@ function RefNameAutocomplete({
             queryString: debouncedSearch,
             searchType: 'prefix',
           }
+          // TODO: have scope be a diff param to the text search manager
           const prefixResults = await textSearchManager.search(args)
           results = results.concat(prefixResults)
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
             const newOption: Option = {
-              group: 'text search adapter',
+              group: 'text search results',
               result,
             }
             return newOption
