@@ -2,6 +2,39 @@ const murmur = require('murmurhash-js')
 const { BloomFilter } = require('bloom-filters')
 const { IndexedFasta } = require('@gmod/indexedfasta')
 
+function zeroPad(num, places){
+    const paddedString = String(num).padStart(places, '0')
+    return paddedString
+}
+
+function bitStringToArrayBuffer(bitString) {
+
+    // split the string into octets
+    var pairs = bitString.match(/[\d]{1,8}/gi)
+
+    // convert the octets to integers
+    var integers = pairs.map(function(s) {
+        return parseInt(s, 2);
+    });
+
+    var array = new Uint8Array(integers);
+
+    return array.buffer;
+}
+
+/**
+ * @param { number } rowNum - bigsi row number
+ * @param { string } root - parent directory where bigsi is stored
+ *
+ * @returns { string } path - path of the row binary file 
+ */
+function makeBigsiRowPath(rowNum, root){
+    const paddedRowNum = zeroPad(rowNum, 6)
+    const rowPath = `${paddedRowNum.slice(0,3)}/${paddedRowNum.slice(3,6)}`
+    const path = `${root}/${rowPath}.bin`
+
+    return path
+}
 async function loadFasta(fastaPath, faiPath){
     const seq = new IndexedFasta({
         path: fastaPath,
@@ -107,6 +140,9 @@ function makeMinimizersBloomFilter(minimizers, sizeBloomFilter=300000){
 }
 
 module.exports = {
+    zeroPad: zeroPad,
+    bitStringToArrayBuffer: bitStringToArrayBuffer,
+    makeBigsiRowPath: makeBigsiRowPath,
     loadFasta: loadFasta,
     extractMinimizers: extractMinimizers,
     reverseComplement: reverseComplement,
