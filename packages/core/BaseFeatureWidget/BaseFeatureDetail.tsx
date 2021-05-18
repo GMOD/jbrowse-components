@@ -200,26 +200,19 @@ const ArrayValue = ({
             <BasicValue value={value[0]} />
           </div>
         )
-      ) : (
+      ) : value.every(val => isObject(val)) ? (
         value.map((val, i) => (
-          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            {isObject(val) ? (
-              <Attributes
-                attributes={val}
-                prefix={[...prefix, name + '-' + i]}
-              />
-            ) : (
-              <div className={classes.field}>
-                <FieldName
-                  prefix={prefix}
-                  description={description}
-                  name={name}
-                />
-                <BasicValue value={val} />
-              </div>
-            )}
-          </div>
+          <Attributes attributes={val} prefix={[...prefix, name + '-' + i]} />
         ))
+      ) : (
+        <div className={classes.field}>
+          <FieldName prefix={prefix} description={description} name={name} />
+          {value.map((val, i) => (
+            <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+              <BasicValue value={val} />
+            </div>
+          ))}
+        </div>
       )}
     </>
   )
