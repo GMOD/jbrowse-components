@@ -162,7 +162,7 @@ function getBigsiSubmatrix(bigsi, rowFilter){
 
 }
 
-function computeSubmatrixHits(submatrix, bigsiHits, BFFalsePositiveProb=0.82, hitFalsePositiveProb=0.001){
+function computeSubmatrixHits(submatrix, bigsiHits, BFFalsePositiveProb=0.82, hitFalsePositiveProb=0){
     /* Inputs:
      *  submatrix -- bigsi array of arrays of hit rows
      *  bigsiHits -- object to store hits results for each bucket in bigsi
