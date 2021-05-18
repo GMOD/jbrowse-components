@@ -64,17 +64,15 @@ export default (pluginManager: PluginManager) => {
      * @param args - search options/arguments include: search query
      */
     relevantAdapters(args: BaseArgs) {
-      // root level adapters and list of all tracks
+      // root level adapters
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
-      //console.log('search args', args)
-      let openedTrackIds = []
-      if (args.openedTracks) {
-        openedTrackIds = args.openedTracks.map(track => {
-          return track.rpcSessionId
-        })
-      }
-      //console.log(openedTrackIds)
+      // let openedTrackIds = []
+      // if (args.openedTracks) {
+      //  openedTrackIds = args.openedTracks.map(track => {
+      //    return track.rpcSessionId
+      //  })
+      // }
       // if opened tracks... get adapters that cover those tracks (track or aggregate)
       // or get adapters that cover
       const trackTextSearchAdapters: BaseTextSearchAdapter[] = []
@@ -87,10 +85,6 @@ export default (pluginManager: PluginManager) => {
           trackTextSearchAdapters.push(trackTextSearchAdapter)
         }
       })
-      //console.log(
-      //  'all adapters',
-      //  textSearchAdapters.concat(trackTextSearchAdapters),
-      //)
       return textSearchAdapters.concat(trackTextSearchAdapters)
     }
 

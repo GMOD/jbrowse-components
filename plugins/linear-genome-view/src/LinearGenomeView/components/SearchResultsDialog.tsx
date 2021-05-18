@@ -138,7 +138,7 @@ export default function SearchResultsDialog({
       <Divider />
       <DialogContent>
         {model.searchResults.length === 0 ? (
-          <Typography >
+          <Typography>
             {`No results found for `}
             <b>{model.searchQuery}</b>
           </Typography>

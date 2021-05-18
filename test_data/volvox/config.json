@@ -854,15 +854,6 @@
             "uri": "volvox.sort.gff3.gz.tbi"
           }
         }
-      },
-      "textSearchAdapter": {
-        "type": "JBrowse1TextSearchAdapter",
-        "textSearchAdapterId": "testTrackTextSearchAdapter",
-        "namesIndexLocation": {
-          "uri": "names/"
-        },
-        "tracks": ["gff3tabix_genes", "volvox_filtered_vcf"],
-        "assemblies": ["volvox"]
       }
     },
     {

@@ -122,13 +122,14 @@ export default observer(({ model }: { model: LGV }) => {
         model.showAllRegions()
       } else {
         // Note: reggaex is used to detect but not validate locstrings
-        const locStringPattern = /(\{([^}]+)\})?(.+):(.+)(\.{2}|-)(.+)/
+        // const locStringPattern=/(\{([^}]+)\})?(.+):(.+)(\.{2}|-)(.+)/
+        // const locStringPattern=/(\{([^}]+)\})?(.+)/
+        const results = await textSearchManager.search({
+          queryString: newRegionValue.toLocaleLowerCase(),
+          searchType: 'exact',
+        })
         // distinguishes between locstrings and search strings
-        if (!locStringPattern.test(newRegionValue)) {
-          const results = await textSearchManager.search({
-            queryString: newRegionValue.toLocaleLowerCase(),
-            searchType: 'exact',
-          })
+        if (results.length > 0) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())
         } else {
           try {

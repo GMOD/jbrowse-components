@@ -132,7 +132,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [textSearchManager, debouncedSearch])
+  }, [textSearchManager, debouncedSearch, searchScope])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
