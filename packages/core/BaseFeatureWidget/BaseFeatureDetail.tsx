@@ -582,16 +582,23 @@ export const FeatureDetails = (props: {
 const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const { model } = props
   const { featureData } = model
+  const session = getSession(model)
 
   if (!featureData) {
     return null
   }
   const feature = JSON.parse(JSON.stringify(featureData))
+  const extraFields = getConf(session, ['featureDetails', 'extraFields'], {
+    feature,
+  })
 
   if (isEmpty(feature)) {
     return null
   }
-  return <FeatureDetails model={model} feature={feature} />
+
+  return (
+    <FeatureDetails model={model} feature={{ ...feature, ...extraFields }} />
+  )
 })
 
 export default BaseFeatureDetails

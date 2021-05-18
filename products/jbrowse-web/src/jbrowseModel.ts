@@ -50,6 +50,12 @@ export default function JBrowseWeb(
             type: 'stringArray',
             defaultValue: ['mRNA', 'transcript'],
           },
+          extraFields: {
+            type: 'string',
+            description: 'modifies on the base feature details',
+            defaultValue: `jexl:{civicdb:"<a href=https://civicdb.org/events/genes/"+feature.gene_id+"/summary/variants/"+feature.id+"/summary>Link to CIVIC</a>"}`,
+            contextVariable: ['feature'],
+          },
         }),
         disableAnalytics: {
           type: 'boolean',
