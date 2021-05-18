@@ -344,12 +344,12 @@ export default class TextIndex extends JBrowseCommand {
   // Params:
   //  trackIds: array of string ids for tracks to index
   //  runFlags: specify if there is a target ouput location for the indexing
-  getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
+  async getIndexingConfigurations(trackIds: Array<string>, runFlags: any){
     // are we planning to have target and output flags on this command?
     const output = runFlags?.target || runFlags?.out || '.'
-    const isDir = (promises.lstat(output)).isDirectory()
+    const isDir = (await (promises.lstat(output))).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
-    const config: Config = this.readJsonFile(this.target)
+    const config: Config = await this.readJsonFile(this.target)
     if (!config.tracks) {
       this.error('Error, no tracks found in config.json. Please add a track before indexing.')
     }
