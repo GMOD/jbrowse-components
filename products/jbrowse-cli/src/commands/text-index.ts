@@ -123,13 +123,12 @@ export default class TextIndex extends JBrowseCommand {
   //
   //
 
-  // globalPromise = undefined;
-
 
   // Take in the local file path, check if the
   // it is gzipped or not, then passes it into the correct
-  // file handler
-  parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean){
+  // file handler.
+  // Returns a promise that ixIxx finishes indexing.
+  async parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean){
     let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn);
     if(!isGZ)
       return this.indexGff3(gff3ReadStream, isTest)
@@ -139,7 +138,8 @@ export default class TextIndex extends JBrowseCommand {
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
-  parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
+  // Returns a promise that the file downloads and ixIxx finishes indexing it.
+  async parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
     if (!isGZ)
       return this.parseGff3UrlNoGz(urlIn, isTest)
     else
@@ -150,6 +150,7 @@ export default class TextIndex extends JBrowseCommand {
   // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
   // for parsing and indexing. Awaits promise until the child process
   // is complete and resolves the promise.
+  // Returns a promise that the file downloads and ixIxx finishes indexing it.
   private parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
     const newUrl = new URL(urlIn)
   
@@ -189,6 +190,7 @@ export default class TextIndex extends JBrowseCommand {
   // piping into parseGff3 for parsing and indexing. Awaits 
   // a promise until the child proccess is complete and
   // indexing is complete.
+  // Returns a promise that the file downloads and ixIxx finishes indexing it.
   private parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
@@ -247,6 +249,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
+  // Returns a promise that ixIxx finishes (or errors).
   private indexGff3(gff3In: ReadStream, isTest: boolean) {
     const gffTranform = new Transform({
       objectMode: true,
@@ -294,7 +297,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Given a readStream of data, indexes the stream into .ix and .ixx files using ixIxx.
   // The ixIxx executable is required on the system path for users, however tests use a local copy.
-  // Returns the exit code of child process ixIxx.
+  // Returns a promise around ixIxx completing (or erroring).
   runIxIxx(readStream: ReadStream, isTest: boolean){
     const ixFileName: string = "out.ix"
     const ixxFileName: string = "out.ixx"
@@ -320,21 +323,27 @@ export default class TextIndex extends JBrowseCommand {
         this.log(`Output from ixIxx: ${data}`)
     })
 
-    // Hook up the reject from promise on error
-    ixProcess.stderr.on('data', (data) => {
-        this.error(`Error with ixIxx: ${data}`)
-    })
 
     let promise = new Promise((resolve, reject) => {
       ixProcess.on('close', (code) => {
-        resolve('Success!')
-        // Code should = 0 for success
-        this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
-        return code;
+        if (code == 0) {
+          resolve('Success!')
+          // Code should = 0 for success
+          this.log(`Indexing done! Check ${ixFileName} and ${ixxFileName} files for output.`)
+          return code;
+        }
+        else {
+          reject('fail')
+          this.error(`ixIxx exited with code: ${code}`)  
+        }
+      })
+
+      // Hook up the reject from promise on error
+      ixProcess.stderr.on('data', (data) => {
+        reject('fail')
+        this.error(`Error with ixIxx: ${data}`)
       })
     })
-
-    this.globalPromise = promise
 
     return promise;
   }
