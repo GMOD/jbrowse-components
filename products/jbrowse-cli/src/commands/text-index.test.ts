@@ -111,20 +111,20 @@ describe('indexGff3', () => {
 
 // Test for remote http gzipped file
 // NOTE: This tests a big file and takes 20+ seconds. Jest would timeout and error, so this test is commented out.
-// describe('indexGff3', () => {
-//   const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz';
-//   let isTest = true;
-//   it(`Index remote http gzipped gff3 file into out.ix and out.ixx`, async () => {
-//     let textIndex = new TextIndex([], null)
-//     textIndex.log = jest.fn()
+describe('indexGff3', () => {
+  const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/RefSeq_UMD3.1.1_multitype_genes.gff3.gz';
+  let isTest = true;
+  it(`Index remote http gzipped gff3 file into out.ix and out.ixx`, async () => {
+    let textIndex = new TextIndex([], null)
+    textIndex.log = jest.fn()
 
-//     await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
-//     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
-//     expect(ixdata).toMatchSnapshot()
-//     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
-//     expect(ixxData).toMatchSnapshot()
-//   })
-// })
+    await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    expect(ixdata).toMatchSnapshot()
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
+  })
+})
 
 // Test for remote http non-gzipped file
   // test goes here but I'm not having any luck finding a non-gzipped http file link.
