@@ -7,7 +7,11 @@
     },
     {
       "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
+      "url": "http://localhost:9000/dist/jbrowse-plugin-gdc.umd.development.js"
+    },
+    {
+      "name": "CIVIC",
+      "url": "https://unpkg.com/jbrowse-plugin-civic/dist/jbrowse-plugin-civic.umd.production.min.js"
     },
     {
       "name": "UCSC",
@@ -73,6 +77,16 @@
     }
   ],
   "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "civic_hg19",
+      "name": "CIVIC cancer variants hg19",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "CIVICAdapter"
+      }
+    },
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
