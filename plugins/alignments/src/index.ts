@@ -42,7 +42,10 @@ import SNPCoverageRenderer, {
   configSchema as SNPCoverageRendererConfigSchema,
   ReactComponent as SNPCoverageRendererReactComponent,
 } from './SNPCoverageRenderer'
-import { PileupGetGlobalValueForTag } from './PileupRPC/rpcMethods'
+import {
+  PileupGetGlobalValueForTag,
+  PileupGetVisibleModifications,
+} from './PileupRPC/rpcMethods'
 
 export { MismatchParser }
 
@@ -181,6 +184,9 @@ export default class AlignmentsPlugin extends Plugin {
 
     pluginManager.addRpcMethod(
       () => new PileupGetGlobalValueForTag(pluginManager),
+    )
+    pluginManager.addRpcMethod(
+      () => new PileupGetVisibleModifications(pluginManager),
     )
   }
 }

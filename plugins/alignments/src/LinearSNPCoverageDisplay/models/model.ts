@@ -1,4 +1,4 @@
-import { types, cast, getEnv } from 'mobx-state-tree'
+import { types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Tooltip from '../components/Tooltip'
 
 // using a map because it preserves order
@@ -35,9 +36,21 @@ const stateModelFactory = (
           }),
           {},
         ),
+        colorBy: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        ),
       }),
     )
+    .volatile(() => ({
+      modificationTagMap: {},
+    }))
     .actions(self => ({
+      setModificationTagMap(elt: Record<string, string>) {
+        self.modificationTagMap = elt
+      },
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
@@ -48,6 +61,9 @@ const stateModelFactory = (
         tagFilter?: { tag: string; value: string }
       }) {
         self.filterBy = cast(filter)
+      },
+      setColorBy(colorBy?: { type: string; tag?: string }) {
+        self.colorBy = cast(colorBy)
       },
     }))
     .views(self => ({
@@ -79,6 +95,29 @@ const stateModelFactory = (
         return self.drawIndicators !== undefined
           ? self.drawIndicators
           : readConfObject(this.rendererConfig, 'drawIndicators')
+      },
+      get renderProps() {
+        return {
+          ...self.composedRenderProps,
+          ...getParentRenderProps(self),
+          notReady: !self.ready,
+          rpcDriverName: self.rpcDriverName,
+          displayModel: self,
+          config: self.rendererConfig,
+          scaleOpts: self.scaleOpts,
+          resolution: self.resolution,
+          height: self.height,
+          ticks: self.ticks,
+          displayCrossHatches: self.displayCrossHatches,
+          filters: self.filters,
+          modificationTagMap: JSON.parse(
+            JSON.stringify(self.modificationTagMap),
+          ),
+
+          // must use getSnapshot because otherwise changes to e.g. just the
+          // colorBy.type are not read
+          colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
+        }
       },
     }))
     .actions(self => ({
