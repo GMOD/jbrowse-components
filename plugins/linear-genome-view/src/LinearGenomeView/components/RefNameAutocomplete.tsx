@@ -40,7 +40,6 @@ export interface Option {
 // filters for options to display in dropdown
 const filter = createFilterOptions<Option>({
   trim: true,
-  limit: 15,
   matchFrom: 'start',
 })
 const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
