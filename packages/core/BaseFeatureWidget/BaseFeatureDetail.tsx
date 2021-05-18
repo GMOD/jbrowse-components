@@ -581,7 +581,7 @@ export const FeatureDetails = (props: {
 
 const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const { model } = props
-  const { featureData, view, display, track } = model
+  const { featureData, track } = model
   const session = getSession(model)
 
   if (!featureData) {
@@ -592,12 +592,16 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
     return null
   }
 
-  const sessionExtra = getConf(session, ['featureDetails', 'extraFields'], {
-    feature,
-  })
-  const trackExtra = getConf(track, ['extraFields'], {
-    feature,
-  })
+  const sessionExtra = session
+    ? getConf(session, ['featureDetails', 'extraFields'], {
+        feature,
+      })
+    : {}
+  const trackExtra = track
+    ? getConf(track, ['extraFields'], {
+        feature,
+      })
+    : {}
 
 
   return (
