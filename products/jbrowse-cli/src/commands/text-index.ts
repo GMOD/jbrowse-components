@@ -167,11 +167,11 @@ export default class TextIndex extends JBrowseCommand {
       this.error('Error, no tracks found in config.json. Please add a track before indexing.')
     }
     const configurations = trackIds.map(trackId => {
-      const track = config.tracks.find(
-        (track) => trackId === track.trackId,
+      const currentTrack = config.tracks.find(
+        track => trackId === track.trackId,
       )
-      if (track) {
-        const {adapter} = track
+      if (currentTrack) {
+        const { adapter, attributes } = currentTrack
         if (adapter.type === 'Gff3TabixAdapter') {
           return {
             trackId,
@@ -180,11 +180,9 @@ export default class TextIndex extends JBrowseCommand {
               gzipped: true,
               gffLocation: adapter?.gffGzLocation,
             },
-            attributes: []
+            attributes,
           }
         }
-        // TODO: add statement to check for GTF files
-        // TODO: add attributes?
       } else {
         this.error(`Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`)
       }

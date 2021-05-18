@@ -32,6 +32,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         description: 'anything to add about this track',
         defaultValue: {},
       },
+      attributes: {
+        type: 'stringArray',
+        description: 'attributes used to index track',
+        defaultValue: ['Name', 'ID', 'Description'],
+      },
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
       // see corresponding entry in circular-view ChordTrack
