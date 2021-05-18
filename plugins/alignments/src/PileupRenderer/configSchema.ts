@@ -23,6 +23,7 @@ export default ConfigurationSchema(
       model: types.enumeration('displayMode', [
         'normal',
         'compact',
+        'squish',
         'collapse',
       ]),
       description: 'Alternative display modes',
@@ -50,11 +51,7 @@ export default ConfigurationSchema(
       defaultValue: 7,
       contextVariable: ['feature'],
     },
-    noSpacing: {
-      type: 'boolean',
-      description: 'remove spacing between features',
-      defaultValue: false,
-    },
+
     largeInsertionIndicatorScale: {
       type: 'number',
       description:

@@ -14,32 +14,41 @@ import {
   getContainingView,
 } from '@jbrowse/core/util'
 
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
+import {
+  cast,
+  types,
+  addDisposer,
+  getEnv,
+  getParent,
+  Instance,
+} from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
-import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+import {
+  filterByModel,
+  colorByModel,
+  colorSchemeMenu,
+  filterByMenu,
+  getUniqueTagValues,
+  setDisplayModeMenu,
+} from '../shared/models'
 
-const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
-const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 // using a map because it preserves order
@@ -62,8 +71,7 @@ const stateModelFactory = (
         type: types.literal('LinearPileupDisplay'),
         configuration: ConfigurationReference(configSchema),
         showSoftClipping: false,
-        featureHeight: types.maybe(types.number),
-        noSpacing: types.maybe(types.boolean),
+        displayMode: types.maybe(types.string),
         trackMaxHeight: types.maybe(types.number),
         mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
@@ -75,23 +83,8 @@ const stateModelFactory = (
             assemblyName: types.string,
           }),
         ),
-        colorBy: types.maybe(
-          types.model({
-            type: types.string,
-            tag: types.maybe(types.string),
-          }),
-        ),
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1536),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+        colorBy: colorByModel,
+        filterBy: filterByModel,
       }),
     )
     .volatile(() => ({
@@ -109,11 +102,8 @@ const stateModelFactory = (
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
-      setFeatureHeight(n: number) {
-        self.featureHeight = n
-      },
-      setNoSpacing(flag: boolean) {
-        self.noSpacing = flag
+      setDisplayMode(type: string) {
+        self.displayMode = type
       },
 
       setColorScheme(colorScheme: { type: string; tag?: string }) {
@@ -121,31 +111,7 @@ const stateModelFactory = (
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
-      async getUniqueTagValues(
-        colorScheme: { type: string; tag?: string },
-        blocks: BlockSet,
-        opts?: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const values = await rpcManager.call(
-          getRpcSessionId(self),
-          'PileupGetGlobalValueForTag',
-          {
-            adapterConfig,
-            tag: colorScheme.tag,
-            sessionId,
-            regions: blocks.contentBlocks,
-            ...opts,
-          },
-        )
-        return values as string[]
-      },
+
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
@@ -184,9 +150,10 @@ const stateModelFactory = (
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
-                  const uniqueTagSet = await self.getUniqueTagValues(
-                    colorBy,
-                    view.staticBlocks,
+                  const uniqueTagSet = await getUniqueTagValues(
+                    self,
+                    view.staticBlocks.contentBlocks,
+                    colorBy.tag,
                   )
                   self.updateColorTagMap(uniqueTagSet)
                 }
@@ -319,17 +286,16 @@ const stateModelFactory = (
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            height: self.featureHeight,
-            noSpacing: self.noSpacing,
+            displayMode: self.displayMode,
             maxHeight: this.maxHeight,
             mismatchAlpha: self.mismatchAlpha,
           },
           getEnv(self),
         )
       },
-      get featureHeightSetting() {
+      get displayModeSetting() {
         return (
-          self.featureHeight || readConfObject(this.rendererConfig, 'height')
+          self.displayMode || readConfObject(this.rendererConfig, 'displayMode')
         )
       },
       get mismatchAlphaSetting() {
@@ -375,12 +341,10 @@ const stateModelFactory = (
                 },
               ]
             : []
-          self.additionalContextMenuItemCallbacks.forEach(
-            (callback: Function) => {
-              const menuItems = callback(feat, self, pluginManager)
-              contextMenuItems.push(...menuItems)
-            },
-          )
+          self.additionalContextMenuItemCallbacks.forEach(callback => {
+            const menuItems = callback(feat, self, pluginManager)
+            contextMenuItems.push(...menuItems)
+          })
           return contextMenuItems
         },
 
@@ -397,9 +361,13 @@ const stateModelFactory = (
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
-              filters.push(
-                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
-              )
+              if (value === undefined) {
+                filters.push(`jexl:getTag(feature,"${tag}") == undefined`)
+              } else {
+                filters.push(
+                  `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
+                )
+              }
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
@@ -425,6 +393,10 @@ const stateModelFactory = (
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
+
+            // this forces the worker to create an extra layoutSession, but
+            // allows it to share a webworker
+            sessionExtra: JSON.stringify(self.filterBy),
           }
         },
 
@@ -470,79 +442,16 @@ const stateModelFactory = (
                 },
               ],
             },
-            {
-              label: 'Color scheme',
-              icon: PaletteIcon,
-              subMenu: [
-                {
-                  label: 'Normal',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'normal' })
-                  },
-                },
-                {
-                  label: 'Mapping quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mappingQuality' })
-                  },
-                },
-                {
-                  label: 'Strand',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'strand' })
-                  },
-                },
-                {
-                  label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
-                },
-                {
-                  label: 'Per-base quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseQuality' })
-                  },
-                },
-                {
-                  label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
-                },
-                {
-                  label: 'Stranded paired-end',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'reverseTemplate' })
-                  },
-                },
-                {
-                  label: 'Color by tag...',
-                  onClick: () => {
-                    getSession(self).setDialogComponent(ColorByTagDlg, {
-                      model: self,
-                    })
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Filter by',
-              icon: FilterListIcon,
-              onClick: () => {
-                getSession(self).setDialogComponent(FilterByTagDlg, {
-                  model: self,
-                })
-              },
-            },
-            {
-              label: 'Set feature height',
-              onClick: () => {
-                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
-                  model: self,
-                })
-              },
-            },
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [colorSchemeMenu(self)]
+              : []),
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [filterByMenu(self)]
+              : []),
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [setDisplayModeMenu(self)]
+              : []),
+
             {
               label: 'Set max height',
               onClick: () => {

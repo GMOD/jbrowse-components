@@ -53,11 +53,14 @@ export class LayoutSession implements LayoutSessionProps {
   }
 
   makeLayout() {
+    const displayMode = readConfObject(this.config, 'displayMode')
+    const maxHeight = readConfObject(this.config, 'maxHeight')
+
     return new MultiLayout(GranularRectLayout, {
-      maxHeight: readConfObject(this.config, 'maxHeight'),
-      displayMode: readConfObject(this.config, 'displayMode'),
+      maxHeight,
+      displayMode,
       pitchX: this.bpPerPx,
-      pitchY: readConfObject(this.config, 'noSpacing') ? 1 : 3,
+      pitchY: displayMode === 'squish' ? 1 : 3,
     })
   }
 
@@ -121,12 +124,15 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 export default class BoxRendererType extends FeatureRendererType {
   sessions: { [sessionId: string]: LayoutSession } = {}
 
-  getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
-    const { sessionId } = props
-    if (!this.sessions[sessionId]) {
-      this.sessions[sessionId] = this.createSession(props)
+  getWorkerSession(
+    props: LayoutSessionProps & { sessionId: string; sessionExtra?: string },
+  ) {
+    const { sessionId, sessionExtra } = props
+    const id = `${sessionId}-${sessionExtra}`
+    if (!this.sessions[id]) {
+      this.sessions[id] = this.createSession(props)
     }
-    const session = this.sessions[sessionId]
+    const session = this.sessions[id]
     session.update(props)
     return session
   }

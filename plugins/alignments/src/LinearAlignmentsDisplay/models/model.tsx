@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -6,9 +6,33 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import deepEqual from 'fast-deep-equal'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
-import { getContainingTrack } from '@jbrowse/core/util'
+import {
+  addDisposer,
+  getSnapshot,
+  cast,
+  Instance,
+  types,
+} from 'mobx-state-tree'
+import {
+  getSession,
+  getContainingTrack,
+  getContainingView,
+} from '@jbrowse/core/util'
+import GroupIcon from '@material-ui/icons/ViewModule'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AlignmentsConfigModel } from './configSchema'
+import {
+  colorSchemeMenu,
+  filterByMenu,
+  setDisplayModeMenu,
+  colorByModel,
+  filterByModel,
+  getUniqueTagValues,
+} from '../../shared/models'
+
+const GroupByTagDlg = lazy(() => import('../components/GroupByTag'))
+
+type LGV = LinearGenomeViewModel
 
 const minDisplayHeight = 20
 const stateModelFactory = (
@@ -23,12 +47,26 @@ const stateModelFactory = (
         PileupDisplay: types.maybe(
           pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
         ),
+        PileupDisplays: types.maybe(
+          types.array(
+            pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
+          ),
+        ),
         SNPCoverageDisplay: types.maybe(
           pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
         ),
         snpCovHeight: 45,
         type: types.literal('LinearAlignmentsDisplay'),
         configuration: ConfigurationReference(configSchema),
+        groupBy: types.maybe(
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        ),
+        colorBy: colorByModel,
+        displayMode: types.maybe(types.string),
+        filterBy: filterByModel,
         height: 250,
         showCoverage: true,
         showPileup: true,
@@ -36,6 +74,8 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       scrollTop: 0,
+      groups: [] as string[],
+      ready: false,
     }))
     .actions(self => ({
       toggleCoverage() {
@@ -49,6 +89,36 @@ const stateModelFactory = (
       },
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
+      },
+      setColorScheme(colorScheme: { type: string; tag?: string }) {
+        self.colorBy = cast(colorScheme)
+      },
+      setFilterBy(filter: {
+        flagInclude: number
+        flagExclude: number
+        readName?: string
+        tagFilter?: { tag: string; value: string }
+      }) {
+        self.filterBy = cast(filter)
+      },
+      setGroupBy(groupBy: { type: string; tag: string }) {
+        self.groupBy = cast(groupBy)
+        self.ready = false
+      },
+      setReady(flag: boolean) {
+        self.ready = flag
+      },
+
+      updateGroups(groups: string[]) {
+        for (let i = 0; i < groups.length; i++) {
+          if (!self.groups.includes(groups[i])) {
+            self.groups = groups
+            break
+          }
+        }
+      },
+      setDisplayMode(type?: string) {
+        self.displayMode = type
       },
     }))
     .views(self => {
@@ -101,11 +171,17 @@ const stateModelFactory = (
         get trackMenuItems(): MenuItem[] {
           return [
             ...trackMenuItems,
-            {
-              type: 'subMenu',
-              label: 'Pileup settings',
-              subMenu: self.PileupDisplay.composedTrackMenuItems,
-            },
+
+            // When there are multiple PileupDisplays, we hide the
+            // PileupDisplay track settings
+            ...(self.groups.length
+              ? []
+              : [
+                  {
+                    label: 'Pileup settings',
+                    subMenu: self.PileupDisplay.composedTrackMenuItems,
+                  },
+                ]),
             {
               type: 'subMenu',
               label: 'SNPCoverage settings',
@@ -113,6 +189,19 @@ const stateModelFactory = (
                 ...self.SNPCoverageDisplay.composedTrackMenuItems,
                 ...self.SNPCoverageDisplay.extraTrackMenuItems,
               ],
+            },
+
+            colorSchemeMenu(self),
+            filterByMenu(self),
+            setDisplayModeMenu(self),
+            {
+              label: 'Group by',
+              icon: GroupIcon,
+              onClick: () => {
+                getSession(self).setDialogComponent(GroupByTagDlg, {
+                  model: self,
+                })
+              },
             },
           ]
         },
@@ -136,6 +225,26 @@ const stateModelFactory = (
           configuration: displayConfig,
         }
       },
+
+      setPileupDisplays(displayConfig: AnyConfigurationModel) {
+        self.PileupDisplays = cast([
+          ...self.groups.map(group => ({
+            type: 'LinearPileupDisplay',
+            configuration: displayConfig,
+            filterBy: {
+              tagFilter: { tag: self.groupBy?.tag, value: group },
+            },
+            colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
+          })),
+          {
+            type: 'LinearPileupDisplay',
+            configuration: displayConfig,
+            filterBy: {
+              tagFilter: { tag: self.groupBy?.tag, value: undefined },
+            },
+          },
+        ])
+      },
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) {
           self.height = displayHeight
@@ -150,74 +259,163 @@ const stateModelFactory = (
         return newHeight - oldHeight
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            if (!self.SNPCoverageDisplay) {
-              self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
-            } else if (
-              !deepEqual(
-                self.snpCoverageDisplayConfig,
-                getSnapshot(self.SNPCoverageDisplay.configuration),
-              )
-            ) {
-              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
-              self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
-            }
-
-            if (!self.PileupDisplay) {
-              self.setPileupDisplay(self.pileupDisplayConfig)
-            } else if (
-              !deepEqual(
-                self.pileupDisplayConfig,
-                getSnapshot(self.PileupDisplay.configuration),
-              )
-            ) {
-              self.PileupDisplay.setConfig(self.pileupDisplayConfig)
-            }
-
-            // propagate the filterBy setting from pileupdisplay to snpcoverage
-            // note: the snpcoverage display is not able to control filterBy
-            // itself
-            if (
-              !deepEqual(
-                getSnapshot(self.PileupDisplay.filterBy),
-                getSnapshot(self.SNPCoverageDisplay.filterBy),
-              )
-            ) {
-              self.SNPCoverageDisplay.setFilterBy(
-                getSnapshot(self.PileupDisplay.filterBy),
-              )
-            }
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
-            self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
-          }),
-        )
-      },
-      async renderSvg(opts: { rasterizeLayers?: boolean }) {
-        const pileupHeight = self.height - self.SNPCoverageDisplay.height
-        await when(() => self.PileupDisplay.ready)
-        return (
-          <>
-            <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
-            <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
-              {
-                await self.PileupDisplay.renderSvg({
-                  ...opts,
-                  overrideHeight: pileupHeight,
-                })
+    .actions(self => {
+      let oldGroups = ''
+      return {
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(() => {
+              // initialize snpcov sub-display at startup
+              if (!self.SNPCoverageDisplay) {
+                self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
               }
-            </g>
-          </>
-        )
-      },
-    }))
+
+              // initialize pileup sub-display at startup
+              if (
+                self.groups.length &&
+                oldGroups !== JSON.stringify(self.groups)
+              ) {
+                self.setPileupDisplays(self.pileupDisplayConfig)
+                oldGroups = JSON.stringify(self.groups)
+              } else if (!self.PileupDisplay) {
+                self.setPileupDisplay(self.pileupDisplayConfig)
+              }
+
+              // propagate updates to the copy of the snpcov display on this
+              // model to the subdisplay if changed
+              if (
+                !deepEqual(
+                  self.snpCoverageDisplayConfig,
+                  getSnapshot(self.SNPCoverageDisplay.configuration),
+                )
+              ) {
+                self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
+                self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
+              }
+
+              // propagate updates to the copy of the pileup display on this
+              // model to the subdisplay
+              if (
+                !deepEqual(
+                  self.pileupDisplayConfig,
+                  getSnapshot(self.PileupDisplay.configuration),
+                )
+              ) {
+                self.PileupDisplay.setConfig(self.pileupDisplayConfig)
+              }
+
+              // propagate the filterBy and colorBy settings
+              self.SNPCoverageDisplay.setFilterBy(getSnapshot(self.filterBy))
+              self.PileupDisplay.setFilterBy(getSnapshot(self.filterBy))
+              if (self.colorBy) {
+                const { colorBy } = self
+                self.SNPCoverageDisplay.setColorScheme(getSnapshot(colorBy))
+                if (self.groups.length) {
+                  self.PileupDisplays?.forEach(disp =>
+                    disp.setColorScheme(getSnapshot(colorBy)),
+                  )
+                } else {
+                  self.PileupDisplay.setColorScheme(getSnapshot(colorBy))
+                }
+              }
+
+              if (self.displayMode) {
+                const { displayMode } = self
+                if (self.groups.length) {
+                  self.PileupDisplays?.forEach(disp =>
+                    disp.setDisplayMode(displayMode),
+                  )
+                } else {
+                  self.PileupDisplay.setDisplayMode(displayMode)
+                }
+              }
+            }),
+          )
+          addDisposer(
+            self,
+            autorun(() => {
+              self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+            }),
+          )
+
+          addDisposer(
+            self,
+            autorun(async () => {
+              try {
+                const { groupBy } = self
+                const view = getContainingView(self) as LGV
+
+                // continually generate the vc pairing, set and rerender if any
+                // new values seen
+                if (groupBy?.tag) {
+                  const uniqueTagSet = await getUniqueTagValues(
+                    self,
+                    view.staticBlocks.contentBlocks,
+                    groupBy.tag,
+                  )
+                  self.updateGroups(uniqueTagSet)
+                }
+                self.setReady(true)
+              } catch (e) {
+                console.error(e)
+              }
+            }),
+          )
+        },
+        async renderSvg(opts: { rasterizeLayers?: boolean }) {
+          const pileupHeight = self.height - self.SNPCoverageDisplay.height
+          if (self.groups.length) {
+            await Promise.all(
+              self.PileupDisplays?.map(disp => when(() => disp.ready)) || [],
+            )
+          } else {
+            await when(() => self.PileupDisplay.ready)
+          }
+          let currOffset = 0
+          return (
+            <>
+              <g>{await self.SNPCoverageDisplay.renderSvg(opts)}</g>
+              <g transform={`translate(0 ${self.SNPCoverageDisplay.height})`}>
+                {
+                  await (self.PileupDisplays?.length
+                    ? Promise.all(
+                        self.PileupDisplays.map(async (disp, index) => {
+                          const {
+                            reactElement,
+                            layoutHeight,
+                          } = await disp.renderSvg({
+                            ...opts,
+                            overrideHeight: pileupHeight,
+                          })
+
+                          const offset = layoutHeight + 10
+                          currOffset += offset
+                          return (
+                            <g
+                              key={`${Math.random}`}
+                              transform={`translate(0 ${currOffset - offset})`}
+                            >
+                              <text fontSize={10} y={10}>
+                                {self.groupBy?.tag}{' '}
+                                {self.groups[index] || 'none'}
+                              </text>
+                              <g transform="translate(0 10)">{reactElement}</g>
+                            </g>
+                          )
+                        }),
+                      )
+                    : self.PileupDisplay.renderSvg({
+                        ...opts,
+                        overrideHeight: pileupHeight,
+                      }))
+                }
+              </g>
+            </>
+          )
+        },
+      }
+    })
 }
 
 export default stateModelFactory

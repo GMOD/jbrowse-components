@@ -5,13 +5,21 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { AlignmentsDisplayModel } from '../models/model'
 
 function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
-  const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
+  const {
+    PileupDisplay,
+    PileupDisplays,
+    SNPCoverageDisplay,
+    showPileup,
+    showCoverage,
+    groups,
+    groupBy,
+  } = model
   return (
-    <div
-      data-testid={`display-${getConf(model, 'displayId')}`}
-      style={{ position: 'relative' }}
-    >
-      <div data-testid="Blockset-snpcoverage">
+    <div data-testid={`display-${getConf(model, 'displayId')}`}>
+      <div
+        data-testid="Blockset-snpcoverage"
+        style={{ height: SNPCoverageDisplay.height }}
+      >
         {showCoverage ? (
           <SNPCoverageDisplay.RenderingComponent model={SNPCoverageDisplay} />
         ) : null}
@@ -25,24 +33,45 @@ function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
           return 0
         }}
         style={{
-          position: 'absolute',
-          top: showCoverage ? SNPCoverageDisplay.height + 2 : 0,
           height: 3,
         }}
       />
 
-      <div
-        data-testid="Blockset-pileup"
-        style={{
-          position: 'absolute',
-          top: showCoverage ? SNPCoverageDisplay.height + 5 : 0,
-          height: 3,
-        }}
-      >
-        {showPileup ? (
-          <PileupDisplay.RenderingComponent model={PileupDisplay} />
-        ) : null}
-      </div>
+      {PileupDisplays ? (
+        PileupDisplays.map((disp, index) => {
+          const { layoutHeight: height } = disp
+          const tag = `${groupBy?.tag}${groups[index] || ' none'}`
+          return (
+            <div
+              data-testid={`Blockset-pileup-${tag}`}
+              key={disp.id}
+              style={{
+                height,
+                overflow: 'hidden',
+                marginBottom: 5,
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  zIndex: 1000,
+                  background: 'white',
+                  border: '1px solid black',
+                }}
+              >
+                {tag}
+              </div>
+              {showPileup ? <disp.RenderingComponent model={disp} /> : null}
+            </div>
+          )
+        })
+      ) : (
+        <div data-testid="Blockset-pileup">
+          {showPileup ? (
+            <PileupDisplay.RenderingComponent model={PileupDisplay} />
+          ) : null}
+        </div>
+      )}
     </div>
   )
 }

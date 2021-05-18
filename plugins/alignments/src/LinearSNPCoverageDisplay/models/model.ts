@@ -1,4 +1,4 @@
-import { types, cast, getEnv } from 'mobx-state-tree'
+import { types, cast, getEnv, getParent } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
@@ -8,6 +8,12 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import Tooltip from '../components/Tooltip'
+import {
+  colorSchemeMenu,
+  filterByMenu,
+  filterByModel,
+  colorByModel,
+} from '../../shared/models'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -24,17 +30,8 @@ const stateModelFactory = (
         type: types.literal('LinearSNPCoverageDisplay'),
         drawInterbaseCounts: types.maybe(types.boolean),
         drawIndicators: types.maybe(types.boolean),
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1536),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+        colorBy: colorByModel,
+        filterBy: filterByModel,
       }),
     )
     .actions(self => ({
@@ -49,6 +46,7 @@ const stateModelFactory = (
       }) {
         self.filterBy = cast(filter)
       },
+      setColorScheme() {},
     }))
     .views(self => ({
       get rendererConfig() {
@@ -135,6 +133,12 @@ const stateModelFactory = (
                 self.toggleDrawInterbaseCounts()
               },
             },
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [colorSchemeMenu(self)]
+              : []),
+            ...(getParent(self).type !== 'LinearAlignmentsDisplay'
+              ? [filterByMenu(self)]
+              : []),
           ]
         },
         get trackMenuItems() {
