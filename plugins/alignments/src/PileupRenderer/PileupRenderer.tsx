@@ -16,7 +16,7 @@ import Color from 'color'
 import { Region } from '@jbrowse/core/util/types'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import { BaseLayout } from '@jbrowse/core/util/layouts/BaseLayout'
-
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   Mismatch,
@@ -31,6 +31,7 @@ import {
   PileupLayoutSession,
   PileupLayoutSessionProps,
 } from './PileupLayoutSession'
+import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 export type {
   RenderArgs,
@@ -892,14 +893,23 @@ export default class PileupRenderer extends BoxRendererType {
     const layoutRecords = this.layoutFeats({ ...renderProps, features, layout })
 
     // @ts-ignore
-    const { sequenceAdapter } = await renderProps.dataAdapter.configure()
+    const { dataAdapter: sequenceAdapter } = renderProps.adapterConfig
+      .sequenceAdapter
+      ? await getAdapter(
+          this.pluginManager,
+          renderProps.sessionId,
+          // @ts-ignore
+          renderProps.adapterConfig.sequenceAdapter,
+        )
+      : {}
     const [region] = regions
     const [feat] = sequenceAdapter
-      ? await sequenceAdapter
+      ? await (sequenceAdapter as BaseFeatureDataAdapter)
           .getFeatures({
             start: region.start,
             end: region.end + 1,
             refName: region.refName,
+            assemblyName: region.assemblyName,
           })
           .pipe(toArray())
           .toPromise()
