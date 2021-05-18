@@ -4,6 +4,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import {
   getContainingView,
+  getContainingTrack,
   getSession,
   isSelectionContainer,
   isSessionModelWithWidgets,
@@ -272,7 +273,12 @@ export const BaseLinearDisplay = types
         const featureWidget = session.addWidget(
           'BaseFeatureWidget',
           'baseFeature',
-          { featureData: feature.toJSON(), view: getContainingView(self) },
+          {
+            featureData: feature.toJSON(),
+            view: getContainingView(self),
+            display: self,
+            track: getContainingTrack(self),
+          },
         )
         session.showWidget(featureWidget)
       }

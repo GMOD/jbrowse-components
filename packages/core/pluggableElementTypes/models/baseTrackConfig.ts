@@ -46,6 +46,12 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       //   ),
       //   defaultValue: [],
       // },
+      extraFields: {
+        type: 'string',
+        description: 'modifies on the base feature details',
+        defaultValue: `jexl:{}`,
+        contextVariable: ['feature'],
+      },
     },
     {
       preProcessSnapshot: s => {

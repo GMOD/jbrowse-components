@@ -14,6 +14,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
+      track: types.safeReference(
+        pluginManager.pluggableMstType('track', 'stateModel'),
+      ),
+      display: types.safeReference(
+        pluginManager.pluggableMstType('display', 'stateModel'),
+      ),
     })
     .actions(self => ({
       setFeatureData(data: Record<string, unknown>) {
