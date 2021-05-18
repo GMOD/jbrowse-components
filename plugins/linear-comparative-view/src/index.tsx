@@ -158,6 +158,62 @@ function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
+function mergeIntervals(intervals: any) {
+  // test if there are at least 2 intervals
+  if (intervals.length <= 1) {
+    return intervals
+  }
+
+  const stack = []
+  let top = null
+
+  // sort the intervals based on their start values
+  intervals = intervals.sort((a: any, b: any) => a - b)
+
+  // push the 1st interval into the stack
+  stack.push(intervals[0])
+
+  // start from the next interval and merge if needed
+  for (let i = 1; i < intervals.length; i++) {
+    // get the top element
+    top = stack[stack.length - 1]
+
+    // if the current interval doesn't overlap with the
+    // stack top element, push it to the stack
+    if (top.end < intervals[i].start) {
+      stack.push(intervals[i])
+    }
+    // otherwise update the end value of the top element
+    // if end of current interval is higher
+    else if (top.end < intervals[i].end) {
+      top.end = intervals[i].end
+      stack.pop()
+      stack.push(top)
+    }
+  }
+
+  return stack
+}
+
+function groupBy(arr: any, property: any) {
+  return arr.reduce(function (memo, x) {
+    if (!memo[x[property]]) {
+      memo[x[property]] = []
+    }
+    memo[x[property]].push(x)
+    return memo
+  }, {})
+}
+function gatherOverlaps(regions: any[]) {
+  const groups = groupBy(regions, 'refName')
+  const merged = Object.values(groups).map((group: any) => {
+    group.sort((a, b) => a.start - b.start)
+    return mergeIntervals(group)
+  })
+
+  return merged.flat().sort((a, b) => a.index - b.index)
+}
+
 function WindowSizeDlg(props: {
   feature: Feature
   handleClose: () => void
@@ -313,16 +369,16 @@ function WindowSizeDlg(props: {
 
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
-      const lgvRegions = features
-        .map(f => {
+      const lgvRegions = gatherOverlaps(
+        features.map(f => {
           return {
             ...f,
             start: Math.max(0, f.start - windowSize),
             end: f.end + windowSize,
             assemblyName: trackAssembly,
           }
-        })
-        .sort((a, b) => a.clipPos - b.clipPos)
+        }),
+      ).sort((a, b) => a.clipPos - b.clipPos)
 
       session.addAssembly?.({
         name: `${readAssembly}`,
