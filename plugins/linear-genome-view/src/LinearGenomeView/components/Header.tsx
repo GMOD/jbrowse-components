@@ -112,7 +112,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const { assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
-  const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
+  const { coarseDynamicBlocks: contentBlocks, displayedRegions, rankSearchResults } = model
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions = (assembly && assembly.regions) || []
@@ -135,7 +135,9 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         const results = await textSearchManager.search({
           queryString: newRegionValue.toLocaleLowerCase(),
           searchType: 'exact',
-        })
+          },
+          rankSearchResults,
+        )
         // distinguishes between locstrings and search strings
         if (results.length > 0) {
           model.setSearchResults(results, newRegionValue.toLocaleLowerCase())

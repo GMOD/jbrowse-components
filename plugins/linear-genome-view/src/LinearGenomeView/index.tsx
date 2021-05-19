@@ -278,6 +278,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
       },
+      get searchScope() {
+        const session = getSession(self)
+        if (self.displayedRegions.length === 0) {
+          return {
+            aggregate: true,
+            assemblyNames: session.assemblyNames,
+          }
+        }
+        return {
+          aggregate: true,
+          openedTracks: self.tracks,
+          assemblyNames: session.assemblyNames,
+        }
+      },
       parentRegion(assemblyName: string, refName: string) {
         return this.displayedParentRegions.find(
           parentRegion =>
@@ -429,22 +443,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      findSearchScope() {
-        const session = getSession(self)
-        if (self.displayedRegions.length === 0) {
-          return {
-            aggregate: true,
-            assemblyNames: session.assemblyNames,
+      rankSearchResults(results: BaseResult) {
+        // order of rank
+        const openTrackIds = self.tracks.map(track => track.rpcSessionId)
+        // console.log(openTrackIds)
+        const ranked = results.map(result => {
+          if (openTrackIds !== []) {
+            if (openTrackIds.includes(result.trackId)) {
+              // console.log(result.getScore())
+              // console.log(result.updateScore(result.getScore()+1))
+              return result.updateScore(result.getScore() + 1)
+            }
           }
-        }
-        return {
-          aggregate: true,
-          openedTracks: self.tracks,
-          assemblyNames: session.assemblyNames,
-        }
-      },
-
-      rankSearchResults(results: BaseResult[]) {
+          // console.log(result)
+          return result
+        })
         return results
       },
 

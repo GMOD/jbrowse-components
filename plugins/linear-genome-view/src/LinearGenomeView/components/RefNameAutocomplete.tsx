@@ -74,10 +74,10 @@ function RefNameAutocomplete({
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
   const { textSearchManager } = pluginManager.rootModel
-  const { coarseVisibleLocStrings } = model
+  const { coarseVisibleLocStrings, rankSearchResults } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = (assembly && assembly.regions) || []
-  const searchScope = model.findSearchScope()
+  const searchScope = model.searchScope
   // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
@@ -108,7 +108,10 @@ function RefNameAutocomplete({
             searchType: 'prefix',
           }
           // TODO: have scope be a diff param to the text search manager
-          const prefixResults = await textSearchManager.search(args)
+          const prefixResults = await textSearchManager.search(
+            args,
+            rankSearchResults,
+          )
           results = results.concat(prefixResults)
         }
         if (results.length > 0 && active) {

@@ -17,6 +17,8 @@ interface BaseArgs {
   aggregate?: boolean
   openedTracks?: Array<string>
   assemblyNames?: Array<string>
+
+  rankSearchResults?: Function
 }
 
 export default (pluginManager: PluginManager) => {
@@ -93,7 +95,7 @@ export default (pluginManager: PluginManager) => {
      * @param args - search options/arguments include: search query
      * limit of results to return, searchType...preffix | full | exact", etc.
      */
-    async search(args: BaseArgs) {
+    async search(args: BaseArgs, rankSearchResults: Function) {
       // determine list of relevant adapters
       this.textSearchAdapters = this.loadTextSearchAdapters(args)
       const results: Array<BaseResult[]> = await Promise.all(
@@ -105,12 +107,15 @@ export default (pluginManager: PluginManager) => {
       )
 
       // aggregate and return relevant results
-      const relevantResults = this.relevantResults(results.flat()) // flattening the results
-
+      const relevantResults = this.sortResults(
+        results.flat(),
+        rankSearchResults,
+      )
+      
       if (args.limit && relevantResults.length > 0) {
         return relevantResults.slice(0, args.limit)
       }
-
+      console.log(relevantResults)
       return relevantResults
     }
 
@@ -118,13 +123,27 @@ export default (pluginManager: PluginManager) => {
      * Returns array of revelevant results
      * @param results - array of results from all text search adapters
      */
-    relevantResults(results: BaseResult[]) {
+    sortResults(results: BaseResult[], rankSearchResults: Function) {
       /**
        * Relevant results sketch
        * priority results coming from opened tracks vs all tracks
        * recently searched terms?
        */
-      return results
+      // const rankedResults=rankSearchResults(results)
+      // console.log(rankSearchResults(results))
+      const sortedResults = rankSearchResults(results).sort(function (
+        result1: BaseResult,
+        result2: BaseResult,
+      ) {
+        if (result1.getScore() < result2.getScore()) {
+          return 1
+        }
+        if (result1.getScore() > result2.getScore()) {
+          return -1
+        }
+        return 0
+      })
+      return sortedResults
     }
   }
 }

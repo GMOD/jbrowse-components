@@ -19,6 +19,8 @@ export interface BaseResultArgs {
   refName?: string
 
   trackId?: string
+
+  score: number
 }
 export default class BaseResult {
   label: string
@@ -35,6 +37,7 @@ export default class BaseResult {
 
   trackId?: string
 
+  score: number
   constructor(args: BaseResultArgs) {
     this.label = args.label
     this.renderingComponent = args.renderingComponent
@@ -43,6 +46,7 @@ export default class BaseResult {
     this.textSearchAdapter = args.textSearchAdapter
     this.relevance = args.relevance
     this.trackId = args.trackId
+    this.score = args.score || 1
   }
 
   getLabel() {
@@ -59,6 +63,15 @@ export default class BaseResult {
 
   getTrackId() {
     return this.trackId
+  }
+
+  getScore() {
+    return this.score
+  }
+  updateScore(newScore: number) {
+    console.log("hiiiii")
+    this.score = newScore
+    return this.score
   }
 }
 
