@@ -679,6 +679,7 @@ const Renderer = observer(
               loader.setBlankSession(true)
               handleClose()
             }}
+            reason={loader.sessionTriaged.reason}
           />
         </Suspense>
       ) : (
@@ -696,6 +697,7 @@ const Renderer = observer(
               factoryReset()
               handleClose()
             }}
+            reason={loader.sessionTriaged.reason}
           />
         </Suspense>
       )

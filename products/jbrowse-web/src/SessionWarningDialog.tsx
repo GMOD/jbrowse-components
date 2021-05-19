@@ -25,9 +25,11 @@ const useStyles = makeStyles(theme => ({
 export default function SessionWarningModal({
   onConfirm,
   onCancel,
+  reason,
 }: {
   onConfirm: () => void
   onCancel: () => void
+  reason: { url: string }[]
 }) {
   const classes = useStyles()
   return (
@@ -43,10 +45,12 @@ export default function SessionWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            This link contains an external session, which may contain dangerous
-            code.
-          </DialogContentText>
-          <DialogContentText>
+            This link contains a session that has the following unknown plugins:
+            <ul>
+              {reason.map(r => (
+                <li>URL: {r.url}</li>
+              ))}
+            </ul>
             Please ensure you trust the source of this session.
           </DialogContentText>
         </DialogContent>

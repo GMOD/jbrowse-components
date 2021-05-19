@@ -25,9 +25,11 @@ const useStyles = makeStyles(theme => ({
 export default function ConfigWarningModal({
   onConfirm,
   onCancel,
+  reason,
 }: {
   onConfirm: () => void
   onCancel: () => void
+  reason: { url: string }[]
 }) {
   const classes = useStyles()
   return (
@@ -44,10 +46,13 @@ export default function ConfigWarningModal({
         <WarningIcon fontSize="large" />
         <DialogContent>
           <DialogContentText>
-            This link contains a cross origin config that loads a configuration
-            from an external site.
-          </DialogContentText>
-          <DialogContentText>
+            This link contains a cross origin config that has the following
+            unknown plugins:
+            <ul>
+              {reason.map(r => (
+                <li>URL: {r.url}</li>
+              ))}
+            </ul>
             Please ensure you trust the source of this link.
           </DialogContentText>
         </DialogContent>
