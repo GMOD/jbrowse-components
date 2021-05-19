@@ -133,6 +133,45 @@ const stateModelFactory = (
         )
         return values as string[]
       },
+      async getUniqueModificationValues(
+        colorScheme: { type: string; tag?: string },
+        blocks: BlockSet,
+        opts?: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const values = await rpcManager.call(
+          getRpcSessionId(self),
+          'PileupGetVisibleModifications',
+          {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            regions: blocks.contentBlocks,
+            ...opts,
+          },
+        )
+        return values as string[]
+      },
+
+      updateModificationColorMap(uniqueModifications: string[]) {
+        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
+
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            const totalKeys = [...self.modificationTagMap.keys()].length
+            const newColor = colorPalette[totalKeys]
+            self.modificationTagMap.set(value, newColor)
+          }
+        })
+      },
+
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
@@ -176,6 +215,14 @@ const stateModelFactory = (
                     view.staticBlocks,
                   )
                   self.updateColorTagMap(uniqueTagSet)
+                }
+
+                if (colorBy?.type === 'modifications') {
+                  const uniqueModificationsSet = await self.getUniqueModificationValues(
+                    colorBy,
+                    view.staticBlocks,
+                  )
+                  self.updateModificationColorMap(uniqueModificationsSet)
                 }
 
                 if (sortedBy) {
@@ -409,6 +456,9 @@ const stateModelFactory = (
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
+            modificationTagMap: JSON.parse(
+              JSON.stringify(self.modificationTagMap),
+            ),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
