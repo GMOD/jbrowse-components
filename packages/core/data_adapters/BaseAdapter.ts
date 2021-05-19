@@ -221,7 +221,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return refNames.includes(refName)
   }
 
-  public getRegionStats(region: Region, opts?: BaseOptions) {
+  public async getRegionStats(region: Region, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }

@@ -12,7 +12,7 @@ import {
 } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import React from 'react'
-import ErrorBoundary from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
 import FileSaver from 'file-saver'

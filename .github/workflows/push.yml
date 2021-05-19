@@ -4,11 +4,11 @@ on: push
 
 jobs:
   test:
-    name: Test and typecheck on node 12 and ubuntu-latest
+    name: Test and typecheck on node 12.x and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12
+      - name: Use Node.js 12.x
         uses: actions/setup-node@v2
         with:
           node-version: '12'

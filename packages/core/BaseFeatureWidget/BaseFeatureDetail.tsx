@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,react/prop-types */
 import React from 'react'
-import ErrorBoundary from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
   AccordionDetails,
@@ -190,18 +190,31 @@ const ArrayValue = ({
 }) => {
   const classes = useStyles()
   return (
-    <div className={classes.field}>
-      <FieldName prefix={prefix} description={description} name={name} />
+    <>
       {value.length === 1 ? (
-        <BasicValue value={value[0]} />
-      ) : (
-        value.map((val, i) => (
-          <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
-            <BasicValue value={val} />
+        isObject(value[0]) ? (
+          <Attributes attributes={value[0]} prefix={[...prefix, name]} />
+        ) : (
+          <div className={classes.field}>
+            <FieldName prefix={prefix} description={description} name={name} />
+            <BasicValue value={value[0]} />
           </div>
+        )
+      ) : value.every(val => isObject(val)) ? (
+        value.map((val, i) => (
+          <Attributes attributes={val} prefix={[...prefix, name + '-' + i]} />
         ))
+      ) : (
+        <div className={classes.field}>
+          <FieldName prefix={prefix} description={description} name={name} />
+          {value.map((val, i) => (
+            <div key={`${name}-${i}`} className={classes.fieldSubvalue}>
+              <BasicValue value={val} />
+            </div>
+          ))}
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -394,6 +407,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
               />
             )
           }
+
           if (isObject(value)) {
             return (
               <Attributes
