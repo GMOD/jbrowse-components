@@ -75,6 +75,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
       )
     }
+    return { sequenceAdapter: this.sequenceAdapter }
   }
 
   async getHeader(opts?: BaseOptions) {

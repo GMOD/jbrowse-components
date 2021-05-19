@@ -211,6 +211,17 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "cpgisland_ucsc_hg38",
+      "name": "UCSC CpG islands",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "cpgIslandExt"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "segdups_ucsc_hg19",
       "name": "UCSC SegDups",
       "category": ["Annotation"],
@@ -3077,6 +3088,79 @@
         "type": "BigBedAdapter",
         "bigBedLocation": {
           "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "human_chr20_mod_call_5mC_5hmC_CG_bam",
+      "name": "human_chr20_mod_call_5mC_5hmC_CG (BAM)",
+      "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam.bai"
+          }
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "human_chr20_mod_call_5mC_5hmC_CG_cram",
+      "name": "human_chr20_mod_call_5mC_5hmC_CG (CRAM)",
+      "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "modified_bases.5mC",
+      "name": "modified_bases.5mC",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
         }
       }
     }
