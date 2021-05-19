@@ -44,6 +44,11 @@ export const LocalPathLocation = types.model('LocalPathLocation', {
   localPath: types.string, // TODO: refine
 })
 
+export const BlobLocation = types.model('BlobLocation', {
+  name: types.string, // TODO: refine
+  blobId: types.string,
+})
+
 export const UriLocationRaw = types.model('UriLocation', {
   uri: types.string, // TODO: refine
   baseUri: types.maybe(types.string),
@@ -59,4 +64,8 @@ export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   },
 })
 
-export const FileLocation = types.union(LocalPathLocation, UriLocation)
+export const FileLocation = types.union(
+  LocalPathLocation,
+  UriLocation,
+  BlobLocation,
+)

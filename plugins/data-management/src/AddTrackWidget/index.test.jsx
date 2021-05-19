@@ -188,8 +188,8 @@ describe('tests localpath', () => {
     widget.setTrackData({ localPath: 'volvox-sorted.bam' })
     expect(widget.trackType).toBe('AlignmentsTrack')
     expect(widget.trackName).toBe('volvox-sorted.bam')
-    // the localPath is a "relativeUrl"
-    expect(widget.isRelativeUrl).toBe(true)
+    // the localPath is not a "relativeUrl"
+    expect(widget.isRelativeUrl).toBe(false)
     expect(widget.isFtp).toBe(false)
     expect(widget.wrongProtocol).toBe(false)
     expect(widget.assembly).toBe('volvox')

@@ -17,24 +17,34 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+function StatusMessage({
+  trackAdapter,
+  trackType,
+}: {
+  trackAdapter: { type: string; subadapter?: { type: string } }
+  trackType: string
+}) {
+  const classes = useStyles()
+  return trackAdapter.type === 'SNPCoverageAdapter' ? (
+    <Typography className={classes.spacing}>
+      Selected <code>{trackType}</code>. Using adapter{' '}
+      <code>{trackAdapter.type}</code> with subadapter{' '}
+      <code>{trackAdapter.subadapter?.type}</code>. Please enter a track name
+      and, if necessary, update the track type.
+    </Typography>
+  ) : (
+    <Typography className={classes.spacing}>
+      Using adapter <code>{trackAdapter.type}</code> and guessing track type{' '}
+      <code>{trackType}</code>. Please enter a track name and, if necessary,
+      update the track type.
+    </Typography>
+  )
+}
+
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
-  let error = ''
-  const { trackName, trackData, trackAdapter, trackType, assembly } = model
-
-  if (model.isFtp) {
-    error = `Warning: JBrowse cannot access files using the ftp protocol`
-  } else if (model.isRelativeUrl) {
-    error = `Warning: one or more of your files do not provide the protocol e.g.
-          https://, please provide an absolute URL unless you are sure a
-          relative URL is intended.`
-  } else if (model.wrongProtocol) {
-    error = `Warning: You entered a http:// resources but we cannot access HTTP
-          resources from JBrowse when it is running on https. Please use an
-          https URL for your track, or access the JBrowse app from the http
-          protocol`
-  }
+  const { trackName, trackAdapter, trackType, assembly, warningMessage } = model
 
   if (model.unsupported) {
     return (
@@ -61,7 +71,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       </Typography>
     )
   }
-  if (trackAdapter.type === UNKNOWN) {
+  if (trackAdapter?.type === UNKNOWN) {
     return (
       <>
         <Typography className={classes.spacing}>
@@ -118,105 +128,79 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       </>
     )
   }
-  if (!trackAdapter.type) {
+
+  if (!trackAdapter?.type) {
     // TODO: if file type is unrecognized, provide some way of specifying
     // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this data type.</Typography>
   }
-  if (trackData.uri || trackData.localPath || trackData.config) {
-    let message = null
-    if (trackData.uri || trackData.localPath) {
-      message =
-        trackAdapter.type === 'SNPCoverageAdapter' ? (
-          <Typography className={classes.spacing}>
-            Selected <code>{trackType}</code>. Using adapter{' '}
-            <code>{trackAdapter.type}</code> with subadapter{' '}
-            <code>{trackAdapter.subadapter.type}</code>. Please enter a track
-            name and, if necessary, update the track type.
-          </Typography>
-        ) : (
-          <Typography className={classes.spacing}>
-            Using adapter <code>{trackAdapter.type}</code> and guessing track
-            type <code>{trackType}</code>. Please enter a track name and, if
-            necessary, update the track type.
-          </Typography>
-        )
-    } else {
-      message = (
-        <Typography className={classes.spacing}>
-          Please enter a track type and track name.
-        </Typography>
-      )
-    }
-    return (
-      <>
-        {message}
-        {error ? (
-          <Typography style={{ color: 'orange' }}>{error}</Typography>
-        ) : null}
-        <TextField
-          className={classes.spacing}
-          label="trackName"
-          helperText="A name for this track"
-          fullWidth
-          value={trackName}
-          onChange={event => model.setTrackName(event.target.value)}
-          inputProps={{ 'data-testid': 'trackNameInput' }}
-        />
-        <TextField
-          className={classes.spacing}
-          value={trackType}
-          label="trackType"
-          helperText="A track type"
-          select
-          fullWidth
-          onChange={event => {
-            model.setTrackType(event.target.value)
-          }}
-          SelectProps={{
-            // @ts-ignore
-            SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
-          }}
-        >
-          {getEnv(session)
-            .pluginManager.getElementTypesInGroup('track')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((installedTrackType: any) => (
-              <MenuItem
-                key={installedTrackType.name}
-                value={installedTrackType.name}
-              >
-                {installedTrackType.name}
-              </MenuItem>
-            ))}
-        </TextField>
-        <TextField
-          value={assembly}
-          label="assemblyName"
-          helperText="Assembly to which the track will be added"
-          select
-          fullWidth
-          onChange={event => {
-            model.setAssembly(event.target.value)
-          }}
-          SelectProps={{
-            // @ts-ignore
-            SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
-          }}
-        >
-          {session.assemblies.map(assemblyConf => {
-            const assemblyName = readConfObject(assemblyConf, 'name')
-            return (
-              <MenuItem key={assemblyName} value={assemblyName}>
-                {assemblyName}
-              </MenuItem>
-            )
-          })}
-        </TextField>
-      </>
-    )
-  }
-  return <></>
+
+  return (
+    <>
+      {trackAdapter ? (
+        <StatusMessage trackAdapter={trackAdapter} trackType={trackType} />
+      ) : null}
+      {warningMessage ? (
+        <Typography style={{ color: 'orange' }}>{warningMessage}</Typography>
+      ) : null}
+      <TextField
+        className={classes.spacing}
+        label="trackName"
+        helperText="A name for this track"
+        fullWidth
+        value={trackName}
+        onChange={event => model.setTrackName(event.target.value)}
+        inputProps={{ 'data-testid': 'trackNameInput' }}
+      />
+      <TextField
+        className={classes.spacing}
+        value={trackType}
+        label="trackType"
+        helperText="A track type"
+        select
+        fullWidth
+        onChange={event => {
+          model.setTrackType(event.target.value)
+        }}
+        SelectProps={{
+          // @ts-ignore
+          SelectDisplayProps: { 'data-testid': 'trackTypeSelect' },
+        }}
+      >
+        {getEnv(session)
+          .pluginManager.getElementTypesInGroup('track')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map(({ name }: any) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+      </TextField>
+      <TextField
+        value={assembly}
+        label="assemblyName"
+        helperText="Assembly to which the track will be added"
+        select
+        fullWidth
+        onChange={event => {
+          model.setAssembly(event.target.value)
+        }}
+        SelectProps={{
+          // @ts-ignore
+          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
+        }}
+      >
+        {session.assemblies.map(assemblyConf => {
+          const assemblyName = readConfObject(assemblyConf, 'name')
+          return (
+            <MenuItem key={assemblyName} value={assemblyName}>
+              {assemblyName}
+            </MenuItem>
+          )
+        })}
+      </TextField>
+    </>
+  )
 }
 
 export default observer(ConfirmTrack)

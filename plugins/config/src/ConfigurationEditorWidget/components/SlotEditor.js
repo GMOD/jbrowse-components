@@ -4,23 +4,26 @@ import {
   getSubType,
   getUnionSubTypes,
 } from '@jbrowse/core/util/mst-reflection'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardHeader from '@material-ui/core/CardHeader'
-import Checkbox from '@material-ui/core/Checkbox'
-import FormControl from '@material-ui/core/FormControl'
-import FormControlLabel from '@material-ui/core/FormControlLabel'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import IconButton from '@material-ui/core/IconButton'
-import InputAdornment from '@material-ui/core/InputAdornment'
-import InputLabel from '@material-ui/core/InputLabel'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
-import SvgIcon from '@material-ui/core/SvgIcon'
-import TextField from '@material-ui/core/TextField'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  List,
+  ListItem,
+  MenuItem,
+  Paper,
+  SvgIcon,
+  TextField,
+  makeStyles,
+} from '@material-ui/core'
+
 import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
@@ -331,17 +334,11 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
   )
 })
 
-function createSetLocation(slot) {
-  return location => {
-    slot.set({ ...slot.value, ...location })
-  }
-}
-
 const FileSelectorWrapper = observer(({ slot }) => {
   return (
     <FileSelector
       location={slot.value}
-      setLocation={createSetLocation(slot)}
+      setLocation={location => slot.set(location)}
       name={slot.name}
       description={slot.description}
     />
