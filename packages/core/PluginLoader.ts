@@ -26,6 +26,11 @@ export interface PluginDefinition {
   url: string
 }
 
+export interface PluginRecord {
+  plugin: PluginConstructor
+  definition: PluginDefinition
+}
+
 export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
@@ -95,9 +100,12 @@ export default class PluginLoader {
     })
   }
 
-  async load(): Promise<PluginConstructor[]> {
+  async load(): Promise<PluginRecord[]> {
     return Promise.all(
-      this.definitions.map(definition => this.loadPlugin(definition)),
+      this.definitions.map(async definition => ({
+        plugin: await this.loadPlugin(definition),
+        definition,
+      })),
     )
   }
 }

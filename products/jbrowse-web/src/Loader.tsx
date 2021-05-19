@@ -119,6 +119,11 @@ async function checkPlugins(pluginsToCheck: { url: string }[]) {
 
 type Config = SnapshotOut<AnyConfigurationModel>
 
+interface PluginRecord {
+  plugin: PluginConstructor
+  definition: PluginDefinition
+}
+
 const SessionLoader = types
   .model({
     configPath: types.maybe(types.string),
@@ -132,8 +137,8 @@ const SessionLoader = types
     shareWarningOpen: false as any,
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
-    runtimePlugins: [] as PluginConstructor[],
-    sessionPlugins: [] as PluginConstructor[],
+    runtimePlugins: [] as PluginRecord[],
+    sessionPlugins: [] as PluginRecord[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -187,10 +192,10 @@ const SessionLoader = types
     setSessionError(error: Error) {
       self.sessionError = error
     },
-    setRuntimePlugins(plugins: PluginConstructor[]) {
+    setRuntimePlugins(plugins: PluginRecord[]) {
       self.runtimePlugins = plugins
     },
-    setSessionPlugins(plugins: PluginConstructor[]) {
+    setSessionPlugins(plugins: PluginRecord[]) {
       self.sessionPlugins = plugins
     },
     setConfigSnapshot(snap: unknown) {
@@ -494,8 +499,14 @@ const Renderer = observer(
                 metadata: { isCore: true },
               } as PluginLoadRecord
             }),
-            ...runtimePlugins.map(P => new P()),
-            ...sessionPlugins.map(P => new P()),
+            ...runtimePlugins.map(({ plugin: P, definition }) => ({
+              plugin: new P(),
+              metadata: { definition },
+            })),
+            ...sessionPlugins.map(({ plugin: P, definition }) => ({
+              plugin: new P(),
+              metadata: { definition },
+            })),
           ])
           pluginManager.createPluggableElements()
 

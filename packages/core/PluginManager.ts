@@ -32,6 +32,7 @@ import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 import { AbstractRootModel } from './util'
 import CorePlugin from './CorePlugin'
 import createJexlInstance from './util/jexl'
+import { PluginDefinition } from './PluginLoader'
 
 /** little helper class that keeps groups of callbacks that are
 then run in a specified order by group */
@@ -302,6 +303,12 @@ export default class PluginManager {
     })
 
     return this
+  }
+
+  get pluginDefinitions(): PluginDefinition[] {
+    return Object.values(this.pluginMetaData)
+      .map(p => p.definition)
+      .filter(f => !!f)
   }
 
   getElementType(groupName: PluggableElementTypeGroup, typeName: string) {

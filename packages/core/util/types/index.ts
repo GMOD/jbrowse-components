@@ -89,6 +89,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   showWidget?: Function
   addWidget?: Function
 
+  addTrackConf?: Function
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any

@@ -122,7 +122,16 @@ export default function RootModel(
       isDefaultSessionEditing: false,
       pluginsUpdated: false,
     })
-    .volatile(() => ({
+    .volatile(self => ({
+      rpcManager: new RpcManager(
+        pluginManager,
+        pluginManager.pluginDefinitions,
+        self.jbrowse.configuration.rpc,
+        {
+          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          MainThreadRpcDriver: {},
+        },
+      ),
       savedSessionsVolatile: observable.map({}),
       pluginManager,
       error: undefined as undefined | Error,
@@ -370,15 +379,6 @@ export default function RootModel(
             ]
           : []),
       ] as Menu[],
-      rpcManager: new RpcManager(
-        pluginManager,
-        getSnapshot(self.jbrowse.plugins),
-        self.jbrowse.configuration.rpc,
-        {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
-          MainThreadRpcDriver: {},
-        },
-      ),
       adminMode,
     }))
     .actions(self => ({
