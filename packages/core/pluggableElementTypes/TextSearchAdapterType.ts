@@ -1,9 +1,9 @@
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
-import { AdapterConstructor } from '../data_adapters/BaseAdapter'
+import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
 export default class TextSearchAdapterType extends PluggableElementBase {
-  AdapterClass: AdapterConstructor
+  AdapterClass: AnyAdapter
 
   configSchema: AnyConfigurationSchemaType
 
@@ -13,7 +13,7 @@ export default class TextSearchAdapterType extends PluggableElementBase {
     name: string
     description?: string
     configSchema: AnyConfigurationSchemaType
-    AdapterClass: AdapterConstructor
+    AdapterClass: AnyAdapter
   }) {
     super(stuff)
     this.description = stuff.description

@@ -431,7 +431,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       findSearchScope() {
         const session = getSession(self)
-        if (!self.hasDisplayedRegions) {
+        if (self.displayedRegions.length === 0) {
           return {
             aggregate: true,
             assemblyNames: session.assemblyNames,
@@ -540,7 +540,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.rightOffset = right
       },
 
-      setSearchResults(results: BaseResult[], query: string) {
+      setSearchResults(
+        results: BaseResult[] | undefined,
+        query: string | undefined,
+      ) {
         self.searchResults = results
         self.searchQuery = query
       },

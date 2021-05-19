@@ -137,7 +137,8 @@ export default function SearchResultsDialog({
       </DialogTitle>
       <Divider />
       <DialogContent>
-        {model.searchResults.length === 0 ? (
+        {model.searchResults?.length === 0 ||
+        model.searchResults === undefined ? (
           <Typography>
             {`No results found for `}
             <b>{model.searchQuery}</b>
