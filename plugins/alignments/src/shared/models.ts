@@ -1,11 +1,12 @@
 import { lazy } from 'react'
-import { types } from 'mobx-state-tree'
+import { types, IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import PaletteIcon from '@material-ui/icons/Palette'
 import FilterListIcon from '@material-ui/icons/FilterList'
 
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
+const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
 
 const colorBy = types.maybe(
   types.model({
@@ -26,7 +27,9 @@ const filterBy = types.optional(
   {},
 )
 
-const colorSchemeMenu = (self: any) => ({
+const colorSchemeMenu = (
+  self: IAnyStateTreeNode & { setColorScheme: (a: { type: string }) => void },
+) => ({
   label: 'Color scheme',
   icon: PaletteIcon,
   subMenu: [
@@ -60,6 +63,16 @@ const colorSchemeMenu = (self: any) => ({
         self.setColorScheme({ type: 'perBaseQuality' })
       },
     },
+
+    {
+      label: 'Base modifications (MM+MP/ML)',
+      onClick: () => {
+        getSession(self).setDialogComponent(ModificationsDlg, {
+          model: self,
+        })
+      },
+    },
+
     {
       label: 'Insert size',
       onClick: () => {
@@ -83,8 +96,7 @@ const colorSchemeMenu = (self: any) => ({
   ],
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const filterByMenu = (self: any) => ({
+const filterByMenu = (self: IAnyStateTreeNode) => ({
   label: 'Filter by',
   icon: FilterListIcon,
   onClick: () => {

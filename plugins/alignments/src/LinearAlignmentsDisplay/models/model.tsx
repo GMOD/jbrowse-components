@@ -50,6 +50,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       scrollTop: 0,
+      modificationTagMap: {},
     }))
     .actions(self => ({
       toggleCoverage() {
@@ -221,17 +222,12 @@ const stateModelFactory = (
               self.SNPCoverageDisplay.setColorScheme(getSnapshot(self.colorBy))
               self.PileupDisplay.setColorScheme(getSnapshot(self.colorBy))
             }
-              self.SNPCoverageDisplay.setModificationTagMap(
-                JSON.parse(
-                  JSON.stringify(self.modificationTagMap),
-                ),
-              )
-              self.PileupDisplay.setModificationTagMap(
-                JSON.parse(
-                  JSON.stringify(self.modificationTagMap),
-                ),
-              )
-
+            // self.SNPCoverageDisplay.setModificationTagMap(
+            //   JSON.parse(JSON.stringify(self.modificationTagMap)),
+            // )
+            // self.PileupDisplay.setModificationTagMap(
+            //   JSON.parse(JSON.stringify(self.modificationTagMap)),
+            // )
 
             // propagate the height setting
             self.SNPCoverageDisplay.setHeight(self.snpCovHeight)

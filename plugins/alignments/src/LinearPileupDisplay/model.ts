@@ -21,7 +21,14 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, getEnv, getParent, Instance } from 'mobx-state-tree'
+import {
+  cast,
+  types,
+  addDisposer,
+  getEnv,
+  getParent,
+  Instance,
+} from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -83,6 +90,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, string>({}),
       ready: false,
       currBpPerPx: 0,
     }))
@@ -105,6 +113,7 @@ const stateModelFactory = (
 
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
+        self.modificationTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
@@ -160,7 +169,6 @@ const stateModelFactory = (
       },
 
       updateModificationColorMap(uniqueModifications: string[]) {
-        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
 
         uniqueModifications.forEach(value => {

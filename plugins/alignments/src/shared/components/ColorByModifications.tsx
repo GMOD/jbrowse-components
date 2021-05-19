@@ -45,6 +45,7 @@ function ColorByTagDlg(props: {
   const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 
+  console.log({ modificationTagMap })
   const modifications = [...modificationTagMap.entries()]
 
   return (
