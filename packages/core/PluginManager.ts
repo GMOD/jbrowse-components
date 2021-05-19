@@ -307,7 +307,7 @@ export default class PluginManager {
 
   get pluginDefinitions(): PluginDefinition[] {
     return Object.values(this.pluginMetaData)
-      .map(p => p.definition)
+      .map(p => p.definition as PluginDefinition)
       .filter(f => !!f)
   }
 

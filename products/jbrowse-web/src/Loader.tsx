@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
-import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import PluginLoader, {
+  PluginDefinition,
+  PluginRecord,
+} from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -118,11 +121,6 @@ async function checkPlugins(pluginsToCheck: { url: string }[]) {
 }
 
 type Config = SnapshotOut<AnyConfigurationModel>
-
-interface PluginRecord {
-  plugin: PluginConstructor
-  definition: PluginDefinition
-}
 
 const SessionLoader = types
   .model({
