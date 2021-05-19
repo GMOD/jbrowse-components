@@ -1,18 +1,21 @@
-/* eslint-disable no-console,no-continue */
+/* eslint-disable no-console */
 const readline = require('readline')
+const acorn = require('acorn')
+const jsx = require('acorn-jsx')
 
 const rl = readline.createInterface({
   input: process.stdin, // or fileStream
 })
-
+const parser = acorn.Parser.extend(jsx())
 let readingHeader = false
 let title = ''
 let topLevel = false
-let figure = ''
-let caption = ''
 
 ;(async () => {
   for await (const line of rl) {
+    if (line.startsWith('import Figure')) {
+      continue
+    }
     if (!readingHeader && line === '---') {
       readingHeader = true
       continue
@@ -33,29 +36,24 @@ let caption = ''
       }
       continue
     }
-    if (line.startsWith('![]')) {
-      const res = line.match(/\(([^)]+)\)/)
-      if (res) {
-        figure = res[1].replace('/jb2', '..')
-        continue
-      }
+    if (line.startsWith('<Figure')) {
+      const res = parser.parse(line, { ecmaVersion: 2020 })
+      const src = res.body[0].expression.openingElement.attributes.find(
+        attr => attr.name.name === 'src',
+      )
+      const caption = res.body[0].expression.openingElement.attributes.find(
+        attr => attr.name.name === 'caption',
+      )
+
+      // chop off leading absolute figure /
+      const srcval = src.value.value.slice(1)
+      const captionval = caption.value.value
+      console.log(`![${captionval}](${srcval})\n\n`)
+      continue
     }
-    if (figure) {
-      if (line.trim() !== '') {
-        caption += `${line} `
-        continue
-      } else {
-        console.log(`![${caption}](${figure})\n\n`)
-        figure = ''
-        caption = ''
-        continue
-      }
-    }
+
     if (readingHeader === false) {
       console.log(line)
     }
-  }
-  if (figure && caption) {
-    console.log(`![${caption}](${figure})\n\n`)
   }
 })()

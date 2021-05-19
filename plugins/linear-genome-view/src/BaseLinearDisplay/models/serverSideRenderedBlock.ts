@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
-import { Component } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types/mst'
+import { AbstractDisplayModel } from '@jbrowse/core/util/types'
+import React from 'react'
 
 import {
   assembleLocString,
@@ -29,14 +31,14 @@ const blockState = types
   .volatile(() => ({
     renderInProgress: undefined as AbortController | undefined,
     filled: false,
-    data: undefined as any,
-    html: '',
+    reactElement: undefined as React.ReactElement | undefined,
+    features: undefined as Map<string, Feature> | undefined,
+    layout: undefined as any,
     status: '',
     error: undefined as Error | undefined,
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
-    renderingComponent: undefined as any,
     renderProps: undefined as any,
   }))
   .actions(self => {
@@ -69,11 +71,11 @@ const blockState = types
         }
         self.filled = false
         self.message = undefined
-        self.html = ''
-        self.data = undefined
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
         self.error = undefined
         self.maxHeightReached = false
-        self.renderingComponent = undefined
         self.renderProps = undefined
         renderInProgress = abortController
       },
@@ -83,21 +85,21 @@ const blockState = types
         }
         self.filled = false
         self.message = messageText
-        self.html = ''
-        self.data = undefined
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
         self.error = undefined
         self.maxHeightReached = false
-        self.renderingComponent = undefined
         self.renderProps = undefined
         renderInProgress = undefined
       },
       setRendered(
         props:
           | {
-              data: any
-              html: any
+              reactElement: React.ReactElement
+              features: Map<string, Feature>
+              layout: any
               maxHeightReached: boolean
-              renderingComponent: Component
               renderProps: any
             }
           | undefined,
@@ -106,19 +108,19 @@ const blockState = types
           return
         }
         const {
-          data,
-          html,
+          reactElement,
+          features,
+          layout,
           maxHeightReached,
-          renderingComponent,
           renderProps,
         } = props
         self.filled = true
         self.message = undefined
-        self.html = html
-        self.data = data
+        self.reactElement = reactElement
+        self.features = features
+        self.layout = layout
         self.error = undefined
         self.maxHeightReached = maxHeightReached
-        self.renderingComponent = renderingComponent
         self.renderProps = renderProps
         renderInProgress = undefined
       },
@@ -130,24 +132,24 @@ const blockState = types
         // the rendering failed for some reason
         self.filled = false
         self.message = undefined
-        self.html = ''
-        self.data = undefined
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
         self.maxHeightReached = false
         self.error = error
-        self.renderingComponent = undefined
         self.renderProps = undefined
         renderInProgress = undefined
       },
       reload() {
         self.renderInProgress = undefined
         self.filled = false
-        self.data = undefined
-        self.html = ''
+        self.reactElement = undefined
+        self.features = undefined
+        self.layout = undefined
         self.error = undefined
         self.message = undefined
         self.maxHeightReached = false
         self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderingComponent = undefined
         self.renderProps = undefined
         getParent(self, 2).reload()
       },
@@ -178,13 +180,16 @@ const blockState = types
 export default blockState
 export type BlockStateModel = typeof blockState
 export type BlockModel = Instance<BlockStateModel>
-// calls the render worker to render the block content
-// not using a flow for this, because the flow doesn't
-// work with autorun
-function renderBlockData(self: Instance<BlockStateModel>) {
+
+// calls the render worker to render the block content not using a flow for
+// this, because the flow doesn't work with autorun
+export function renderBlockData(
+  self: Instance<BlockStateModel>,
+  optDisplay?: AbstractDisplayModel,
+) {
   try {
-    const { assemblyManager, rpcManager } = getSession(self)
-    const display = getContainingDisplay(self) as any
+    const display = optDisplay || (getContainingDisplay(self) as any)
+    const { assemblyManager, rpcManager } = getSession(display)
     const {
       adapterConfig,
       renderProps,
@@ -263,7 +268,6 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     displayError,
   } = props as RenderProps
-
   if (!isAlive(self)) {
     return undefined
   }
@@ -281,19 +285,20 @@ async function renderBlockEffect(
     return undefined
   }
 
-  const { html, maxHeightReached, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    {
-      ...renderArgs,
-      ...renderProps,
-      signal,
-    },
-  )
-  return {
-    data,
-    html,
+  const {
+    reactElement,
+    features,
+    layout,
     maxHeightReached,
-    renderingComponent: rendererType.ReactComponent,
-    renderProps,
+  } = await rendererType.renderInClient(rpcManager, {
+    ...renderArgs,
+    ...renderProps,
+    signal,
+  })
+  return {
+    reactElement,
+    features,
+    layout,
+    maxHeightReached,
   }
 }

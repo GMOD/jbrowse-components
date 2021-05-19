@@ -24,8 +24,9 @@ export default function calculateStaticBlocks(
 
   // on the main thread, window.innerWidth is used because this reduces
   // recalculating the blocks, otherwise, model.width for cases such as
-  // off-main-thread
-  width = window.innerWidth || model.width,
+  // off-main-thread. also this is not a ternary because our window.innerWidth
+  // might be undefined on off-main-thread, so instead use || model.width
+  width = (typeof window !== 'undefined' && window.innerWidth) || model.width,
 ) {
   const {
     offsetPx,
@@ -56,12 +57,15 @@ export default function calculateStaticBlocks(
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
-    if (windowRightBlockNum >= regionBlockCount)
+    if (windowRightBlockNum >= regionBlockCount) {
       windowRightBlockNum = regionBlockCount - 1
+    }
 
     let windowLeftBlockNum =
       Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - extra
-    if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
+    if (windowLeftBlockNum < 0) {
+      windowLeftBlockNum = 0
+    }
 
     const regionWidthPx = (regionEnd - regionStart) / bpPerPx
 

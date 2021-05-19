@@ -1,17 +1,20 @@
-import { SvgIconProps } from '@material-ui/core/SvgIcon'
-import IconButton, {
+import {
+  SvgIconProps,
+  IconButton,
   IconButtonProps as IconButtonPropsType,
-} from '@material-ui/core/IconButton'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+  Paper,
+  makeStyles,
+  useTheme,
+  Tooltip,
+} from '@material-ui/core'
+import CloseIcon from '@material-ui/icons/Close'
+import MenuIcon from '@material-ui/icons/Menu'
 import { fade } from '@material-ui/core/styles/colorManipulator'
-import Tooltip from '@material-ui/core/Tooltip'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
 import { ContentRect, withContentRect } from 'react-measure'
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
+
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -157,8 +160,9 @@ export default withContentRect('bounds')(
       // note that this effect will run only once, because of
       // the empty array second param
       useEffect(() => {
-        if (scrollRef && scrollRef.current && scrollRef.current.scrollIntoView)
+        if (scrollRef?.current?.scrollIntoView) {
           scrollRef.current.scrollIntoView({ block: 'center' })
+        }
       }, [])
 
       return (

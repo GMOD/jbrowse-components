@@ -31,14 +31,14 @@ function serializeColor(color: Color) {
 }
 
 export default function SetColorDialog(props: {
-  display: {
+  model: {
     color: number
     setColor: Function
   }
   handleClose: () => void
 }) {
   const classes = useStyles()
-  const { display, handleClose } = props
+  const { model, handleClose } = props
 
   return (
     <Dialog
@@ -61,14 +61,14 @@ export default function SetColorDialog(props: {
         <div className={classes.root}>
           <CompactPicker
             onChange={event => {
-              display.setColor(serializeColor(event.rgb))
+              model.setColor(serializeColor(event.rgb))
             }}
           />
           <br />
           <div style={{ margin: 20 }}>
             <Button
               onClick={() => {
-                display.setColor(undefined)
+                model.setColor(undefined)
               }}
               color="secondary"
               variant="contained"

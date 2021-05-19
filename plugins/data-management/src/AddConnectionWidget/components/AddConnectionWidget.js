@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import Button from '@material-ui/core/Button'
 import Step from '@material-ui/core/Step'
@@ -35,7 +34,6 @@ function AddConnectionWidget({ model }) {
   const [connectionType, setConnectionType] = useState({})
   const [configModel, setConfigModel] = useState({})
   const [configModelReady, setConfigModelReady] = useState(true)
-  const [assemblyName, setAssemblyName] = useState('')
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
 
@@ -46,10 +44,12 @@ function AddConnectionWidget({ model }) {
   function handleSetConnectionType(newConnectionType) {
     setConnectionType(newConnectionType)
     setConfigModel(
-      newConnectionType.configSchema.create({
-        connectionId: `${newConnectionType.name}-${assemblyName}-${Date.now()}`,
-        assemblyName,
-      }),
+      newConnectionType.configSchema.create(
+        {
+          connectionId: `${newConnectionType.name}-${Date.now()}`,
+        },
+        getEnv(model),
+      ),
     )
   }
 
@@ -63,11 +63,6 @@ function AddConnectionWidget({ model }) {
             )}
             connectionType={connectionType}
             setConnectionType={handleSetConnectionType}
-            assemblyNameChoices={session.assemblies.map(assembly =>
-              readConfObject(assembly, 'name'),
-            )}
-            assemblyName={assemblyName}
-            setAssemblyName={setAssemblyName}
           />
         )
       case 1:
@@ -85,8 +80,11 @@ function AddConnectionWidget({ model }) {
   }
 
   function handleNext() {
-    if (activeStep === steps.length - 1) handleFinish()
-    else setActiveStep(activeStep + 1)
+    if (activeStep === steps.length - 1) {
+      handleFinish()
+    } else {
+      setActiveStep(activeStep + 1)
+    }
   }
 
   function handleBack() {
@@ -103,8 +101,9 @@ function AddConnectionWidget({ model }) {
     if (
       (activeStep === 0 && connectionType.name) ||
       (activeStep === 1 && configModel && configModelReady)
-    )
+    ) {
       return true
+    }
     return false
   }
 

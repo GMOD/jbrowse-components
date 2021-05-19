@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { observer } from 'mobx-react'
 import { inDevelopment, fromUrlSafeB64 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import ErrorBoundary from 'react-error-boundary'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   StringParam,
-  useQueryParam,
   QueryParamProvider,
+  useQueryParam,
 } from 'use-query-params'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
@@ -26,19 +26,17 @@ import {
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  readSessionFromDynamo,
-  scanSharedSessionForCallbacks,
-} from './sessionSharing'
+import { readSessionFromDynamo } from './sessionSharing'
 import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import packagedef from '../package.json'
 import factoryReset from './factoryReset'
-import StartScreen from './StartScreen'
-import SessionWarningModal from './sessionWarningModal'
-import ConfigWarningModal from './configWarningModal'
+
+const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
+const ConfigWarningDialog = lazy(() => import('./ConfigWarningDialog'))
+const StartScreen = lazy(() => import('./StartScreen'))
 
 function NoConfigMessage() {
   const links = [
@@ -52,6 +50,8 @@ function NoConfigMessage() {
     ['test_data/yeast_synteny/config.json', 'Yeast synteny'],
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
+    ['test_data/config_wormbase.json', 'Wormbase'],
+    ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (
     <div>
@@ -119,6 +119,7 @@ const SessionLoader = types
     configSnapshot: undefined as any,
     sessionSnapshot: undefined as any,
     runtimePlugins: [] as PluginConstructor[],
+    sessionPlugins: [] as PluginConstructor[],
     sessionError: undefined as Error | undefined,
     configError: undefined as Error | undefined,
     bc1:
@@ -175,12 +176,14 @@ const SessionLoader = types
     setRuntimePlugins(plugins: PluginConstructor[]) {
       self.runtimePlugins = plugins
     },
+    setSessionPlugins(plugins: PluginConstructor[]) {
+      self.sessionPlugins = plugins
+    },
     setConfigSnapshot(snap: unknown) {
       self.configSnapshot = snap
     },
     setSessionSnapshot(snap: unknown) {
       self.sessionSnapshot = snap
-      sessionStorage.setItem('current', JSON.stringify(snap))
     },
     setBlankSession(flag: boolean) {
       self.blankSession = flag
@@ -200,6 +203,30 @@ const SessionLoader = types
         console.error(e)
         self.setConfigError(e)
       }
+    },
+    async fetchSessionPlugins(sessionSnapShot: {
+      sessionPlugins: PluginDefinition[]
+    }) {
+      try {
+        const pluginLoader = new PluginLoader(sessionSnapShot.sessionPlugins)
+        pluginLoader.installGlobalReExports(window)
+        const sessionPlugins = await pluginLoader.load()
+        self.setSessionPlugins([...sessionPlugins])
+      } catch (e) {
+        console.error(e)
+        self.setConfigError(e)
+      }
+    },
+    async setSessionSnapshot(snap: unknown) {
+      await this.fetchSessionPlugins(
+        snap as {
+          sessionPlugins: PluginDefinition[]
+        },
+      )
+      this.setSessionSnapshotSuccess(snap)
+    },
+    setSessionSnapshotSuccess(snap: unknown) {
+      self.sessionSnapshot = snap
     },
     async fetchConfig() {
       try {
@@ -232,7 +259,7 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          self.setSessionSnapshot(sessionSnap)
+          await this.setSessionSnapshot(sessionSnap)
           return
         }
       }
@@ -250,7 +277,7 @@ const SessionLoader = types
         try {
           const result = await resultP
           // @ts-ignore
-          self.setSessionSnapshot({ ...result, id: shortid() })
+          await self.setSessionSnapshot({ ...result, id: shortid() })
           return
         } catch (e) {
           // the broadcast channels did not find the session in another tab
@@ -270,8 +297,7 @@ const SessionLoader = types
         return (conf.configuration || {})[attr] || def
       }
 
-      const defaultURL =
-        'https://g5um1mrb0i.execute-api.us-east-1.amazonaws.com/api/v1/'
+      const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decryptedSession = await readSessionFromDynamo(
         `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
         self.sessionQuery || '',
@@ -279,7 +305,7 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(fromUrlSafeB64(decryptedSession))
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeEncodedUrlSession() {
@@ -287,18 +313,13 @@ const SessionLoader = types
         // @ts-ignore
         fromUrlSafeB64(self.sessionQuery.replace('encoded-', '')),
       )
-      self.setSessionSnapshot({ ...session, id: shortid() })
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async decodeJsonUrlSession() {
       // @ts-ignore
       const session = JSON.parse(self.sessionQuery.replace('json-', ''))
-      const hasCallbacks = await scanSharedSessionForCallbacks(session)
-      if (hasCallbacks) {
-        self.setSessionTriaged({ snap: session, origin: 'share' })
-      } else {
-        self.setSessionSnapshot({ ...session, id: shortid() })
-      }
+      await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
     async afterCreate() {
@@ -413,6 +434,7 @@ const Renderer = observer(
       try {
         const {
           runtimePlugins,
+          sessionPlugins,
           adminKey,
           configSnapshot,
           sessionSnapshot,
@@ -431,6 +453,7 @@ const Renderer = observer(
               } as PluginLoadRecord
             }),
             ...runtimePlugins.map(P => new P()),
+            ...sessionPlugins.map(P => new P()),
           ])
           pluginManager.createPluggableElements()
 
@@ -449,6 +472,15 @@ const Renderer = observer(
               },
               { pluginManager },
             )
+            rootModel.jbrowse.configuration.rpc.addDriverConfig(
+              'WebWorkerRpcDriver',
+              { type: 'WebWorkerRpcDriver' },
+            )
+            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
+              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
+                'WebWorkerRpcDriver',
+              )
+            }
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default
@@ -507,10 +539,6 @@ const Renderer = observer(
               writeGAAnalytics(rootModel, initialTimestamp)
             }
 
-            // TODO use UndoManager
-            // rootModel.setHistory(
-            //   UndoManager.create({}, { targetStore: rootModel.session }),
-            // )
             pluginManager.setRootModel(rootModel)
             pluginManager.configure()
             setPluginManager(pluginManager)
@@ -563,7 +591,6 @@ const Renderer = observer(
               {`${err}`}
               {snapshotError ? (
                 <>
-                  {' '}
                   ... Failed element had snapshot:
                   <pre
                     style={{
@@ -587,39 +614,47 @@ const Renderer = observer(
         loader.setSessionTriaged(undefined)
       }
       return loader.sessionTriaged.origin === 'session' ? (
-        <SessionWarningModal
-          onConfirm={() => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            loader.setSessionSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            loader.setBlankSession(true)
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <SessionWarningDialog
+            onConfirm={async () => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              await loader.setSessionSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              loader.setBlankSession(true)
+              handleClose()
+            }}
+          />
+        </Suspense>
       ) : (
-        <ConfigWarningModal
-          onConfirm={async () => {
-            const session = JSON.parse(
-              JSON.stringify(loader.sessionTriaged.snap),
-            )
-            await loader.fetchPlugins(session)
-            loader.setConfigSnapshot({ ...session, id: shortid() })
-            handleClose()
-          }}
-          onCancel={() => {
-            factoryReset()
-            handleClose()
-          }}
-        />
+        <Suspense fallback={<div />}>
+          <ConfigWarningDialog
+            onConfirm={async () => {
+              const session = JSON.parse(
+                JSON.stringify(loader.sessionTriaged.snap),
+              )
+              await loader.fetchPlugins(session)
+              loader.setConfigSnapshot({ ...session, id: shortid() })
+              handleClose()
+            }}
+            onCancel={() => {
+              factoryReset()
+              handleClose()
+            }}
+          />
+        </Suspense>
       )
     }
     if (pm) {
       if (!pm.rootModel?.session) {
-        return <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+        return (
+          <Suspense fallback={<div>Loading...</div>}>
+            <StartScreen root={pm.rootModel} onFactoryReset={factoryReset} />
+          </Suspense>
+        )
       }
       return <JBrowse pluginManager={pm} />
     }
@@ -648,7 +683,7 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
     />
   )
 }
-export default ({ initialTimestamp }: { initialTimestamp: number }) => {
+const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
       <QueryParamProvider>
@@ -657,5 +692,7 @@ export default ({ initialTimestamp }: { initialTimestamp: number }) => {
     </ErrorBoundary>
   )
 }
+
+export default LoaderWrapper
 
 export type SessionLoader = Instance<typeof SessionLoader>

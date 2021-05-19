@@ -1,4 +1,4 @@
-/* eslint-disable no-nested-ternary,@typescript-eslint/no-explicit-any,no-return-assign */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -17,6 +17,7 @@ import {
 } from '@jbrowse/core/util'
 
 interface MyProps {
+  exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
   bpPerPx: number
@@ -144,7 +145,6 @@ function DNA(props: {
   return (
     <>
       {seq.split('').map((letter, index) => {
-        // @ts-ignore
         const color = theme.palette.bases[letter.toUpperCase()]
         const x = reverse ? rightPx - (index + 1) * w : leftPx + index * w
         return (
@@ -175,23 +175,19 @@ function DNA(props: {
   )
 }
 
-function Sequence(props: MyProps) {
-  const {
-    features = new Map(),
-    regions,
-    bpPerPx,
-    theme: configTheme,
-    showForward = true,
-    showReverse = true,
-    showTranslation = true,
-  } = props
-  const theme = createJBrowseTheme(configTheme)
+const SequenceSVG = ({
+  regions,
+  theme: configTheme,
+  features = new Map(),
+  showReverse,
+  showForward,
+  showTranslation,
+  bpPerPx,
+}: any) => {
   const [region] = regions
-  const width = (region.end - region.start) / bpPerPx
-  const totalHeight = 200
+  const theme = createJBrowseTheme(configTheme)
   const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
-
   const [feature] = [...features.values()]
   if (!feature) {
     return null
@@ -206,11 +202,7 @@ function Sequence(props: MyProps) {
   let currY = -20
 
   return (
-    <svg
-      width={width}
-      height={totalHeight}
-      style={{ width, height: totalHeight }}
-    >
+    <>
       {/* the upper translation row. if the view is reversed, the reverse
         translation is on the top */}
       {showTranslation && (region.reversed ? showReverse : showForward)
@@ -272,7 +264,34 @@ function Sequence(props: MyProps) {
             />
           ))
         : null}
+    </>
+  )
+}
+
+const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
+  return exportSVG ? (
+    <>{children}</>
+  ) : (
+    <svg
+      width={width}
+      height={totalHeight}
+      style={{ width, height: totalHeight }}
+    >
+      {children}
     </svg>
+  )
+}
+
+function Sequence(props: MyProps) {
+  const { regions, bpPerPx } = props
+  const [region] = regions
+  const width = (region.end - region.start) / bpPerPx
+  const totalHeight = 200
+
+  return (
+    <Wrapper {...props} totalHeight={totalHeight} width={width}>
+      <SequenceSVG {...props} />
+    </Wrapper>
   )
 }
 

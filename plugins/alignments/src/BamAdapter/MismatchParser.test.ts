@@ -4,6 +4,8 @@ import {
   cigarToMismatches,
   parseCigar,
   mdToMismatches,
+  getNextRefPos,
+  getModificationPositions,
 } from './MismatchParser'
 
 const seq =
@@ -469,4 +471,27 @@ I3M1I2M1I6M1D43M1I33M1I27M1I13M2D6M1I59M1I5M1I6M2I39M1I9M1I28M1D43M2I5M2I8M1D15M
   expect(generateMD(target, query, cigar)).toBe(
     '8^C128^A218^C2^G41^A218^C31T9^T10G0C293^C232^G38^A46C1G176A2G1C308A19C99C1G0T0A161^T81^TC4G196^T217^AG590^G117^G67^G43^G327^C21C28^C94A40^T15^A12^G112T155^AC0T75C301G86^G93G63^G169C70G75^T9^G48G41^T59C48^G209^T261^C134T47^C83A60^A28^A6^A43^CT2C112^G10G122^A39^A32A0T24^T108^A98T0C0T3^A71^T16^A116^AT37G8A74G30^T18A0C1T21C4A7^C268G1',
   )
+})
+
+test('getNextRefPos basic', () => {
+  const cigar = '10S10M1I4M1D15M'
+  const cigarOps = parseCigar(cigar)
+  const iter = getNextRefPos(cigarOps, [5, 10, 15, 20, 25, 30, 35])
+  const [...vals] = iter
+  expect(vals).toEqual([-5, 0, 5, 10, 14, 20, 25])
+})
+test('getNextRefPos with many indels', () => {
+  const cigar = '10S4M1D1IM10'
+  const cigarOps = parseCigar(cigar)
+  const iter = getNextRefPos(cigarOps, [5, 10, 15])
+  const [...vals] = iter
+  expect(vals).toEqual([-5, 0, 5])
+})
+
+test('getModificationPositions', () => {
+  const positions = getModificationPositions(
+    'C+m,2,2,1,4,1',
+    'AGCTCTCCAGAGTCGNACGCCATYCGCGCGCCACCA',
+  )
+  expect(positions[0]).toEqual({ type: 'm', positions: [6, 17, 20, 31, 34] })
 })

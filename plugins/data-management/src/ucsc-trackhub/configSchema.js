@@ -9,6 +9,12 @@ export default ConfigurationSchema(
       defaultValue: { uri: 'http://mysite.com/path/to/hub.txt' },
       description: 'location of the hub file (usually called hub.txt)',
     },
+    assemblyNames: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        'optional list of genomes to import from this track hub, if empty all genomes will be imported',
+    },
   },
   { baseConfiguration: baseConnectionConfig },
 )

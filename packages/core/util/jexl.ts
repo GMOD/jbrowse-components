@@ -6,27 +6,28 @@ type JexlWithAddFunction = typeof jexl & {
 }
 type JexlNonBuildable = Omit<typeof jexl, 'Jexl'>
 
-function createJexlInstance(/* config?: any*/): JexlNonBuildable {
-  const jexlInstance = new jexl.Jexl()
-  // someday will make sure all of configs callbacks are added in, including ones passed in
+export default function (/* config?: any*/): JexlNonBuildable {
+  const j = new jexl.Jexl() as JexlWithAddFunction
+  // someday will make sure all of configs callbacks are added in, including
+  // ones passed in
 
   // below are core functions
-  jexlInstance.addTransform('getData', (feature: Feature, data: string) => {
+  j.addFunction('get', (feature: Feature, data: string) => {
     return feature.get(data)
   })
 
-  jexlInstance.addTransform('getId', (feature: Feature) => {
+  j.addFunction('id', (feature: Feature) => {
     return feature.id()
   })
 
   // let user cast a jexl type into a javascript type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  jexlInstance.addTransform('cast', (arg: any) => {
+  j.addFunction('cast', (arg: any) => {
     return arg
   })
 
   // logging
-  jexlInstance.addTransform('log', (thing: unknown) => {
+  j.addFunction('log', (thing: unknown) => {
     // eslint-disable-next-line no-console
     console.log(thing)
     return thing
@@ -34,105 +35,80 @@ function createJexlInstance(/* config?: any*/): JexlNonBuildable {
 
   // math
   // addfunction added in jexl 2.3 but types/jexl still on 2.2
-  ;(jexlInstance as JexlWithAddFunction).addFunction('max', Math.max)
-  ;(jexlInstance as JexlWithAddFunction).addFunction('min', Math.min)
-  jexlInstance.addTransform('sqrt', Math.sqrt)
-  jexlInstance.addTransform('ceil', Math.ceil)
-  jexlInstance.addTransform('floor', Math.floor)
-  jexlInstance.addTransform('round', Math.round)
-  jexlInstance.addTransform('abs', Math.abs)
+  j.addFunction('max', Math.max)
+  j.addFunction('min', Math.min)
+  j.addFunction('sqrt', Math.sqrt)
+  j.addFunction('ceil', Math.ceil)
+  j.addFunction('floor', Math.floor)
+  j.addFunction('round', Math.round)
+  j.addFunction('abs', Math.abs)
+  j.addFunction('parseInt', Number.parseInt)
 
   // string
-  jexlInstance.addTransform('split', (str: string, char: string) =>
-    str.split(char),
-  )
-  jexlInstance.addTransform('charAt', (str: string, index: number) =>
-    str.charAt(index),
-  )
-  jexlInstance.addTransform('charCodeAt', (str: string, index: number) =>
+  j.addFunction('split', (str: string, char: string) => str.split(char))
+  j.addFunction('charAt', (str: string, index: number) => str.charAt(index))
+  j.addFunction('charCodeAt', (str: string, index: number) =>
     str.charCodeAt(index),
   )
-  jexlInstance.addTransform('codePointAt', (str: string, pos: number) =>
+  j.addFunction('codePointAt', (str: string, pos: number) =>
     str.codePointAt(pos),
   )
-  jexlInstance.addTransform(
-    'endsWith',
-    (str: string, searchStr: string, length?: number | undefined) => {
-      str.endsWith(searchStr, length)
-    },
-  )
-  jexlInstance.addTransform(
-    'padEnd',
-    (str: string, targetLength: number, padString?: string | undefined) => {
-      str.padEnd(targetLength, padString)
-    },
-  )
-  jexlInstance.addTransform(
-    'padStart',
-    (str: string, targetLength: number, fillString?: string | undefined) => {
-      str.padStart(targetLength, fillString)
-    },
-  )
-  jexlInstance.addTransform('repeat', (str: string, count: number) => {
-    str.repeat(count)
-  })
-  jexlInstance.addTransform(
-    'replace',
-    (str: string, match: string, newSubStr: string) => {
-      str.replace(match, newSubStr)
-    },
-  )
-  jexlInstance.addTransform(
-    'replaceAll',
-    (str: string, match: string, newSubStr: string) => {
-      str.replaceAll(match, newSubStr)
-    },
-  )
-  jexlInstance.addTransform(
-    'slice',
-    (str: string, start: number, end?: number | undefined) => {
-      str.slice(start, end)
-    },
-  )
-  jexlInstance.addTransform(
+  j.addFunction(
     'startsWith',
-    (str: string, searchStr: string, position?: number | undefined) => {
-      str.startsWith(searchStr, position)
-    },
+    (str: string, searchStr: string, length?: number | undefined) =>
+      str.startsWith(searchStr, length),
   )
-  jexlInstance.addTransform(
+  j.addFunction(
+    'endsWith',
+    (str: string, searchStr: string, length?: number | undefined) =>
+      str.endsWith(searchStr, length),
+  )
+  j.addFunction(
+    'padEnd',
+    (str: string, targetLength: number, padString?: string | undefined) =>
+      str.padEnd(targetLength, padString),
+  )
+  j.addFunction(
+    'padStart',
+    (str: string, targetLength: number, fillString?: string | undefined) =>
+      str.padStart(targetLength, fillString),
+  )
+  j.addFunction('repeat', (str: string, count: number) => str.repeat(count))
+  j.addFunction('replace', (str: string, match: string, newSubStr: string) =>
+    str.replace(match, newSubStr),
+  )
+  j.addFunction('replaceAll', (str: string, match: string, newSubStr: string) =>
+    str.replaceAll(match, newSubStr),
+  )
+  j.addFunction(
+    'slice',
+    (str: string, start: number, end?: number | undefined) =>
+      str.slice(start, end),
+  )
+  j.addFunction(
+    'startsWith',
+    (str: string, searchStr: string, position?: number | undefined) =>
+      str.startsWith(searchStr, position),
+  )
+  j.addFunction(
     'substring',
-    (str: string, start: number, end?: number | undefined) => {
-      str.substring(start, end)
-    },
+    (str: string, start: number, end?: number | undefined) =>
+      str.substring(start, end),
   )
-  jexlInstance.addTransform('toLowerCase', (str: string) => {
-    str.toLowerCase()
-  })
-  jexlInstance.addTransform('toUpperCase', (str: string) => {
-    str.toUpperCase()
-  })
-  jexlInstance.addTransform('trim', (str: string) => {
+  j.addFunction('toLowerCase', (str: string) => str.toLowerCase())
+  j.addFunction('toUpperCase', (str: string) => str.toUpperCase())
+  j.addFunction('trim', (str: string) => {
     str.trim()
   })
-  jexlInstance.addTransform('trimEnd', (str: string) => {
-    str.trimEnd()
-  })
-  jexlInstance.addTransform('trimStart', (str: string) => {
-    str.trimStart()
-  })
+  j.addFunction('trimEnd', (str: string) => str.trimEnd())
+  j.addFunction('trimStart', (str: string) => str.trimStart())
 
-  jexlInstance.addTransform('hashcode', (str: string) => {
-    return str
-      .split('')
-      .map(c => c.charCodeAt(0))
-      .reduce((a, b) => a + b, 0)
+  j.addFunction('getTag', (feature: Feature, str: string) => {
+    const tags = feature.get('tags')
+    return tags ? tags[str] : feature.get(str)
   })
 
-  // eslint-disable-next-line no-bitwise
-  jexlInstance.addBinaryOp('&', 15, (a: number, b: number) => a & b)
+  j.addBinaryOp('&', 15, (a: number, b: number) => a & b)
 
-  return jexlInstance
+  return j
 }
-
-export default createJexlInstance

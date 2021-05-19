@@ -358,7 +358,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -480,9 +480,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -499,9 +500,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div
@@ -533,19 +531,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1117,7 +1110,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1154,7 +1147,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 79px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 99px;"
           />
           <div
@@ -1194,7 +1187,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 279px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 299px;"
           />
           <div
@@ -1234,7 +1227,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 479px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 499px;"
           />
           <div
@@ -1274,7 +1267,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 679px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 699px;"
           />
           <div
@@ -1314,7 +1307,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: 879px;"
           />
           <div
-            class="makeStyles-tick makeStyles-majorTick"
+            class="makeStyles-tick makeStyles-minorTick"
             style="left: 899px;"
           />
           <div
@@ -1532,9 +1525,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -1551,9 +1545,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div
@@ -1585,19 +1576,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1609,19 +1595,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="126"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="1000px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="1000px"
+                  />
                 </div>
               </div>
               <div
@@ -1696,9 +1677,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <button
           aria-controls="simple-menu"
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
+          class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
           data-testid="track_menu_icon"
-          tabindex="0"
+          disabled=""
+          tabindex="-1"
           type="button"
         >
           <span
@@ -1715,9 +1697,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
             </svg>
           </span>
-          <span
-            class="MuiTouchRipple-root"
-          />
         </button>
       </div>
       <div
@@ -1749,19 +1728,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="125"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="100px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="100px"
+                  />
                 </div>
               </div>
               <div
@@ -1773,19 +1747,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 style="width: 1000px;"
               >
                 <div
-                  class="ssr-container"
-                  data-html-size="126"
+                  style="position: relative;"
                 >
-                  <div
-                    style="position:relative"
-                  >
-                    <svg
-                      class="SvgFeatureRendering"
-                      height="0px"
-                      style="display:block"
-                      width="1000px"
-                    />
-                  </div>
+                  <svg
+                    class="SvgFeatureRendering"
+                    height="0px"
+                    style="display: block;"
+                    width="1000px"
+                  />
                 </div>
               </div>
               <div

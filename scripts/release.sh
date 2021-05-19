@@ -15,17 +15,17 @@ GITHUB_AUTH=$1
 [[ -n "$2" ]] && SEMVER_LEVEL="$2" || SEMVER_LEVEL="patch"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-[[ "$BRANCH" != "master" ]] && { echo "Current branch is not master, please switch to master branch" && exit 1; }
+[[ "$BRANCH" != "main" ]] && { echo "Current branch is not main, please switch to main branch" && exit 1; }
 NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
-MASTERUPDATED=$(git rev-list --left-only --count origin/master...master)
-[[ "$MASTERUPDATED" != 0 ]] && { echo "Master is not up to date with origin/master. Please fetch and try again" && exit 1; }
+MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
+[[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
 
 # make sure packages are all up to date
 yarn
 
 # make sure the tests are passing
-yarn test
+yarn test --runInBand
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
@@ -38,8 +38,7 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 [[ -f $BLOGPOST_DRAFT ]] || { echo "No blogpost draft found at $BLOGPOST_DRAFT, please write one." && exit 1; }
 
 # Updates the "Browse demo instance" link on the homepage
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$RELEASE_TAG/index.html
-INSTANCE=$INSTANCE node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; JSON.stringify(config,0,2)" >tmp.json
+RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
 # Packages that have changed and will have their version bumped

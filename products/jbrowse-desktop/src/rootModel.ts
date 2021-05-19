@@ -6,6 +6,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { MenuItem } from '@jbrowse/core/ui'
 import AddIcon from '@material-ui/icons/Add'
 import SettingsIcon from '@material-ui/icons/Settings'
+import AppsIcon from '@material-ui/icons/Apps'
 import {
   cast,
   getParent,
@@ -13,8 +14,6 @@ import {
   SnapshotIn,
   types,
 } from 'mobx-state-tree'
-import { UndoManager } from 'mst-middlewares'
-import { readConfObject } from '@jbrowse/core/configuration'
 import JBrowseDesktop from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 
@@ -53,12 +52,13 @@ export default function RootModel(pluginManager: PluginManager) {
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       isAssemblyEditing: false,
+      pluginsUpdated: true,
     })
     .actions(self => ({
       setSavedSessionNames(sessionNames: string[]) {
         self.savedSessionNames = cast(sessionNames)
       },
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
+      setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
       },
       setDefaultSession() {
@@ -71,6 +71,9 @@ export default function RootModel(pluginManager: PluginManager) {
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
+      },
+      setPluginsUpdated(flag: boolean) {
+        self.pluginsUpdated = flag
       },
       renameCurrentSession(sessionName: string) {
         if (self.session) {
@@ -111,6 +114,13 @@ export default function RootModel(pluginManager: PluginManager) {
                 session.setDefaultSession()
               },
             },
+            {
+              label: 'Return to splash screen',
+              icon: AppsIcon,
+              onClick: () => {
+                self.setSession(undefined)
+              },
+            },
           ],
         },
         {
@@ -130,7 +140,7 @@ export default function RootModel(pluginManager: PluginManager) {
       ] as Menu[],
       rpcManager: new RpcManager(
         pluginManager,
-        readConfObject(self.jbrowse.configuration, 'plugins'),
+        getSnapshot(self.jbrowse.plugins),
         self.jbrowse.configuration.rpc,
         {
           ElectronRpcDriver: { workerCreationChannel: 'createWindowWorker' },
@@ -141,9 +151,6 @@ export default function RootModel(pluginManager: PluginManager) {
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
-        if (sessionSnapshot)
-          this.setHistory(UndoManager.create({}, { targetStore: self.session }))
-        else this.setHistory(undefined)
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setHistory(history: any) {

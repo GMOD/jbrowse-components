@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "1.0.4",
+  "version": "1.2.0",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -36,8 +36,9 @@
   },
   "dependencies": {
     "@gmod/tabix": "^1.5.0",
-    "@gmod/vcf": "^4.0.1",
+    "@gmod/vcf": "^4.0.3",
     "@material-ui/data-grid": "^4.0.0-alpha.20",
+    "@material-ui/icons": "^4.11.2",
     "generic-filehandle": "^2.0.0"
   },
   "peerDependencies": {
@@ -49,7 +50,7 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0",
+    "react": ">=16.8.0",
     "rxjs": "^6.0.0"
   },
   "publishConfig": {

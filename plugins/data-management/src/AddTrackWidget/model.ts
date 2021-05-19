@@ -10,7 +10,6 @@ import {
 
 function isAbsoluteUrl(url: string) {
   try {
-    // eslint-disable-next-line no-new
     new URL(url)
     return true
   } catch (error) {
@@ -87,7 +86,6 @@ export default function f(pluginManager: PluginManager) {
       },
 
       get trackName() {
-        // @ts-ignore
         const uri = self.trackData?.uri
         const localPath = self.trackData?.localPath
         return (

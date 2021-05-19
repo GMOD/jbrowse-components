@@ -38,8 +38,12 @@ export function readConfObject(
   args: Record<string, any> = {},
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
-  if (!confObject) throw new TypeError('must provide conf object to read')
-  if (!slotPath) return getSnapshot(confObject)
+  if (!confObject) {
+    throw new TypeError('must provide conf object to read')
+  }
+  if (!slotPath) {
+    return getSnapshot(confObject)
+  }
   if (typeof slotPath === 'string') {
     let slot = confObject[slotPath]
     // check for the subconf being a map if we don't find it immediately
@@ -66,10 +70,14 @@ export function readConfObject(
 
     if (slot.expr) {
       const appliedFunc = slot.expr.evalSync(args)
-      if (isStateTreeNode(appliedFunc)) return getSnapshot(appliedFunc)
+      if (isStateTreeNode(appliedFunc)) {
+        return getSnapshot(appliedFunc)
+      }
       return appliedFunc
     }
-    if (isStateTreeNode(slot)) return getSnapshot(slot)
+    if (isStateTreeNode(slot)) {
+      return getSnapshot(slot)
+    }
     return slot
   }
 
@@ -107,7 +115,9 @@ export function getConf(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: Record<string, any> = {},
 ) {
-  if (!model) throw new TypeError('must provide a model object')
+  if (!model) {
+    throw new TypeError('must provide a model object')
+  }
   const { configuration } = model as { configuration: unknown }
   if (isConfigurationModel(configuration)) {
     return readConfObject(configuration, slotPath, args)
@@ -159,13 +169,17 @@ export function isBareConfigurationSchemaType(
       return true
     }
     // if it's a late type, assume its a config schema
-    if (isLateType(thing)) return true
+    if (isLateType(thing)) {
+      return true
+    }
   }
   return false
 }
 
 export function isConfigurationSchemaType(thing: unknown): boolean {
-  if (!isType(thing)) return false
+  if (!isType(thing)) {
+    return false
+  }
 
   // written as a series of if-statements instead of a big logical OR
   // because this construction gives much better debugging backtraces.
@@ -173,7 +187,9 @@ export function isConfigurationSchemaType(thing: unknown): boolean {
   // also, note that the order of these statements matters, because
   // for example some union types are also optional types
 
-  if (isBareConfigurationSchemaType(thing)) return true
+  if (isBareConfigurationSchemaType(thing)) {
+    return true
+  }
 
   if (isUnionType(thing)) {
     return getUnionSubTypes(thing).every(

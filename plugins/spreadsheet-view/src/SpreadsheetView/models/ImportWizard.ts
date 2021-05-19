@@ -1,10 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { parseCsvBuffer, parseTsvBuffer } from '../importAdapters/ImportUtils'
-import { parseVcfBuffer } from '../importAdapters/VcfImport'
-import { parseBedBuffer, parseBedPEBuffer } from '../importAdapters/BedImport'
-import { parseSTARFusionBuffer } from '../importAdapters/STARFusionImport'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
@@ -17,12 +12,20 @@ export default (pluginManager: PluginManager) => {
 
   const fileTypes = ['CSV', 'TSV', 'VCF', 'BED', 'BEDPE', 'STAR-Fusion']
   const fileTypeParsers = {
-    CSV: parseCsvBuffer,
-    TSV: parseTsvBuffer,
-    VCF: parseVcfBuffer,
-    BED: parseBedBuffer,
-    BEDPE: parseBedPEBuffer,
-    'STAR-Fusion': parseSTARFusionBuffer,
+    CSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseCsvBuffer),
+    TSV: () =>
+      import('../importAdapters/ImportUtils').then(r => r.parseTsvBuffer),
+    VCF: () =>
+      import('../importAdapters/VcfImport').then(r => r.parseVcfBuffer),
+    BED: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedBuffer),
+    BEDPE: () =>
+      import('../importAdapters/BedImport').then(r => r.parseBedPEBuffer),
+    'STAR-Fusion': () =>
+      import('../importAdapters/STARFusionImport').then(
+        r => r.parseSTARFusionBuffer,
+      ),
   }
   // regexp used to guess the type of a file or URL from its file extension
   const fileTypesRegexp = new RegExp(
@@ -118,7 +121,9 @@ export default (pluginManager: PluginManager) => {
       },
 
       setColumnNameLineNumber(newnumber: number) {
-        if (newnumber > 0) self.columnNameLineNumber = newnumber
+        if (newnumber > 0) {
+          self.columnNameLineNumber = newnumber
+        }
       },
 
       setFileType(typeName: string) {
@@ -143,27 +148,36 @@ export default (pluginManager: PluginManager) => {
 
       // fetch and parse the file, make a new Spreadsheet model for it,
       // then set the parent to display it
-      import() {
+      async import() {
         try {
-          if (!self.fileSource) return
-          const typeParser =
-            fileTypeParsers[self.fileType as keyof typeof fileTypeParsers]
-          if (!typeParser)
-            throw new Error(`cannot open files of type '${self.fileType}'`)
-          if (self.loading)
+          if (!self.fileSource) {
+            return
+          }
+
+          if (self.loading) {
             throw new Error('cannot import, load already in progress')
+          }
           self.loading = true
+          const typeParser = await fileTypeParsers[
+            self.fileType as keyof typeof fileTypeParsers
+          ]()
+          if (!typeParser) {
+            throw new Error(`cannot open files of type '${self.fileType}'`)
+          }
+
+          const { unzip } = await import('@gmod/bgzf-filehandle')
 
           const filehandle = openLocation(self.fileSource)
           filehandle
             .stat()
             .then(stat => {
-              if (stat.size > IMPORT_SIZE_LIMIT)
+              if (stat.size > IMPORT_SIZE_LIMIT) {
                 throw new Error(
                   `File is too big. Tabular files are limited to at most ${(
                     IMPORT_SIZE_LIMIT / 1000
                   ).toLocaleString()}kb.`,
                 )
+              }
             })
             .then(() => filehandle.readFile())
             .then(buffer => {

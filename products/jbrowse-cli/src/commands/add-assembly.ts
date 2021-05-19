@@ -344,10 +344,19 @@ custom         Either a JSON file location or inline JSON that defines a custom
   }
 
   async run() {
+    // https://stackoverflow.com/a/35008327/2129219
+    const exists = (s: string) =>
+      new Promise(r => fs.access(s, fs.constants.F_OK, e => r(!e)))
+
     const { args: runArgs, flags: runFlags } = this.parse(AddAssembly)
 
     const output = runFlags.target || runFlags.out || '.'
-    const isDir = (await fsPromises.lstat(output)).isDirectory()
+
+    if (!(await exists(output))) {
+      await fsPromises.mkdir(output, { recursive: true })
+    }
+
+    const isDir = fs.statSync(output).isDirectory()
     this.target = isDir ? `${output}/config.json` : output
 
     const { sequence: argsSequence } = runArgs as { sequence: string }
@@ -497,7 +506,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
     } catch (error) {
       // ignore
     }
-    if (locationUrl) return false
+    if (locationUrl) {
+      return false
+    }
     return true
   }
 
@@ -510,12 +521,16 @@ custom         Either a JSON file location or inline JSON that defines a custom
       // ignore
     }
 
-    if (locationUrl) return false
+    if (locationUrl) {
+      return false
+    }
     switch (load) {
       case 'copy': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.copyFile(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
@@ -527,7 +542,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'symlink': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.symlink(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),
@@ -539,7 +556,9 @@ custom         Either a JSON file location or inline JSON that defines a custom
       case 'move': {
         await Promise.all(
           filePaths.map(async filePath => {
-            if (!filePath) return undefined
+            if (!filePath) {
+              return undefined
+            }
             return fsPromises.rename(
               filePath,
               path.join(path.dirname(destination), path.basename(filePath)),

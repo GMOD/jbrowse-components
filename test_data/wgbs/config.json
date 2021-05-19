@@ -1,0 +1,54 @@
+{
+  "assemblies": [
+    {
+      "name": "ref",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ref-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "ref.fa"
+          },
+          "faiLocation": {
+            "uri": "ref.fa.fai"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bwa-meth.sorted.subselect.downsample",
+      "name": "bwa-meth.sorted.subselect.downsample",
+      "assemblyNames": ["ref"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "bwa-meth.sorted.subselect.downsample.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "bwa-meth.sorted.subselect.downsample.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "ref.fa"
+          },
+          "faiLocation": {
+            "uri": "ref.fa.fai"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -11,9 +11,15 @@ import configSchema from './configSchema'
 test('adapter can fetch files from names index', async () => {
   function mockFetch(url: string): Promise<Response> {
     let response = {}
-    if (url.includes('names/meta.json')) response = meta
-    if (url.includes('names/0.json')) response = first
-    if (url.includes('names/f.json')) response = last
+    if (url.includes('names/meta.json')) {
+      response = meta
+    }
+    if (url.includes('names/0.json')) {
+      response = first
+    }
+    if (url.includes('names/f.json')) {
+      response = last
+    }
     return Promise.resolve(new Response(JSON.stringify(response)))
   }
 

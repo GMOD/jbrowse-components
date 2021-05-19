@@ -1,13 +1,13 @@
+import React, { useEffect, useState, Suspense } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
-import { App, StartScreen, createJBrowseTheme } from '@jbrowse/core/ui'
-
+import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import CssBaseline from '@material-ui/core/CssBaseline'
-
 import { ThemeProvider } from '@material-ui/core/styles'
 
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
-import React, { useEffect, useState } from 'react'
+import { AssemblyManager } from '@jbrowse/plugin-data-management'
+import StartScreen from './StartScreen'
 import factoryReset from './factoryReset'
 
 const debounceMs = 1000
@@ -42,12 +42,25 @@ const JBrowse = observer(({ pluginManager }) => {
   const [firstLoad, setFirstLoad] = useState(true)
 
   const { rootModel } = pluginManager
-  const { session, jbrowse, error } = rootModel
-  if (firstLoad && session) setFirstLoad(false)
+  const {
+    session,
+    jbrowse,
+    error,
+    pluginsUpdated,
+    setPluginsUpdated,
+  } = rootModel
+  if (firstLoad && session) {
+    setFirstLoad(false)
+  }
 
   useEffect(() => {
-    function sendIpcConfig(snapshot) {
-      ipcRenderer.send('saveConfig', snapshot)
+    async function sendIpcConfig(snapshot) {
+      await ipcRenderer.invoke('saveConfig', snapshot)
+
+      if (pluginsUpdated) {
+        setPluginsUpdated(false)
+        window.location.reload()
+      }
     }
 
     let disposer = () => {}
@@ -60,7 +73,7 @@ const JBrowse = observer(({ pluginManager }) => {
       }
     }
     return disposer
-  }, [jbrowse, ipcRenderer])
+  }, [jbrowse, ipcRenderer, pluginsUpdated, setPluginsUpdated])
 
   useEffect(() => {
     async function createScreenshot(snapshot) {
@@ -90,9 +103,6 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { AssemblyManager } = pluginManager.getPlugin(
-    'DataManagementPlugin',
-  ).exports
 
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
@@ -100,13 +110,15 @@ const JBrowse = observer(({ pluginManager }) => {
       {rootModel.session ? (
         <>
           <App session={rootModel.session} />
-          <AssemblyManager
-            rootModel={rootModel}
-            open={rootModel.isAssemblyEditing}
-            onClose={() => {
-              rootModel.setAssemblyEditing(false)
-            }}
-          />
+          <Suspense fallback={<div />}>
+            <AssemblyManager
+              rootModel={rootModel}
+              open={rootModel.isAssemblyEditing}
+              onClose={() => {
+                rootModel.setAssemblyEditing(false)
+              }}
+            />
+          </Suspense>
         </>
       ) : (
         <StartScreen

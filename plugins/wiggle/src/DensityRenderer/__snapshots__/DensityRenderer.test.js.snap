@@ -2,8 +2,6 @@
 
 exports[`inverted mode and reversed 1`] = `
 Object {
-  "height": 100,
   "imageData": Any<Object>,
-  "width": 33,
 }
 `;

@@ -30,7 +30,9 @@ export default ({ lib, load }: PluginManager) => {
       // TODO: Figure this out for multiple assembly names
       const { assemblyName } = view.displayedRegions[0]
       const assembly = getSession(view).assemblyManager.get(assemblyName)
-      if (!assembly) throw new Error('assembly not yet loaded')
+      if (!assembly) {
+        throw new Error('assembly not yet loaded')
+      }
       const { getCanonicalRefName } = assembly
       const featureRefName = getCanonicalRefName(feature.get('refName'))
 
@@ -52,8 +54,12 @@ export default ({ lib, load }: PluginManager) => {
           const matePosition = breakendSpecification.MatePosition.split(':')
           endPos = parseInt(matePosition[1], 10) - 1
           mateRefName = getCanonicalRefName(matePosition[0])
-          if (breakendSpecification.Join === 'left') startMod = -1
-          if (breakendSpecification.MateDirection === 'left') endMod = -1
+          if (breakendSpecification.Join === 'left') {
+            startMod = -1
+          }
+          if (breakendSpecification.MateDirection === 'left') {
+            endMod = -1
+          }
         }
 
         // if (breakendSpecification.Join === 'left') {

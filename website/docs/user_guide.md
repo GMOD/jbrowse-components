@@ -4,6 +4,8 @@ toplevel: true
 title: User guide
 ---
 
+import Figure from './figure'
+
 ## Navigating the UI
 
 ### Linear genome view usage
@@ -45,14 +47,12 @@ the form for adding a track:
 
 File->Open Track
 
-![](img/add_track_form.png)
-The 'Add track form'
+<Figure caption="After opening the menu item for 'Open new track' a drawer widget for the 'Add track form' will appear" src="/img/add_track_form.png" />
 
 Note: There is also a circular "+" button inside the track selector menu that
 can also be used to access the "Add track" form.
 
-![](img/add_track_tracklist.png)
-The 'Add track button' in the tracklist
+<Figure caption="The orange plus icon in the bottom right of a tracklist can also be used to launch the 'Add track form'" src="/img/add_track_tracklist.png" />
 
 In the "Add track" form, you can provide a URL to a file to load. Opening files
 from your local machine is not supported currently in the jbrowse-web app
@@ -91,7 +91,7 @@ cases.
 Note that you can copy and paste URLs between different tabs in your local
 browser though
 
-![](img/share_button.png)
+<Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use these URLs generated here rather than simply copying and pasting your URL to other users" src="/img/share_button.png" />
 
 The session URL will contain
 
@@ -112,15 +112,11 @@ without being a JBrowse admin!
 
 Currently, in order to edit a track config, you have to make a copy of the track
 
-![](img/copy_track.png)
-Figure showing how to copy a track, note that settings button is disabled
-because we don't 'own this track' as a non-privileged user
+<Figure caption="Screenshot showing how to copy a track. In order to edit detailed configuration of a track, we require that you first make a copy of it, which can be done via the track menu" src="/img/copy_track.png" />
 
 After you have copied the track, you can edit the track settings
 
-![](img/session_track_settings.png)
-Figure showing the settings button is now enabled on the session track, and you
-have full control over your session tracks
+<Figure caption="After copying a track, which puts it in your 'session tracks', you can then edit the track settings, and you have full control over your session tracks" src="/img/session_track_settings.png" />
 
 Your new track is a "session track" and can be shared with other
 users with the "Share" button
@@ -130,11 +126,10 @@ users with the "Share" button
 The scale bars accept a click and drag action to select a region
 
 <!--
-https://s3.amazonaws.com/jbrowse.org/code/jb2/master/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
+https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
 -->
 
-![](./img/rubberband.png)
-Rubberband selection can be performed on both the region and overview scale bars
+<Figure caption="Rubberband selection can be performed on both the region and overview scale bars" src="/img/rubberband.png" />
 
 #### Track label positioning
 
@@ -146,8 +141,7 @@ hamburger menu for a specific view.
 http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=share-1RbMciFHOT&password=wYEDf
 -->
 
-![](./img/tracklabels.png)
-Example of using the overlap and offset track label positioning options
+<Figure caption="Example of using the overlap and offset track label positioning options" src="/img/tracklabels.png" />
 
 #### Horizontally flip
 
@@ -159,8 +153,7 @@ bar to help indicate whether the app is horizontally flipped or not
 
 Here is an example of before and after horizontally flipping the view
 
-![](./img/horizontally_flip.png)
-Before and after horizontally flipping
+<Figure caption="Before and after horizontally flipping" src="/img/horizontally_flip.png" />
 
 ## Sequence track
 
@@ -169,12 +162,7 @@ If the view is horizontally flipped, the sequence is "reverse complemented" so
 the bottom three translation frames go to the top, and the top frames go to the
 bottom.
 
-![](./img/sequence_track.png)
-The sequence track, with a positive strand gene for context, shows the start
-codon on the first exon in the top-three rows of the translation frame. The
-bottom panel shows the same view but with the view horizontally flipped, and
-the gene is now shown reversed and the start codon is in the bottom translation
-frames.
+<Figure caption="The sequence track, with a positive strand gene for context, shows the start codon on the first exon in the top-three rows of the translation frame. The bottom panel shows the same view but with the view horizontally flipped, and the gene is now shown reversed and the start codon is in the bottom translation frames." src="/img/sequence_track.png" />
 
 ## Alignments tracks
 
@@ -193,7 +181,8 @@ the reference genome, or blue if they aligned to the reverse strand.
 
 ### Coverage visualization
 
-The coverage visualization shows the depth-of-coverage of the reads at each position on the genome, and also draws using colored boxes any occurrence of
+The coverage visualization shows the depth-of-coverage of the reads at each
+position on the genome, and also draws using colored boxes any occurrence of
 mismatches between the read and the reference genome, so if 50% of the reads
 had a T instead of the reference A, half the height of the coverage histogram
 would contain a 'red' box
@@ -207,9 +196,7 @@ window.innerHeight
 https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=test_data%2Fconfig_demo.json&session=eJztVctu2kAU_RU0q1Yixjbh5V0e5NFSioA2UqsKje2LPYk9tmYGSIL8770zJsYkRF1U6qoLFtzXOXN8Zu6WcJoC8cgYNo0ZSMky3nBt1z6xeyd2d-7aXsf17IFlO70fpElSKiLGiWc3SSjoBsQdC1VMvHb_tEnWDDaSeD-3hIU48u75Sn1yJ_c-9oVM5gl9GpdgceQMMKiecv1vxDhQcQ08S-E7jsBMtlxKUJNH4jnt027X6nR7_U7HcQY9u9Mkfj4BYZLVYAinECH3El7Acofk4DCpqFCGMnDk5Z4O3I7ddbFZwBqEBAwuaSKhSaiUkPrJAc_iFzIVNHioHe2b0x9GjjMc7U9xlrCIp8CVnOtiTMTAohiB3QFqE2R8yaKVoApZYjmP0kRg0YQlsMrLFq8SbhEl12rUH-7H1-v2ox3bfjN6e7zFHOE2fIFe5CaLiZ0BZp_Pp-1GTgOfZY0P4-svo-nHRlVUF0brUEqDygRUQZSJJx0zI3SQhjRXIGpczml6tgvi96PpKAsquivBtNZK5dJrtWTboil9zjjdSCvI0ta9L7KNBCsTUSsyJpEtjd4SQEO5wKPIB1-0rSVdmJOd2JZrtRcpzXMILcQiRZMwHsKjBkv-ITD-GCmKQhsN8QV6TcOW32W6C735YFUC-2br6AqoWgk4Un4kWRi02XhykaGzaQSHxkqSYJjOzmTK98Z6U7x316D_vrmOtL12mOR5sCv5g80OK__WazVqe8_Jlf_flQeufG3LmmzHzHYka2ZISCBQ-v3VUcYjLNZnk3G2eekgnhIrKGOlycuIflpjFsINUtdou1d4H_qK_XqrVCnjsZmBzMS8pBYzBBFBzAKakBLEWHJEfUhkHfsCn2cQet_sBmoC1R6LQBkh6vPmdbzqHr1fUV2rm_dKLmtwRN-vJKG52UFbVG3JEmQ4h0elZSxX6sEq1ZLTQLE1XL7iXZjLyhEEjXTLcevxAEyi-A3q17Nj
 -->
 
-![](./img/alignments.png)
-Screenshot showing the alignments track, which contains both a
-coverage view at the top and a pileup view at the bottom
+<Figure caption="Screenshot showing the alignments track, which contains both a coverage view at the top and a pileup view at the bottom" src="/img/alignments.png" />
 
 ### Show soft clipping
 
@@ -230,11 +217,7 @@ window.innerHeight
 http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJztVVFv2jAQ_ivIT5sENAHaoryxdms7VR0qrJs0Tcgkh-M1cTLbCTCU_76zQ5N0pFWr7XEvkXx33_edL5_tHRE0BuKRK6GBSap5IjoalO7AhsZpBKRLYioZF8RzuiSQdA3yCw90SLzheNQlOYe1It63HeEB0vCaZmFoEK63qRG45gKovACRxHCHIMwkq5UCPd0Qb3Dijkb9oTMYDN3T8fhkeNwly3QK0iSdvovKXKUR3UJwCwzJS0kJq5uyfV-zCTIqTaW2nYLAdo4dx0GshBykAgysaKSgS6hSEC-j7R6cJ1GebEjxHZuV1L9v7Icx9-P7H4uv63ojk4gzEYPQam6KMRECZyHKDo5R2E_EirOsnEFF3osSwXoSaKB6Ku_5ksYInPIIsrSk8faKm9j9fJ8Fp25YSzbrajnXOZTbtUPstq6C59pZpBaBxaI5FVvZsZWdNddhZ3bXeWPq33YqQHOcZnYPA8V5-hT9kMitidaDMxka0FSDbLR8hqyTfRSRuLpO_GpfmeRYYzy1CKimR6XGUdt--na8heXgf8NhPtwQKfiZgfBhctD0fJ2847puW9v1i0X7gyXXpCgK41IRgESjGlD5-273oYP_WiUQN8vZB6A6k9BS3pIsrNrsZnqW4LGgDB77T7Nfq_MLeTPa1P47KK5NOHrGgy2wlxhRidTfw17hxseof2TJxg7qX6yy5X_zPjLvn-5tjK3Nky1Zy6EgAl-bK95EuWBYbDcQJusHBPG0zKCMlWehjJjLO-QBXOIIjNr-pq9DnxBvHqsqZa04s5KJnJethRxFpB9yn0akFLHOvaZLiFRT-wxNA9I8antC00D1PDLQdhBNvnlTrzpuT1dUp-_yqZLzhpwxXRJFNLXv3A6ntuIRdjiHjTZjLF_qthfaTJ76mudw_or2n8kV9kYQuECNK4FvMprP8BXFb9Ec-8Q
 -->
 
-![](./img/alignments_soft_clipped.png)
-Shows what turning on soft-clipping enables for a simulated long-read
-dataset. There is a simulated structural variant, a deletion, at this position,
-so the read has bases that map to the other side of the deletion being revealed
-by this.
+<Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
 
 ### Sort by options
 
@@ -252,12 +235,7 @@ Here is how to turn on the center line
 1. Open the hamburger menu in the top left of the linear genome view
 2. Select "Show center line"
 
-![](./img/alignments_center_line.png)
-Illustrates before and after turning on the center line. The center line is an
-indicator that shows what base pair underlies the center of the view. Note that
-this is used in the 'Sort by' option discussed below; the sort is performed
-using properties of the feature or even exact base pair underlying the center
-line
+<Figure caption="Illustrates before and after turning on the center line. The center line is an indicator that shows what base pair underlies the center of the view. Note that this is used in the 'Sort by' option discussed below; the sort is performed using properties of the feature or even exact base pair underlying the center line" src="/img/alignments_center_line.png" />
 
 ### Sorting by base
 
@@ -269,11 +247,7 @@ specific base-pair mutation at the position crossing the center line (which is
    track label
 2. Select 'Sort by'->'Base pair'
 
-![](./img/alignments_sort_by_base.png)
-Illustrating the pileup re-ordering that happens when turning on the
-'Sort by'->'Base pair'. The sorting is done by specifically what letter of each
-read underlies the current center line position (the center line is 1bp wide,
-so sorted by that exact letter)
+<Figure caption="Illustrating the pileup re-ordering that happens when turning on the 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each read underlies the current center line position (the center line is 1bp wide, so sorted by that exact letter)" src="/img/alignments_center_line.png" />
 
 ### Sort, color and filter by tag
 
@@ -285,16 +259,24 @@ We can now also do things like
 
 With these features, we can create very expressive views of alignments tracks
 
-![](./img/alignments/out-fs8.png)
-Figure showing a step-by-step of doing sort and color by HP tag to visualize the HP tagged reads showing haplotype
+<Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag" src="/img/alignments/haplotype.png" />
+
+### Color by orientation
+
+JBrowse uses the same color scheme as IGV for coloring by pair orientation.
+These pair orientations can be used to reveal complex patterns of structural
+variation
+
+See https://software.broadinstitute.org/software/igv/interpreting_pair_orientations for a good guide on interpreting these pair orientations
+
+<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->" src="/img/inverted_duplication.png" />
 
 ## BigWig tracks
 
 Visualizing genome signals, whether it is read depth-of-coverage or other
 signal, can often be done by using BigWig files
 
-![](./img/bigwig_xyplot.png)
-This figure shows a BigWig using the XY plot renderer
+<Figure caption="A simple wiggle track with the XY plot renderer" src="/img/bigwig_xyplot.png" />
 
 ### Viewing whole-genome coverage for profiling CNV
 
@@ -317,9 +299,7 @@ for CNV coverage visualization
 Also note: all tracks have a drag handle on the bottom of it which you
 can drag down to make the track taller
 
-![](./img/bigwig/out-fs8.png)
-Figure showing the step-by-step way to make a whole-genome CNV profile of
-a coverage BigWig
+<Figure caption="A step-by-step guide to view a whole-genome CNV profile of coverage from a BigWig file" src="/img/bigwig/whole_genome_coverage.png" />
 
 ## Variant tracks
 
@@ -327,20 +307,16 @@ Visualizing variant tracks from the VCF format alongside the original alignment
 evidence track is a common workflow for validating your results. In JBrowse 2
 we can open a variant track and an alignments track as shown below
 
-![](./img/variant_with_pileup.png)
-Variant track indicating a SNP alongside the alignment track evidence
+<Figure caption="Variant track indicating a SNP alongside the alignment track evidence" src="/img/variant_with_pileup.png" />
 
 ### Variant widget
 
-The variant features have a specialized widget that contains a table
-indicating all the calls that were made in a multi-sample VCF. Some VCF files,
-like the 1000 genomes VCF, can contain thousands of samples in a single file.
-This table can display the details
+The variant features have a specialized widget that contains a table indicating
+all the calls that were made in a multi-sample VCF. Some VCF files, like the
+1000 genomes VCF, can contain thousands of samples in a single file. This
+table can display the details
 
-![](./img/variant_panel.png)
-Figure showing the variant feature sidebar with a filtered by genotype (with
-alternative allele '1'). Users can also filter by sample name or other
-attributes
+<Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes" src="/img/variant_panel.png" />
 
 ## Linear synteny and dotplot views
 
@@ -361,15 +337,11 @@ workflow
 Then currently you must configuration edit the PAFAdapter to indicate the two
 assemblies in the PAFAdapter
 
-![](./img/dotplot_menu.png)
-Adding a new dotplot or synteny view via the menubar
+<Figure caption="Adding a new dotplot or synteny view via the menubar" src="/img/dotplot_menu.png" />
 
-![](./img/dotplot_add.png)
-Example of the import form for a dotplot or synteny view. Allows you to select
-two different assemblies and a PAF file can be supplied via a URL
+<Figure caption="Example of the import form for a dotplot or synteny view. Allows you to select two different assemblies and a PAF file can be supplied via a URL" src="/img/dotplot_add.png" />
 
-![](./img/dotplot.png)
-Example of a dotplot visualization of the grape vs the peach genome
+<Figure caption="Example of a dotplot visualization of the grape vs the peach genome" src="/img/dotplot.png" />
 
 See the [dotplot configuration](config_guide#dotplot-view-config) for more
 detailed descriptions
@@ -380,15 +352,9 @@ Use the main menu bar to select
 
 File->Add->Linear synteny view
 
-![](./img/dotplot_menu.png)
-Adding a new linear-synteny-view via the menubar
+<Figure caption="Example of the import form for a synteny view allowing you to select two different assemblies and optionally adding a PAF file via a URL" src="/img/dotplot_add.png" />
 
-![](./img/dotplot_add.png)
-Example of the import form for a synteny view allowing you to select two
-different assemblies and optionally adding a PAF file via a URL
-
-![](./img/linear_synteny.png)
-Figure showing grape vs peach synteny
+<Figure caption="Example screenshot showing the linear synteny view for grape vs peach" src="/img/linear_synteny.png" />
 
 See the [linear synteny
 configuration](config_guide#configuring-linear-synteny-views) for more details
@@ -403,9 +369,7 @@ displayed in different contexts.
 Here is a short demo that shows opening a synteny view from a dotplot view
 selection
 
-![](./img/synteny_from_dotplot_view.png)
-Figure showing the click and drag selection over the dotplot view prompts you
-to open up a linear synteny view from the selected region
+<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view prompts you to open up a linear synteny view from the selected region" src="/img/synteny_from_dotplot_view.png" />
 
 ### Long read vs reference plots
 
@@ -415,11 +379,9 @@ genome by
 - Right clicking an alignment
 - Select "Dotplot read vs ref" or "Linear read vs ref" in the context menu
 
-![](./img/dotplot_longread.png)
-Example of a dotplot of a long read vs the reference genome
+<Figure caption="Example of a dotplot of a long read vs the reference genome" src="/img/dotplot_longread.png" />
 
-![](./img/linear_longread.png)
-Example of a 'synteny' view of a long read vs the reference genome
+<Figure caption="Example of a 'synteny' view of a long read vs the reference genome" src="/img/linear_longread.png" />
 
 ## Hi-C tracks
 
@@ -431,8 +393,7 @@ Currently configuration options are basic for Hi-C tracks, see
 [configuration](config_guide#hictrack-config) for info about configuring Hi-C
 tracks
 
-![](./img/hic_track.png)
-Screenshot showing a Hi-C track
+<Figure caption="Screenshot of a Hi-C track" src="/img/hic_track.png" />
 
 ## SV inspector
 
@@ -443,8 +404,7 @@ structural variant calls
 
 We can start the SV inspector by launching it from the App level menu bar
 
-![](./img/sv_inspector_begin.png)
-The SV inspector can be launched from the main menu bar
+<Figure caption="The SV inspector can be launched from the main menu bar" src="/img/sv_inspector_begin.png" />
 
 This will bring up an "import form" that asks you for your SV evidence. This
 can be provided opening a file locally or using a URL for files in the
@@ -454,8 +414,7 @@ following formats:
 - BEDPE
 - STAR-fusion result file
 
-![](./img/sv_inspector_importform.png)
-Figure showing the SV inspector import form
+<Figure caption="The import form for getting started with the SV inspector" src="/img/sv_inspector_importform.png" />
 
 ### Example SV inspector workflow
 
@@ -468,8 +427,7 @@ these published data http://schatz-lab.org/publications/SKBR3/
 
 Copy this URL and paste it into the import form and select hg19
 
-![](./img/sv_inspector_importform_after.png)
-Figure showing the SV inspector import form with URL
+<Figure caption="The SV inspector with the import form and URL pasted" src="/img/sv_inspector_importform_after.png" />
 
 ### SV inspector results
 
@@ -477,16 +435,14 @@ After loading the user's requested file, you will have a tabular view with each
 row representing a row of the file you opened, along with a whole-genome
 overview of the SVs on the right
 
-![](./img/sv_inspector_importform_loaded.png)
-SV inspector with loaded results
+<Figure caption="The SV inspector with loaded results" src="/img/sv_inspector_importform_loaded.png" />
 
 Now here is where things can become interesting
 
 We can search and filter the table, with filtering and searching being reflected
 in the circular view as well.
 
-![](./img/sv_inspector_importform_filtered.png)
-SV inspector with filter applied
+<Figure caption="The SV inspector with filter applied" src="/img/sv_inspector_importform_filtered.png" />
 
 ### Launching breakpoint split view
 
@@ -498,8 +454,4 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-![](./img/breakpoint_split_view.png)
-Figure showing "breakpoint split view" which examines the breakpoints of a
-structural variant, e.g. an interchromosomal translocation, and connects
-supporting reads (black splines) and the variant call itself (green thicker
-line, with feet indicating directionality)
+<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />

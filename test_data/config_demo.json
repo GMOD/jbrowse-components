@@ -155,7 +155,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -211,6 +211,17 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "cpgisland_ucsc_hg38",
+      "name": "UCSC CpG islands",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "UCSCAdapter",
+        "track": "cpgIslandExt"
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "segdups_ucsc_hg19",
       "name": "UCSC SegDups",
       "category": ["Annotation"],
@@ -256,9 +267,9 @@
           "type": "LinearGDCDisplay",
           "displayId": "gdc_plugin_track_linear",
           "renderer": {
-            "color1": "jexl:{LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'}|cast[feature|getData('consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
+            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[get(feature,'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
             "labels": {
-              "name": "jexl:feature|getData('genomicDnaChange')"
+              "name": "jexl:get(feature,'genomicDnaChange')"
             },
             "type": "SvgFeatureRenderer"
           }
@@ -374,7 +385,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -425,7 +436,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('geneName2')"
+              "description": "jexl:get(feature,'geneName2')"
             }
           }
         }
@@ -859,42 +870,6 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "na12878_highcov",
-      "name": "NA12878 high-coverage",
-      "assemblyNames": ["hg38"],
-      "category": ["NA12878"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram"
-        },
-        "craiLocation": {
-          "uri": "https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram.crai"
-        },
-        "sequenceAdapter": {
-          "type": "BgzipFastaAdapter",
-          "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
-          },
-          "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
-          },
-          "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
-          }
-        }
-      },
-      "renderers": {
-        "PileupRenderer": {
-          "type": "PileupRenderer"
-        },
-        "SvgFeatureRenderer": {
-          "type": "SvgFeatureRenderer"
-        }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
       "trackId": "na12878_exome",
       "name": "NA12878 Exome",
       "assemblyNames": ["hg19"],
@@ -1180,7 +1155,7 @@
       }
     },
     {
-      "type": "FeatureTrack",
+      "type": "VariantTrack",
       "trackId": "variants_hg002",
       "name": "HG002 GIAB consensus SV (VCF)",
       "assemblyNames": ["hg19"],
@@ -2487,7 +2462,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -2518,7 +2493,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "feature|getData('gene_name')"
+              "description": "jexl:get(feature,'gene_name')"
             }
           }
         }
@@ -3084,11 +3059,110 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "f|getData('ucscLabel')"
+              "description": "jexl:get(feature,'ucscLabel')"
             }
           }
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mastermind_hg19",
+      "name": "UCSC Mastermind",
+      "category": ["Variation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/mastermind.bb"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mastermind_hg38",
+      "name": "UCSC Mastermind",
+      "category": ["Variation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "http://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/mastermind.bb"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "human_chr20_mod_call_5mC_5hmC_CG_bam",
+      "name": "human_chr20_mod_call_5mC_5hmC_CG (BAM)",
+      "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.bam.bai"
+          }
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "human_chr20_mod_call_5mC_5hmC_CG_cram",
+      "name": "human_chr20_mod_call_5mC_5hmC_CG (CRAM)",
+      "description": "Source: Oxford Nanopore Technologies, re-hosted with permission",
+      "assemblyNames": ["hg38"],
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram"
+        },
+        "craiLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "modified_bases.5mC",
+      "name": "modified_bases.5mC",
+      "category": ["Methylation"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://jbrowse.org/genomes/GRCh38/methylation/modified_bases.5mC.bb"
+        }
+      }
     }
   ],
   "connections": [],

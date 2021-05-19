@@ -11,7 +11,8 @@
     "strict": true,
     "noEmit": false,
     "target": "es2017",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": ["src"],
   "exclude": ["**/*.test.ts", "**/testUtil.ts"]

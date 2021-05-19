@@ -134,7 +134,9 @@ export default class HttpMap {
     const hashHexCharacters = await this.getHashHexCharacters()
     if (hashHexCharacters) {
       const compress = await this.getCompress()
-      while (hex.length < 8) hex = `0${hex}`
+      while (hex.length < 8) {
+        hex = `0${hex}`
+      }
       hex = hex.substr(8 - hashHexCharacters)
       const dirpath = []
       for (let i = 0; i < hex.length; i += 3) {

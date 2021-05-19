@@ -22,11 +22,17 @@ function PrerenderedCanvas(props: {
   const featureCanvas = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    if (!imageData) return
+    if (!imageData) {
+      return
+    }
     const canvas = featureCanvas.current
-    if (!canvas) return
+    if (!canvas) {
+      return
+    }
     const context = canvas.getContext('2d')
-    if (!context) return
+    if (!context) {
+      return
+    }
     if (imageData.commands) {
       imageData.commands.forEach((command: any) => {
         if (command.type === 'strokeStyle') {

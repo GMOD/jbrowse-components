@@ -3,10 +3,7 @@ import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearc
 import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  AdapterClass as NCListAdapterClass,
-  configSchema as ncListAdapterConfigSchema,
-} from './NCListAdapter'
+import { configSchema as ncListAdapterConfigSchema } from './NCListAdapter'
 import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
   configSchema as jbrowse1AdapterConfigSchema,
@@ -25,7 +22,8 @@ export default class LegacyJBrowsePlugin extends Plugin {
         new AdapterType({
           name: 'NCListAdapter',
           configSchema: ncListAdapterConfigSchema,
-          AdapterClass: NCListAdapterClass,
+          getAdapterClass: () =>
+            import('./NCListAdapter/NCListAdapter').then(r => r.default),
         }),
     )
 

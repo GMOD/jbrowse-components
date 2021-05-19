@@ -10,7 +10,6 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import Color from 'color'
-import HicAdapterFactory from './HicAdapter'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
   ReactComponent as HicRendererReactComponent,
@@ -19,6 +18,7 @@ import {
   configSchemaFactory as linearHicdisplayConfigSchemaFactory,
   modelFactory as linearHicdisplayModelFactory,
 } from './LinearHicDisplay'
+import hicAdapterConfigSchema from './HicAdapter/configSchema'
 
 export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
@@ -28,7 +28,9 @@ export default class HicPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'HicAdapter',
-          ...pluginManager.jbrequire(HicAdapterFactory),
+          configSchema: hicAdapterConfigSchema,
+          getAdapterClass: () =>
+            import('./HicAdapter/HicAdapter').then(r => r.default),
         }),
     )
     pluginManager.addRendererType(

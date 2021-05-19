@@ -9,7 +9,7 @@ function makeFilters(displayModel) {
   for (const attrName of filterOut.keys()) {
     for (const value of filterOut.get(attrName).keys()) {
       if (filterOut.get(attrName).get(value)) {
-        filters.push(`jexl:feature|getData('${attrName}') != '${value}'`)
+        filters.push(`jexl:get(feature,'${attrName}') != '${value}'`)
       }
     }
   }
@@ -36,6 +36,7 @@ export default configSchema => {
           return {
             ...getParentRenderProps(self),
             ...this.composedRenderProps,
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.configuration.renderer,
             filters,
@@ -57,10 +58,14 @@ export default configSchema => {
       .actions(self => ({
         setFilterControlsHeight(newHeight) {
           if (newHeight > self.filterControlsMinHeight) {
-            if (newHeight < self.filterControlsMaxHeight)
+            if (newHeight < self.filterControlsMaxHeight) {
               self.filterControlsHeight = newHeight
-            else self.filterControlsHeight = self.filterControlsMaxHeight
-          } else self.filterControlsHeight = self.filterControlsMinHeight
+            } else {
+              self.filterControlsHeight = self.filterControlsMaxHeight
+            }
+          } else {
+            self.filterControlsHeight = self.filterControlsMinHeight
+          }
           return self.filterControlsHeight
         },
         resizeFilterControls(distance) {
@@ -71,7 +76,9 @@ export default configSchema => {
           return oldHeight - newHeight
         },
         toggleFilter(attrName, value, checked) {
-          if (!self.filterOut.has(attrName)) self.filterOut.set(attrName, {})
+          if (!self.filterOut.has(attrName)) {
+            self.filterOut.set(attrName, {})
+          }
           const values = self.filterOut.get(attrName)
           values.set(String(value), !checked)
         },

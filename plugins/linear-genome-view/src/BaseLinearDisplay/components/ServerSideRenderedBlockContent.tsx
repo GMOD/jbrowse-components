@@ -6,7 +6,6 @@ import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import Button from '@material-ui/core/Button'
 import RefreshIcon from '@material-ui/icons/Refresh'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 const useStyles = makeStyles(theme => ({
   loading: {
@@ -76,18 +75,30 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   const [shown, setShown] = useState(false)
   const classes = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    let killed = false
+    const timeout = setTimeout(() => {
+      if (!killed) {
+        setShown(true)
+      }
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      killed = true
+    }
   }, [])
 
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent(model, 2)
   const status = displayStatus || blockStatus
-  return shown ? (
-    <div className={classes.loading}>
-      <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
-    </div>
-  ) : null
+  return (
+    <>
+      {shown ? (
+        <div className={classes.loading}>
+          <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
+        </div>
+      ) : null}
+    </>
+  )
 })
 
 function BlockMessage({
@@ -170,8 +181,7 @@ const ServerSideRenderedBlockContent = observer(
         </Repeater>
       )
     }
-
-    return <ServerSideRenderedContent model={model} />
+    return model.reactElement
   },
 )
 

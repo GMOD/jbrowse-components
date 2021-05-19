@@ -7,6 +7,7 @@ import { ThemeProvider } from '@material-ui/core/styles'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import ShareButton from './ShareButton'
+import AdminComponent from './AdminComponent'
 
 function deleteBaseUris(config) {
   if (typeof config === 'object') {
@@ -30,9 +31,7 @@ const JBrowse = observer(({ pluginManager }) => {
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
-    // @ts-ignore
     window.JBrowseRootModel = rootModel
-    // @ts-ignore
     window.JBrowseSession = session
   }, [currentSessionId, rootModel, session, setSessionId])
 
@@ -67,9 +66,6 @@ const JBrowse = observer(({ pluginManager }) => {
   }
 
   const theme = getConf(rootModel.jbrowse, 'theme')
-  const { AssemblyManager, SetDefaultSession } = pluginManager.getPlugin(
-    'DataManagementPlugin',
-  ).exports
   return (
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <CssBaseline />
@@ -77,25 +73,7 @@ const JBrowse = observer(({ pluginManager }) => {
         session={session}
         HeaderButtons={<ShareButton session={session} />}
       />
-      {adminKey ? (
-        <>
-          <AssemblyManager
-            rootModel={rootModel}
-            open={rootModel.isAssemblyEditing}
-            onClose={() => {
-              rootModel.setAssemblyEditing(false)
-            }}
-          />
-          <SetDefaultSession
-            rootModel={rootModel}
-            open={rootModel.isDefaultSessionEditing}
-            onClose={() => {
-              rootModel.setDefaultSessionEditing(false)
-            }}
-            currentDefault={rootModel.jbrowse.defaultSession.name}
-          />
-        </>
-      ) : null}
+      {adminKey ? <AdminComponent pluginManager={pluginManager} /> : null}
     </ThemeProvider>
   )
 })

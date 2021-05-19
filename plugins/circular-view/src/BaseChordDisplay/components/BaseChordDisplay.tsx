@@ -13,8 +13,12 @@ export default ({ lib, load }: PluginManager) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function BaseChordDisplay({ display }: any) {
-    if (display.error) return <DisplayError model={display} />
-    if (!display.filled) return <Loading model={display} />
+    if (display.error) {
+      return <DisplayError model={display} />
+    }
+    if (!display.filled) {
+      return <Loading model={display} />
+    }
     return <RpcRenderedSvgGroup model={display} />
   }
   BaseChordDisplay.propTypes = {

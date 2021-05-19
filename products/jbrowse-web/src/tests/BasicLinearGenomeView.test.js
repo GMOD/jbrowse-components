@@ -68,7 +68,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const track = await findByTestId('rubberBand_controls')
+    const track = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
@@ -77,7 +81,7 @@ describe('valid file tests', () => {
     const zoomMenuItem = await findByText('Zoom to region')
     fireEvent.click(zoomMenuItem)
     expect(state.session.views[0].bpPerPx).toEqual(0.02)
-  })
+  }, 15000)
 
   it('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
     const pluginManager = getPluginManager()
@@ -85,7 +89,11 @@ describe('valid file tests', () => {
     const { findByTestId, findByText } = render(
       <JBrowse pluginManager={pluginManager} />,
     )
-    const rubberBandComponent = await findByTestId('rubberBand_controls')
+    const rubberBandComponent = await findByTestId(
+      'rubberBand_controls',
+      {},
+      { timeout: 10000 },
+    )
 
     expect(state.session.views[0].bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
@@ -107,6 +115,8 @@ describe('valid file tests', () => {
     const trackId1 = state.session.views[0].tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
     )
     const trackRenderingContainer1 = await findByTestId(
       'trackRenderingContainer-integration_test-volvox_filtered_vcf',
@@ -190,7 +200,11 @@ describe('valid file tests', () => {
     )
 
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-    await findByTestId('display-volvox_alignments_alignments')
+    await findByTestId(
+      'display-volvox_alignments_alignments',
+      {},
+      { timeout: 10000 },
+    )
 
     // opens the view menu and selects show center line
     const viewMenu = await findByTestId('view_menu_icon')

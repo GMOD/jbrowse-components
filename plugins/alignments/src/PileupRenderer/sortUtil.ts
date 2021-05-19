@@ -40,7 +40,9 @@ export const sortFeature = (
       const getTag = (f: Feature, t: string) => {
         return isCram ? f.get('tags')[t] : f.get(t)
       }
-      const isString = typeof getTag(featuresInCenterLine[0], tag) === 'string'
+      const isString =
+        featuresInCenterLine[0] &&
+        typeof getTag(featuresInCenterLine[0], tag) === 'string'
       if (isString) {
         featuresInCenterLine.sort((a, b) =>
           getTag(b, tag).localeCompare(getTag(a, tag)),

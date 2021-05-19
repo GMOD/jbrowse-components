@@ -165,6 +165,7 @@ function SvgFeatureRendering(props) {
     features,
     config,
     displayModel,
+    exportSVG,
   } = props
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
@@ -185,7 +186,6 @@ function SvgFeatureRendering(props) {
     onMouseMove,
     onMouseUp,
     onClick,
-    onContextMenu,
   } = props
 
   const mouseDown = useCallback(
@@ -193,7 +193,9 @@ function SvgFeatureRendering(props) {
       setMouseIsDown(true)
       setMovedDuringLastMouseDown(false)
       const handler = onMouseDown
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseDown],
@@ -203,7 +205,9 @@ function SvgFeatureRendering(props) {
     event => {
       setMouseIsDown(false)
       const handler = onMouseUp
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseUp],
@@ -212,7 +216,9 @@ function SvgFeatureRendering(props) {
   const mouseEnter = useCallback(
     event => {
       const handler = onMouseEnter
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseEnter],
@@ -221,7 +227,9 @@ function SvgFeatureRendering(props) {
   const mouseLeave = useCallback(
     event => {
       const handler = onMouseLeave
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseLeave],
@@ -230,7 +238,9 @@ function SvgFeatureRendering(props) {
   const mouseOver = useCallback(
     event => {
       const handler = onMouseOver
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseOver],
@@ -239,7 +249,9 @@ function SvgFeatureRendering(props) {
   const mouseOut = useCallback(
     event => {
       const handler = onMouseOut
-      if (!handler) return undefined
+      if (!handler) {
+        return undefined
+      }
       return handler(event)
     },
     [onMouseOut],
@@ -299,22 +311,20 @@ function SvgFeatureRendering(props) {
     [movedDuringLastMouseDown, onClick],
   )
 
-  const contextMenu = useCallback(
-    event => {
-      if (movedDuringLastMouseDown) {
-        return
-      }
-      if (onContextMenu) {
-        onContextMenu(event)
-      }
-    },
-    [movedDuringLastMouseDown, onContextMenu],
-  )
-
   useEffect(() => {
     setHeight(layout.getTotalHeight())
   }, [layout])
 
+  if (exportSVG) {
+    return (
+      <RenderedFeatures
+        features={features}
+        displayMode={displayMode}
+        {...props}
+        region={region}
+      />
+    )
+  }
   return (
     <div style={renderingStyle}>
       <svg
@@ -332,7 +342,6 @@ function SvgFeatureRendering(props) {
         onFocus={mouseEnter}
         onBlur={mouseLeave}
         onClick={click}
-        onContextMenu={contextMenu}
         style={{ display: 'block' }}
       >
         <RenderedFeatures
@@ -380,10 +389,12 @@ SvgFeatureRendering.propTypes = {
   onFeatureClick: ReactPropTypes.func,
   onFeatureContextMenu: ReactPropTypes.func,
   blockKey: ReactPropTypes.string,
+  exportSVG: ReactPropTypes.shape({}),
 }
 
 SvgFeatureRendering.defaultProps = {
   displayModel: {},
+  exportSVG: undefined,
 
   features: new Map(),
   blockKey: undefined,

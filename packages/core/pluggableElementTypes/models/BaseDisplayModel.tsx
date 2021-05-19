@@ -10,6 +10,7 @@ export const BaseDisplay = types
   .model('BaseDisplay', {
     id: ElementId,
     type: types.string,
+    rpcDriverName: types.maybe(types.string),
   })
   .volatile(() => ({
     rendererTypeName: '',
@@ -56,6 +57,7 @@ export const BaseDisplay = types
     get renderProps() {
       return {
         ...getParentRenderProps(self),
+        rpcDriverName: self.rpcDriverName,
         displayModel: self,
       }
     },
@@ -67,12 +69,14 @@ export const BaseDisplay = types
     get rendererType() {
       const { pluginManager } = getEnv(self)
       const RendererType = pluginManager.getRendererType(self.rendererTypeName)
-      if (!RendererType)
+      if (!RendererType) {
         throw new Error(`renderer "${self.rendererTypeName}" not found`)
-      if (!RendererType.ReactComponent)
+      }
+      if (!RendererType.ReactComponent) {
         throw new Error(
           `renderer ${self.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return RendererType
     },
 
@@ -105,6 +109,9 @@ export const BaseDisplay = types
   .actions(self => ({
     setError(error?: Error) {
       self.error = error
+    },
+    setRpcDriverName(rpcDriverName: string) {
+      self.rpcDriverName = rpcDriverName
     },
     // base display reload does nothing, see specialized displays for details
     reload() {},

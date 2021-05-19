@@ -41,7 +41,7 @@ export default function JBrowseDesktop(
           defaultValue: false,
         },
       }),
-      plugins: types.frozen(),
+      plugins: types.array(types.frozen()),
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
@@ -84,11 +84,14 @@ export default function JBrowseDesktop(
       },
       addAssemblyConf(assemblyConf) {
         const { name } = assemblyConf
-        if (!name) throw new Error('Can\'t add assembly with no "name"')
-        if (self.assemblyNames.includes(name))
+        if (!name) {
+          throw new Error('Can\'t add assembly with no "name"')
+        }
+        if (self.assemblyNames.includes(name)) {
           throw new Error(
             `Can't add assembly with name "${name}", an assembly with that name already exists`,
           )
+        }
         const length = self.assemblies.push({
           ...assemblyConf,
           sequence: {
@@ -109,24 +112,26 @@ export default function JBrowseDesktop(
       },
       addTrackConf(trackConf) {
         const { type } = trackConf
-        if (!type) throw new Error(`unknown track type ${type}`)
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
       addConnectionConf(connectionConf) {
         const { type } = connectionConf
-        if (!type) throw new Error(`unknown connection type ${type}`)
+        if (!type) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
-
       deleteConnectionConf(configuration) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
         return self.connections.splice(idx, 1)
       },
-
       deleteTrackConf(trackConf) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
@@ -135,6 +140,18 @@ export default function JBrowseDesktop(
         }
 
         return self.tracks.splice(idx, 1)
+      },
+      addPlugin(plugin) {
+        self.plugins = [...self.plugins, plugin]
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
+      },
+      removePlugin(pluginName) {
+        self.plugins = self.plugins.filter(
+          plugin => `${plugin.name}Plugin` !== pluginName,
+        )
+        const rootModel = getParent(self)
+        rootModel.setPluginsUpdated(true)
       },
     }))
     .views(self => ({

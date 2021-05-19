@@ -1,3 +1,4 @@
+import { ObservableMap } from 'mobx'
 import { objectFromEntries } from '../index'
 import {
   RectTuple,
@@ -65,12 +66,22 @@ class LayoutRow<T> {
   }
 
   getItemAt(x: number): Record<string, T> | boolean | undefined {
-    if (this.allFilled) return this.allFilled
-    if (!this.rowState) return undefined
+    if (this.allFilled) {
+      return this.allFilled
+    }
+    if (!this.rowState) {
+      return undefined
+    }
 
-    if (this.rowState.min === undefined) return undefined
-    if (x < this.rowState.min) return undefined
-    if (x >= this.rowState.max) return undefined
+    if (this.rowState.min === undefined) {
+      return undefined
+    }
+    if (x < this.rowState.min) {
+      return undefined
+    }
+    if (x >= this.rowState.max) {
+      return undefined
+    }
     const offset = x - this.rowState.offset
     // if (offset < 0)
     //     debugger
@@ -80,13 +91,19 @@ class LayoutRow<T> {
   }
 
   isRangeClear(left: number, right: number): boolean {
-    if (this.allFilled) return false
+    if (this.allFilled) {
+      return false
+    }
 
-    if (!this.rowState) return true
+    if (!this.rowState) {
+      return true
+    }
 
     const { min, max } = this.rowState
 
-    if (right <= min || left >= max) return true
+    if (right <= min || left >= max) {
+      return true
+    }
 
     // TODO: check right and middle before looping
     const maxX = Math.min(max, right)
@@ -184,8 +201,12 @@ class LayoutRow<T> {
       this.rowState.bits[x] = data
     }
 
-    if (left < this.rowState.min) this.rowState.min = left
-    if (right > this.rowState.max) this.rowState.max = right
+    if (left < this.rowState.min) {
+      this.rowState.min = left
+    }
+    if (right > this.rowState.max) {
+      this.rowState.max = right
+    }
     // // this.log(`added ${leftX} - ${rightX}`)
   }
 
@@ -193,13 +214,19 @@ class LayoutRow<T> {
    *  Given a range of interbase coordinates, deletes all data dealing with that range
    */
   discardRange(left: number, right: number): void {
-    if (this.allFilled) return // allFilled is irrevocable currently
+    if (this.allFilled) {
+      return
+    } // allFilled is irrevocable currently
 
     // if we have no data, do nothing
-    if (!this.rowState) return
+    if (!this.rowState) {
+      return
+    }
 
     // if doesn't overlap at all, do nothing
-    if (right <= this.rowState.min || left >= this.rowState.max) return
+    if (right <= this.rowState.min || left >= this.rowState.max) {
+      return
+    }
 
     // if completely encloses range, discard everything
     if (left <= this.rowState.min && right >= this.rowState.max) {
@@ -292,7 +319,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private bitmap: LayoutRow<T>[]
 
-  private rectangles: Map<string, Rectangle<T>>
+  private rectangles: ObservableMap<string, Rectangle<T>>
 
   public maxHeightReached: boolean
 
@@ -331,7 +358,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     this.bitmap = []
-    this.rectangles = new Map()
+    this.rectangles = new ObservableMap()
     this.maxHeight = Math.ceil(maxHeight / this.pitchY)
     this.pTotalHeight = 0 // total height, in units of bitmap squares (px/pitchY)
   }
@@ -351,7 +378,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // console.log(`${this.id} add ${id}`)
     const storedRec = this.rectangles.get(id)
     if (storedRec) {
-      if (storedRec.top === null) return null
+      if (storedRec.top === null) {
+        return null
+      }
 
       // add it to the bitmap again, since that bitmap range may have been discarded
       this.addRectToBitmap(storedRec)
@@ -378,7 +407,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     let top = 0
     if (this.displayMode !== 'collapse') {
       for (; top <= maxTop; top += 1) {
-        if (!this.collides(rectangle, top)) break
+        if (!this.collides(rectangle, top)) {
+          break
+        }
       }
 
       if (top > maxTop) {
@@ -432,7 +463,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   addRectToBitmap(rect: Rectangle<T>): void {
-    if (rect.top === null) return
+    if (rect.top === null) {
+      return
+    }
 
     const data = rect.data || true
     const { bitmap } = this
@@ -465,7 +498,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const { bitmap } = this
     for (let y = 0; y < bitmap.length; y += 1) {
       const row = bitmap[y]
-      if (row) row.discardRange(pLeft, pRight)
+      if (row) {
+        row.discardRange(pLeft, pRight)
+      }
     }
   }
 
@@ -476,7 +511,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getByCoord(x: number, y: number): Record<string, T> | boolean | undefined {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
-    if (!row) return undefined
+    if (!row) {
+      return undefined
+    }
     const pX = Math.floor(x / this.pitchX)
     return row.getItemAt(pX)
   }
@@ -493,6 +530,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getTotalHeight(): number {
     return this.pTotalHeight * this.pitchY
+  }
+
+  get totalHeight() {
+    return this.getTotalHeight()
   }
 
   getRectangles(): Map<string, RectTuple> {

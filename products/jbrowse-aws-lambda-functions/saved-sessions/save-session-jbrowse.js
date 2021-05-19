@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-unresolved
 const AWS = require('aws-sdk')
 const { createHash } = require('crypto')
 const multipart = require('./multipart')

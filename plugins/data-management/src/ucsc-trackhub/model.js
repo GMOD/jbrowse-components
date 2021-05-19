@@ -13,7 +13,7 @@ import {
   generateTracks,
 } from './ucscTrackHub'
 
-export default function (pluginManager) {
+export default function UCSCTrackHubConnection(pluginManager) {
   return types.compose(
     'UCSCTrackHubConnection',
     BaseConnectionModelFactory(pluginManager),
@@ -29,64 +29,87 @@ export default function (pluginManager) {
             self.configuration,
             'hubTxtLocation',
           )
-          const assemblyName = readConfObject(
-            self.configuration,
-            'assemblyName',
-          )
           const session = getSession(self)
-          const assemblyConf = session.assemblies.find(
-            assembly => readConfObject(assembly, 'name') === assemblyName,
-          )
           fetchHubFile(hubFileLocation)
             .then(hubFile => {
               let genomesFileLocation
-              if (hubFileLocation.uri)
+              if (hubFileLocation.uri) {
                 genomesFileLocation = {
                   uri: new URL(hubFile.get('genomesFile'), hubFileLocation.uri)
                     .href,
                 }
-              else
+              } else {
                 genomesFileLocation = { localPath: hubFile.get('genomesFile') }
+              }
               return Promise.all([
                 hubFile,
                 fetchGenomesFile(genomesFileLocation),
               ])
             })
             .then(([hubFile, genomesFile]) => {
-              if (!genomesFile.has(assemblyName))
-                throw new Error(
-                  `Assembly "${assemblyName}" not in genomes file from connection "${connectionName}"`,
+              const trackDbData = []
+              for (const [genomeName, genome] of genomesFile) {
+                const assemblyNames = readConfObject(
+                  self.configuration,
+                  'assemblyNames',
                 )
-              // const twoBitPath = genomesFile.get(assemblyName).get('twoBitPath')
-              let trackDbFileLocation
-              if (hubFileLocation.uri)
-                trackDbFileLocation = {
-                  uri: new URL(
-                    genomesFile.get(assemblyName).get('trackDb'),
-                    new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
-                  ).href,
+                if (
+                  assemblyNames.length > 0 &&
+                  !assemblyNames.includes(genomeName)
+                ) {
+                  break
                 }
-              else
-                trackDbFileLocation = {
-                  localPath: genomesFile.get(assemblyName).get('trackDb'),
+                const assemblyConf = session.assemblies.find(
+                  assembly => readConfObject(assembly, 'name') === genomeName,
+                )
+                if (!assemblyConf) {
+                  throw new Error(
+                    `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
+                  )
                 }
-              return Promise.all([
-                trackDbFileLocation,
-                fetchTrackDbFile(trackDbFileLocation),
-              ])
+                let trackDbFileLocation
+                if (hubFileLocation.uri) {
+                  trackDbFileLocation = {
+                    uri: new URL(
+                      genome.get('trackDb'),
+                      new URL(hubFile.get('genomesFile'), hubFileLocation.uri),
+                    ).href,
+                  }
+                } else {
+                  trackDbFileLocation = {
+                    localPath: genome.get('trackDb'),
+                  }
+                }
+                trackDbData.push(
+                  Promise.all([
+                    trackDbFileLocation,
+                    fetchTrackDbFile(trackDbFileLocation),
+                    genomeName,
+                    assemblyConf,
+                  ]),
+                )
+              }
+              return Promise.all([...trackDbData])
             })
-            .then(([trackDbFileLocation, trackDbFile]) => {
-              const sequenceAdapter = readConfObject(assemblyConf, [
-                'sequence',
-                'adapter',
-              ])
-              const tracks = generateTracks(
-                trackDbFile,
+            .then(trackDbData => {
+              for (const [
                 trackDbFileLocation,
-                assemblyName,
-                sequenceAdapter,
-              )
-              self.setTrackConfs(tracks)
+                trackDbFile,
+                genomeName,
+                assemblyConf,
+              ] of trackDbData) {
+                const sequenceAdapter = readConfObject(assemblyConf, [
+                  'sequence',
+                  'adapter',
+                ])
+                const tracks = generateTracks(
+                  trackDbFile,
+                  trackDbFileLocation,
+                  genomeName,
+                  sequenceAdapter,
+                )
+                self.addTrackConfs(tracks)
+              }
             })
             .catch(error => {
               console.error(error)

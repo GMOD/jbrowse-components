@@ -95,19 +95,27 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-export default observer(({ model }: { model: LGV }) => {
+const RegionWidth = observer(({ model }: { model: LGV }) => {
+  const classes = useStyles()
+  const { coarseTotalBp } = model
+  return (
+    <Typography variant="body2" color="textSecondary" className={classes.bp}>
+      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
+    </Typography>
+  )
+})
+
+const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const theme = useTheme()
   const session = getSession(model)
   const { assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
-
   const { coarseDynamicBlocks: contentBlocks, displayedRegions } = model
   const { assemblyName, refName } = contentBlocks[0] || { refName: '' }
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions = (assembly && assembly.regions) || []
-
   async function setDisplayedRegion(result: BaseResult) {
     if (result) {
       const newRegionValue = result.getLocation()
@@ -181,12 +189,4 @@ export default observer(({ model }: { model: LGV }) => {
   return <OverviewScaleBar model={model}>{controls}</OverviewScaleBar>
 })
 
-const RegionWidth = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const { coarseTotalBp } = model
-  return (
-    <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {`${Math.round(coarseTotalBp).toLocaleString('en-US')} bp`}
-    </Typography>
-  )
-})
+export default LinearGenomeViewHeader

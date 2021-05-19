@@ -101,6 +101,7 @@ const StringArrayEditor = observer(({ slot }) => {
                     }}
                     disabled={value === ''}
                     color="secondary"
+                    data-testid={`stringArrayAdd-${slot.name}`}
                   >
                     <AddIcon />
                   </IconButton>
@@ -392,8 +393,9 @@ const SlotEditor = observer(({ slot, slotSchema }) => {
     console.warn(`no slot editor defined for ${type}, editing as string`)
     ValueComponent = StringEditor
   }
-  if (!(type in valueComponents))
+  if (!(type in valueComponents)) {
     console.warn(`SlotEditor needs to implement ${type}`)
+  }
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>

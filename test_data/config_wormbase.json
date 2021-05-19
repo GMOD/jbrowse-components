@@ -1,0 +1,47 @@
+{
+  "assemblies": [
+    {
+      "name": "C. elegans (N2)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GCF_000002985.6_WBcel235_genomic-ReferenceSequenceTrack",
+        "metadata": {
+          "source": "https://www.ncbi.nlm.nih.gov/assembly/GCF_000002985.6/",
+          "strain": "Bristol N2"
+        },
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/wormbase/c_elegans/fasta/GCF_000002985.6_WBcel235_genomic.fa.gz.gzi"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/wormbase/ce_aliases.txt"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "type": "JBrowse1Connection",
+      "connectionId": "JBrowse1Connection-GCF_000002985.6_WBcel235_genomic-1616618478254",
+      "name": "wormbase",
+      "assemblyNames": ["C. elegans (N2)"],
+      "dataDirLocation": {
+        "uri": "https://wormbase.org/tools/genome/jbrowse-simple/data/c_elegans_PRJNA13758"
+      }
+    }
+  ]
+}

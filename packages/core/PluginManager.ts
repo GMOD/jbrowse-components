@@ -83,15 +83,23 @@ type PluggableElementTypeGroup =
 class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: { [name: string]: ElementClass } = {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  baseClass: { new (...args: any[]): ElementClass }
+  baseClass: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { new (...args: any[]): ElementClass }
+    // covers abstract class case
+    | (Function & {
+        prototype: ElementClass
+      })
 
   typeName: string
 
   constructor(
     typeName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    elementType: { new (...args: any[]): ElementClass },
+    elementType: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    | { new (...args: any[]): ElementClass }
+      // covers abstract class case
+      | (Function & {
+          prototype: ElementClass
+        }),
   ) {
     this.typeName = typeName
     this.baseClass = elementType
@@ -106,10 +114,11 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name))
+    if (!this.has(name)) {
       throw new Error(
         `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
       )
+    }
     return this.registeredTypes[name]
   }
 
@@ -237,7 +246,9 @@ export default class PluginManager {
   }
 
   configure() {
-    if (this.configured) throw new Error('already configured')
+    if (this.configured) {
+      throw new Error('already configured')
+    }
 
     this.plugins.forEach(plugin => plugin.configure(this))
 
@@ -288,8 +299,9 @@ export default class PluginManager {
 
     this.elementCreationSchedule.add(groupName, () => {
       const newElement = creationCallback(this)
-      if (!newElement.name)
+      if (!newElement.name) {
         throw new Error(`cannot add a ${groupName} with no name`)
+      }
 
       if (typeRecord.has(newElement.name)) {
         throw new Error(
@@ -328,7 +340,9 @@ export default class PluginManager {
           pluggableTypes.push(thing)
         }
       })
-    // try to smooth over the case when no types are registered, mostly encountered in tests
+
+    // try to smooth over the case when no types are registered, mostly
+    // encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
         `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}')`,
@@ -352,8 +366,9 @@ export default class PluginManager {
           pluggableTypes.push(thing)
         }
       })
-    if (pluggableTypes.length === 0)
+    if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
+    }
     return types.union(...pluggableTypes)
   }
 
@@ -362,7 +377,9 @@ export default class PluginManager {
   lib = ReExports
 
   load = <FTYPE extends AnyFunction>(lib: FTYPE): ReturnType<FTYPE> => {
-    if (!this.jbrequireCache.has(lib)) this.jbrequireCache.set(lib, lib(this))
+    if (!this.jbrequireCache.has(lib)) {
+      this.jbrequireCache.set(lib, lib(this))
+    }
     return this.jbrequireCache.get(lib)
   }
 
@@ -390,7 +407,9 @@ export default class PluginManager {
       return this.load(lib)
     }
 
-    if (lib.default) return this.jbrequire(lib.default)
+    if (lib.default) {
+      return this.jbrequire(lib.default)
+    }
 
     throw new TypeError(
       'lib passed to jbrequire must be either a string or a function',

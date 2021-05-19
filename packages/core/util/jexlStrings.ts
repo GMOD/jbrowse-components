@@ -3,7 +3,7 @@ import createJexlInstance from './jexl'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const compilationCache: Record<string, any> = {}
 
-// revert function strings back to master, create a different file for jexlStrings.ts
+// revert function strings back to main, create a different file for jexlStrings.ts
 // pass the jexl property of the pluginManager as a param
 
 /**
@@ -17,7 +17,7 @@ export function stringToJexlExpression(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl?: any,
 ) {
-  const cacheKey = `${'nosig'}|${str}`
+  const cacheKey = `nosig|${str}`
   if (!compilationCache[cacheKey]) {
     const match = str.startsWith('jexl:')
     if (!match) {
@@ -30,6 +30,5 @@ export function stringToJexlExpression(
     compilationCache[cacheKey] = compiled
   }
 
-  const expr = compilationCache[cacheKey]
-  return expr
+  return compilationCache[cacheKey]
 }

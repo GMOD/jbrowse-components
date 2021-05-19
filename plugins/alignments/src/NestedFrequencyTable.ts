@@ -1,4 +1,4 @@
-/* eslint-disable guard-for-in,@typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // see perf results on object.keys vs for-in loop
 // https://jsperf.com/object-keys-vs-hasownproperty/55
 export default class NestedFrequencyTable {

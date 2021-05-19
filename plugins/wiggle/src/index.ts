@@ -12,8 +12,8 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
 import {
-  AdapterClass as BigWigAdapterClass,
   configSchema as bigWigAdapterConfigSchema,
+  adapterCapabilities,
 } from './BigWigAdapter'
 import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
@@ -39,7 +39,7 @@ import {
   WiggleGetMultiRegionStats,
 } from './WiggleRPC/rpcMethods'
 
-export default class extends Plugin {
+export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
 
   install(pluginManager: PluginManager) {
@@ -80,7 +80,9 @@ export default class extends Plugin {
         new AdapterType({
           name: 'BigWigAdapter',
           configSchema: bigWigAdapterConfigSchema,
-          AdapterClass: BigWigAdapterClass,
+          adapterCapabilities,
+          getAdapterClass: () =>
+            import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),
     )
 
@@ -123,6 +125,8 @@ export default class extends Plugin {
   exports = {
     LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
+    XYPlotRenderer,
+    xyPlotRendererConfigSchema,
     utils,
     WiggleBaseRenderer,
     linearWiggleDisplayModelFactory,

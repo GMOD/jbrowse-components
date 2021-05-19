@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   NotificationLevel,
   AbstractSessionModel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -22,7 +24,10 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
+import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -38,8 +43,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
-      connectionInstances: types.map(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+      connectionInstances: types.array(
+        pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
     })
     .volatile((/* self */) => ({
@@ -55,6 +60,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
+
+      DialogComponent: undefined as DialogComponentType | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get rpcManager() {
@@ -91,11 +99,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
-        if (isAlive(self))
+        if (isAlive(self)) {
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
             self.activeWidgets.size - 1
           ]
+        }
         return undefined
       },
       /**
@@ -122,29 +131,31 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setDialogComponent(comp?: DialogComponentType, props?: any) {
+        self.DialogComponent = comp
+        self.DialogProps = props
+      },
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
         const { type } = configuration
-        if (!type) throw new Error('track configuration has no `type` listed')
+        if (!type) {
+          throw new Error('track configuration has no `type` listed')
+        }
         const name = readConfObject(configuration, 'name')
         const connectionType = pluginManager.getConnectionType(type)
-        if (!connectionType) throw new Error(`unknown connection type ${type}`)
-        const assemblyName = readConfObject(configuration, 'assemblyName')
+        if (!connectionType) {
+          throw new Error(`unknown connection type ${type}`)
+        }
         const connectionData = {
           ...initialSnapshot,
           name,
           type,
           configuration,
         }
-        if (!self.connectionInstances.has(assemblyName))
-          self.connectionInstances.set(assemblyName, [])
-        const assemblyConnections = self.connectionInstances.get(assemblyName)
-        if (!assemblyConnections)
-          throw new Error(`assembly ${assemblyName} not found`)
-        const length = assemblyConnections.push(connectionData)
-        return assemblyConnections[length - 1]
+        const length = self.connectionInstances.push(connectionData)
+        return self.connectionInstances[length - 1]
       },
 
       removeReferring(
@@ -175,15 +186,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
-          if (!dereferenced)
+          if (!dereferenced) {
             throw new Error(
               `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
+          }
         })
       },
 
@@ -191,10 +205,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const assemblyConnections =
-          self.connectionInstances.get(assemblyName) || []
-        const connection = assemblyConnections.find(c => c.name === name)
+        const connection = self.connectionInstances.find(c => c.name === name)
         connection.tracks.forEach((track: any) => {
           const referring = self.getReferring(track)
           this.removeReferring(
@@ -213,17 +224,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
-        const assemblyName = readConfObject(configuration, 'assemblyName')
-        const connectionInstances = self.connectionInstances.get(assemblyName)
-        if (!connectionInstances)
-          throw new Error(`connections for ${assemblyName} not found`)
-        const connection = connectionInstances.find(c => c.name === name)
-        connectionInstances.remove(connection)
+        const connection = self.connectionInstances.find(c => c.name === name)
+        self.connectionInstances.remove(connection)
       },
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         self.view = {
           ...initialState,
@@ -240,7 +249,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -252,8 +263,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
+        if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
+        }
         self.activeWidgets.set(widget.id, widget)
       },
 
@@ -286,11 +298,24 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       clearConnections() {
-        self.connectionInstances.clear()
+        self.connectionInstances.length = 0
       },
 
       renameCurrentSession(sessionName: string) {
         return getParent(self).renameCurrentSession(sessionName)
+      },
+    }))
+    .views(self => ({
+      getTrackActionMenuItems(config: any) {
+        return [
+          {
+            label: 'About track',
+            onClick: () => {
+              self.setDialogComponent(AboutDialog, { config })
+            },
+            icon: InfoIcon,
+          },
+        ]
       },
     }))
     .extend(() => {
@@ -320,11 +345,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
+export type SessionModel = Instance<SessionStateModel>
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// @ts-ignore
 function z(x: Instance<SessionStateModel>): AbstractSessionModel {
-  /* eslint-enable @typescript-eslint/no-unused-vars */
   // this function's sole purpose is to get typescript to check
   // that the session model implements all of AbstractSessionModel
   return x

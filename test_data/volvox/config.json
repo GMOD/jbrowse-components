@@ -282,7 +282,11 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_alignments_alignments",
-          "defaultRendering": "svg"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "defaultRendering": "svg"
+          }
         }
       ]
     },
@@ -373,7 +377,11 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_altname_alignments",
-          "defaultRendering": "svg"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_altname_alignments_pileup",
+            "defaultRendering": "svg"
+          }
         }
       ]
     },
@@ -398,13 +406,14 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "renderers": {
-            "PileupRenderer": {
-              "type": "PileupRenderer",
-              "maxHeight": 10
-            },
-            "SvgFeatureRenderer": {
-              "type": "SvgFeatureRenderer"
+          "pileupDisplay": {
+            "type": "LinearPileupDisplay",
+            "displayId": "volvox_bam_small_max_height_alignments_pileup",
+            "renderers": {
+              "PileupRenderer": {
+                "type": "PileupRenderer",
+                "maxHeight": 10
+              }
             }
           }
         }
@@ -481,7 +490,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_bigwig_nonexist",
       "name": "wiggle_track 404",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -494,7 +503,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray",
       "name": "wiggle_track xyplot",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -507,7 +516,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_line",
       "name": "wiggle_track lineplot",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -527,7 +536,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_density",
       "name": "wiggle_track density",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -547,7 +556,7 @@
       "type": "QuantitativeTrack",
       "trackId": "volvox_microarray_density_altname",
       "name": "wiggle_track density (altname)",
-      "category": ["Integration test"],
+      "category": ["Integration test", "Wiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
@@ -915,6 +924,24 @@
       }
     },
     {
+      "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_assembly_alias",
+      "name": "volvox filtered vcf (with assembly alias)",
+      "assemblyNames": ["vvx"],
+      "category": ["VCF"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
@@ -1234,10 +1261,110 @@
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
-            "color1": "jexl:feature|getData('type')=='SNV'?'green':'purple'"
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
           }
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-chebi-volvox",
+      "name": "MM-chebi-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-chebi-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-chebi-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-double-volvox",
+      "name": "MM-double-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-double-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-double-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-multi-volvox",
+      "name": "MM-multi-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-multi-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-multi-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-orient-volvox",
+      "name": "MM-orient-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-orient-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-orient-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {

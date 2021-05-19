@@ -22,7 +22,7 @@ import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
 
-export default [
+const corePlugins = [
   SVG,
   LinearGenomeView,
   Alignments,
@@ -47,3 +47,5 @@ export default [
   BreakpointSplitView,
   HicPlugin,
 ]
+
+export default corePlugins

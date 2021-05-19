@@ -8,7 +8,9 @@ describe('test JBrowse1 hash implementation', () => {
   test('read from meta', async () => {
     function mockFetch(url: string): Promise<Response> {
       let response = {}
-      if (url.includes('names/meta.json')) response = meta
+      if (url.includes('names/meta.json')) {
+        response = meta
+      }
       return Promise.resolve(new Response(JSON.stringify(response)))
     }
     const rootTemplate = path
@@ -37,9 +39,15 @@ describe('test JBrowse1 hash implementation', () => {
   test('get bucket contents', async () => {
     function mockFetch(url: string): Promise<Response> {
       let response = {}
-      if (url.includes('names/meta.json')) response = meta
-      if (url.includes('names/0.json')) response = first
-      if (url.includes('names/f.json')) response = last
+      if (url.includes('names/meta.json')) {
+        response = meta
+      }
+      if (url.includes('names/0.json')) {
+        response = first
+      }
+      if (url.includes('names/f.json')) {
+        response = last
+      }
       return Promise.resolve(new Response(JSON.stringify(response)))
     }
     const rootTemplate = path

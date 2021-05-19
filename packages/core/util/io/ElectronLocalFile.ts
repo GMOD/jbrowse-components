@@ -5,7 +5,9 @@ declare global {
     electron?: import('electron').AllElectron
   }
 }
-const { electron } = window
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { electron } = typeof window !== 'undefined' ? window : ({} as any)
 
 type PathLike = import('fs').PathLike
 type Stats = import('fs').Stats
@@ -19,21 +21,27 @@ export default class ElectronLocalFile implements GenericFilehandle {
 
   constructor(source: PathLike) {
     let ipcRenderer
-    if (electron) ipcRenderer = electron.ipcRenderer
-    if (!ipcRenderer)
+    if (electron) {
+      ipcRenderer = electron.ipcRenderer
+    }
+    if (!ipcRenderer) {
       throw new Error(
         'Cannot use ElectronLocalFile without ipcRenderer from electron',
       )
+    }
     this.ipcRenderer = ipcRenderer
     this.filename = source
   }
 
   private async getFd(): Promise<number> {
-    if (!this.filename) throw new Error('no file path specified')
-    if (!this.fd)
+    if (!this.filename) {
+      throw new Error('no file path specified')
+    }
+    if (!this.fd) {
       this.fd = this.ipcRenderer.invoke('open', this.filename, 'r') as Promise<
         number
       >
+    }
     return this.fd
   }
 
@@ -62,7 +70,9 @@ export default class ElectronLocalFile implements GenericFilehandle {
   }
 
   async readFile(_: FilehandleOptions = {}): Promise<Buffer | string> {
-    if (!this.filename) throw new Error('no file path specified')
+    if (!this.filename) {
+      throw new Error('no file path specified')
+    }
 
     const result = await this.ipcRenderer.invoke('readFile', this.filename)
 

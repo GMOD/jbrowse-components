@@ -42,7 +42,7 @@ function defaultOnChordClick(feature, chordTrack, pluginManager) {
   session.addView('BreakpointSplitView', viewSnapshot)
 }
 
-export default pluginManager => {
+const SvInspectorViewF = pluginManager => {
   const { jbrequire } = pluginManager
   const { autorun, reaction } = pluginManager.lib.mobx
   const { types, getParent, addDisposer, getSnapshot } = pluginManager.lib[
@@ -117,7 +117,9 @@ export default pluginManager => {
 
       get assemblyName() {
         const { assembly } = self.spreadsheetView
-        if (assembly) return readConfObject(assembly, 'name')
+        if (assembly) {
+          return readConfObject(assembly, 'name')
+        }
         return undefined
       },
 
@@ -283,7 +285,9 @@ export default pluginManager => {
               assemblyName: self && self.assemblyName,
             }),
             data => {
-              if (!data) return
+              if (!data) {
+                return
+              }
               const { assemblyName, generatedTrackConf } = data
               // hide any visible tracks
               if (self.circularView.tracks.length) {
@@ -345,8 +349,11 @@ export default pluginManager => {
         self.width = newWidth
       },
       setHeight(newHeight) {
-        if (newHeight > minHeight) self.height = newHeight
-        else self.height = minHeight
+        if (newHeight > minHeight) {
+          self.height = newHeight
+        } else {
+          self.height = minHeight
+        }
         return self.height
       },
       resizeHeight(distance) {
@@ -380,3 +387,5 @@ export default pluginManager => {
 
   return { stateModel }
 }
+
+export default SvInspectorViewF

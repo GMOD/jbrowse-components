@@ -10,43 +10,57 @@ import Stick from './Stick'
 function LollipopRendering(props) {
   const onMouseDown = event => {
     const { onMouseDown: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseUp = event => {
     const { onMouseUp: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseEnter = event => {
     const { onMouseEnter: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseLeave = event => {
     const { onMouseLeave: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseOver = event => {
     const { onMouseOver: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onMouseOut = event => {
     const { onMouseOut: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
   const onClick = event => {
     const { onClick: handler } = props
-    if (!handler) return undefined
+    if (!handler) {
+      return undefined
+    }
     return handler(event)
   }
 
@@ -57,12 +71,13 @@ function LollipopRendering(props) {
     const centerPx = bpToPx(centerBp, region, bpPerPx)
     const radiusPx = readConfObject(args.config, 'radius', { feature })
 
-    if (!radiusPx)
+    if (!radiusPx) {
       console.error(
         new Error(
           `lollipop radius ${radiusPx} configured for feature ${feature.id()}`,
         ),
       )
+    }
     layout.add(feature.id(), centerPx, radiusPx * 2, radiusPx * 2, {
       featureId: feature.id(),
       anchorX: centerPx,

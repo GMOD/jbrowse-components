@@ -1,15 +1,14 @@
-/* eslint-disable react/require-default-props */
 import React, { useRef, useEffect } from 'react'
 import { getParent, isStateTreeNode } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import { ImageBitmapType } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { BreakpointSplitRenderingProps } from '../BreakpointSplitRenderer'
+import { RenderArgsDeserializedWithImageData } from '../BreakpointSplitRenderer'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function BreakpointSplitRendering(props: BreakpointSplitRenderingProps) {
+function BreakpointSplitRendering(props: RenderArgsDeserializedWithImageData) {
   const {
     displayModel = {},
     width,

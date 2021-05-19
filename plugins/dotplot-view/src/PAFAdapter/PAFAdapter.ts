@@ -60,15 +60,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       if (line.length) {
         const [
           chr1,
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           queryRefSeqLen,
           start1,
           end1,
           strand,
           chr2,
-          // @ts-ignore
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           targetRefSeqLen,
           start2,
           end2,

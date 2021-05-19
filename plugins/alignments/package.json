@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-alignments",
-  "version": "1.0.4",
+  "version": "1.2.0",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -41,7 +41,7 @@
     "abortable-promise-cache": "^1.1.3",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",
-    "deep-equal": "^2.0.3",
+    "fast-deep-equal": "^3.1.3",
     "generic-filehandle": "^2.0.0",
     "json-stable-stringify": "^1.0.1",
     "react-d3-axis": "^0.1.2"
@@ -55,7 +55,7 @@
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0",
+    "react": ">=16.8.0",
     "rxjs": "^6.0.0"
   },
   "publishConfig": {

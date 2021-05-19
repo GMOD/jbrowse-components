@@ -1,6 +1,6 @@
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
-export default pluginManager => {
+const SvInspectorComponentF = pluginManager => {
   const { jbrequire } = pluginManager
   const { observer, PropTypes } = jbrequire('mobx-react')
   const React = jbrequire('react')
@@ -53,6 +53,7 @@ export default pluginManager => {
   })
 
   const ViewControls = observer(({ model }) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const classes = useStyles()
     return (
       <Grid
@@ -78,6 +79,7 @@ export default pluginManager => {
   })
 
   const CircularViewOptions = observer(({ svInspector }) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const classes = useStyles()
 
     return (
@@ -168,3 +170,5 @@ export default pluginManager => {
   }
   return observer(SvInspectorView)
 }
+
+export default SvInspectorComponentF

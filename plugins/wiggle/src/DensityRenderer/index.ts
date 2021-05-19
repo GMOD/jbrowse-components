@@ -8,13 +8,16 @@ import { getScale } from '../util'
 
 import ConfigSchema from '../configSchema'
 import WiggleBaseRenderer, {
-  WiggleBaseRendererProps,
+  RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 
 export { default as ReactComponent } from '../WiggleRendering'
 
-export default class extends WiggleBaseRenderer {
-  draw(ctx: CanvasRenderingContext2D, props: WiggleBaseRendererProps) {
+export default class DensityRenderer extends WiggleBaseRenderer {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
     const { features, regions, bpPerPx, scaleOpts, height, config } = props
     const [region] = regions
     const pivot = readConfObject(config, 'bicolorPivot')

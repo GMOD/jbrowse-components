@@ -49,7 +49,9 @@ export default class FromConfigRegionsAdapter
         ) {
           currentRegion.end = feature.get('end')
         } else {
-          if (currentRegion) regions.push(currentRegion)
+          if (currentRegion) {
+            regions.push(currentRegion)
+          }
           currentRegion = {
             refName,
             start: feature.get('start'),
@@ -57,7 +59,9 @@ export default class FromConfigRegionsAdapter
           }
         }
       }
-      if (currentRegion) regions.push(currentRegion)
+      if (currentRegion) {
+        regions.push(currentRegion)
+      }
     }
 
     // sort the regions by refName

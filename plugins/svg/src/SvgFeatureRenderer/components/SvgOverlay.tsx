@@ -193,7 +193,9 @@ function SvgOverlay({
   }
 
   function onFeatureClick(event: React.MouseEvent<SVGRectElement, MouseEvent>) {
-    if (movedDuringLastMouseDown) return undefined
+    if (movedDuringLastMouseDown) {
+      return undefined
+    }
     const { onFeatureClick: handler } = handlers
     if (!(handler && mouseoverFeatureId)) {
       return undefined
@@ -209,7 +211,6 @@ function SvgOverlay({
     if (!(handler && mouseoverFeatureId)) {
       return undefined
     }
-    event.stopPropagation()
     return handler(event, mouseoverFeatureId)
   }
 

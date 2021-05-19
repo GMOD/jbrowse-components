@@ -7,7 +7,7 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentLink": "https://s3.amazonaws.com/jbrowse.org/code/jb2/v1.0.4/index.html"
+    "currentVersion": "v1.2.0"
   },
   "themeConfig": {
     "colorMode": {
@@ -29,6 +29,16 @@
         {
           "to": "blog",
           "label": "Blog",
+          "position": "left"
+        },
+        {
+          "to": "download",
+          "label": "Download",
+          "position": "left"
+        },
+        {
+          "to": "plugin_store",
+          "label": "Plugins",
           "position": "left"
         },
         {

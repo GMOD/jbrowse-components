@@ -147,9 +147,14 @@ export function findParentThat(
 ) {
   let currentNode: IAnyStateTreeNode | undefined = node
   while (currentNode && isAlive(currentNode)) {
-    if (predicate(currentNode)) return currentNode
-    if (hasParent(currentNode)) currentNode = getParent(currentNode)
-    else break
+    if (predicate(currentNode)) {
+      return currentNode
+    }
+    if (hasParent(currentNode)) {
+      currentNode = getParent(currentNode)
+    } else {
+      break
+    }
   }
   throw new Error('no matching node found')
 }
@@ -466,21 +471,29 @@ export function compareLocs(locA: ParsedLocString, locB: ParsedLocString) {
     locA.assemblyName || locB.assemblyName
       ? (locA.assemblyName || '').localeCompare(locB.assemblyName || '')
       : 0
-  if (assemblyComp) return assemblyComp
+  if (assemblyComp) {
+    return assemblyComp
+  }
 
   const refComp =
     locA.refName || locB.refName
       ? (locA.refName || '').localeCompare(locB.refName || '')
       : 0
-  if (refComp) return refComp
+  if (refComp) {
+    return refComp
+  }
 
   if (locA.start !== undefined && locB.start !== undefined) {
     const startComp = locA.start - locB.start
-    if (startComp) return startComp
+    if (startComp) {
+      return startComp
+    }
   }
   if (locA.end !== undefined && locB.end !== undefined) {
     const endComp = locA.end - locB.end
-    if (endComp) return endComp
+    if (endComp) {
+      return endComp
+    }
   }
   return 0
 }
@@ -503,8 +516,12 @@ export function compareLocStrings(
  * @param  max -
  */
 export function clamp(num: number, min: number, max: number): number {
-  if (num < min) return min
-  if (num > max) return max
+  if (num < min) {
+    return min
+  }
+  if (num > max) {
+    return max
+  }
   return num
 }
 
@@ -610,8 +627,11 @@ interface Config {
 // similar to electron.js
 export function mergeConfigs(A: Config, B: Config) {
   const merged = merge(A, B)
-  if (B.defaultSession) merged.defaultSession = B.defaultSession
-  else if (A.defaultSession) merged.defaultSession = A.defaultSession
+  if (B.defaultSession) {
+    merged.defaultSession = B.defaultSession
+  } else if (A.defaultSession) {
+    merged.defaultSession = A.defaultSession
+  }
   return merged
 }
 
@@ -714,8 +734,9 @@ export function makeAbortableReaction<T, U, V>(
           successFunction(result)
         }
       } catch (error) {
-        if (thisInProgress && !thisInProgress.signal.aborted)
+        if (thisInProgress && !thisInProgress.signal.aborted) {
           thisInProgress.abort()
+        }
         handleError(error)
       }
     },
@@ -860,14 +881,31 @@ export const complement = (() => {
   }
 })()
 
+export function blobToDataURL(blob: Blob) {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsDataURL(blob)
+  })
+}
+
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
 // get the contents of the canvas
 export const rIC =
-  window.requestIdleCallback ||
-  (typeof jest === 'undefined'
-    ? (cb: Function) => setTimeout(() => cb(), 1)
-    : (cb: Function) => cb())
+  typeof jest === 'undefined'
+    ? // @ts-ignore
+      typeof window !== 'undefined' && window.requestIdleCallback
+      ? // @ts-ignore
+        window.requestIdleCallback
+      : (cb: Function) => setTimeout(() => cb(), 1)
+    : (cb: Function) => cb()
 
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: string, fontSize = 10) {
@@ -982,4 +1020,36 @@ export function generateCodonTable(table: any) {
     }
   })
   return tempCodonTable
+}
+
+// call statusCallback with current status and clear when finished
+export async function updateStatus(
+  statusMsg: string,
+  statusCallback: Function,
+  fn: Function,
+) {
+  statusCallback(statusMsg)
+  const result = await fn()
+  statusCallback('')
+  return result
+}
+
+export function hashCode(str: string) {
+  let hash = 0
+  let i
+  let chr
+  if (str.length === 0) {
+    return hash
+  }
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i)
+    hash = (hash << 5) - hash + chr
+    hash |= 0 // Convert to 32bit integer
+  }
+  return hash
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function objectHash(obj: Record<string, any>) {
+  return `${hashCode(JSON.stringify(obj))}`
 }

@@ -207,10 +207,11 @@ export default function assemblyFactory(
         return self.refNameColors[idx % self.refNameColors.length]
       },
       isValidRefName(refName: string) {
-        if (!self.refNameAliases)
+        if (!self.refNameAliases) {
           throw new Error(
             'isValidRefName cannot be called yet, the assembly has not finished loading',
           )
+        }
         return !!this.getCanonicalRefName(refName)
       },
     }))
@@ -330,9 +331,12 @@ async function loadAssemblyReaction(
   const dataAdapterType = pluginManager.getAdapterType(
     sequenceAdapterConfig.type,
   )
-  const adapter = new dataAdapterType.AdapterClass(
-    sequenceAdapterConfig,
-  ) as RegionsAdapter
+  const { AdapterClass, getAdapterClass } = dataAdapterType
+  const CLASS = AdapterClass || (await getAdapterClass?.())
+  if (!CLASS) {
+    throw new Error('Failed to get adapter class')
+  }
+  const adapter = new CLASS(sequenceAdapterConfig) as RegionsAdapter
   const adapterRegions = (await adapter.getRegions({ signal })) as Region[]
 
   const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
@@ -345,7 +349,15 @@ async function loadAssemblyReaction(
     const refAliasAdapterType = pluginManager.getAdapterType(
       refNameAliasesAdapterConfig.type,
     )
-    const refNameAliasAdapter = new refAliasAdapterType.AdapterClass(
+    const {
+      AdapterClass: RefAdapterClass,
+      getAdapterClass: getRefAdapterClass,
+    } = refAliasAdapterType
+    const REFCLASS = RefAdapterClass || (await getRefAdapterClass?.())
+    if (!REFCLASS) {
+      throw new Error('Failed to get REFCLASS')
+    }
+    const refNameAliasAdapter = new REFCLASS(
       refNameAliasesAdapterConfig,
     ) as BaseRefNameAliasAdapter
     const refNameAliasesList = (await refNameAliasAdapter.getRefNameAliases({
@@ -367,7 +379,6 @@ async function loadAssemblyReaction(
   adapterRegionsWithAssembly.forEach(region => {
     refNameAliases[region.refName] = region.refName
   })
-  // eslint-disable-next-line consistent-return
   return { adapterRegionsWithAssembly, refNameAliases }
 }
 export type Assembly = Instance<ReturnType<typeof assemblyFactory>>

@@ -84,7 +84,9 @@ function dataToSpreadsheetSnapshot(
     isLoaded: true,
     rows: rows.map((row, rowNumber) => {
       const id = rowNumber + (options.hasColumnNameLine ? 0 : 1)
-      if (row.length > maxCols) maxCols = row.length
+      if (row.length > maxCols) {
+        maxCols = row.length
+      }
       return {
         id: String(id),
         cells: row.map((text, columnNumber) => {

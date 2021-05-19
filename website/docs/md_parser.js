@@ -1,4 +1,4 @@
-/* eslint-disable no-console,no-continue */
+/* eslint-disable no-console */
 const readline = require('readline')
 
 const rl = readline.createInterface({
@@ -11,10 +11,14 @@ let topLevel = false
 
 ;(async () => {
   for await (const line of rl) {
+    if (line.startsWith('import Figure')) {
+      continue
+    }
     if (!readingHeader && line === '---') {
       readingHeader = true
       continue
     }
+
     if (readingHeader && line.startsWith('title')) {
       title = line.replace('title: ', '')
       continue
@@ -32,8 +36,11 @@ let topLevel = false
       continue
     }
     if (readingHeader === false) {
-      if (line.startsWith('#')) console.log(`#${line}`)
-      else console.log(line)
+      if (line.startsWith('#')) {
+        console.log(`#${line}`)
+      } else {
+        console.log(line)
+      }
     }
   }
 })()

@@ -14,16 +14,30 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@material-ui/data-grid'
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 import { getEnv } from 'mobx-state-tree'
 import {
   FeatureDetails,
   BaseCard,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { getSession } from '@jbrowse/core/util'
+import BreakendOptionDialog from './BreakendOptionDialog'
+import { Breakend } from '../VcfTabixAdapter/VcfFeature'
+
+// from vcf-js
+function toString(feat: string | Breakend) {
+  if (typeof feat === 'string') {
+    return feat
+  }
+  const char = feat.MateDirection === 'left' ? ']' : '['
+  if (feat.Join === 'left') {
+    return `${char}${feat.MatePosition}${char}${feat.Replacement}`
+  }
+  return `${feat.Replacement}${char}${feat.MatePosition}${char}`
+}
 
 function VariantSamples(props: any) {
   const [filter, setFilter] = useState<any>({})
-  const [showFilters, setShowFilters] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
   const { feature } = props
 
   const { samples = {} } = feature
@@ -57,14 +71,15 @@ function VariantSamples(props: any) {
           ? filters.every(key => {
               const val = row[key]
               const currFilter = filter[key]
-              return currFilter ? val.match(currFilter) : true
+              return currFilter ? val.match(new RegExp(currFilter, 'i')) : true
             })
           : true
       })
   } catch (e) {
     error = e
   }
-
+  // disableSelectionOnClick helps avoid
+  // https://github.com/mui-org/material-ui-x/issues/1197
   return (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
@@ -106,6 +121,7 @@ function VariantSamples(props: any) {
           columns={infoFields}
           rowHeight={20}
           headerHeight={25}
+          disableSelectionOnClick
           disableColumnMenu
         />
       </div>
@@ -121,12 +137,15 @@ function BreakendPanel(props: {
   const { model, locStrings, feature } = props
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
+  const [breakpointDialog, setBreakpointDialog] = useState(false)
   let viewType: any
   try {
     viewType = pluginManager.getViewType('BreakpointSplitView')
   } catch (e) {
     // plugin not added
   }
+
+  const simpleFeature = new SimpleFeature(feature)
   return (
     <BaseCard {...props} title="Breakends">
       <Typography>Link to linear view of breakend endpoints</Typography>
@@ -166,16 +185,7 @@ function BreakendPanel(props: {
                   <Link
                     href="#"
                     onClick={() => {
-                      const { view } = model
-                      // @ts-ignore
-                      const viewSnapshot = viewType.snapshotFromBreakendFeature(
-                        new SimpleFeature(feature),
-                        view,
-                      )
-                      viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
-                      viewSnapshot.featureData = feature
-                      session.addView('BreakpointSplitView', viewSnapshot)
+                      setBreakpointDialog(true)
                     }}
                   >
                     {`${feature.refName}:${feature.start} // ${locString} (split view)`}
@@ -184,6 +194,16 @@ function BreakendPanel(props: {
               )
             })}
           </ul>
+          {breakpointDialog ? (
+            <BreakendOptionDialog
+              model={model}
+              feature={simpleFeature}
+              viewType={viewType}
+              handleClose={() => {
+                setBreakpointDialog(false)
+              }}
+            />
+          ) : null}
         </>
       ) : null}
     </BaseCard>
@@ -192,9 +212,10 @@ function BreakendPanel(props: {
 
 function VariantFeatureDetails(props: any) {
   const { model } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
+  const { featureData, descriptions } = model
+  const feat = JSON.parse(JSON.stringify(featureData))
   const { samples, ...rest } = feat
-  const descriptions = {
+  const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
     POS:
       'position: The reference position, with the 1st base having position 1',
@@ -211,7 +232,14 @@ function VariantFeatureDetails(props: any) {
 
   return (
     <Paper data-testid="variant-side-drawer">
-      <FeatureDetails feature={rest} descriptions={descriptions} {...props} />
+      <FeatureDetails
+        feature={{
+          ...rest,
+          ALT: rest.ALT?.map((alt: string | Breakend) => toString(alt)),
+        }}
+        descriptions={{ ...basicDescriptions, ...descriptions }}
+        {...props}
+      />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel

@@ -8,5 +8,3 @@ export const stateModel = types.model('HelpWidget', {
   id: ElementId,
   type: types.literal('HelpWidget'),
 })
-
-export { default as ReactComponent } from './components/HelpWidget'

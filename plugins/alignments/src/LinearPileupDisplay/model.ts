@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   ConfigurationReference,
   readConfObject,
@@ -11,7 +12,6 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
-  getContainingTrack,
 } from '@jbrowse/core/util'
 
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
@@ -21,7 +21,7 @@ import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -32,13 +32,16 @@ import FilterListIcon from '@material-ui/icons/ClearAll'
 
 import { autorun, observable } from 'mobx'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import ColorByTagDlg from './components/ColorByTag'
-import FilterByTagDlg from './components/FilterByTag'
-import SortByTagDlg from './components/SortByTag'
-import SetFeatureHeightDlg from './components/SetFeatureHeight'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+
+const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
+const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
+const SortByTagDlg = lazy(() => import('./components/SortByTag'))
+const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
+const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
+const ModificationsDlg = lazy(() => import('./components/ColorByModifications'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -62,7 +65,9 @@ const stateModelFactory = (
         showSoftClipping: false,
         featureHeight: types.maybe(types.number),
         noSpacing: types.maybe(types.boolean),
+        fadeLikelihood: types.maybe(types.boolean),
         trackMaxHeight: types.maybe(types.number),
+        mismatchAlpha: types.maybe(types.boolean),
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -76,6 +81,7 @@ const stateModelFactory = (
           types.model({
             type: types.string,
             tag: types.maybe(types.string),
+            extra: types.frozen(),
           }),
         ),
         filterBy: types.optional(
@@ -93,6 +99,7 @@ const stateModelFactory = (
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
+      modificationTagMap: observable.map<string, string>({}),
       ready: false,
       currBpPerPx: 0,
     }))
@@ -143,6 +150,45 @@ const stateModelFactory = (
         )
         return values as string[]
       },
+      async getUniqueModificationValues(
+        colorScheme: { type: string; tag?: string },
+        blocks: BlockSet,
+        opts?: {
+          headers?: Record<string, string>
+          signal?: AbortSignal
+          filters?: string[]
+        },
+      ) {
+        const { rpcManager } = getSession(self)
+        const { adapterConfig } = self
+        const sessionId = getRpcSessionId(self)
+        const values = await rpcManager.call(
+          getRpcSessionId(self),
+          'PileupGetVisibleModifications',
+          {
+            adapterConfig,
+            tag: colorScheme.tag,
+            sessionId,
+            regions: blocks.contentBlocks,
+            ...opts,
+          },
+        )
+        return values as string[]
+      },
+
+      updateModificationColorMap(uniqueModifications: string[]) {
+        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
+
+        uniqueModifications.forEach(value => {
+          if (!self.modificationTagMap.has(value)) {
+            const totalKeys = [...self.modificationTagMap.keys()].length
+            const newColor = colorPalette[totalKeys]
+            self.modificationTagMap.set(value, newColor)
+          }
+        })
+      },
+
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = [
@@ -186,6 +232,14 @@ const stateModelFactory = (
                     view.staticBlocks,
                   )
                   self.updateColorTagMap(uniqueTagSet)
+                }
+
+                if (colorBy?.type === 'modifications') {
+                  const uniqueModificationsSet = await self.getUniqueModificationValues(
+                    colorBy,
+                    view.staticBlocks,
+                  )
+                  self.updateModificationColorMap(uniqueModificationsSet)
                 }
 
                 if (sortedBy) {
@@ -252,6 +306,9 @@ const stateModelFactory = (
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
+      toggleMismatchAlpha() {
+        self.mismatchAlpha = !self.mismatchAlpha
+      },
 
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
@@ -310,17 +367,26 @@ const stateModelFactory = (
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          height: self.featureHeight,
-          noSpacing: self.noSpacing,
-          maxHeight: this.maxHeight,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            height: self.featureHeight,
+            noSpacing: self.noSpacing,
+            maxHeight: this.maxHeight,
+            mismatchAlpha: self.mismatchAlpha,
+          },
+          getEnv(self),
+        )
       },
       get featureHeightSetting() {
         return (
           self.featureHeight || readConfObject(this.rendererConfig, 'height')
         )
+      },
+      get mismatchAlphaSetting() {
+        return self.mismatchAlpha !== undefined
+          ? self.mismatchAlpha
+          : readConfObject(this.rendererConfig, 'mismatchAlpha')
       },
     }))
     .views(self => {
@@ -378,21 +444,20 @@ const stateModelFactory = (
           if (self.filterBy) {
             const { flagInclude, flagExclude } = self.filterBy
             filters = [
-              `jexl:((feature|getData('flags')&${flagInclude})==${flagInclude}) && !(feature|getData('flags')&${flagExclude})`,
+              `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
             ]
             if (self.filterBy.tagFilter) {
               const { tag, value } = self.filterBy.tagFilter
               filters.push(
-                `jexl:"${value}" =='*' ? (feature|getData('tags) ? feature|getData('tags)["${tag}"] : feature|getData("${tag}")) != undefined\n
-                : feature|getData('tags') ? feature|getData('tags')["${tag}"] : feature|getData("${tag}")) == "${value}")`,
+                `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
               )
             }
             if (self.filterBy.readName) {
               const { readName } = self.filterBy
-              filters.push(`jexl:feature|getData('name') == "${readName}"`)
+              filters.push(`jexl:get(feature,'name') == "${readName}"`)
             }
           }
-          return filters
+          return new SerializableFilterChain({ filters })
         },
 
         get renderProps() {
@@ -403,10 +468,14 @@ const stateModelFactory = (
             notReady:
               !self.ready ||
               (self.sortedBy && self.currBpPerPx !== view.bpPerPx),
+            rpcDriverName: self.rpcDriverName,
             displayModel: self,
             sortedBy: self.sortedBy,
             colorBy: self.colorBy,
             colorTagMap: JSON.parse(JSON.stringify(self.colorTagMap)),
+            modificationTagMap: JSON.parse(
+              JSON.stringify(self.modificationTagMap),
+            ),
             filters: this.filters,
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
@@ -445,10 +514,9 @@ const stateModelFactory = (
                 {
                   label: 'Sort by tag...',
                   onClick: () =>
-                    getContainingTrack(self).setDialogComponent(
-                      SortByTagDlg,
-                      self,
-                    ),
+                    getSession(self).setDialogComponent(SortByTagDlg, {
+                      model: self,
+                    }),
                 },
                 {
                   label: 'Clear sort',
@@ -491,9 +559,17 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Adjust mismatch visibility by quality',
+                  label: 'Base modifications (MM+MP/ML)',
                   onClick: () => {
-                    self.setColorScheme({ type: 'mismatchQuality' })
+                    getSession(self).setDialogComponent(ModificationsDlg, {
+                      model: self,
+                    })
+                  },
+                },
+                {
+                  label: 'Methylation (specialized MM+MP/ML)',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'methylation' })
                   },
                 },
                 {
@@ -511,10 +587,9 @@ const stateModelFactory = (
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getContainingTrack(self).setDialogComponent(
-                      ColorByTagDlg,
-                      self,
-                    )
+                    getSession(self).setDialogComponent(ColorByTagDlg, {
+                      model: self,
+                    })
                   },
                 },
               ],
@@ -523,28 +598,33 @@ const stateModelFactory = (
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  FilterByTagDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(FilterByTagDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set feature height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetFeatureHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetFeatureHeightDlg, {
+                  model: self,
+                })
               },
             },
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetMaxHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetMaxHeightDlg, {
+                  model: self,
+                })
+              },
+            },
+            {
+              label: 'Fade mismatches by quality',
+              type: 'checkbox',
+              checked: self.mismatchAlphaSetting,
+              onClick: () => {
+                self.toggleMismatchAlpha()
               },
             },
           ]
