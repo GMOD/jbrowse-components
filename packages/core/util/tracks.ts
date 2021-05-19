@@ -99,6 +99,7 @@ export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
   getFileName: (f: FileLocation) => string,
+  adapterHint?: string,
 ) {
   function makeIndex(location: FileLocation, suffix: string) {
     if ('uri' in location) {
@@ -112,19 +113,26 @@ export function guessAdapter(
 
   const fileName = getFileName(file)
   const indexName = index && getFileName(index)
+  function makeIndexType(
+    name: string | undefined,
+    typeA: string,
+    typeB: string,
+  ) {
+    return name?.toUpperCase().endsWith(typeA) ? typeA : typeB
+  }
 
-  if (/\.bam$/i.test(fileName)) {
+  if (/\.bam$/i.test(fileName) || adapterHint === 'BamAdapter') {
     return {
       type: 'BamAdapter',
       bamLocation: file,
       index: {
         location: index || makeIndex(file, '.bai'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'BAI',
+        indexType: makeIndexType(indexName, 'CSI', 'BAI'),
       },
     }
   }
 
-  if (/\.cram$/i.test(fileName)) {
+  if (/\.cram$/i.test(fileName) || adapterHint === 'CramAdapter') {
     return {
       type: 'CramAdapter',
       cramLocation: file,
@@ -138,13 +146,13 @@ export function guessAdapter(
     }
   }
 
-  if (/\.gff3?\.b?gz$/i.test(fileName)) {
+  if (/\.gff3?\.b?gz$/i.test(fileName) || adapterHint === 'Gff3TabixAdapter') {
     return {
       type: 'Gff3TabixAdapter',
       gffGzLocation: file,
       index: {
         location: index || makeIndex(file, '.tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
@@ -161,13 +169,13 @@ export function guessAdapter(
     }
   }
 
-  if (/\.vcf\.b?gz$/i.test(fileName)) {
+  if (/\.vcf\.b?gz$/i.test(fileName) || adapterHint === 'VcfTabixAdapter') {
     return {
       type: 'VcfTabixAdapter',
       vcfGzLocation: file,
       index: {
         location: index || makeIndex(file, 'tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
@@ -184,32 +192,35 @@ export function guessAdapter(
     }
   }
 
-  if (/\.bed\.b?gz$/i.test(fileName)) {
+  if (/\.bed\.b?gz$/i.test(fileName) || adapterHint === 'BedTabixAdapter') {
     return {
       type: 'BedTabixAdapter',
       bedGzLocation: file,
       index: {
         location: index || makeIndex(file, '.tbi'),
-        indexType: indexName?.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
+        indexType: makeIndexType(indexName, 'CSI', 'TBI'),
       },
     }
   }
 
-  if (/\.(bb|bigbed)$/i.test(fileName)) {
+  if (/\.(bb|bigbed)$/i.test(fileName) || adapterHint === 'BigBedAdapter') {
     return {
       type: 'BigBedAdapter',
       bigBedLocation: file,
     }
   }
 
-  if (/\.(bw|bigwig)$/i.test(fileName)) {
+  if (/\.(bw|bigwig)$/i.test(fileName) || adapterHint === 'BigWigAdapter') {
     return {
       type: 'BigWigAdapter',
       bigWigLocation: file,
     }
   }
 
-  if (/\.(fa|fasta|fas|fna|mfa)$/i.test(fileName)) {
+  if (
+    /\.(fa|fasta|fas|fna|mfa)$/i.test(fileName) ||
+    adapterHint === 'IndexedFastaAdapter'
+  ) {
     return {
       type: 'IndexedFastaAdapter',
       fastaLocation: file,
@@ -217,7 +228,10 @@ export function guessAdapter(
     }
   }
 
-  if (/\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName)) {
+  if (
+    /\.(fa|fasta|fas|fna|mfa)\.b?gz$/i.test(fileName) ||
+    adapterHint === 'BgzipFastaAdapter'
+  ) {
     return {
       type: 'BgzipFastaAdapter',
       fastaLocation: file,
@@ -226,7 +240,7 @@ export function guessAdapter(
     }
   }
 
-  if (/\.2bit$/i.test(fileName)) {
+  if (/\.2bit$/i.test(fileName) || adapterHint === 'TwoBitAdapter') {
     return {
       type: 'TwoBitAdapter',
       twoBitLocation: file,
@@ -239,28 +253,31 @@ export function guessAdapter(
     }
   }
 
-  if (/\/trackData.jsonz?$/i.test(fileName)) {
+  if (
+    /\/trackData.jsonz?$/i.test(fileName) ||
+    adapterHint === 'NCListAdapter'
+  ) {
     return {
       type: 'NCListAdapter',
       rootUrlTemplate: file,
     }
   }
 
-  if (/\/sparql$/i.test(fileName)) {
+  if (/\/sparql$/i.test(fileName) || adapterHint === 'SPARQLAdapter') {
     return {
       type: 'SPARQLAdapter',
       endpoint: file,
     }
   }
 
-  if (/\.hic/i.test(fileName)) {
+  if (/\.hic/i.test(fileName) || adapterHint === 'HicAdapter') {
     return {
       type: 'HicAdapter',
       hicLocation: file,
     }
   }
 
-  if (/\.paf/i.test(fileName)) {
+  if (/\.paf/i.test(fileName) || adapterHint === 'PAFAdapter') {
     return {
       type: 'PAFAdapter',
       pafLocation: file,

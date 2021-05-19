@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -49,11 +48,11 @@ export default function f(pluginManager: PluginManager) {
       altTrackName: '',
       altTrackType: '',
 
-      altTrackAdapter: {} as any,
+      adapterHint: '',
     }))
     .actions(self => ({
-      setTrackAdapter(obj: any) {
-        self.altTrackAdapter = obj
+      setAdapterHint(obj: string) {
+        self.adapterHint = obj
       },
       setTrackSource(str: string) {
         self.trackSource = str
@@ -79,17 +78,17 @@ export default function f(pluginManager: PluginManager) {
         self.altTrackName = ''
         self.altTrackType = ''
         self.altAssemblyName = ''
-        self.altTrackAdapter = {}
+        self.adapterHint = ''
         self.indexTrackData = { uri: '' }
         self.trackData = { uri: '' }
       },
     }))
     .views(self => ({
       get trackAdapter() {
-        const { trackData, indexTrackData } = self
+        const { trackData, indexTrackData, adapterHint } = self
 
         return trackData
-          ? guessAdapter(trackData, indexTrackData, getFileName)
+          ? guessAdapter(trackData, indexTrackData, getFileName, adapterHint)
           : undefined
       },
 

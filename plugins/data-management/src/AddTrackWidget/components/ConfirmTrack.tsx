@@ -41,6 +41,61 @@ function StatusMessage({
   )
 }
 
+function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
+  const classes = useStyles()
+  const session = getSession(model)
+  const { adapterHint } = model
+  return (
+    <>
+      <Typography className={classes.spacing}>
+        Was not able to guess the adapter type for this data, but it may be in
+        the list below. If not, you can{' '}
+        <Link
+          href="https://github.com/GMOD/jbrowse-components/releases"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          check for new releases
+        </Link>{' '}
+        of JBrowse to see if they support this data type or{' '}
+        <Link
+          href="https://github.com/GMOD/jbrowse-components/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          file an issue
+        </Link>{' '}
+        and add a feature request for this data type.
+      </Typography>
+      <TextField
+        className={classes.spacing}
+        value={adapterHint}
+        label="adapterType"
+        helperText="An adapter type"
+        select
+        fullWidth
+        onChange={event => {
+          model.setAdapterHint(event.target.value)
+        }}
+        SelectProps={{
+          // @ts-ignore
+          SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
+        }}
+      >
+        {getEnv(session)
+          .pluginManager.getElementTypesInGroup('adapter')
+          // Exclude SNPCoverageAdapter from primary adapter user selection
+          .filter((elt: { name: string }) => elt.name !== 'SNPCoverageAdapter')
+          .map((elt: { name: string }) => (
+            <MenuItem key={elt.name} value={elt.name}>
+              {elt.name}
+            </MenuItem>
+          ))}
+      </TextField>
+    </>
+  )
+}
+
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
   const session = getSession(model)
@@ -72,66 +127,10 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     )
   }
   if (trackAdapter?.type === UNKNOWN) {
-    return (
-      <>
-        <Typography className={classes.spacing}>
-          Was not able to guess the adapter type for this data, but it may be in
-          the list below. If not, you can{' '}
-          <Link
-            href="https://github.com/GMOD/jbrowse-components/releases"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            check for new releases
-          </Link>{' '}
-          of JBrowse to see if they support this data type or{' '}
-          <Link
-            href="https://github.com/GMOD/jbrowse-components/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            file an issue
-          </Link>{' '}
-          and add a feature request for this data type.
-        </Typography>
-        <TextField
-          className={classes.spacing}
-          value={trackAdapter}
-          label="adapterType"
-          helperText="An adapter type"
-          select
-          fullWidth
-          onChange={event => {
-            model.setTrackAdapter({ type: event.target.value })
-          }}
-          SelectProps={{
-            // @ts-ignore
-            SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
-          }}
-        >
-          {getEnv(session)
-            .pluginManager.getElementTypesInGroup('adapter')
-            .map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (installedAdapterType: any) =>
-                // Exclude SNPCoverageAdapter from primary adapter user selection
-                installedAdapterType.name !== 'SNPCoverageAdapter' && (
-                  <MenuItem
-                    key={installedAdapterType.name}
-                    value={installedAdapterType.name}
-                  >
-                    {installedAdapterType.name}
-                  </MenuItem>
-                ),
-            )}
-        </TextField>
-      </>
-    )
+    return <UnknownAdapterPrompt model={model} />
   }
 
   if (!trackAdapter?.type) {
-    // TODO: if file type is unrecognized, provide some way of specifying
-    // adapter and guessing reasonable default for it.
     return <Typography>Could not recognize this data type.</Typography>
   }
 
