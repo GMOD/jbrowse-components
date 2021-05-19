@@ -113,13 +113,7 @@ async function checkPlugins(pluginsToCheck: { url: string }[]) {
     plugins: { url: string }[]
   }
   const allowedPluginUrls = array.plugins.map(p => p.url)
-  const configPluginUrls: string[] = pluginsToCheck.map(
-    (p: { url: string }) => p.url,
-  )
-  const allPluginsAllowed = configPluginUrls.every(r =>
-    allowedPluginUrls.includes(r),
-  )
-  return allPluginsAllowed
+  return pluginsToCheck.every(p => allowedPluginUrls.includes(p.url))
 }
 
 type Config = SnapshotOut<AnyConfigurationModel>
