@@ -20,7 +20,7 @@ export interface BaseResultArgs {
 
   trackId?: string
 
-  score: number
+  score?: number
 }
 export default class BaseResult {
   label: string

@@ -158,6 +158,24 @@ Object {
       ],
       "type": "JBrowse1TextSearchAdapter",
     },
+    Object {
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "AdapterWithoutAssemblies",
+      "type": "JBrowse1TextSearchAdapter",
+    },
+    Object {
+      "assemblies": Array [
+        "volvox3",
+        "volvox4",
+      ],
+      "namesIndexLocation": Object {
+        "uri": "names/",
+      },
+      "textSearchAdapterId": "AdapterWithDiffAssemblies",
+      "type": "JBrowse1TextSearchAdapter",
+    },
   ],
   "tracks": Array [
     Object {
@@ -196,7 +214,13 @@ Object {
       ],
       "name": "volvox structural variant test",
       "textSearchAdapter": Object {
-        "textSearchAdapterId": "placeholderId",
+        "assemblies": Array [
+          "NonExistantAssembly",
+        ],
+        "namesIndexLocation": Object {
+          "uri": "names/",
+        },
+        "textSearchAdapterId": "TrackAdapter",
         "type": "JBrowse1TextSearchAdapter",
       },
       "trackId": "volvox_sv_test",

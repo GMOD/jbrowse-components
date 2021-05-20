@@ -443,7 +443,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
-      rankSearchResults(results: BaseResult) {
+      rankSearchResults(results: BaseResult[]) {
         // order of rank
         const openTrackIds = self.tracks.map(track => track.rpcSessionId)
         results.forEach(result => {

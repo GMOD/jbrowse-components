@@ -7,6 +7,7 @@ import PluginManager from '../PluginManager'
 import QuickLRU from '../util/QuickLRU'
 import { searchType, BaseTextSearchAdapter } from '../data_adapters/BaseAdapter'
 import { readConfObject } from '../configuration'
+import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType'
 
 interface BaseArgs {
   searchType: searchType
@@ -38,10 +39,10 @@ export default (pluginManager: PluginManager) => {
     /**
      * Instantiate/initialize list of relevant adapters
      */
-    loadTextSearchAdapters(args: BaseArgs) {
+    loadTextSearchAdapters(scope: Scope) {
       const adaptersToUse: BaseTextSearchAdapter[] = []
       // initialize relevant adapters
-      this.relevantAdapters(args).forEach(
+      this.relevantAdapters(scope).forEach(
         (adapterConfig: AnyConfigurationModel) => {
           const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
           if (this.adapterCache.has(adapterId)) {
@@ -73,12 +74,9 @@ export default (pluginManager: PluginManager) => {
       // root level adapters and track adapters
       const { textSearchAdapters, tracks } = pluginManager.rootModel
         ?.jbrowse as any
-      let trackTextSearchAdapters: BaseTextSearchAdapter[] = []
-      tracks.forEach((trackTextSearchAdapterConfig: AnyConfigurationModel) => {
-        const trackTextSearchAdapter = readConfObject(
-          trackTextSearchAdapterConfig,
-          'textSearchAdapter',
-        )
+      let trackTextSearchAdapters: AnyConfigurationModel[] = []
+      tracks.forEach((trackConfig: AnyConfigurationModel) => {
+        const trackTextSearchAdapter = trackConfig.textSearchAdapter
         if (trackTextSearchAdapter.textSearchAdapterId !== 'placeholderId') {
           trackTextSearchAdapters.push(trackTextSearchAdapter)
         }
@@ -97,12 +95,12 @@ export default (pluginManager: PluginManager) => {
 
     getAdaptersWithAssemblies(
       scopeAssemblyNames: Array<string>,
-      adapterList: Array<BaseTextSearchAdapter>,
+      adapterList: AnyConfigurationModel[],
     ) {
       const adaptersWithAssemblies = adapterList.filter(
-        (adapterConf: AnyConfigurationModel) => {
-          const adapterAssemblies = readConfObject(adapterConf, 'assemblies')
-          const intersection = adapterAssemblies.filter(assembly =>
+        (adapterConfig: AnyConfigurationModel) => {
+          const adapterAssemblies = readConfObject(adapterConfig, 'assemblies')
+          const intersection = adapterAssemblies.filter((assembly: string) =>
             scopeAssemblyNames.includes(assembly),
           )
           return intersection.length > 0
@@ -116,7 +114,11 @@ export default (pluginManager: PluginManager) => {
      * @param args - search options/arguments include: search query
      * limit of results to return, searchType...preffix | full | exact", etc.
      */
-    async search(args: BaseArgs, scope: Scope, rankSearchResults: Function) {
+    async search(
+      args: BaseArgs,
+      scope: Scope,
+      rankSearchResults: (results: BaseResult[]) => BaseResult[],
+    ) {
       // determine list of relevant adapters based on scope
       this.textSearchAdapters = this.loadTextSearchAdapters(scope)
       const results: Array<BaseResult[]> = await Promise.all(
@@ -145,7 +147,10 @@ export default (pluginManager: PluginManager) => {
      * @param rankSearchResults - function that updates results scores
      * based on more relevance
      */
-    sortResults(results: BaseResult[], rankSearchResults: Function) {
+    sortResults(
+      results: BaseResult[],
+      rankSearchResults: (results: BaseResult[]) => BaseResult[],
+    ) {
       // first sort results in alphabetical order
       const sortedResults = results.sort(
         (a, b) => -b.getLabel().localeCompare(a.getLabel()),

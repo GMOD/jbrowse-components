@@ -106,7 +106,6 @@ function RefNameAutocomplete({
             queryString: debouncedSearch,
             searchType: 'prefix',
           }
-          // TODO: have scope be a diff param to the text search manager
           const prefixResults = await textSearchManager.search(
             args,
             searchScope,
@@ -135,7 +134,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [textSearchManager, debouncedSearch, searchScope])
+  }, [textSearchManager, debouncedSearch, searchScope, rankSearchResults])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
