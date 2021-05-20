@@ -31,7 +31,7 @@ function bitStringToArrayBuffer(bitString) {
 function makeBigsiRowPath(rowNum, root){
     const paddedRowNum = zeroPad(rowNum, 6)
     const rowPath = `${paddedRowNum.slice(0,3)}/${paddedRowNum.slice(3,6)}`
-    const path = `${root}/${rowPath}.bin`
+    const path = `${root}/${rowPath}`
 
     return path
 }
