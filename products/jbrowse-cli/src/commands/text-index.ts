@@ -97,10 +97,12 @@ export default class TextIndex extends JBrowseCommand {
       // repeats_hg19
       // gff3tabix_genes
       
-      // const trackIds: Array<string> = ['gff3tabix_genes']
-      // const indexConfig = this.getIndexingConfigurations(trackIds, null)
-      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      // this.parseLocalGff3(uri, true, false)
+      const trackIds: Array<string> = ['gff3tabix_genes']
+      const indexConfig = await this.getIndexingConfigurations(trackIds, null)
+      const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+      const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      this.parseLocalGff3(uri, true, false, indexAttributes)
     }
   }
 
@@ -128,12 +130,12 @@ export default class TextIndex extends JBrowseCommand {
   // it is gzipped or not, then passes it into the correct
   // file handler.
   // Returns a promise that ixIxx finishes indexing.
-  async parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean){
+  async parseLocalGff3(gff3LocalIn: string, isGZ: boolean, isTest: boolean, attributesArr: Array<string>){
     let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn);
     if(!isGZ)
-      return this.indexGff3(gff3ReadStream, isTest)
+      return this.indexGff3(gff3ReadStream, isTest, attributesArr)
     else
-      return this.parseLocalGzip(gff3ReadStream, isTest)
+      return this.parseLocalGzip(gff3ReadStream, isTest, attributesArr)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -241,21 +243,21 @@ export default class TextIndex extends JBrowseCommand {
 
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
-  private parseLocalGzip(file: ReadStream, isTest: boolean){
+  private parseLocalGzip(file: ReadStream, isTest: boolean, attributesArr: Array<string>){
     const unzip = createGunzip()
     let gZipRead: ReadStream = file.pipe(unzip)
-    return this.indexGff3(gZipRead, isTest)
+    return this.indexGff3(gZipRead, isTest, attributesArr)
   } 
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
   // Returns a promise that ixIxx finishes (or errors).
-  private indexGff3(gff3In: ReadStream, isTest: boolean) {
+  private indexGff3(gff3In: ReadStream, isTest: boolean, attributesArr: Array<string>) {
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
           chunk.forEach((record: RecordData) => {
-              this.recurseFeatures(record, gff3Stream)
+              this.recurseFeatures(record, gff3Stream, attributesArr)
               done()
           })
       }
@@ -271,26 +273,46 @@ export default class TextIndex extends JBrowseCommand {
   // Recursively goes through every record in the gff3 file and gets
   // the desires attributes in the form of a JSON object. It is then pushed
   // and returned to the ixIxx file to run.
-  private recurseFeatures(record: RecordData, gff3Stream: ReadStream) {
+  private recurseFeatures(record: RecordData, gff3Stream: ReadStream, attributesArr: Array<string>) {
 
-    const recordObj = { "ID":record.attributes.ID,
-                        "Name":record.attributes.Name,
-                        "seq_id": record.seq_id, 
-                        "start": record.start,
-                        "end": record.end
-                      }
 
-    if(record.attributes.Name && record.attributes.ID){
+    let recordObj = {}
+    let attrString: string = ""
 
-        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
-
-        let str: string = (`${buff.toString('base64')} ${record.attributes.ID} ${record.attributes.Name} ${record.attributes.ID}\n`)
-        gff3Stream.push(str)
+    debugger;
+    // check if its undefined then break out if it is
+    if(attributesArr){
+      for(let i = 0; i < attributesArr.length; i++){
+        let attr = attributesArr[i]
+        if(record[attr]){
+          console.log(attr)
+          // Check to see if the attr exists for the record
+          recordObj[attr] = record[attr]
+          attrString += ' '
+          attrString += recordObj[attr]
+        }
+        else if (record.attributes[attr]) {
+          console.log(attr)
+          // Name and ID are in the attributes object, so check there too
+          recordObj[attr] = record.attributes[attr]
+          attrString += ' '
+          attrString += recordObj[attr]
+        }
+      }
+    }else{
+      return
     }
+  
+        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
+        let str: string = (`${buff.toString('base64')}\n`)
+        str += attrString
+
+        gff3Stream.push(str)
+    
 
     for(let j = 0; record.length; j++){
         for(let i = 0; i < record[j].child_features.length; i++){
-            this.recurseFeatures(record[j].child_features[i], gff3Stream)
+            this.recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
         }
     }
   }
@@ -376,7 +398,7 @@ export default class TextIndex extends JBrowseCommand {
               gzipped: true,
               gffLocation: adapter?.gffGzLocation,
             },
-            attributes,
+            attributes: adapter?.attributes,
           }
         }
       } else {

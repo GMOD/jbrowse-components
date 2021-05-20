@@ -60,6 +60,7 @@
         "gffGzLocation": {
           "uri": "test/data/volvox.sort.gff3.gz"
         },
+        "attributes": ["Name", "ID", "start", "end"],
         "index": {
           "location": {
             "uri": "volvox.sort.gff3.gz.tbi"
