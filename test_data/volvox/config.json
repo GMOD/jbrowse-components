@@ -62,6 +62,24 @@
         "volvox_filtered_vcf"
       ],
       "assemblies": ["volvox", "volvox2"]
+    },
+    {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "AdapterWithoutAssemblies",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "tracks": [],
+      "assemblies": []
+    },
+    {
+      "type": "JBrowse1TextSearchAdapter",
+      "textSearchAdapterId": "AdapterWithDiffAssemblies",
+      "namesIndexLocation": {
+        "uri": "names/"
+      },
+      "tracks": [],
+      "assemblies": ["volvox3", "volvox4"]
     }
   ],
   "tracks": [
@@ -82,6 +100,15 @@
             "uri": "volvox.dup.vcf.gz.tbi"
           }
         }
+      },
+      "textSearchAdapter": {
+        "type": "JBrowse1TextSearchAdapter",
+        "textSearchAdapterId": "TrackAdapter",
+        "namesIndexLocation": {
+          "uri": "names/"
+        },
+        "tracks": [],
+        "assemblies": ["NonExistantAssembly"]
       }
     },
     {
