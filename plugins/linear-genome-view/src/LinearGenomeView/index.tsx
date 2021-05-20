@@ -446,17 +446,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       rankSearchResults(results: BaseResult) {
         // order of rank
         const openTrackIds = self.tracks.map(track => track.rpcSessionId)
-        // console.log(openTrackIds)
-        const ranked = results.map(result => {
+        results.forEach(result => {
           if (openTrackIds !== []) {
             if (openTrackIds.includes(result.trackId)) {
-              // console.log(result.getScore())
-              // console.log(result.updateScore(result.getScore()+1))
-              return result.updateScore(result.getScore() + 1)
+              result.updateScore(result.getScore() + 1)
             }
           }
-          // console.log(result)
-          return result
         })
         return results
       },

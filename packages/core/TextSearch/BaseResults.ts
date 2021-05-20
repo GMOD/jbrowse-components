@@ -69,7 +69,6 @@ export default class BaseResult {
     return this.score
   }
   updateScore(newScore: number) {
-    console.log("hiiiii")
     this.score = newScore
     return this.score
   }

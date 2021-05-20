@@ -40,6 +40,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { assemblyNames, assemblyManager } = session
   const { pluginManager } = getEnv(session)
   const { textSearchManager } = pluginManager.rootModel
+  const { rankSearchResults } = model
   const [selectedAssemblyIdx, setSelectedAssemblyIdx] = useState(0)
   const [selectedRegion, setSelectedRegion] = useState<string | undefined>('')
   const [assemblyRegions, setAssemblyRegions] = useState<Region[]>([])
@@ -47,7 +48,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const hasError = Boolean(error)
   const assemblyName = assemblyNames[selectedAssemblyIdx]
   const displayName = assemblyName && !error ? selectedAssemblyIdx : ''
-
+  const searchScope = model.searchScope
   useEffect(() => {
     let done = false
     ;(async () => {
@@ -86,10 +87,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       // region visible, xref #1703
       model.showAllRegions()
     } else {
-      const results = await textSearchManager.search({
-        queryString: input.toLocaleLowerCase(),
-        searchType: 'exact',
-      })
+      const results = await textSearchManager.search(
+        {
+          queryString: input.toLocaleLowerCase(),
+          searchType: 'exact',
+        },
+        searchScope,
+        rankSearchResults,
+      )
       if (results.length > 0) {
         model.setSearchResults(results, input.toLocaleLowerCase())
       } else {
