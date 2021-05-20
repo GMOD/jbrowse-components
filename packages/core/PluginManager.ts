@@ -138,7 +138,8 @@ type AnyFunction = (...args: any) => any
 export type PluginMetaData = Record<string, unknown>
 
 export type PluginLoadRecord = {
-  metadata: PluginMetaData
+  definition?: PluginDefinition
+  metadata?: PluginMetaData
   plugin: Plugin
 }
 
@@ -149,6 +150,8 @@ export default class PluginManager {
   jexl: any = createJexlInstance()
 
   pluginMetaData: Record<string, PluginMetaData> = {}
+
+  pluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
@@ -205,13 +208,17 @@ export default class PluginManager {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
-    const [plugin, metadata] =
+    const [plugin, metadata = {}] =
       load instanceof Plugin ? [load, {}] : [load.plugin, load.metadata]
 
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
     }
+
     this.pluginMetaData[plugin.name] = metadata
+    if ('definition' in load && load.definition) {
+      this.pluginDefinitions.push(load.definition)
+    }
     plugin.install(this)
     this.plugins.push(plugin)
     return this
@@ -303,12 +310,6 @@ export default class PluginManager {
     })
 
     return this
-  }
-
-  get pluginDefinitions(): PluginDefinition[] {
-    return Object.values(this.pluginMetaData)
-      .map(p => p.definition as PluginDefinition)
-      .filter(f => !!f)
   }
 
   getElementType(groupName: PluggableElementTypeGroup, typeName: string) {

@@ -82,7 +82,7 @@ export default function Loader({
             })),
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
-              metadata: { definition },
+              definition,
             })),
           ])
         } catch (e) {

@@ -499,11 +499,11 @@ const Renderer = observer(
             }),
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
-              metadata: { definition },
+              definition,
             })),
             ...sessionPlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
-              metadata: { definition },
+              definition,
             })),
           ])
           pluginManager.createPluggableElements()
