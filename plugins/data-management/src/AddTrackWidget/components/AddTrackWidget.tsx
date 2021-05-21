@@ -61,7 +61,9 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const trackId = `${trackName
       .toLowerCase()
-      .replace(/ /g, '_')}-${Date.now()}`
+      .replace(/ /g, '_')}-${Date.now()}${
+      session.adminMode ? '' : '-sessionTrack'
+    }`
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
