@@ -125,7 +125,6 @@ export default function RootModel(
     .volatile(self => ({
       rpcManager: new RpcManager(
         pluginManager,
-        pluginManager.pluginDefinitions,
         self.jbrowse.configuration.rpc,
         {
           WebWorkerRpcDriver: { WorkerClass: RenderWorker },

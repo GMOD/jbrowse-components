@@ -135,12 +135,14 @@ type AnyFunction = (...args: any) => any
  * Can also use this metadata to stash other things about why the plugin is
  * loaded, such as where it came from, what plugin depends on it, etc.
  */
-export type PluginMetaData = Record<string, unknown>
+export type PluginMetadata = Record<string, unknown>
 
-export type PluginLoadRecord = {
-  definition?: PluginDefinition
-  metadata?: PluginMetaData
+export interface PluginLoadRecord {
+  metadata?: PluginMetadata
   plugin: Plugin
+}
+export interface RuntimePluginLoadRecord extends PluginLoadRecord {
+  definition: PluginDefinition
 }
 
 export default class PluginManager {
@@ -149,9 +151,9 @@ export default class PluginManager {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jexl: any = createJexlInstance()
 
-  pluginMetaData: Record<string, PluginMetaData> = {}
+  pluginMetadata: Record<string, PluginMetadata> = {}
 
-  pluginDefinitions: PluginDefinition[] = []
+  runtimePluginDefinitions: PluginDefinition[] = []
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'renderer',
@@ -204,7 +206,7 @@ export default class PluginManager {
     return configurationSchemas
   }
 
-  addPlugin(load: Plugin | PluginLoadRecord) {
+  addPlugin(load: Plugin | PluginLoadRecord | RuntimePluginLoadRecord) {
     if (this.configured) {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
@@ -215,9 +217,9 @@ export default class PluginManager {
       throw new Error('plugin already installed')
     }
 
-    this.pluginMetaData[plugin.name] = metadata
-    if ('definition' in load && load.definition) {
-      this.pluginDefinitions.push(load.definition)
+    this.pluginMetadata[plugin.name] = metadata
+    if ('definition' in load) {
+      this.runtimePluginDefinitions.push(load.definition)
     }
     plugin.install(this)
     this.plugins.push(plugin)
