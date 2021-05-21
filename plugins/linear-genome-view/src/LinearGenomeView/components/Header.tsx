@@ -152,8 +152,17 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
           try {
             model.navToLocString(newRegionValue)
           } catch (e) {
-            console.warn(e)
-            session.notify(`${e}`, 'warning')
+            if (
+              `${e}` === `Error: Unknown reference sequence "${newRegionValue}"`
+            ) {
+              model.setSearchResults(
+                results,
+                newRegionValue.toLocaleLowerCase(),
+              )
+            } else {
+              console.warn(e)
+              session.notify(`${e}`, 'warning')
+            }
           }
         }
       }

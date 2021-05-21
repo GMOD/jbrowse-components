@@ -101,8 +101,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         try {
           input && model.navToLocString(input, assemblyName)
         } catch (e) {
-          console.warn(e)
-          session.notify(`${e}`, 'warning')
+          if (`${e}` === `Error: Unknown reference sequence "${input}"`) {
+            model.setSearchResults(results, input.toLocaleLowerCase())
+          } else {
+            console.warn(e)
+            session.notify(`${e}`, 'warning')
+          }
         }
       }
     }
