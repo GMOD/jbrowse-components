@@ -45,15 +45,20 @@ function RefNameAutocomplete({
   const session = getSession(model)
   const { assemblyManager } = session
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = (assembly && assembly.regions) || []
+  const regions = useMemo(
+    () => (assembly && assembly.regions) || ([] as Region[]),
+    [assembly],
+  )
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
-  const options: Array<Option> = useMemo(() => {
-    const defaultOptions = regions.map(option => {
-      return { type: 'reference sequence', value: option.refName }
-    })
-    return defaultOptions
-  }, [regions])
+  const options = useMemo(
+    () =>
+      regions.map(option => ({
+        type: 'reference sequence',
+        value: option.refName,
+      })) as Option[],
+    [regions],
+  )
 
   function onChange(newRegionName: Option | string) {
     let newRegionValue: string | undefined
