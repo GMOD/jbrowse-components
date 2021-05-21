@@ -82,7 +82,16 @@ function Home() {
                   JBrowseR R package on <tt>CRAN</tt>
                 </Link>
               </li>
+
               <li>More embeddable products coming soon</li>
+            </ul>
+            <h3>CLI</h3>
+            <ul>
+              <li>
+                <Link href="https://github.com/GMOD/jb2export/">
+                  @jbrowse/img image exporter
+                </Link>
+              </li>
             </ul>
             <h3>Desktop</h3>
             <ul>
