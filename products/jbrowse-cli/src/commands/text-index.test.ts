@@ -52,7 +52,11 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseLocalGff3(gff3FileLocation, true,  isTest);
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+    await textIndex.parseLocalGff3(gff3FileLocation, true,  isTest, indexAttributes);
     const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -68,7 +72,11 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseLocalGff3(gff3FileLocation, false,  isTest);
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+    await textIndex.parseLocalGff3(gff3FileLocation, false,  isTest, indexAttributes);
     const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -84,7 +92,11 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseGff3Url(gff3FileLocation, false, isTest);
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+    await textIndex.parseGff3Url(gff3FileLocation, false, isTest, indexAttributes);
     const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -100,7 +112,11 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    let promise = textIndex.parseGff3Url(gff3FileLocation, true, isTest)
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+    let promise = textIndex.parseGff3Url(gff3FileLocation, true, isTest, indexAttributes)
     await promise;
     const ixdata = JSON.stringify(readFileSync('./products/jbrowse-cli/test/data/out.ix', {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
@@ -118,7 +134,11 @@ describe('indexGff3', () => {
     let textIndex = new TextIndex([], null)
     textIndex.log = jest.fn()
 
-    await textIndex.parseGff3Url(gff3FileLocation, true, isTest)
+    const trackIds: Array<string> = ['gff3tabix_genes']
+    const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
+
+    await textIndex.parseGff3Url(gff3FileLocation, true, isTest, indexAttributes)
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     expect(ixdata).toMatchSnapshot()
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
@@ -148,13 +168,14 @@ describe('getIndexingConfigurations', () => {
     let textIndex = new TextIndex([], null)
     const trackIds: Array<string> = ['gff3tabix_genes']
     const indexConfig = await textIndex.getIndexingConfigurations(trackIds, { target: 'products/jbrowse-cli' })
+    const indexAttributes: Array<string> = indexConfig[0].attributes;
     const uri: string = './products/jbrowse-cli/' + indexConfig[0].indexingConfiguration.gffLocation.uri;
-    await textIndex.parseLocalGff3(uri, true, true)
+
+    await textIndex.parseLocalGff3(uri, true, true, indexAttributes)
 
     const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
     const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
     expect(ixxData).toMatchSnapshot()
     expect(ixdata).toMatchSnapshot()
-    
   })
 })

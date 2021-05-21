@@ -84,10 +84,10 @@ export default class TextIndex extends JBrowseCommand {
 
 
       // Check if the file is a URL, then index it.
-      if (this.isURL(gff3FileLocation))
+      /*if (this.isURL(gff3FileLocation))
         this.parseGff3Url(gff3FileLocation, false, false)
       else
-        this.parseLocalGff3(gff3FileLocation, false, false)
+        this.parseLocalGff3(gff3FileLocation, false, false)*/
 
 
       // this.log(
@@ -141,11 +141,11 @@ export default class TextIndex extends JBrowseCommand {
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
   // Returns a promise that the file downloads and ixIxx finishes indexing it.
-  async parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean) {
+  async parseGff3Url(urlIn: string, isGZ: boolean, isTest: boolean, attributesArr: Array<string>) {
     if (!isGZ)
-      return this.parseGff3UrlNoGz(urlIn, isTest)
+      return this.parseGff3UrlNoGz(urlIn, isTest, attributesArr)
     else
-      return this.parseGff3UrlWithGz(urlIn, isTest)
+      return this.parseGff3UrlWithGz(urlIn, isTest, attributesArr)
   }
   
   
@@ -153,14 +153,14 @@ export default class TextIndex extends JBrowseCommand {
   // for parsing and indexing. Awaits promise until the child process
   // is complete and resolves the promise.
   // Returns a promise that the file downloads and ixIxx finishes indexing it.
-  private parseGff3UrlNoGz(urlIn: string, isTest: boolean) {
+  private parseGff3UrlNoGz(urlIn: string, isTest: boolean, attributesArr: Array<string>) {
     const newUrl = new URL(urlIn)
   
     let promise = new Promise((resolve, reject) => {
       if (newUrl.protocol === "https:") {
         httpsFR
           .get(urlIn, async (res) => {
-            await this.indexGff3(res, isTest)
+            await this.indexGff3(res, isTest, attributesArr)
             resolve("Success!")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
@@ -172,7 +172,7 @@ export default class TextIndex extends JBrowseCommand {
       } else {
         httpFR
           .get(urlIn, async (res) => {
-            await this.indexGff3(res, isTest)
+            await this.indexGff3(res, isTest, attributesArr)
             resolve("Success!")
           })
           .on("error", (e: NodeJS.ErrnoException) => {
@@ -193,7 +193,7 @@ export default class TextIndex extends JBrowseCommand {
   // a promise until the child proccess is complete and
   // indexing is complete.
   // Returns a promise that the file downloads and ixIxx finishes indexing it.
-  private parseGff3UrlWithGz(urlIn: string, isTest: boolean) {
+  private parseGff3UrlWithGz(urlIn: string, isTest: boolean, attributesArr: Array<string>) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
@@ -201,7 +201,7 @@ export default class TextIndex extends JBrowseCommand {
       if (newUrl.protocol === "https:") {
         httpsFR
         .get(urlIn, async (response) => {
-          await this.indexGff3(response.pipe(unzip), isTest)
+          await this.indexGff3(response.pipe(unzip), isTest, attributesArr)
           resolve("Success!")
         })
         .on("error", (e: NodeJS.ErrnoException) => {
@@ -212,7 +212,7 @@ export default class TextIndex extends JBrowseCommand {
       } else {
           httpFR
             .get(urlIn, async (response) => {
-              await this.indexGff3(response.pipe(unzip), isTest)
+              await this.indexGff3(response.pipe(unzip), isTest, attributesArr)
               resolve("Success!")
             })
             .on("error", (e: NodeJS.ErrnoException) => {
@@ -273,47 +273,49 @@ export default class TextIndex extends JBrowseCommand {
   // Recursively goes through every record in the gff3 file and gets
   // the desires attributes in the form of a JSON object. It is then pushed
   // and returned to the ixIxx file to run.
-  private recurseFeatures(record: RecordData, gff3Stream: ReadStream, attributesArr: Array<string>) {
-
-
+  private async recurseFeatures(record: RecordData, gff3Stream: ReadStream, attributesArr: Array<string>) {
     let recordObj = {}
     let attrString: string = ""
 
-    debugger;
-    // check if its undefined then break out if it is
+    // check if the attributes array is undefined
+    // breaks out of loop if it is (end of recursion)
     if(attributesArr){
-      for(let i = 0; i < attributesArr.length; i++){
-        let attr = attributesArr[i]
-        if(record[attr]){
-          console.log(attr)
-          // Check to see if the attr exists for the record
+
+      // goes through the attributes array and checks
+      // if the record contains the attribute that the
+      // user wants to search by. If it contains it,
+      // it adds it to the record object and attributes
+      // string
+      for(let attr of attributesArr){
+        if(record[attr]){ // Check to see if the attr exists for the record
           recordObj[attr] = record[attr]
-          attrString += ' '
-          attrString += recordObj[attr]
+          attrString += ' ' + recordObj[attr]
         }
-        else if (record.attributes[attr]) {
-          console.log(attr)
-          // Name and ID are in the attributes object, so check there too
+        else if (record.attributes[attr]) { // Name and ID are in the attributes object, so check there too
           recordObj[attr] = record.attributes[attr]
-          attrString += ' '
-          attrString += recordObj[attr]
+          attrString += ' ' + recordObj[attr]
         }
       }
-    }else{
+
+      // encodes the record object so that it can be used by ixIxx
+      // appends the attributes that we are indexing by to the end
+      // of the string before pushing to ixIxx
+      let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
+      let str: string = (`${buff.toString('base64')}`)
+      str += attrString
+
+      gff3Stream.push(str)
+
+    } else {
       return
     }
   
-        let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
-        let str: string = (`${buff.toString('base64')}\n`)
-        str += attrString
-
-        gff3Stream.push(str)
-    
-
+    // recurses through each record to get child features and 
+    // parses their attributes as well.
     for(let j = 0; record.length; j++){
-        for(let i = 0; i < record[j].child_features.length; i++){
-            this.recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
-        }
+      for(let i = 0; i < record[j].child_features.length; i++){
+        this.recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
+      }
     }
   }
 
