@@ -3969,14 +3969,14 @@
     unique-filename "^1.1.1"
     which "^1.3.1"
 
-"@gmod/bam@^1.1.6":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.6.tgz#53a1fd64c2630d6b8a8aa6ca2e4db236e80b5d8a"
-  integrity sha512-8E47E1C6ud7G806NFKsu2dt+tNY0Ob5en4mXjlMjNEMOtQhWWORhNVgCQDXsiDakg+0WUGboa05yfuUBGSCaJQ==
+"@gmod/bam@^1.1.7":
+  version "1.1.7"
+  resolved "https://registry.yarnpkg.com/@gmod/bam/-/bam-1.1.7.tgz#4dfc4740d555f26d7e74e67b65fdfd237559ae70"
+  integrity sha512-/LdGaVmE8iTA8ox+RGJynRYKz8jI0UQFvg4AxV60z8S6mYWQrSZTAGFRrv9ixWuBFb5odyYbDeNSV4HZpaSkdA==
   dependencies:
     "@babel/runtime-corejs3" "^7.5.5"
     "@gmod/bgzf-filehandle" "^1.3.3"
-    abortable-promise-cache "^1.2.0"
+    abortable-promise-cache "^1.4.0"
     buffer-crc32 "^0.2.13"
     cross-fetch "^3.0.2"
     es6-promisify "^6.0.1"
@@ -7579,7 +7579,7 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.3, abortable-promise-cache@^1.3.0:
+abortable-promise-cache@^1.0.1, abortable-promise-cache@^1.1.3, abortable-promise-cache@^1.3.0, abortable-promise-cache@^1.4.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/abortable-promise-cache/-/abortable-promise-cache-1.4.1.tgz#92c2c56751eca38af402b07b9ba104e9a54cb69a"
   integrity sha512-S0RbS0FPyqHcg2QXG+lYrzREpLsoZsbA3W0CIY4YHza2EKbfXcRAf5VMZRHG2BhA6UwK9EJx6OQvnW/X280/Lw==
