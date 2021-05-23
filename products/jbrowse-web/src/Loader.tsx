@@ -245,7 +245,9 @@ const SessionLoader = types
     ) {
       try {
         const { sessionPlugins = [] } = snap
-        const sessionPluginsAllowed = await checkPlugins(sessionPlugins)
+        const sessionPluginsAllowed = sessionPlugins.length
+          ? await checkPlugins(sessionPlugins)
+          : true
         if (sessionPluginsAllowed || userAcceptedConfirmation) {
           await this.fetchSessionPlugins(snap)
           self.setSessionSnapshotSuccess(snap)
@@ -273,7 +275,9 @@ const SessionLoader = types
       // cross origin config check
       if (configUri.hostname !== window.location.hostname) {
         const configPlugins = config.plugins || []
-        const configPluginsAllowed = await checkPlugins(configPlugins)
+        const configPluginsAllowed = configPlugins.length
+          ? await checkPlugins(configPlugins)
+          : true
         if (!configPluginsAllowed) {
           self.setSessionTriaged({
             snap: config,
