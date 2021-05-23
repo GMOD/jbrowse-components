@@ -32,6 +32,7 @@ export async function getUniqueTagValues(
 
 export async function getUniqueModificationValues(
   self: any,
+  adapterConfig: any,
   colorScheme: { type: string; tag?: string },
   blocks: BlockSet,
   opts?: {
@@ -41,7 +42,6 @@ export async function getUniqueModificationValues(
   },
 ) {
   const { rpcManager } = getSession(self)
-  const { adapterConfig } = self
   const sessionId = getRpcSessionId(self)
   const values = await rpcManager.call(
     sessionId,

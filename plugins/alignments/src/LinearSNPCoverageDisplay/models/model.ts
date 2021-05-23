@@ -1,5 +1,5 @@
 import { addDisposer, types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
-import { autorun } from 'mobx'
+import { observable, autorun } from 'mobx'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import {
@@ -51,13 +51,9 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      modificationTagMap: {} as Record<string, string>,
+      modificationTagMap: observable.map({}),
     }))
     .actions(self => ({
-      setModificationTagMap(elt: Record<string, string>) {
-        self.modificationTagMap = elt
-        self.ready = true
-      },
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
@@ -71,19 +67,16 @@ const stateModelFactory = (
       },
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
-        self.ready = false
-      },
-      setReady(flag: boolean) {
-        self.ready = flag
       },
 
       updateModificationColorMap(uniqueModifications: string[]) {
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
         let i = 0
+
         uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap[value]) {
+          if (!self.modificationTagMap.has(value)) {
             const newColor = colorPalette[i++]
-            self.modificationTagMap[value] = newColor
+            self.modificationTagMap.set(value, newColor)
           }
         })
       },
@@ -118,11 +111,18 @@ const stateModelFactory = (
           ? self.drawIndicators
           : readConfObject(this.rendererConfig, 'drawIndicators')
       },
+
+      get modificationsReady() {
+        return self.colorBy?.type === 'modifications'
+          ? Object.keys(JSON.parse(JSON.stringify(self.modificationTagMap)))
+              .length > 0
+          : true
+      },
       get renderProps() {
         return {
           ...self.composedRenderProps,
           ...getParentRenderProps(self),
-          notReady: !self.ready,
+          notReady: !self.ready || !this.modificationsReady,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
           config: self.rendererConfig,
@@ -158,16 +158,14 @@ const stateModelFactory = (
                 const { colorBy } = self
                 const { staticBlocks } = getContainingView(self) as LGV
                 if (colorBy?.type === 'modifications') {
-                  self.updateModificationColorMap(
-                    await getUniqueModificationValues(
-                      self,
-                      colorBy,
-                      staticBlocks,
-                    ),
+                  const vals = await getUniqueModificationValues(
+                    self,
+                    getConf(self.parentTrack, 'adapter'),
+                    colorBy,
+                    staticBlocks,
                   )
+                  self.updateModificationColorMap(vals)
                 }
-
-                self.setReady(true)
               } catch (error) {
                 console.error(error)
                 self.setError(error)
