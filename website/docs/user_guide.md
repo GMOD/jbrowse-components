@@ -257,9 +257,24 @@ We can now also do things like
 - Filter by tag
 - Color by tag
 
-With these features, we can create very expressive views of alignments tracks
+With these features, we can create very expressive views of alignments tracks.
+For example, in the below step-by-step guide, it shows how to color and sort
+the reads by the HP tag.
 
 <Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag" src="/img/alignments/haplotype.png" />
+
+### Color by modifications/methylation
+
+If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
+format, then the alignments track can use these to color these. It uses two
+modes
+
+1. Modifications mode - draws the modifications as they are
+2. Methylation mode - draws both unmodified and modifified CpGs (unmodified
+   positions are not indicated by the MM tag and this mode considers the
+   sequence context)
+
+<Figure caption="Alignments displayed in the modifications mode and methylation mode using the MM tag" src="/img/alignment_modifications.png" />
 
 ### Color by orientation
 
