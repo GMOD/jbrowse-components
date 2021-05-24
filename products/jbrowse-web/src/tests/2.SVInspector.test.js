@@ -46,7 +46,6 @@ test('opens a vcf.gz file in the sv inspector view', async () => {
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('SV inspector'))
 
-  fireEvent.click(await findByText('URL'))
   fireEvent.change(await findByTestId('urlInput'), {
     target: { value: 'volvox.dup.renamed.vcf.gz' },
   })

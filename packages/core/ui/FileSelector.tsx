@@ -44,7 +44,7 @@ const FileLocationEditor = observer(
     description?: string
   }) => {
     const { location, name, description } = props
-    const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
+    const fileOrUrl = !location || isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
     return (
