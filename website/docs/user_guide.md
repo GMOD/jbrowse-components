@@ -455,3 +455,43 @@ This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />
+
+## Getting the protein sequence for features
+
+If you have a track with gene or transcript level features, then the feature
+detail sidebar will automatically stitch together the sequence for that
+feature. The options include:
+
+- CDS - the coding sequences, spliced together
+- Protein - performs protein translation on the CDS, currently assuming the
+  default codon translation table
+- cDNA - the CDS plus UTR, or just all exons if a non-coding gene
+- Gene w/ introns - the entire gene region sequence with the introns included
+- Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the
+  splice sites shown
+- Gene w/ 500 up+down stream - the entire gene region with 500bp upstream and
+  downstream (shown in light red)
+- Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
+  10bp around the splice sites shown and the up/down stream shown
+
+Some of the params such as 500bp and 10bp are arbitrarily chosen, if you are
+interested in adjusting these parameters let us know
+
+<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_details_sequence.png" />
+
+## Using the plugin store
+
+Users can add plugins to their session using the in-app plugin store. The
+plugin will be added to your "session" which can be shared with the share
+button (or if you are an admin running the admin-server, then it will be added
+to the config file).
+
+This can add extra functions or tracks or many other interesting features. For
+example, if you add the CIVIC plugin, it will automatically add a track that
+contains the CIVIC cancer gene annotations to hg19.
+
+Note that not all plugins are directly useful from being added (sometimes it
+needs extra work on the part of the plugin developer to make them useful in the
+GUI, some plugins require hand editing of configuration files).
+
+<Figure caption="Screenshot showing the plugin store inside the app" src="/img/plugin_store.png" />
