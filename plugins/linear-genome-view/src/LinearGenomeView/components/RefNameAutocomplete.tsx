@@ -41,6 +41,7 @@ export interface Option {
 const filter = createFilterOptions<Option>({
   trim: true,
   matchFrom: 'start',
+  ignoreCase: true,
 })
 const helperSearchText = `Search for features or navigate to a location using syntax "chr1:1-100" or "chr1:1..100"`
 const useStyles = makeStyles(() => ({

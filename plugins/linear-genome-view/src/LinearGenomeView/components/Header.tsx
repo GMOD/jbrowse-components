@@ -134,9 +134,6 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        // Note: reggaex is used to detect but not validate locstrings
-        // const locStringPattern=/(\{([^}]+)\})?(.+):(.+)(\.{2}|-)(.+)/
-        // const locStringPattern=/(\{([^}]+)\})?(.+)/
         const results = await textSearchManager.search(
           {
             queryString: newRegionValue.toLocaleLowerCase(),

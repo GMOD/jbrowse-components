@@ -92,14 +92,16 @@ export default class JBrowse1TextSearchAdapter
         })
         return formattedResult
       }
+      // {"name":"too many matches","hitLimit":1}
+      const defaultLabel = typeof result === 'object' && result.name ? result.name : result
       const defaultResult = new BaseResult({
-        label: result,
+        label: defaultLabel,
         matchedAttribute: 'name',
         matchedObject: result,
       })
       return defaultResult
     })
-    return formattedResults
+    return formattedResults.filter(result => result.getLabel() !== 'too many matches')
   }
 
   freeResources() {}
