@@ -44,11 +44,12 @@ function RefNameAutocomplete({
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions = useMemo(
-    () => (assembly && assembly.regions) || ([] as Region[]),
-    [assembly],
-  )
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const regions =
+    (assemblyName && assemblyManager.get(assemblyName)?.regions) ||
+    ([] as Region[])
+
   const { coarseVisibleLocStrings } = model
   const loaded = regions.length !== 0
   const options = useMemo(
