@@ -7,6 +7,7 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { http as httpFR, https as httpsFR } from 'follow-redirects'
 import { createGunzip } from "zlib"
 import { resolve } from 'path'
+import { type } from 'os'
 
 
 type trackConfig = {
@@ -102,7 +103,7 @@ export default class TextIndex extends JBrowseCommand {
       const indexAttributes: Array<string> = indexConfig[0].attributes;
 
       const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      this.parseLocalGff3(uri, true, false, indexAttributes)
+      this.indexDriver(uri, true, false, indexAttributes)
     }
   }
 
@@ -124,6 +125,27 @@ export default class TextIndex extends JBrowseCommand {
   //                      ---->  parseGff3UrlWithGz() ------
   //
   //
+
+
+
+  async indexDriver(uris: string | Array<string>, isGZ: boolean, isTest: boolean, attributesArr: Array<string>) {
+    
+    
+    // For loop for each uri in the uri array
+    if (typeof uris === 'string')
+      uris = [uris] // turn uris string into an array of one string
+
+    const uri = uris[0];
+    if (this.isURL(uri))
+      this.parseGff3Url(uri, isGZ, isTest, attributesArr)
+    else
+      this.parseLocalGff3(uri, isGZ, isTest, attributesArr)
+
+
+
+  }
+
+
 
 
   // Take in the local file path, check if the
@@ -249,10 +271,7 @@ export default class TextIndex extends JBrowseCommand {
     return this.indexGff3(gZipRead, isTest, attributesArr)
   } 
 
-  // Function that takes in a gff3 readstream and parses through
-  // it and retrieves the needed attributes and information.
-  // Returns a promise that ixIxx finishes (or errors).
-  private indexGff3(gff3In: ReadStream, isTest: boolean, attributesArr: Array<string>) {
+  private tryit(gff3Stream: ReadStream, isTest: boolean, attributesArr: Array<string>) {
     const gffTranform = new Transform({
       objectMode: true,
       transform: (chunk, _encoding, done) => {
@@ -262,11 +281,21 @@ export default class TextIndex extends JBrowseCommand {
           })
       }
     })
-      
-    const gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false})).pipe(gffTranform)
-      
+
+    gff3Stream = gff3Stream.pipe(gffTranform);
+
     // Return promise for ixIxx to finish
     return this.runIxIxx(gff3Stream, isTest)
+  }
+
+  // Function that takes in a gff3 readstream and parses through
+  // it and retrieves the needed attributes and information.
+  // Returns a promise that ixIxx finishes (or errors).
+  private indexGff3(gff3In: ReadStream, isTest: boolean, attributesArr: Array<string>) {
+    
+    let gff3Stream: ReadStream = gff3In.pipe(gff.parseStream({parseSequences: false}))
+
+    return this.tryit(gff3Stream, isTest, attributesArr);
   }
 
 
