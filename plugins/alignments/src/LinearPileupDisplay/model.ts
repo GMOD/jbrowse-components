@@ -511,17 +511,11 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Base modifications (MM+MP/ML)',
+                  label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).setDialogComponent(ModificationsDlg, {
                       model: self,
                     })
-                  },
-                },
-                {
-                  label: 'Methylation (specialized MM+MP/ML)',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'methylation' })
                   },
                 },
                 {
