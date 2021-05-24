@@ -277,7 +277,9 @@ modes
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
 
-<Figure caption="Alignments displayed in the modifications mode and methylation mode using the MM tag" src="/img/alignment_modifications.png" />
+<Figure caption="The track menu can be used to access the settings to color by modifications or methylation" src="/img/alignments/modifications1.png" />
+<Figure caption="Screenshot showing the same track in both modifications mode and methylation mode" src="/img/alignments/modifications2.png" />
+<Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings" src="/img/alignments/modifications3.png" />
 
 ### Color by orientation
 
