@@ -85,7 +85,7 @@ function Home() {
 
               <li>More embeddable products coming soon</li>
             </ul>
-            <h3>CLI</h3>
+            <h3>Command line tools</h3>
             <ul>
               <li>
                 <Link href="https://github.com/GMOD/jb2export/">
