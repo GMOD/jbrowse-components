@@ -54,13 +54,15 @@ can also be used to access the "Add track" form.
 
 <Figure caption="The orange plus icon in the bottom right of a tracklist can also be used to launch the 'Add track form'" src="/img/add_track_tracklist.png" />
 
-In the "Add track" form, you can provide a URL to a file to load. Opening files
-from your local machine is not supported currently in the jbrowse-web app
-(jbrowse-desktop does allow this though, and may be added to jbrowse-web in the
-future)
+In the "Add track" form, you can provide a URL to a file to load, or you can
+also open files from your local machine. In some cases, you need to provide an
+index (bigwig files for example have no index, but BAM/CRAM or tabix filetypes
+like VCF/GFF/BED tabix do). In some cases we can automatically infer the index
+e.g. if you provide a URL for a BAM and the index filename is bamfilename
++'.bai' but you may need to manually supply it in some cases (index inference
+can't be done with files from your local machine)
 
-Paste a URL to a file and optionally provide an index file URL too. The
-following file formats are supported
+The following file formats are supported
 
 - Tabixed VCF
 - Tabixed BED
@@ -70,6 +72,7 @@ following file formats are supported
 - BigWig
 - BigBed
 - .hic file (Juicebox)
+- PAF
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
