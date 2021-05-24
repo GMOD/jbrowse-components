@@ -20,6 +20,8 @@ NPMUSER=$(npm whoami)
 [[ -n "$NPMUSER" ]] || { echo "No NPM user detected, please run 'npm adduser'" && exit 1; }
 MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 [[ "$MAINUPDATED" != 0 ]] && { echo "main is not up to date with origin/main. Please fetch and try again" && exit 1; }
+LOCAL_CHANGES=$(git status --short)
+[[ "$LOCAL_CHANGES" != "" ]] && { echo "Please discard or stash changes and try again." && exit 1; }
 
 # make sure packages are all up to date
 yarn
