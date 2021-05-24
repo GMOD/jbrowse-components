@@ -14,7 +14,6 @@ import {
   getContainingView,
 } from '@jbrowse/core/util'
 
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -35,6 +34,8 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
+
+import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
 
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
@@ -125,61 +126,9 @@ const stateModelFactory = (
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
-      async getUniqueTagValues(
-        colorScheme: { type: string; tag?: string },
-        blocks: BlockSet,
-        opts?: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const values = await rpcManager.call(
-          getRpcSessionId(self),
-          'PileupGetGlobalValueForTag',
-          {
-            adapterConfig,
-            tag: colorScheme.tag,
-            sessionId,
-            regions: blocks.contentBlocks,
-            ...opts,
-          },
-        )
-        return values as string[]
-      },
-      async getUniqueModificationValues(
-        colorScheme: { type: string; tag?: string },
-        blocks: BlockSet,
-        opts?: {
-          headers?: Record<string, string>
-          signal?: AbortSignal
-          filters?: string[]
-        },
-      ) {
-        const { rpcManager } = getSession(self)
-        const { adapterConfig } = self
-        const sessionId = getRpcSessionId(self)
-        const values = await rpcManager.call(
-          getRpcSessionId(self),
-          'PileupGetVisibleModifications',
-          {
-            adapterConfig,
-            tag: colorScheme.tag,
-            sessionId,
-            regions: blocks.contentBlocks,
-            ...opts,
-          },
-        )
-        return values as string[]
-      },
 
       updateModificationColorMap(uniqueModifications: string[]) {
-        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
-
         uniqueModifications.forEach(value => {
           if (!self.modificationTagMap.has(value)) {
             const totalKeys = [...self.modificationTagMap.keys()].length
@@ -227,7 +176,8 @@ const stateModelFactory = (
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
-                  const uniqueTagSet = await self.getUniqueTagValues(
+                  const uniqueTagSet = await getUniqueTagValues(
+                    self,
                     colorBy,
                     view.staticBlocks,
                   )
@@ -235,7 +185,9 @@ const stateModelFactory = (
                 }
 
                 if (colorBy?.type === 'modifications') {
-                  const uniqueModificationsSet = await self.getUniqueModificationValues(
+                  const uniqueModificationsSet = await getUniqueModificationValues(
+                    self,
+                    getConf(self.parentTrack, ['adapter']),
                     colorBy,
                     view.staticBlocks,
                   )
@@ -559,17 +511,11 @@ const stateModelFactory = (
                   },
                 },
                 {
-                  label: 'Base modifications (MM+MP/ML)',
+                  label: 'Modifications or methylation',
                   onClick: () => {
                     getSession(self).setDialogComponent(ModificationsDlg, {
                       model: self,
                     })
-                  },
-                },
-                {
-                  label: 'Methylation (specialized MM+MP/ML)',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'methylation' })
                   },
                 },
                 {

@@ -14,9 +14,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close'
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    width: 300,
-  },
+  root: {},
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -32,6 +30,32 @@ const useStyles = makeStyles(theme => ({
     },
   },
 }))
+
+function ModificationTable({
+  modifications,
+}: {
+  modifications: [string, string][]
+}) {
+  const classes = useStyles()
+  return (
+    <table className={classes.table}>
+      <tbody>
+        {modifications.map(([key, value]) => (
+          <tr key={key}>
+            <td>{key}</td>
+            <td>{value}</td>
+            <td
+              style={{
+                width: '1em',
+                background: value,
+              }}
+            />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
 
 function ColorByTagDlg(props: {
   model: {
@@ -59,11 +83,18 @@ function ColorByTagDlg(props: {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent style={{ overflowX: 'hidden' }}>
+      <DialogContent>
         <div className={classes.root}>
           <Typography>
-            This dialog presents current settings for the color by modifications
-            setting
+            You can choose to color the modifications in the BAM/CRAM MM/ML
+            specification using this dialog. Choosing modifications colors the
+            modified positions and can color multiple modification types.
+            Choosing the methylation setting colors methylated and unmethylated
+            CpG.
+          </Typography>
+          <Typography>
+            Note: you can revisit this dialog to see the current mapping of
+            colors to modification type for the modification coloring mode
           </Typography>
           <div style={{ margin: 20 }}>
             {colorBy?.type === 'modifications' ? (
@@ -71,23 +102,9 @@ function ColorByTagDlg(props: {
                 {modifications.length ? (
                   <>
                     Current modification-type-to-color mapping
-                    <table className={classes.table}>
-                      <tbody>
-                        {modifications.map(([key, value]) => (
-                          <tr key={key}>
-                            <td>{key}</td>
-                            <td>{value}</td>
-                            <td
-                              style={{
-                                width: 14,
-                                height: 14,
-                                background: value,
-                              }}
-                            />
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <ModificationTable
+                      modifications={[...modificationTagMap.entries()]}
+                    />
                   </>
                 ) : (
                   <div>
@@ -100,27 +117,51 @@ function ColorByTagDlg(props: {
                 )}
               </div>
             ) : null}
+            {colorBy?.type === 'methylation' ? (
+              <ModificationTable
+                modifications={[
+                  ['methylated', 'red'],
+                  ['unmethylated', 'blue'],
+                ]}
+              />
+            ) : null}
           </div>
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ marginLeft: 20 }}
-            onClick={() => {
-              model.setColorScheme({
-                type: 'modifications',
-              })
-              handleClose()
-            }}
-          >
-            Color by modifications
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => handleClose()}
-          >
-            Cancel
-          </Button>
+          <div style={{ display: 'flex' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ margin: 5 }}
+              onClick={() => {
+                model.setColorScheme({
+                  type: 'modifications',
+                })
+                handleClose()
+              }}
+            >
+              Modifications
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ margin: 5 }}
+              onClick={() => {
+                model.setColorScheme({
+                  type: 'methylation',
+                })
+                handleClose()
+              }}
+            >
+              Methylation
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{ margin: 5 }}
+              onClick={() => handleClose()}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
