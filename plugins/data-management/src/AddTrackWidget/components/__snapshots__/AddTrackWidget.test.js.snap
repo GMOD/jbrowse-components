@@ -72,7 +72,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                     data-shrink="true"
                     for="callback-editor"
                   >
-                    URL
+                    Main file
                   </label>
                   <div
                     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
@@ -157,7 +157,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                     data-shrink="true"
                     for="callback-editor"
                   >
-                    Index URL (optional)
+                    Index file
                   </label>
                   <div
                     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
