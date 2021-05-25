@@ -66,6 +66,23 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
             role="group"
           >
             <button
+              aria-label="local file"
+              aria-pressed="false"
+              class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
+              tabindex="0"
+              type="button"
+              value="file"
+            >
+              <span
+                class="MuiToggleButton-label"
+              >
+                File
+              </span>
+              <span
+                class="MuiTouchRipple-root"
+              />
+            </button>
+            <button
               aria-label="url"
               aria-pressed="true"
               class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal MuiToggleButton-selected"

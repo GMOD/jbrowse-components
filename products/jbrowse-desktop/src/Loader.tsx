@@ -80,7 +80,10 @@ export default function Loader({
               plugin: new P(),
               metadata: { isCore: true },
             })),
-            ...runtimePlugins.map(P => new P()),
+            ...runtimePlugins.map(({ plugin: P, definition }) => ({
+              plugin: new P(),
+              definition,
+            })),
           ])
         } catch (e) {
           // used to launch an error dialog for whatever caused plugin loading

@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import Container from '@material-ui/core/Container'
-import Grid from '@material-ui/core/Grid'
-import MenuItem from '@material-ui/core/MenuItem'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import {
+  Button,
+  Paper,
+  Container,
+  Grid,
+  MenuItem,
+  TextField,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({

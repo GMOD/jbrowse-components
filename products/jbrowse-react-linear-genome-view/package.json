@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-linear-genome-view",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "JBrowse 2 linear genome view React component",
   "keywords": [
     "jbrowse",
@@ -35,18 +35,18 @@
     "postbuild-storybook": "rimraf public/test_data && node scripts/postBuild.js"
   },
   "dependencies": {
-    "@jbrowse/core": "^1.2.0",
-    "@jbrowse/plugin-alignments": "^1.2.0",
+    "@jbrowse/core": "^1.3.0",
+    "@jbrowse/plugin-alignments": "^1.3.0",
     "@jbrowse/plugin-bed": "^1.2.0",
-    "@jbrowse/plugin-circular-view": "^1.2.0",
-    "@jbrowse/plugin-config": "^1.2.0",
-    "@jbrowse/plugin-data-management": "^1.2.0",
-    "@jbrowse/plugin-gff3": "^1.2.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.2.0",
-    "@jbrowse/plugin-sequence": "^1.2.0",
-    "@jbrowse/plugin-svg": "^1.2.0",
-    "@jbrowse/plugin-variants": "^1.2.0",
-    "@jbrowse/plugin-wiggle": "^1.2.0",
+    "@jbrowse/plugin-circular-view": "^1.3.0",
+    "@jbrowse/plugin-config": "^1.3.0",
+    "@jbrowse/plugin-data-management": "^1.3.0",
+    "@jbrowse/plugin-gff3": "^1.3.0",
+    "@jbrowse/plugin-linear-genome-view": "^1.3.0",
+    "@jbrowse/plugin-sequence": "^1.3.0",
+    "@jbrowse/plugin-svg": "^1.3.0",
+    "@jbrowse/plugin-variants": "^1.3.0",
+    "@jbrowse/plugin-wiggle": "^1.3.0",
     "@material-ui/core": "^4.9.5",
     "@material-ui/icons": "^4.0.0",
     "@material-ui/lab": "^4.0.0-alpha.45",
@@ -62,6 +62,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "devDependencies": {}
+  }
 }

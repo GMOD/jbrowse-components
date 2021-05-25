@@ -20,13 +20,13 @@ function TrackSourceSelect({ model }: { model: AddTrackModel }) {
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <FileSelector
-          name="URL"
+          name="Main file"
           description=""
           location={model.trackData}
           setLocation={model.setTrackData}
         />
         <FileSelector
-          name="Index URL (optional)"
+          name="Index file"
           description="Automatically inferred from the URL if not supplied"
           location={model.indexTrackData}
           setLocation={model.setIndexTrackData}

@@ -43,7 +43,6 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
   fireEvent.click(await findByText('Spreadsheet view'))
 
   await findByTestId('spreadsheet_view_open')
-  fireEvent.click(await findByText('URL'))
   fireEvent.change(await findByTestId('urlInput'), {
     target: { value: 'volvox.filtered.vcf.gz' },
   })
@@ -67,7 +66,6 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
   fireEvent.click(await findByText('Spreadsheet view'))
 
   await findByTestId('spreadsheet_view_open')
-  fireEvent.click(await findByText('URL'))
   fireEvent.change(await findByTestId('urlInput'), {
     target: { value: 'volvox-bed12.bed.gz' },
   })

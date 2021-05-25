@@ -376,7 +376,11 @@ export function getModificationTypes(mm: string) {
       if (!matches) {
         throw new Error('bad format for MM tag')
       }
-      const [, , , type] = matches
-      return type
+      const [, , , typestr] = matches
+
+      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
+      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
+      return typestr.split(/(\d+|.)/).filter(f => !!f)
     })
+    .flat()
 }

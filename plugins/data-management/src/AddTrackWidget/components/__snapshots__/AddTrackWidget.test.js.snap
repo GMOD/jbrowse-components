@@ -72,7 +72,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                     data-shrink="true"
                     for="callback-editor"
                   >
-                    URL
+                    Main file
                   </label>
                   <div
                     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
@@ -85,6 +85,23 @@ exports[`<AddTrackWidget /> renders 1`] = `
                         class="MuiToggleButtonGroup-root"
                         role="group"
                       >
+                        <button
+                          aria-label="local file"
+                          aria-pressed="false"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
+                          tabindex="0"
+                          type="button"
+                          value="file"
+                        >
+                          <span
+                            class="MuiToggleButton-label"
+                          >
+                            File
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
                         <button
                           aria-label="url"
                           aria-pressed="true"
@@ -132,7 +149,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                     data-shrink="true"
                     for="callback-editor"
                   >
-                    Index URL (optional)
+                    Index file
                   </label>
                   <div
                     class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-1 MuiGrid-align-items-xs-center"
@@ -145,6 +162,23 @@ exports[`<AddTrackWidget /> renders 1`] = `
                         class="MuiToggleButtonGroup-root"
                         role="group"
                       >
+                        <button
+                          aria-label="local file"
+                          aria-pressed="false"
+                          class="MuiButtonBase-root MuiToggleButton-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupedHorizontal"
+                          tabindex="0"
+                          type="button"
+                          value="file"
+                        >
+                          <span
+                            class="MuiToggleButton-label"
+                          >
+                            File
+                          </span>
+                          <span
+                            class="MuiTouchRipple-root"
+                          />
+                        </button>
                         <button
                           aria-label="url"
                           aria-pressed="true"

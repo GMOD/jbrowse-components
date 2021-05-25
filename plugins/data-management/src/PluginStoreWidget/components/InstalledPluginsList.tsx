@@ -17,30 +17,26 @@ function InstalledPluginsList({
   pluginManager: PluginManager
   model: PluginStoreModel
 }) {
-  const { plugins } = pluginManager
+  const { plugins } = pluginManager as PluginManager
 
   const corePlugins = plugins
-    .filter((p: BasePlugin) =>
-      Boolean(pluginManager.pluginMetaData[p.name]?.isCore),
-    )
-    .map((p: BasePlugin) => p.name)
+    .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
+    .map(p => p.name)
 
-  const externalPlugins = plugins.filter((plugin: BasePlugin) => {
-    return !corePlugins.includes(plugin.name)
-  })
-
-  const externalPluginsRender = externalPlugins
-    .filter((plugin: BasePlugin) => {
-      return plugin.name.toLowerCase().includes(model.filterText.toLowerCase())
-    })
-    .map((plugin: BasePlugin) => {
-      return <InstalledPlugin key={plugin.name} plugin={plugin} model={model} />
-    })
+  const externalPlugins = plugins.filter(
+    plugin => !corePlugins.includes(plugin.name),
+  )
 
   return (
     <List>
       {externalPlugins.length ? (
-        externalPluginsRender
+        externalPlugins
+          .filter(plugin =>
+            plugin.name.toLowerCase().includes(model.filterText.toLowerCase()),
+          )
+          .map(plugin => (
+            <InstalledPlugin key={plugin.name} plugin={plugin} model={model} />
+          ))
       ) : (
         <Typography>No plugins currently installed</Typography>
       )}

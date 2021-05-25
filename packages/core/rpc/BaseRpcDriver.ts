@@ -152,6 +152,12 @@ export default abstract class BaseRpcDriver {
         throw new Error('dead state tree node passed to RPC call')
       }
 
+      // special case, don't try to iterate the file's subelements as the
+      // object entries below would
+      if (thing instanceof File) {
+        return thing
+      }
+
       return objectFromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))

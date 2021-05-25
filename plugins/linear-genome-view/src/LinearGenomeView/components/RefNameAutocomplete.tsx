@@ -91,13 +91,11 @@ function RefNameAutocomplete({
   const debouncedSearch = useDebounce(currentSearch, 350)
   const [searchOptions, setSearchOptions] = useState<Option[]>([])
   const { assemblyManager } = session
-  const { textSearchManager } = pluginManager.rootModel
-  const { coarseVisibleLocStrings, rankSearchResults } = model
+  const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
   const regions: Region[] = useMemo(() => {
     return (assembly && assembly.regions) || []
   }, [assembly])
-  // const searchScope = model.searchScope
   // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {

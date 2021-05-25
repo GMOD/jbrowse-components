@@ -1,14 +1,16 @@
+import React, { useState } from 'react'
+import {
+  Button,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+  makeStyles,
+} from '@material-ui/core'
 import { getSession } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import Button from '@material-ui/core/Button'
-import Step from '@material-ui/core/Step'
-import StepContent from '@material-ui/core/StepContent'
-import StepLabel from '@material-ui/core/StepLabel'
-import Stepper from '@material-ui/core/Stepper'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
@@ -59,7 +61,9 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
 
     const trackId = `${trackName
       .toLowerCase()
-      .replace(/ /g, '_')}-${Date.now()}`
+      .replace(/ /g, '_')}-${Date.now()}${
+      session.adminMode ? '' : '-sessionTrack'
+    }`
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
@@ -94,9 +98,9 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   function isNextDisabled() {
     switch (activeStep) {
       case 0:
-        return !(trackData.uri || trackData.localPath || trackData.blob)
+        return !trackData
       case 1:
-        return !(trackName && trackType && trackAdapter.type && assembly)
+        return !(trackName && trackType && trackAdapter?.type && assembly)
       default:
         return true
     }
@@ -139,10 +143,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       </Stepper>
     </div>
   )
-}
-
-AddTrackWidget.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(AddTrackWidget)
