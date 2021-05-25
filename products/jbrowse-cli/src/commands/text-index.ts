@@ -123,19 +123,21 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   // Diagram of function call flow:
+
   //
-  //                       -------------------------------------
-  // parseLocalGff3() -- /                                      \
-  //                     \                                       \
-  //                      ---->  parseLocalGzip()  -------------- \
-  //                                                               \
-  //                                                                ------>  indexGff3()  ----->  runIxIxx()  --->  Indexed files created (.ix and .ixx)
-  //                                                               /           ↓    ↑
-  //                      ---->  parseGff3UrlNoGz() -----------  /        recurse_features()
-  //  parseGff3Url() ---/                                      /
-  //                    \                                    /
-  //                      ---->  parseGff3UrlWithGz() ------
-  //
+  //                                      ------> parseGff3UrlWithGz()---\
+  //                                    /                                  indexGff3()
+  //                                  / --------> parseGff3UrlNoGz()-----/            \
+  //                                /                                                  \      
+  //               -----> parseURL()                                                    \
+  //              |                                                                      \
+  // indexDriver()                                                                        returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
+  //              \                                                                      /                   ⇆
+  //               -----> parseLocalGff3()                                              /             recurseFeatures()
+  //                                      \                                            /
+  //                                       \ -----> parseLocalGZip() ---\            /
+  //                                        \                            indexGff3()
+  //                                         --------------------------/   
   //
 
   // This function takes a list of uris, as well as which attributes to index,
