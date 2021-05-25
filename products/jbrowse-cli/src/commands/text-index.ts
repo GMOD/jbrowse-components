@@ -140,6 +140,7 @@ export default class TextIndex extends JBrowseCommand {
   //                                         --------------------------/   
   //
 
+
   // This function takes a list of uris, as well as which attributes to index,
   // and indexes them all into one aggregate index.
   // Returns a promise of the indexing child process completing.
@@ -156,7 +157,7 @@ export default class TextIndex extends JBrowseCommand {
 
     //  For each uri, we parse the file and add it to aggregateStream.
     for (const uri of uris) {
-      // Generate transform function parses a gff stream.
+      // Generate transform function parses an @gmod/gff stream.
       const gffTranform = new Transform({
         objectMode: true,
         transform: (chunk, _encoding, done) => {
@@ -173,8 +174,6 @@ export default class TextIndex extends JBrowseCommand {
         gff3Stream = await this.handleGff3Url(
           uri,
           uri.includes('.gz'),
-          isTest,
-          attributesArr,
         )
         gff3Stream = gff3Stream.pipe(gffTranform)
       }
@@ -205,10 +204,9 @@ export default class TextIndex extends JBrowseCommand {
     return this.runIxIxx(aggregateStream, isTest)
   }
 
-  // Take in the local file path, check if the
-  // it is gzipped or not, then passes it into the correct
-  // file handler.
-  // Returns a promise that ixIxx finishes indexing.
+  // Take in the local file path, check if the it is gzipped or not,
+  // then passes it into the correct file handler.
+  // Returns a @gmod/gff stream.
   handleLocalGff3(
     gff3LocalIn: string,
     isGZ: boolean,
@@ -222,26 +220,19 @@ export default class TextIndex extends JBrowseCommand {
 
   // Method for handing off the parsing of a gff3 file URL.
   // Calls the proper parser depending on if it is gzipped or not.
-  // Returns a promise that the file downloads and ixIxx finishes indexing it.
+  // Returns a @gmod/gff stream.
   async handleGff3Url(
     urlIn: string,
     isGZ: boolean,
-    isTest: boolean,
-    attributesArr: Array<string>,
   ) {
-    if (!isGZ) return this.handleGff3UrlNoGz(urlIn, isTest, attributesArr)
-    else return this.handleGff3UrlWithGz(urlIn, isTest, attributesArr)
+    if (!isGZ) return this.handleGff3UrlNoGz(urlIn)
+    else return this.handleGff3UrlWithGz(urlIn)
   }
 
-  // Grabs the remote file from urlIn, then pipe it directly to parseGff3()
-  // for parsing and indexing. Awaits promise until the child process
-  // is complete and resolves the promise.
-  // Returns a promise that the file downloads and ixIxx finishes indexing it.
-  handleGff3UrlNoGz(
-    urlIn: string,
-    isTest: boolean,
-    attributesArr: Array<string>,
-  ) {
+  // Grabs the remote file from urlIn, then pipe it directly to parseGff3Stream()
+  // for parsing and indexing.
+  // Returns a promise for the resulting @gmod/gff stream.
+  handleGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
 
     let promise = new Promise((resolve, reject) => {
@@ -274,15 +265,9 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   // Grab the remote file from urlIn, then unzip it before
-  // piping into parseGff3 for parsing and indexing. Awaits
-  // a promise until the child proccess is complete and
-  // indexing is complete.
-  // Returns a promise that the file downloads and ixIxx finishes indexing it.
-  handleGff3UrlWithGz(
-    urlIn: string,
-    isTest: boolean,
-    attributesArr: Array<string>,
-  ) {
+  // piping into parseGff3Stream for parsing.
+  // Returns a promise for the resulting @gmod/gff stream.
+  handleGff3UrlWithGz(urlIn: string) {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
@@ -330,6 +315,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
+  // Returns a @gmod/gff stream.
   handleLocalGzip(
     file: ReadStream,
     isTest: boolean,
@@ -342,6 +328,7 @@ export default class TextIndex extends JBrowseCommand {
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
+  // Returns a @gmod/gff stream.
   parseGff3Stream(gff3In: ReadStream) {
     let gff3Stream: ReadStream = gff3In.pipe(
       gff.parseStream({ parseSequences: false }),
@@ -351,8 +338,8 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   // Recursively goes through every record in the gff3 file and gets
-  // the desires attributes in the form of a JSON object. It is then pushed
-  // and returned to the ixIxx file to run.
+  // the desired attributes in the form of a JSON object. It is then
+  // pushed to gff3Stream in proper indexing format.
   async recurseFeatures(
     record: RecordData,
     gff3Stream: ReadStream,
@@ -397,7 +384,7 @@ export default class TextIndex extends JBrowseCommand {
     // parses their attributes as well.
     for (let j = 0; record.length; j++) {
       for (let i = 0; i < record[j].child_features.length; i++) {
-        recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
+        this.recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
       }
     }
   }
