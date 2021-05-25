@@ -281,29 +281,22 @@ describe('valid file tests', () => {
     fireEvent.change(inputBox, {
       target: { value: '{volvox2}ctgB:1..200' },
     })
-    await waitFor(
-      () => expect(inputBox.value).toEqual('{volvox2}ctgB:1..200'),
-      {
-        timeout: 1000,
-      },
-    )
+
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+    await findByPlaceholderText('Search for location')
     await waitFor(
       () =>
         expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
           'volvox2',
         ),
       {
-        timeout: 1000,
+        timeout: 10000,
       },
     )
     await waitFor(() =>
       expect(state.session.views[0].displayedRegions[0].refName).toEqual(
         'ctgB',
       ),
-    )
-    expect((await findByPlaceholderText('Search for location')).value).toEqual(
-      expect.stringContaining('ctgB'),
     )
     // test search
     fireEvent.mouseDown(inputBox)
