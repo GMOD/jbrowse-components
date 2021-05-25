@@ -50,6 +50,23 @@ const useStyles = makeStyles(() => ({
   },
 }))
 
+async function fetchResults(self: LinearGenomeViewModel, query: string) {
+  const session = getSession(self)
+  const { pluginManager } = getEnv(session)
+  const { rankSearchResults } = self
+  const { textSearchManager } = pluginManager.rootModel
+  const searchScope = self.searchScope
+  const args = {
+    queryString: query,
+    searchType: 'prefix',
+  }
+  const searchResults = await textSearchManager.search(
+    args,
+    searchScope,
+    rankSearchResults,
+  )
+  return searchResults
+}
 function RefNameAutocomplete({
   model,
   onSelect,
@@ -77,8 +94,10 @@ function RefNameAutocomplete({
   const { textSearchManager } = pluginManager.rootModel
   const { coarseVisibleLocStrings, rankSearchResults } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  const regions: Region[] = (assembly && assembly.regions) || []
-  const searchScope = model.searchScope
+  const regions: Region[] = useMemo(() => {
+    return (assembly && assembly.regions) || []
+  }, [assembly])
+  // const searchScope = model.searchScope
   // default options for dropdown
   const options: Array<Option> = useMemo(() => {
     const defaultOptions = regions.map(option => {
@@ -103,16 +122,8 @@ function RefNameAutocomplete({
       try {
         let results: BaseResult[] = []
         if (debouncedSearch && debouncedSearch !== '') {
-          const args = {
-            queryString: debouncedSearch,
-            searchType: 'prefix',
-          }
-          const prefixResults = await textSearchManager.search(
-            args,
-            searchScope,
-            rankSearchResults,
-          )
-          results = results.concat(prefixResults)
+          const searchResults = await fetchResults(model, debouncedSearch)
+          results = results.concat(searchResults)
         }
         if (results.length > 0 && active) {
           const adapterResults: Option[] = results.map(result => {
@@ -135,7 +146,7 @@ function RefNameAutocomplete({
     return () => {
       active = false
     }
-  }, [textSearchManager, debouncedSearch, searchScope, rankSearchResults])
+  }, [debouncedSearch, model])
 
   function onChange(selectedOption: Option | string) {
     if (selectedOption) {
