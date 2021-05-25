@@ -125,18 +125,18 @@ export default class TextIndex extends JBrowseCommand {
   // Diagram of function call flow:
 
   //
-  //                                      ------> parseGff3UrlWithGz()---\
-  //                                    /                                  indexGff3()
-  //                                  / --------> parseGff3UrlNoGz()-----/            \
-  //                                /                                                  \      
-  //               -----> parseURL()                                                    \
-  //              |                                                                      \
-  // indexDriver()                                                                        returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
-  //              \                                                                      /                   ⇆
-  //               -----> parseLocalGff3()                                              /             recurseFeatures()
-  //                                      \                                            /
-  //                                       \ -----> parseLocalGZip() ---\            /
-  //                                        \                            indexGff3()
+  //                                      ------> handleGff3UrlWithGz()---\
+  //                                    /                                  parseGff3Stream()
+  //                                  / --------> handleGff3UrlNoGz()-----/                 \
+  //                                /                                                        \      
+  //               -----> handleURL()                                                         \
+  //              |                                                                            \
+  // indexDriver()                                                                          returns ----> indexDriver() -------> runIxIxx --------> output .ix and .ixx files
+  //              \                                                                            /               ⇆
+  //               -----> handleLocalGff3()                                                   /         recurseFeatures()
+  //                                      \                                                 /
+  //                                       \ -----> parseLocalGZip() ---\                 /
+  //                                        \                            parseGff3Stream()
   //                                         --------------------------/   
   //
 
