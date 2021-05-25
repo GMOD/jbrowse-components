@@ -1,0 +1,33 @@
+##gff-version 3
+Group4.16	AU9	gene	645069	648388	0.41	+	.	ID=au9.g2952;Name=au9.g2952
+Group4.16	AU9	mRNA	645069	648388	0.41	+	.	ID=au9.g2952.t1;Name=au9.g2952.t1;Parent=au9.g2952
+Group4.16	AU9	five_prime_UTR	645069	645258	0.68	+	.	Parent=au9.g2952.t1
+Group4.16	AU9	five_prime_UTR	645589	645601	1	+	.	Parent=au9.g2952.t1
+Group4.16	AU9	start_codon	645602	645604	.	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	645602	645750	1	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	645814	645917	1	+	1	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	645998	646147	1	+	2	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	646217	646316	1	+	2	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	646405	646558	1	+	1	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	646653	646733	1	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	646811	646910	1	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	646995	647122	1	+	2	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	647210	647359	1	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	647447	647549	1	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	647718	647948	1	+	2	Parent=au9.g2952.t1
+Group4.16	AU9	CDS	648031	648164	1	+	2	Parent=au9.g2952.t1
+Group4.16	AU9	stop_codon	648162	648164	.	+	0	Parent=au9.g2952.t1
+Group4.16	AU9	three_prime_UTR	648165	648388	0.59	+	.	Parent=au9.g2952.t1
+###
+Group4.16	AU9	gene	524631	526109	0.2	-	.	ID=au9.g2934;Name=au9.g2934
+Group4.16	AU9	mRNA	524631	526109	0.2	-	.	ID=au9.g2934.t1;Name=au9.g2934.t1;Parent=au9.g2934
+Group4.16	AU9	three_prime_UTR	524631	524909	0.4	-	.	Parent=au9.g2934.t1
+Group4.16	AU9	stop_codon	524910	524912	.	-	0	Parent=au9.g2934.t1
+Group4.16	AU9	CDS	524910	525067	1	-	2	Parent=au9.g2934.t1
+Group4.16	AU9	CDS	525162	525450	1	-	0	Parent=au9.g2934.t1
+Group4.16	AU9	CDS	525550	525715	1	-	1	Parent=au9.g2934.t1
+Group4.16	AU9	CDS	525783	526009	1	-	0	Parent=au9.g2934.t1
+Group4.16	AU9	start_codon	526007	526009	.	-	0	Parent=au9.g2934.t1
+Group4.16	AU9	five_prime_UTR	526010	526109	0.35	-	.	Parent=au9.g2934.t1
+###
+Group4.16	AU9	gene	627339	628538	0.19	+	.	ID=au9.g2947;Name=au9.g2947
