@@ -13,12 +13,8 @@ import React from 'react'
 import 'fontsource-roboto'
 import {
   createViewState,
-  createJBrowseTheme,
   JBrowseLinearGenomeView,
-  ThemeProvider,
 } from '@jbrowse/react-linear-genome-view'
-
-const theme = createJBrowseTheme()
 
 function View() {
   const state = createViewState({
@@ -29,11 +25,7 @@ function View() {
       /* tracks */
     ],
   })
-  return (
-    <ThemeProvider theme={theme}>
-      <JBrowseLinearGenomeView viewState={state} />
-    </ThemeProvider>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 ```
 

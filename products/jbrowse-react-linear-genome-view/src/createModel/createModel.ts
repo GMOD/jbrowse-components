@@ -4,7 +4,7 @@ import assemblyManagerFactory, {
 import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, getSnapshot, SnapshotIn, types } from 'mobx-state-tree'
+import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
@@ -60,3 +60,6 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
     }))
   return { model: rootModel, pluginManager }
 }
+
+export type ViewStateModel = ReturnType<typeof createModel>['model']
+export type ViewModel = Instance<ViewStateModel>
