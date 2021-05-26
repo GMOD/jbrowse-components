@@ -58,7 +58,7 @@
     "rxjs": "^6.0.0"
   },
   "peerDependencies": {
-    "react": "^16.8.0"
+    "react": ">=16.8.0"
   },
   "publishConfig": {
     "access": "public"
