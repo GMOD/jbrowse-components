@@ -174,7 +174,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
         filter(feature => this.featurePassesFilters(renderArgs, feature)),
         tap(feature => {
           const id = feature.id()
-          if (!id) throw new Error(`invalid feature id "${id}"`)
+          if (!id) {
+            throw new Error(`invalid feature id "${id}"`)
+          }
           features.set(id, feature)
         }),
         ignoreElements(),
@@ -190,7 +192,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) return true
+    if (!renderArgs.filters) {
+      return true
+    }
     return renderArgs.filters.passes(feature, renderArgs)
   }
 

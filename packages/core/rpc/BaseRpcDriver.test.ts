@@ -36,7 +36,6 @@ class MockWorkerHandle implements WorkerHandle {
           throw new Error('timeout')
         }
 
-        // eslint-disable-next-line no-await-in-loop
         await timeout(50)
       }
     } else if (name === 'doWorkShortPingTime') {

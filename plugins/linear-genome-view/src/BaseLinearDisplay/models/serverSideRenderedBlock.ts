@@ -3,6 +3,7 @@ import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { Region } from '@jbrowse/core/util/types/mst'
+import { AbstractDisplayModel } from '@jbrowse/core/util/types'
 import React from 'react'
 
 import {
@@ -179,13 +180,16 @@ const blockState = types
 export default blockState
 export type BlockStateModel = typeof blockState
 export type BlockModel = Instance<BlockStateModel>
-// calls the render worker to render the block content
-// not using a flow for this, because the flow doesn't
-// work with autorun
-function renderBlockData(self: Instance<BlockStateModel>) {
+
+// calls the render worker to render the block content not using a flow for
+// this, because the flow doesn't work with autorun
+export function renderBlockData(
+  self: Instance<BlockStateModel>,
+  optDisplay?: AbstractDisplayModel,
+) {
   try {
-    const { assemblyManager, rpcManager } = getSession(self)
-    const display = getContainingDisplay(self) as any
+    const display = optDisplay || (getContainingDisplay(self) as any)
+    const { assemblyManager, rpcManager } = getSession(display)
     const {
       adapterConfig,
       renderProps,
@@ -264,7 +268,6 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     displayError,
   } = props as RenderProps
-
   if (!isAlive(self)) {
     return undefined
   }

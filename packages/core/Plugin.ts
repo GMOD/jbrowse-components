@@ -7,6 +7,10 @@ import { AnyConfigurationSchemaType } from './configuration/configurationSchema'
 export default abstract class Plugin {
   abstract name: string
 
+  url?: string
+
+  version?: string
+
   install(_pluginManager: PluginManager): void {}
 
   configure(_pluginManager: PluginManager): void {}

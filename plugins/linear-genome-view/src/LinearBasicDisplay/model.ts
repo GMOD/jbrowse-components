@@ -1,12 +1,14 @@
+import { lazy } from 'react'
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getContainingTrack } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import VisibilityIcon from '@material-ui/icons/Visibility'
-import { types, Instance } from 'mobx-state-tree'
+import { types, getEnv, Instance } from 'mobx-state-tree'
 import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
-import SetMaxHeightDlg from './components/SetMaxHeight'
+
+const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -49,12 +51,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
 
-        return self.rendererType.configSchema.create({
-          ...configBlob,
-          showLabels: this.showLabels,
-          displayMode: this.displayMode,
-          maxHeight: this.maxHeight,
-        })
+        return self.rendererType.configSchema.create(
+          {
+            ...configBlob,
+            showLabels: this.showLabels,
+            displayMode: this.displayMode,
+            maxHeight: this.maxHeight,
+          },
+          getEnv(self),
+        )
       },
     }))
 
@@ -112,10 +117,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getContainingTrack(self).setDialogComponent(
-                  SetMaxHeightDlg,
-                  self,
-                )
+                getSession(self).setDialogComponent(SetMaxHeightDlg, {
+                  model: self,
+                })
               },
             },
           ]

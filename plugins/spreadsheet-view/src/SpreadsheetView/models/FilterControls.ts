@@ -19,10 +19,11 @@ export default (pluginManager: PluginManager) => {
       // returns a function that tests the given row
       get predicate() {
         let s = self.stringToFind // avoid closing over self
-        if (!s)
+        if (!s) {
           return function alwaysTrue() {
             return true
           }
+        }
         s = s.toLowerCase()
         return function stringPredicate(
           _sheet: unknown,
@@ -36,7 +37,9 @@ export default (pluginManager: PluginManager) => {
           ) {
             const cell = cellsWithDerived[columnNumber]
             // note: case insensitive
-            if (cell.text && cell.text.toLowerCase().includes(s)) return true
+            if (cell.text && cell.text.toLowerCase().includes(s)) {
+              return true
+            }
           }
           return false
         }
@@ -76,7 +79,9 @@ export default (pluginManager: PluginManager) => {
       },
       rowPassesFilters(sheet: unknown, row: unknown) {
         for (let i = 0; i < this.filters.length; i += 1) {
-          if (!this.filters[i].predicate(sheet, row)) return false
+          if (!this.filters[i].predicate(sheet, row)) {
+            return false
+          }
         }
         return true
       },

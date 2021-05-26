@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import {
   AppBar,
   Dialog,
@@ -8,10 +8,8 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
-import { Instance, getEnv } from 'mobx-state-tree'
-import createSessionModel from '../createModel/createSessionModel'
-
-type Session = Instance<ReturnType<typeof createSessionModel>>
+import { getEnv } from 'mobx-state-tree'
+import { SessionModel } from '../createModel/createSessionModel'
 
 const useStyles = makeStyles({
   paper: {
@@ -19,44 +17,48 @@ const useStyles = makeStyles({
   },
 })
 
-const ModalWidgetContents = observer(({ session }: { session: Session }) => {
-  const { visibleWidget } = session
-  if (!visibleWidget) {
+const ModalWidgetContents = observer(
+  ({ session }: { session: SessionModel }) => {
+    const { visibleWidget } = session
+    if (!visibleWidget) {
+      return (
+        <AppBar position="relative">
+          <Toolbar />
+        </AppBar>
+      )
+    }
+    const { ReactComponent, HeadingComponent, heading } = getEnv(
+      session,
+    ).pluginManager.getWidgetType(visibleWidget.type)
     return (
-      <AppBar position="relative">
-        <Toolbar />
-      </AppBar>
+      <>
+        <AppBar position="static">
+          <Toolbar>
+            {HeadingComponent ? (
+              <HeadingComponent model={visibleWidget} />
+            ) : (
+              <Typography variant="h6">{heading}</Typography>
+            )}
+          </Toolbar>
+        </AppBar>
+        {visibleWidget && ReactComponent ? (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ReactComponent
+              model={visibleWidget}
+              session={session}
+              overrideDimensions={{
+                height: (window.innerHeight * 5) / 8,
+                width: 800,
+              }}
+            />
+          </Suspense>
+        ) : null}
+      </>
     )
-  }
-  const { ReactComponent, HeadingComponent, heading } = getEnv(
-    session,
-  ).pluginManager.getWidgetType(visibleWidget.type)
-  return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          {HeadingComponent ? (
-            <HeadingComponent model={visibleWidget} />
-          ) : (
-            <Typography variant="h6">{heading}</Typography>
-          )}
-        </Toolbar>
-      </AppBar>
-      {visibleWidget && ReactComponent ? (
-        <ReactComponent
-          model={visibleWidget}
-          session={session}
-          overrideDimensions={{
-            height: (window.innerHeight * 5) / 8,
-            width: 800,
-          }}
-        />
-      ) : null}
-    </>
-  )
-})
+  },
+)
 
-const ModalWidget = observer(({ session }: { session: Session }) => {
+const ModalWidget = observer(({ session }: { session: SessionModel }) => {
   const classes = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (

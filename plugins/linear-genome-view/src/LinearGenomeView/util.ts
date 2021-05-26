@@ -18,7 +18,9 @@ export function chooseGridPitch(
   let majorPitch = 10 ** majorMagnitude
   while (majorPitch < minMajorPitchBp) {
     majorPitch *= 2
-    if (majorPitch >= minMajorPitchBp) break
+    if (majorPitch >= minMajorPitchBp) {
+      break
+    }
     majorPitch *= 2.5
   }
 
@@ -49,7 +51,9 @@ export function makeTicks(
 
   let minBase = start
   let maxBase = end
-  if (minBase === null || maxBase === null) return []
+  if (minBase === null || maxBase === null) {
+    return []
+  }
 
   if (bpPerPx < 0) {
     ;[minBase, maxBase] = [maxBase, minBase]
@@ -68,13 +72,10 @@ export function makeTicks(
     base < maxBase;
     base += iterPitch
   ) {
-    if (emitMinor && base % gridPitch.majorPitch) {
+    if (emitMinor && base % (gridPitch.majorPitch * 2)) {
       ticks.push({ type: 'minor', base: base - 1, index })
       index += 1
     } else if (emitMajor && !(base % (gridPitch.majorPitch * 2))) {
-      ticks.push({ type: 'labeledMajor', base: base - 1, index })
-      index += 1
-    } else if (emitMajor) {
       ticks.push({ type: 'major', base: base - 1, index })
       index += 1
     }

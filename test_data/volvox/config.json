@@ -907,6 +907,24 @@
       }
     },
     {
+      "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_assembly_alias",
+      "name": "volvox filtered vcf (with assembly alias)",
+      "assemblyNames": ["vvx"],
+      "category": ["VCF"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi"
+          }
+        }
+      }
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "bigbed_genes",
       "name": "BigBed genes",
@@ -1230,6 +1248,106 @@
           }
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-chebi-volvox",
+      "name": "MM-chebi-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-chebi-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-chebi-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-double-volvox",
+      "name": "MM-double-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-double-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-double-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-multi-volvox",
+      "name": "MM-multi-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-multi-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-multi-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "MM-orient-volvox",
+      "name": "MM-orient-volvox",
+      "category": ["Methylation"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "MM-orient-volvox.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "MM-orient-volvox.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {

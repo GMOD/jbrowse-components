@@ -10,9 +10,6 @@ function ConnectionTypeSelect(props: {
   connectionTypeChoices: ConnectionType[]
   connectionType: ConnectionType
   setConnectionType: Function
-  assemblyNameChoices: string[]
-  assemblyName: string
-  setAssemblyName: Function
 }) {
   const { connectionTypeChoices, connectionType, setConnectionType } = props
 

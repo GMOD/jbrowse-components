@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, no-console, @typescript-eslint/camelcase, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals, no-console, react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from '@librpc/web'
@@ -13,7 +13,9 @@ import corePlugins from './corePlugins'
 
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
-if (typeof __webpack_require__ === 'function') useStaticRendering(true)
+if (typeof __webpack_require__ === 'function') {
+  useStaticRendering(true)
+}
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
@@ -42,8 +44,10 @@ async function getPluginManager() {
   const pluginLoader = new PluginLoader(config.plugins)
   pluginLoader.installGlobalReExports(self)
   const runtimePlugins = await pluginLoader.load()
-  const plugins = [...corePlugins, ...runtimePlugins]
-  const pluginManager = new PluginManager(plugins.map(P => new P()))
+  const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
+  const pluginManager = new PluginManager(
+    plugins.map(({ plugin: P }) => new P()),
+  )
   pluginManager.createPluggableElements()
   pluginManager.configure()
   jbPluginManager = pluginManager
@@ -120,8 +124,9 @@ getPluginManager()
     const rpcConfig: { [methodName: string]: Function } = {}
     const rpcMethods = pluginManager.getElementTypesInGroup('rpc method')
     rpcMethods.forEach(rpcMethod => {
-      if (!(rpcMethod instanceof RpcMethodType))
+      if (!(rpcMethod instanceof RpcMethodType)) {
         throw new Error('invalid rpc method??')
+      }
 
       rpcConfig[rpcMethod.name] = wrapForRpc(
         rpcMethod.execute.bind(rpcMethod),

@@ -26,4 +26,3 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 }
 
 export { configSchema, stateModelFactory }
-export { BaseFeatureDetails as ReactComponent } from './BaseFeatureDetail'

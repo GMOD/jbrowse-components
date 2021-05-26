@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { lazy } from 'react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import isObject from 'is-object'
 import {
   readConfObject,
   isConfigurationModel,
@@ -9,6 +9,7 @@ import {
   Region,
   NotificationLevel,
   TrackViewModel,
+  DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import { observable } from 'mobx'
@@ -31,6 +32,8 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 declare interface ReferringNode {
   node: IAnyStateTreeNode
@@ -78,8 +81,8 @@ export default function sessionModelFactory(
        */
       task: undefined,
 
-      // which config is being shown in the "About track" menu
-      showAboutConfig: undefined as undefined | AnyConfigurationModel,
+      DialogComponent: undefined as DialogComponentType | undefined,
+      DialogProps: undefined as any,
     }))
     .views(self => ({
       get rpcManager() {
@@ -123,11 +126,12 @@ export default function sessionModelFactory(
         return { theme: readConfObject(this.configuration, 'theme') }
       },
       get visibleWidget() {
-        if (isAlive(self))
+        if (isAlive(self)) {
           // returns most recently added item in active widgets
           return Array.from(self.activeWidgets.values())[
             self.activeWidgets.size - 1
           ]
+        }
         return undefined
       },
 
@@ -158,9 +162,11 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
-      setShowAboutConfig(showConfig: AnyConfigurationModel) {
-        self.showAboutConfig = showConfig
+      setDialogComponent(comp?: DialogComponentType, props?: unknown) {
+        self.DialogComponent = comp
+        self.DialogProps = props
       },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -219,9 +225,13 @@ export default function sessionModelFactory(
       },
 
       updateDrawerWidth(drawerWidth: number) {
-        if (drawerWidth === self.drawerWidth) return self.drawerWidth
+        if (drawerWidth === self.drawerWidth) {
+          return self.drawerWidth
+        }
         let newDrawerWidth = drawerWidth
-        if (newDrawerWidth < minDrawerWidth) newDrawerWidth = minDrawerWidth
+        if (newDrawerWidth < minDrawerWidth) {
+          newDrawerWidth = minDrawerWidth
+        }
         self.drawerWidth = newDrawerWidth
         return newDrawerWidth
       },
@@ -235,7 +245,9 @@ export default function sessionModelFactory(
 
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) throw new Error(`unknown view type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown view type ${typeName}`)
+        }
 
         const length = self.views.push({
           ...initialState,
@@ -299,15 +311,18 @@ export default function sessionModelFactory(
             const type = 'configuration editor widget(s)'
             callbacks.push(() => this.hideWidget(node))
             dereferenced = true
-            if (!dereferenceTypeCount[type]) dereferenceTypeCount[type] = 0
+            if (!dereferenceTypeCount[type]) {
+              dereferenceTypeCount[type] = 0
+            }
             dereferenceTypeCount[type] += 1
           }
-          if (!dereferenced)
+          if (!dereferenced) {
             throw new Error(
               `Error when closing this connection, the following node is still referring to a track configuration: ${JSON.stringify(
                 getSnapshot(node),
               )}`,
             )
+          }
         })
       },
 
@@ -368,10 +383,11 @@ export default function sessionModelFactory(
           (s: AnyConfigurationModel) =>
             readConfObject(s, 'name') === assemblyName,
         )
-        if (!assembly)
+        if (!assembly) {
           throw new Error(
             `Could not add view of assembly "${assemblyName}", assembly name not found`,
           )
+        }
         initialState.displayRegionsFromAssemblyName = readConfObject(
           assembly,
           'name',
@@ -396,7 +412,9 @@ export default function sessionModelFactory(
         configuration = { type: typeName },
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) throw new Error(`unknown widget type ${typeName}`)
+        if (!typeDefinition) {
+          throw new Error(`unknown widget type ${typeName}`)
+        }
         const data = {
           ...initialState,
           id,
@@ -408,8 +426,9 @@ export default function sessionModelFactory(
       },
 
       showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id))
+        if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
+        }
         self.activeWidgets.set(widget.id, widget)
       },
 
@@ -521,7 +540,7 @@ export default function sessionModelFactory(
           {
             label: 'About track',
             onClick: () => {
-              session.setShowAboutConfig(config)
+              session.setDialogComponent(AboutDialog, { config })
             },
             icon: InfoIcon,
           },
@@ -571,7 +590,7 @@ export default function sessionModelFactory(
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out
         // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (isObject(connectionInstances)) {
+        if (!Array.isArray(connectionInstances)) {
           return rest
         }
       }

@@ -1,4 +1,4 @@
-import rangeParser from 'range-parser' // eslint-disable-line import/no-extraneous-dependencies
+import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
@@ -29,7 +29,9 @@ export function getPluginManager(initialState, adminMode = true) {
       JSON.stringify({ session: rootModel.jbrowse.defaultSession }),
     )
     rootModel.activateSession(name)
-  } else rootModel.setDefaultSession()
+  } else {
+    rootModel.setDefaultSession()
+  }
   rootModel.session.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
@@ -41,7 +43,7 @@ export function generateReadBuffer(getFileFunction) {
   return async request => {
     try {
       const file = getFileFunction(request.url)
-      const maxRangeRequest = 1000000 // kind of arbitrary, part of the rangeParser
+      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
       if (request.headers.get('range')) {
         const range = rangeParser(maxRangeRequest, request.headers.get('range'))
         if (range === -2 || range === -1) {

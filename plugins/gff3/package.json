@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "1.0.4",
+  "version": "1.2.0",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -46,7 +46,7 @@
     "mobx-react": "^7.1.0",
     "mobx-state-tree": "^5.0.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0",
+    "react": ">=16.8.0",
     "rxjs": "^6.0.0"
   },
   "publishConfig": {

@@ -177,7 +177,9 @@ export function mdToMismatches(
         const s = cigarOps ? getTemplateCoordLocal(curr.start) : curr.start
         curr.base = seq ? seq.substr(s, 1) : 'X'
         const qualScore = qual?.slice(s, s + 1)[0]
-        if (qualScore) curr.qual = qualScore
+        if (qualScore) {
+          curr.qual = qualScore
+        }
         curr.altbase = token
         nextRecord()
       }
@@ -284,4 +286,101 @@ export function generateMD(target: string, query: string, cigar: string) {
     str += lengthMD
   }
   return str
+}
+
+// get relative reference sequence positions for positions given relative to
+// the read sequence
+export function* getNextRefPos(cigarOps: string[], positions: number[]) {
+  let cigarIdx = 0
+  let readPos = 0
+  let refPos = 0
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i]
+    for (; cigarIdx < cigarOps.length && readPos < pos; cigarIdx += 2) {
+      const len = +cigarOps[cigarIdx]
+      const op = cigarOps[cigarIdx + 1]
+      if (op === 'S' || op === 'I') {
+        readPos += len
+      } else if (op === 'D' || op === 'N') {
+        refPos += len
+      } else if (op === 'M' || op === 'X' || op === '=') {
+        readPos += len
+        refPos += len
+      }
+    }
+
+    yield positions[i] - readPos + refPos
+  }
+}
+
+export function getModificationPositions(mm: string, seq: string) {
+  const mods = mm.split(';')
+  return mods
+    .filter(mod => !!mod)
+    .map(mod => {
+      const [basemod, ...rest] = mod.split(',')
+
+      // regexes based on parse_mm.pl from hts-specs
+      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      if (!matches) {
+        throw new Error('bad format for MM tag')
+      }
+      const [, base, strand, typestr] = matches
+
+      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
+      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
+      const types = typestr.split(/(\d+|.)/).filter(f => !!f)
+
+      if (strand === '-') {
+        console.warn('unsupported negative strand modifications')
+        // make sure to return a somewhat matching type even in this case
+        return { type: 'unsupported', positions: [] }
+      }
+
+      // this logic also based on parse_mm.pl from hts-specs is that in the
+      // sequence of the read, if we have a modification type e.g. C+m;2 and a
+      // sequence ACGTACGTAC we skip the two instances of C and go to the last
+      // C
+      return types.map(type => {
+        let i = 0
+        return {
+          type,
+          positions: rest
+            .map(score => +score)
+            .map(delta => {
+              i++
+              do {
+                if (base === 'N' || base === seq[i]) {
+                  delta--
+                }
+                i++
+              } while (delta >= 0 && i < seq.length)
+              i--
+              return i
+            }),
+        }
+      })
+    })
+    .flat()
+}
+
+export function getModificationTypes(mm: string) {
+  const mods = mm.split(';')
+  return mods
+    .filter(mod => !!mod)
+    .map(mod => {
+      const [basemod] = mod.split(',')
+
+      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      if (!matches) {
+        throw new Error('bad format for MM tag')
+      }
+      const [, , , typestr] = matches
+
+      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
+      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
+      return typestr.split(/(\d+|.)/).filter(f => !!f)
+    })
+    .flat()
 }

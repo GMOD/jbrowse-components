@@ -71,7 +71,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}): Promise<string[]> {
-    if (this.refNames) return this.refNames
+    if (this.refNames) {
+      return this.refNames
+    }
     let refNames = [] as string[]
     if (this.refNamesQueryTemplate) {
       const queryTemplate = encodeURIComponent(this.refNamesQueryTemplate)
@@ -101,8 +103,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async querySparql(query: string, opts?: BaseOptions): Promise<any> {
     let additionalQueryParams = ''
-    if (this.additionalQueryParams.length)
+    if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
+    }
     const signal = opts && opts.signal
     const response = await fetch(
       `${this.endpoint}?query=${query}${additionalQueryParams}`,
@@ -116,10 +119,13 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
     const rows = ((response || {}).results || {}).bindings || []
-    if (!rows.length) return []
+    if (!rows.length) {
+      return []
+    }
     const fields = response.head.vars
-    if (!fields.includes('refName'))
+    if (!fields.includes('refName')) {
       throw new Error('"refName" not found in refNamesQueryTemplate response')
+    }
     return rows.map(row => row.refName.value)
   }
 
@@ -128,14 +134,17 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     refName: string,
   ): SimpleFeature[] {
     const rows = ((results || {}).results || {}).bindings || []
-    if (!rows.length) return []
+    if (!rows.length) {
+      return []
+    }
     const fields = results.head.vars
     const requiredFields = ['start', 'end', 'uniqueId']
     requiredFields.forEach(requiredField => {
-      if (!fields.includes(requiredField))
+      if (!fields.includes(requiredField)) {
         console.error(
           `Required field ${requiredField} missing from feature data`,
         )
+      }
     })
     const seenFeatures: Record<string, SPARQLFeature> = {}
     rows.forEach(row => {
@@ -148,14 +157,18 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
             field = field.slice(4)
             idx += 1
           }
-          while (idx > rawData.length - 1) rawData.push({})
+          while (idx > rawData.length - 1) {
+            rawData.push({})
+          }
           rawData[idx][field] = value
         }
       })
 
       rawData.forEach((rd, idx) => {
         const { uniqueId } = rd
-        if (idx < rawData.length - 1) rawData[idx + 1].parentUniqueId = uniqueId
+        if (idx < rawData.length - 1) {
+          rawData[idx + 1].parentUniqueId = uniqueId
+        }
         seenFeatures[uniqueId] = {
           data: {
             ...rd,
@@ -176,7 +189,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
       if (pid) {
         const p = seenFeatures[pid]
         if (p) {
-          if (!p.data.subfeatures) p.data.subfeatures = []
+          if (!p.data.subfeatures) {
+            p.data.subfeatures = []
+          }
           p.data.subfeatures.push({
             ...f.data,
             uniqueId,
@@ -190,7 +205,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
           let found = false
           for (const subfeature of subfeatures) {
             if (subfeature && subfeature.uniqueId === pid) {
-              if (!subfeature.subfeatures) subfeature.subfeatures = []
+              if (!subfeature.subfeatures) {
+                subfeature.subfeatures = []
+              }
               subfeature.subfeatures.push({
                 ...f.data,
                 uniqueId,
@@ -202,7 +219,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
               subfeatures.push(...subfeature.subfeatures)
             }
           }
-          if (!found) console.error(`Could not find parentID ${pid}`)
+          if (!found) {
+            console.error(`Could not find parentID ${pid}`)
+          }
         }
       }
     }
@@ -222,7 +241,9 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     opts: BaseOptions = {},
   ): Promise<boolean> {
     const refNames = await this.getRefNames(opts)
-    if (refNames.length && !refNames.includes(refName)) return false
+    if (refNames.length && !refNames.includes(refName)) {
+      return false
+    }
     return true
   }
 

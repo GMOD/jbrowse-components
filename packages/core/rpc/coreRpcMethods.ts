@@ -35,7 +35,7 @@ export class CoreGetRefNames extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -63,7 +63,7 @@ export class CoreGetFileInfo extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -90,7 +90,7 @@ export class CoreGetMetadata extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -124,7 +124,7 @@ export class CoreGetFeatures extends RpcMethodType {
       rpcDriverClassName,
     )
     const { sessionId, adapterConfig, region } = deserializedArgs
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
@@ -155,7 +155,9 @@ export class CoreFreeResources extends RpcMethodType {
     // pass the freeResources hint along to all the renderers as well
     this.pluginManager.getRendererTypes().forEach(renderer => {
       const count = renderer.freeResources(/* specification */)
-      if (count) deleteCount += count
+      if (count) {
+        deleteCount += count
+      }
     })
 
     return deleteCount
@@ -219,15 +221,16 @@ export class CoreRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const { dataAdapter } = getAdapter(
+    const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
       adapterConfig,
     )
-    if (!(dataAdapter instanceof BaseFeatureDataAdapter))
+    if (!(dataAdapter instanceof BaseFeatureDataAdapter)) {
       throw new Error(
         `CoreRender cannot handle this type of data adapter ${dataAdapter}`,
       )
+    }
 
     const RendererType = validateRendererType(
       rendererType,

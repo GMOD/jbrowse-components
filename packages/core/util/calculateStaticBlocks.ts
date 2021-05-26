@@ -57,12 +57,15 @@ export default function calculateStaticBlocks(
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
-    if (windowRightBlockNum >= regionBlockCount)
+    if (windowRightBlockNum >= regionBlockCount) {
       windowRightBlockNum = regionBlockCount - 1
+    }
 
     let windowLeftBlockNum =
       Math.floor((windowLeftBp - regionBpOffset) / blockSizeBp) - extra
-    if (windowLeftBlockNum < 0) windowLeftBlockNum = 0
+    if (windowLeftBlockNum < 0) {
+      windowLeftBlockNum = 0
+    }
 
     const regionWidthPx = (regionEnd - regionStart) / bpPerPx
 

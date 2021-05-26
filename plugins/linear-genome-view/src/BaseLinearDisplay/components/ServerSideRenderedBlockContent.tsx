@@ -75,18 +75,30 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   const [shown, setShown] = useState(false)
   const classes = useStyles()
   useEffect(() => {
-    const timeout = setTimeout(() => setShown(true), 300)
-    return () => clearTimeout(timeout)
+    let killed = false
+    const timeout = setTimeout(() => {
+      if (!killed) {
+        setShown(true)
+      }
+    }, 300)
+    return () => {
+      clearTimeout(timeout)
+      killed = true
+    }
   }, [])
 
   const { status: blockStatus } = model
   const { message: displayStatus } = getParent(model, 2)
   const status = displayStatus || blockStatus
-  return shown ? (
-    <div className={classes.loading}>
-      <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
-    </div>
-  ) : null
+  return (
+    <>
+      {shown ? (
+        <div className={classes.loading}>
+          <div className={classes.dots}>{status ? `${status}` : 'Loading'}</div>
+        </div>
+      ) : null}
+    </>
+  )
 })
 
 function BlockMessage({

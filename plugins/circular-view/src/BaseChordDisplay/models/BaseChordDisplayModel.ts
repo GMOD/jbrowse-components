@@ -18,7 +18,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
 import React from 'react'
 import renderReactionFactory from './renderReaction'
-import { CircularViewModel } from '../../CircularView'
+import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 export const BaseChordDisplayModel = types
   .compose(
@@ -55,7 +55,9 @@ export const BaseChordDisplayModel = types
     get blockDefinitions() {
       const origSlices = (getContainingView(self) as CircularViewModel)
         .staticSlices
-      if (!self.refNameMap) return origSlices
+      if (!self.refNameMap) {
+        return origSlices
+      }
 
       const slices = JSON.parse(JSON.stringify(origSlices))
 
@@ -97,12 +99,14 @@ export const BaseChordDisplayModel = types
       const ThisRendererType = pluginManager.getRendererType(
         self.rendererTypeName,
       )
-      if (!ThisRendererType)
+      if (!ThisRendererType) {
         throw new Error(`renderer "${display.rendererTypeName}" not found`)
-      if (!ThisRendererType.ReactComponent)
+      }
+      if (!ThisRendererType.ReactComponent) {
         throw new Error(
           `renderer ${display.rendererTypeName} has no ReactComponent, it may not be completely implemented yet`,
         )
+      }
       return ThisRendererType
     },
 
@@ -115,9 +119,13 @@ export const BaseChordDisplayModel = types
      * is probably a feature
      */
     get selectedFeatureId() {
-      if (!isAlive(self)) return undefined
+      if (!isAlive(self)) {
+        return undefined
+      }
       const session = getSession(self)
-      if (!session) return undefined
+      if (!session) {
+        return undefined
+      }
       const { selection } = session
       // does it quack like a feature?
       if (isFeature(selection)) {

@@ -1,4 +1,4 @@
-import { PluginConstructor } from '@jbrowse/core/Plugin'
+import { PluginRecord } from '@jbrowse/core/PluginLoader'
 import React, { useEffect, useState } from 'react'
 import {
   createViewState,
@@ -9,10 +9,6 @@ import {
 } from '../src'
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
-
-export default {
-  title: 'Linear View',
-}
 
 const theme = createJBrowseTheme()
 
@@ -62,7 +58,29 @@ export const OneLinearGenomeView = () => {
     assembly,
     tracks,
     defaultSession,
+
+    // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
+    onChange: patch => {
+      // eslint-disable-next-line no-console
+      console.log('patch', patch)
+    },
+  })
+  return (
+    <ThemeProvider theme={theme}>
+      <JBrowseLinearGenomeView viewState={state} />
+    </ThemeProvider>
+  )
+}
+
+export const OneLinearGenomeViewUsingLocObject = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+
+    // use 0-based coordinates for "location object" here
+    location: { refName: 'ctgA', start: 10000, end: 20000 },
     onChange: patch => {
       // eslint-disable-next-line no-console
       console.log('patch', patch)
@@ -140,9 +158,13 @@ export const TwoLinearGenomeViews = () => {
   )
 }
 
-export const WithRuntimePlugins = () => {
-  const [plugins, setPlugins] = useState<PluginConstructor[]>()
+export const WithPlugins = () => {
+  // usage with buildtime plugins
+  // import UCSCPlugin from 'jbrowse-plugin-ucsc'
+  // const plugins = [UCSCPlugin]
 
+  // alternative usage with runtime plugins
+  const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {
       const loadedPlugins = await loadPlugins([
@@ -191,7 +213,7 @@ export const WithRuntimePlugins = () => {
         },
       },
     },
-    plugins,
+    plugins: plugins.map(p => p.plugin),
     tracks: [
       {
         type: 'FeatureTrack',
@@ -251,3 +273,9 @@ export const WithRuntimePlugins = () => {
     </ThemeProvider>
   )
 }
+
+const JBrowseLinearGenomeViewStories = {
+  title: 'Linear View',
+}
+
+export default JBrowseLinearGenomeViewStories

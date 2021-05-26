@@ -47,13 +47,14 @@ class GenericFilehandleWrapper {
   }
 
   async read(position: number, length: number) {
-    const { buffer, bytesRead } = await this.filehandle.read(
+    const { buffer: b, bytesRead } = await this.filehandle.read(
       Buffer.allocUnsafe(length),
       0,
       length,
       position,
     )
-    return buffer.buffer.slice(0, bytesRead)
+    // xref https://stackoverflow.com/a/31394257/2129219
+    return b.buffer.slice(b.byteOffset, b.byteOffset + bytesRead)
   }
 }
 export function openFilehandleWrapper(location: FileLocation) {

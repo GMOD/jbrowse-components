@@ -16,7 +16,7 @@ Object {
   "defaultSession": Object {
     "name": "New session",
   },
-  "plugins": undefined,
+  "plugins": Array [],
   "tracks": Array [],
 }
 `;
@@ -138,7 +138,7 @@ Object {
       },
     },
   },
-  "plugins": undefined,
+  "plugins": Array [],
   "tracks": Array [
     Object {
       "adapter": Object {
@@ -2403,6 +2403,44 @@ Object {
     },
     Object {
       "adapter": Object {
+        "index": Object {
+          "location": Object {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": Object {
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": Array [
+        "vvx",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
+          "renderer": Object {
+            "type": "StructuralVariantChordRenderer",
+          },
+          "type": "ChordVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (with assembly alias)",
+      "trackId": "volvox_filtered_vcf_assembly_alias",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
         "bigBedLocation": Object {
           "uri": "volvox.bb",
         },
@@ -3103,6 +3141,310 @@ Object {
       "name": "volvox filtered vcf (green snp, purple indel)",
       "trackId": "variant_colors",
       "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "MM-chebi-volvox.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "MM-chebi-volvox.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Methylation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "MM-chebi-volvox-LinearAlignmentsDisplay",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
+            },
+            "type": "LinearSNPCoverageDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "MM-chebi-volvox-LinearPileupDisplay",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "MM-chebi-volvox-LinearSNPCoverageDisplay",
+          "renderers": Object {
+            "SNPCoverageRenderer": Object {
+              "type": "SNPCoverageRenderer",
+            },
+          },
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "MM-chebi-volvox",
+      "trackId": "MM-chebi-volvox",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "MM-double-volvox.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "MM-double-volvox.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Methylation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "MM-double-volvox-LinearAlignmentsDisplay",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
+            },
+            "type": "LinearSNPCoverageDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "MM-double-volvox-LinearPileupDisplay",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "MM-double-volvox-LinearSNPCoverageDisplay",
+          "renderers": Object {
+            "SNPCoverageRenderer": Object {
+              "type": "SNPCoverageRenderer",
+            },
+          },
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "MM-double-volvox",
+      "trackId": "MM-double-volvox",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "MM-multi-volvox.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "MM-multi-volvox.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Methylation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "MM-multi-volvox-LinearAlignmentsDisplay",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
+            },
+            "type": "LinearSNPCoverageDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "MM-multi-volvox-LinearPileupDisplay",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "MM-multi-volvox-LinearSNPCoverageDisplay",
+          "renderers": Object {
+            "SNPCoverageRenderer": Object {
+              "type": "SNPCoverageRenderer",
+            },
+          },
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "MM-multi-volvox",
+      "trackId": "MM-multi-volvox",
+      "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bamLocation": Object {
+          "uri": "MM-orient-volvox.bam",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "MM-orient-volvox.bam.bai",
+          },
+        },
+        "sequenceAdapter": Object {
+          "twoBitLocation": Object {
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
+        },
+        "type": "BamAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Methylation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "MM-orient-volvox-LinearAlignmentsDisplay",
+          "pileupDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "PileupRenderer": Object {
+                "type": "PileupRenderer",
+              },
+              "SvgFeatureRenderer": Object {
+                "type": "SvgFeatureRenderer",
+              },
+            },
+            "type": "LinearPileupDisplay",
+          },
+          "snpCoverageDisplay": Object {
+            "displayId": "placeholderId",
+            "renderers": Object {
+              "SNPCoverageRenderer": Object {
+                "type": "SNPCoverageRenderer",
+              },
+            },
+            "type": "LinearSNPCoverageDisplay",
+          },
+          "type": "LinearAlignmentsDisplay",
+        },
+        Object {
+          "displayId": "MM-orient-volvox-LinearPileupDisplay",
+          "renderers": Object {
+            "PileupRenderer": Object {
+              "type": "PileupRenderer",
+            },
+            "SvgFeatureRenderer": Object {
+              "type": "SvgFeatureRenderer",
+            },
+          },
+          "type": "LinearPileupDisplay",
+        },
+        Object {
+          "displayId": "MM-orient-volvox-LinearSNPCoverageDisplay",
+          "renderers": Object {
+            "SNPCoverageRenderer": Object {
+              "type": "SNPCoverageRenderer",
+            },
+          },
+          "type": "LinearSNPCoverageDisplay",
+        },
+      ],
+      "name": "MM-orient-volvox",
+      "trackId": "MM-orient-volvox",
+      "type": "AlignmentsTrack",
     },
   ],
 }

@@ -54,13 +54,15 @@ can also be used to access the "Add track" form.
 
 <Figure caption="The orange plus icon in the bottom right of a tracklist can also be used to launch the 'Add track form'" src="/img/add_track_tracklist.png" />
 
-In the "Add track" form, you can provide a URL to a file to load. Opening files
-from your local machine is not supported currently in the jbrowse-web app
-(jbrowse-desktop does allow this though, and may be added to jbrowse-web in the
-future)
+In the "Add track" form, you can provide a URL to a file to load, or you can
+also open files from your local machine. In some cases, you need to provide an
+index (bigwig files for example have no index, but BAM/CRAM or tabix filetypes
+like VCF/GFF/BED tabix do). In some cases we can automatically infer the index
+e.g. if you provide a URL for a BAM and the index filename is bamfilename
++'.bai' but you may need to manually supply it in some cases (index inference
+can't be done with files from your local machine)
 
-Paste a URL to a file and optionally provide an index file URL too. The
-following file formats are supported
+The following file formats are supported
 
 - Tabixed VCF
 - Tabixed BED
@@ -70,6 +72,7 @@ following file formats are supported
 - BigWig
 - BigBed
 - .hic file (Juicebox)
+- PAF
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
@@ -257,9 +260,26 @@ We can now also do things like
 - Filter by tag
 - Color by tag
 
-With these features, we can create very expressive views of alignments tracks
+With these features, we can create very expressive views of alignments tracks.
+For example, in the below step-by-step guide, it shows how to color and sort
+the reads by the HP tag.
 
 <Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag" src="/img/alignments/haplotype.png" />
+
+### Color by modifications/methylation
+
+If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
+format, then the alignments track can use these to color these. It uses two
+modes
+
+1. Modifications mode - draws the modifications as they are
+2. Methylation mode - draws both unmodified and modifified CpGs (unmodified
+   positions are not indicated by the MM tag and this mode considers the
+   sequence context)
+
+<Figure caption="The track menu can be used to access the settings to color by modifications or methylation" src="/img/alignments/modifications1.png" />
+<Figure caption="Screenshot showing the same track in both modifications mode and methylation mode" src="/img/alignments/modifications2.png" />
+<Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings" src="/img/alignments/modifications3.png" />
 
 ### Color by orientation
 
@@ -455,3 +475,43 @@ This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />
+
+## Getting the protein sequence for features
+
+If you have a track with gene or transcript level features, then the feature
+detail sidebar will automatically stitch together the sequence for that
+feature. The options include:
+
+- CDS - the coding sequences, spliced together
+- Protein - performs protein translation on the CDS, currently assuming the
+  default codon translation table
+- cDNA - the CDS plus UTR, or just all exons if a non-coding gene
+- Gene w/ introns - the entire gene region sequence with the introns included
+- Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the
+  splice sites shown
+- Gene w/ 500 up+down stream - the entire gene region with 500bp upstream and
+  downstream (shown in light red)
+- Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
+  10bp around the splice sites shown and the up/down stream shown
+
+Some of the params such as 500bp and 10bp are arbitrarily chosen, if you are
+interested in adjusting these parameters let us know
+
+<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_details_sequence.png" />
+
+## Using the plugin store
+
+Users can add plugins to their session using the in-app plugin store. The
+plugin will be added to your "session" which can be shared with the share
+button (or if you are an admin running the admin-server, then it will be added
+to the config file).
+
+This can add extra functions or tracks or many other interesting features. For
+example, if you add the CIVIC plugin, it will automatically add a track that
+contains the CIVIC cancer gene annotations to hg19.
+
+Note that not all plugins are directly useful from being added (sometimes it
+needs extra work on the part of the plugin developer to make them useful in the
+GUI, some plugins require hand editing of configuration files).
+
+<Figure caption="Screenshot showing the plugin store inside the app" src="/img/plugin_store.png" />

@@ -8,6 +8,7 @@ import {
   UriLocation,
   BlobLocation,
 } from '../types'
+import { getBlob } from '../tracks'
 
 declare global {
   interface Window {
@@ -19,7 +20,9 @@ declare global {
 // for detecting electron in a renderer process, which is the one that has node enabled for us
 // const isElectron = process.versions.electron
 // const i2 = process.versions.hasOwnProperty('electron')
-const isElectron = /electron/i.test(navigator.userAgent)
+const isElectron = /electron/i.test(
+  typeof navigator !== 'undefined' ? navigator.userAgent : '',
+)
 
 export const openUrl = (arg: string) => {
   return isElectron ? new ElectronRemoteFile(arg) : rangeFetcherOpenUrl(arg)
@@ -36,7 +39,7 @@ function isLocalPathLocation(
 }
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blob' in location
+  return 'blobId' in location
 }
 
 export function openLocation(location: FileLocation): GenericFilehandle {
@@ -63,7 +66,14 @@ export function openLocation(location: FileLocation): GenericFilehandle {
     }
   }
   if (isBlobLocation(location)) {
-    return new BlobFile(location.blob)
+    // special case where blob is not directly stored on the model, use a getter
+    const blob = getBlob(location.blobId)
+    if (!blob) {
+      throw new Error(
+        `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
+      )
+    }
+    return new BlobFile(blob)
   }
   throw new Error('invalid fileLocation')
 }

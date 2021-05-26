@@ -1,21 +1,26 @@
-import Button from '@material-ui/core/Button'
-import FormHelperText from '@material-ui/core/FormHelperText'
-import Grid from '@material-ui/core/Grid'
-import InputLabel from '@material-ui/core/InputLabel'
-import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
-import ToggleButton from '@material-ui/lab/ToggleButton'
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup'
-import { observer } from 'mobx-react'
 import React, { useState } from 'react'
 import {
-  FileLocation,
-  UriLocation,
+  Button,
+  Grid,
+  FormHelperText,
+  InputLabel,
+  TextField,
+  Typography,
+} from '@material-ui/core'
+import { ToggleButtonGroup, ToggleButton } from '@material-ui/lab'
+import { observer } from 'mobx-react'
+import { isElectron } from '../util'
+import {
+  PreLocalPathLocation,
+  PreUriLocation,
+  PreBlobLocation,
+  PreFileLocation,
   LocalPathLocation,
+  UriLocation,
+  FileLocation,
   BlobLocation,
 } from '../util/types'
-
-const isElectron = typeof window !== 'undefined' && Boolean(window.electron)
+import { getBlob, storeBlobLocation } from '../util/tracks'
 
 function isUriLocation(location: FileLocation): location is UriLocation {
   return 'uri' in location
@@ -28,7 +33,7 @@ function isLocalPathLocation(
 }
 
 function isBlobLocation(location: FileLocation): location is BlobLocation {
-  return 'blob' in location
+  return 'blobId' in location
 }
 
 const FileLocationEditor = observer(
@@ -37,25 +42,11 @@ const FileLocationEditor = observer(
     setLocation: (param: FileLocation) => void
     name?: string
     description?: string
-    localFileAllowed?: boolean
   }) => {
-    const { location, name, description, localFileAllowed = isElectron } = props
-    const fileOrUrl =
-      (location && isUriLocation(location)) || !localFileAllowed
-        ? 'url'
-        : 'file'
+    const { location, name, description } = props
+    const fileOrUrl = location && isUriLocation(location) ? 'url' : 'file'
     const [fileOrUrlState, setFileOrUrlState] = useState(fileOrUrl)
 
-    const handleFileOrUrlChange = (
-      _event: unknown,
-      newValue: string | null,
-    ) => {
-      if (newValue === 'url') {
-        setFileOrUrlState('url')
-      } else if (localFileAllowed) {
-        setFileOrUrlState('file')
-      }
-    }
     return (
       <>
         <InputLabel shrink htmlFor="callback-editor">
@@ -66,16 +57,20 @@ const FileLocationEditor = observer(
             <ToggleButtonGroup
               value={fileOrUrlState}
               exclusive
-              onChange={handleFileOrUrlChange}
+              onChange={(_, newValue) => {
+                if (newValue === 'url') {
+                  setFileOrUrlState('url')
+                } else {
+                  setFileOrUrlState('file')
+                }
+              }}
               aria-label="file or url picker"
             >
-              {localFileAllowed ? (
-                <ToggleButton value="file" aria-label="local file">
-                  File
-                </ToggleButton>
-              ) : null}
+              <ToggleButton value="file" aria-label="local file">
+                File
+              </ToggleButton>
               <ToggleButton value="url" aria-label="url">
-                Url
+                URL
               </ToggleButton>
             </ToggleButtonGroup>
           </Grid>
@@ -98,17 +93,13 @@ const UrlChooser = (props: {
   setLocation: Function
 }) => {
   const { location, setLocation } = props
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setLocation({ uri: event.target.value })
-  }
+
   return (
     <TextField
       fullWidth
       inputProps={{ 'data-testid': 'urlInput' }}
       defaultValue={location && isUriLocation(location) ? location.uri : ''}
-      onChange={handleChange}
+      onChange={event => setLocation({ uri: event.target.value })}
     />
   )
 }
@@ -116,22 +107,14 @@ const UrlChooser = (props: {
 const LocalFileChooser = observer(
   (props: { location?: FileLocation; setLocation: Function }) => {
     const { location, setLocation } = props
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { target } = event
-      const file = target && target.files && target.files[0]
-      if (file) {
-        if (isElectron) {
-          setLocation({ localPath: file.path })
-        } else {
-          setLocation({ blob: file })
-        }
-      }
-    }
 
     const filename =
       location &&
-      ((isBlobLocation(location) && (location.blob as File).name) ||
+      ((isBlobLocation(location) && location.name) ||
         (isLocalPathLocation(location) && location.localPath))
+
+    const needToReload =
+      location && isBlobLocation(location) && !getBlob(location.blobId)
 
     return (
       <div style={{ position: 'relative' }}>
@@ -146,17 +129,31 @@ const LocalFileChooser = observer(
               width: '100%',
               opacity: 0,
             }}
-            onChange={handleChange}
+            onChange={({ target }) => {
+              const file = target && target.files && target.files[0]
+              if (file) {
+                if (isElectron) {
+                  setLocation({ localPath: file.path })
+                } else {
+                  setLocation(storeBlobLocation({ blob: file }))
+                }
+              }
+            }}
           />
         </Button>
         {filename ? (
-          <Typography
-            style={{ marginLeft: '0.4rem' }}
-            variant="body1"
-            component="span"
-          >
-            {filename}
-          </Typography>
+          <>
+            <Typography
+              style={{ marginLeft: '0.4rem' }}
+              variant="body1"
+              component="span"
+            >
+              {filename}
+            </Typography>
+            {needToReload ? (
+              <Typography color="error">(need to reload)</Typography>
+            ) : null}
+          </>
         ) : null}
       </div>
     )

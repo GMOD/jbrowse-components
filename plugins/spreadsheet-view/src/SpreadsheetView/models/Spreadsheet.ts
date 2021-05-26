@@ -8,7 +8,7 @@ import ColumnDataTypes from './ColumnDataTypes'
 import StaticRowSetF from './StaticRowSet'
 import RowF from './Row'
 
-export default (pluginManager: PluginManager) => {
+const SpreadsheetModelF = (pluginManager: PluginManager) => {
   const { lib, load } = pluginManager
   const { types, getParent } = lib['mobx-state-tree']
 
@@ -109,7 +109,9 @@ export default (pluginManager: PluginManager) => {
             rowA.cellsWithDerived[columnNumber],
             rowB.cellsWithDerived[columnNumber],
           )
-          if (result) return descending ? -result : result
+          if (result) {
+            return descending ? -result : result
+          }
         }
         return 0
       },
@@ -147,8 +149,10 @@ export default (pluginManager: PluginManager) => {
       setSortColumns(
         newSort: NonNullable<SnapshotIn<typeof self.sortColumns>>,
       ) {
-        // @ts-ignore
-        if (newSort) self.sortColumns = newSort
+        if (newSort) {
+          // @ts-ignore
+          self.sortColumns = newSort
+        }
       },
       setColumnType(columnNumber: number, newTypeName: string) {
         self.columns[columnNumber].dataType = { type: newTypeName }
@@ -160,3 +164,5 @@ export default (pluginManager: PluginManager) => {
 
   return stateModel
 }
+
+export default SpreadsheetModelF

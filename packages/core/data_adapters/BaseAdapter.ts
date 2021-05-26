@@ -2,9 +2,12 @@ import { Observable, merge } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from '../util'
+import { checkAbortSignal, hashCode, observeAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import {
+  AnyConfigurationModel,
+  ConfigurationSchema,
+} from '../configuration/configurationSchema'
 import { getSubAdapterType } from './dataAdapterCache'
 import { Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
@@ -18,7 +21,10 @@ export interface BaseOptions {
   [key: string]: unknown
 }
 
-export interface AdapterConstructor {
+// see
+// https://www.typescriptlang.org/docs/handbook/2/classes.html#abstract-construct-signatures
+// for why this is the abstract construct signature
+export interface AnyAdapter {
   new (
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
@@ -33,22 +39,23 @@ export type AnyDataAdapter =
   | SequenceAdapter
 
 // generates a short "id fingerprint" from the config passed to the base
-// feature adapter by recursively enumerating props up to an ID of length 100
+// feature adapter by recursively enumerating props, but if config is too big
+// does not process entire config (FromConfigAdapter for example can be large)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function idMaker(args: any, id = '') {
   const keys = Object.keys(args)
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
-    if (id.length > 100) {
+    if (id.length > 5000) {
       break
     }
-    if (typeof args[key] === 'object') {
+    if (typeof args[key] === 'object' && args[key]) {
       id += idMaker(args[key], id)
     } else {
       id += `${key}-${args[key]};`
     }
   }
-  return id.slice(0, 100)
+  return hashCode(id)
 }
 
 export abstract class BaseAdapter {
@@ -56,12 +63,21 @@ export abstract class BaseAdapter {
 
   static capabilities = [] as string[]
 
-  constructor(args: unknown = {}) {
+  config: AnyConfigurationModel
+
+  getSubAdapter?: getSubAdapterType
+
+  constructor(
+    config: AnyConfigurationModel = ConfigurationSchema('empty', {}).create(),
+    getSubAdapter?: getSubAdapterType,
+  ) {
+    this.config = config
+    this.getSubAdapter = getSubAdapter
     // note: we use switch on jest here for more simple feature IDs
     // in test environment
     if (typeof jest === 'undefined') {
-      const data = isStateTreeNode(args) ? getSnapshot(args) : args
-      this.id = idMaker(data)
+      const data = isStateTreeNode(config) ? getSnapshot(config) : config
+      this.id = `${idMaker(data)}`
     } else {
       this.id = 'test'
     }
@@ -205,7 +221,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return refNames.includes(refName)
   }
 
-  public getRegionStats(region: Region, opts?: BaseOptions) {
+  public async getRegionStats(region: Region, opts?: BaseOptions) {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }

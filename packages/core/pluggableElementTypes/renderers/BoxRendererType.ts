@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal'
+import deepEqual from 'fast-deep-equal'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
@@ -123,8 +123,9 @@ export default class BoxRendererType extends FeatureRendererType {
 
   getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
     const { sessionId } = props
-    if (!this.sessions[sessionId])
+    if (!this.sessions[sessionId]) {
       this.sessions[sessionId] = this.createSession(props)
+    }
     const session = this.sessions[sessionId]
     session.update(props)
     return session
@@ -132,13 +133,17 @@ export default class BoxRendererType extends FeatureRendererType {
 
   // expands region for glyphs to use
   getExpandedRegion(region: Region, renderArgs: RenderArgsDeserialized) {
-    if (!region) return region
+    if (!region) {
+      return region
+    }
     const { bpPerPx, config } = renderArgs
     const maxFeatureGlyphExpansion =
       config === undefined
         ? 0
         : readConfObject(config, 'maxFeatureGlyphExpansion')
-    if (!maxFeatureGlyphExpansion) return region
+    if (!maxFeatureGlyphExpansion) {
+      return region
+    }
     const bpExpansion = Math.round(maxFeatureGlyphExpansion * bpPerPx)
     return {
       ...region,

@@ -7,10 +7,6 @@ import {
 } from '../src'
 import nextstrainConfig from '../public/nextstrain_covid.json'
 
-export default {
-  title: 'Nextstrain View',
-}
-
 const theme = createJBrowseTheme({
   palette: {
     primary: {
@@ -43,3 +39,9 @@ export const NextstrainGenomeView = () => {
     </ThemeProvider>
   )
 }
+
+const NextstrainStory = {
+  title: 'Nextstrain View',
+}
+
+export default NextstrainStory

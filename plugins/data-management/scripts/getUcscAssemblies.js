@@ -15,10 +15,11 @@ const downloadsPageUrl = 'http://hgdownload.soe.ucsc.edu/downloads.html'
 http
   .get(downloadsPageUrl, res => {
     const { statusCode } = res
-    if (statusCode !== 200)
+    if (statusCode !== 200) {
       throw new Error(
         `Could not get downloads page, status code ${statusCode}: ${downloadsPageUrl}`,
       )
+    }
     res.setEncoding('utf8')
     let pageContent = ''
     res.on('data', chunk => {

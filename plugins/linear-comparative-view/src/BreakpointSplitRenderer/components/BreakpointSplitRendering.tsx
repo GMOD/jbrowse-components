@@ -1,5 +1,4 @@
-/* eslint-disable react/require-default-props */
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useMemo, useEffect } from 'react'
 import { getParent, isStateTreeNode } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
 import { ImageBitmapType } from '@jbrowse/core/util/offscreenCanvasPonyfill'
@@ -17,16 +16,18 @@ function BreakpointSplitRendering(props: RenderArgsDeserializedWithImageData) {
     highResolutionScaling = 1,
     imageData,
   } = props
-  let voffs = [0, 0]
-  if (displayModel && isStateTreeNode(displayModel)) {
-    // @ts-ignore
-    const { viewOffsets } = displayModel
-    const { views } = getParent(displayModel, 3)
-    voffs = []
-    for (let i = 0; i < views.length; i++) {
-      voffs.push(views[i].offsetPx - viewOffsets[i])
+  const voffs = useMemo(() => {
+    const ret = [0, 0]
+    if (displayModel && isStateTreeNode(displayModel)) {
+      // @ts-ignore
+      const { viewOffsets } = displayModel
+      const { views } = getParent(displayModel, 3)
+      for (let i = 0; i < views.length; i++) {
+        ret.push(views[i].offsetPx - viewOffsets[i])
+      }
     }
-  }
+    return ret
+  }, [displayModel])
 
   const featureCanvas = useRef<HTMLCanvasElement>(null)
 

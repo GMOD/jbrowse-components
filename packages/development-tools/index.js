@@ -11,7 +11,6 @@ function createJBrowsePluginTsdxConfig(config, options, globals) {
           try {
             require.resolve(id)
             return false
-            // eslint-disable-next-line no-empty
           } catch {}
         }
       }

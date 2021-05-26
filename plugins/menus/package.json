@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-menus",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "JBrowse 2 basic menus",
   "keywords": [
     "jbrowse",
@@ -47,8 +47,8 @@
     "mobx-react": "^7.1.0",
     "mobx-state-tree": "^5.0.1",
     "prop-types": "^15.0.0",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
   },
   "private": true
 }

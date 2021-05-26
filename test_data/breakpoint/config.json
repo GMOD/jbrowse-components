@@ -4,12 +4,20 @@
       "name": "hg19",
       "aliases": ["GRCh37"],
       "sequence": {
-        "trackId": "hg19_seq",
         "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
             "uri": "../hg19.chrom.sizes"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "../hg19_aliases_chr.txt"
           }
         }
       }
@@ -89,13 +97,13 @@
             "bpPerPx": 10,
             "displayedRegions": [
               {
-                "refName": "3",
+                "refName": "chr3",
                 "start": 0,
                 "end": 186700647,
                 "assemblyName": "hg19"
               },
               {
-                "refName": "3",
+                "refName": "chr3",
                 "start": 186700647,
                 "end": 198022430,
                 "assemblyName": "hg19"
@@ -134,13 +142,13 @@
             "bpPerPx": 10,
             "displayedRegions": [
               {
-                "refName": "6",
+                "refName": "chr6",
                 "start": 0,
                 "end": 56758391,
                 "assemblyName": "hg19"
               },
               {
-                "refName": "6",
+                "refName": "chr6",
                 "start": 56758391,
                 "end": 171115067,
                 "assemblyName": "hg19"

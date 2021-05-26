@@ -40,11 +40,8 @@ export default class RpcManager {
 
   backendConfigurations: BackendConfigurations
 
-  runtimePluginDefinitions: PluginDefinition[]
-
   constructor(
     pluginManager: PluginManager,
-    runtimePluginDefinitions: PluginDefinition[] = [],
     mainConfiguration: AnyConfigurationModel,
     backendConfigurations: BackendConfigurations,
   ) {
@@ -52,7 +49,6 @@ export default class RpcManager {
       throw new Error('RpcManager requires at least a main configuration')
     }
     this.pluginManager = pluginManager
-    this.runtimePluginDefinitions = runtimePluginDefinitions
     this.mainConfiguration = mainConfiguration
     this.backendConfigurations = backendConfigurations
     this.driverObjects = new Map()
@@ -60,7 +56,9 @@ export default class RpcManager {
 
   getDriver(backendName: keyof typeof DriverClasses): DriverClass {
     const driver = this.driverObjects.get(backendName)
-    if (driver) return driver
+    if (driver) {
+      return driver
+    }
 
     const backendConfiguration = this.backendConfigurations[backendName]
     const DriverClassImpl = DriverClasses[backendName]
@@ -72,7 +70,7 @@ export default class RpcManager {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newDriver = new DriverClassImpl(backendConfiguration as any, {
-      plugins: this.runtimePluginDefinitions,
+      plugins: this.pluginManager.runtimePluginDefinitions,
     })
     this.driverObjects.set(backendName, newDriver)
     return newDriver

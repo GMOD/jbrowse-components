@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-/* eslint curly:error */
 import PluginManager from '@jbrowse/core/PluginManager'
 import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { isAbortException } from '@jbrowse/core/util'
@@ -88,8 +87,10 @@ async function getPluginManager() {
   const pluginLoader = new PluginLoader(config.plugins)
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load()
-  const plugins = [...corePlugins, ...runtimePlugins]
-  const pluginManager = new PluginManager(plugins.map(P => new P()))
+  const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
+  const pluginManager = new PluginManager(
+    plugins.map(({ plugin: P }) => new P()),
+  )
 
   pluginManager.createPluggableElements()
   pluginManager.configure()

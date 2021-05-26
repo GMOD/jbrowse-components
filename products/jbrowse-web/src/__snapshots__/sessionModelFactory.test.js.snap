@@ -10,6 +10,7 @@ Object {
   "name": "testSession",
   "sessionAssemblies": Array [],
   "sessionConnections": Array [],
+  "sessionPlugins": Array [],
   "sessionTracks": Array [],
   "views": Array [],
   "widgets": Object {},

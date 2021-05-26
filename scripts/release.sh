@@ -25,7 +25,7 @@ MAINUPDATED=$(git rev-list --left-only --count origin/main...main)
 yarn
 
 # make sure the tests are passing
-yarn test
+yarn test --runInBand
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")
@@ -38,8 +38,7 @@ BLOGPOST_DRAFT=website/release_announcement_drafts/$RELEASE_TAG.md
 [[ -f $BLOGPOST_DRAFT ]] || { echo "No blogpost draft found at $BLOGPOST_DRAFT, please write one." && exit 1; }
 
 # Updates the "Browse demo instance" link on the homepage
-INSTANCE=https://s3.amazonaws.com/jbrowse.org/code/jb2/$RELEASE_TAG/index.html
-RELEASE_TAG=$RELEASE_TAG INSTANCE=$INSTANCE node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentLink = process.env.INSTANCE; config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
+RELEASE_TAG=$RELEASE_TAG node --print "const config = require('./website/docusaurus.config.json'); config.customFields.currentVersion = process.env.RELEASE_TAG; JSON.stringify(config,0,2)" >tmp.json
 mv tmp.json website/docusaurus.config.json
 
 # Packages that have changed and will have their version bumped

@@ -20,4 +20,3 @@ const stateModel = types
   }))
 
 export { configSchema, stateModel }
-export { default as ReactComponent } from './BreakpointAlignmentsFeatureDetail'

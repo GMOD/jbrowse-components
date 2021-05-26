@@ -6,13 +6,17 @@ import {
   ReactComponent as SvgFeatureRendererReactComponent,
 } from './SvgFeatureRenderer'
 
+class SvgFeatureRenderer extends BoxRendererType {
+  supportsSVG = true
+}
+
 export default class SVGPlugin extends Plugin {
   name = 'SVGPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addRendererType(
       () =>
-        new BoxRendererType({
+        new SvgFeatureRenderer({
           name: 'SvgFeatureRenderer',
           ReactComponent: SvgFeatureRendererReactComponent,
           configSchema: svgFeatureRendererConfigSchema,

@@ -114,6 +114,8 @@ describe('valid file tests', () => {
     const trackId1 = state.session.views[0].tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
+      {},
+      { timeout: 10000 },
     )
     const trackRenderingContainer1 = await findByTestId(
       'trackRenderingContainer-integration_test-volvox_filtered_vcf',

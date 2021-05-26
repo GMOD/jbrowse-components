@@ -12,6 +12,7 @@ import { MenuItem } from '../../ui'
 import {
   LocalPathLocation as MULocalPathLocation,
   UriLocation as MUUriLocation,
+  BlobLocation as MUBlobLocation,
 } from './mst'
 import RpcManager from '../../rpc/RpcManager'
 import { Feature } from '../simpleFeature'
@@ -39,6 +40,28 @@ export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 
+export interface BasePlugin {
+  version?: string
+  name: string
+  url?: string
+}
+
+export interface JBrowsePlugin {
+  name: string
+  authors: string[]
+  description: string
+  location: string
+  url: string
+  license: string
+  image?: string
+}
+
+export type DialogComponentType =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | React.LazyExoticComponent<React.FC<any>>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | React.FC<any>
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   setSelection(feature: Feature): void
@@ -55,8 +78,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTrackActionMenuItems?: Function
   addAssembly?: Function
   removeAssembly?: Function
-  showAboutConfig?: AnyConfigurationModel
-  setShowAboutConfig?: Function
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]
@@ -65,6 +86,13 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   adminMode?: boolean
   showWidget?: Function
   addWidget?: Function
+
+  addTrackConf?: Function
+  DialogComponent?: DialogComponentType
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DialogProps: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDialogComponent: (dlg?: DialogComponentType, props?: any) => void
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -103,6 +131,17 @@ export function isSessionModelWithWidgets(
   return isSessionModel(thing) && 'widgets' in thing
 }
 
+export interface SessionWithSessionPlugins extends AbstractSessionModel {
+  sessionPlugins: JBrowsePlugin[]
+  addSessionPlugin: Function
+  removeSessionPlugin: Function
+}
+export function isSessionWithSessionPlugins(
+  thing: unknown,
+): thing is SessionWithSessionPlugins {
+  return isSessionModel(thing) && 'sessionPlugins' in thing
+}
+
 /** abstract interface for a session that manages a global selection */
 export interface SelectionContainer extends AbstractSessionModel {
   selection?: unknown
@@ -135,9 +174,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-export interface AbstractTrackModel {
-  setDialogComponent(dlg: unknown, display?: unknown): void
-}
+type AbstractTrackModel = {}
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&
@@ -186,6 +223,14 @@ export interface AbstractRootModel {
   adminMode?: boolean
 }
 
+/** root model with more included for the heavier JBrowse web and desktop app */
+export interface AppRootModel extends AbstractRootModel {
+  isAssemblyEditing: boolean
+  isDefaultSessionEditing: boolean
+  setAssemblyEditing: (arg: boolean) => boolean
+  setDefaultSessionEditing: (arg: boolean) => boolean
+}
+
 /** a root model that manages global menus */
 export interface AbstractMenuManager {
   appendMenu(menuName: string): void
@@ -228,14 +273,23 @@ export interface Region extends NoAssemblyRegion {
 }
 
 export interface LocalPathLocation
-  extends SnapshotOut<typeof MULocalPathLocation> {}
+  extends SnapshotIn<typeof MULocalPathLocation> {}
 
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
-export interface BlobLocation {
-  blob: Blob
-}
+export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
 
 /* eslint-enable @typescript-eslint/no-empty-interface */
+
+// These types are slightly different than the MST models representing a
+// location because a blob cannot be stored in a MST, so this is the
+// pre-processed file location
+export type PreUriLocation = { uri: string }
+export type PreLocalPathLocation = { localPath: string }
+export type PreBlobLocation = { blob: File }
+export type PreFileLocation =
+  | PreUriLocation
+  | PreLocalPathLocation
+  | PreBlobLocation

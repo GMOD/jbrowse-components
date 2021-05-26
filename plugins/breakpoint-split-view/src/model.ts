@@ -1,11 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any,no-bitwise */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MenuItem } from '@jbrowse/core/ui'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import { types, Instance } from 'mobx-state-tree'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import intersection from 'array-intersection'
 import isObject from 'is-object'
+
+// https://stackoverflow.com/a/49186706/2129219
+// the array-intersection package on npm has a large kb size, and we are just
+// intersecting open track ids so simple is better
+function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[]): T[] {
+  const a12 = a1.filter(value => a2.includes(value))
+  if (rest.length === 0) {
+    return a12
+  }
+  // @ts-ignore
+  return intersect(a12, ...rest)
+}
 
 export const VIEW_DIVIDER_HEIGHT = 3
 
@@ -60,10 +71,12 @@ export default function stateModelFactory(pluginManager: any) {
     .views(self => ({
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
-        const viewTracks = self.views.map(view =>
-          view.tracks.map(t => t.configuration.trackId),
+        return intersect(
+          // @ts-ignore expects at least two params but this is fine
+          ...self.views.map(view =>
+            view.tracks.map(t => t.configuration.trackId),
+          ),
         )
-        return intersection(...viewTracks)
       },
 
       get menuItems(): MenuItem[] {

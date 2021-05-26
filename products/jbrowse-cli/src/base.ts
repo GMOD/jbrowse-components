@@ -216,12 +216,10 @@ export default abstract class JBrowseCommand extends Command {
     let result
 
     do {
-      // eslint-disable-next-line no-await-in-loop
       const response = await fetch(
         `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
       )
       if (response.ok) {
-        // eslint-disable-next-line no-await-in-loop
         result = (await response.json()) as GithubRelease[]
 
         yield result.filter(release => release.tag_name.startsWith('v'))

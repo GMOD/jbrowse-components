@@ -101,8 +101,12 @@ export function getNiceDomain({
   let [min, max] = domain
 
   if (scaleType === 'linear') {
-    if (max < 0) max = 0
-    if (min > 0) min = 0
+    if (max < 0) {
+      max = 0
+    }
+    if (min > 0) {
+      min = 0
+    }
   }
   if (scaleType === 'log') {
     // if the min is 0, assume that it's just something

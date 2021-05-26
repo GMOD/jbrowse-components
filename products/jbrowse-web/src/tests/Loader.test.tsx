@@ -1,7 +1,7 @@
 import React from 'react'
-import ErrorBoundary, { FallbackProps } from 'react-error-boundary'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'
-import { TextDecoder, TextEncoder } from 'fastestsmallesttextencoderdecoder'
+import { TextEncoder, TextDecoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 
@@ -22,6 +22,21 @@ const getFile = (url: string) => {
 }
 
 const readBuffer = async (url: string, args: RequestInit) => {
+  if (url.match('plugin-store')) {
+    return {
+      ok: true,
+      async json() {
+        return {
+          plugins: [
+            {
+              url:
+                'https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js',
+            },
+          ],
+        }
+      },
+    }
+  }
   if (url.match(/testid/)) {
     return {
       ok: true,
@@ -86,8 +101,6 @@ function FallbackComponent({ error }: FallbackProps) {
   return <div>there was an error: {String(error)}</div>
 }
 
-const initialTimestamp = 0
-
 describe('<Loader />', () => {
   afterEach(() => {
     localStorage.clear()
@@ -99,7 +112,7 @@ describe('<Loader />', () => {
       <ErrorBoundary FallbackComponent={FallbackComponent}>
         {/* @ts-ignore */}
         <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
-          <Loader initialTimestamp={initialTimestamp} />
+          <Loader />
         </QueryParamProvider>
       </ErrorBoundary>,
     )
@@ -123,7 +136,7 @@ describe('<Loader />', () => {
             '?config=test_data/volvox/config_main_thread.json&session=abcdefg',
         }}
       >
-        <Loader initialTimestamp={initialTimestamp} />
+        <Loader />
       </QueryParamProvider>,
     )
 
@@ -139,7 +152,7 @@ describe('<Loader />', () => {
             '?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq',
         }}
       >
-        <Loader initialTimestamp={initialTimestamp} />
+        <Loader />
       </QueryParamProvider>,
     )
 
@@ -149,19 +162,40 @@ describe('<Loader />', () => {
     })
   })
 
-  xit('can warn of custom callbacks in shared session', async () => {
+  // minimal session with plugin in our plugins.json
+  // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
+  it('can warn of  callbacks in json session', async () => {
+    render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+    await waitFor(() => {
+      expect(sessionStorage.length).toBeGreaterThan(0)
+    })
+  }, 10000)
+
+  // minimal session,
+  // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
+  it('pops up a warning for evil plugin', async () => {
     const { findByTestId } = render(
       <QueryParamProvider
         // @ts-ignore
         location={{
           search:
-            '?config=test_data/volvox/config_main_thread.json&session=share-testcustomcallback&password=ZXCV1',
+            '?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://evil.com/evil.js"}]}}',
         }}
       >
-        <Loader initialTimestamp={initialTimestamp} />
+        <Loader />
       </QueryParamProvider>,
     )
-    expect(await findByTestId('session-warning-modal')).toBeTruthy()
+    await findByTestId('session-warning-modal')
   }, 10000)
 
   it('can use config from a url with nonexistent share param ', async () => {
@@ -174,7 +208,7 @@ describe('<Loader />', () => {
               '?config=test_data/volvox/config_main_thread.json&session=share-nonexist',
           }}
         >
-          <Loader initialTimestamp={initialTimestamp} />
+          <Loader />
         </QueryParamProvider>
       </ErrorBoundary>,
     )
@@ -191,7 +225,7 @@ describe('<Loader />', () => {
               '?config=test_data/bad_config_for_testing_error_catcher.json',
           }}
         >
-          <Loader initialTimestamp={initialTimestamp} />
+          <Loader />
         </QueryParamProvider>
       </ErrorBoundary>,
     )

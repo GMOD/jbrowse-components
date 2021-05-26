@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { makeStyles } from '@material-ui/core/styles'
 import React, { useEffect, useState } from 'react'
-import { PluginConstructor } from '@jbrowse/core/Plugin'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { SnapshotIn } from 'mobx-state-tree'
 import PluginLoader from '@jbrowse/core/PluginLoader'
@@ -38,17 +37,17 @@ export default function Loader({
   const [configSnapshot, setConfigSnapshot] = useState<
     SnapshotIn<AnyConfigurationModel>
   >()
-  const [plugins, setPlugins] = useState<PluginConstructor[]>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [plugins, setPlugins] = useState<any[]>([])
   const classes = useStyles()
   const [error, setError] = useState('')
   const [snapshotError, setSnapshotError] = useState('')
   const [pluginManager, setPluginManager] = useState<PluginManager>()
 
-  const ipcRenderer = (electron && electron.ipcRenderer) || {
-    invoke: () => {},
-  }
-
   useEffect(() => {
+    const ipcRenderer = (electron && electron.ipcRenderer) || {
+      invoke: () => {},
+    }
     async function fetchConfig() {
       try {
         setConfigSnapshot(
@@ -66,7 +65,7 @@ export default function Loader({
     }
 
     fetchConfig()
-  }, [ipcRenderer])
+  }, [])
 
   useEffect(() => {
     async function fetchPlugins() {
@@ -76,7 +75,16 @@ export default function Loader({
           const pluginLoader = new PluginLoader(configSnapshot.plugins)
           pluginLoader.installGlobalReExports(window)
           const runtimePlugins = await pluginLoader.load()
-          setPlugins([...corePlugins, ...runtimePlugins])
+          setPlugins([
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
+            ...runtimePlugins.map(({ plugin: P, definition }) => ({
+              plugin: new P(),
+              definition,
+            })),
+          ])
         } catch (e) {
           // used to launch an error dialog for whatever caused plugin loading
           // to fail
@@ -90,8 +98,8 @@ export default function Loader({
   }, [configSnapshot])
 
   useEffect(() => {
-    if (plugins) {
-      const pm = new PluginManager(plugins.map(P => new P()))
+    if (plugins.length > 0) {
+      const pm = new PluginManager(plugins)
       pm.createPluggableElements()
 
       const JBrowseRootModel = JBrowseRootModelFactory(pm)

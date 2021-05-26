@@ -6,5 +6,5 @@ jest.spyOn(console, 'warn').mockImplementation((...args) => {
   if (typeof args[0] === 'string' && args[0].includes('useResizeContainer')) {
     return undefined
   }
-  return originalWarn.call(console, args)
+  return originalWarn.call(console, ...args)
 })
