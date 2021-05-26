@@ -1,22 +1,6 @@
 import React from 'react'
-import {
-  createViewState,
-  createJBrowseTheme,
-  JBrowseLinearGenomeView,
-  ThemeProvider,
-} from '../src'
+import { createViewState, JBrowseLinearGenomeView } from '../src'
 import nextstrainConfig from '../public/nextstrain_covid.json'
-
-const theme = createJBrowseTheme({
-  palette: {
-    primary: {
-      main: '#5da8a3',
-    },
-    secondary: {
-      main: '#333',
-    },
-  },
-})
 
 const { assembly } = nextstrainConfig
 const { tracks } = nextstrainConfig
@@ -32,12 +16,20 @@ export const NextstrainGenomeView = () => {
       // eslint-disable-next-line no-console
       console.log('patch', patch)
     },
+    configuration: {
+      theme: {
+        palette: {
+          primary: {
+            main: '#5da8a3',
+          },
+          secondary: {
+            main: '#333',
+          },
+        },
+      },
+    },
   })
-  return (
-    <ThemeProvider theme={theme}>
-      <JBrowseLinearGenomeView viewState={state} />
-    </ThemeProvider>
-  )
+  return <JBrowseLinearGenomeView viewState={state} />
 }
 
 const NextstrainStory = {

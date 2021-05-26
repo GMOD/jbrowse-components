@@ -18,6 +18,7 @@ export default function createConfigModel(
           type: 'number',
           defaultValue: 2,
         },
+        theme: { type: 'frozen', defaultValue: {} },
       }),
       assembly: assemblyConfigSchemasType,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),

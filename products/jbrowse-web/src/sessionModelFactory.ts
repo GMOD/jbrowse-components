@@ -200,7 +200,7 @@ export default function sessionModelFactory(
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        const rootModel = getRoot(self)
+        const rootModel = getRoot<any>(self)
         rootModel.setPluginsUpdated(true)
       },
       removeAssembly(assemblyName: string) {
@@ -218,7 +218,7 @@ export default function sessionModelFactory(
         if (index !== -1) {
           self.sessionPlugins.splice(index, 1)
         }
-        const rootModel = getRoot(self)
+        const rootModel = getRoot<any>(self)
         rootModel.setPluginsUpdated(true)
       },
       makeConnection(
