@@ -426,7 +426,7 @@ EXAMPLES
   $ jbrowse text-index --individual --tracks=my_track_id
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.1.0/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v1.3.0/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
