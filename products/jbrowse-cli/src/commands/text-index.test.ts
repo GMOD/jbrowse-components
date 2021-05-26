@@ -214,6 +214,7 @@ describe('aggregateIndexing', () => {
     let textIndex = new TextIndex([], null)
     const trackIds: Array<string> = ["./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3", 
     "./products/jbrowse-cli/test/data/three_records.gff3", "./products/jbrowse-cli/test/data/two_records.gff3"] 
+    
     const indexAttributes: Array<string> = testObjs[0].attributes
 
     await textIndex.indexDriver(trackIds, true, indexAttributes)
