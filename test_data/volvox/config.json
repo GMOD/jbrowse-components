@@ -1348,6 +1348,25 @@
           }
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "single_exon_gene",
+      "category": ["Miscellaneous"],
+      "name": "Single exon gene",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "single_exon_gene.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      }
     }
   ],
   "defaultSession": {
