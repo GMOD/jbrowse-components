@@ -214,6 +214,8 @@ describe('aggregateIndexing', () => {
     let textIndex = new TextIndex([], null)
     const trackIds: Array<string> = ["./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3", 
     "./products/jbrowse-cli/test/data/three_records.gff3", "./products/jbrowse-cli/test/data/two_records.gff3"] 
+    // TODO: two_records and three_records come from au9_scaffold, so this is all duplicate data, which would make for a good test,
+    //          but this one whould probably be changed.
     
     const indexAttributes: Array<string> = testObjs[0].attributes
 
@@ -227,4 +229,73 @@ describe('aggregateIndexing', () => {
 })
 
 // multiple URLS
+describe('aggregateIndexing', () => {
+  const testObjs = [
+    {
+      attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
+    },
+  ]
+  it(`Parses URL gff3 file using custom configuration`, async () => {
+    let textIndex = new TextIndex([], null)
+    const trackIds: Array<string> = ["https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3", 
+    'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz'] 
+    
+    const indexAttributes: Array<string> = testObjs[0].attributes
+
+    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
+    expect(ixdata).toMatchSnapshot()
+  })
+})
+
 // combination
+describe('aggregateIndexing', () => {
+  const testObjs = [
+    {
+      attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
+    },
+  ]
+  it(`Parses all the different kinds of index files`, async () => {
+    let textIndex = new TextIndex([], null)
+    const trackIds: Array<string> = ["https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3", 
+    './products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3',
+    'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
+    './products/jbrowse-cli/test/data/volvox.sort.gff3.gz'] 
+    
+    const indexAttributes: Array<string> = testObjs[0].attributes
+
+    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
+    expect(ixdata).toMatchSnapshot()
+  })
+})
+
+// duplicate data
+describe('aggregateIndexing', () => {
+  const testObjs = [
+    {
+      attributes: ['Name', 'ID', 'seq_id', 'start', 'end'],
+    },
+  ]
+  it(`Parses local gff3 file using custom configuration`, async () => {
+    let textIndex = new TextIndex([], null)
+    const trackIds: Array<string> = ["./products/jbrowse-cli/test/data/au9_scaffold_subset_sync.gff3", 
+    "./products/jbrowse-cli/test/data/three_records.gff3", "./products/jbrowse-cli/test/data/two_records.gff3"] 
+    // two_records and three_records come from au9_scaffold, so this is all duplicate data.
+    
+    const indexAttributes: Array<string> = testObjs[0].attributes
+
+    await textIndex.indexDriver(trackIds, true, indexAttributes)
+    
+    const ixdata = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ix'), {encoding:'utf8', flag:'r'}))
+    const ixxData = JSON.stringify(readFileSync(('./products/jbrowse-cli/test/data/out.ixx'), {encoding: 'utf8', flag:'r'}))
+    expect(ixxData).toMatchSnapshot()
+    expect(ixdata).toMatchSnapshot()
+  })
+})
