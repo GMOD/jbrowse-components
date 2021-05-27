@@ -116,8 +116,8 @@ export default class TextIndex extends JBrowseCommand {
 
       const indexAttributes: Array<string> = testObjs[0].attributes
 
-      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      const uri: string = './test/data/two_records.gff3'
+      const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      //const uri: string = './test/data/two_records.gff3'
       this.indexDriver(uri, false, indexAttributes)
     }
   }
@@ -343,11 +343,10 @@ export default class TextIndex extends JBrowseCommand {
   async recurseFeatures(
     record: RecordData,
     gff3Stream: ReadStream,
-    attributesArr: Array<string>,
+    attributesArr: Array<string>
   ) {
-    let recordObj = {}
-    let attrString: string = ''
-
+    
+  
     // check if the attributes array is undefined
     // breaks out of loop if it is (end of recursion)
     if (attributesArr) {
@@ -356,35 +355,62 @@ export default class TextIndex extends JBrowseCommand {
       // user wants to search by. If it contains it,
       // it adds it to the record object and attributes
       // string
-      for (let attr of attributesArr) {
-        if (record[attr]) {
-          // Check to see if the attr exists for the record
-          recordObj[attr] = record[attr]
-          attrString += ' ' + recordObj[attr]
-        } else if (record.attributes[attr]) {
-          // Name and ID are in the attributes object, so check there too
-          recordObj[attr] = record.attributes[attr]
-          attrString += ' ' + recordObj[attr]
+  
+  
+      let getAndPushRecord = (subRecord) => {
+  
+        let recordObj = {};
+        let attrString: string = "";
+  
+        for (let attr of attributesArr) {
+          if (subRecord[attr]) { // Check to see if the attr exists for the record
+            recordObj[attr] = subRecord[attr];
+            attrString += " " + recordObj[attr];
+          } else if (subRecord.attributes && subRecord.attributes[attr]) { // Name and ID are in the attributes object, so check there too
+            recordObj[attr] = subRecord.attributes[attr];
+            attrString += " " + recordObj[attr];
+          }
+        }
+  
+        // encodes the record object so that it can be used by ixIxx
+        // appends the attributes that we are indexing by to the end
+        // of the string before pushing to ixIxx
+        let buff = Buffer.from(JSON.stringify(recordObj), "utf-8");
+        let str: string = `${buff.toString("base64")}`;
+        str += attrString + "\n";
+  
+        gff3Stream.push(str);
+      }
+  
+      
+      if (Array.isArray(record)) {
+        for (const r of record) {
+          getAndPushRecord(r)
         }
       }
-
-      // encodes the record object so that it can be used by ixIxx
-      // appends the attributes that we are indexing by to the end
-      // of the string before pushing to ixIxx
-      let buff = Buffer.from(JSON.stringify(recordObj), 'utf-8')
-      let str: string = `${buff.toString('base64')}`
-      str += attrString
-
-      gff3Stream.push(str)
-    } else {
-      return
+      else {
+        getAndPushRecord(record)
+      }
+  
+  
+    } else {  
+      return;
     }
-
+  
     // recurses through each record to get child features and
     // parses their attributes as well.
-    for (let j = 0; record.length; j++) {
-      for (let i = 0; i < record[j].child_features.length; i++) {
-        this.recurseFeatures(record[j].child_features[i], gff3Stream, attributesArr)
+  
+    if (record.child_features || record[0].child_features) {
+      if(Array.isArray(record)){
+          for (const r of record) {
+            for (let i = 0; i < record[0].child_features.length; i++) {
+              this.recurseFeatures(r.child_features[i], gff3Stream, attributesArr);
+            }
+          }
+      }else{
+        for(let i = 0; i < record['child_features'].length; i++){
+          this.recurseFeatures(record.child_features[i], gff3Stream, attributesArr);
+        }
       }
     }
   }
