@@ -4,10 +4,11 @@ import { ReadStream, createReadStream, promises } from 'fs'
 import { Transform, PassThrough } from 'stream'
 import gff from '@gmod/gff'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import { http as httpFR, https as httpsFR } from 'follow-redirects'
-import { createGunzip } from 'zlib'
+import { FollowResponse, http as httpFR, https as httpsFR } from 'follow-redirects'
+import { createGunzip, Gunzip } from 'zlib'
 import { resolve } from 'path'
 import { type } from 'os'
+import { IncomingMessage } from 'http'
 
 type trackConfig = {
   trackId: string
@@ -80,7 +81,6 @@ export default class TextIndex extends JBrowseCommand {
       // const gff3FileLocation: string = "./test/data/au9_scaffold_subset_sync.gff3"
       // const gff3FileLocation: string = 'https://github.com/GMOD/jbrowse-components/blob/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz?raw=true'
       // const gff3FileLocation = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
-      // const gff3FileLocation = 'https://github.com/GMOD/jbrowse-components/raw/cli_trix_indexer/test_data/volvox/volvox.sort.gff3.gz'
       // const gff3FileLocation = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
 
       // Check if the file is a URL, then index it.
@@ -116,8 +116,10 @@ export default class TextIndex extends JBrowseCommand {
 
       const indexAttributes: Array<string> = testObjs[0].attributes
 
-      const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
-      //const uri: string = './test/data/two_records.gff3'
+      // const uri: string = indexConfig[0].indexingConfiguration.gffLocation.uri;
+      // const uri: string = 'http://128.206.12.216/drupal/sites/bovinegenome.org/files/data/umd3.1/Ensembl_Mus_musculus.NCBIM37.67.pep.all_vs_UMD3.1.gff3.gz'
+      const uri: string = './test/data/two_records.gff3'
+      // const uri: string = 'https://raw.githubusercontent.com/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3'
       this.indexDriver(uri, false, indexAttributes)
     }
   }
@@ -168,23 +170,15 @@ export default class TextIndex extends JBrowseCommand {
         },
       })
 
-      let gff3Stream;
+      let gff3Stream: ReadStream | Transform;
       // If it is a URL, we want to await the http request.
       if (this.isURL(uri)) {
-        gff3Stream = await this.handleGff3Url(
-          uri,
-          uri.includes('.gz'),
-        )
+        gff3Stream = await this.handleGff3Url(uri, uri.includes('.gz'))
         gff3Stream = gff3Stream.pipe(gffTranform)
       }
       // If it is local, there is no need to await.
       else {
-        gff3Stream = this.handleLocalGff3(
-          uri,
-          uri.includes('.gz'),
-          isTest,
-          attributesArr,
-        )
+        gff3Stream = this.handleLocalGff3(uri, uri.includes('.gz'))
         gff3Stream = gff3Stream.pipe(gffTranform)
       }
 
@@ -210,12 +204,10 @@ export default class TextIndex extends JBrowseCommand {
   handleLocalGff3(
     gff3LocalIn: string,
     isGZ: boolean,
-    isTest: boolean,
-    attributesArr: Array<string>,
   ) {
     let gff3ReadStream: ReadStream = createReadStream(gff3LocalIn)
     if (!isGZ) return this.parseGff3Stream(gff3ReadStream)
-    else return this.handleLocalGzip(gff3ReadStream, isTest, attributesArr)
+    else return this.handleLocalGzip(gff3ReadStream)
   }
 
   // Method for handing off the parsing of a gff3 file URL.
@@ -224,7 +216,7 @@ export default class TextIndex extends JBrowseCommand {
   async handleGff3Url(
     urlIn: string,
     isGZ: boolean,
-  ) {
+  ) : Promise<ReadStream> {
     if (!isGZ) return this.handleGff3UrlNoGz(urlIn)
     else return this.handleGff3UrlWithGz(urlIn)
   }
@@ -235,11 +227,11 @@ export default class TextIndex extends JBrowseCommand {
   handleGff3UrlNoGz(urlIn: string) {
     const newUrl = new URL(urlIn)
 
-    let promise = new Promise((resolve, reject) => {
+    let promise = new Promise<ReadStream>((resolve, reject) => {
       if (newUrl.protocol === 'https:') {
         httpsFR
-          .get(urlIn, res => {
-            const parseStream = this.parseGff3Stream(res)
+          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
+            const parseStream = this.parseGff3Stream(response)
             resolve(parseStream)
           })
           .on('error', (e: NodeJS.ErrnoException) => {
@@ -249,8 +241,8 @@ export default class TextIndex extends JBrowseCommand {
           })
       } else {
         httpFR
-          .get(urlIn, res => {
-            const parseStream = this.parseGff3Stream(res)
+          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
+            const parseStream = this.parseGff3Stream(response)
             resolve(parseStream)
           })
           .on('error', (e: NodeJS.ErrnoException) => {
@@ -271,10 +263,10 @@ export default class TextIndex extends JBrowseCommand {
     const unzip = createGunzip()
     const newUrl = new URL(urlIn)
 
-    let promise = new Promise((resolve, reject) => {
+    let promise = new Promise<ReadStream>((resolve, reject) => {
       if (newUrl.protocol === 'https:') {
         httpsFR
-          .get(urlIn, response => {
+          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
             const parseStream = this.parseGff3Stream(response.pipe(unzip))
             resolve(parseStream)
           })
@@ -285,7 +277,7 @@ export default class TextIndex extends JBrowseCommand {
           })
       } else {
         httpFR
-          .get(urlIn, response => {
+          .get(urlIn, (response: IncomingMessage & FollowResponse) => {
             const parseStream = this.parseGff3Stream(response.pipe(unzip))
             resolve(parseStream)
           })
@@ -316,20 +308,16 @@ export default class TextIndex extends JBrowseCommand {
   // Handles local gZipped files by unzipping them
   // then passing them into the parseGff3()
   // Returns a @gmod/gff stream.
-  handleLocalGzip(
-    file: ReadStream,
-    isTest: boolean,
-    attributesArr: Array<string>,
-  ) {
+  handleLocalGzip(file: ReadStream) {
     const unzip = createGunzip()
-    let gZipRead: ReadStream = file.pipe(unzip)
+    const gZipRead = file.pipe(unzip)
     return this.parseGff3Stream(gZipRead)
   }
 
   // Function that takes in a gff3 readstream and parses through
   // it and retrieves the needed attributes and information.
   // Returns a @gmod/gff stream.
-  parseGff3Stream(gff3In: ReadStream) {
+  parseGff3Stream(gff3In: ReadStream | (IncomingMessage & FollowResponse) | Gunzip) {
     let gff3Stream: ReadStream = gff3In.pipe(
       gff.parseStream({ parseSequences: false }),
     )
@@ -342,7 +330,7 @@ export default class TextIndex extends JBrowseCommand {
   // pushed to gff3Stream in proper indexing format.
   async recurseFeatures(
     record: RecordData,
-    gff3Stream: ReadStream,
+    gff3Stream: ReadStream | Transform,
     attributesArr: Array<string>
   ) {
     
