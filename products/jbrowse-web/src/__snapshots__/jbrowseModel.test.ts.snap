@@ -3446,6 +3446,37 @@ Object {
       "trackId": "MM-orient-volvox",
       "type": "AlignmentsTrack",
     },
+    Object {
+      "adapter": Object {
+        "gffGzLocation": Object {
+          "uri": "single_exon_gene.sorted.gff.gz",
+        },
+        "index": Object {
+          "location": Object {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi",
+          },
+        },
+        "type": "Gff3TabixAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "single_exon_gene-LinearBasicDisplay",
+          "renderer": Object {
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearBasicDisplay",
+        },
+      ],
+      "name": "Single exon gene",
+      "trackId": "single_exon_gene",
+      "type": "FeatureTrack",
+    },
   ],
 }
 `;
