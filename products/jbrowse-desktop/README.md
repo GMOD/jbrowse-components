@@ -35,6 +35,15 @@ Mac, and Windows. You can also use `yarn build-electron:win`,
 `yarn build-electron:linux`, or `yarn build-electron:mac` to build and package
 for a specific platform.
 
+#### MacOS
+
+To install the development libraries on Mac:
+
+```sh
+# To build for Linux and Mac
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
 #### Windows
 
 Only the Windows application can be packaged when developing on a Windows
