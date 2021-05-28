@@ -1,11 +1,10 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { App, createJBrowseTheme } from '@jbrowse/core/ui'
-import CssBaseline from '@material-ui/core/CssBaseline'
-import { ThemeProvider } from '@material-ui/core/styles'
+import { CssBaseline, ThemeProvider } from '@material-ui/core'
 
 import { observer } from 'mobx-react'
-import { onSnapshot } from 'mobx-state-tree'
+import { onSnapshot, getSnapshot } from 'mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import StartScreen from './StartScreen'
 import factoryReset from './factoryReset'
@@ -35,45 +34,42 @@ function debounce(func, wait) {
   }
   return debounced
 }
-
+function saveConfig(snapshot) {
+  const { electron = {} } = window
+  return electron.ipcRenderer.invoke('saveConfig', snapshot)
+}
 const JBrowse = observer(({ pluginManager }) => {
   const { electron = {} } = window
   const { desktopCapturer, ipcRenderer } = electron
   const [firstLoad, setFirstLoad] = useState(true)
 
   const { rootModel } = pluginManager
-  const {
-    session,
-    jbrowse,
-    error,
-    pluginsUpdated,
-    setPluginsUpdated,
-  } = rootModel
+  const { session, jbrowse, error, pluginsUpdated } = rootModel
+
   if (firstLoad && session) {
     setFirstLoad(false)
   }
 
   useEffect(() => {
-    async function sendIpcConfig(snapshot) {
-      await ipcRenderer.invoke('saveConfig', snapshot)
-
-      if (pluginsUpdated) {
-        setPluginsUpdated(false)
-        window.location.reload()
-      }
-    }
-
-    let disposer = () => {}
     if (jbrowse) {
-      const updater = debounce(sendIpcConfig, debounceMs)
+      const updater = debounce(saveConfig, debounceMs)
       const snapshotDisposer = onSnapshot(jbrowse, updater)
-      disposer = () => {
+      return () => {
         snapshotDisposer()
         updater.cancel()
       }
     }
-    return disposer
-  }, [jbrowse, ipcRenderer, pluginsUpdated, setPluginsUpdated])
+    return () => {}
+  }, [jbrowse, ipcRenderer, pluginsUpdated, rootModel])
+
+  useEffect(() => {
+    ;(async () => {
+      if (pluginsUpdated) {
+        await saveConfig(getSnapshot(jbrowse))
+        window.location.reload()
+      }
+    })()
+  }, [pluginsUpdated, jbrowse])
 
   useEffect(() => {
     async function createScreenshot(snapshot) {
