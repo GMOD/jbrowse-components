@@ -278,18 +278,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
         ]
       },
-      get searchScope() {
-        const session = getSession(self)
-        if (self.displayedRegions.length === 0) {
-          return {
-            aggregate: true,
-            assemblyNames: session.assemblyNames,
-          }
-        }
+      searchScope(assemblyName: string) {
         return {
+          assemblyName,
           aggregate: true,
           openedTracks: self.tracks,
-          assemblyNames: session.assemblyNames,
         }
       },
       parentRegion(assemblyName: string, refName: string) {
@@ -444,8 +437,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       rankSearchResults(results: BaseResult[]) {
-        // order of rank
-        const openTrackIds = self.tracks.map(track => track.rpcSessionId)
+        const openTrackIds = self.tracks.map(
+          track => track.configuration.trackId,
+        )
         results.forEach(result => {
           if (openTrackIds !== []) {
             if (openTrackIds.includes(result.trackId)) {
