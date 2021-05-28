@@ -96,11 +96,11 @@
     "productName": "JBrowse 2",
     "copyright": "Copyright © 2019",
     "win": {
-      "target": "zip",
+      "target": "nsis",
       "artifactName": "jbrowse-desktop-${version}-win.${ext}"
     },
     "linux": {
-      "target": "zip",
+      "target": "AppImage",
       "artifactName": "jbrowse-desktop-${version}-linux.${ext}",
       "executableName": "jbrowse-desktop"
     },
