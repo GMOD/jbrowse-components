@@ -53,7 +53,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const color = readConfObject(config, 'color', { feature })
       ctx.fillStyle = color
       ctx.strokeStyle = color
-      if (strand === '-') {
+      if (strand === -1) {
         ;[end, start] = [start, end]
       }
       const b10 = hview.bpToPx({ refName, coord: start })
