@@ -155,7 +155,7 @@ export default function SearchResultsDialog({
                   <TableRow>
                     <TableCell>Name</TableCell>
                     <TableCell align="right">Location</TableCell>
-                    <TableCell align="right">Track Id</TableCell>
+                    <TableCell align="right">Track</TableCell>
                     <TableCell align="right" />
                   </TableRow>
                 </TableHead>
@@ -216,7 +216,7 @@ export default function SearchResultsDialog({
           }}
           color="primary"
         >
-          Close
+          Cancel
         </Button>
       </DialogActions>
     </Dialog>
