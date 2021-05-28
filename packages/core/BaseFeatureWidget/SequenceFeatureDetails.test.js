@@ -101,3 +101,28 @@ test('NCDN updownstream', () => {
     'ATGTCGTGTTGTGACCTGGCTGCGGCGGGACAG',
   )
 })
+
+test('single exon cDNA should not have duplicate sequences', () => {
+  const seq = readFasta('./test_data/volvox.fa')
+  const { getByTestId } = render(
+    <SequencePanel
+      sequence={{ seq }}
+      mode="cdna"
+      feature={{
+        start: 1200,
+        end: 1500,
+        type: 'mRNA',
+        subfeatures: [
+          { start: 1200, end: 1500, type: 'exon' },
+          { start: 1200, end: 1500, type: 'CDS' },
+        ],
+      }}
+    />,
+  )
+
+  const element = getByTestId('sequence_panel')
+
+  expect(element.children[0].textContent).toEqual(
+    'atgtcacctcgggtactgcctctattacagaggtatcttaatggcgcatccagccttgtggctgggtctacgtacgcgtgggcaccatacgtatgttggcaggaaaggtcaatcatgcttgtttcctcgtcgcagaaacgttcacactattggctcgcgggatcgaacgggcctgattatttttccagctcctgcgttcctatcacgccaactgtcgctaataaaatgttatatagagataacccattgctatgcaaggatggagaaaccgcttcacaacaccctagaattacttcagca',
+  )
+})
