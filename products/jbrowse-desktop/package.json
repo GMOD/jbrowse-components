@@ -106,7 +106,7 @@
     },
     "mac": {
       "category": "public.app-category.utilities",
-      "target": "zip",
+      "target": "dmg",
       "artifactName": "jbrowse-desktop-${version}-mac.${ext}"
     },
     "files": [
