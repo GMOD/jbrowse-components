@@ -110,6 +110,20 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         } as PafRecord
       })
 
+    // calculate the "weighted mean" (e.g. longer alignments factor in more
+    // heavily) of all the fragments of a query vs the reference that it mapped
+    // to
+    //
+    // this uses a combined key query+'-'+ref to iteratively map all the
+    // alignments that match a particular ref from a particular query (so 1d
+    // array of what could be a 2d map)
+    //
+    // the result is a single number that says e.g. chr5 from human mapped to
+    // chr5 on mouse with 0.8 quality, and that0.8 is then attached to all the
+    // pieces of chr5 on human that mapped to chr5 on mouse. if chr5 on human
+    // also more weakly mapped to chr6 on mouse, then it would have another
+    // value e.g. 0.6. this can show strong and weak levels of synteny,
+    // especially in polyploidy situations
     const scoreMap: { [key: string]: { quals: number[]; len: number[] } } = {}
     for (let i = 0; i < ret.length; i++) {
       const entry = ret[i]
