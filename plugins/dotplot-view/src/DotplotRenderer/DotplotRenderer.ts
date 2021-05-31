@@ -116,7 +116,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-
+      const identity = feature.get('meanScore') //feature.get('numMatches') / feature.get('blockLen')
+      ctx.fillStyle = `hsl(${identity * 200},80%,45%)`
+      ctx.strokeStyle = `hsl(${identity * 200},80%,45%)`
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
