@@ -97,7 +97,6 @@ function RefNameAutocomplete({
   const { assemblyManager } = session
   const { coarseVisibleLocStrings } = model
   const assembly = assemblyName && assemblyManager.get(assemblyName)
-  // console.log('assemblyName', assemblyName)
   const regions: Region[] = useMemo(() => {
     return (assembly && assembly.regions) || []
   }, [assembly])
