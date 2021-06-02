@@ -1,9 +1,9 @@
-name: Desktop build - Linux
+name: Desktop build - Mac
 on: push
 
 jobs:
   build:
-    name: Build Linux desktop app
+    name: Build Mac desktop app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
